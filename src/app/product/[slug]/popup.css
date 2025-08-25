@@ -1,0 +1,291 @@
+.custom-model-main {
+  text-align: center;
+  z-index: 0;
+  -webkit-overflow-scrolling: touch;
+  opacity: 1;
+  -webkit-transition: opacity 0.15s linear, z-index 0.15;
+  -o-transition: opacity 0.15s linear, z-index 0.15;
+  transition: opacity 0.15s linear, z-index 0.15;
+  z-index: -1;
+  outline: 0;
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.show {
+  z-index: 99999;
+  opacity: 1;
+  overflow: hidden;
+}
+
+.custom-model-inner {
+  -webkit-transform: translate(0, -25%);
+  -ms-transform: translate(0, -25%);
+  transform: translate(0, -25%);
+  -webkit-transition: -webkit-transform 0.3s ease-out;
+  -o-transition: -o-transform 0.3s ease-out;
+  transition: -webkit-transform 0.3s ease-out;
+  -o-transition: transform 0.3s ease-out;
+  transition: transform 0.3s ease-out;
+  transition: transform 0.3s ease-out, -webkit-transform 0.3s ease-out;
+  display: inline-block;
+  vertical-align: middle;
+  width: 100%;
+  margin: 0;
+}
+
+.custom-model-wrap {
+  display: block;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  background-color: #2c2c2c;
+  /* border: 1px solid #999; */
+  /* border: 1px solid rgba(0, 0, 0, 0.2); */
+  /* border-radius: 6px; */
+  /* -webkit-box-shadow: 0 3px 9px rgba(0, 0, 0, 0.5); */
+  /* box-shadow: 0 3px 9px rgba(0, 0, 0, 0.5); */
+  /* background-clip: padding-box; */
+  outline: 0;
+  /* text-align: left; */
+  /* padding: 20px; */
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  /* max-height: calc(100vh - 70px); */
+  overflow-y: auto;
+}
+
+.show .custom-model-inner {
+  -webkit-transform: translate(0, 0);
+  -ms-transform: translate(0, 0);
+  transform: translate(0, 0);
+  position: absolute;
+  left: 0;
+  z-index: 999;
+  height: 100%;
+}
+
+.show .bg-overlay {
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 99;
+}
+
+.bg-overlay {
+  background: rgba(0, 0, 0, 0);
+  height: 100%;
+  width: 100%;
+  position: fixed;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 0;
+  -webkit-transition: background 0.15s linear;
+  -o-transition: background 0.15s linear;
+  transition: background 0.15s linear;
+}
+
+.close-btn {
+  cursor: pointer;
+  z-index: 99;
+  color: #adadad;
+  font-size: 70px;
+  font-weight: 200;
+  position: absolute;
+  top: -15px;
+  right: 30px;
+  display: block;
+}
+
+.close-btn:hover {
+  color: #ffffff;
+}
+
+.pop-up-content-wrap .container {
+  max-width: 1400px;
+}
+
+.pop-top {
+  display: flex;
+  text-align: left;
+  padding: 12px 0px;
+  justify-content: space-around;
+  align-items: center;
+}
+.pop-top h3 {
+  color: #fff;
+  font-size: 23px;
+  font-weight: 700;
+}
+.pop-top .vehicleThumbDetails__part__price {
+  text-align: right;
+}
+.pop-top .vehicleThumbDetails__part__price span {
+  font-size: 30px;
+  display: block;
+  line-height: initial;
+  color: #fff;
+}
+.pop-top .vehicleThumbDetails__part__price.pop_up_price span bdi {
+  display: flex;
+}
+.carava_details .swiper-wrapper {
+  width: 100%;
+  height: 600px;
+}
+.carava_details .swiper-slide {
+  text-align: center;
+  font-size: 30px;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.swiper-button-next,
+.swiper-button-prev {
+  width: 40px;
+  height: 40px;
+  border-radius: 5px;
+  background: transparent;
+}
+.swiper-button-next:after,
+.swiper-button-prev:after {
+  color: #fff;
+  font-size: 40px;
+  font-weight: bold;
+}
+.single-product-slider .swiper-pagination-bullet-active {
+  background: #f58333;
+}
+.sidebar-enquiry {
+  position: relative;
+  top: 80px;
+}
+
+.form-item p {
+margin-bottom: 0;
+}
+.cfs-error {
+    color: #bc0505;
+    text-align: left;
+    font-size: 13px;
+    margin-top: 3px;
+}
+.phone_country {
+    position: relative;
+}
+.phone-label {
+    position: absolute;
+    top: 58%;
+    left: 10px;
+    transform: translateY(-50%);
+    color: #000000;
+    pointer-events: none;
+    font-size: 16px;
+}
+.form-item .phone_country input {
+    padding-left: 40px;
+}
+.form {
+  width: 100%;
+  margin: 0 auto;
+  background: #f2f2f2;
+  padding: 22px;
+  border-radius: 4px;
+  height: auto;
+}
+.sidebar-enquiry h4 {
+  font-family: "Poppins";
+  font-size: 20px;
+  font-weight: 500;
+  margin-bottom: 15px;
+  text-align: left;
+}
+.form-item {
+  position: relative;
+  margin-bottom: 15px;
+}
+.form-item input,
+.form-item textarea {
+  background: #fff;
+  border: none;
+  border-radius: 0;
+  width: 100%;
+  height: 60px;
+  padding: 10px 15px 0;
+  transition: all 0.3s;
+  display: block;
+  box-shadow: none !important;
+  outline: none;
+}
+.form-item textarea {
+  height: 85px;
+  padding-top: 30px;
+}
+
+.form-item input:focus,
+.form-item textarea:focus {
+  border-color: blue;
+}
+.form-item label {
+  position: absolute;
+  cursor: text;
+  z-index: 2;
+  top: 8px;
+  left: 0;
+  font-size: 11px;
+  font-weight: 400;
+  background: #ffffff;
+  padding: 0 15px;
+  color: #999;
+  transition: all 0.3s ease;
+}
+.terms_text {
+  font-size: 11px;
+  margin-bottom: 10px;
+  text-align: left;
+  letter-spacing: -0.2px;
+}
+.terms_text a {
+  color: #f58333;
+}
+.submit-btn button {
+  display: inline-block;
+  margin-top: 0;
+  background: #f58333;
+  border: 1px solid #f58333;
+  color: #fff;
+  padding: 10px 20px;
+  text-transform: uppercase;
+  border-radius: 20px;
+  font-weight: 500;
+  width: 100%;
+}
+.submit-btn button:hover {
+  background: #000000;
+  border: 1px solid #000000;
+}
+
+@media screen and (min-width: 800px) {
+  .custom-model-main:before {
+    content: "";
+    display: inline-block;
+    height: auto;
+    vertical-align: middle;
+    margin-right: -0px;
+    height: 100%;
+  }
+}
+
+@media screen and (max-width: 799px) {
+  .custom-model-inner {
+    margin-top: 0px;
+  }
+}

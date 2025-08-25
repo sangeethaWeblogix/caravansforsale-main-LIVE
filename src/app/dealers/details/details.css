@@ -1,0 +1,284 @@
+.dealer_list_home.dealer_details_single {
+  border: none;
+  padding: 0;
+  border-radius: 0;
+  background: #ffffff;
+  margin-bottom: 30px;
+}
+.dealer_li_top {
+  display: flex;
+  margin-bottom: 25px;
+  align-items: center;
+}
+.dealer_details_single .dealer_ll_left {
+  width: 150px;
+}
+.dealer_details_single .dealer_thumb {
+  width: 120px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border-radius: 50%;
+  margin-right: 10px;
+  border: 1px solid #ddd;
+  box-shadow: 2px 2px 2px rgb(0 0 0 / 9%);
+}
+.dealer_ll_right {
+  width: 84%;
+}
+.dealer_ll_right h1 {
+  font-weight: 600;
+  color: #000;
+  font-size: 25px;
+}
+.dealer_details_single .dealer_about {
+  font-weight: 400;
+  font-size: 16px;
+  height: auto;
+}
+.dealer_details_single .dealer_about p {
+  font-weight: 400;
+  font-size: 16px;
+  margin-bottom: 10px;
+}
+.dealer_details_single .dealer_about h2,
+.dealer_details_single .dealer_about h2 strong {
+  font-weight: 500;
+  font-size: 25px;
+  margin-bottom: 10px;
+}
+.dealer_details_single .dealer_about ul {
+  padding-left: 20px;
+}
+.dealer_details_single .dealer_about ul li {
+  padding-bottom: 10px;
+  font-size: 16px;
+  list-style: disc;
+  color: #000;
+}
+.dealer_about h6 {
+  font-weight: 600;
+  font-size: 20px;
+  margin-top: 20px;
+}
+.dealer_about .side-tags .content {
+  display: flex;
+  gap: 5px;
+}
+.dealer_about .side-tags a {
+  font-size: 15px;
+  font-weight: 500;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background-color: #eef4f8;
+  margin-bottom: 4px;
+}
+.bl-lg {
+  border-left: 1px solid #ddd;
+}
+.dealer_info_right {
+  position: relative;
+  height: 100%;
+}
+.dealer_details_single .dealer_info_right h4 {
+  font-weight: 600;
+  font-size: 19px;
+  margin-bottom: 12px;
+}
+.dealer_info_right p {
+  font-size: 14px;
+}
+.dealer_info_right p strong {
+  font-weight: 500;
+}
+.dealer_info_right p a {
+  color: rgb(0, 145, 234);
+  max-width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: inline-block;
+  position: relative;
+  top: 4px;
+  height: 20px;
+}
+.dealer_details_single .dealer_info_right ul {
+  height: auto;
+  list-style: none;
+  padding-left: 0;
+  height: 155px;
+  overflow: hidden;
+}
+.working_hours ul li {
+  justify-content: space-between;
+  margin-bottom: 4px;
+  display: flex;
+  font-size: 15px;
+}
+.working_hours ul li strong {
+  font-weight: 500;
+}
+.dealer_details_single .dealer_info_right a.btn {
+  position: relative;
+  font-weight: 400;
+  border-radius: 4px !important;
+  padding: 12px 20px;
+  box-shadow: none;
+  bottom: 0;
+  background: #000;
+}
+.dealer_details_single .dealer_info_right a.btn:hover {
+  background: #f58333;
+}
+.vehicleDetailsWithIcons.simple {
+  white-space: nowrap;
+  padding: 8px 0 16px;
+  max-width: 100%;
+  margin: 0;
+  width: 100%;
+  display: inline-block;
+  align-items: center;
+  font-size: 9px;
+}
+.vehicleDetailsWithIcons.simple li {
+  color: #fff;
+  display: inline-block;
+  text-align: left;
+  vertical-align: top;
+  font-size: 1.6em;
+  margin-right: 25px;
+  line-height: 27px;
+  width: 25%;
+  float: left;
+}
+.vehicleDetailsWithIcons.simple li::before {
+  content: "\f111";
+  font-family: "Font Awesome 6 Free";
+  font-weight: 900;
+  font-style: normal;
+  color: #797979;
+  font-size: 9px;
+  position: relative;
+  margin-right: 5px;
+  top: -2px;
+}
+.vehicleDetailsWithIcons.simple li span {
+  display: inline-block;
+  font-weight: 400;
+  color: #000;
+  line-height: normal;
+}
+.product-page .product-card .btn {
+  width: 100%;
+  background-color: #000000;
+  padding: 7px 15px;
+  -webkit-transition: all 0.4s ease;
+  -o-transition: all 0.4s ease;
+  transition: all 0.4s ease;
+  font-size: 15px;
+  margin-top: 20px;
+}
+.product-page .dealer-list .swiper-button-next,
+.product-page .dealer-list .swiper-button-prev {
+  background-color: transparent;
+  position: absolute;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid #ddd;
+  border-radius: 50%;
+  -ms-box-shadow: 0 2px 10px -5px rgba(0, 0, 0, 0.7);
+  -o-box-shadow: 0 2px 10px -5px rgba(0, 0, 0, 0.7);
+  box-shadow: 0 2px 10px -5px rgb(0 0 0 / 70%);
+  background-color: #fff;
+  z-index: 2;
+}
+
+.product-page .dealer-list .swiper-button-next:after,
+.product-page .dealer-list .swiper-button-prev:after {
+  font-size: 20px;
+  color: #000;
+}
+
+.product-page .dealer-list .swiper-button-next,
+.product-page .dealer-list .swiper-container-rtl .swiper-button-prev {
+  right: -20px;
+}
+
+.product-page .dealer-list .swiper-button-prev,
+.product-page .dealer-list .swiper-container-rtl .swiper-button-next {
+  left: -20px;
+}
+
+.product-page .dealer-list .swiper-button-next:hover,
+.product-page .dealer-list .swiper-button-prev:hover {
+  background-color: white;
+}
+.product-page .dealer-list .swiper-wrapper,
+.product-page .dealer-list .swiper {
+  position: static;
+}
+.search_quick_links .title {
+    margin-bottom: 35px;
+}
+.related-products h3, .search_quick_links h2 {
+    font-size: 26px;
+    text-decoration: none;
+    font-weight: 500;
+}
+.other_dlogo {
+    margin-bottom: 20px;
+}
+.other_dlogo a {
+    text-align: center;
+    -webkit-transition: all 0.6s ease;
+    -o-transition: all 0.6s ease;
+    transition: all 0.6s ease;
+    padding: 10px;
+    border-radius: 6px;
+    color: #000000;
+    background: #fff;
+    border: 1px solid #f1f1f1;
+}
+
+.other_dlogo a:hover {
+    box-shadow: 0 0px 10px #0003;
+}
+
+.other_dlogo span {
+    margin-top: 5px;
+    line-height: 18px;
+    max-width: 170px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.search_quick_links ul {
+    list-style: none;
+    padding: 0;
+}
+
+.link_list_s a {
+    border: 1px solid #ddd;
+    border-radius: 100px;
+    box-sizing: border-box;
+    display: inline-block;
+    max-height: none;
+    padding: 14px 34px 14px 24px;
+    margin-bottom: 10px;
+    background: #ddd;
+    text-decoration: none !important;
+    font-weight: 500;
+}
+.link_list_s a:hover {
+    background: #fff8f4;
+    border-color: #ffd3b4;
+    color: #000;
+}
+.link_list_s a i {
+    margin-right: 5px;
+}
