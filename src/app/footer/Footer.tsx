@@ -12,7 +12,7 @@ import { BsChevronUp } from "react-icons/bs";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
-  const siteUrl = "https://www.caravansforsale.com.au";
+  // const siteUrl = "https://www.caravansforsale.com.au";
 
   return (
     <>
