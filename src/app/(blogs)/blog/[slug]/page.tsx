@@ -4,7 +4,7 @@ import "../../blogComponents/details.css";
 type RouteParams = { slug: string };
 async function fetchBlogDetail(slug: string) {
   const res = await fetch(
-    `https://www.api.caravansforsale.com.au/wp-json/cfs/v1/blog-detail/${encodeURIComponent(
+    `https://www.admin.caravansforsale.com.au/wp-json/cfs/v1/blog-detail/${encodeURIComponent(
       slug
     )}`,
     { cache: "no-store", headers: { Accept: "application/json" } }

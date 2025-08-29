@@ -4,17 +4,28 @@ import React from "react";
 import Link from "next/link";
 
 const locations = [
-  "Arundel", "Avoca", "Bakers Creek", "Bells Creek",
-  "Bowen", "Brendale", "Bundaberg East", "Burleigh Heads",
-  "Burleigh Waters", "Burpengary East", "Caboolture", "Chevallum",
+  "Arundel",
+  "Avoca",
+  "Bakers Creek",
+  "Bells Creek",
+  "Bowen",
+  "Brendale",
+  "Bundaberg East",
+  "Burleigh Heads",
+  "Burleigh Waters",
+  "Burpengary East",
+  "Caboolture",
+  "Chevallum",
 ];
 
 const getLink = (location: string) =>
-  `https://www.caravansforsale.com.au/caravan-dealers/qld/${location.toLowerCase().replace(/ /g, "-")}${location.includes("Burpengary East") ? "-4505" : ""}`;
+  `https://www.admin.caravansforsale.com.au/caravan-dealers/qld/${location
+    .toLowerCase()
+    .replace(/ /g, "-")}${location.includes("Burpengary East") ? "-4505" : ""}`;
 
 const NearbyLocationsSection = () => {
   return (
-    <section className="search_quick_links section-padding" >
+    <section className="search_quick_links section-padding">
       <div className="container">
         <div className="title">
           <h2>Find Caravan Dealers Near Burpengary</h2>
