@@ -19,7 +19,7 @@ type FeaturedResponse = FeaturedItem[] | { data?: FeaturedItem[] };
 
 const BASE =
   process.env.NEXT_PUBLIC_CFS_API_BASE?.replace(/\/$/, "") ??
-  "https://.caravansforsale.com.au/wp-json/cfs/v1";
+  "https://www.admin.caravansforsale.com.au/wp-json/cfs/v1";
 
 export async function fetchFeaturedHomeCat(
   category: string
