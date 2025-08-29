@@ -1,57 +1,37 @@
+export const dynamic = "force-dynamic";
+
 import ListingsPage from "@/app/components/ListContent/Listings";
 import { parseSlugToFilters } from "../../components/urlBuilder";
 import { metaFromSlug } from "../../../utils/seo/metaFromSlug";
-import { Metadata } from "next";
-import Head from "next/head"; // Import Head from next/head
+import type { Metadata } from "next";
 
 type Params = { slug?: string[] };
-type SearchParams = { [k: string]: string | string[] | undefined };
+type SearchParams = Record<string, string | string[] | undefined>;
 
-// Function to generate metadata
+// Generate metadata (SEO)
 export async function generateMetadata({
   params,
+  searchParams,
 }: {
-  params: Promise<Params>;
+  params: Params;
+  searchParams: SearchParams; // ✅ no Promise
 }): Promise<Metadata> {
-  const { slug = [] } = await params;
-  return metaFromSlug(slug);
+  return metaFromSlug(params.slug || [], searchParams);
 }
-
-// Main Listings component
+// Main Listings page
 export default async function Listings({
   params,
   searchParams,
 }: {
-  params: Promise<Params>;
-  searchParams: Promise<SearchParams>;
+  params: Params;
+  searchParams: Promise<SearchParams>; // ✅ same here
 }) {
-  // Resolve both params and searchParams asynchronously
-  const [{ slug = [] }, sp] = await Promise.all([params, searchParams]);
+  const sp = await searchParams; // ✅ await once
+  const { slug = [] } = params;
 
-  // Extract filters and pagination
-  const filters = parseSlugToFilters(slug);
-  const paged = Array.isArray(sp?.paged) ? sp!.paged[0] : sp?.paged ?? "1";
+  const filters = parseSlugToFilters(slug, sp);
 
-  // Get metadata from the slug
-  const metaData = await metaFromSlug(slug);
+  const paged = Array.isArray(sp?.paged) ? sp.paged[0] : sp?.paged ?? "1";
 
-  // Ensure title and description are strings (convert if necessary)
-  const title = String(metaData.title ?? "Default Title"); // Convert to string
-  const description = String(metaData.description ?? "Default description"); // Convert to string
-
-  return (
-    <>
-      {/* Inject metadata into the head tag */}
-      <Head>
-        <title>{title}</title>
-        <meta name="description" content={description} />
-        <meta property="og:title" content={title} />
-        <meta property="og:description" content={description} />
-        {/* Add any other meta tags you need */}
-      </Head>
-
-      {/* Render ListingsPage with the filters and pagination */}
-      <ListingsPage {...filters} page={paged} />
-    </>
-  );
+  return <ListingsPage {...filters} page={paged} />;
 }
