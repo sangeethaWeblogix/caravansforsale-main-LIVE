@@ -11,7 +11,6 @@ type FormState = {
   "caravan-type": "";
   condition: "";
   budget: "";
-  requirements: "";
 };
 
 export default function ContactSection() {
@@ -26,7 +25,6 @@ export default function ContactSection() {
     "caravan-type": "",
     condition: "",
     budget: "",
-    requirements: "",
   });
   const [errors, setErrors] = useState<
     Partial<Record<keyof FormState, string>>
@@ -101,7 +99,6 @@ export default function ContactSection() {
       form.append("caravan-type", formData["caravan-type"]);
       form.append("condition", formData.condition);
       form.append("budget", formData.budget);
-      form.append("requirements", formData.requirements);
       form.append("your-message", formData["your-message"]);
       Object.entries(formData).forEach(([key, value]) =>
         form.append(key, value)
@@ -126,7 +123,6 @@ export default function ContactSection() {
           "caravan-type": "",
           condition: "",
           budget: "",
-          requirements: "",
         });
         setErrors({});
       } else {
