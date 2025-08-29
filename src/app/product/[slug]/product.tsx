@@ -302,10 +302,22 @@ export default function ClientLogger({
   const save = hasSale ? reg - sale : 0;
   const isPOA = !hasSale && (reg === 0 || Number.isNaN(reg));
 
-  const handleBackClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    e.preventDefault();
-    window.history.back();
+  const handleBackClick = () => {
+    // Set a flag in sessionStorage before going back
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("forceRefreshOnBack", "true");
+      window.history.back();
+    }
   };
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const shouldReload = sessionStorage.getItem("forceRefreshOnBack");
+      if (shouldReload === "true") {
+        sessionStorage.removeItem("forceRefreshOnBack");
+        window.location.reload(); // Force refresh
+      }
+    }
+  }, []);
 
   const productId: string | number | undefined =
     product.id ?? pd.id ?? product.name;

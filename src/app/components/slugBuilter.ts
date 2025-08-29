@@ -13,6 +13,7 @@ const asNum = (v?: string | number) =>
   typeof v === "number" ? v : v && v.trim() ? Number(v) : undefined;
 
 export function buildSlugFromFilters(f: Filters): string {
+  console.log("buildSlugFromFilters", f);
   const segments: string[] = [];
   // const DEFAULT_RADIUS = 50;
   // 1) Make / Model
@@ -89,10 +90,15 @@ export function buildSlugFromFilters(f: Filters): string {
     segments.push(`search=${plus}`);
   }
 
-  const path = `/listings/${segments.join("/")}`;
+  //  const path = `/listings/${segments.join("/")}`;
+  //  const urlWithQuery = query.toString() ? `${path}?${query.toString()}` : path;
+  //  if (!urlWithQuery.endsWith("/") && !urlWithQuery.includes("?")) {
+  //    return `${urlWithQuery}/`;
+  //  }
+  //  return urlWithQuery;
+  const path =
+    segments.length > 0 ? `/listings/${segments.join("/")}` : "/listings";
   const urlWithQuery = query.toString() ? `${path}?${query.toString()}` : path;
-  if (!urlWithQuery.endsWith("/") && !urlWithQuery.includes("?")) {
-    return `${urlWithQuery}/`;
-  }
+
   return urlWithQuery;
 }

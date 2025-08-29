@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "www.dev.caravansforsale.com.au" },
-      { protocol: "https", hostname: "www.admin.caravansforsale.com.au" },
+      { protocol: "https", hostname: "www.api.caravansforsale.com.au" },
     ],
   },
 };

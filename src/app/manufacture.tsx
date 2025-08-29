@@ -63,11 +63,25 @@ const Manufacture = () => {
   };
 
   const buildHref = (man: MakeItem) => {
-    // Priority: custom_link → slug → slugify(name)
-    if (man.custom_link) return man.custom_link;
-    const value = (man.name && man.name.trim()) || slugify(man.name);
-    return `/listings/${encodeURIComponent(value)}`;
+    // Use custom_link if present and already a valid relative or absolute URL
+    if (man.custom_link) {
+      // Clean trailing or leading slashes for relative paths
+      if (man.custom_link.startsWith("/")) {
+        return man.custom_link;
+      } else {
+        // For URLs without a leading slash, add one to keep consistent path style
+        return `/${man.custom_link}`;
+      }
+    }
+
+    // Use slug if provided, else slugify the name
+    const slugValue = man.slug?.trim() || slugify(man.name);
+
+    // Encode slug and prepend with /listings
+    return `/listings/${encodeURIComponent(slugValue)}`;
   };
+
+  console.log("make", items);
 
   return (
     <div>

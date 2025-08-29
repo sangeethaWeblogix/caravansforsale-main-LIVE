@@ -6,7 +6,7 @@ type PageProps = { params: Promise<RouteParams> };
 
 async function fetchBlogDetail(slug: string) {
   const res = await fetch(
-    `https://www.admin.caravansforsale.com.au/wp-json/cfs/v1/blog-detail/${encodeURIComponent(
+    `https://www.api.caravansforsale.com.au/wp-json/cfs/v1/blog-detail/${encodeURIComponent(
       slug
     )}`,
     { cache: "no-store", headers: { Accept: "application/json" } }
@@ -38,9 +38,12 @@ export async function generateMetadata({
     data?.short_description ||
     "View caravan details.";
 
+  const robots = "index, follow";
+
   return {
     title,
     description,
+    robots,
     openGraph: {
       title,
       description,

@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   description:
     "Latest news, in-depth reviews, and expert advice on the latest in the caravan market. Stay informed and make smarter decisions.",
   icons: { icon: "/favicon.ico" },
+  robots: "index, follow",
 };
 
 export const revalidate = 60; // ISR: refresh every 60s

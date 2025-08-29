@@ -7,7 +7,7 @@ type PageProps = { params: Promise<RouteParams> };
 
 async function fetchProductDetail(slug: string) {
   const res = await fetch(
-    `https://www.admin.caravansforsale.com.au/wp-json/cfs/v1/product-detail/${encodeURIComponent(
+    `https://www.api.caravansforsale.com.au/wp-json/cfs/v1/product-detail/${encodeURIComponent(
       slug
     )}`,
     { cache: "no-store", headers: { Accept: "application/json" } }

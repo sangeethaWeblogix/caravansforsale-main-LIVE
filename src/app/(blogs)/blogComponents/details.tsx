@@ -49,6 +49,8 @@ export default function blogDetailsPage({
   if (!post) {
     notFound();
   }
+  console.log("blog", post);
+
   return (
     <div className="blog-page style-5 color-4">
       <section className="all-news section-padding pt-50 blog bg-transparent single_blog style-3">
@@ -101,9 +103,7 @@ export default function blogDetailsPage({
             </div>
 
             <div className="col-lg-3 rightbar-stick">
-              <div className="theiaStickySidebar">
-                
-              </div>
+              <div className="theiaStickySidebar"></div>
             </div>
           </div>
         </div>

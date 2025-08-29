@@ -8,6 +8,7 @@ import { useParams, useRouter } from "next/navigation";
 import { fetchBlogs, type BlogPost, type BlogPageResult } from "@/api/blog/api";
 import { formatPostDate } from "@/utils/date";
 import { toSlug } from "@/utils/seo/slug";
+import BlogCardSkelton from "../../../../components/blogCardSkeleton";
 
 // Build compact page list like [1, '…', 8, 9, 10, 11, 12, '…', 35]
 function buildPageList(current: number, total: number, delta = 2) {
@@ -111,7 +112,13 @@ export default function BlogPage() {
               {!loading && blogPosts.length === 0 && (
                 <div className="text-center py-5">No posts found.</div>
               )}
-
+              {loading && (
+                <>
+                  {[...Array(3)].map((_, i) => (
+                    <BlogCardSkelton key={i} />
+                  ))}
+                </>
+              )}
               {!loading &&
                 blogPosts.map((post, index) => {
                   const href = getHref(post);

@@ -7,7 +7,7 @@ export async function POST(
 ) {
   const id = params.id;
   // ✅ single slash; no trailing double slashes
-  const endpoint = `https://www.admin.caravansforsale.com.au/wp-json/contact-form-7/v1/contact-forms/${id}/feedback`;
+  const endpoint = `https://www.caravansforsale.com.au/wp-json/contact-form-7/v1/contact-forms/${id}/feedback`;
 
   const formData = await req.formData();
   const resp = await fetch(endpoint, {

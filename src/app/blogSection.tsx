@@ -6,6 +6,7 @@ import Link from "next/link";
 import { fetchHomePage, type HomeBlogPost } from "@/api/home/api";
 import { formatPostDate } from "@/utils/date";
 import { toSlug } from "@/utils/seo/slug";
+import BlogCardSkeleton from "./components/homeBlogSkelton";
 
 interface BlogPost extends HomeBlogPost {
   // ensure fields you use are present
@@ -63,7 +64,11 @@ export default function HomeLatestBlogs() {
 
         <div className="content">
           {loading ? (
-            <div className="py-4 text-muted">Loading…</div>
+            <div className="row">
+              {[...Array(3)].map((_, i) => (
+                <BlogCardSkeleton key={i} />
+              ))}
+            </div>
           ) : (
             <div className="blog-content">
               <div className="row">
@@ -81,6 +86,7 @@ export default function HomeLatestBlogs() {
                                 width={300}
                                 height={200}
                                 unoptimized
+                                priority
                               />
                             )}
                           </div>
