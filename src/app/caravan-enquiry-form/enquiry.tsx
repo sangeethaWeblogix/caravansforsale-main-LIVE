@@ -139,6 +139,7 @@ export default function ContactSection() {
       setLoading(false);
     }
   };
+  console.log("formData", formData);
   const hasAnyError = Object.values(errors).some(Boolean);
 
   return (
@@ -314,21 +315,17 @@ export default function ContactSection() {
                     </div>
 
                     {/* Requirements */}
+
+                    {/* Message (optional) */}
                     <div className="col-lg-12">
                       <div className="form-group mb-20">
                         <textarea
-                          name="requirements"
+                          name="your-message"
                           className="form-control"
-                          placeholder="Requirements (Description)*"
-                          value={formData.requirements}
+                          placeholder="Additional message (optional)"
+                          value={formData["your-message"]}
                           onChange={handleChange}
-                          required
                         />
-                        {errors.requirements && (
-                          <small className="text-danger">
-                            {errors.requirements}
-                          </small>
-                        )}
                       </div>
                     </div>
 
