@@ -2258,11 +2258,13 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
           value={
             isUserTypingRef.current
               ? locationInput
-              : formatsuburbLocationInput(
+              : selectedSuburbName && selectedStateName && selectedpincode
+              ? formatsuburbLocationInput(
                   selectedSuburbName,
                   selectedStateName,
                   selectedpincode
                 )
+              : "" // 👈 nothing if incomplete
           }
           onChange={(e) => {
             isUserTypingRef.current = true;
