@@ -84,7 +84,7 @@ export default function BlogPage() {
 
   const getHref = (p: BlogPost) => {
     const slug = (p.slug ?? "").trim() || toSlug(p.title ?? "");
-    return slug ? `/blog/${slug}/` : "#";
+    return slug ? `/${slug}/` : "#";
   };
 
   const prevUrl =
