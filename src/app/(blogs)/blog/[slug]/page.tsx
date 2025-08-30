@@ -1,5 +1,5 @@
-import Details from "../../[slug]/details";
-import "../../[slug]/details.css";
+import Details from "../../../[slug]/details";
+import "../../../[slug]/details.css";
 
 type RouteParams = { slug: string };
 async function fetchBlogDetail(slug: string) {
