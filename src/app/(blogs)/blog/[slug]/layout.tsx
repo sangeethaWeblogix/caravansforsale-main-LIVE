@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import DeatilsPage from "../../blogComponents/details";
-import "../../blogComponents/details.css";
+import DeatilsPage from "../../[slug]/details";
+import "../../[slug]/details.css";
 type RouteParams = { slug: string };
 type PageProps = { params: Promise<RouteParams> };
 
