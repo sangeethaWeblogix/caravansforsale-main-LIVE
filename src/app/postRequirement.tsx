@@ -87,9 +87,9 @@ const PostRequirement = () => {
           </div>
 
           <div className="final_post_btn">
-            <a href="/caravan-enquiry-form/" className="btn">
+            <Link href="/caravan-enquiry-form/" className="btn">
               Post Your Requirements
-            </a>
+            </Link>
           </div>
         </div>
       </div>
