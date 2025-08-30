@@ -1,7 +1,9 @@
-import Details from "./details";
+import type { Metadata } from "next";
+import DeatilsPage from "./details";
 import "./details.css";
-
 type RouteParams = { slug: string };
+type PageProps = { params: Promise<RouteParams> };
+
 async function fetchBlogDetail(slug: string) {
   const res = await fetch(
     `https://www.admin.caravansforsale.com.au/wp-json/cfs/v1/blog-detail/${encodeURIComponent(
@@ -13,15 +15,56 @@ async function fetchBlogDetail(slug: string) {
   return res.json();
 }
 
-export default async function ProductBlogPage(
-  { params }: { params: Promise<RouteParams> } // ⬅️ match Next's PageProps (Promise)
-) {
-  const { slug } = await params; // ⬅️ await it
+// ✅ SEO from product.seo (NO images)
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<RouteParams>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const data = await fetchBlogDetail(slug);
+
+  const seo = data?.seo ?? data?.product?.seo ?? {};
+  const title =
+    seo.metatitle ||
+    seo.meta_title ||
+    data?.title ||
+    data?.name ||
+    "Product - Caravans for Sale";
+
+  const description =
+    seo.metadescription ||
+    seo.meta_description ||
+    data?.short_description ||
+    "View caravan details.";
+  const robots = "index, follow";
+
+  return {
+    title,
+    description,
+    robots,
+    openGraph: {
+      title,
+      description,
+    },
+    twitter: {
+      card: "summary", // no image card
+      title,
+      description,
+    },
+    other: {
+      "og:type": "blog",
+    },
+  };
+}
+
+export default async function ProductDetailPage({ params }: PageProps) {
+  const { slug } = await params;
   const data = await fetchBlogDetail(slug);
 
   return (
     <div>
-      <Details data={data} />
+      <DeatilsPage data={data} />
     </div>
   );
 }
