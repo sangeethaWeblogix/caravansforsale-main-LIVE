@@ -477,6 +477,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     loadFilters();
   }, []);
 
+  console.log("make", makes);
   type UnknownRec = Record<string, unknown>;
 
   const isOptionArray = (v: unknown): v is Option[] =>
@@ -2233,7 +2234,12 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
         {makeOpen && (
           <div className="filter-accordion-items">
             {Array.isArray(makes) &&
-              (showAllMakes ? makes : makes.slice(0, 10)).map((make) => (
+              (showAllMakes
+                ? [...makes].sort((a, b) => a.name.localeCompare(b.name))
+                : [...makes]
+                    .sort((a, b) => a.name.localeCompare(b.name))
+                    .slice(0, 10)
+              ).map((make) => (
                 <div
                   key={make.slug}
                   className={`filter-accordion-item ${
@@ -2249,7 +2255,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                     setSelectedMakeName(make.name);
 
                     // ✅ Immediately open model dropdown
-                    setModelOpen(true); // <== Force open immediately
+                    setModelOpen(true);
 
                     // ✅ Update filters
                     const updatedFilters: Filters = {
@@ -2259,12 +2265,11 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                     };
 
                     setFilters(updatedFilters);
-                    // onFilterChange(updatedFilters);
                     filtersInitialized.current = true;
 
                     // ✅ Update URL
                     startTransition(() => {
-                      updateAllFiltersAndURL(updatedFilters); // ✅ this triggers the API + URL update
+                      updateAllFiltersAndURL(updatedFilters);
                     });
                   }}
                 >
