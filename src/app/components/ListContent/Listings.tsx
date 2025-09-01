@@ -136,26 +136,19 @@ export default function ListingsPage({ ...incomingFilters }: Props) {
 
   // Parse slug ONCE on mount; do not fetch here
   const initializedRef = useRef(false);
+
   useEffect(() => {
     if (initializedRef.current) return;
     initializedRef.current = true;
 
     const path = pathKey;
     const slugParts = path.split("/listings/")[1]?.split("/") || [];
-
-    // Convert Next.js searchParams into a plain object
-    const query: Record<string, string | string[] | undefined> = {};
-    searchParams.forEach((value, key) => {
-      query[key] = value;
-    });
-
-    const parsed = parseSlugToFilters(slugParts, query);
-    console.log("metsparsed", parsed);
+    const parsed = parseSlugToFilters(slugParts);
 
     const merged = { ...parsed, ...incomingFilters };
     filtersRef.current = merged;
     setFilters(merged);
-  }, [incomingFilters, searchParams]);
+  }, [incomingFilters]);
 
   const normalizeSearchFromMake = (f: Filters): Filters => {
     if (!f?.make) return f;
@@ -170,7 +163,6 @@ export default function ListingsPage({ ...incomingFilters }: Props) {
     }
     return f;
   };
-
   const updateURLWithFilters = useCallback(
     (nextFilters: Filters, pageNum: number) => {
       const slug = buildSlugFromFilters(nextFilters);
@@ -178,7 +170,6 @@ export default function ListingsPage({ ...incomingFilters }: Props) {
 
       if (nextFilters.orderby)
         query.set("orderby", String(nextFilters.orderby));
-
       if (nextFilters.acustom_fromyears)
         query.set(
           "acustom_fromyears",
@@ -204,17 +195,6 @@ export default function ListingsPage({ ...incomingFilters }: Props) {
       initializedRef.current = true;
     }
   }, []);
-
-  const calledOnceRef = useRef(false);
-
-  useEffect(() => {
-    console.log("URL changed. Parsing filters and reloading listings.");
-
-    if (!calledOnceRef.current) {
-      loadListings();
-      calledOnceRef.current = true;
-    }
-  }, [pathname, searchParams]);
 
   const handleNextPage = () => {
     if (pagination.current_page < pagination.total_pages) {
@@ -335,25 +315,12 @@ export default function ListingsPage({ ...incomingFilters }: Props) {
   useEffect(() => {
     if (!initializedRef.current) return;
 
-    const path = pathKey;
-    const slugParts = path.split("/listings/")[1]?.split("/") || [];
-
-    // ✅ Here you DO pass query
-    const query: Record<string, string | string[] | undefined> = {};
-    searchParams.forEach((value, key) => {
-      query[key] = value;
-    });
-
-    const parsedFromURL = parseSlugToFilters(slugParts, query);
-    console.log("metsparsed2", parsedFromURL);
+    const slugParts = pathKey.split("/listings/")[1]?.split("/") || [];
+    const parsedFromURL = parseSlugToFilters(slugParts);
 
     const pageFromURL = parseInt(searchParams.get("page") || "1", 10);
     const orderbyQP = searchParams.get("orderby") || undefined;
-    const fromyear = searchParams.get("acustom_fromyears") || undefined;
-    const toyear = searchParams.get("acustom_toyears") || undefined;
-
     const radiusQP = searchParams.get("radius_kms");
-
     const radiusFromURL = radiusQP
       ? Math.max(5, parseInt(radiusQP, 10))
       : undefined;
@@ -362,9 +329,6 @@ export default function ListingsPage({ ...incomingFilters }: Props) {
       ...parsedFromURL,
       ...incomingFiltersRef.current,
       orderby: orderbyQP,
-      acustom_fromyears: fromyear,
-      acustom_toyears: toyear,
-
       radius_kms: radiusFromURL !== DEFAULT_RADIUS ? radiusFromURL : undefined,
     };
 
@@ -382,10 +346,9 @@ export default function ListingsPage({ ...incomingFilters }: Props) {
     const requestKey = JSON.stringify({ page: pageFromURL, filters: merged });
     if (LAST_GLOBAL_REQUEST_KEY === requestKey) return;
     LAST_GLOBAL_REQUEST_KEY = requestKey;
-    initializedRef.current = true; // ✅ only here
 
     loadListings(pageFromURL, merged);
-  }, [searchKey, pathKey, loadListings]);
+  }, [searchKey, pathKey, loadListings, DEFAULT_RADIUS]);
 
   const handleFilterChange = useCallback(
     (newFilters: Filters) => {
@@ -395,12 +358,6 @@ export default function ListingsPage({ ...incomingFilters }: Props) {
         mergedFilters.orderby = undefined; // ✅ no `any`, no `delete`
       }
 
-      if ("acustom_fromyears" in newFilters && !newFilters.acustom_fromyears) {
-        mergedFilters.acustom_fromyears = undefined;
-      }
-      if ("acustom_toyears" in newFilters && !newFilters.acustom_toyears) {
-        mergedFilters.acustom_toyears = undefined;
-      }
       setFilters(mergedFilters);
       filtersRef.current = mergedFilters;
 
@@ -415,9 +372,8 @@ export default function ListingsPage({ ...incomingFilters }: Props) {
 
       updateURLWithFilters(mergedFilters, 1);
     },
-    [searchParams, updateURLWithFilters, loadListings]
+    [searchParams, updateURLWithFilters]
   );
-  // first load from URL
 
   // Mobile offcanvas filter state
   const mobileFiltersRef = useRef<HTMLDivElement>(null);
