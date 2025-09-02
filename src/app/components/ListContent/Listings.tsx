@@ -223,11 +223,11 @@ export default function ListingsPage({
     [router, DEFAULT_RADIUS]
   );
 
-  useEffect(() => {
-    if (!initializedRef.current) {
-      initializedRef.current = true;
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (!initializedRef.current) {
+  //     initializedRef.current = true;
+  //   }
+  // }, []);
 
   const handleNextPage = () => {
     if (pagination.current_page < pagination.total_pages) {
@@ -235,7 +235,7 @@ export default function ListingsPage({
 
       // Update pagination state and fetch data directly
       // setPagination((prev) => ({ ...prev, current_page: nextPage }));
-      loadListings(nextPage, filtersRef.current, true);
+      // loadListings(nextPage, filtersRef.current, true);
 
       // Also update URL but don't wait for it to trigger the fetch
       updateURLWithFilters(filtersRef.current, nextPage);
