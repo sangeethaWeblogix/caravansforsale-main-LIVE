@@ -84,31 +84,62 @@ export interface Filters {
   radius_kms?: number | string;
 }
 
-type Props = Filters & { page?: string | number };
-
+interface Props extends Filters {
+  page?: string | number;
+  initialData?: any; // Add initialData prop
+}
 /** ------------ Component ------------ */
 
-export default function ListingsPage({ ...incomingFilters }: Props) {
+export default function ListingsPage({
+  initialData,
+  ...incomingFilters
+}: Props) {
   const DEFAULT_RADIUS = 50 as const;
 
   const [filters, setFilters] = useState<Filters>({});
   const filtersRef = useRef<Filters>({});
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [products, setProducts] = useState<Product[]>([]);
-  const [pageTitle, setPageTitle] = useState("");
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [makes, setMakes] = useState<MakeOption[]>([]);
-  const [models, setModels] = useState<MakeOption[]>([]);
-  const [metaTitle, setMetaTitle] = useState("");
-  const [metaDescription, setMetaDescription] = useState("");
-
-  const [stateOptions, setStateOptions] = useState<StateOption[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-
   const router = useRouter();
 
+  const [isUsingInitialData, setIsUsingInitialData] = useState(!!initialData);
+
+  // Initialize state with initialData if provided
+  const [products, setProducts] = useState<Product[]>(
+    initialData?.data?.products || []
+  );
+  const [categories, setCategories] = useState<Category[]>(
+    initialData?.data?.all_categories || []
+  );
+  const [makes, setMakes] = useState<MakeOption[]>(
+    initialData?.data?.make_options || []
+  );
+  const [stateOptions, setStateOptions] = useState<StateOption[]>(
+    initialData?.data?.states || []
+  );
+  const [models, setModels] = useState<MakeOption[]>(
+    initialData?.data?.model_options || []
+  );
+  const [pageTitle, setPageTitle] = useState(
+    initialData?.title || "Caravan Listings"
+  );
+  const [metaTitle, setMetaTitle] = useState(initialData?.seo?.metatitle || "");
+  const [metaDescription, setMetaDescription] = useState(
+    initialData?.seo?.metadescription || ""
+  );
   const [pagination, setPagination] = useState<Pagination>(() => {
+    // Use initial data if available, otherwise fall back to default
+    if (initialData?.pagination) {
+      return {
+        current_page: initialData.pagination.current_page || 1,
+        total_pages: initialData.pagination.total_pages || 1,
+        per_page: initialData.pagination.per_page || 12,
+        total_products: initialData.pagination.total_products || 0,
+        total_items: initialData.pagination.total_items || 0,
+      };
+    }
+
     const fromURL =
       typeof window !== "undefined"
         ? parseInt(
@@ -141,14 +172,14 @@ export default function ListingsPage({ ...incomingFilters }: Props) {
     if (initializedRef.current) return;
     initializedRef.current = true;
 
-    const path = pathKey;
+    const path = pathname;
     const slugParts = path.split("/listings/")[1]?.split("/") || [];
     const parsed = parseSlugToFilters(slugParts);
 
     const merged = { ...parsed, ...incomingFilters };
     filtersRef.current = merged;
     setFilters(merged);
-  }, [incomingFilters]);
+  }, [incomingFilters, pathname]);
 
   const normalizeSearchFromMake = (f: Filters): Filters => {
     if (!f?.make) return f;
@@ -163,6 +194,7 @@ export default function ListingsPage({ ...incomingFilters }: Props) {
     }
     return f;
   };
+
   const updateURLWithFilters = useCallback(
     (nextFilters: Filters, pageNum: number) => {
       const slug = buildSlugFromFilters(nextFilters);
@@ -190,6 +222,7 @@ export default function ListingsPage({ ...incomingFilters }: Props) {
     },
     [router, DEFAULT_RADIUS]
   );
+
   useEffect(() => {
     if (!initializedRef.current) {
       initializedRef.current = true;
@@ -199,7 +232,12 @@ export default function ListingsPage({ ...incomingFilters }: Props) {
   const handleNextPage = () => {
     if (pagination.current_page < pagination.total_pages) {
       const nextPage = pagination.current_page + 1;
-      console.log("🟢 Triggering updateURLWithFilters with page:", nextPage);
+
+      // Update pagination state and fetch data directly
+      // setPagination((prev) => ({ ...prev, current_page: nextPage }));
+      loadListings(nextPage, filtersRef.current, true);
+
+      // Also update URL but don't wait for it to trigger the fetch
       updateURLWithFilters(filtersRef.current, nextPage);
     }
   };
@@ -207,12 +245,27 @@ export default function ListingsPage({ ...incomingFilters }: Props) {
   const handlePrevPage = () => {
     if (pagination.current_page > 1) {
       const prevPage = pagination.current_page - 1;
+
+      // Update pagination state and fetch data directly
+      // setPagination((prev) => ({ ...prev, current_page: prevPage }));
+      // loadListings(prevPage, filtersRef.current, true);
+
+      // Also update URL but don't wait for it to trigger the fetch
       updateURLWithFilters(filtersRef.current, prevPage);
     }
   };
-
   const loadListings = useCallback(
-    async (pageNum = 1, appliedFilters: Filters = filtersRef.current) => {
+    async (
+      pageNum = 1,
+      appliedFilters: Filters = filtersRef.current,
+      skipInitialCheck = false
+    ) => {
+      // If we have initial data and this is the first load, skip the API call
+      if (initialData && !skipInitialCheck && isUsingInitialData) {
+        setIsUsingInitialData(false); // Next time, fetch from API
+        return;
+      }
+
       setIsLoading(true);
       window.scrollTo({ top: 0, behavior: "smooth" });
 
@@ -271,7 +324,7 @@ export default function ListingsPage({ ...incomingFilters }: Props) {
           setProducts([]);
           setPageTitle("No results found. Redirecting...");
           setMetaTitle("No listings found");
-          setMetaDescription("We couldn’t find listings for your filters.");
+          setMetaDescription("We couldn't find listings for your filters.");
           setTimeout(() => {
             const empty: Filters = {};
             filtersRef.current = empty;
@@ -295,13 +348,10 @@ export default function ListingsPage({ ...incomingFilters }: Props) {
         setIsLoading(false);
       }
     },
-    [DEFAULT_RADIUS, router]
+    [DEFAULT_RADIUS, router, initialData, isUsingInitialData]
   );
 
-  /* ---- SINGLE source of truth: URL -> fetch ----
-     This is the only effect that calls loadListings.
-     It also de-dupes across StrictMode remounts via LAST_GLOBAL_REQUEST_KEY. */
-
+  /* ---- SINGLE source of truth: URL -> fetch ---- */
   const searchKey = searchParams.toString();
   const pathKey = pathname;
 
@@ -311,6 +361,10 @@ export default function ListingsPage({ ...incomingFilters }: Props) {
     const next = JSON.stringify(incomingFilters);
     if (prev !== next) incomingFiltersRef.current = incomingFilters;
   }, [incomingFilters]);
+
+  // Add these refs to track previous values
+  const prevFiltersRef = useRef<Filters>({});
+  const prevPageRef = useRef(1);
 
   useEffect(() => {
     if (!initializedRef.current) return;
@@ -332,30 +386,37 @@ export default function ListingsPage({ ...incomingFilters }: Props) {
       radius_kms: radiusFromURL !== DEFAULT_RADIUS ? radiusFromURL : undefined,
     };
 
-    // Compare current and previous filters to avoid unnecessary fetches
-    const prevFiltersJson = JSON.stringify(filtersRef.current);
-    const nextFiltersJson = JSON.stringify(merged);
+    // Check if anything actually changed
+    const filtersChanged =
+      JSON.stringify(merged) !== JSON.stringify(prevFiltersRef.current);
+    const pageChanged = pageFromURL !== prevPageRef.current;
 
-    if (prevFiltersJson !== nextFiltersJson) {
-      filtersRef.current = merged;
-      setFilters(merged);
+    if (!filtersChanged && !pageChanged) {
+      // Nothing changed, no need to fetch
+      return;
     }
 
+    // Update refs with current values
+    prevFiltersRef.current = { ...merged };
+    prevPageRef.current = pageFromURL;
+
+    filtersRef.current = merged;
+    setFilters(merged);
     setPagination((prev) => ({ ...prev, current_page: pageFromURL }));
 
     const requestKey = JSON.stringify({ page: pageFromURL, filters: merged });
     if (LAST_GLOBAL_REQUEST_KEY === requestKey) return;
     LAST_GLOBAL_REQUEST_KEY = requestKey;
 
-    loadListings(pageFromURL, merged);
-  }, [searchKey, pathKey, loadListings, DEFAULT_RADIUS]);
+    loadListings(pageFromURL, merged, true);
+  }, [searchKey, pathKey, loadListings, DEFAULT_RADIUS, searchParams]);
 
   const handleFilterChange = useCallback(
     (newFilters: Filters) => {
       const mergedFilters = { ...filtersRef.current, ...newFilters };
 
       if ("orderby" in newFilters && !newFilters.orderby) {
-        mergedFilters.orderby = undefined; // ✅ no `any`, no `delete`
+        mergedFilters.orderby = undefined;
       }
 
       setFilters(mergedFilters);

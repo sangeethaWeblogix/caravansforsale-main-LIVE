@@ -4,10 +4,11 @@ import ListingsPage from "@/app/components/ListContent/Listings";
 import { parseSlugToFilters } from "../../components/urlBuilder";
 import { metaFromSlug } from "../../../utils/seo/metaFromSlug";
 import type { Metadata } from "next";
+import { fetchListings } from "@/api/listings/api";
 
-// Define types for the async params
-type Params = Promise<{ slug?: string[] }>;
-type SearchParams = Promise<Record<string, string | string[] | undefined>>;
+// Types for params/searchParams
+type Params = { slug?: string[] };
+type SearchParams = Record<string, string | string[] | undefined>;
 
 // Generate metadata (SEO)
 export async function generateMetadata({
@@ -17,10 +18,7 @@ export async function generateMetadata({
   params: Params;
   searchParams: SearchParams;
 }): Promise<Metadata> {
-  const resolvedParams = await params;
-  const resolvedSearchParams = await searchParams;
-
-  return metaFromSlug(resolvedParams.slug || [], resolvedSearchParams);
+  return metaFromSlug(params.slug || [], searchParams);
 }
 
 // Main Listings page
@@ -31,18 +29,22 @@ export default async function Listings({
   params: Params;
   searchParams: SearchParams;
 }) {
-  // Await both params and searchParams
-  const [resolvedParams, resolvedSearchParams] = await Promise.all([
-    params,
-    searchParams,
-  ]);
+  const { slug = [] } = params;
 
-  const { slug = [] } = resolvedParams;
-  const sp = resolvedSearchParams;
+  const filters = parseSlugToFilters(slug, searchParams);
 
-  const filters = parseSlugToFilters(slug, sp);
+  // ✅ Always use "page", not "paged"
+  const page =
+    typeof searchParams.page === "string"
+      ? parseInt(searchParams.page, 10)
+      : Array.isArray(searchParams.page)
+      ? parseInt(searchParams.page[0], 10)
+      : 1;
 
-  const paged = Array.isArray(sp?.paged) ? sp.paged[0] : sp?.paged ?? "1";
+  const response = await fetchListings({
+    ...filters,
+    page,
+  });
 
-  return <ListingsPage {...filters} page={paged} />;
+  return <ListingsPage {...filters} page={page} initialData={response} />;
 }
