@@ -83,10 +83,24 @@ export interface Filters {
   keyword?: string;
   radius_kms?: number | string;
 }
-
+interface ListingResponse {
+  data?: {
+    products?: Product[];
+    all_categories?: Category[];
+    make_options?: MakeOption[];
+    states?: StateOption[];
+    model_options?: MakeOption[];
+  };
+  title?: string;
+  seo?: {
+    metatitle?: string;
+    metadescription?: string;
+  };
+  pagination?: Pagination;
+}
 interface Props extends Filters {
   page?: string | number;
-  initialData?: any; // Add initialData prop
+  initialData?: ListingResponse; // Replace any with proper type
 }
 /** ------------ Component ------------ */
 
@@ -277,12 +291,7 @@ export default function ListingsPage({
           typeof radiusNum === "number" && radiusNum !== DEFAULT_RADIUS
             ? String(radiusNum)
             : undefined;
-        const yearFrom = safeFilters.acustom_fromyears
-          ? Number(safeFilters.acustom_fromyears)
-          : undefined;
-        const yearTo = safeFilters.acustom_toyears
-          ? Number(safeFilters.acustom_toyears)
-          : undefined;
+
         const response = await fetchListings({
           ...safeFilters,
           page: pageNum,
