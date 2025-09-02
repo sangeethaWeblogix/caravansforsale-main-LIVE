@@ -51,7 +51,7 @@ export default async function ListingsPage() {
   const initialData = await fetchListings({});
 
   return (
-    <Suspense fallback={<div>Loading listings...</div>}>
+    <Suspense>
       <Listing initialData={initialData} />
     </Suspense>
   );
