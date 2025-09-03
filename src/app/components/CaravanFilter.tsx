@@ -1593,7 +1593,10 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     // 1) set local filters only if changed
 
     const nextRaw: Filters = override ?? filters;
-    const next: Filters = clean(hydrateLocation(normalizeFilters(nextRaw)));
+    const next: Filters = {
+      ...clean(hydrateLocation(normalizeFilters(nextRaw))),
+      page: 1, // ← Add this line to reset page
+    };
     next.make = sanitizeMake(next.make); // belt & suspenders
     setFilters((prev) => (filtersEqual(prev, next) ? (prev as Filters) : next));
     filtersInitialized.current = true;

@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
-import { fetchListings } from "../../../api/listings/api";
+import { fetchListings, ApiResponse, Item } from "../../../api/listings/api";
 import Listing from "./LisitingContent";
 import CaravanFilter from "../CaravanFilter";
 import SkeletonListing from "../skelton";
@@ -33,6 +33,14 @@ interface Product {
   make?: string;
   slug?: string;
   is_exclusive: boolean;
+  // Include additional properties that might come from API
+  title?: string;
+  weight?: string;
+  price?: string;
+  thumbnail?: string;
+  url?: string;
+  sleeps?: string;
+  manufacturer?: string;
 }
 
 interface Pagination {
@@ -83,25 +91,37 @@ export interface Filters {
   keyword?: string;
   radius_kms?: number | string;
 }
-interface ListingResponse {
-  data?: {
-    products?: Product[];
-    all_categories?: Category[];
-    make_options?: MakeOption[];
-    states?: StateOption[];
-    model_options?: MakeOption[];
-  };
-  title?: string;
-  seo?: {
-    metatitle?: string;
-    metadescription?: string;
-  };
-  pagination?: Pagination;
-}
+
 interface Props extends Filters {
   page?: string | number;
-  initialData?: ListingResponse; // Replace any with proper type
+  initialData?: ApiResponse;
 }
+
+/** ------------ Helper Functions ------------ */
+
+// Add this helper function to transform API items to Products
+function transformApiItemsToProducts(items: Item[]): Product[] {
+  return items.map((item) => ({
+    id: typeof item.id === "number" ? item.id : parseInt(String(item.id)) || 0,
+    name: item.name || "",
+    length: item.length || "",
+    kg: item.kg || "",
+    regular_price: item.regular_price || "",
+    sale_price: item.sale_price,
+    price_difference: item.price_difference,
+    image: item.image || "",
+    link: item.link || "",
+    condition: item.condition || "",
+    location: item.location,
+    categories: item.categories,
+    people: item.people || "",
+    make: item.make || "",
+    slug: item.slug,
+    is_exclusive: item.is_exclusive ?? false,
+    // keep extra props
+  }));
+}
+
 /** ------------ Component ------------ */
 
 export default function ListingsPage({
@@ -121,7 +141,9 @@ export default function ListingsPage({
 
   // Initialize state with initialData if provided
   const [products, setProducts] = useState<Product[]>(
-    initialData?.data?.products || []
+    initialData?.data?.products
+      ? transformApiItemsToProducts(initialData.data.products)
+      : []
   );
   const [categories, setCategories] = useState<Category[]>(
     initialData?.data?.all_categories || []
@@ -237,21 +259,9 @@ export default function ListingsPage({
     [router, DEFAULT_RADIUS]
   );
 
-  // useEffect(() => {
-  //   if (!initializedRef.current) {
-  //     initializedRef.current = true;
-  //   }
-  // }, []);
-
   const handleNextPage = () => {
     if (pagination.current_page < pagination.total_pages) {
       const nextPage = pagination.current_page + 1;
-
-      // Update pagination state and fetch data directly
-      // setPagination((prev) => ({ ...prev, current_page: nextPage }));
-      // loadListings(nextPage, filtersRef.current, true);
-
-      // Also update URL but don't wait for it to trigger the fetch
       updateURLWithFilters(filtersRef.current, nextPage);
     }
   };
@@ -259,15 +269,10 @@ export default function ListingsPage({
   const handlePrevPage = () => {
     if (pagination.current_page > 1) {
       const prevPage = pagination.current_page - 1;
-
-      // Update pagination state and fetch data directly
-      // setPagination((prev) => ({ ...prev, current_page: prevPage }));
-      // loadListings(prevPage, filtersRef.current, true);
-
-      // Also update URL but don't wait for it to trigger the fetch
       updateURLWithFilters(filtersRef.current, prevPage);
     }
   };
+
   const loadListings = useCallback(
     async (
       pageNum = 1,
@@ -316,11 +321,7 @@ export default function ListingsPage({
           keyword: safeFilters.keyword,
           radius_kms: radiusParam,
         });
-        console.log(
-          "acstom",
-          safeFilters.acustom_fromyears,
-          safeFilters.acustom_toyears
-        );
+
         const hasFilters = Object.values(safeFilters).some(
           (val) => val !== undefined && val !== null && val !== ""
         );
@@ -328,14 +329,16 @@ export default function ListingsPage({
         const productsFound = (response?.data?.products?.length ?? 0) > 0;
 
         if (productsFound) {
-          setProducts((response.data?.products as Product[]) ?? []);
+          const transformedProducts = transformApiItemsToProducts(
+            response.data?.products || []
+          );
+          setProducts(transformedProducts);
           setCategories(response.data?.all_categories ?? []);
           setMakes(response.data?.make_options ?? []);
           setStateOptions(response.data?.states ?? []);
           setModels(response.data?.model_options ?? []);
           setPageTitle(response.title ?? "Caravan Listings");
           if (response.pagination) setPagination(response.pagination);
-
           setMetaDescription(response.seo?.metadescription ?? "");
           setMetaTitle(response.seo?.metatitle ?? "");
         } else if (hasFilters) {
