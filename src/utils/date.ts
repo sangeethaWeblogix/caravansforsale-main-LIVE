@@ -7,7 +7,7 @@ export function formatPostDate(input: string | Date): string {
   }
   const d = new Date(input);
   if (Number.isNaN(d.getTime())) return "";
-  return d.toLocaleDateString("en-AU", {
+  return d.toLocaleDateString("en-US", {
     year: "numeric",
     month: "long",
     day: "numeric",
