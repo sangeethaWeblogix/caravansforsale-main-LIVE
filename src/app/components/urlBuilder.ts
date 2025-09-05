@@ -223,12 +223,14 @@ export function parseSlugToFilters(
     // Helper: handle arrays from query (e.g., Next.js gives string[])
     const getScalar = (v: string | string[] | undefined): string | undefined =>
       Array.isArray(v) ? v[0] : v;
-    filters.acustom_fromyears = toNumber(query.acustom_fromyears);
 
     if (query.radius_kms) filters.radius_kms = getScalar(query.radius_kms);
 
+    if (query.acustom_fromyears)
+      filters.acustom_fromyears = toNumber(query.acustom_fromyears);
     if (query.acustom_toyears)
-      filters.acustom_toyears = getScalar(query.acustom_toyears);
+      filters.acustom_toyears = toNumber(query.acustom_toyears);
+
     if (query.page) filters.page = getScalar(query.page);
     if (query.orderby) filters.orderby = getScalar(query.orderby);
     if (query.search) filters.search = getScalar(query.search);

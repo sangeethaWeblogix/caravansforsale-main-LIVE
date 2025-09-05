@@ -462,65 +462,75 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     // onFilterChange(next); // if your parent needs it
     updateAllFiltersAndURL(next);
   };
+  const [isLoading, setIsLoading] = useState(false);
   const didFetchRef = useRef(false);
+
   useEffect(() => {
-    if (didFetchRef.current) return;
+    if (didFetchRef.current || isLoading) return;
     didFetchRef.current = true;
+    setIsLoading(true);
+
     const loadFilters = async () => {
-      const res = await fetchProductList();
-      if (res?.data) {
-        setCategories(res.data.all_categories || []);
-        setMakes(res.data.make_options || []);
-        setStates(res.data.states || []);
+      try {
+        const res = await fetchProductList();
+        if (res?.data) {
+          setCategories(res.data.all_categories || []);
+          setMakes(res.data.make_options || []);
+          setStates(res.data.states || []);
+        }
+      } catch (error) {
+        console.error("Failed to fetch product list:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
+
     loadFilters();
-  }, []);
+  }, [isLoading]);
 
-  console.log("make", makes);
-  type UnknownRec = Record<string, unknown>;
+  // type UnknownRec = Record<string, unknown>;
 
-  const isOptionArray = (v: unknown): v is Option[] =>
-    Array.isArray(v) &&
-    v.every(
-      (o) =>
-        typeof o === "object" &&
-        o !== null &&
-        typeof (o as UnknownRec).name === "string" &&
-        typeof (o as UnknownRec).slug === "string"
-    );
+  // const isOptionArray = (v: unknown): v is Option[] =>
+  //   Array.isArray(v) &&
+  //   v.every(
+  //     (o) =>
+  //       typeof o === "object" &&
+  //       o !== null &&
+  //       typeof (o as UnknownRec).name === "string" &&
+  //       typeof (o as UnknownRec).slug === "string"
+  //   );
 
-  const isStateOptionArray = (v: unknown): v is StateOption[] =>
-    Array.isArray(v) &&
-    v.every(
-      (s) =>
-        typeof s === "object" &&
-        s !== null &&
-        typeof (s as UnknownRec).name === "string" &&
-        typeof (s as UnknownRec).value === "string"
-    );
+  // const isStateOptionArray = (v: unknown): v is StateOption[] =>
+  //   Array.isArray(v) &&
+  //   v.every(
+  //     (s) =>
+  //       typeof s === "object" &&
+  //       s !== null &&
+  //       typeof (s as UnknownRec).name === "string" &&
+  //       typeof (s as UnknownRec).value === "string"
+  //   );
 
-  useEffect(() => {
-    const loadFilters = async () => {
-      const res = await fetchProductList();
-      const d = (res?.data ?? undefined) as UnknownRec | undefined;
+  // useEffect(() => {
+  //   const loadFilters = async () => {
+  //     const res = await fetchProductList();
+  //     const d = (res?.data ?? undefined) as UnknownRec | undefined;
 
-      const cats = isOptionArray(d?.["all_categories"])
-        ? (d!["all_categories"] as Option[])
-        : [];
-      // const mks = isOptionArray(d?.["make_options"])
-      //   ? (d!["make_options"] as Option[])
-      //   : [];
-      const sts = isStateOptionArray(d?.["states"])
-        ? (d!["states"] as StateOption[])
-        : [];
+  //     const cats = isOptionArray(d?.["all_categories"])
+  //       ? (d!["all_categories"] as Option[])
+  //       : [];
+  //     // const mks = isOptionArray(d?.["make_options"])
+  //     //   ? (d!["make_options"] as Option[])
+  //     //   : [];
+  //     const sts = isStateOptionArray(d?.["states"])
+  //       ? (d!["states"] as StateOption[])
+  //       : [];
 
-      setCategories(cats); // ✅ always Option[]
-      // setMakes(mks); // ✅ always Option[]
-      setStates(sts); // ✅ always StateOption[]
-    };
-    loadFilters();
-  }, []);
+  //     setCategories(cats); // ✅ always Option[]
+  //     // setMakes(mks); // ✅ always Option[]
+  //     setStates(sts); // ✅ always StateOption[]
+  //   };
+  //   loadFilters();
+  // }, []);
 
   useEffect(() => {
     if (typeof currentFilters.radius_kms === "number") {
@@ -1539,18 +1549,6 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
       setSelectedModelName(modelMatch.name);
     }
   }, [model, selectedModel]);
-
-  useEffect(() => {
-    if (!selectedCategory && !selectedMake && !selectedStateName) {
-      console.warn("🚨 Important filters are null!", {
-        pathname,
-        filters,
-        selectedCategory,
-        selectedMake,
-        selectedStateName,
-      });
-    }
-  }, [filters, selectedCategory, selectedMake, selectedStateName]);
 
   const isValidMakeSlug = (slug: string | null | undefined): slug is string =>
     !!slug && makes.some((m) => m.slug === slug);

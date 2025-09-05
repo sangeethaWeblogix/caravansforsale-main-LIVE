@@ -1,6 +1,13 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import {
+  Suspense,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useMemo,
+} from "react";
 import { fetchListings, ApiResponse, Item } from "../../../api/listings/api";
 import Listing from "./LisitingContent";
 import CaravanFilter from "../CaravanFilter";
@@ -122,6 +129,19 @@ function transformApiItemsToProducts(items: Item[]): Product[] {
   }));
 }
 
+// Debounce function to limit API calls
+function debounce<T extends (...args: any[]) => any>(
+  func: T,
+  wait: number
+): (...args: Parameters<T>) => void {
+  let timeout: NodeJS.Timeout | null = null;
+
+  return (...args: Parameters<T>) => {
+    if (timeout) clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), wait);
+  };
+}
+
 /** ------------ Component ------------ */
 
 export default function ListingsPage({
@@ -130,42 +150,36 @@ export default function ListingsPage({
 }: Props) {
   const DEFAULT_RADIUS = 50 as const;
 
-  const [filters, setFilters] = useState<Filters>({});
-  const filtersRef = useRef<Filters>({});
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
+  // Memoize initial data processing
+  const initialProducts = useMemo(
+    () =>
+      initialData?.data?.products
+        ? transformApiItemsToProducts(initialData.data.products)
+        : [],
+    [initialData]
+  );
 
-  const [isUsingInitialData, setIsUsingInitialData] = useState(!!initialData);
+  const initialCategories = useMemo(
+    () => initialData?.data?.all_categories || [],
+    [initialData]
+  );
 
-  // Initialize state with initialData if provided
-  const [products, setProducts] = useState<Product[]>(
-    initialData?.data?.products
-      ? transformApiItemsToProducts(initialData.data.products)
-      : []
+  const initialMakes = useMemo(
+    () => initialData?.data?.make_options || [],
+    [initialData]
   );
-  const [categories, setCategories] = useState<Category[]>(
-    initialData?.data?.all_categories || []
+
+  const initialStateOptions = useMemo(
+    () => initialData?.data?.states || [],
+    [initialData]
   );
-  const [makes, setMakes] = useState<MakeOption[]>(
-    initialData?.data?.make_options || []
+
+  const initialModels = useMemo(
+    () => initialData?.data?.model_options || [],
+    [initialData]
   );
-  const [stateOptions, setStateOptions] = useState<StateOption[]>(
-    initialData?.data?.states || []
-  );
-  const [models, setModels] = useState<MakeOption[]>(
-    initialData?.data?.model_options || []
-  );
-  const [pageTitle, setPageTitle] = useState(
-    initialData?.title || "Caravan Listings"
-  );
-  const [metaTitle, setMetaTitle] = useState(initialData?.seo?.metatitle || "");
-  const [metaDescription, setMetaDescription] = useState(
-    initialData?.seo?.metadescription || ""
-  );
-  const [pagination, setPagination] = useState<Pagination>(() => {
-    // Use initial data if available, otherwise fall back to default
+
+  const initialPagination = useMemo(() => {
     if (initialData?.pagination) {
       return {
         current_page: initialData.pagination.current_page || 1,
@@ -176,21 +190,39 @@ export default function ListingsPage({
       };
     }
 
-    const fromURL =
-      typeof window !== "undefined"
-        ? parseInt(
-            new URLSearchParams(window.location.search).get("page") || "1",
-            10
-          )
-        : 1;
     return {
-      current_page: fromURL,
+      current_page: 1,
       total_pages: 1,
       total_items: 0,
       per_page: 12,
       total_products: 0,
     };
-  });
+  }, [initialData]);
+
+  const [filters, setFilters] = useState<Filters>({});
+  const filtersRef = useRef<Filters>({});
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+
+  const [isUsingInitialData, setIsUsingInitialData] = useState(!!initialData);
+
+  // Initialize state with memoized initial values
+  const [products, setProducts] = useState<Product[]>(initialProducts);
+  const [categories, setCategories] = useState<Category[]>(initialCategories);
+  const [makes, setMakes] = useState<MakeOption[]>(initialMakes);
+  const [stateOptions, setStateOptions] =
+    useState<StateOption[]>(initialStateOptions);
+  const [models, setModels] = useState<MakeOption[]>(initialModels);
+  const [pageTitle, setPageTitle] = useState(
+    initialData?.title || "Caravan Listings"
+  );
+  const [metaTitle, setMetaTitle] = useState(initialData?.seo?.metatitle || "");
+  const [metaDescription, setMetaDescription] = useState(
+    initialData?.seo?.metadescription || ""
+  );
+  const [pagination, setPagination] = useState<Pagination>(initialPagination);
 
   const asNumber = (v: unknown): number | undefined => {
     if (typeof v === "number") return v;
@@ -200,7 +232,22 @@ export default function ListingsPage({
     }
     return undefined;
   };
+  // const queryObj = useMemo(() => {
+  //   return Object.fromEntries(searchParams.entries());
+  // }, [searchParams.toString()]);
 
+  // useEffect(() => {
+  //   if (initializedRef.current) return;
+  //   initializedRef.current = true;
+
+  //   const path = pathname;
+  //   const slugParts = path.split("/listings/")[1]?.split("/") || [];
+  //   const parsed = parseSlugToFilters(slugParts, queryObj);
+
+  //   const merged = { ...parsed, ...incomingFilters, queryObj };
+  //   filtersRef.current = merged;
+  //   setFilters(merged);
+  // }, [incomingFilters, queryObj]);
   // Parse slug ONCE on mount; do not fetch here
   const initializedRef = useRef(false);
 
@@ -210,12 +257,15 @@ export default function ListingsPage({
 
     const path = pathname;
     const slugParts = path.split("/listings/")[1]?.split("/") || [];
-    const parsed = parseSlugToFilters(slugParts);
+    const queryObj = Object.fromEntries(searchParams.entries());
+    const parsed = parseSlugToFilters(slugParts, queryObj);
 
     const merged = { ...parsed, ...incomingFilters };
     filtersRef.current = merged;
     setFilters(merged);
+    // }, [incomingFilters, pathname, searchParams.toString()]);
   }, [incomingFilters, pathname]);
+  console.log("metafilters", filters);
 
   const normalizeSearchFromMake = (f: Filters): Filters => {
     if (!f?.make) return f;
@@ -273,102 +323,106 @@ export default function ListingsPage({
     }
   };
 
-  const loadListings = useCallback(
-    async (
-      pageNum = 1,
-      appliedFilters: Filters = filtersRef.current,
-      skipInitialCheck = false
-    ) => {
-      // If we have initial data and this is the first load, skip the API call
-      if (initialData && !skipInitialCheck && isUsingInitialData) {
-        setIsUsingInitialData(false); // Next time, fetch from API
-        return;
-      }
-
-      setIsLoading(true);
-      window.scrollTo({ top: 0, behavior: "smooth" });
-
-      try {
-        const safeFilters = normalizeSearchFromMake(appliedFilters);
-
-        const radiusNum = asNumber(safeFilters.radius_kms);
-        const radiusParam =
-          typeof radiusNum === "number" && radiusNum !== DEFAULT_RADIUS
-            ? String(radiusNum)
-            : undefined;
-
-        const response = await fetchListings({
-          ...safeFilters,
-          page: pageNum,
-          condition: safeFilters.condition,
-          minKg: safeFilters.minKg?.toString(),
-          maxKg: safeFilters.maxKg?.toString(),
-          sleeps: safeFilters.sleeps,
-          from_price: safeFilters.from_price?.toString(),
-          to_price: safeFilters.to_price?.toString(),
-          acustom_fromyears: safeFilters.acustom_fromyears?.toString(),
-          acustom_toyears: safeFilters.acustom_toyears?.toString(),
-          from_length: safeFilters.from_length?.toString(),
-          to_length: safeFilters.to_length?.toString(),
-          make: safeFilters.make,
-          model: safeFilters.model,
-          state: safeFilters.state,
-          region: safeFilters.region,
-          suburb: safeFilters.suburb,
-          pincode: safeFilters.pincode,
-          orderby: safeFilters.orderby,
-          search: safeFilters.search,
-          keyword: safeFilters.keyword,
-          radius_kms: radiusParam,
-        });
-
-        const hasFilters = Object.values(safeFilters).some(
-          (val) => val !== undefined && val !== null && val !== ""
-        );
-
-        const productsFound = (response?.data?.products?.length ?? 0) > 0;
-
-        if (productsFound) {
-          const transformedProducts = transformApiItemsToProducts(
-            response.data?.products || []
-          );
-          setProducts(transformedProducts);
-          setCategories(response.data?.all_categories ?? []);
-          setMakes(response.data?.make_options ?? []);
-          setStateOptions(response.data?.states ?? []);
-          setModels(response.data?.model_options ?? []);
-          setPageTitle(response.title ?? "Caravan Listings");
-          if (response.pagination) setPagination(response.pagination);
-          setMetaDescription(response.seo?.metadescription ?? "");
-          setMetaTitle(response.seo?.metatitle ?? "");
-        } else if (hasFilters) {
-          setProducts([]);
-          setPageTitle("No results found. Redirecting...");
-          setMetaTitle("No listings found");
-          setMetaDescription("We couldn't find listings for your filters.");
-          setTimeout(() => {
-            const empty: Filters = {};
-            filtersRef.current = empty;
-            setFilters(empty);
-            router.push("/listings");
-          }, 2500);
-        } else {
-          setProducts([]);
-          setPagination((prev) => ({
-            current_page: 1,
-            total_pages: 1,
-            per_page: prev.per_page,
-            total_products: 0,
-            total_items: 0,
-          }));
+  // Debounced version of loadListings
+  const debouncedLoadListings = useCallback(
+    debounce(
+      async (
+        pageNum: number,
+        appliedFilters: Filters,
+        skipInitialCheck: boolean
+      ) => {
+        // If we have initial data and this is the first load, skip the API call
+        if (initialData && !skipInitialCheck && isUsingInitialData) {
+          setIsUsingInitialData(false); // Next time, fetch from API
+          return;
         }
-      } catch (error) {
-        console.error("❌ Failed to fetch listings:", error);
-        setProducts([]);
-      } finally {
-        setIsLoading(false);
-      }
-    },
+
+        setIsLoading(true);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+
+        try {
+          const safeFilters = normalizeSearchFromMake(appliedFilters);
+
+          const radiusNum = asNumber(safeFilters.radius_kms);
+          const radiusParam =
+            typeof radiusNum === "number" && radiusNum !== DEFAULT_RADIUS
+              ? String(radiusNum)
+              : undefined;
+
+          const response = await fetchListings({
+            ...safeFilters,
+            page: pageNum,
+            condition: safeFilters.condition,
+            minKg: safeFilters.minKg?.toString(),
+            maxKg: safeFilters.maxKg?.toString(),
+            sleeps: safeFilters.sleeps,
+            from_price: safeFilters.from_price?.toString(),
+            to_price: safeFilters.to_price?.toString(),
+            acustom_fromyears: safeFilters.acustom_fromyears?.toString(),
+            acustom_toyears: safeFilters.acustom_toyears?.toString(),
+            from_length: safeFilters.from_length?.toString(),
+            to_length: safeFilters.to_length?.toString(),
+            make: safeFilters.make,
+            model: safeFilters.model,
+            state: safeFilters.state,
+            region: safeFilters.region,
+            suburb: safeFilters.suburb,
+            pincode: safeFilters.pincode,
+            orderby: safeFilters.orderby,
+            search: safeFilters.search,
+            keyword: safeFilters.keyword,
+            radius_kms: radiusParam,
+          });
+
+          const hasFilters = Object.values(safeFilters).some(
+            (val) => val !== undefined && val !== null && val !== ""
+          );
+
+          const productsFound = (response?.data?.products?.length ?? 0) > 0;
+
+          if (productsFound) {
+            const transformedProducts = transformApiItemsToProducts(
+              response.data?.products || []
+            );
+            setProducts(transformedProducts);
+            setCategories(response.data?.all_categories ?? []);
+            setMakes(response.data?.make_options ?? []);
+            setStateOptions(response.data?.states ?? []);
+            setModels(response.data?.model_options ?? []);
+            setPageTitle(response.title ?? "Caravan Listings");
+            if (response.pagination) setPagination(response.pagination);
+            setMetaDescription(response.seo?.metadescription ?? "");
+            setMetaTitle(response.seo?.metatitle ?? "");
+          } else if (hasFilters) {
+            setProducts([]);
+            setPageTitle("No results found. Redirecting...");
+            setMetaTitle("No listings found");
+            setMetaDescription("We couldn't find listings for your filters.");
+            setTimeout(() => {
+              const empty: Filters = {};
+              filtersRef.current = empty;
+              setFilters(empty);
+              router.push("/listings");
+            }, 2500);
+          } else {
+            setProducts([]);
+            setPagination((prev) => ({
+              current_page: 1,
+              total_pages: 1,
+              per_page: prev.per_page,
+              total_products: 0,
+              total_items: 0,
+            }));
+          }
+        } catch (error) {
+          console.error("❌ Failed to fetch listings:", error);
+          setProducts([]);
+        } finally {
+          setIsLoading(false);
+        }
+      },
+      300
+    ), // 300ms debounce delay
     [DEFAULT_RADIUS, router, initialData, isUsingInitialData]
   );
 
@@ -434,8 +488,8 @@ export default function ListingsPage({
     if (LAST_GLOBAL_REQUEST_KEY === requestKey) return;
     LAST_GLOBAL_REQUEST_KEY = requestKey;
 
-    loadListings(pageFromURL, merged, true);
-  }, [searchKey, pathKey, loadListings, DEFAULT_RADIUS, searchParams]);
+    debouncedLoadListings(pageFromURL, merged, true);
+  }, [searchKey, pathKey, debouncedLoadListings, DEFAULT_RADIUS, searchParams]);
 
   const handleFilterChange = useCallback(
     (newFilters: Filters) => {
