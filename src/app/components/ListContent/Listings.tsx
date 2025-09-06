@@ -232,24 +232,11 @@ export default function ListingsPage({
     }
     return undefined;
   };
-  // const queryObj = useMemo(() => {
-  //   return Object.fromEntries(searchParams.entries());
-  // }, [searchParams.toString()]);
-
-  // useEffect(() => {
-  //   if (initializedRef.current) return;
-  //   initializedRef.current = true;
-
-  //   const path = pathname;
-  //   const slugParts = path.split("/listings/")[1]?.split("/") || [];
-  //   const parsed = parseSlugToFilters(slugParts, queryObj);
-
-  //   const merged = { ...parsed, ...incomingFilters, queryObj };
-  //   filtersRef.current = merged;
-  //   setFilters(merged);
-  // }, [incomingFilters, queryObj]);
-  // Parse slug ONCE on mount; do not fetch here
   const initializedRef = useRef(false);
+
+  const query = useMemo(() => {
+    return Object.fromEntries(searchParams.entries());
+  }, [searchParams.toString()]);
 
   useEffect(() => {
     if (initializedRef.current) return;
@@ -257,15 +244,35 @@ export default function ListingsPage({
 
     const path = pathname;
     const slugParts = path.split("/listings/")[1]?.split("/") || [];
-    const queryObj = Object.fromEntries(searchParams.entries());
-    const parsed = parseSlugToFilters(slugParts, queryObj);
 
+    const parsed = parseSlugToFilters(slugParts, query);
+    console.log("query", query);
     const merged = { ...parsed, ...incomingFilters };
+    console.log("querymer", merged);
+
     filtersRef.current = merged;
     setFilters(merged);
-    // }, [incomingFilters, pathname, searchParams.toString()]);
-  }, [incomingFilters, pathname]);
-  console.log("metafilters", filters);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]); // 👈 empty dependency array
+
+  // Parse slug ONCE on mount; do not fetch here
+
+  // useEffect(() => {
+  //   if (initializedRef.current) return;
+  //   initializedRef.current = true;
+
+  //   const path = pathname;
+  //   const slugParts = path.split("/listings/")[1]?.split("/") || [];
+  //   const queryObj = Object.fromEntries(searchParams.entries());
+  //   const parsed = parseSlugToFilters(slugParts, queryObj);
+
+  //   const merged = { ...parsed, ...incomingFilters };
+  //   filtersRef.current = merged;
+  //   setFilters(merged);
+  //   // }, [incomingFilters, pathname, searchParams.toString()]);
+  // }, [incomingFilters, pathname]);
+  // console.log("metafilters", filters);
 
   const normalizeSearchFromMake = (f: Filters): Filters => {
     if (!f?.make) return f;
@@ -303,6 +310,7 @@ export default function ListingsPage({
       if (pageNum > 1) query.set("page", String(pageNum));
 
       const safeSlug = slug.endsWith("/") ? slug : `${slug}/`; // 👈 important
+
       const finalURL = query.toString() ? `${safeSlug}?${query}` : safeSlug;
       router.push(finalURL);
     },

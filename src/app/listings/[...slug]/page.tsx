@@ -16,16 +16,14 @@ export async function generateMetadata({
   params,
   searchParams,
 }: {
-  params: Params;
-  searchParams: SearchParams;
+  params: { slug?: string[] };
+  searchParams: Record<string, string | string[] | undefined>;
 }): Promise<Metadata> {
-  // Await the params and searchParams
-  const [resolvedParams, resolvedSearchParams] = await Promise.all([
-    params,
-    searchParams,
-  ]);
+  const slugParts = params.slug || [];
+  const query = searchParams || {};
 
-  return metaFromSlug(resolvedParams.slug || [], resolvedSearchParams);
+  // ✅ Always pass slug + query
+  return metaFromSlug(slugParts, query);
 }
 
 // Main Listings page

@@ -32,20 +32,23 @@ export interface Filters {
  */
 export function parseSlugToFilters(
   slugParts: string[],
-  query?: Record<string, string | string[] | undefined> // Works with most frameworks
+  query?: Record<string, string | string[] | undefined>
 ): Filters {
   const filters: Filters = {};
+
   const conditionMap: Record<string, string> = {
     new: "New",
     used: "Used",
     "near-new": "Near New",
   };
+
   function toNumber(val: string | string[] | undefined): number | undefined {
     if (!val) return undefined;
     const str = Array.isArray(val) ? val[0] : val;
     const num = Number(str);
     return isNaN(num) ? undefined : num;
   }
+
   const hasReservedSuffix = (s: string) =>
     /-(category|condition|state|region|suburb|keyword)$/.test(s) ||
     /-(kg-atm|length-in-feet|people-sleeping-capacity)$/.test(s) ||
@@ -53,14 +56,14 @@ export function parseSlugToFilters(
     /^under-\d+/.test(s) ||
     /^between-/.test(s) ||
     /^\d{4}$/.test(s) ||
-    s.includes("="); // e.g. search=, keyword=
+    s.includes("=");
 
+  // --- SLUG PARSING ---
   slugParts.forEach((_part) => {
     const decoded = decodeURIComponent(_part);
     const part = decoded.split("?")[0];
     if (!part) return;
 
-    // --- Typed segments ---
     if (part.endsWith("-category")) {
       filters.category = part.replace("-category", "");
       return;
@@ -101,7 +104,7 @@ export function parseSlugToFilters(
       return;
     }
 
-    // ATM: support canonical and legacy patterns
+    // ATM
     if (part.includes("-kg-atm")) {
       const canon = part.match(/^between-(\d+)-(\d+)-kg-atm$/);
       if (canon) {
@@ -127,7 +130,7 @@ export function parseSlugToFilters(
       }
     }
 
-    // Length (feet)
+    // Length
     if (part.includes("length-in-feet")) {
       const between = part.match(/^between-(\d+)-(\d+)-length-in-feet$/);
       if (between) {
@@ -147,7 +150,7 @@ export function parseSlugToFilters(
       }
     }
 
-    // Sleeps (single-value)
+    // Sleeps
     if (part.includes("-people-sleeping-capacity")) {
       const between = part.match(
         /^between-(\d+)-and-(\d+)-people-sleeping-capacity$/
@@ -195,12 +198,12 @@ export function parseSlugToFilters(
       }
     }
 
-    // make / model fallback — only if safe and no search is present
+    // make / model fallback
     if (
       !hasReservedSuffix(part) &&
       !part.includes("=") &&
       isNaN(Number(part)) &&
-      !filters.search // prevent make/model if search is there
+      !filters.search
     ) {
       if (!filters.make) {
         filters.make = part;
@@ -213,32 +216,39 @@ export function parseSlugToFilters(
     }
   });
 
-  // If suburb present, ignore region due to canonical URL structure
+  // If suburb present, ignore region
   if (filters.suburb) {
     filters.region = undefined;
   }
 
   // ---- QUERY STRING SUPPORT ----
   if (query) {
-    // Helper: handle arrays from query (e.g., Next.js gives string[])
     const getScalar = (v: string | string[] | undefined): string | undefined =>
       Array.isArray(v) ? v[0] : v;
 
-    if (query.radius_kms) filters.radius_kms = getScalar(query.radius_kms);
+    const setIfValid = <K extends keyof Filters>(
+      key: K,
+      value: string | number | undefined
+    ) => {
+      if (value !== undefined && value !== "") {
+        filters[key] = value as any;
+      }
+    };
 
-    if (query.acustom_fromyears)
-      filters.acustom_fromyears = toNumber(query.acustom_fromyears);
-    if (query.acustom_toyears)
-      filters.acustom_toyears = toNumber(query.acustom_toyears);
+    setIfValid("radius_kms", getScalar(query.radius_kms));
+    setIfValid("acustom_fromyears", toNumber(query.acustom_fromyears));
+    setIfValid("acustom_toyears", toNumber(query.acustom_toyears));
+    setIfValid("page", getScalar(query.page));
+    setIfValid("orderby", getScalar(query.orderby));
+    setIfValid("search", getScalar(query.search));
 
-    if (query.page) filters.page = getScalar(query.page);
-    if (query.orderby) filters.orderby = getScalar(query.orderby);
-    if (query.search) filters.search = getScalar(query.search);
-    if (query.keyword && !filters.search)
-      filters.search = getScalar(query.keyword); // fallback
-    // You can add any other fields you support in query here.
+    if (!filters.search) {
+      setIfValid("search", getScalar(query.keyword));
+    }
   }
-  console.log("parseSlugToFilters", filters);
+
+  console.log("parseSlugToFilters", filters.acustom_fromyears);
+  console.log("parseSlugTo", filters);
 
   return filters;
 }
