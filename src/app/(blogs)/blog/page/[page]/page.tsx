@@ -36,7 +36,7 @@ export default function BlogPage() {
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(initialPage);
   const [totalPages, setTotalPages] = useState<number>(1);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
   function decodeHTML(str: string = "") {
     if (!str) return "";
     if (typeof window === "undefined") return str; // SSR safe
@@ -106,18 +106,14 @@ export default function BlogPage() {
           <div className="row">
             <div className="col-lg-9">
               {loading && (
-                <div className="text-center py-5">Loading posts…</div>
-              )}
-
-              {!loading && blogPosts.length === 0 && (
-                <div className="text-center py-5">No posts found.</div>
-              )}
-              {loading && (
                 <>
                   {[...Array(3)].map((_, i) => (
                     <BlogCardSkelton key={i} />
                   ))}
                 </>
+              )}
+              {!loading && blogPosts.length === 0 && (
+                <div className="text-center py-5">No posts found.</div>
               )}
               {!loading &&
                 blogPosts.map((post, index) => {
