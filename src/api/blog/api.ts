@@ -1,5 +1,4 @@
 // src/api/blog/api.ts
-import { fixImageUrl } from "@/utils/image";
 const API_BASE = process.env.NEXT_PUBLIC_CFS_API_BASE;
 
 export interface BlogPost {
@@ -50,12 +49,8 @@ export const fetchBlogs = async (page: number = 1): Promise<BlogPageResult> => {
     current_page: page,
     total_pages: 1,
   };
-  const items = (lp.items ?? []).map((item) => ({
-    ...item,
-    image: fixImageUrl(item.image),
-  }));
   return {
-    items,
+    items: lp.items ?? [],
     currentPage: lp.current_page ?? page,
     totalPages: lp.total_pages ?? 1,
   };

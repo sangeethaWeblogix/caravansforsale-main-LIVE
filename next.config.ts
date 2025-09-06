@@ -2,18 +2,18 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   trailingSlash: true,
-  remotePatterns: [
-    {
-      protocol: "https",
-      hostname: "**.caravansforsale.com.au", // your blog API image domain
-    },
-    {
-      protocol: "https",
-      hostname: "admin.caravansforsale.com.au", // if images served from admin
-    },
-  ],
   images: {
-    unoptimized: true,
+    unoptimized: false, // ✅ if you want Next.js optimization
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "**.caravansforsale.com.au",
+      },
+      {
+        protocol: "https",
+        hostname: "admin.caravansforsale.com.au",
+      },
+    ],
   },
 };
 
