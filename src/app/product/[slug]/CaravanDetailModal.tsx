@@ -39,12 +39,14 @@ export default function CaravanDetailModal({
     email: "",
     phone: "",
     postcode: "",
+    message: "",
   });
   const [touched, setTouched] = useState({
     name: false,
     email: false,
     phone: false,
     postcode: false,
+    message: false,
   });
   const [errors, setErrors] = useState<Partial<typeof form>>({});
   const [submitting, setSubmitting] = useState(false);
@@ -84,7 +86,13 @@ export default function CaravanDetailModal({
     e.preventDefault();
     const v = validate(form);
     setErrors(v);
-    setTouched({ name: true, email: true, phone: true, postcode: true });
+    setTouched({
+      name: true,
+      email: true,
+      phone: true,
+      postcode: true,
+      message: false,
+    });
     if (Object.keys(v).length) return;
 
     setSubmitting(true);
@@ -95,10 +103,17 @@ export default function CaravanDetailModal({
         email: form.email.trim(),
         name: form.name.trim(),
         phone: form.phone.trim(),
+        message: form.message.trim() || "",
         postcode: form.postcode.trim(),
       });
-      setForm({ name: "", email: "", phone: "", postcode: "" });
-      setTouched({ name: false, email: false, phone: false, postcode: false });
+      setForm({ name: "", email: "", phone: "", postcode: "", message: "" });
+      setTouched({
+        name: false,
+        email: false,
+        phone: false,
+        postcode: false,
+        message: false,
+      });
       setErrors({});
       setOkMsg("Enquiry sent successfully!");
     } catch (err: unknown) {
@@ -110,13 +125,18 @@ export default function CaravanDetailModal({
       setSubmitting(false);
     }
   };
-
   useEffect(() => {
     // clear messages when closing
     if (!isOpen) {
       setOkMsg(null);
       setErrors({});
-      setTouched({ name: false, email: false, phone: false, postcode: false });
+      setTouched({
+        name: false,
+        email: false,
+        phone: false,
+        postcode: false,
+        message: false,
+      });
     }
   }, [isOpen]);
 
@@ -318,6 +338,11 @@ export default function CaravanDetailModal({
                             <textarea
                               id="enquiry4-message"
                               name="enquiry4-message"
+                              value={form.message}
+                              onBlur={() => onBlur("message")}
+                              onChange={(e) =>
+                                setField("message", e.target.value)
+                              }
                               className="wpcf7-form-control wpcf7-textarea"
                             ></textarea>
                           </p>

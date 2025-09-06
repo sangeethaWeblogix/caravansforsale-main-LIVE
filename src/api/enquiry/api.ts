@@ -8,6 +8,7 @@ export type ProductEnquiryPayload = {
   name: string;
   phone: string;
   postcode: string;
+  message: string;
 };
 
 export type ProductEnquiryResponse = {
