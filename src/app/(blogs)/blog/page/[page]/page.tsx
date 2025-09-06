@@ -91,7 +91,6 @@ export default function BlogPage() {
     currentPage <= 2 ? "/blog/" : `/blog/page/${currentPage - 1}/`;
   const nextUrl = `/blog/page/${Math.min(totalPages, currentPage + 1)}/`;
 
-  console.log("blog", blogPosts);
   return (
     <div className="blog-page style-5">
       <section className="all-news bg-light-gray blog-listing section-padding blog bg-transparent style-3">
