@@ -67,7 +67,6 @@ interface Props {
   metaDescription: string; // Add metaDescription prop
   onFilterChange: (filters: Filters) => void;
   currentFilters: Filters;
-  handleFilterChange: (filters: Filters) => void;
 }
 
 export default function ListingContent({
@@ -79,7 +78,6 @@ export default function ListingContent({
   metaDescription,
   onFilterChange,
   currentFilters,
-  handleFilterChange,
 }: Props) {
   const imageUrl = "public/favicon.ico";
   const getHref = (p: Product) => {

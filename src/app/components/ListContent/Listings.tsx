@@ -469,7 +469,6 @@ export default function ListingsPage({
 
   // Mobile offcanvas filter state
   const mobileFiltersRef = useRef<HTMLDivElement>(null);
-  const [draftFilters, setDraftFilters] = useState<Filters>({});
   useEffect(() => {
     import("bootstrap/js/dist/offcanvas").catch(() => {});
   }, []);
@@ -532,12 +531,10 @@ export default function ListingsPage({
                 <Listing
                   products={products}
                   pagination={pagination}
-                  draftFilters={draftFilters}
                   onNext={handleNextPage}
                   onPrev={handlePrevPage}
                   metaDescription={metaDescription}
                   metaTitle={metaTitle}
-                  handleFilterChange={handleFilterChange}
                   onFilterChange={handleFilterChange}
                   currentFilters={filters}
                 />

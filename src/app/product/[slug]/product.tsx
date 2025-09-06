@@ -343,17 +343,33 @@ export default function ClientLogger({
 
                 <div className="contactSeller__container d-lg-none">
                   <div className="price_section">
-                    <div className="price-shape">
-                      <span className="current">
-                        <span className="woocommerce-Price-amount amount">
+                    <div className="price-container">
+                      <div className="price-left">
+                        <div className="current-price">
                           <bdi>
-                            <span className="woocommerce-Price-currencySymbol"></span>
-                            {Number(product.regular_price).toLocaleString(
-                              "en-IN"
-                            )}{" "}
+                            {isPOA || !reg || Number(reg) === 0
+                              ? "POA"
+                              : hasSale && sale
+                              ? fmt(Number(sale))
+                              : fmt(Number(reg))}
                           </bdi>
-                        </span>
-                      </span>
+                        </div>
+
+                        {hasSale && reg && (
+                          <div className="original-price">
+                            <s>{fmt(Number(reg))}</s>
+                          </div>
+                        )}
+                      </div>
+
+                      {hasSale && save && Number(save) > 0 && (
+                        <div className="price-right">
+                          <span className="save-label">Save</span>
+                          <span className="save-value">
+                            {fmt(Number(save))}
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -551,6 +567,7 @@ export default function ClientLogger({
                       className="btn btn-primary"
                       onClick={() => setShowModal(true)}
                     >
+                      {/* bottom */}
                       Contact Dealer
                     </button>
                   </div>
@@ -606,7 +623,7 @@ export default function ClientLogger({
                                   ) : hasSale ? (
                                     <>
                                       <div className="price-card__sale">
-                                        {fmt(sale)}
+                                        {fmt(Number(sale))}{" "}
                                       </div>
                                       <div className="price-card__regular">
                                         <s>{fmt(reg)}</s>
@@ -619,7 +636,7 @@ export default function ClientLogger({
                                   )}
                                 </div>
 
-                                {hasSale && (
+                                {hasSale && save && (
                                   <>
                                     <div className="price-card__divider" />
                                     <div className="price-card__save">
@@ -627,7 +644,7 @@ export default function ClientLogger({
                                         Save
                                       </div>
                                       <div className="price-card__saveValue">
-                                        {fmt(save)}
+                                        {save ? fmt(Number(save)) : ""}
                                       </div>
                                     </div>
                                   </>
