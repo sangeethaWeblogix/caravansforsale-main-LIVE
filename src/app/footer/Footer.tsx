@@ -46,7 +46,7 @@ const Footer = () => {
               </div>
 
               {/* About Us Column */}
-              <div className="col-lg-3">
+              <div className="col-lg-3 col-sm-6">
                 <h6 className="foot-title foot_xs">About Us</h6>
                 <ul className="menu footer_xs">
                   {/* <li><Link href={`${siteUrl}/caravan-dealers/`}>Caravan Dealers</Link></li> */}
@@ -78,7 +78,7 @@ const Footer = () => {
               </div>
 
               {/* Popular Pages Column */}
-              <div className="col-lg-3">
+              <div className="col-lg-3 col-sm-6">
                 <h6 className="foot-title foot_xs">Popular Pages</h6>
                 <ul className="menu footer_xs">
                   <li>
