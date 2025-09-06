@@ -36,7 +36,7 @@ const PostRequirement = () => {
 
           <div className="home-post__items info top_cta_container">
             <div className="top_cta bg-white">
-              <div className="home_post_middle hidden-xs">
+              <div className="home_post_middle hidden-xs hidden-sm">
                 <div className="type">Type</div>
                 <div className="condition">Condition</div>
                 <div className="requirements">Requirements</div>
@@ -50,6 +50,7 @@ const PostRequirement = () => {
                   {/* ⬇️ outer container is a div, not <a> */}
                   <div className="home-post__item d-flex">
                     <div className="type">
+                      <span className="m_label hidden-lg hidden-md">Type : </span>
                       <Link
                         href={`/listings/${item.type.toLowerCase()}-category/`}
                       >
@@ -58,6 +59,7 @@ const PostRequirement = () => {
                     </div>
 
                     <div className="condition">
+                      <span className="m_label hidden-lg hidden-md">Condition : </span>
                       <Link
                         href={`/listings/${item.condition.toLowerCase()}-condition/`}
                       >
@@ -65,15 +67,17 @@ const PostRequirement = () => {
                       </Link>
                     </div>
 
-                    <div className="requirements">{item.requirements}</div>
+                    <div className="requirements"><span className="m_label hidden-lg hidden-md">Requirements : </span>{item.requirements}</div>
 
                     <div className="status">
+                      <span className="m_label hidden-lg hidden-md hidden-sm">Status : </span>
                       <i className="fa fa-check" />{" "}
                       {item.active === "1" ? "Active" : "Inactive"}
                     </div>
 
-                    <div className="location">{item.location}</div>
+                    <div className="location"><span className="m_label hidden-lg hidden-md">Location : </span>{item.location}</div>
                     <div className="budget">
+                      <span className="m_label hidden-lg hidden-md">Budget</span>
                       {new Intl.NumberFormat("en-US", {
                         style: "currency",
                         currency: "USD",

@@ -91,6 +91,7 @@ export default function BlogPage() {
     currentPage <= 2 ? "/blog/" : `/blog/page/${currentPage - 1}/`;
   const nextUrl = `/blog/page/${Math.min(totalPages, currentPage + 1)}/`;
 
+  console.log("blog", blogPosts);
   return (
     <div className="blog-page style-5">
       <section className="all-news bg-light-gray blog-listing section-padding blog bg-transparent style-3">
@@ -124,7 +125,7 @@ export default function BlogPage() {
                       className="card border-0 bg-transparent rounded-0 border-bottom brd-gray pb-30 mb-30"
                     >
                       <div className="row">
-                        <div className="col-lg-5">
+                        <div className="col-lg-5 col-sm-6">
                           <div className="img img-cover">
                             <Link href={href}>
                               <Image
@@ -137,7 +138,7 @@ export default function BlogPage() {
                             </Link>
                           </div>
                         </div>
-                        <div className="col-lg-7">
+                        <div className="col-lg-7 col-sm-6">
                           <div className="card-body p-0">
                             <small className="d-block date text">
                               <Link href={href} className="op-8">

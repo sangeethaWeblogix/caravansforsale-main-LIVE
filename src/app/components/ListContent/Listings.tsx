@@ -508,7 +508,7 @@ export default function ListingsPage({
 
             <div className="row">
               {/* Desktop sidebar */}
-              <div className="col-lg-3 d-none d-lg-block">
+              <div className="col-lg-3 col-sm-4 hidden-xs">
                 <div className="filter">
                   <Suspense fallback={<div>Loading filters...</div>}>
                     <CaravanFilter

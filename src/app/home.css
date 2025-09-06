@@ -1183,6 +1183,155 @@ a.ignoretext {
     background: transparent;
 }
 
+@media (min-width: 992px) and (max-width: 1200px) { 
+.home_top h1 {
+      font-size: 38px;
+}
+.product-page .product-details .tab-content {
+    padding: 30px 0px;
+}
+.product-page .other_items .related-products .swiper-button-next {
+    right: -35px;
+}
+.product-page .other_items .related-products .swiper-button-prev {
+    left: -35px;
+}
+.budget {
+    width: 18%;
+    padding: 5px;
+}
+.location {
+    width: 16%;
+    padding: 5px 20px;
+}
+.requirements {
+    width: 40%;
+    padding: 5px 30px;
+}
+.type, .condition {
+    width: 13%;
+    padding: 5px;
+}
+.home-post_head {
+      padding-bottom: 0;
+}
+.caravans_by_state .service-box .sec_left {
+  width: 75%;
+}
+.caravans_by_state .service-box h5 {
+  font-size: 17px;
+}
+.caravans_by_manufacturer .post_info h3 {
+      font-size: 20px;
+}
+.caravans_by_manufacturer .post_info ul li {
+  font-size: 13px;
+}
+.blog.style-8 .side-posts .item .info h4.title {
+      font-size: 15px;
+}
+}
+
+@media (min-width: 768px) and (max-width: 991px) { 
+
+.deal-of-month .inside_col h2 {    font-size: 25px;}
+.product-page .product-details .nav-pills {gap: 30px;}
+.product-page .product-details .nav-pills .nav-link {
+    padding-left: 0;
+    padding-right: 0;
+}
+.product-page .product-details .tab-content {
+    padding: 30px 0px;
+}
+.product-page .other_items .related-products .swiper-button-prev {
+    left: -25px;
+  }
+  .product-page .other_items .related-products .swiper-button-next {
+    right: -25px;
+  }
+  .product-page .caravans_by_state.related-products .swiper-button-next,
+  .product-page .caravans_by_manufacturer.related-products .swiper-button-next {
+    right: -25px;
+  }
+  .product-page .caravans_by_state.related-products .swiper-button-prev,
+  .product-page .caravans_by_manufacturer.related-products .swiper-button-prev {
+    left: -25px;
+  }
+  .product-page .related-products .swiper-button-next, .product-page .related-products .swiper-button-prev {
+    width: 40px;
+    height: 40px;
+}
+.product-page .related-products .swiper-button-next:after, .product-page .related-products .swiper-button-prev:after {
+    font-size: 18px;
+    color: #000;
+}
+.home_top h1 {
+  font-size: 30px;
+}
+.search-container {
+  max-width: 600px;
+}
+.home-post_head h2 {
+    font-weight: 600;
+    font-size: 22px;
+    margin-bottom: 10px;
+  }
+
+  .home-post_head p {
+    font-size: 16px;
+  }
+  .post_bgs {
+    padding: 20px 20px;
+  }
+  .home-post_head {
+    margin-bottom: 0;
+    padding-bottom: 0;
+  }
+  .home-post__item {
+    display: block !important;
+    padding: 10px 10px;
+  }
+  .type, .condition {
+    width: auto;
+    padding: 5px;
+}
+.requirements {
+    width: auto;
+    padding: 5px;
+}
+.status {
+    width: auto;
+    padding: 5px;
+}
+.location {
+    width: auto;
+    padding: 5px;
+}
+.home-post__item .budget {
+    text-align: center;
+    color: #fff;
+    background: #ec7200;
+    border-radius: 10px;
+    padding: 10px 15px;
+    font-size: 25px;
+    font-weight: 700;
+    width: auto;
+}
+.home-post__item .budget .m_label {
+    display: block;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 400;
+    margin-bottom: 0px;
+}
+.caravans_by_state .service-box h5 {
+    font-size: 20px;
+}
+.blog.style-8 .side-posts .item .info h4.title {
+    font-size: 15px;
+}
+}
+
 @media (max-width: 767px) {
   .home_top h1 {
     font-weight: 500;
@@ -1214,7 +1363,7 @@ a.ignoretext {
     margin-bottom: 15px;
   }
   .product-page .product-details .nav-pills .nav-link {
-    font-size: 13px;
+    font-size: 14px;
   }
   .product-page .product-details .nav-pills .nav-link:after {
     height: 3px;
@@ -1264,6 +1413,13 @@ a.ignoretext {
     display: block !important;
     padding: 10px 10px;
   }
+  .home-post__item .budget .m_label {
+    display: block;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 400;
+    margin-bottom: 0px;
+}
   .product_data .img_b {
         min-height: auto;
   }
