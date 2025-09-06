@@ -111,7 +111,7 @@ export default function ListingContent({
       <div className="col-lg-6 col-md-8">
         <div className="top-filter mb-10">
           <div className="row align-items-center">
-            <div className="col-lg-6">
+            <div className="col-lg-6 col-sm-6">
               <p className="show_count">
                 Showing{" "}
                 {(pagination.current_page - 1) * pagination.per_page + 1}–
@@ -133,7 +133,7 @@ export default function ListingContent({
                 <i className="bi bi-search" /> &nbsp;Filter
               </button>
             </div>
-            <div className="col-lg-6 col-8">
+            <div className="col-lg-6 col-sm-6 col-8">
               <div className="r-side">
                 <form className="woocommerce-ordering" method="get">
                   <div className="form-group shot-buy">

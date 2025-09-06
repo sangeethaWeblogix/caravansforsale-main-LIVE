@@ -366,6 +366,10 @@ input[type=checkbox]:checked~.menuIconToggle>.dia.p-2 {
   display: block;
 }
 
+@media (min-width: 768px) and (max-width: 991px) { 
+.navbar.style-4.header-white {    padding: 8px 0px;}
+.navbar.style-4 .navbar-brand {padding: 0;}
+}
 
 @media screen and (max-width: 767px) {
 .navbar.style-4 {
@@ -391,6 +395,7 @@ input[type=checkbox]:checked~.menuIconToggle>.dia.p-2 {
 @media screen and (max-width: 480px) {
     .navbar.style-4 .navbar-brand {
         width: 250px;
+                padding: 0;
     }
     .menuIconToggle {
         width: 35px;

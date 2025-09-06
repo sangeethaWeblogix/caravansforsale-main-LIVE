@@ -75,7 +75,7 @@ export default function HomeLatestBlogs() {
                 {blogPosts.map((post) => {
                   const href = getHref(post);
                   return (
-                    <div className="col-lg-4" key={post.id}>
+                    <div className="col-lg-4 col-sm-6" key={post.id}>
                       <div className="side-posts">
                         <div className="item">
                           <div className="img img-cover">
