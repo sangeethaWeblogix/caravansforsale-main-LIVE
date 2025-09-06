@@ -1,4 +1,4 @@
- "use client";
+"use client";
 
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { fetchListings, ApiResponse, Item } from "../../../api/listings/api";
@@ -532,10 +532,12 @@ export default function ListingsPage({
                 <Listing
                   products={products}
                   pagination={pagination}
+                  draftFilters={draftFilters}
                   onNext={handleNextPage}
                   onPrev={handlePrevPage}
                   metaDescription={metaDescription}
                   metaTitle={metaTitle}
+                  handleFilterChange={handleFilterChange}
                   onFilterChange={handleFilterChange}
                   currentFilters={filters}
                 />
@@ -557,9 +559,6 @@ export default function ListingsPage({
         style={{ maxHeight: "100dvh" }}
       >
         <div className="offcanvas-header mobile_filter_xs sticky-top bg-white">
-          <h5 className="offcanvas-title mb-0" id="mobileFiltersLabel">
-            Filters
-          </h5>
           <button
             type="button"
             className="btn-close"
@@ -567,7 +566,6 @@ export default function ListingsPage({
             aria-label="Close"
           />
         </div>
-
         <div className="offcanvas-body pt-2">
           <Suspense fallback={<div>Loading filters...</div>}>
             <CaravanFilter
@@ -575,10 +573,10 @@ export default function ListingsPage({
               makes={makes}
               models={models}
               states={stateOptions}
-              currentFilters={draftFilters}
               onFilterChange={(partial) => {
-                setDraftFilters((prev) => ({ ...prev, ...partial }));
+                handleFilterChange(partial);
               }}
+              currentFilters={filters}
             />
           </Suspense>
         </div>

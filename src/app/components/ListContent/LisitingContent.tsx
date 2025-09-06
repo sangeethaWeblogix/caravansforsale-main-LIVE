@@ -67,6 +67,8 @@ interface Props {
   metaDescription: string; // Add metaDescription prop
   onFilterChange: (filters: Filters) => void;
   currentFilters: Filters;
+  draftFilters: Filters;
+  handleFilterChange: (filters: Filters) => void;
 }
 
 export default function ListingContent({
@@ -78,6 +80,8 @@ export default function ListingContent({
   metaDescription,
   onFilterChange,
   currentFilters,
+  draftFilters,
+  handleFilterChange,
 }: Props) {
   const imageUrl = "public/favicon.ico";
   const getHref = (p: Product) => {
@@ -129,6 +133,7 @@ export default function ListingContent({
                 data-bs-toggle="offcanvas"
                 data-bs-target="#mobileFilters"
                 aria-controls="mobileFilters"
+                onClick={() => handleFilterChange(draftFilters)}
               >
                 <i className="bi bi-search" /> &nbsp;Filter
               </button>
