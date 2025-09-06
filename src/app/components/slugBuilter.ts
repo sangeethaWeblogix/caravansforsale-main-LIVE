@@ -13,7 +13,6 @@ const asNum = (v?: string | number) =>
   typeof v === "number" ? v : v && v.trim() ? Number(v) : undefined;
 
 export function buildSlugFromFilters(f: Filters): string {
-  console.log("buildSlugFromFilters", f);
   const segments: string[] = [];
   // const DEFAULT_RADIUS = 50;
   // 1) Make / Model

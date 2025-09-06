@@ -477,7 +477,6 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     loadFilters();
   }, []);
 
-  console.log("make", makes);
   type UnknownRec = Record<string, unknown>;
 
   const isOptionArray = (v: unknown): v is Option[] =>

@@ -14,8 +14,6 @@ export async function metaFromSlug(
     page: parsed.page ? Number(parsed.page) : 1,
   };
 
-  console.log("Final filters:", finalFilters);
-
   // ✅ build querystring
   // const qs = buildQuery(finalFilters);
   // const url = `https://www.caravansforsale.com.au/wp-json/cfs/v1/new-list?${qs.toString()}`;
@@ -25,8 +23,6 @@ export async function metaFromSlug(
 
   // ✅ option 2: if fetchListings expects filters object (more likely)
   const res = await fetchListings(finalFilters);
-
-  console.log("API response SEO:", res?.seo);
 
   const title = res?.seo?.metatitle || "Caravan Listings";
   const description =

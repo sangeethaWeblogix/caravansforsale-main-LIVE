@@ -49,7 +49,6 @@ export default function blogDetailsPage({
   if (!post) {
     notFound();
   }
-  console.log("blog", post);
 
   return (
     <div className="blog-page style-5 color-4">

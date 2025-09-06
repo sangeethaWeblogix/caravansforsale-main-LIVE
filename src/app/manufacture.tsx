@@ -81,8 +81,6 @@ const Manufacture = () => {
     return `/listings/${encodeURIComponent(slugValue)}`;
   };
 
-  console.log("make", items);
-
   return (
     <div>
       <div className="container">
