@@ -33,7 +33,14 @@ export const fetchBlogs = async (page: number = 1): Promise<BlogPageResult> => {
   const url = `${API_BASE}/blog?page=${page}`;
   if (typeof window !== "undefined") console.log("[Blog API] GET", url);
 
-  const res = await fetch(url, { cache: "no-store" });
+  const res = await fetch(url, {
+    method: "GET",
+    headers: {
+      Accept: "application/json", // optional
+    },
+    cache: "no-store",
+  });
+
   if (!res.ok) throw new Error(`Blog API failed: ${res.status}`);
 
   const data: BlogApiResponse = await res.json();
