@@ -71,7 +71,11 @@ export default function SearchSection() {
 
   const showSuggestions = async () => {
     setIsSuggestionBoxOpen(true);
-    loadBaseOnce(); // first open shows base list
+
+    // ✅ Only load base list when input is empty
+    if (!query.trim()) {
+      await loadBaseOnce();
+    }
   };
 
   const closeSuggestions = () => setIsSuggestionBoxOpen(false);
