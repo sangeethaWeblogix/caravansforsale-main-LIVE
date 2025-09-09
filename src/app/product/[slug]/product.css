@@ -16,7 +16,6 @@
   font-weight: 500;
   text-transform: capitalize;
   margin-top: 7px;
-  font-family: "Poppins";
   color: #444;
 }
 .left-info {
@@ -500,13 +499,100 @@
   color: #ec7200;
 }
 
+.related-products h3 {
+  margin-bottom: 15px;
+}
+.product-page .related-products .product-card .img {
+      background: #ffffff;
+}
+.product-page .product-card .price del {
+    margin-right: 5px;
+    font-weight: 400;
+    color: #818181;
+}
+
+.related-products.section-padding {
+ padding: 30px 0px;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  /*  */
+  .price-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .price-left {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .current-price {
+    color: #f60;
+    font-size: 25px;
+    font-weight: bold;
+  }
+
+  .original-price {
+    color: #888;
+    text-decoration: line-through;
+    font-size: 16px;
+  }
+
+  .price-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    font-size: 16px;
+  }
+
+  .save-label {
+    color: #888;
+  }
+
+  .save-value {
+    color: #0070f3;
+    font-weight: bold;
+            font-size: 25px;
+  }
+  .pop-top .vehicleThumbDetails__part__price.pop_up_price span bdi {
+    justify-content: start;
+    display: flex;
+}
+}
+
 @media (max-width: 767px) {
   .caravan_dtt {
     padding: 30px 0;
   }
+  .pop-top .vehicleThumbDetails__part__price.pop_up_price span bdi {
+    justify-content: start;
+    display: flex;
+}
+
+.product-page .related-products .swiper-button-prev {
+    left: -10px;
+  }
+  .product-page .related-products .swiper-button-next {
+    right: -10px;
+  }
+
+  .product-page .related-products .swiper-button-next,
+  .product-page .related-products .swiper-button-prev {
+    width: 40px;
+    height: 40px;
+  }
+  .product-page .related-products .swiper-button-next:after,
+  .product-page .related-products .swiper-button-prev:after {
+    font-size: 18px;
+    color: #000;
+  }
 
   .product-page .product-info .title {
     font-size: 22px;
+    margin-bottom: 10px;
   }
 
   .contactSeller__container,
@@ -621,7 +707,7 @@
 
   .current-price {
     color: #f60;
-    font-size: 20px;
+    font-size: 25px;
     font-weight: bold;
   }
 
@@ -645,5 +731,6 @@
   .save-value {
     color: #0070f3;
     font-weight: bold;
+            font-size: 25px;
   }
 }

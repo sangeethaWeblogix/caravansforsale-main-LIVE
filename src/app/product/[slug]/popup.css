@@ -113,11 +113,11 @@
 }
 
 .pop-top {
-  display: flex;
-  text-align: left;
-  padding: 12px 0px;
-  justify-content: space-around;
-  align-items: center;
+    text-align: left;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    display: flex;
 }
 .pop-top h3 {
   color: #fff;
@@ -125,7 +125,8 @@
   font-weight: 700;
 }
 .pop-top .vehicleThumbDetails__part__price {
-  text-align: right;
+    text-align: right;
+    width: 300px;
 }
 .pop-top .vehicleThumbDetails__part__price span {
   font-size: 30px;
@@ -134,7 +135,8 @@
   color: #fff;
 }
 .pop-top .vehicleThumbDetails__part__price.pop_up_price span bdi {
-  display: flex;
+    display: flex;
+    justify-content: end;
 }
 .carava_details .swiper-wrapper {
   width: 100%;
