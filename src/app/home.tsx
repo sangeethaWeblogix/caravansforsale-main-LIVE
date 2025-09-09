@@ -168,6 +168,22 @@ export default function ProductPage() {
                     cities: ["Hobart", "Launceston", "Devonport", "Burnie"],
                     image: "/images/tas_map.svg",
                   },
+                  {
+                    state: "Australian Capital Territory",
+                    cities: [
+                      "Canberra Airport",
+                      "Hume",
+                      "Barton",
+                    ],
+                    image: "/images/act_map.svg",
+                  },
+                  {
+                    state: "Northern Territory",
+                    cities: [
+                      "Darwin",
+                    ],
+                    image: "/images/nt_map.svg",
+                  },
                 ].map((state, index) => (
                   <SwiperSlide key={index}>
                     <div className="service-box">

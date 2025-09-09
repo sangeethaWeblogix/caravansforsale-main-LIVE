@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import DeatilsPage from "./details";
+import RelatedNews from "./RelatedNews";
+import FaqSection from "./FaqSection";
 import "./details.css";
 type RouteParams = { slug: string };
 type PageProps = { params: Promise<RouteParams> };
@@ -65,6 +67,8 @@ export default async function ProductDetailPage({ params }: PageProps) {
   return (
     <div>
       <DeatilsPage data={data} />
+      <FaqSection />
+       <RelatedNews />
     </div>
   );
 }

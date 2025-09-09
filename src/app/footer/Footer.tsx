@@ -82,32 +82,32 @@ const Footer = () => {
                 <h6 className="foot-title foot_xs">Popular Pages</h6>
                 <ul className="menu footer_xs">
                   <li>
-                    <Link href="/blog/best-caravans-full-off-road-capabilities-australia/">
+                    <Link href="/best-caravans-full-off-road-capabilities-australia/">
                       Best Off Road Caravans
                     </Link>
                   </li>
                   <li>
-                    <Link href="/blog/best-semi-off-road-caravans-australia-guide/">
+                    <Link href="/best-semi-off-road-caravans-australia-guide/">
                       Best Semi Off Road Caravans
                     </Link>
                   </li>
                   <li>
-                    <Link href="/blog/best-caravans-for-extreme-off-road-travel/">
+                    <Link href="/best-caravans-for-extreme-off-road-travel/">
                       Best Extreme Off Road Caravans
                     </Link>
                   </li>
                   <li>
-                    <Link href="/blog/best-luxury-caravans-australia-highlights-features-reviews/">
+                    <Link href="/best-luxury-caravans-australia-highlights-features-reviews/">
                       Best Luxury Caravans
                     </Link>
                   </li>
                   <li>
-                    <Link href="/blog/top-family-off-road-caravans-australia/">
+                    <Link href="/top-family-off-road-caravans-australia/">
                       Best Family Caravans
                     </Link>
                   </li>
                   <li>
-                    <Link href="/blog/touring-caravans/">
+                    <Link href="/touring-caravans/">
                       Best Touring Caravans
                     </Link>
                   </li>

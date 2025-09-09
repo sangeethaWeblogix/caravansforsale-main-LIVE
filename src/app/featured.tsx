@@ -118,6 +118,11 @@ export default function DealsOnlyCFS() {
         <div className="tab-content" id="pills-tabContent">
           <div className="tab-pane fade show active">
             {/* HERO */}
+            <Link
+                            
+                            href={productHref(hero)}
+                            prefetch={false}
+                          >
             <div className="content-info text-center pb-0">
               <div className="product_data">
                 {loading[active] ? (
@@ -192,13 +197,12 @@ export default function DealsOnlyCFS() {
                         </div>
 
                         <div className="sub_bttn">
-                          <Link
+                          <span
                             className="btn"
-                            href={productHref(hero)}
-                            prefetch={false}
+                            
                           >
                             VIEW THIS DEAL
-                          </Link>
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -210,6 +214,7 @@ export default function DealsOnlyCFS() {
                 )}
               </div>
             </div>
+            </Link>
 
             {/* LIST / CAROUSEL */}
             {loading[active] ? (
