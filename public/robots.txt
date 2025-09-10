@@ -1,0 +1,7 @@
+User-agent: Mediapartners-Google
+Disallow: /
+Disallow: /*?filter_*
+Disallow: /*/attribute/
+Allow: /
+
+Sitemap: https://www.caravansforsale.com.au/sitemap.xml
