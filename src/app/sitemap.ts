@@ -27,7 +27,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: new Date(),
     },
     {
-      url: `${siteUrl}/makes-sitemap.xml`,
+      url: `${siteUrl}/categories-sitemap.xml`,
       lastModified: new Date(),
     },
     {
@@ -36,6 +36,22 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
     {
       url: `${siteUrl}/prices-sitemap.xml`,
+      lastModified: new Date(),
+    },
+    {
+      url: `${siteUrl}/weights-sitemap.xml`,
+      lastModified: new Date(),
+    },
+    {
+      url: `${siteUrl}/sleeps-sitemap.xml`,
+      lastModified: new Date(),
+    },
+    {
+      url: `${siteUrl}/length-sitemap.xml`,
+      lastModified: new Date(),
+    },
+    {
+      url: `${siteUrl}/conditions-sitemap.xml`,
       lastModified: new Date(),
     },
   ];

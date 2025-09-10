@@ -1,25 +1,24 @@
-// src/app/makes-sitemap.xml/route.ts
+// src/app/conditions-sitemap.xml/route.ts
 import { NextResponse } from "next/server";
-import { fetchListings } from "@/api/listings/api";
 
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "https://caravansforsale.com.au";
 
-export async function GET() {
-  const data = await fetchListings({ page: 1 });
-  const makes = data.data?.make_options ?? [];
+// ✅ only these three
+const conditions = ["new", "used", "demo"];
 
-  const urls = makes
-    .map(
-      (make) => `
+export async function GET() {
+  let urls = "";
+
+  conditions.forEach((c) => {
+    urls += `
     <url>
-      <loc>${SITE_URL}/listings/${make.slug}</loc>
+      <loc>${SITE_URL}/listings/${c}-condition</loc>
       <lastmod>${new Date().toISOString()}</lastmod>
       <changefreq>weekly</changefreq>
-      <priority>0.6</priority>
-    </url>`
-    )
-    .join("");
+      <priority>0.7</priority>
+    </url>`;
+  });
 
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
   <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
