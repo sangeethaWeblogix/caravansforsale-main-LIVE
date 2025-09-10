@@ -14,5 +14,29 @@ export default function sitemap(): MetadataRoute.Sitemap {
       url: `${siteUrl}/blogs-sitemap.xml`,
       lastModified: new Date(),
     },
+    {
+      url: `${siteUrl}/listigs-sitemap.xml`,
+      lastModified: new Date(),
+    },
+    {
+      url: `${siteUrl}/makes-sitemap.xml`,
+      lastModified: new Date(),
+    },
+    {
+      url: `${siteUrl}/states-sitemap.xml`,
+      lastModified: new Date(),
+    },
+    {
+      url: `${siteUrl}/makes-sitemap.xml`,
+      lastModified: new Date(),
+    },
+    {
+      url: `${siteUrl}/regions-sitemap.xml`,
+      lastModified: new Date(),
+    },
+    {
+      url: `${siteUrl}/prices-sitemap.xml`,
+      lastModified: new Date(),
+    },
   ];
 }
