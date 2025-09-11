@@ -1,9 +1,30 @@
 // src/app/regions-sitemap.xml/route.ts
 import { NextResponse } from "next/server";
-import { fetchListings } from "@/api/listings/api";
 
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "https://caravansforsale.com.au";
+
+// ✅ Type definitions for API response
+interface Suburb {
+  value: string;
+  name: string;
+}
+
+interface Region {
+  value: string;
+  name: string;
+  suburbs?: Suburb[];
+}
+
+interface State {
+  value: string;
+  name: string;
+  regions?: Region[];
+}
+
+interface ParamsApiResponse {
+  states: State[];
+}
 
 function slugify(text: string): string {
   return text
@@ -15,22 +36,14 @@ function slugify(text: string): string {
     .trim();
 }
 
-// ✅ Define lightweight types for API response
-interface Region {
-  value: string;
-  name: string;
-}
-
-interface State {
-  value: string;
-  name: string;
-  regions?: Region[];
-}
-
 export async function GET() {
-  // ✅ Only states & regions are used
-  const data = await fetchListings({ page: 1 });
-  const states: State[] = data.data?.states ?? [];
+  // ✅ Fetch from params-product-list
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_CFS_API_BASE}/wp-json/cfs/v1/params-product-list`
+  );
+
+  const data: ParamsApiResponse = await res.json();
+  const states = data.states ?? [];
 
   const urls = states.flatMap((state) => {
     const stateSlug = slugify(state.value);
