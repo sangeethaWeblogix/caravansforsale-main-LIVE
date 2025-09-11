@@ -1,34 +1,34 @@
 // src/app/states-sitemap.xml/route.ts
 import { NextResponse } from "next/server";
-import { fetchListings } from "@/api/listings/api";
+import { fetchProductList } from "@/api/productList/api";
 
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "https://caravansforsale.com.au";
 
-// simple slugify function
+// Simple slugify
 function slugify(text: string): string {
   return text
     .toLowerCase()
-    .replace(/\s+/g, "-") // spaces -> dashes
-    .replace(/&/g, "and") // & -> and
-    .replace(/[^\w\-]+/g, "") // remove invalid chars
-    .replace(/\-\-+/g, "-") // multiple dashes -> one
+    .replace(/\s+/g, "-")
+    .replace(/&/g, "and")
+    .replace(/[^\w\-]+/g, "")
+    .replace(/\-\-+/g, "-")
     .trim();
 }
 
 export async function GET() {
-  const data = await fetchListings({ page: 1 });
-  const states = data.data?.states ?? [];
+  const data = await fetchProductList();
+  const states = data?.data?.states ?? [];
 
   const urls = states
-    .map((state) => {
+    .map((state: any) => {
       const stateSlug = slugify(state.value);
       return `
         <url>
-          <loc>${SITE_URL}/listings/${stateSlug}-state</loc>
+          <loc>${SITE_URL}/listings/${stateSlug}-state/</loc>
           <lastmod>${new Date().toISOString().split("T")[0]}</lastmod>
           <changefreq>weekly</changefreq>
-          <priority>0.7</priority>
+          <priority>0.8</priority>
         </url>`;
     })
     .join("");
