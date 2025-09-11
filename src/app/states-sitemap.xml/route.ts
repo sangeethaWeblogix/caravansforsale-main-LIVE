@@ -5,20 +5,32 @@ import { fetchListings } from "@/api/listings/api";
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "https://caravansforsale.com.au";
 
+// simple slugify function
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/\s+/g, "-") // spaces -> dashes
+    .replace(/&/g, "and") // & -> and
+    .replace(/[^\w\-]+/g, "") // remove invalid chars
+    .replace(/\-\-+/g, "-") // multiple dashes -> one
+    .trim();
+}
+
 export async function GET() {
   const data = await fetchListings({ page: 1 });
   const states = data.data?.states ?? [];
 
   const urls = states
-    .map(
-      (state) => `
-    <url>
-      <loc>${SITE_URL}/${state.value}-state</loc>
-      <lastmod>${new Date().toISOString()}</lastmod>
-      <changefreq>weekly</changefreq>
-      <priority>0.6</priority>
-    </url>`
-    )
+    .map((state) => {
+      const stateSlug = slugify(state.value);
+      return `
+        <url>
+          <loc>${SITE_URL}/listings/${stateSlug}-state</loc>
+          <lastmod>${new Date().toISOString().split("T")[0]}</lastmod>
+          <changefreq>weekly</changefreq>
+          <priority>0.7</priority>
+        </url>`;
+    })
     .join("");
 
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
