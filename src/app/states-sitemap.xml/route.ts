@@ -13,7 +13,7 @@ export async function GET() {
     .map(
       (state) => `
     <url>
-      <loc>${SITE_URL}/state/${state.value}</loc>
+      <loc>${SITE_URL}/${state.value}-state</loc>
       <lastmod>${new Date().toISOString()}</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.6</priority>

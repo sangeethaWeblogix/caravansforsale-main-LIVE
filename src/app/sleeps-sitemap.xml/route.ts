@@ -22,7 +22,7 @@ export async function GET() {
     // over
     urls += `
     <url>
-      <loc>${SITE_URL}/listings/over-${s}-people-sleeping-capacity</loc>
+      <loc>${SITE_URL}/listings/${s}-people-sleeping-capacity</loc>
       <lastmod>${new Date().toISOString()}</lastmod>
       <changefreq>monthly</changefreq>
       <priority>0.7</priority>

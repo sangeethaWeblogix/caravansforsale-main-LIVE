@@ -20,7 +20,7 @@ export async function GET() {
     .map(
       (item) => `
     <url>
-      <loc>${SITE_URL}/listing/${item.slug}</loc>
+      <loc>${SITE_URL}/listing/${item.slug}-region</loc>
       <lastmod>${new Date().toISOString()}</lastmod>
       <changefreq>daily</changefreq>
       <priority>0.8</priority>

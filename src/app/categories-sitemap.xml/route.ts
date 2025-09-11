@@ -13,7 +13,7 @@ export async function GET() {
     .map(
       (cat) => `
     <url>
-      <loc>${SITE_URL}/category/${cat.slug}</loc>
+      <loc>${SITE_URL}/${cat.slug}-category</loc>
       <lastmod>${new Date().toISOString()}</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.6</priority>
