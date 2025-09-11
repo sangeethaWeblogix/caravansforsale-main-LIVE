@@ -18,8 +18,7 @@ function slugify(text: string): string {
 
 export async function GET() {
   const data = await fetchProductList();
-  console.log("dataaaa", data);
-  const states = data?.states ?? [];
+  const states = data?.data?.states ?? [];
 
   const urls = states
     .map((state: any) => {
