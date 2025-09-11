@@ -5,7 +5,7 @@ const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "https://caravansforsale.com.au";
 
 // ✅ only these three
-const conditions = ["new", "used", "demo"];
+const conditions = ["new", "used", "near-new"];
 
 export async function GET() {
   let urls = "";
