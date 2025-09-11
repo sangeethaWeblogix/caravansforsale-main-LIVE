@@ -5,38 +5,47 @@ import { fetchListings } from "@/api/listings/api";
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "https://caravansforsale.com.au";
 
-// Simple slugify for clean URLs
 function slugify(text: string): string {
   return text
     .toLowerCase()
-    .replace(/\s+/g, "-") // spaces → dashes
+    .replace(/\s+/g, "-")
     .replace(/&/g, "and")
     .replace(/[^\w\-]+/g, "")
     .replace(/\-\-+/g, "-")
     .trim();
 }
 
+// ✅ Define lightweight types for API response
+interface Region {
+  value: string;
+  name: string;
+}
+
+interface State {
+  value: string;
+  name: string;
+  regions?: Region[];
+}
+
 export async function GET() {
+  // ✅ Only states & regions are used
   const data = await fetchListings({ page: 1 });
-  const states = data.data?.states ?? [];
+  const states: State[] = data.data?.states ?? [];
 
-  const urls: string[] = [];
-
-  states.forEach((state: any) => {
+  const urls = states.flatMap((state) => {
     const stateSlug = slugify(state.value);
 
-    state.regions?.forEach((region: any) => {
-      const regionSlug = slugify(region.value);
-
-      urls.push(`
+    return (state.regions ?? []).map(
+      (region) => `
         <url>
-          <loc>${SITE_URL}/listings/${stateSlug}-state/${regionSlug}-region/</loc>
+          <loc>${SITE_URL}/listings/${stateSlug}-state/${slugify(
+        region.value
+      )}-region/</loc>
           <lastmod>${new Date().toISOString().split("T")[0]}</lastmod>
           <changefreq>weekly</changefreq>
           <priority>0.7</priority>
-        </url>
-      `);
-    });
+        </url>`
+    );
   });
 
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
