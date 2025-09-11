@@ -22,7 +22,7 @@ export async function GET() {
 
   const urls = states
     .map((state: any) => {
-      const stateSlug = slugify(state.value);
+      const stateSlug = slugify(state.name);
       return `
         <url>
           <loc>${SITE_URL}/listings/${stateSlug}-state/</loc>
