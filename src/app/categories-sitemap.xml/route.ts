@@ -1,17 +1,26 @@
 // src/app/categories-sitemap.xml/route.ts
 import { NextResponse } from "next/server";
-import { fetchListings } from "@/api/listings/api";
 
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "https://caravansforsale.com.au";
 
 export async function GET() {
-  const data = await fetchListings({ page: 1 });
-  const categories = data.data?.all_categories ?? [];
+  // call the product params API
+  const res = await fetch(
+    "https://www.admin.caravansforsale.com.au/wp-json/cfs/v1/params-product-list",
+    { next: { revalidate: 3600 } } // revalidate every hour (optional)
+  );
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch categories");
+  }
+
+  const data = await res.json();
+  const categories = data?.data?.all_categories ?? [];
 
   const urls = categories
     .map(
-      (cat) => `
+      (cat: { slug: string }) => `
     <url>
       <loc>${SITE_URL}/${cat.slug}-category</loc>
       <lastmod>${new Date().toISOString()}</lastmod>
