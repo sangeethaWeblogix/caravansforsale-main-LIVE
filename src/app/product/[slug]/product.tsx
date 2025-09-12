@@ -744,7 +744,7 @@ export default function ClientLogger({
         <div className="container">
           <div className="title">
             <div className="tpof_tab">
-              <h3>Browse Similar Off Road Caravans</h3>
+              <h3>Browse Similar Caravans</h3>
             </div>
           </div>
           <div className="similar-products-three position-relative">
