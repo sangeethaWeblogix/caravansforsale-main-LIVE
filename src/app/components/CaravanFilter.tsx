@@ -2876,7 +2876,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                 <h5 className="cfs-filter-label">Select Location</h5>
                 <input
                   type="text"
-                  placeholder="Suburb, pincode..."
+                  placeholder="Suburb or pincode..."
                   className="filter-dropdown cfs-select-input"
                   autoComplete="off"
                   value={formatLocationInput(modalInput)} // 👈 use modalInput
