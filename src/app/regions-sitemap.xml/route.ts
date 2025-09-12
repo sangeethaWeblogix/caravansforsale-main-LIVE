@@ -1,19 +1,28 @@
-// src/app/regions-sitemap.xml/route.ts
 import { NextResponse } from "next/server";
 import { fetchProductList } from "@/api/productList/api";
 
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "https://caravansforsale.com.au";
 
+// Define the response types
+type Region = {
+  value: string;
+};
+
+type State = {
+  value: string;
+  regions?: Region[];
+};
+
 export async function GET() {
   const data = await fetchProductList();
-  const states = data?.data?.states ?? [];
+  const states: State[] = data?.data?.states ?? [];
 
-  const urls = states.flatMap((state: any) => {
+  const urls = states.flatMap((state) => {
     const stateSlug = state.value; // already slug-like
 
     return (state.regions ?? []).map(
-      (region: any) => `
+      (region) => `
         <url>
           <loc>${SITE_URL}/listings/${stateSlug}-state/${
         region.value

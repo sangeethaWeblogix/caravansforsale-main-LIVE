@@ -1,19 +1,21 @@
-// src/app/regions-sitemap.xml/route.ts
 import { NextResponse } from "next/server";
 import { fetchProductList } from "@/api/productList/api";
 
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "https://caravansforsale.com.au";
 
+type Region = { value: string };
+type State = { value: string; regions?: Region[] };
+
 export async function GET() {
   const data = await fetchProductList();
-  const states = data?.data?.states ?? []; // <-- FIXED here
+  const states: State[] = data?.data?.states ?? [];
 
-  const urls = states.flatMap((state: any) => {
+  const urls = states.flatMap((state) => {
     const stateSlug = state.value;
 
     return (state.regions ?? []).map(
-      (region: any) => `
+      (region) => `
         <url>
           <loc>${SITE_URL}/listings/${stateSlug}-state/${
         region.value

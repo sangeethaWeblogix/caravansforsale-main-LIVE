@@ -33,7 +33,7 @@ export async function GET() {
   <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     ${urls}
   </urlset>`;
-
+  console.log("Generated sleeps sitemap URLs:", urls);
   return new NextResponse(sitemap, {
     headers: { "Content-Type": "application/xml" },
   });

@@ -5,10 +5,10 @@ type RouteParams = { slug: string };
 type PageProps = { params: Promise<RouteParams> };
 
 async function fetchBlogDetail(slug: string) {
+  const API_BASE = process.env.NEXT_PUBLIC_CFS_API_BASE!;
+
   const res = await fetch(
-    `https://www.admin.caravansforsale.com.au/wp-json/cfs/v1/blog-detail/${encodeURIComponent(
-      slug
-    )}`,
+    `${API_BASE}/blog-detail/${encodeURIComponent(slug)}`,
     { cache: "no-store", headers: { Accept: "application/json" } }
   );
   if (!res.ok) throw new Error("Failed to load blog detail");

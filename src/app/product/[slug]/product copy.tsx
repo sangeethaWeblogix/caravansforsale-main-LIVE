@@ -10,16 +10,13 @@ import Link from "next/link";
 import CaravanDetailModal from "./CaravanDetailModal";
 import "./product.css";
 import DOMPurify from "dompurify";
-import { type HomeBlogPost } from "@/api/home/api";
-import { toSlug } from "@/utils/seo/slug";
-import ProductSkelton from "../../components/ProductCardSkeleton";
+
 type Attribute = {
   label?: string;
   value?: string;
   url?: string;
   name?: string;
   title?: string;
-
   val?: string;
   text?: string;
 };
@@ -33,8 +30,6 @@ interface ApiData {
   categories?: Category[];
   id?: string | number;
   slug?: string;
-  latest_blog_posts?: string;
-  related?: string;
 }
 
 interface ProductDetailResponse {
@@ -54,41 +49,16 @@ type ProductData = {
   categories?: Category[];
   attribute_urls?: Attribute[];
   description?: string;
-  image?: string[];
-  title?: string;
 };
 
-interface BlogPost extends HomeBlogPost {
-  // ensure fields you use are present
-  id: number;
-  title: string;
-  image: string;
-  slug: string;
-  date?: string;
-  excerpt?: string;
-  link?: string;
-}
 export default function ClientLogger({
   data,
 }: {
   data: ProductDetailResponse;
 }) {
-  // const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
-  console.log("datap", data);
-
   const [activeImage, setActiveImage] = useState<string>("");
   const pd: ApiData = data?.data ?? {};
   const productDetails: ProductData = pd.product_details ?? {};
-  const blogPosts: BlogPost[] = Array.isArray(data?.data?.latest_blog_posts)
-    ? data.data.latest_blog_posts!
-    : [];
-
-  const relatedProducts: ProductData[] = Array.isArray(data?.data?.related)
-    ? data.data.related!
-    : [];
-
-  console.log("datapb", relatedProducts);
-
   const product: ProductData = productDetails;
   const isBrowser = typeof window !== "undefined";
 
@@ -215,14 +185,6 @@ export default function ClientLogger({
     return Number.isFinite(n) ? n : null;
   };
 
-  const getHref = (p: BlogPost) => {
-    const slug = p.slug?.trim() || toSlug(p.title || "post");
-    return `/${slug}/`;
-  };
-  const getProductHref = (p: ProductData) => {
-    const slug = p.slug?.trim() || toSlug(p.title || "post");
-    return slug ? `/product/${slug}/` : "";
-  };
   type LinkOut = { href: string; text: string };
   type SpecItem = { label: string; value: string; url?: string };
 
@@ -761,65 +723,195 @@ export default function ClientLogger({
                 1024: { slidesPerView: 4 },
               }}
             >
-              {relatedProducts.length === 0
-                ? Array.from({ length: 4 }).map((_, idx) => (
-                    <SwiperSlide key={`related-skeleton-${idx}`}>
-                      <ProductSkelton />
-                    </SwiperSlide>
-                  ))
-                : relatedProducts.map((post) => {
-                    const href = getProductHref(post);
-                    return (
-                      <SwiperSlide key={post.id}>
-                        <Link href={href}>
-                          <div className="product-card">
-                            <div className="img">
-                              <Image
-                                src={
-                                  Array.isArray(post.image)
-                                    ? post.image[0]
-                                    : post.image || "/placeholder.jpg"
-                                }
-                                alt="product"
-                                width={400}
-                                height={250}
-                                unoptimized
-                              />
-                            </div>
-                            <div className="product_de">
-                              <div className="info">
-                                <h6 className="category">
-                                  <i className="fa fa-map-marker-alt"></i>{" "}
-                                  <span>{post.location}</span>
-                                </h6>
-                                <h3 className="title">{post.title}</h3>
-                              </div>
-                              <div className="price">
-                                {parseAmount(post.regular_price) === 0 ? (
-                                  <span>POA</span>
-                                ) : parseAmount(post.sale_price) > 0 &&
-                                  parseAmount(post.sale_price) <
-                                    parseAmount(post.regular_price) ? (
-                                  <>
-                                    <del>
-                                      {fmt(parseAmount(post.regular_price))}
-                                    </del>{" "}
-                                    <ins>
-                                      {fmt(parseAmount(post.sale_price))}
-                                    </ins>
-                                  </>
-                                ) : (
-                                  <span>
-                                    {fmt(parseAmount(post.regular_price))}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        </Link>
-                      </SwiperSlide>
-                    );
-                  })}
+              {/* Slide 1 */}
+              <SwiperSlide>
+                <Link href="https://www.caravansforsale.com.au/product/2024-red-centre-tanami-plus-20-8-extreme-off-road-2-berth-rear-door/">
+                  <div className="product-card">
+                    <div className="img">
+                      <Image
+                        src="https://www.admin.caravansforsale.com.au/wp-content/uploads/2024/07/20-8-red-centre-2024-tanami-plus-new-extreme-off-road-caravan-3730-29-maini.jpg"
+                        alt="2024 Red Centre Tanami Plus"
+                        width={400}
+                        height={250}
+                        unoptimized
+                      />
+                    </div>
+                    <div className="product_de">
+                      <div className="info">
+                        <h6 className="category">
+                          <i className="fa fa-map-marker-alt"></i>{" "}
+                          <span>Victoria</span>
+                        </h6>
+                        <h3 className="title">
+                          2024 Red Centre Tanami Plus 20&apos;8 Extreme Off Road
+                          2 Berth - Rear Door
+                        </h3>
+                      </div>
+                      <div className="price">
+                        <span>$142,990</span>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              </SwiperSlide>
+
+              {/* Slide 2 */}
+              <SwiperSlide>
+                <Link href="https://www.caravansforsale.com.au/product/2024-orbit-discovery-x-off-road-2-bunks-with-ensuite-tandem-axle/">
+                  <div className="product-card">
+                    <div className="img">
+                      <Image
+                        src="https://www.admin.caravansforsale.com.au/wp-content/uploads/2024/07/2024-orbit-discovery-x-new-luxury-caravan-2-50-maini.jpg"
+                        alt="2024 Orbit Discovery X"
+                        width={400}
+                        height={250}
+                        unoptimized
+                      />
+                    </div>
+                    <div className="product_de">
+                      <div className="info">
+                        <h6 className="category">
+                          <i className="fa fa-map-marker-alt"></i>{" "}
+                          <span>Victoria</span>
+                        </h6>
+                        <h3 className="title">
+                          2024 Orbit Discovery X Off Road 2 Bunks with Ensuite -
+                          Tandem Axle
+                        </h3>
+                      </div>
+                      <div className="price">
+                        <del>$69,999</del> <ins>$68,999</ins>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              </SwiperSlide>
+              {/* Slide 1 */}
+              <SwiperSlide>
+                <Link href="https://www.caravansforsale.com.au/product/2024-red-centre-tanami-plus-20-8-extreme-off-road-2-berth-rear-door/">
+                  <div className="product-card">
+                    <div className="img">
+                      <Image
+                        src="https://www.admin.caravansforsale.com.au/wp-content/uploads/2024/07/20-8-red-centre-2024-tanami-plus-new-extreme-off-road-caravan-3730-29-maini.jpg"
+                        alt="2024 Red Centre Tanami Plus"
+                        width={400}
+                        height={250}
+                        unoptimized
+                      />
+                    </div>
+                    <div className="product_de">
+                      <div className="info">
+                        <h6 className="category">
+                          <i className="fa fa-map-marker-alt"></i>{" "}
+                          <span>Victoria</span>
+                        </h6>
+                        <h3 className="title">
+                          2024 Red Centre Tanami Plus 20&apos;8 Extreme Off Road
+                          2 Berth - Rear Door
+                        </h3>
+                      </div>
+                      <div className="price">
+                        <span>$142,990</span>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              </SwiperSlide>
+
+              {/* Slide 2 */}
+              <SwiperSlide>
+                <Link href="https://www.caravansforsale.com.au/product/2024-orbit-discovery-x-off-road-2-bunks-with-ensuite-tandem-axle/">
+                  <div className="product-card">
+                    <div className="img">
+                      <Image
+                        src="https://www.admin.caravansforsale.com.au/wp-content/uploads/2024/07/2024-orbit-discovery-x-new-luxury-caravan-2-50-maini.jpg"
+                        alt="2024 Orbit Discovery X"
+                        width={400}
+                        height={250}
+                        unoptimized
+                      />
+                    </div>
+                    <div className="product_de">
+                      <div className="info">
+                        <h6 className="category">
+                          <i className="fa fa-map-marker-alt"></i>{" "}
+                          <span>Victoria</span>
+                        </h6>
+                        <h3 className="title">
+                          2024 Orbit Discovery X Off Road 2 Bunks with Ensuite -
+                          Tandem Axle
+                        </h3>
+                      </div>
+                      <div className="price">
+                        <del>$69,999</del> <ins>$68,999</ins>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              </SwiperSlide>
+              {/* Slide 1 */}
+              <SwiperSlide>
+                <Link href="https://www.caravansforsale.com.au/product/2024-red-centre-tanami-plus-20-8-extreme-off-road-2-berth-rear-door/">
+                  <div className="product-card">
+                    <div className="img">
+                      <Image
+                        src="https://www.admin.caravansforsale.com.au/wp-content/uploads/2024/07/20-8-red-centre-2024-tanami-plus-new-extreme-off-road-caravan-3730-29-maini.jpg"
+                        alt="2024 Red Centre Tanami Plus"
+                        width={400}
+                        height={250}
+                        unoptimized
+                      />
+                    </div>
+                    <div className="product_de">
+                      <div className="info">
+                        <h6 className="category">
+                          <i className="fa fa-map-marker-alt"></i>{" "}
+                          <span>Victoria</span>
+                        </h6>
+                        <h3 className="title">
+                          2024 Red Centre Tanami Plus 20&apos;8 Extreme Off Road
+                          2 Berth - Rear Door
+                        </h3>
+                      </div>
+                      <div className="price">
+                        <span>$142,990</span>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              </SwiperSlide>
+
+              {/* Slide 2 */}
+              <SwiperSlide>
+                <Link href="https://www.caravansforsale.com.au/product/2024-orbit-discovery-x-off-road-2-bunks-with-ensuite-tandem-axle/">
+                  <div className="product-card">
+                    <div className="img">
+                      <Image
+                        src="https://www.admin.caravansforsale.com.au/wp-content/uploads/2024/07/2024-orbit-discovery-x-new-luxury-caravan-2-50-maini.jpg"
+                        alt="2024 Orbit Discovery X"
+                        width={400}
+                        height={250}
+                        unoptimized
+                      />
+                    </div>
+                    <div className="product_de">
+                      <div className="info">
+                        <h6 className="category">
+                          <i className="fa fa-map-marker-alt"></i>{" "}
+                          <span>Victoria</span>
+                        </h6>
+                        <h3 className="title">
+                          2024 Orbit Discovery X Off Road 2 Bunks with Ensuite -
+                          Tandem Axle
+                        </h3>
+                      </div>
+                      <div className="price">
+                        <del>$69,999</del> <ins>$68,999</ins>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              </SwiperSlide>
             </Swiper>
           </div>
         </div>
@@ -849,41 +941,213 @@ export default function ClientLogger({
                 1024: { slidesPerView: 4 },
               }}
             >
-              {blogPosts.length === 0
-                ? Array.from({ length: 4 }).map((_, idx) => (
-                    <SwiperSlide key={`blog-skeleton-${idx}`}>
-                      <ProductSkelton />
-                    </SwiperSlide>
-                  ))
-                : blogPosts.map((post) => {
-                    const href = getHref(post);
-                    return (
-                      <SwiperSlide key={post.id}>
-                        <Link href={href}>
-                          <div className="product-card">
-                            <div className="img">
-                              <Image
-                                src={post.image}
-                                alt={post.title}
-                                width={400}
-                                height={250}
-                                unoptimized
-                              />
-                            </div>
-                            <div className="product_de">
-                              <div className="info">
-                                <h5 className="title">{post.title}</h5>
-                                <p>{post.excerpt}</p>
-                              </div>
-                            </div>
-                          </div>
-                        </Link>
-                      </SwiperSlide>
-                    );
-                  })}
-              {!blogPosts.length && (
-                <div className="col-12 py-3 text-muted">No posts found.</div>
-              )}
+              {/* Slide 1 */}
+              <SwiperSlide>
+                <Link href="https://www.caravansforsale.com.au/pop-top-caravans-with-shower-and-toilet/">
+                  <div className="product-card">
+                    <div className="img">
+                      <Image
+                        src="https://www.admin.caravansforsale.com.au/wp-content/uploads/2025/06/2-768x512.jpg"
+                        alt="2024 Red Centre Tanami Plus"
+                        width={400}
+                        height={250}
+                        unoptimized
+                      />
+                    </div>
+                    <div className="product_de">
+                      <div className="info">
+                        <h5 className="title">
+                          Best Off Road Caravans 2025: What’s New, Tough, and
+                          Worth Your Money
+                        </h5>
+                        <p>
+                          Introduction The demand for find the best off-road
+                          caravan is soaring as adventurers seek rugged,
+                          reliable, and comfortable homes on wheels. These
+                          caravans combine durable construction, smart designs,
+                          and modern technology to handle challenging terrain
+                          while providing creature comforts for extended trips.
+                          Whether exploring remote destinations or national
+                          parks, off-road caravans offer the perfect blend…
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              </SwiperSlide>
+
+              {/* Slide 2 */}
+              <SwiperSlide>
+                <Link href="https://www.caravansforsale.com.au/pop-top-caravans-with-shower-and-toilet/">
+                  <div className="product-card">
+                    <div className="img">
+                      <Image
+                        src="https://www.admin.caravansforsale.com.au/wp-content/uploads/2025/06/2-768x512.jpg"
+                        alt="2024 Red Centre Tanami Plus"
+                        width={400}
+                        height={250}
+                        unoptimized
+                      />
+                    </div>
+                    <div className="product_de">
+                      <div className="info">
+                        <h5 className="title">
+                          Best Off Road Caravans 2025: What’s New, Tough, and
+                          Worth Your Money
+                        </h5>
+                        <p>
+                          Introduction The demand for find the best off-road
+                          caravan is soaring as adventurers seek rugged,
+                          reliable, and comfortable homes on wheels. These
+                          caravans combine durable construction, smart designs,
+                          and modern technology to handle challenging terrain
+                          while providing creature comforts for extended trips.
+                          Whether exploring remote destinations or national
+                          parks, off-road caravans offer the perfect blend…
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              </SwiperSlide>
+              {/* Slide 1 */}
+              <SwiperSlide>
+                <Link href="https://www.caravansforsale.com.au/pop-top-caravans-with-shower-and-toilet/">
+                  <div className="product-card">
+                    <div className="img">
+                      <Image
+                        src="https://www.admin.caravansforsale.com.au/wp-content/uploads/2025/06/2-768x512.jpg"
+                        alt="2024 Red Centre Tanami Plus"
+                        width={400}
+                        height={250}
+                        unoptimized
+                      />
+                    </div>
+                    <div className="product_de">
+                      <div className="info">
+                        <h5 className="title">
+                          Best Off Road Caravans 2025: What’s New, Tough, and
+                          Worth Your Money
+                        </h5>
+                        <p>
+                          Introduction The demand for find the best off-road
+                          caravan is soaring as adventurers seek rugged,
+                          reliable, and comfortable homes on wheels. These
+                          caravans combine durable construction, smart designs,
+                          and modern technology to handle challenging terrain
+                          while providing creature comforts for extended trips.
+                          Whether exploring remote destinations or national
+                          parks, off-road caravans offer the perfect blend…
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              </SwiperSlide>
+
+              {/* Slide 2 */}
+              <SwiperSlide>
+                <Link href="https://www.caravansforsale.com.au/pop-top-caravans-with-shower-and-toilet/">
+                  <div className="product-card">
+                    <div className="img">
+                      <Image
+                        src="https://www.admin.caravansforsale.com.au/wp-content/uploads/2025/06/2-768x512.jpg"
+                        alt="2024 Red Centre Tanami Plus"
+                        width={400}
+                        height={250}
+                        unoptimized
+                      />
+                    </div>
+                    <div className="product_de">
+                      <div className="info">
+                        <h5 className="title">
+                          Best Off Road Caravans 2025: What’s New, Tough, and
+                          Worth Your Money
+                        </h5>
+                        <p>
+                          Introduction The demand for find the best off-road
+                          caravan is soaring as adventurers seek rugged,
+                          reliable, and comfortable homes on wheels. These
+                          caravans combine durable construction, smart designs,
+                          and modern technology to handle challenging terrain
+                          while providing creature comforts for extended trips.
+                          Whether exploring remote destinations or national
+                          parks, off-road caravans offer the perfect blend…
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              </SwiperSlide>
+              {/* Slide 1 */}
+              <SwiperSlide>
+                <Link href="https://www.caravansforsale.com.au/pop-top-caravans-with-shower-and-toilet/">
+                  <div className="product-card">
+                    <div className="img">
+                      <Image
+                        src="https://www.admin.caravansforsale.com.au/wp-content/uploads/2025/06/2-768x512.jpg"
+                        alt="2024 Red Centre Tanami Plus"
+                        width={400}
+                        height={250}
+                        unoptimized
+                      />
+                    </div>
+                    <div className="product_de">
+                      <div className="info">
+                        <h5 className="title">
+                          Best Off Road Caravans 2025: What’s New, Tough, and
+                          Worth Your Money
+                        </h5>
+                        <p>
+                          Introduction The demand for find the best off-road
+                          caravan is soaring as adventurers seek rugged,
+                          reliable, and comfortable homes on wheels. These
+                          caravans combine durable construction, smart designs,
+                          and modern technology to handle challenging terrain
+                          while providing creature comforts for extended trips.
+                          Whether exploring remote destinations or national
+                          parks, off-road caravans offer the perfect blend…
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              </SwiperSlide>
+
+              {/* Slide 2 */}
+              <SwiperSlide>
+                <Link href="https://www.caravansforsale.com.au/pop-top-caravans-with-shower-and-toilet/">
+                  <div className="product-card">
+                    <div className="img">
+                      <Image
+                        src="https://www.admin.caravansforsale.com.au/wp-content/uploads/2025/06/2-768x512.jpg"
+                        alt="2024 Red Centre Tanami Plus"
+                        width={400}
+                        height={250}
+                        unoptimized
+                      />
+                    </div>
+                    <div className="product_de">
+                      <div className="info">
+                        <h5 className="title">
+                          Best Off Road Caravans 2025: What’s New, Tough, and
+                          Worth Your Money
+                        </h5>
+                        <p>
+                          Introduction The demand for find the best off-road
+                          caravan is soaring as adventurers seek rugged,
+                          reliable, and comfortable homes on wheels. These
+                          caravans combine durable construction, smart designs,
+                          and modern technology to handle challenging terrain
+                          while providing creature comforts for extended trips.
+                          Whether exploring remote destinations or national
+                          parks, off-road caravans offer the perfect blend…
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              </SwiperSlide>
             </Swiper>
           </div>
         </div>
