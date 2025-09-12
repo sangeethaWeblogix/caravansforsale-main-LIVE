@@ -3,6 +3,7 @@ import DeatilsPage from "./details";
 import RelatedNews from "./RelatedNews";
 import FaqSection from "./FaqSection";
 import "./details.css";
+
 type RouteParams = { slug: string };
 type PageProps = { params: Promise<RouteParams> };
 
@@ -64,11 +65,26 @@ export default async function ProductDetailPage({ params }: PageProps) {
   const { slug } = await params;
   const data = await fetchBlogDetail(slug);
 
+  console.log("dataaaaa", data);
+
+  const hasRelatedBlogs =
+    Array.isArray(data?.data?.related_blogs) &&
+    data.data.related_blogs.length > 0;
+  console.log("dataaaaahasRelatedBlogs", hasRelatedBlogs);
+
+  // FAQ check
+  const hasFaqs =
+    Array.isArray(data?.messages?.faq) && data.messages.faq.length > 0;
+
   return (
     <div>
       <DeatilsPage data={data} />
-      <FaqSection />
-       <RelatedNews />
+
+      {/* ✅ Pass only the FAQ array */}
+      {hasFaqs && <FaqSection faqs={data.messages.faq} />}
+
+      {/* ✅ Pass only the related blogs array */}
+      {hasRelatedBlogs && <RelatedNews blogs={data.data.related_blogs} />}
     </div>
   );
 }

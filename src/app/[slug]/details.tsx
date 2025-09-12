@@ -20,6 +20,7 @@ export default function blogDetailsPage({
 }: {
   data: BlogDetailResponse;
 }) {
+  console.log("dataaa", data);
   const post = data?.data?.blog_detail;
   // put this near the top of the file (outside the component)
   const decodeEntities = (s = "") =>
@@ -103,7 +104,6 @@ export default function blogDetailsPage({
 
             <div className="col-lg-3 rightbar-stick">
               <div className="theiaStickySidebar"></div>
-              
             </div>
           </div>
         </div>
