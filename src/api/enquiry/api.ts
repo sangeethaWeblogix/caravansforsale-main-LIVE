@@ -11,10 +11,15 @@ export type ProductEnquiryPayload = {
   message: string;
 };
 
+export type ProductEnquiryData = {
+  product_id: string | number;
+  product_name: string;
+  redirect_slug: string;
+};
 export type ProductEnquiryResponse = {
   success?: boolean;
   message?: string;
-  data?: unknown;
+  data?: ProductEnquiryData;
 };
 
 export async function createProductEnquiry(

@@ -3,6 +3,7 @@ import DeatilsPage from "./details";
 import RelatedNews from "./RelatedNews";
 import FaqSection from "./FaqSection";
 import "./details.css";
+import { Card, CardContent, Typography } from "@mui/material";
 
 type RouteParams = { slug: string };
 type PageProps = { params: Promise<RouteParams> };
@@ -25,6 +26,13 @@ export async function generateMetadata({
   params: Promise<RouteParams>;
 }): Promise<Metadata> {
   const { slug } = await params;
+  if (slug.startsWith("thank-you-")) {
+    return {
+      title: "Thank You",
+      description: "Your enquiry was submitted successfully.",
+      robots: "noindex, nofollow",
+    };
+  }
   const data = await fetchBlogDetail(slug);
 
   const seo = data?.seo ?? data?.product?.seo ?? {};
@@ -63,6 +71,21 @@ export async function generateMetadata({
 
 export default async function ProductDetailPage({ params }: PageProps) {
   const { slug } = await params;
+
+  if (slug.startsWith("thank-you-")) {
+    return (
+      <Card>
+        <CardContent className="container text-center py-10">
+          <h1>
+            🎉 Thank You for submiting your information with
+            caravansforsale.com.au!
+          </h1>
+          <Typography>Your enquiry has been submitted successfully.</Typography>
+          <p> Your caravan dealer will contact you as soon as possible </p>
+        </CardContent>
+      </Card>
+    );
+  }
   const data = await fetchBlogDetail(slug);
 
   console.log("dataaaaa", data);

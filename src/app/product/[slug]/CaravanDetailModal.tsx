@@ -9,6 +9,7 @@ import "./popup.css";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { createProductEnquiry } from "@/api/enquiry/api";
+import { useRouter } from "next/navigation";
 
 type CaravanDetailModalProps = {
   isOpen: boolean;
@@ -33,7 +34,6 @@ export default function CaravanDetailModal({
   images,
   product,
 }: CaravanDetailModalProps) {
-  // ---- hooks MUST be unconditional (top-level) ----
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -51,8 +51,10 @@ export default function CaravanDetailModal({
   const [errors, setErrors] = useState<Partial<typeof form>>({});
   const [submitting, setSubmitting] = useState(false);
   const [okMsg, setOkMsg] = useState<string | null>(null);
+  const router = useRouter();
 
-  const NAME_RE = /^[A-Za-z][A-Za-z\s'.-]{1,49}$/; // letters/spaces, 2–50
+  // validation regex
+  const NAME_RE = /^[A-Za-z][A-Za-z\s'.-]{1,49}$/;
   const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
   const PHONE_RE = /^\d{7,15}$/;
   const POST_RE = /^\d{4}$/;
@@ -98,7 +100,7 @@ export default function CaravanDetailModal({
     setSubmitting(true);
     setOkMsg(null);
     try {
-      await createProductEnquiry({
+      const data = await createProductEnquiry({
         product_id: product.id ?? product.slug ?? product.name,
         email: form.email.trim(),
         name: form.name.trim(),
@@ -106,16 +108,13 @@ export default function CaravanDetailModal({
         message: form.message.trim() || "",
         postcode: form.postcode.trim(),
       });
-      setForm({ name: "", email: "", phone: "", postcode: "", message: "" });
-      setTouched({
-        name: false,
-        email: false,
-        phone: false,
-        postcode: false,
-        message: false,
-      });
-      setErrors({});
-      setOkMsg("Enquiry sent successfully!");
+
+      // ✅ redirect logic
+      if (data?.success && data.data?.redirect_slug) {
+        router.push(`/${data.data.redirect_slug}`);
+      } else {
+        router.push("/thank-you-default");
+      }
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "Failed to send. Try again.";
@@ -125,8 +124,8 @@ export default function CaravanDetailModal({
       setSubmitting(false);
     }
   };
+
   useEffect(() => {
-    // clear messages when closing
     if (!isOpen) {
       setOkMsg(null);
       setErrors({});
@@ -140,7 +139,6 @@ export default function CaravanDetailModal({
     }
   }, [isOpen]);
 
-  // ✅ early-return AFTER hooks
   if (!isOpen) return null;
 
   return (
@@ -330,6 +328,8 @@ export default function CaravanDetailModal({
                             </div>
                           )}
                         </div>
+
+                        {/* Message */}
                         <div className="form-item">
                           <p>
                             <label htmlFor="enquiry4-message">
@@ -347,6 +347,7 @@ export default function CaravanDetailModal({
                             ></textarea>
                           </p>
                         </div>
+
                         {okMsg && <div className="cfs-success">{okMsg}</div>}
 
                         <p className="terms_text">
