@@ -9,16 +9,24 @@ type RouteParams = { slug: string };
 type PageProps = { params: Promise<RouteParams> };
 
 async function fetchBlogDetail(slug: string) {
-  const API_BASE = process.env.NEXT_PUBLIC_CFS_API_BASE!;
+  try {
+    const res = await fetch(
+      `https://www.admin.caravansforsale.com.au/wp-json/cfs/v1/blog-detail/${encodeURIComponent(
+        slug
+      )}`,
+      { cache: "no-store", headers: { Accept: "application/json" } }
+    );
 
-  const res = await fetch(
-    `${API_BASE}/blog-detail/${encodeURIComponent(slug)}`,
-    { cache: "no-store", headers: { Accept: "application/json" } }
-  );
-  if (!res.ok) throw new Error("Failed to load blog detail");
-  return res.json();
+    if (!res.ok) {
+      return null; // ❌ Don't throw error, return null
+    }
+
+    return res.json();
+  } catch (error) {
+    console.error("Blog fetch error:", error);
+    return null; // ❌ Return null on fetch failure
+  }
 }
-
 // ✅ SEO from product.seo (NO images)
 export async function generateMetadata({
   params,

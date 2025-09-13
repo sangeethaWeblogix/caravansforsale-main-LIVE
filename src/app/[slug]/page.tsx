@@ -7,18 +7,29 @@ import { Card, CardContent, Typography, Button } from "@mui/material";
 import Link from "next/link";
 import TickIcon from "../../../public/images/tick.jpg";
 import Image from "next/image";
+import { notFound } from "next/navigation"; // ✅ Import notFound
+
 type RouteParams = { slug: string };
 type PageProps = { params: Promise<RouteParams> };
 
 async function fetchBlogDetail(slug: string) {
-  const res = await fetch(
-    `https://www.admin.caravansforsale.com.au/wp-json/cfs/v1/blog-detail/${encodeURIComponent(
-      slug
-    )}`,
-    { cache: "no-store", headers: { Accept: "application/json" } }
-  );
-  if (!res.ok) throw new Error("Failed to load blog detail");
-  return res.json();
+  try {
+    const res = await fetch(
+      `https://www.admin.caravansforsale.com.au/wp-json/cfs/v1/blog-detail/${encodeURIComponent(
+        slug
+      )}`,
+      { cache: "no-store", headers: { Accept: "application/json" } }
+    );
+
+    if (!res.ok) {
+      return null; // ❌ Don't throw error, return null
+    }
+
+    return res.json();
+  } catch (error) {
+    console.error("Blog fetch error:", error);
+    return null; // ❌ Return null on fetch failure
+  }
 }
 
 // ✅ SEO from product.seo (NO images)
@@ -144,7 +155,9 @@ export default async function ProductDetailPage({ params }: PageProps) {
     );
   }
   const data = await fetchBlogDetail(slug);
-
+  if (!data) {
+    notFound(); // ✅ Show Next.js 404 page
+  }
   console.log("dataaaaa", data);
 
   const hasRelatedBlogs =

@@ -1,15 +1,32 @@
 "use client";
+import { Button } from "@mui/material";
+import { Metadata } from "next";
 import Link from "next/link";
 import React from "react";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const metaTitle = "404 not found";
+
+  const robots = "noindex, nofollow";
+
+  return {
+    title: metaTitle,
+    robots: robots,
+    openGraph: {
+      title: metaTitle,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: metaTitle,
+    },
+  };
+}
 
 export default function NotFoundPage() {
   return (
     <>
       <style jsx>{`
-        @import url("https://fonts.googleapis.com/css2?family=Poppins&display=swap");
-
         * {
-          font-family: Poppins, sans-serif;
           color: #fff;
           text-align: center;
           margin: 0;
@@ -72,8 +89,20 @@ export default function NotFoundPage() {
           <h2>Page Not Found</h2>
 
           <p>We can&apos;t seem to find the page you&apos;re looking for.</p>
-          <Link href="/">
-            <button className="btn pt-6">Go to Home</button>
+          <Link href="/" style={{ textDecoration: "none" }}>
+            <Button
+              variant="contained"
+              sx={{
+                mt: 3,
+                backgroundColor: "orange", // Set background to orange
+                color: "white", // Make text white
+                "&:hover": {
+                  backgroundColor: "#ec7200", // Darker orange on hover
+                },
+              }}
+            >
+              Go to Home
+            </Button>
           </Link>
         </section>
       </div>
