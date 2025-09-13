@@ -170,18 +170,12 @@ export default function ProductPage() {
                   },
                   {
                     state: "Australian Capital Territory",
-                    cities: [
-                      "Canberra Airport",
-                      "Hume",
-                      "Barton",
-                    ],
+                    cities: ["Canberra Airport", "Hume", "Barton"],
                     image: "/images/act_map.svg",
                   },
                   {
                     state: "Northern Territory",
-                    cities: [
-                      "Darwin",
-                    ],
+                    cities: ["Darwin"],
                     image: "/images/nt_map.svg",
                   },
                 ].map((state, index) => (
