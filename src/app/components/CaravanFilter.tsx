@@ -394,10 +394,16 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     const out: Filters = { ...next };
 
     // 1) Ensure state is present from UI if missing
+    // if (!out.state && selectedStateName) {
+    //   out.state = selectedStateName;
+    // }
+    if (out.state === undefined && !next.state) {
+      return out;
+    }
+
     if (!out.state && selectedStateName) {
       out.state = selectedStateName;
     }
-
     // 2) Validate region against the chosen state
     const validRegion = getValidRegionName(
       out.state || selectedStateName,
@@ -826,19 +832,21 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     setTimeout(() => {
       const updatedFilters: Filters = {
         ...currentFilters,
+        ...filters,
         state: undefined,
         region: undefined,
         suburb: undefined,
         pincode: undefined,
         location: null,
       };
-
-      filtersInitialized.current = true;
       setFilters(updatedFilters);
+      onFilterChange(updatedFilters);
+      // filtersInitialized.current = true;
+      // setFilters(updatedFilters);
 
-      startTransition(() => {
-        updateAllFiltersAndURL(updatedFilters);
-      });
+      // startTransition(() => {
+      //   updateAllFiltersAndURL(updatedFilters);
+      // });
     }, 0); // Allow React to flush UI state
   };
   // const suppressLocationAutoClearRef = useRef(false);
@@ -1171,6 +1179,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     setLengthFrom(null);
     setLengthTo(null);
     setRadiusKms(RADIUS_OPTIONS[0]);
+
     filtersInitialized.current = true;
     makeInitializedRef.current = false;
     regionSetAfterSuburbRef.current = false;
@@ -1182,7 +1191,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     setFilters(reset);
 
     startTransition(() => {
-      updateAllFiltersAndURL(reset);
+      updateAllFiltersAndURL({ ...reset });
     });
   };
   const radiusDebounceRef = useRef<number | null>(null);
