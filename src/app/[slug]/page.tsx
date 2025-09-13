@@ -4,7 +4,7 @@ import RelatedNews from "./RelatedNews";
 import FaqSection from "./FaqSection";
 import "./details.css";
 import { Card, CardContent, Typography } from "@mui/material";
-
+import Thankyou from "./ThankYou";
 type RouteParams = { slug: string };
 type PageProps = { params: Promise<RouteParams> };
 
@@ -75,14 +75,15 @@ export default async function ProductDetailPage({ params }: PageProps) {
   if (slug.startsWith("thank-you-")) {
     return (
       <Card>
-        <CardContent className="container text-center py-10">
+        <Thankyou />
+        {/* <CardContent className="container text-center py-10">
           <h1>
             🎉 Thank You for submiting your information with
             caravansforsale.com.au!
           </h1>
           <Typography>Your enquiry has been submitted successfully.</Typography>
           <p> Your caravan dealer will contact you as soon as possible </p>
-        </CardContent>
+        </CardContent> */}
       </Card>
     );
   }
