@@ -3,7 +3,7 @@ import DeatilsPage from "./details";
 import RelatedNews from "./RelatedNews";
 import FaqSection from "./FaqSection";
 import "./details.css";
-import { Card, CardContent, Typography } from "@mui/material";
+import { Card } from "@mui/material";
 import Thankyou from "./ThankYou";
 type RouteParams = { slug: string };
 type PageProps = { params: Promise<RouteParams> };

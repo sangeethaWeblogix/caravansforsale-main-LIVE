@@ -1,42 +1,8 @@
 "use client";
 import Link from "next/link";
-import React, { useEffect } from "react";
+import React from "react";
 
 export default function NotFoundPage() {
-  //   useEffect(() => {
-  //     // Click event → add star
-  //     const handleClick = (e: MouseEvent) => {
-  //       const star = document.createElement("img");
-  //       star.src =
-  //         "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Golden_star.svg/1200px-Golden_star.svg.png";
-  //       star.style.width = "35px";
-  //       star.style.position = "absolute";
-  //       star.style.left = `${e.pageX}px`;
-  //       star.style.top = `${e.pageY}px`;
-  //       document.body.appendChild(star);
-
-  //       // remove after 2s
-  //       setTimeout(() => star.remove(), 2000);
-  //     };
-
-  //     // Mouse move → rocket follows
-  //     const handleMouseMove = (e: MouseEvent) => {
-  //       const rocket = document.getElementById("rocket");
-  //       if (rocket) {
-  //         rocket.style.left = `${e.pageX}px`;
-  //         rocket.style.top = `${e.pageY}px`;
-  //       }
-  //     };
-
-  //     window.addEventListener("click", handleClick);
-  //     window.addEventListener("mousemove", handleMouseMove);
-
-  //     return () => {
-  //       window.removeEventListener("click", handleClick);
-  //       window.removeEventListener("mousemove", handleMouseMove);
-  //     };
-  //   }, []);
-
   return (
     <>
       <style jsx>{`
