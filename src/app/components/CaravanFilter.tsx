@@ -2174,9 +2174,9 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                     // fire API + URL sync
                     // onFilterChange(updatedFilters);
                     lastSentFiltersRef.current = updatedFilters;
-                    startTransition(() =>
-                      updateAllFiltersAndURL(updatedFilters)
-                    );
+                    // startTransition(() =>
+                    //   updateAllFiltersAndURL(updatedFilters)
+                    // );
                   }}
                 >
                   {suburb.name}
