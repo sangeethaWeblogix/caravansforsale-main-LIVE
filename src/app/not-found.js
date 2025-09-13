@@ -1,26 +1,7 @@
 "use client";
 import { Button } from "@mui/material";
-import { Metadata } from "next";
 import Link from "next/link";
 import React from "react";
-
-export async function generateMetadata(): Promise<Metadata> {
-  const metaTitle = "404 not found";
-
-  const robots = "noindex, nofollow";
-
-  return {
-    title: metaTitle,
-    robots: robots,
-    openGraph: {
-      title: metaTitle,
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: metaTitle,
-    },
-  };
-}
 
 export default function NotFoundPage() {
   return (
