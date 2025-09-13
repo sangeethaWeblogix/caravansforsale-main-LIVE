@@ -27,7 +27,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        {/* Google Fonts */}
+        {/* Google Fonts via link (runtime load) */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
           rel="preconnect"
@@ -39,7 +39,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
 
-        {/* ✅ GTM Script will be inside <head> in page source */}
+        {/* ✅ GTM Script will be visible in <head> (page source) */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -61,7 +61,7 @@ export default function RootLayout({
             "Montserrat, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, 'Apple Color Emoji', 'Segoe UI Emoji'",
         }}
       >
-        {/* ✅ GTM NoScript (must be first thing inside <body>) */}
+        {/* ✅ GTM NoScript (must be immediately after <body>) */}
         <noscript>
           <iframe
             src="https://www.googletagmanager.com/ns.html?id=GTM-KMN4GT8T"
