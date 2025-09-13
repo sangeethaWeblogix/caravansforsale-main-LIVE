@@ -69,14 +69,13 @@ export default function NotFoundPage() {
       <div className="page">
         <section>
           <h1>404</h1>
-          <h2>Oops! It looks like you have lost</h2>
+          <h2>Page Not Found</h2>
+
+          <p>We can&apos;t seem to find the page you&apos;re looking for.</p>
           <Link href="/">
             <button className="btn pt-6">Go to Home</button>
           </Link>
         </section>
-
-        {/* Rocket image */}
-        <img src="/amri.png" id="rocket" alt="rocket" />
       </div>
     </>
   );
