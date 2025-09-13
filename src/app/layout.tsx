@@ -8,7 +8,6 @@ import Footer from "./footer/Footer";
 import React from "react";
 import { Metadata } from "next";
 import ScrollToTop from "./ScrollToTop";
-import Script from "next/script"; // ✅ import Script
 
 export const metadata: Metadata = {
   title: {
@@ -28,7 +27,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        {/* Google Fonts via link (runtime load) */}
+        {/* Google Fonts */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
           rel="preconnect"
@@ -40,18 +39,20 @@ export default function RootLayout({
           rel="stylesheet"
         />
 
-        {/* ✅ GTM Script (loads after hydration) */}
-        <Script id="gtm-script" strategy="afterInteractive">
-          {`
-            (function(w,d,s,l,i){w[l]=w[l]||[];
-            w[l].push({'gtm.start': new Date().getTime(),event:'gtm.js'});
-            var f=d.getElementsByTagName(s)[0],
-            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';
-            j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;
-            f.parentNode.insertBefore(j,f);
-            })(window,document,'script','dataLayer','GTM-KMN4GT8T');
-          `}
-        </Script>
+        {/* ✅ GTM Script will be inside <head> in page source */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function(w,d,s,l,i){w[l]=w[l]||[];
+              w[l].push({'gtm.start': new Date().getTime(),event:'gtm.js'});
+              var f=d.getElementsByTagName(s)[0],
+              j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';
+              j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;
+              f.parentNode.insertBefore(j,f);
+              })(window,document,'script','dataLayer','GTM-KMN4GT8T');
+            `,
+          }}
+        />
       </head>
       <body
         className="flex flex-col min-h-screen new_font"
@@ -60,7 +61,7 @@ export default function RootLayout({
             "Montserrat, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, 'Apple Color Emoji', 'Segoe UI Emoji'",
         }}
       >
-        {/* ✅ GTM NoScript (immediately after <body>) */}
+        {/* ✅ GTM NoScript (must be first thing inside <body>) */}
         <noscript>
           <iframe
             src="https://www.googletagmanager.com/ns.html?id=GTM-KMN4GT8T"
