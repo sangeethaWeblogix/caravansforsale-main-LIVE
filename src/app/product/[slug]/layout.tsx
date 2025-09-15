@@ -50,6 +50,7 @@ export async function generateMetadata({
     seo.meta_description ||
     data?.short_description ||
     "View caravan details.";
+  const canonicalUrl = `https://www.caravansforsale.com.au/product/${slug}/`;
 
   return {
     title: { absolute: title },
@@ -60,22 +61,25 @@ export async function generateMetadata({
       title,
       description,
     },
+    alternates: {
+      canonical: canonicalUrl, // ✅ canonical link
+    },
     other: { "og:type": "product" },
   };
 }
 
 export default async function ProductDetailPage({ params }: PageProps) {
-  const { slug } = await params;
+  const { slug } = await params; // ✅ no await
   const data = await fetchProductDetail(slug);
 
-  // ❌ If no details or only image → show 404
-  if (!data || Object.keys(data).length === 0 || !data.details) {
+  // ❌ If no product → 404 page
+  if (!data || Object.keys(data).length === 0) {
     notFound();
   }
 
   return (
-    <div>
+    <main className="container mx-auto">
       <ClientLogger data={data} />
-    </div>
+    </main>
   );
 }
