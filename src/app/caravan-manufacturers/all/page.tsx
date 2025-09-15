@@ -1,13 +1,12 @@
 import  Header  from "./Header";
-import  Middle  from "./Middle";
-import  FaqSection  from "./FaqSection";
+import  CaravanList  from "./CaravanList";
 import './comman.css'
 
 export async function generateMetadata(): Promise<Metadata> {
   const metaTitle =
-    "Top 10 Caravan Manufacturers in Australia: Best Brands of 2024";
+    "Full List of Top Quality Caravan Manufacturers in Australia";
   const metaDescription =
-    "See how top Australian caravan manufacturers excel with the best in innovative designs, quality construction, cost efficiency, and expert craftsmanship.";
+    "Discover a diverse range of top-tier caravan manufacturers specializing in off-road, compact poptops, touring models, luxury editions &amp; innovative hybrids.";
 
   const robots = "index, follow";
 
@@ -31,8 +30,7 @@ export default function Home() {
   return (
     <div>
       <Header />
-      <Middle />
-      <FaqSection />      
+      <CaravanList />           
     </div>
   );
 }

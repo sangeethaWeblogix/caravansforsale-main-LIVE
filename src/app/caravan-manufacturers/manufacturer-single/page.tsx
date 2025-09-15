@@ -1,13 +1,13 @@
 import  Header  from "./Header";
 import  Middle  from "./Middle";
-import  FaqSection  from "./FaqSection";
+import  Footer  from "./Footer";
 import './comman.css'
 
 export async function generateMetadata(): Promise<Metadata> {
   const metaTitle =
-    "Top 10 Caravan Manufacturers in Australia: Best Brands of 2024";
+    "Everest Caravans | Custom Built Full Off Road Caravans";
   const metaDescription =
-    "See how top Australian caravan manufacturers excel with the best in innovative designs, quality construction, cost efficiency, and expert craftsmanship.";
+    "Custom-built full off-road, extreme off road caravans @ Everest Caravans with a 10 year structural warranty. Explore rugged durability &amp; premium features.";
 
   const robots = "index, follow";
 
@@ -32,7 +32,7 @@ export default function Home() {
     <div>
       <Header />
       <Middle />
-      <FaqSection />      
+      <Footer />      
     </div>
   );
 }
