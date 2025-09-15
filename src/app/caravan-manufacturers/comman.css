@@ -125,7 +125,7 @@
 }
 
 .buzzstone_inline_210659395 {
-    background-image: url(https://www.caravansforsale.com.au/images/banner1.jpg);
+    background-image: url(https://www.admin.caravansforsale.com.au/images/banner1.jpg);
 }
 
 .sc_recent_news_style_news-announce .post_size_medium {
@@ -134,7 +134,7 @@
 }
 
 .buzzstone_inline_1751010 {
-    background-image: url(https://www.caravansforsale.com.au/images/banner2.jpg);
+    background-image: url(https://www.admin.caravansforsale.com.au/images/banner2.jpg);
 }
 
 .post_featured_bg {
@@ -368,7 +368,7 @@ main .manufacture_content_area h3 {
 }
 
 .key_features h4 {
-    margin-bottom: 10px;
+    margin-bottom: 15px;
     font-weight: 600;
     font-size: 1.4rem;
 }
@@ -442,9 +442,10 @@ main .section-head a {
 }
 
 .faq.style-3 .accordion-item .accordion-collapse .accordion-body h4 {
-    font-size: 19px;
     color: #000;
     margin-bottom: 5px;
+    font-size: 19px;
+    font-weight: 600;
 }
 
 
@@ -491,7 +492,7 @@ main .section-head a {
 }
 
 .faq {
-  background-color: #f1f1f1;
+  background-color: #eeeeee;
 }
 .bg_custom_d h2 {
     font-size: 1.75rem;
@@ -505,7 +506,7 @@ main .section-head a {
 /* --------------- clients style-4 --------------- */
 
 .clients.style-4 {
-    background: url(https://www.caravansforsale.com.au/images/bg_rugged.jpg);
+    background: url(https://www.admin.caravansforsale.com.au/images/bg_rugged.jpg);
     position: relative;
     z-index: 25;
     background-size: cover;
