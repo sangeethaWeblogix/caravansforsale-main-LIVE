@@ -22,6 +22,9 @@ export async function generateMetadata(): Promise<Metadata> {
       title: metaTitle,
       description: metaDescription,
     },
+    alternates: {
+      canonical: "https://www.caravansforsale.com.au/blog/", // ✅ canonical link
+    },
   };
 }
 export const revalidate = 60; // ISR: refresh every 60s

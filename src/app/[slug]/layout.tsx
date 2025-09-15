@@ -39,6 +39,9 @@ export async function generateMetadata({
       title: "Thank You",
       description: "Your enquiry was submitted successfully.",
       robots: "noindex, nofollow",
+      alternates: {
+        canonical: `https://www.caravansforsale.com.au/${slug}/`,
+      },
     };
   }
   const data = await fetchBlogDetail(slug);
@@ -57,11 +60,15 @@ export async function generateMetadata({
     data?.short_description ||
     "View caravan details.";
   const robots = "index, follow";
+  const canonicalUrl = `https://www.caravansforsale.com.au/${slug}/`;
 
   return {
     title,
     description,
     robots,
+    alternates: {
+      canonical: canonicalUrl, // ✅ canonical link
+    },
     openGraph: {
       title,
       description,
