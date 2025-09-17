@@ -130,7 +130,20 @@ export default function CaravanManufacturers() {
               </p>
 
               <p>
-                <p>Everest Caravans' Falcon and Nitro Extreme are designed for the toughest terrain. For families the Calibra and Summitt have practical layouts with plenty of space and amenities. The Alpine range including the Alpine Freestyle and Alpine Quattro is for compact off-road adventures without compromising on comfort.Renowned for durability and smart design, Everest Caravans is recognised as a top builder of the <a href="https://www.caravansforsale.com.au/best-caravans-full-off-road-capabilities-australia/">best off road caravans</a> in Australia—trusted by adventurers for performance, comfort, and reliability.</p>
+                <p>
+                  Everest Caravans' Falcon and Nitro Extreme are designed for
+                  the toughest terrain. For families the Calibra and Summitt
+                  have practical layouts with plenty of space and amenities. The
+                  Alpine range including the Alpine Freestyle and Alpine Quattro
+                  is for compact off-road adventures without compromising on
+                  comfort.Renowned for durability and smart design, Everest
+                  Caravans is recognised as a top builder of the{" "}
+                  <Link href="https://www.caravansforsale.com.au/best-caravans-full-off-road-capabilities-australia/">
+                    best off road caravans
+                  </Link>{" "}
+                  in Australia—trusted by adventurers for performance, comfort,
+                  and reliability.
+                </p>
               </p>
 
               {/* Example of Ad Image */}
@@ -174,7 +187,6 @@ export default function CaravanManufacturers() {
               </a>
               {/* Orbit Caravans Section */}
 
-
               <h3 className="text-xl font-bold mb-3">
                 2.{" "}
                 <a
@@ -189,39 +201,44 @@ export default function CaravanManufacturers() {
 
               <div className="key_features">
                 <h4 className="font-semibold mb-2">
-                  Key Reasons Why Orbit Caravans is the Best Caravan Manufacturer that
-                  builds Aluminium Frame Off Road Caravans
+                  Key Reasons Why Orbit Caravans is the Best Caravan
+                  Manufacturer that builds Aluminium Frame Off Road Caravans
                 </h4>
                 <ul className="list-disc pl-6 space-y-1">
                   <li>
                     Manufacturing Costs: Significantly lower than other caravan
-                    manufacturers that build TIG welded aluminium frame caravans.
+                    manufacturers that build TIG welded aluminium frame
+                    caravans.
                   </li>
                   <li>
-                    Advertising: No expensive celebrity endorsements, TV commercials,
-                    or heavy online spending. Limited presence at caravan shows and
-                    limited dealers.
+                    Advertising: No expensive celebrity endorsements, TV
+                    commercials, or heavy online spending. Limited presence at
+                    caravan shows and limited dealers.
                   </li>
                   <li>
-                    Build Focus: Resources are efficiently managed and dedicated to
-                    high-quality van construction.
+                    Build Focus: Resources are efficiently managed and dedicated
+                    to high-quality van construction.
                   </li>
-                  <li>Australian Owned &amp; Operated: Australian Caravan Manufacturer.</li>
+                  <li>
+                    Australian Owned &amp; Operated: Australian Caravan
+                    Manufacturer.
+                  </li>
                   <li>
                     Expert Staff: All workers with extensive experience from the
                     caravan industry.
                   </li>
                   <li>
-                    Owner: Run by a gun caravan manufacturer who is very customer
-                    centric.
+                    Owner: Run by a gun caravan manufacturer who is very
+                    customer centric.
                   </li>
                   <li>
-                    Technology: Integrates the latest advancements in technology and
-                    design to enhance the performance of every caravan.
+                    Technology: Integrates the latest advancements in technology
+                    and design to enhance the performance of every caravan.
                   </li>
                   <li>
-                    What to Expect: Best value for money, best performance and quality
-                    in the TIG welded aluminium frame caravan range in Australia.
+                    What to Expect: Best value for money, best performance and
+                    quality in the TIG welded aluminium frame caravan range in
+                    Australia.
                   </li>
                 </ul>
                 <a
@@ -236,9 +253,9 @@ export default function CaravanManufacturers() {
                 Orbit Caravans combines luxury with durability in their off-road
                 range, making them a top contender among the best caravan
                 manufacturers. The Discovery X is their flagship model with an
-                extendable floor plan and feature-rich layout. The Eclipse X and Space
-                V are for couples who want luxury and ruggedness, perfect for outback
-                and urban living.
+                extendable floor plan and feature-rich layout. The Eclipse X and
+                Space V are for couples who want luxury and ruggedness, perfect
+                for outback and urban living.
               </p>
 
               <div className="advertisement">
@@ -273,17 +290,41 @@ export default function CaravanManufacturers() {
 
               <div className="key_features">
                 <h4 className="font-semibold mb-2">
-                  Key Reasons Why Grand City Caravans is the Best Caravan Manufacturer in the Luxury Off Road Category
+                  Key Reasons Why Grand City Caravans is the Best Caravan
+                  Manufacturer in the Luxury Off Road Category
                 </h4>
                 <ul className="list-disc pl-6 space-y-1">
-                  <li>Manufacturing Costs: Significantly lower than major caravan manufacturers.</li>
-                  <li>Advertising: No expensive celebrity endorsements, TV commercials, or heavy online spending. Limited presence at caravan shows.</li>
-                  <li>Build Focus: All resources are well managed and dedicated to quality construction of the van.</li>
+                  <li>
+                    Manufacturing Costs: Significantly lower than major caravan
+                    manufacturers.
+                  </li>
+                  <li>
+                    Advertising: No expensive celebrity endorsements, TV
+                    commercials, or heavy online spending. Limited presence at
+                    caravan shows.
+                  </li>
+                  <li>
+                    Build Focus: All resources are well managed and dedicated to
+                    quality construction of the van.
+                  </li>
                   <li>Australian Owned &amp; Operated: Proudly Australian.</li>
-                  <li>Expert Staff: All workers with extensive experience from the caravan industry.</li>
-                  <li>Owner: Run by two brothers, with the entire family bringing over 20 years of experience in being one of the best caravan manufacturers.</li>
-                  <li>Technology: Utilizes cutting-edge 3D technology for design and manufacturing.</li>
-                  <li>What to Expect: Exceptional build quality with a next-level luxury experience.</li>
+                  <li>
+                    Expert Staff: All workers with extensive experience from the
+                    caravan industry.
+                  </li>
+                  <li>
+                    Owner: Run by two brothers, with the entire family bringing
+                    over 20 years of experience in being one of the best caravan
+                    manufacturers.
+                  </li>
+                  <li>
+                    Technology: Utilizes cutting-edge 3D technology for design
+                    and manufacturing.
+                  </li>
+                  <li>
+                    What to Expect: Exceptional build quality with a next-level
+                    luxury experience.
+                  </li>
                 </ul>
                 <a
                   href="/caravan-manufacturers/grand-city-caravans"
@@ -294,10 +335,15 @@ export default function CaravanManufacturers() {
               </div>
 
               <p className="mb-2">
-                Grand City Caravans is one of the top caravan manufacturers that uses 3D technology to design and build luxury caravans.
+                Grand City Caravans is one of the top caravan manufacturers that
+                uses 3D technology to design and build luxury caravans.
               </p>
               <p className="mb-4">
-                Grand City Caravans have high tech options for every kind of traveller. The Nomad and Explorer are built with 3D modelling software, precision and quality. The Royale and Escape ranges are for families and couples who want luxury without losing the ability to go off road.
+                Grand City Caravans have high tech options for every kind of
+                traveller. The Nomad and Explorer are built with 3D modelling
+                software, precision and quality. The Royale and Escape ranges
+                are for families and couples who want luxury without losing the
+                ability to go off road.
               </p>
 
               <div className="advertisement">
@@ -321,35 +367,54 @@ export default function CaravanManufacturers() {
 
               <h3>
                 4.{" "}
-                <a href="https://www.coronetrv.com.au/" target="_blank" rel="noopener noreferrer">
+                <a
+                  href="https://www.coronetrv.com.au/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   Coronet RV
                 </a>
               </h3>
 
               <div className="key_features">
                 <h4>
-                  Key Reasons Why Coronet RV is the Best Caravan Manufacturer for Family Friendly Caravans
+                  Key Reasons Why Coronet RV is the Best Caravan Manufacturer
+                  for Family Friendly Caravans
                 </h4>
                 <ul>
-                  <li>Manufacturing Costs: Significantly lower than major caravan manufacturers.</li>
                   <li>
-                    Advertising: Relies on word-of-mouth rather than big celebrities, TV ads, or extensive
-                    online campaigns. Limited presence at caravan shows.
-                  </li>
-                  <li>Dealership: Operates through a single main dealership located at the factory.</li>
-                  <li>Build Focus: All resources are dedicated to constructing your caravan.</li>
-                  <li>
-                    Owner: Operated by a seasoned expert with extensive experience as a caravan manufacturer
-                    since 1959.
-                  </li>
-                  <li>Australian Owned & Operated: Australian Caravan Manufacturer.</li>
-                  <li>
-                    Strength: Specializes in caravans designed for off-road use, offering exceptional
-                    family-friendly layouts and multiple options.
+                    Manufacturing Costs: Significantly lower than major caravan
+                    manufacturers.
                   </li>
                   <li>
-                    What to Expect: Budget-friendly and affordable high-quality semi-off-road and full
-                    off-road caravans.
+                    Advertising: Relies on word-of-mouth rather than big
+                    celebrities, TV ads, or extensive online campaigns. Limited
+                    presence at caravan shows.
+                  </li>
+                  <li>
+                    Dealership: Operates through a single main dealership
+                    located at the factory.
+                  </li>
+                  <li>
+                    Build Focus: All resources are dedicated to constructing
+                    your caravan.
+                  </li>
+                  <li>
+                    Owner: Operated by a seasoned expert with extensive
+                    experience as a caravan manufacturer since 1959.
+                  </li>
+                  <li>
+                    Australian Owned & Operated: Australian Caravan
+                    Manufacturer.
+                  </li>
+                  <li>
+                    Strength: Specializes in caravans designed for off-road use,
+                    offering exceptional family-friendly layouts and multiple
+                    options.
+                  </li>
+                  <li>
+                    What to Expect: Budget-friendly and affordable high-quality
+                    semi-off-road and full off-road caravans.
                   </li>
                 </ul>
 
@@ -362,14 +427,17 @@ export default function CaravanManufacturers() {
               </div>
 
               <p>
-                Coronet RV has established itself as a leading caravan manufacturer, known for creating
-                top-quality caravans for families with over 50 unique internal layouts in traditional,
+                Coronet RV has established itself as a leading caravan
+                manufacturer, known for creating top-quality caravans for
+                families with over 50 unique internal layouts in traditional,
                 contemporary, and modern designs.
               </p>
               <p>
-                The ULTIMATE range offers a 19 ft 6 customizable couples caravan, and the Enduro 17′ is a
-                premier off-road caravan with an ensuite. The Coronet PTR and FTR semi-offroad series feature
-                a strong Meranti frame, Alucom finish, advanced electronics, and amenities for bush camping.
+                The ULTIMATE range offers a 19 ft 6 customizable couples
+                caravan, and the Enduro 17′ is a premier off-road caravan with
+                an ensuite. The Coronet PTR and FTR semi-offroad series feature
+                a strong Meranti frame, Alucom finish, advanced electronics, and
+                amenities for bush camping.
               </p>
 
               <div className="advertisement">
@@ -404,35 +472,39 @@ export default function CaravanManufacturers() {
 
               <div className="key_features">
                 <h4>
-                  Key Reasons to Consider Silver Valley Caravans As Your Preferred Touring Caravan Manufacturer
+                  Key Reasons to Consider Silver Valley Caravans As Your
+                  Preferred Touring Caravan Manufacturer
                 </h4>
                 <ul>
                   <li>
-                    Quality: Silver Valley Caravans offers an extensive selection of luxury touring caravans,
-                    available in various layouts for elegant on-road journeys.
+                    Quality: Silver Valley Caravans offers an extensive
+                    selection of luxury touring caravans, available in various
+                    layouts for elegant on-road journeys.
                   </li>
                   <li>
-                    Build Focus: Focuses on luxurious finishes with customization options for both interiors and
-                    exteriors.
+                    Build Focus: Focuses on luxurious finishes with
+                    customization options for both interiors and exteriors.
                   </li>
                   <li>
-                    Strengths: Celebrated for delivering comfort and luxury throughout Australia’s landscapes.
+                    Strengths: Celebrated for delivering comfort and luxury
+                    throughout Australia’s landscapes.
                   </li>
                   <li>
-                    Australian Owned & Operated: Deeply established in Australia, ensuring local expertise and
-                    superior craftsmanship.
+                    Australian Owned & Operated: Deeply established in
+                    Australia, ensuring local expertise and superior
+                    craftsmanship.
                   </li>
                   <li>
-                    Owner: Overseen by professionals devoted to being a leading caravan manufacturer of upscale
-                    touring caravans.
+                    Owner: Overseen by professionals devoted to being a leading
+                    caravan manufacturer of upscale touring caravans.
                   </li>
                   <li>
-                    Production Philosophy: Dedicated to providing a wide array of layouts tailored to diverse
-                    family preferences.
+                    Production Philosophy: Dedicated to providing a wide array
+                    of layouts tailored to diverse family preferences.
                   </li>
                   <li>
-                    Technology: Employs cutting-edge materials and innovative design practices to boost caravan
-                    longevity and performance.
+                    Technology: Employs cutting-edge materials and innovative
+                    design practices to boost caravan longevity and performance.
                   </li>
                 </ul>
 
@@ -445,13 +517,16 @@ export default function CaravanManufacturers() {
               </div>
 
               <p>
-                Silver Valley Caravans, a luxury touring caravan manufacturer, offers a large range of caravans
-                in multiple layouts for any family to travel on the road in style.
+                Silver Valley Caravans, a luxury touring caravan manufacturer,
+                offers a large range of caravans in multiple layouts for any
+                family to travel on the road in style.
               </p>
               <p>
-                Silver Valley Caravans have luxury touring caravans. The Family Getaway and Yarra have composite
-                finishes and options for interior and exterior. The Orana, Indigo and Hepburn ranges so you can
-                have luxury and comfort while touring Australia’s outback.
+                Silver Valley Caravans have luxury touring caravans. The Family
+                Getaway and Yarra have composite finishes and options for
+                interior and exterior. The Orana, Indigo and Hepburn ranges so
+                you can have luxury and comfort while touring Australia’s
+                outback.
               </p>
 
               <div className="advertisement">
@@ -486,25 +561,38 @@ export default function CaravanManufacturers() {
 
               <div className="key_features">
                 <h4>
-                  Key Reasons Why Red Centre Caravans is the Leading Caravan Manufacturer with the Best Range
+                  Key Reasons Why Red Centre Caravans is the Leading Caravan
+                  Manufacturer with the Best Range
                 </h4>
                 <ul>
                   <li>
-                    Manufacturing Costs: Significantly lower than major caravan manufacturers of extreme off-road caravans.
+                    Manufacturing Costs: Significantly lower than major caravan
+                    manufacturers of extreme off-road caravans.
                   </li>
                   <li>
-                    Advertising: No celebrity endorsements, TV commercials, or heavy online spending; minimal presence at caravan shows.
+                    Advertising: No celebrity endorsements, TV commercials, or
+                    heavy online spending; minimal presence at caravan shows.
                   </li>
                   <li>
-                    Build Focus: Resources are efficiently managed and dedicated to top-quality caravan construction.
-                  </li>
-                  <li>Australian Owned &amp; Operated: Australian Caravan Manufacturer.</li>
-                  <li>Expert Staff: All team members have extensive experience in the caravan industry.</li>
-                  <li>
-                    Owner: With 20 years of experience in building caravans, has significantly grown as a leading caravan manufacturer over the years.
+                    Build Focus: Resources are efficiently managed and dedicated
+                    to top-quality caravan construction.
                   </li>
                   <li>
-                    What to Expect: Exceptional build quality and performance in the extreme off-road caravan range.
+                    Australian Owned &amp; Operated: Australian Caravan
+                    Manufacturer.
+                  </li>
+                  <li>
+                    Expert Staff: All team members have extensive experience in
+                    the caravan industry.
+                  </li>
+                  <li>
+                    Owner: With 20 years of experience in building caravans, has
+                    significantly grown as a leading caravan manufacturer over
+                    the years.
+                  </li>
+                  <li>
+                    What to Expect: Exceptional build quality and performance in
+                    the extreme off-road caravan range.
                   </li>
                 </ul>
 
@@ -517,14 +605,17 @@ export default function CaravanManufacturers() {
               </div>
 
               <p>
-                Not sure where to start? Red Centre Caravans have got you covered. Off road, on road or hybrid
-                van, they have one. And hello, they have a 10 year structural warranty on their aluminium frame.
+                Not sure where to start? Red Centre Caravans have got you
+                covered. Off road, on road or hybrid van, they have one. And
+                hello, they have a 10 year structural warranty on their
+                aluminium frame.
               </p>
               <p>
-                Red Centre Caravans is a top caravan manufacturer known for their aluminium frame caravans. The
-                Newell and Kimberley are light and strong for on road and off road travel. The Tanami Extreme
-                and Gibb Off Road Plus are for extreme off-road travel with advanced suspension and energy
-                efficient design.
+                Red Centre Caravans is a top caravan manufacturer known for
+                their aluminium frame caravans. The Newell and Kimberley are
+                light and strong for on road and off road travel. The Tanami
+                Extreme and Gibb Off Road Plus are for extreme off-road travel
+                with advanced suspension and energy efficient design.
               </p>
 
               <div className="advertisement">
@@ -550,29 +641,45 @@ export default function CaravanManufacturers() {
 
               <div className="key_features">
                 <h4>
-                  Key Reasons Why Masterpiece Caravans is Leading the Industry as a Top Caravan Manufacturer with Superior Construction Methods
+                  Key Reasons Why Masterpiece Caravans is Leading the Industry
+                  as a Top Caravan Manufacturer with Superior Construction
+                  Methods
                 </h4>
                 <ul>
                   <li>
-                    Quality: Masterpiece Caravans is the only caravan manufacturer using the groundbreaking
-                    R-Tech construction method.
-                  </li>
-                  <li>Build Focus: Emphasizes lightweight, durable, and ROT-free construction.</li>
-                  <li>Strengths: Renowned for crafting some of Australia's most premium caravans.</li>
-                  <li>Australian Owned &amp; Operated: Proudly based in Australia, ensuring local expertise.</li>
-                  <li>
-                    Owner: Led by a seasoned expert with extensive knowledge in building top-tier caravans as a
-                    leading caravan manufacturer.
+                    Quality: Masterpiece Caravans is the only caravan
+                    manufacturer using the groundbreaking R-Tech construction
+                    method.
                   </li>
                   <li>
-                    Production Philosophy: Focuses on producing a limited number of vans to ensure superior
-                    quality and craftsmanship.
+                    Build Focus: Emphasizes lightweight, durable, and ROT-free
+                    construction.
                   </li>
                   <li>
-                    Technology: Incorporates the latest advancements in technology and design to optimize caravan
-                    performance.
+                    Strengths: Renowned for crafting some of Australia's most
+                    premium caravans.
                   </li>
-                  <li>What to Expect: Experience the highest quality caravans Australia has to offer.</li>
+                  <li>
+                    Australian Owned &amp; Operated: Proudly based in Australia,
+                    ensuring local expertise.
+                  </li>
+                  <li>
+                    Owner: Led by a seasoned expert with extensive knowledge in
+                    building top-tier caravans as a leading caravan
+                    manufacturer.
+                  </li>
+                  <li>
+                    Production Philosophy: Focuses on producing a limited number
+                    of vans to ensure superior quality and craftsmanship.
+                  </li>
+                  <li>
+                    Technology: Incorporates the latest advancements in
+                    technology and design to optimize caravan performance.
+                  </li>
+                  <li>
+                    What to Expect: Experience the highest quality caravans
+                    Australia has to offer.
+                  </li>
                 </ul>
 
                 <Link
@@ -584,15 +691,17 @@ export default function CaravanManufacturers() {
               </div>
 
               <p>
-                Masterpiece Caravans, a top caravan manufacturer, uses a revolutionary R-Tech construction
-                process to build high-quality caravans for off-road travel. Their framing materials are 30%
+                Masterpiece Caravans, a top caravan manufacturer, uses a
+                revolutionary R-Tech construction process to build high-quality
+                caravans for off-road travel. Their framing materials are 30%
                 lighter, non conductive and rot free.
               </p>
               <p>
-                Masterpiece Caravans have the ultimate off road caravans with the Optimum, Optimum CRZR and
-                Performance models. These caravans are built for perfection with strong construction and
-                luxurious interiors. The XTM and Dynamic ranges are compact and luxurious, for the toughest
-                terrain and a comfortable living space.
+                Masterpiece Caravans have the ultimate off road caravans with
+                the Optimum, Optimum CRZR and Performance models. These caravans
+                are built for perfection with strong construction and luxurious
+                interiors. The XTM and Dynamic ranges are compact and luxurious,
+                for the toughest terrain and a comfortable living space.
               </p>
 
               <div className="advertisement">
@@ -618,25 +727,37 @@ export default function CaravanManufacturers() {
 
               <div className="key_features">
                 <h4>
-                  Key Reasons Why Villa Caravans is the Best Caravan Manufacturer in the Semi Off Road Category
+                  Key Reasons Why Villa Caravans is the Best Caravan
+                  Manufacturer in the Semi Off Road Category
                 </h4>
                 <ul>
                   <li>
-                    Manufacturing Costs: Significantly lower than those of major caravan manufacturers that build caravans with semi off-road capabilities.
+                    Manufacturing Costs: Significantly lower than those of major
+                    caravan manufacturers that build caravans with semi off-road
+                    capabilities.
                   </li>
                   <li>
-                    Advertising: No celebrity endorsements, TV commercials, or heavy online spending. Limited presence at caravan shows and only 2 dealers.
+                    Advertising: No celebrity endorsements, TV commercials, or
+                    heavy online spending. Limited presence at caravan shows and
+                    only 2 dealers.
                   </li>
                   <li>
-                    Build Focus: Resources are effectively managed and dedicated to high-quality caravan construction.
+                    Build Focus: Resources are effectively managed and dedicated
+                    to high-quality caravan construction.
                   </li>
                   <li>Australian Owned &amp; Operated: Proudly Australian.</li>
-                  <li>Expert Staff: All team members have extensive experience in the caravan industry.</li>
                   <li>
-                    Owner: Third generation caravan manufacturer with the entire family in the caravan
-                    manufacturing industry.
+                    Expert Staff: All team members have extensive experience in
+                    the caravan industry.
                   </li>
-                  <li>What to Expect: Superior build and quality in the semi off road range.</li>
+                  <li>
+                    Owner: Third generation caravan manufacturer with the entire
+                    family in the caravan manufacturing industry.
+                  </li>
+                  <li>
+                    What to Expect: Superior build and quality in the semi off
+                    road range.
+                  </li>
                 </ul>
 
                 <Link
@@ -648,13 +769,15 @@ export default function CaravanManufacturers() {
               </div>
 
               <p>
-                Villa Caravans stands out as a premier caravan manufacturer, offering unique caravans with semi
-                off-road features and top-of-the-range materials inside and out.
+                Villa Caravans stands out as a premier caravan manufacturer,
+                offering unique caravans with semi off-road features and
+                top-of-the-range materials inside and out.
               </p>
               <p>
-                Villa Caravans are semi off-road. The Escape SE and Escape models are for off road travel with
-                semi off road suspension and wheels. These caravans are for the adventurer who wants to travel
-                dirt roads without sacrificing the luxuries of a caravan.
+                Villa Caravans are semi off-road. The Escape SE and Escape
+                models are for off road travel with semi off road suspension and
+                wheels. These caravans are for the adventurer who wants to
+                travel dirt roads without sacrificing the luxuries of a caravan.
               </p>
 
               <div className="advertisement">
@@ -678,58 +801,64 @@ export default function CaravanManufacturers() {
 
               <h3>
                 9.{" "}
-                <a href="https://willowrv.com.au/" target="_blank" rel="noopener noreferrer">
+                <a
+                  href="https://willowrv.com.au/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   Willow RV
                 </a>
               </h3>
 
               <div className="key_features">
                 <h4>
-                  Key Reasons Why Willow RV is One of Australia’s Most Trusted Caravan
-                  Manufacturers
+                  Key Reasons Why Willow RV is One of Australia’s Most Trusted
+                  Caravan Manufacturers
                 </h4>
                 <ul>
                   <li>
-                    <strong>100% Australian Made:</strong> Every caravan and motorhome is built
-                    locally to handle tough Aussie conditions.
+                    <strong>100% Australian Made:</strong> Every caravan and
+                    motorhome is built locally to handle tough Aussie
+                    conditions.
                   </li>
                   <li>
-                    <strong>Exceptional Value:</strong> Premium features come standard—no hidden
-                    extras or add-ons.
+                    <strong>Exceptional Value:</strong> Premium features come
+                    standard—no hidden extras or add-ons.
                   </li>
                   <li>
-                    <strong>Quality Over Hype:</strong> No flashy ads or celebrities—just
-                    well-built, reliable caravans.
+                    <strong>Quality Over Hype:</strong> No flashy ads or
+                    celebrities—just well-built, reliable caravans.
                   </li>
                   <li>
-                    <strong>Smart Design:</strong> Precision-built for a balance of durability and
-                    luxury.
+                    <strong>Smart Design:</strong> Precision-built for a balance
+                    of durability and luxury.
                   </li>
                   <li>
-                    <strong>Luxury Interiors:</strong> Designed for comfort in all weather, with a
-                    five-star feel.
+                    <strong>Luxury Interiors:</strong> Designed for comfort in
+                    all weather, with a five-star feel.
                   </li>
                   <li>
-                    <strong>Proven Reputation:</strong> Trusted by Aussie travellers for quality,
-                    value, and performance.
+                    <strong>Proven Reputation:</strong> Trusted by Aussie
+                    travellers for quality, value, and performance.
                   </li>
                   <li>
-                    <strong>What to Expect:</strong> Long-lasting, stylish vans that let you enjoy
-                    the road—not the repairs.
+                    <strong>What to Expect:</strong> Long-lasting, stylish vans
+                    that let you enjoy the road—not the repairs.
                   </li>
                 </ul>
               </div>
 
               <p>
-                Willow RV is a top choice for high-quality, Australian-made caravans offering
-                great value for money.
+                Willow RV is a top choice for high-quality, Australian-made
+                caravans offering great value for money.
               </p>
               <p>
-                Willow RV builds luxury caravans for Australian conditions, combining comfort and
-                durability. The Illawarra, Waratah, Ironbark, and Boab series offer open-plan
-                layouts, premium features, and rugged reliability—ideal for short getaways or
-                long-term adventures. Trusted for innovation and quality, Willow RV is a leading
-                Australian brand.
+                Willow RV builds luxury caravans for Australian conditions,
+                combining comfort and durability. The Illawarra, Waratah,
+                Ironbark, and Boab series offer open-plan layouts, premium
+                features, and rugged reliability—ideal for short getaways or
+                long-term adventures. Trusted for innovation and quality, Willow
+                RV is a leading Australian brand.
               </p>
 
               <div className="advertisement">
@@ -760,38 +889,41 @@ export default function CaravanManufacturers() {
 
               <div className="key_features">
                 <h4>
-                  Key Reasons Why Apache Caravans is a Standout Australian Caravan
-                  Manufacturer in the Hybrid Off Road Category
+                  Key Reasons Why Apache Caravans is a Standout Australian
+                  Caravan Manufacturer in the Hybrid Off Road Category
                 </h4>
                 <ul>
                   <li>
-                    <strong>Innovation:</strong> Smart layouts, eco-friendly tech, and
-                    space-maximizing interiors set Apache apart.
+                    <strong>Innovation:</strong> Smart layouts, eco-friendly
+                    tech, and space-maximizing interiors set Apache apart.
                   </li>
                   <li>
                     <strong>Design Approach:</strong> Designed with comfort,
-                    practicality, and flexibility for both short getaways and long-term
-                    touring.
+                    practicality, and flexibility for both short getaways and
+                    long-term touring.
                   </li>
                   <li>
-                    <strong>Manufacturing Costs:</strong> Streamlined production with
-                    overseas manufacturing helps keep caravan prices affordable.
+                    <strong>Manufacturing Costs:</strong> Streamlined production
+                    with overseas manufacturing helps keep caravan prices
+                    affordable.
                   </li>
                   <li>
-                    <strong>Advertising:</strong> Minimal spend on advertising—Apache
-                    relies on product quality and word of mouth to build trust.
+                    <strong>Advertising:</strong> Minimal spend on
+                    advertising—Apache relies on product quality and word of
+                    mouth to build trust.
                   </li>
                   <li>
                     <strong>Build Focus:</strong> Focused investment in quality
                     construction and modern design over marketing frills.
                   </li>
                   <li>
-                    <strong>Diverse Line-up:</strong> From compact tourers to spacious
-                    family vans, Apache offers caravans to suit every lifestyle.
+                    <strong>Diverse Line-up:</strong> From compact tourers to
+                    spacious family vans, Apache offers caravans to suit every
+                    lifestyle.
                   </li>
                   <li>
-                    <strong>What to Expect:</strong> A wide range of caravans built for
-                    durability, efficiency, and everyday adventure.
+                    <strong>What to Expect:</strong> A wide range of caravans
+                    built for durability, efficiency, and everyday adventure.
                   </li>
                 </ul>
                 <a
@@ -803,17 +935,19 @@ export default function CaravanManufacturers() {
               </div>
 
               <p>
-                Apache Caravans is a trusted Australian manufacturer known for building
-                high-quality, versatile hybrid caravans for all types of travellers.
+                Apache Caravans is a trusted Australian manufacturer known for
+                building high-quality, versatile hybrid caravans for all types
+                of travellers.
               </p>
               <p>
-                Apache Caravans offers great value through smart design, comfort, and
-                innovation. Compact models like the Navigator 13 and Renegade 13 suit
-                weekenders, while the Delta Force 15 appeals to eco-conscious travellers.
-                The Navigator 15 adds space with a full kitchen and bathroom, and the
-                TopGun 13 and WildKat 14 are built tough for varied terrain. Whether
-                lightweight, eco-friendly, or luxurious, Apache delivers reliable
-                caravans for Australian adventures.
+                Apache Caravans offers great value through smart design,
+                comfort, and innovation. Compact models like the Navigator 13
+                and Renegade 13 suit weekenders, while the Delta Force 15
+                appeals to eco-conscious travellers. The Navigator 15 adds space
+                with a full kitchen and bathroom, and the TopGun 13 and WildKat
+                14 are built tough for varied terrain. Whether lightweight,
+                eco-friendly, or luxurious, Apache delivers reliable caravans
+                for Australian adventures.
               </p>
 
               <div className="advertisement">
@@ -828,7 +962,6 @@ export default function CaravanManufacturers() {
                   alt="Apache caravans - hybrid caravan manufacturer"
                 />
               </div>
-
 
               {/* 🔽 Continue same structure for manufacturers 2–10 
                   (Orbit, Grand City, Coronet, Silver Valley, Red Centre, 
