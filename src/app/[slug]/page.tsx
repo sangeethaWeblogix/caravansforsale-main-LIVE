@@ -173,18 +173,12 @@ export default async function ProductDetailPage({ params }: PageProps) {
   console.log("dataaaaahasRelatedBlogs", hasRelatedBlogs);
 
   // FAQ check
-  const hasFaqs =
-    Array.isArray(data?.messages?.faq) && data.messages.faq.length > 0;
+  const hasFaqs = Array.isArray(data?.data?.faq) && data.data.faq.length > 0;
+  console.log("dataaaaahasRelatedFAQ", data);
 
   return (
     <div>
       <DeatilsPage data={data} />
-
-      {/* ✅ Pass only the FAQ array */}
-      {hasFaqs && <FaqSection faqs={data.messages.faq} />}
-
-      {/* ✅ Pass only the related blogs array */}
-      {hasRelatedBlogs && <RelatedNews blogs={data.data.related_blogs} />}
     </div>
   );
 }

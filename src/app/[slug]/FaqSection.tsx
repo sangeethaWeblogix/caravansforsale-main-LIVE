@@ -2,14 +2,16 @@
 import { useState } from "react";
 
 type FaqItem = {
-  question: string;
-  answer: string;
+  heading: string;
+  content: string;
 };
 
-export default function FaqSection({ faqs }: { faqs: FaqItem[] }) {
+export default function FaqSection({ data }: { data: FaqItem[] }) {
+  console.log("faqs", data);
+
   const [activeIndex, setActiveIndex] = useState<number | null>(0);
 
-  if (!faqs || faqs.length === 0) return null; // ✅ nothing to show
+  if (!data || data.length === 0) return null; // ✅ nothing to show
 
   const toggleAccordion = (index: number) => {
     setActiveIndex((prev) => (prev === index ? null : index));
@@ -22,7 +24,7 @@ export default function FaqSection({ faqs }: { faqs: FaqItem[] }) {
           <h2 className="mb-30">Frequently asked questions (FAQs)</h2>
         </div>
         <div className="accordion" id="accordionFaq">
-          {faqs.map((faq, index) => {
+          {data.map((faq, index) => {
             const isOpen = activeIndex === index;
             return (
               <div className="accordion-item border-bottom" key={index}>
@@ -32,7 +34,7 @@ export default function FaqSection({ faqs }: { faqs: FaqItem[] }) {
                     type="button"
                     onClick={() => toggleAccordion(index)}
                   >
-                    {faq.question}
+                    {faq.heading}
                   </button>
                 </h3>
                 <div
@@ -42,7 +44,7 @@ export default function FaqSection({ faqs }: { faqs: FaqItem[] }) {
                 >
                   <div
                     className="accordion-body"
-                    dangerouslySetInnerHTML={{ __html: faq.answer }}
+                    dangerouslySetInnerHTML={{ __html: faq.content }}
                   />
                 </div>
               </div>

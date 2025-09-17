@@ -1,5 +1,7 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
+import FaqSection from "./FaqSection";
+import RelatedNews from "./RelatedNews";
 
 type BlogDetail = {
   id: number;
@@ -10,9 +12,27 @@ type BlogDetail = {
   image?: string;
   content?: string; // HTML
 };
+type FaqItem = {
+  heading: string;
+  content: string;
+};
+
+type RelatedBlog = {
+  id: number;
+  title: string;
+  excerpt: string;
+  link: string;
+  image?: string;
+  imageAlt?: string;
+  slug?: string;
+};
+
 type BlogDetailResponse = {
-  data?: { blog_detail?: BlogDetail };
-  messages?: { faq?: string; related_blogs?: string };
+  data?: {
+    blog_detail?: BlogDetail;
+    faq?: FaqItem[];
+    related_blogs?: RelatedBlog[];
+  };
   seo?: { metatitle?: string; metadescription?: string; index?: string };
 };
 export default function blogDetailsPage({
@@ -108,6 +128,8 @@ export default function blogDetailsPage({
           </div>
         </div>
       </section>
+      <FaqSection data={data?.data?.faq || []} />
+      <RelatedNews blogs={data?.data?.related_blogs || []} />
     </div>
   );
 }
