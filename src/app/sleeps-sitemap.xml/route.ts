@@ -20,13 +20,6 @@ export async function GET() {
     </url>`;
 
     // over
-    urls += `
-    <url>
-      <loc>${SITE_URL}/listings/${s}-people-sleeping-capacity</loc>
-      <lastmod>${new Date().toISOString()}</lastmod>
-      <changefreq>monthly</changefreq>
-      <priority>0.7</priority>
-    </url>`;
   });
 
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
