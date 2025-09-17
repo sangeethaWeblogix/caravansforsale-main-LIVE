@@ -113,11 +113,11 @@
 }
 
 .pop-top {
-  display: flex;
-  text-align: left;
-  padding: 12px 0px;
-  justify-content: space-around;
-  align-items: center;
+    text-align: left;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    display: flex;
 }
 .pop-top h3 {
   color: #fff;
@@ -125,7 +125,8 @@
   font-weight: 700;
 }
 .pop-top .vehicleThumbDetails__part__price {
-  text-align: right;
+    text-align: right;
+    width: 300px;
 }
 .pop-top .vehicleThumbDetails__part__price span {
   font-size: 30px;
@@ -134,7 +135,8 @@
   color: #fff;
 }
 .pop-top .vehicleThumbDetails__part__price.pop_up_price span bdi {
-  display: flex;
+    display: flex;
+    justify-content: end;
 }
 .carava_details .swiper-wrapper {
   width: 100%;
@@ -170,28 +172,28 @@
 }
 
 .form-item p {
-margin-bottom: 0;
+  margin-bottom: 0;
 }
 .cfs-error {
-    color: #bc0505;
-    text-align: left;
-    font-size: 13px;
-    margin-top: 3px;
+  color: #bc0505;
+  text-align: left;
+  font-size: 13px;
+  margin-top: 3px;
 }
 .phone_country {
-    position: relative;
+  position: relative;
 }
 .phone-label {
-    position: absolute;
-    top: 58%;
-    left: 10px;
-    transform: translateY(-50%);
-    color: #000000;
-    pointer-events: none;
-    font-size: 16px;
+  position: absolute;
+  top: 58%;
+  left: 10px;
+  transform: translateY(-50%);
+  color: #000000;
+  pointer-events: none;
+  font-size: 16px;
 }
 .form-item .phone_country input {
-    padding-left: 40px;
+  padding-left: 40px;
 }
 .form {
   width: 100%;
@@ -273,6 +275,17 @@ margin-bottom: 0;
   border: 1px solid #000000;
 }
 
+@media (min-width: 768px) and (max-width: 991px) {
+  .pop-top {
+    display: block;
+        padding-right: 50px;
+  }
+  .sidebar-enquiry {
+    position: relative;
+    top: 10px;
+}
+ }
+
 @media screen and (min-width: 800px) {
   .custom-model-main:before {
     content: "";
@@ -287,5 +300,12 @@ margin-bottom: 0;
 @media screen and (max-width: 799px) {
   .custom-model-inner {
     margin-top: 0px;
+  }
+  .swiper-button-next {
+    right: 0;
+  }
+
+  .swiper-button-prev {
+    left: 0;
   }
 }

@@ -29,7 +29,8 @@
     ".next/types/**/*.ts",
     "src/app/region",
     "src/app/components/ListContent",
-    "src/app/Product"
+    "src/app/Product",
+    "src/app/not-found.js"
   ],
   "exclude": ["node_modules"]
 }

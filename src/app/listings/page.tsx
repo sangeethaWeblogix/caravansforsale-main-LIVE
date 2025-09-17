@@ -34,23 +34,17 @@ export async function generateMetadata(): Promise<Metadata> {
       card: "summary_large_image",
       title: metaTitle,
       description: metaDescription,
-      images: [
-        {
-          url: imageUrl,
-          width: 1200,
-          height: 630,
-          alt: "Caravan Listings",
-        },
-      ],
     },
   };
 }
 
 // ✅ No props here — App Router handles metadata separately
-export default function ListingsPage() {
+export default async function ListingsPage() {
+  const initialData = await fetchListings({});
+
   return (
-    <Suspense fallback={<div>Loading listings...</div>}>
-      <Listing />
+    <Suspense>
+      <Listing initialData={initialData} />
     </Suspense>
   );
 }

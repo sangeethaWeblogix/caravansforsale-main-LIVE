@@ -9,6 +9,7 @@ import "./popup.css";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { createProductEnquiry } from "@/api/enquiry/api";
+import { useRouter } from "next/navigation";
 
 type CaravanDetailModalProps = {
   isOpen: boolean;
@@ -33,24 +34,27 @@ export default function CaravanDetailModal({
   images,
   product,
 }: CaravanDetailModalProps) {
-  // ---- hooks MUST be unconditional (top-level) ----
   const [form, setForm] = useState({
     name: "",
     email: "",
     phone: "",
     postcode: "",
+    message: "",
   });
   const [touched, setTouched] = useState({
     name: false,
     email: false,
     phone: false,
     postcode: false,
+    message: false,
   });
   const [errors, setErrors] = useState<Partial<typeof form>>({});
   const [submitting, setSubmitting] = useState(false);
   const [okMsg, setOkMsg] = useState<string | null>(null);
+  const router = useRouter();
 
-  const NAME_RE = /^[A-Za-z][A-Za-z\s'.-]{1,49}$/; // letters/spaces, 2–50
+  // validation regex
+  const NAME_RE = /^[A-Za-z][A-Za-z\s'.-]{1,49}$/;
   const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
   const PHONE_RE = /^\d{7,15}$/;
   const POST_RE = /^\d{4}$/;
@@ -84,23 +88,33 @@ export default function CaravanDetailModal({
     e.preventDefault();
     const v = validate(form);
     setErrors(v);
-    setTouched({ name: true, email: true, phone: true, postcode: true });
+    setTouched({
+      name: true,
+      email: true,
+      phone: true,
+      postcode: true,
+      message: false,
+    });
     if (Object.keys(v).length) return;
 
     setSubmitting(true);
     setOkMsg(null);
     try {
-      await createProductEnquiry({
+      const data = await createProductEnquiry({
         product_id: product.id ?? product.slug ?? product.name,
         email: form.email.trim(),
         name: form.name.trim(),
         phone: form.phone.trim(),
+        message: form.message.trim() || "",
         postcode: form.postcode.trim(),
       });
-      setForm({ name: "", email: "", phone: "", postcode: "" });
-      setTouched({ name: false, email: false, phone: false, postcode: false });
-      setErrors({});
-      setOkMsg("Enquiry sent successfully!");
+
+      // ✅ redirect logic
+      if (data?.success && data.data?.redirect_slug) {
+        router.push(`/${data.data.redirect_slug}`);
+      } else {
+        router.push("/thank-you-default");
+      }
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "Failed to send. Try again.";
@@ -112,15 +126,19 @@ export default function CaravanDetailModal({
   };
 
   useEffect(() => {
-    // clear messages when closing
     if (!isOpen) {
       setOkMsg(null);
       setErrors({});
-      setTouched({ name: false, email: false, phone: false, postcode: false });
+      setTouched({
+        name: false,
+        email: false,
+        phone: false,
+        postcode: false,
+        message: false,
+      });
     }
   }, [isOpen]);
 
-  // ✅ early-return AFTER hooks
   if (!isOpen) return null;
 
   return (
@@ -310,6 +328,8 @@ export default function CaravanDetailModal({
                             </div>
                           )}
                         </div>
+
+                        {/* Message */}
                         <div className="form-item">
                           <p>
                             <label htmlFor="enquiry4-message">
@@ -318,10 +338,16 @@ export default function CaravanDetailModal({
                             <textarea
                               id="enquiry4-message"
                               name="enquiry4-message"
+                              value={form.message}
+                              onBlur={() => onBlur("message")}
+                              onChange={(e) =>
+                                setField("message", e.target.value)
+                              }
                               className="wpcf7-form-control wpcf7-textarea"
                             ></textarea>
                           </p>
                         </div>
+
                         {okMsg && <div className="cfs-success">{okMsg}</div>}
 
                         <p className="terms_text">

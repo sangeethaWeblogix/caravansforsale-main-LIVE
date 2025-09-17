@@ -28,12 +28,23 @@ interface Filters {
 }
 
 /** Minimal item shape needed here (no `any`) */
-type Item = {
-  id?: number | string;
+export type Item = {
+  id: number;
+  name: string;
+  length: string;
+  kg: string;
+  regular_price: string;
+  sale_price?: string;
+  price_difference?: string;
+  image: string;
+  link: string;
+  condition: string;
+  location?: string;
+  categories?: string[];
+  people?: string;
+  make?: string;
   slug?: string;
-  link?: string;
-  is_exclusive?: boolean; // boolean & optional
-  // other fields may exist but aren't needed for list-building
+  is_exclusive: boolean;
 };
 export interface ApiSEO {
   metadescription?: string;

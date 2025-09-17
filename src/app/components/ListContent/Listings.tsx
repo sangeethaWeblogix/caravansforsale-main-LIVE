@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
-import { fetchListings } from "../../../api/listings/api";
+import { fetchListings, ApiResponse, Item } from "../../../api/listings/api";
 import Listing from "./LisitingContent";
 import CaravanFilter from "../CaravanFilter";
 import SkeletonListing from "../skelton";
@@ -33,6 +33,14 @@ interface Product {
   make?: string;
   slug?: string;
   is_exclusive: boolean;
+  // Include additional properties that might come from API
+  title?: string;
+  weight?: string;
+  price?: string;
+  thumbnail?: string;
+  url?: string;
+  sleeps?: string;
+  manufacturer?: string;
 }
 
 interface Pagination {
@@ -84,31 +92,90 @@ export interface Filters {
   radius_kms?: number | string;
 }
 
-type Props = Filters & { page?: string | number };
+interface Props extends Filters {
+  page?: string | number;
+  initialData?: ApiResponse;
+}
+
+/** ------------ Helper Functions ------------ */
+
+// Add this helper function to transform API items to Products
+function transformApiItemsToProducts(items: Item[]): Product[] {
+  return items.map((item) => ({
+    id: typeof item.id === "number" ? item.id : parseInt(String(item.id)) || 0,
+    name: item.name || "",
+    length: item.length || "",
+    kg: item.kg || "",
+    regular_price: item.regular_price || "",
+    sale_price: item.sale_price,
+    price_difference: item.price_difference,
+    image: item.image || "",
+    link: item.link || "",
+    condition: item.condition || "",
+    location: item.location,
+    categories: item.categories,
+    people: item.people || "",
+    make: item.make || "",
+    slug: item.slug,
+    is_exclusive: item.is_exclusive ?? false,
+    // keep extra props
+  }));
+}
 
 /** ------------ Component ------------ */
 
-export default function ListingsPage({ ...incomingFilters }: Props) {
+export default function ListingsPage({
+  initialData,
+  ...incomingFilters
+}: Props) {
   const DEFAULT_RADIUS = 50 as const;
 
   const [filters, setFilters] = useState<Filters>({});
   const filtersRef = useRef<Filters>({});
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [products, setProducts] = useState<Product[]>([]);
-  const [pageTitle, setPageTitle] = useState("");
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [makes, setMakes] = useState<MakeOption[]>([]);
-  const [models, setModels] = useState<MakeOption[]>([]);
-  const [metaTitle, setMetaTitle] = useState("");
-  const [metaDescription, setMetaDescription] = useState("");
-
-  const [stateOptions, setStateOptions] = useState<StateOption[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-
   const router = useRouter();
 
+  const [isUsingInitialData, setIsUsingInitialData] = useState(!!initialData);
+
+  // Initialize state with initialData if provided
+  const [products, setProducts] = useState<Product[]>(
+    initialData?.data?.products
+      ? transformApiItemsToProducts(initialData.data.products)
+      : []
+  );
+  const [categories, setCategories] = useState<Category[]>(
+    initialData?.data?.all_categories || []
+  );
+  const [makes, setMakes] = useState<MakeOption[]>(
+    initialData?.data?.make_options || []
+  );
+  const [stateOptions, setStateOptions] = useState<StateOption[]>(
+    initialData?.data?.states || []
+  );
+  const [models, setModels] = useState<MakeOption[]>(
+    initialData?.data?.model_options || []
+  );
+  const [pageTitle, setPageTitle] = useState(
+    initialData?.title || "Caravan Listings"
+  );
+  const [metaTitle, setMetaTitle] = useState(initialData?.seo?.metatitle || "");
+  const [metaDescription, setMetaDescription] = useState(
+    initialData?.seo?.metadescription || ""
+  );
   const [pagination, setPagination] = useState<Pagination>(() => {
+    // Use initial data if available, otherwise fall back to default
+    if (initialData?.pagination) {
+      return {
+        current_page: initialData.pagination.current_page || 1,
+        total_pages: initialData.pagination.total_pages || 1,
+        per_page: initialData.pagination.per_page || 12,
+        total_products: initialData.pagination.total_products || 0,
+        total_items: initialData.pagination.total_items || 0,
+      };
+    }
+
     const fromURL =
       typeof window !== "undefined"
         ? parseInt(
@@ -136,26 +203,19 @@ export default function ListingsPage({ ...incomingFilters }: Props) {
 
   // Parse slug ONCE on mount; do not fetch here
   const initializedRef = useRef(false);
+
   useEffect(() => {
     if (initializedRef.current) return;
     initializedRef.current = true;
 
-    const path = pathKey;
+    const path = pathname;
     const slugParts = path.split("/listings/")[1]?.split("/") || [];
-
-    // Convert Next.js searchParams into a plain object
-    const query: Record<string, string | string[] | undefined> = {};
-    searchParams.forEach((value, key) => {
-      query[key] = value;
-    });
-
-    const parsed = parseSlugToFilters(slugParts, query);
-    console.log("metsparsed", parsed);
+    const parsed = parseSlugToFilters(slugParts);
 
     const merged = { ...parsed, ...incomingFilters };
     filtersRef.current = merged;
     setFilters(merged);
-  }, [incomingFilters, searchParams]);
+  }, [incomingFilters, pathname]);
 
   const normalizeSearchFromMake = (f: Filters): Filters => {
     if (!f?.make) return f;
@@ -178,7 +238,6 @@ export default function ListingsPage({ ...incomingFilters }: Props) {
 
       if (nextFilters.orderby)
         query.set("orderby", String(nextFilters.orderby));
-
       if (nextFilters.acustom_fromyears)
         query.set(
           "acustom_fromyears",
@@ -199,27 +258,10 @@ export default function ListingsPage({ ...incomingFilters }: Props) {
     },
     [router, DEFAULT_RADIUS]
   );
-  useEffect(() => {
-    if (!initializedRef.current) {
-      initializedRef.current = true;
-    }
-  }, []);
-
-  const calledOnceRef = useRef(false);
-
-  useEffect(() => {
-    console.log("URL changed. Parsing filters and reloading listings.");
-
-    if (!calledOnceRef.current) {
-      loadListings();
-      calledOnceRef.current = true;
-    }
-  }, [pathname, searchParams]);
 
   const handleNextPage = () => {
     if (pagination.current_page < pagination.total_pages) {
       const nextPage = pagination.current_page + 1;
-      console.log("🟢 Triggering updateURLWithFilters with page:", nextPage);
       updateURLWithFilters(filtersRef.current, nextPage);
     }
   };
@@ -230,9 +272,35 @@ export default function ListingsPage({ ...incomingFilters }: Props) {
       updateURLWithFilters(filtersRef.current, prevPage);
     }
   };
+  useEffect(() => {
+    if (initialData?.data?.products) {
+      const transformed = transformApiItemsToProducts(
+        initialData.data.products
+      );
+      setProducts(transformed);
+      setCategories(initialData.data.all_categories || []);
+      setMakes(initialData.data.make_options || []);
+      setStateOptions(initialData.data.states || []);
+      setModels(initialData.data.model_options || []);
+      setPageTitle(initialData.title || "Caravan Listings");
+      setMetaTitle(initialData.seo?.metatitle || "");
+      setMetaDescription(initialData.seo?.metadescription || "");
+      if (initialData.pagination) setPagination(initialData.pagination);
+    }
+  }, [initialData]);
 
   const loadListings = useCallback(
-    async (pageNum = 1, appliedFilters: Filters = filtersRef.current) => {
+    async (
+      pageNum = 1,
+      appliedFilters: Filters = filtersRef.current,
+      skipInitialCheck = false
+    ) => {
+      // If we have initial data and this is the first load, skip the API call
+      if (initialData && !skipInitialCheck && isUsingInitialData) {
+        setIsUsingInitialData(false); // Next time, fetch from API
+        return;
+      }
+
       setIsLoading(true);
       window.scrollTo({ top: 0, behavior: "smooth" });
 
@@ -277,21 +345,23 @@ export default function ListingsPage({ ...incomingFilters }: Props) {
         const productsFound = (response?.data?.products?.length ?? 0) > 0;
 
         if (productsFound) {
-          setProducts((response.data?.products as Product[]) ?? []);
+          const transformedProducts = transformApiItemsToProducts(
+            response.data?.products || []
+          );
+          setProducts(transformedProducts);
           setCategories(response.data?.all_categories ?? []);
           setMakes(response.data?.make_options ?? []);
           setStateOptions(response.data?.states ?? []);
           setModels(response.data?.model_options ?? []);
           setPageTitle(response.title ?? "Caravan Listings");
           if (response.pagination) setPagination(response.pagination);
-
           setMetaDescription(response.seo?.metadescription ?? "");
           setMetaTitle(response.seo?.metatitle ?? "");
         } else if (hasFilters) {
           setProducts([]);
           setPageTitle("No results found. Redirecting...");
           setMetaTitle("No listings found");
-          setMetaDescription("We couldn’t find listings for your filters.");
+          setMetaDescription("We couldn't find listings for your filters.");
           setTimeout(() => {
             const empty: Filters = {};
             filtersRef.current = empty;
@@ -315,13 +385,10 @@ export default function ListingsPage({ ...incomingFilters }: Props) {
         setIsLoading(false);
       }
     },
-    [DEFAULT_RADIUS, router]
+    [DEFAULT_RADIUS, router, initialData, isUsingInitialData]
   );
 
-  /* ---- SINGLE source of truth: URL -> fetch ----
-     This is the only effect that calls loadListings.
-     It also de-dupes across StrictMode remounts via LAST_GLOBAL_REQUEST_KEY. */
-
+  /* ---- SINGLE source of truth: URL -> fetch ---- */
   const searchKey = searchParams.toString();
   const pathKey = pathname;
 
@@ -332,20 +399,15 @@ export default function ListingsPage({ ...incomingFilters }: Props) {
     if (prev !== next) incomingFiltersRef.current = incomingFilters;
   }, [incomingFilters]);
 
+  // Add these refs to track previous values
+  const prevFiltersRef = useRef<Filters>({});
+  const prevPageRef = useRef(1);
+
   useEffect(() => {
     if (!initializedRef.current) return;
 
-    const path = pathKey;
-    const slugParts = path.split("/listings/")[1]?.split("/") || [];
-
-    // ✅ Here you DO pass query
-    const query: Record<string, string | string[] | undefined> = {};
-    searchParams.forEach((value, key) => {
-      query[key] = value;
-    });
-
-    const parsedFromURL = parseSlugToFilters(slugParts, query);
-    console.log("metsparsed2", parsedFromURL);
+    const slugParts = pathKey.split("/listings/")[1]?.split("/") || [];
+    const parsedFromURL = parseSlugToFilters(slugParts);
 
     const pageFromURL = parseInt(searchParams.get("page") || "1", 10);
     const orderbyQP = searchParams.get("orderby") || undefined;
@@ -353,7 +415,6 @@ export default function ListingsPage({ ...incomingFilters }: Props) {
     const toyear = searchParams.get("acustom_toyears") || undefined;
 
     const radiusQP = searchParams.get("radius_kms");
-
     const radiusFromURL = radiusQP
       ? Math.max(5, parseInt(radiusQP, 10))
       : undefined;
@@ -364,37 +425,41 @@ export default function ListingsPage({ ...incomingFilters }: Props) {
       orderby: orderbyQP,
       acustom_fromyears: fromyear,
       acustom_toyears: toyear,
-
       radius_kms: radiusFromURL !== DEFAULT_RADIUS ? radiusFromURL : undefined,
     };
 
-    // Compare current and previous filters to avoid unnecessary fetches
-    const prevFiltersJson = JSON.stringify(filtersRef.current);
-    const nextFiltersJson = JSON.stringify(merged);
+    // Check if anything actually changed
+    const filtersChanged =
+      JSON.stringify(merged) !== JSON.stringify(prevFiltersRef.current);
+    const pageChanged = pageFromURL !== prevPageRef.current;
 
-    if (prevFiltersJson !== nextFiltersJson) {
-      filtersRef.current = merged;
-      setFilters(merged);
+    if (!filtersChanged && !pageChanged) {
+      // Nothing changed, no need to fetch
+      return;
     }
 
+    // Update refs with current values
+    prevFiltersRef.current = { ...merged };
+    prevPageRef.current = pageFromURL;
+
+    filtersRef.current = merged;
+    setFilters(merged);
     setPagination((prev) => ({ ...prev, current_page: pageFromURL }));
 
     const requestKey = JSON.stringify({ page: pageFromURL, filters: merged });
     if (LAST_GLOBAL_REQUEST_KEY === requestKey) return;
     LAST_GLOBAL_REQUEST_KEY = requestKey;
-    initializedRef.current = true; // ✅ only here
 
-    loadListings(pageFromURL, merged);
-  }, [searchKey, pathKey, loadListings]);
+    loadListings(pageFromURL, merged, true);
+  }, [searchKey, pathKey, loadListings, DEFAULT_RADIUS, searchParams]);
 
   const handleFilterChange = useCallback(
     (newFilters: Filters) => {
       const mergedFilters = { ...filtersRef.current, ...newFilters };
 
       if ("orderby" in newFilters && !newFilters.orderby) {
-        mergedFilters.orderby = undefined; // ✅ no `any`, no `delete`
+        mergedFilters.orderby = undefined;
       }
-
       if ("acustom_fromyears" in newFilters && !newFilters.acustom_fromyears) {
         mergedFilters.acustom_fromyears = undefined;
       }
@@ -415,13 +480,11 @@ export default function ListingsPage({ ...incomingFilters }: Props) {
 
       updateURLWithFilters(mergedFilters, 1);
     },
-    [searchParams, updateURLWithFilters, loadListings]
+    [searchParams, updateURLWithFilters]
   );
-  // first load from URL
 
   // Mobile offcanvas filter state
   const mobileFiltersRef = useRef<HTMLDivElement>(null);
-  const [draftFilters, setDraftFilters] = useState<Filters>({});
   useEffect(() => {
     import("bootstrap/js/dist/offcanvas").catch(() => {});
   }, []);
@@ -460,7 +523,7 @@ export default function ListingsPage({ ...incomingFilters }: Props) {
 
             <div className="row">
               {/* Desktop sidebar */}
-              <div className="col-lg-3 d-none d-lg-block">
+              <div className="col-lg-3 col-sm-4 hidden-xs">
                 <div className="filter">
                   <Suspense fallback={<div>Loading filters...</div>}>
                     <CaravanFilter
@@ -509,9 +572,6 @@ export default function ListingsPage({ ...incomingFilters }: Props) {
         style={{ maxHeight: "100dvh" }}
       >
         <div className="offcanvas-header mobile_filter_xs sticky-top bg-white">
-          <h5 className="offcanvas-title mb-0" id="mobileFiltersLabel">
-            Filters
-          </h5>
           <button
             type="button"
             className="btn-close"
@@ -519,7 +579,6 @@ export default function ListingsPage({ ...incomingFilters }: Props) {
             aria-label="Close"
           />
         </div>
-
         <div className="offcanvas-body pt-2">
           <Suspense fallback={<div>Loading filters...</div>}>
             <CaravanFilter
@@ -527,10 +586,10 @@ export default function ListingsPage({ ...incomingFilters }: Props) {
               makes={makes}
               models={models}
               states={stateOptions}
-              currentFilters={draftFilters}
               onFilterChange={(partial) => {
-                setDraftFilters((prev) => ({ ...prev, ...partial }));
+                handleFilterChange(partial);
               }}
+              currentFilters={filters}
             />
           </Suspense>
         </div>

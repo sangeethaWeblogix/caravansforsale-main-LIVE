@@ -21,7 +21,7 @@ const DealerSection = () => {
                     <div className="dealer_ll_left">
                       <div className="dealer_thumb">
                         <Image
-                          src="https://www.caravansforsale.com.au/wp-content/uploads/2024/04/GOLF_SUPER_CENTRE.png"
+                          src="https://www.admin.caravansforsale.com.au/wp-content/uploads/2024/04/GOLF_SUPER_CENTRE.png"
                           alt="Golf Super Centre"
                           width={300}
                           height={100}

@@ -79,7 +79,7 @@ export default function ListingContent({
   onFilterChange,
   currentFilters,
 }: Props) {
-  const imageUrl = "public/favicon.ico";
+  // const imageUrl = "public/favicon.ico";
   const getHref = (p: Product) => {
     const slug = p.slug?.trim() || toSlug(p.name);
     return slug ? `/product/${slug}/` : ""; // trailing slash optional
@@ -105,13 +105,12 @@ export default function ListingContent({
         <meta property="og:description" content={metaDescription} />
         <meta name="twitter:title" content={metaTitle} />
         <meta name="twitter:description" content={metaDescription} />
-        <meta name="twitter:image" content={imageUrl} /> {/* Twitter image */}
       </Head>
 
       <div className="col-lg-6 col-md-8">
         <div className="top-filter mb-10">
           <div className="row align-items-center">
-            <div className="col-lg-6">
+            <div className="col-lg-6 col-sm-6">
               <p className="show_count">
                 Showing{" "}
                 {(pagination.current_page - 1) * pagination.per_page + 1}–
@@ -133,7 +132,7 @@ export default function ListingContent({
                 <i className="bi bi-search" /> &nbsp;Filter
               </button>
             </div>
-            <div className="col-lg-6 col-8">
+            <div className="col-lg-6 col-sm-6 col-8">
               <div className="r-side">
                 <form className="woocommerce-ordering" method="get">
                   <div className="form-group shot-buy">

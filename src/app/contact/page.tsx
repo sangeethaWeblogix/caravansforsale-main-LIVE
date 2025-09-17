@@ -21,6 +21,9 @@ export async function generateMetadata(): Promise<Metadata> {
       title: metaTitle,
       description: metaDescription,
     },
+    alternates: {
+      canonical: "https://www.caravansforsale.com.au/contact/", // ✅ canonical link
+    },
   };
 }
 export default function Home() {

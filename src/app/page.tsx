@@ -23,6 +23,9 @@ export async function generateMetadata(): Promise<Metadata> {
       title: metaTitle,
       description: metaDescription,
     },
+    alternates: {
+      canonical: "https://www.caravansforsale.com.au/", // <-- change URL per page
+    },
   };
 }
 

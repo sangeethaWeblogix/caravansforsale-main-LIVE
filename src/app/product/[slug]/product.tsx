@@ -1,18 +1,25 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import CaravanDetailModal from "./CaravanDetailModal";
 import "./product.css";
 import DOMPurify from "dompurify";
-
+import { type HomeBlogPost } from "@/api/home/api";
+import { toSlug } from "@/utils/seo/slug";
+import ProductSkelton from "../../components/ProductCardSkeleton";
 type Attribute = {
   label?: string;
   value?: string;
   url?: string;
   name?: string;
   title?: string;
+
   val?: string;
   text?: string;
 };
@@ -26,6 +33,8 @@ interface ApiData {
   categories?: Category[];
   id?: string | number;
   slug?: string;
+  latest_blog_posts?: string;
+  related?: string;
 }
 
 interface ProductDetailResponse {
@@ -45,16 +54,41 @@ type ProductData = {
   categories?: Category[];
   attribute_urls?: Attribute[];
   description?: string;
+  image?: string[];
+  title?: string;
 };
 
+interface BlogPost extends HomeBlogPost {
+  // ensure fields you use are present
+  id: number;
+  title: string;
+  image: string;
+  slug: string;
+  date?: string;
+  excerpt?: string;
+  link?: string;
+}
 export default function ClientLogger({
   data,
 }: {
   data: ProductDetailResponse;
 }) {
+  // const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
+  console.log("datap", data);
+
   const [activeImage, setActiveImage] = useState<string>("");
   const pd: ApiData = data?.data ?? {};
   const productDetails: ProductData = pd.product_details ?? {};
+  const blogPosts: BlogPost[] = Array.isArray(data?.data?.latest_blog_posts)
+    ? data.data.latest_blog_posts!
+    : [];
+
+  const relatedProducts: ProductData[] = Array.isArray(data?.data?.related)
+    ? data.data.related!
+    : [];
+
+  console.log("datapb", relatedProducts);
+
   const product: ProductData = productDetails;
   const isBrowser = typeof window !== "undefined";
 
@@ -181,6 +215,14 @@ export default function ClientLogger({
     return Number.isFinite(n) ? n : null;
   };
 
+  const getHref = (p: BlogPost) => {
+    const slug = p.slug?.trim() || toSlug(p.title || "post");
+    return `/${slug}/`;
+  };
+  const getProductHref = (p: ProductData) => {
+    const slug = p.slug?.trim() || toSlug(p.title || "post");
+    return slug ? `/product/${slug}/` : "";
+  };
   type LinkOut = { href: string; text: string };
   type SpecItem = { label: string; value: string; url?: string };
 
@@ -324,355 +366,528 @@ export default function ClientLogger({
   const productSlug: string | undefined = product.slug ?? pd.slug;
 
   return (
-    <section className="product caravan_dtt">
-      <div className="container">
-        <div className="content">
-          <div className="row justify-content-center">
-            {/* Left Column */}
-            <div className="col-xl-8 col-lg-8 col-md-12">
-              <Link
-                href="#"
-                onClick={handleBackClick}
-                className="back_to_search back_to_search_btn"
-              >
-                <i className="bi bi-chevron-left fs-6"></i> Back to Search
-              </Link>
+    <>
+      <section className="product caravan_dtt">
+        <div className="container">
+          <div className="content">
+            <div className="row justify-content-center">
+              {/* Left Column */}
+              <div className="col-xl-8 col-lg-8 col-md-12">
+                <Link
+                  href="#"
+                  onClick={handleBackClick}
+                  className="back_to_search back_to_search_btn"
+                >
+                  <i className="bi bi-chevron-left fs-6"></i> Back to Search
+                </Link>
 
-              <div className="product-info left-info">
-                <h1 className="title">{product.name}</h1>
+                <div className="product-info left-info">
+                  <h1 className="title">{product.name}</h1>
 
-                <div className="contactSeller__container d-lg-none">
-                  <div className="price_section">
-                    <div className="price-shape">
-                      <span className="current">
-                        <span className="woocommerce-Price-amount amount">
-                          <bdi>
-                            <span className="woocommerce-Price-currencySymbol"></span>
-                            {Number(product.regular_price).toLocaleString(
-                              "en-IN"
-                            )}{" "}
-                          </bdi>
-                        </span>
+                  <div className="contactSeller__container d-lg-none">
+                    <div className="price_section">
+                      <div className="price-container">
+                        <div className="price-left">
+                          <div className="current-price">
+                            <bdi>
+                              {isPOA || !reg || Number(reg) === 0
+                                ? "POA"
+                                : hasSale && sale
+                                ? fmt(Number(sale))
+                                : fmt(Number(reg))}
+                            </bdi>
+                          </div>
+
+                          {hasSale && reg && (
+                            <div className="original-price">
+                              <s>{fmt(Number(reg))}</s>
+                            </div>
+                          )}
+                        </div>
+
+                        {hasSale && save && Number(save) > 0 && (
+                          <div className="price-right">
+                            <span className="save-label">Save</span>
+                            <span className="save-value">
+                              {fmt(Number(save))}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="attributes">
+                    {stateFields
+                      .filter((f) => f.value)
+                      .map((f, index) => (
+                        <h6 className="category" key={index}>
+                          {f.label}- {f.value}
+                        </h6>
+                      ))}
+                  </div>
+                </div>
+
+                {/* Image Gallery */}
+                <div className="caravan_slider_visible">
+                  <button
+                    className="hover_link Click-here"
+                    onClick={() => setShowModal(true)}
+                  />
+                  <div className="slider_thumb_vertical image_container">
+                    <div className="image_mop">
+                      {productSubImage.slice(0, 4).map((image, i) => (
+                        <div className="image_item" key={`${image}-${i}`}>
+                          <div className="background_thumb">
+                            <Image
+                              src={image}
+                              width={128}
+                              height={96}
+                              alt="Thumbnail"
+                              priority={i < 4}
+                              unoptimized
+                            />
+                          </div>
+                          <div className="img">
+                            <Image
+                              src={image}
+                              width={128}
+                              height={96}
+                              alt={`Thumb ${i + 1}`}
+                              priority={i < 4}
+                            />
+                          </div>
+                        </div>
+                      ))}
+
+                      <span className="caravan__image_count">
+                        <span>{productSubImage.length}+</span>
                       </span>
                     </div>
                   </div>
-                </div>
 
-                <div className="attributes">
-                  {stateFields
-                    .filter((f) => f.value)
-                    .map((f, index) => (
-                      <h6 className="category" key={index}>
-                        {f.label}- {f.value}
-                      </h6>
-                    ))}
-                </div>
-              </div>
-
-              {/* Image Gallery */}
-              <div className="caravan_slider_visible">
-                <button
-                  className="hover_link Click-here"
-                  onClick={() => setShowModal(true)}
-                />
-                <div className="slider_thumb_vertical image_container">
-                  <div className="image_mop">
-                    {productSubImage.slice(0, 4).map((image, i) => (
-                      <div className="image_item" key={`${image}-${i}`}>
-                        <div className="background_thumb">
-                          <Image
-                            src={image}
-                            width={128}
-                            height={96}
-                            alt="Thumbnail"
-                            priority={i < 4}
-                            unoptimized
-                          />
-                        </div>
-                        <div className="img">
-                          <Image
-                            src={image}
-                            width={128}
-                            height={96}
-                            alt={`Thumb ${i + 1}`}
-                            priority={i < 4}
-                          />
-                        </div>
-                      </div>
-                    ))}
-
-                    <span className="caravan__image_count">
-                      <span>{productSubImage.length}+</span>
-                    </span>
-                  </div>
-                </div>
-
-                {/* Large Image */}
-                <div className="lager_img_view image_container">
-                  <div className="background_thumb">
-                    <Image
-                      src={activeImage || productImage}
-                      width={800}
-                      height={600}
-                      alt="Large"
-                      className="img-fluid"
-                    />
-                  </div>
-                  <a href="#">
-                    <Image
-                      src={activeImage || productImage}
-                      width={800}
-                      height={600}
-                      alt="Large"
-                      className="img-fluid"
-                    />
-                  </a>
-                </div>
-              </div>
-
-              {/* Tabs */}
-              <section className="product-details">
-                <ul className="nav nav-pills">
-                  <li className="nav-item">
-                    <button
-                      className={`nav-link ${
-                        activeTab === "specifications" ? "active" : ""
-                      }`}
-                      onClick={() => setActiveTab("specifications")}
-                    >
-                      Specifications
-                    </button>
-                  </li>
-                  <li className="nav-item">
-                    <button
-                      className={`nav-link ${
-                        activeTab === "description" ? "active" : ""
-                      }`}
-                      onClick={() => setActiveTab("description")}
-                    >
-                      Description
-                    </button>
-                  </li>
-                </ul>
-
-                <div className="tab-content mt-3">
-                  {activeTab === "specifications" && (
-                    <div className="tab-pane fade show active">
-                      <div className="content-info text-center pb-0">
-                        <div className="additional-info">
-                          <ul>
-                            {specFields
-                              .filter((f) => f.value)
-                              .map((f) => {
-                                const links = linksForSpec(
-                                  f.label,
-                                  String(f.value),
-                                  f.url // ✅ prefer API-provided url
-                                );
-                                return (
-                                  <li key={f.label}>
-                                    <strong>{f.label}:</strong>{" "}
-                                    <span>
-                                      {links
-                                        ? links.map((lnk, idx) => (
-                                            <span key={lnk.href}>
-                                              <Link
-                                                href={lnk.href}
-                                                prefetch={false}
-                                              >
-                                                {lnk.text}
-                                              </Link>
-                                              {idx < links.length - 1
-                                                ? ", "
-                                                : ""}
-                                            </span>
-                                          ))
-                                        : String(f.value)}
-                                    </span>
-                                  </li>
-                                );
-                              })}
-                          </ul>
-                        </div>
-                      </div>
+                  {/* Large Image */}
+                  <div className="lager_img_view image_container">
+                    <div className="background_thumb">
+                      <Image
+                        src={activeImage || productImage}
+                        width={800}
+                        height={600}
+                        alt="Large"
+                        className="img-fluid"
+                      />
                     </div>
-                  )}
-                  {activeTab === "description" && (
-                    <div
-                      className="tab-pane fade show active product-description"
-                      dangerouslySetInnerHTML={{ __html: safeHtml }}
-                    />
-                  )}
-                </div>
-              </section>
-
-              {/* Community Section */}
-              <section className="community product_dt_lower style-5 pt-4">
-                <div className="content">
-                  <div className="heading">
-                    <h3>Caravan Marketplace Advantage</h3>
-                    <p>
-                      We help you get superior service, guaranteed deals, and
-                      access to top manufacturers.
-                    </p>
-                  </div>
-                  <div className="card_flex d-flex flex-wrap">
-                    {[
-                      {
-                        img: "low-price",
-                        text: "Get exclusive deals from top caravan manufacturers.",
-                      },
-                      {
-                        img: "deal",
-                        text: "Our expert team sources deals from across the market.",
-                      },
-                      {
-                        img: "special_deal",
-                        text: "Access insights and hidden gems in the industry.",
-                      },
-                    ].map((item) => (
-                      <div className="commun-card" key={item.img}>
-                        <div className="icon">
-                          <Image
-                            src={`/images/${item.img}.svg`}
-                            alt={item.img}
-                            width={32}
-                            height={32}
-                          />
-                        </div>
-                        <div className="inf">
-                          <p>{item.text}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="contact_dealer mt-3">
-                    <button
-                      className="btn btn-primary"
-                      onClick={() => setShowModal(true)}
-                    >
-                      Contact Dealer
-                    </button>
+                    <a href="#">
+                      <Image
+                        src={activeImage || productImage}
+                        width={800}
+                        height={600}
+                        alt="Large"
+                        className="img-fluid"
+                      />
+                    </a>
                   </div>
                 </div>
-              </section>
 
-              {/* Mobile Bottom Bar */}
-              <div className="fixed-bottom-bar d-lg-none">
-                <button
-                  className="btn enbttn_qqr btn-primary w-100 mb-2"
-                  onClick={() => setShowModal(true)}
-                >
-                  Send Enquiry
-                </button>
-                <p className="terms_text small">
-                  By clicking &apos;Send Enquiry&apos;, you agree to our
-                  <Link href="/privacy-collection-statement">
-                    {" "}
-                    Collection Statement
-                  </Link>
-                  , <Link href="/privacy-policy">Privacy Policy</Link>, and{" "}
-                  <Link href="/terms-conditions">Terms and Conditions</Link>.
-                </p>
-              </div>
-            </div>
-
-            {/* Right Sidebar */}
-            <div className="col-xl-4 col-lg-4 d-none d-lg-block">
-              <div
-                className="product-info-sidebar sticky-top"
-                style={{ top: "80px" }}
-              >
-                <div className="contactSeller__container">
-                  <div
-                    className="price_section"
-                    style={{
-                      boxShadow: "0px 4px 15px #0000000d",
-                      display: "block",
-                      border: "1px solid #ddd",
-                      padding: "10px 0px",
-                      borderRadius: "6px",
-                    }}
-                  >
-                    <div className="divide-2">
-                      <div className="price_section border-0">
-                        <div className="price-shape">
-                          <span className="current">
-                            <div>
-                              <div className="price-card">
-                                <div className="price-card__left">
-                                  {isPOA ? (
-                                    <div className="price-card__sale">POA</div>
-                                  ) : hasSale ? (
-                                    <>
-                                      <div className="price-card__sale">
-                                        {fmt(sale)}
-                                      </div>
-                                      <div className="price-card__regular">
-                                        <s>{fmt(reg)}</s>
-                                      </div>
-                                    </>
-                                  ) : (
-                                    <div className="price-card__sale">
-                                      {fmt(reg)}
-                                    </div>
-                                  )}
-                                </div>
-
-                                {hasSale && (
-                                  <>
-                                    <div className="price-card__divider" />
-                                    <div className="price-card__save">
-                                      <div className="price-card__saveLabel">
-                                        Save
-                                      </div>
-                                      <div className="price-card__saveValue">
-                                        {fmt(save)}
-                                      </div>
-                                    </div>
-                                  </>
-                                )}
-                              </div>
-                            </div>
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="contact_dealer mt-2">
+                {/* Tabs */}
+                <section className="product-details">
+                  <ul className="nav nav-pills">
+                    <li className="nav-item">
                       <button
-                        className="btn btn-primary "
+                        className={`nav-link ${
+                          activeTab === "specifications" ? "active" : ""
+                        }`}
+                        onClick={() => setActiveTab("specifications")}
+                      >
+                        Specifications
+                      </button>
+                    </li>
+                    <li className="nav-item">
+                      <button
+                        className={`nav-link ${
+                          activeTab === "description" ? "active" : ""
+                        }`}
+                        onClick={() => setActiveTab("description")}
+                      >
+                        Description
+                      </button>
+                    </li>
+                  </ul>
+
+                  <div className="tab-content mt-3">
+                    {activeTab === "specifications" && (
+                      <div className="tab-pane fade show active">
+                        <div className="content-info text-center pb-0">
+                          <div className="additional-info">
+                            <ul>
+                              {specFields
+                                .filter((f) => f.value)
+                                .map((f) => {
+                                  const links = linksForSpec(
+                                    f.label,
+                                    String(f.value),
+                                    f.url // ✅ prefer API-provided url
+                                  );
+                                  return (
+                                    <li key={f.label}>
+                                      <strong>{f.label}:</strong>{" "}
+                                      <span>
+                                        {links
+                                          ? links.map((lnk, idx) => (
+                                              <span key={lnk.href}>
+                                                <Link
+                                                  href={lnk.href}
+                                                  prefetch={false}
+                                                >
+                                                  {lnk.text}
+                                                </Link>
+                                                {idx < links.length - 1
+                                                  ? ", "
+                                                  : ""}
+                                              </span>
+                                            ))
+                                          : String(f.value)}
+                                      </span>
+                                    </li>
+                                  );
+                                })}
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    {activeTab === "description" && (
+                      <div
+                        className="tab-pane fade show active product-description"
+                        dangerouslySetInnerHTML={{ __html: safeHtml }}
+                      />
+                    )}
+                  </div>
+                </section>
+
+                {/* Community Section */}
+                <section className="community product_dt_lower style-5 pt-4">
+                  <div className="content">
+                    <div className="heading">
+                      <h3>Caravan Marketplace Advantage</h3>
+                      <p>
+                        We help you get superior service, guaranteed deals, and
+                        access to top manufacturers.
+                      </p>
+                    </div>
+                    <div className="card_flex d-flex flex-wrap">
+                      {[
+                        {
+                          img: "low-price",
+                          text: "Get exclusive deals from top caravan manufacturers.",
+                        },
+                        {
+                          img: "deal",
+                          text: "Our expert team sources deals from across the market.",
+                        },
+                        {
+                          img: "special_deal",
+                          text: "Access insights and hidden gems in the industry.",
+                        },
+                      ].map((item) => (
+                        <div className="commun-card" key={item.img}>
+                          <div className="icon">
+                            <Image
+                              src={`/images/${item.img}.svg`}
+                              alt={item.img}
+                              width={32}
+                              height={32}
+                            />
+                          </div>
+                          <div className="inf">
+                            <p>{item.text}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="contact_dealer mt-3">
+                      <button
+                        className="btn btn-primary"
                         onClick={() => setShowModal(true)}
                       >
-                        Contact Dealer{" "}
+                        {/* bottom */}
+                        Contact Dealer
                       </button>
                     </div>
                   </div>
+                </section>
+
+                {/* Mobile Bottom Bar */}
+                <div className="fixed-bottom-bar d-lg-none">
+                  <button
+                    className="btn enbttn_qqr btn-primary w-100 mb-2"
+                    onClick={() => setShowModal(true)}
+                  >
+                    Send Enquiry
+                  </button>
+                  <p className="terms_text small">
+                    By clicking &apos;Send Enquiry&apos;, you agree to our
+                    <Link href="/privacy-collection-statement">
+                      {" "}
+                      Collection Statement
+                    </Link>
+                    , <Link href="/privacy-policy">Privacy Policy</Link>, and{" "}
+                    <Link href="/terms-conditions">Terms and Conditions</Link>.
+                  </p>
                 </div>
               </div>
-            </div>
 
-            {/* Modal */}
-            {showModal && (
-              <CaravanDetailModal
-                isOpen={showModal}
-                onClose={() => setShowModal(false)}
-                images={productSubImage}
-                product={{
-                  id: productId,
-                  slug: productSlug,
-                  name: product.name ?? "",
-                  image: activeImage || productImage,
-                  price: hasSale ? sale : reg,
-                  regularPrice: reg,
-                  salePrice: sale,
-                  isPOA,
-                  location: product.location ?? undefined,
-                }}
-              />
-            )}
+              {/* Right Sidebar */}
+              <div className="col-xl-4 col-lg-4 d-none d-lg-block">
+                <div
+                  className="product-info-sidebar sticky-top"
+                  style={{ top: "80px" }}
+                >
+                  <div className="contactSeller__container">
+                    <div
+                      className="price_section"
+                      style={{
+                        boxShadow: "0px 4px 15px #0000000d",
+                        display: "block",
+                        border: "1px solid #ddd",
+                        padding: "10px 0px",
+                        borderRadius: "6px",
+                      }}
+                    >
+                      <div className="divide-2">
+                        <div className="price_section border-0">
+                          <div className="price-shape">
+                            <span className="current">
+                              <div>
+                                <div className="price-card">
+                                  <div className="price-card__left">
+                                    {isPOA ? (
+                                      <div className="price-card__sale">
+                                        POA
+                                      </div>
+                                    ) : hasSale ? (
+                                      <>
+                                        <div className="price-card__sale">
+                                          {fmt(Number(sale))}{" "}
+                                        </div>
+                                        <div className="price-card__regular">
+                                          <s>{fmt(reg)}</s>
+                                        </div>
+                                      </>
+                                    ) : (
+                                      <div className="price-card__sale">
+                                        {fmt(reg)}
+                                      </div>
+                                    )}
+                                  </div>
+
+                                  {hasSale && save && (
+                                    <>
+                                      <div className="price-card__divider" />
+                                      <div className="price-card__save">
+                                        <div className="price-card__saveLabel">
+                                          Save
+                                        </div>
+                                        <div className="price-card__saveValue">
+                                          {save ? fmt(Number(save)) : ""}
+                                        </div>
+                                      </div>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="contact_dealer mt-2">
+                        <button
+                          className="btn btn-primary "
+                          onClick={() => setShowModal(true)}
+                        >
+                          Contact Dealer{" "}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Modal */}
+              {showModal && (
+                <CaravanDetailModal
+                  isOpen={showModal}
+                  onClose={() => setShowModal(false)}
+                  images={productSubImage}
+                  product={{
+                    id: productId,
+                    slug: productSlug,
+                    name: product.name ?? "",
+                    image: activeImage || productImage,
+                    price: hasSale ? sale : reg,
+                    regularPrice: reg,
+                    salePrice: sale,
+                    isPOA,
+                    location: product.location ?? undefined,
+                  }}
+                />
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+      {/* ✅ Related Products Section */}
+      <div
+        className="related-products section-padding"
+        style={{ position: "relative", zIndex: 0, background: "#f1f1f1" }}
+      >
+        <div className="container">
+          <div className="title">
+            <div className="tpof_tab">
+              <h3>Browse Similar Caravans</h3>
+            </div>
+          </div>
+          <div className="similar-products-three position-relative">
+            {/* ✅ Swiper React Component */}
+            <Swiper
+              modules={[Navigation]}
+              navigation
+              spaceBetween={20}
+              slidesPerView={4}
+              loop={false}
+              breakpoints={{
+                320: { slidesPerView: 1 },
+                768: { slidesPerView: 2 },
+                1024: { slidesPerView: 4 },
+              }}
+            >
+              {relatedProducts.length === 0
+                ? Array.from({ length: 4 }).map((_, idx) => (
+                    <SwiperSlide key={`related-skeleton-${idx}`}>
+                      <ProductSkelton />
+                    </SwiperSlide>
+                  ))
+                : relatedProducts.map((post) => {
+                    const href = getProductHref(post);
+                    return (
+                      <SwiperSlide key={post.id}>
+                        <Link href={href}>
+                          <div className="product-card">
+                            <div className="img">
+                              <Image
+                                src={
+                                  Array.isArray(post.image)
+                                    ? post.image[0]
+                                    : post.image || "/placeholder.jpg"
+                                }
+                                alt="product"
+                                width={400}
+                                height={250}
+                                unoptimized
+                              />
+                            </div>
+                            <div className="product_de">
+                              <div className="info">
+                                <h6 className="category">
+                                  <i className="fa fa-map-marker-alt"></i>{" "}
+                                  <span>{post.location}</span>
+                                </h6>
+                                <h3 className="title">{post.title}</h3>
+                              </div>
+                              <div className="price">
+                                {parseAmount(post.regular_price) === 0 ? (
+                                  <span>POA</span>
+                                ) : parseAmount(post.sale_price) > 0 &&
+                                  parseAmount(post.sale_price) <
+                                    parseAmount(post.regular_price) ? (
+                                  <>
+                                    <del>
+                                      {fmt(parseAmount(post.regular_price))}
+                                    </del>{" "}
+                                    <ins>
+                                      {fmt(parseAmount(post.sale_price))}
+                                    </ins>
+                                  </>
+                                ) : (
+                                  <span>
+                                    {fmt(parseAmount(post.regular_price))}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </Link>
+                      </SwiperSlide>
+                    );
+                  })}
+            </Swiper>
           </div>
         </div>
       </div>
-    </section>
+      {/* ✅ Latest News */}
+      <div
+        className="related-products latest_blog section-padding"
+        style={{ position: "relative", zIndex: 0, background: "#ffffff" }}
+      >
+        <div className="container">
+          <div className="title">
+            <div className="tpof_tab">
+              <h3>Latest News, Reviews & Advice</h3>
+            </div>
+          </div>
+          <div className="similar-products-three position-relative">
+            {/* ✅ Swiper React Component */}
+            <Swiper
+              modules={[Navigation]}
+              navigation
+              spaceBetween={20}
+              slidesPerView={4}
+              loop={false}
+              breakpoints={{
+                320: { slidesPerView: 1 },
+                768: { slidesPerView: 2 },
+                1024: { slidesPerView: 4 },
+              }}
+            >
+              {blogPosts.length === 0
+                ? Array.from({ length: 4 }).map((_, idx) => (
+                    <SwiperSlide key={`blog-skeleton-${idx}`}>
+                      <ProductSkelton />
+                    </SwiperSlide>
+                  ))
+                : blogPosts.map((post) => {
+                    const href = getHref(post);
+                    return (
+                      <SwiperSlide key={post.id}>
+                        <Link href={href}>
+                          <div className="product-card">
+                            <div className="img">
+                              <Image
+                                src={post.image}
+                                alt={post.title}
+                                width={400}
+                                height={250}
+                                unoptimized
+                              />
+                            </div>
+                            <div className="product_de">
+                              <div className="info">
+                                <h5 className="title">{post.title}</h5>
+                                <p>{post.excerpt}</p>
+                              </div>
+                            </div>
+                          </div>
+                        </Link>
+                      </SwiperSlide>
+                    );
+                  })}
+              {!blogPosts.length && (
+                <div className="col-12 py-3 text-muted">No posts found.</div>
+              )}
+            </Swiper>
+          </div>
+        </div>
+      </div>
+    </>
   );
 }

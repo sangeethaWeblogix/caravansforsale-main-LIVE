@@ -236,7 +236,6 @@ export function parseSlugToFilters(
       filters.search = getScalar(query.keyword); // fallback
     // You can add any other fields you support in query here.
   }
-  console.log("parseSlugToFilters", filters);
 
   return filters;
 }

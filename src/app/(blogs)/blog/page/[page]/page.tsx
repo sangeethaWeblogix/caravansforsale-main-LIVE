@@ -36,7 +36,7 @@ export default function BlogPage() {
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(initialPage);
   const [totalPages, setTotalPages] = useState<number>(1);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
   function decodeHTML(str: string = "") {
     if (!str) return "";
     if (typeof window === "undefined") return str; // SSR safe
@@ -84,7 +84,7 @@ export default function BlogPage() {
 
   const getHref = (p: BlogPost) => {
     const slug = (p.slug ?? "").trim() || toSlug(p.title ?? "");
-    return slug ? `/blog/${slug}/` : "#";
+    return slug ? `/${slug}/` : "#";
   };
 
   const prevUrl =
@@ -106,18 +106,14 @@ export default function BlogPage() {
           <div className="row">
             <div className="col-lg-9">
               {loading && (
-                <div className="text-center py-5">Loading posts…</div>
-              )}
-
-              {!loading && blogPosts.length === 0 && (
-                <div className="text-center py-5">No posts found.</div>
-              )}
-              {loading && (
                 <>
                   {[...Array(3)].map((_, i) => (
                     <BlogCardSkelton key={i} />
                   ))}
                 </>
+              )}
+              {!loading && blogPosts.length === 0 && (
+                <div className="text-center py-5">No posts found.</div>
               )}
               {!loading &&
                 blogPosts.map((post, index) => {
@@ -128,7 +124,7 @@ export default function BlogPage() {
                       className="card border-0 bg-transparent rounded-0 border-bottom brd-gray pb-30 mb-30"
                     >
                       <div className="row">
-                        <div className="col-lg-5">
+                        <div className="col-lg-5 col-sm-6">
                           <div className="img img-cover">
                             <Link href={href}>
                               <Image
@@ -141,7 +137,7 @@ export default function BlogPage() {
                             </Link>
                           </div>
                         </div>
-                        <div className="col-lg-7">
+                        <div className="col-lg-7 col-sm-6">
                           <div className="card-body p-0">
                             <small className="d-block date text">
                               <Link href={href} className="op-8">

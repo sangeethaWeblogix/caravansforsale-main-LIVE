@@ -12,7 +12,7 @@ export default function CaravanDealersPage() {
         className="services top_search_filter style-1"
         style={{
           backgroundImage:
-            "url(https://www.caravansforsale.com.au/wp-content/uploads/2024/11/banner_cover_dealer.jpg)",
+            "url(https://www.admin.caravansforsale.com.au/wp-content/uploads/2024/11/banner_cover_dealer.jpg)",
           backgroundPosition: "center",
           backgroundSize: "cover",
         }}

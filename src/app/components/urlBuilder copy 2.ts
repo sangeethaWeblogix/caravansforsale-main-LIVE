@@ -207,6 +207,5 @@ export function parseSlugToFilters(
     // add further query param parsing here if needed
   }
 
-  console.log("Parsed filters:", filters); // debug
   return filters;
 }

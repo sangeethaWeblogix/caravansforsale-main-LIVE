@@ -8,12 +8,18 @@ export type ProductEnquiryPayload = {
   name: string;
   phone: string;
   postcode: string;
+  message: string;
 };
 
+export type ProductEnquiryData = {
+  product_id: string | number;
+  product_name: string;
+  redirect_slug: string;
+};
 export type ProductEnquiryResponse = {
   success?: boolean;
   message?: string;
-  data?: unknown;
+  data?: ProductEnquiryData;
 };
 
 export async function createProductEnquiry(

@@ -1,22 +1,27 @@
 // src/app/product-details/[slug]/page.tsx
 import type { Metadata } from "next";
 import ClientLogger from "./product";
+import { notFound } from "next/navigation";
 
 type RouteParams = { slug: string };
 type PageProps = { params: Promise<RouteParams> };
 
 async function fetchProductDetail(slug: string) {
-  const res = await fetch(
-    `https://www.admin.caravansforsale.com.au/wp-json/cfs/v1/product-detail/${encodeURIComponent(
-      slug
-    )}`,
-    { cache: "no-store", headers: { Accept: "application/json" } }
-  );
-  if (!res.ok) throw new Error("Failed to load product detail");
-  return res.json();
+  const API_BASE = process.env.NEXT_PUBLIC_CFS_API_BASE!;
+  try {
+    const res = await fetch(
+      `${API_BASE}/product-detail-new/?slug=${encodeURIComponent(slug)}`,
+      { cache: "no-store", headers: { Accept: "application/json" } }
+    );
+    if (!res.ok) return null;
+    return res.json();
+  } catch (error) {
+    console.error("product fetch error:", error);
+    return null;
+  }
 }
 
-// ✅ SEO from product.seo (NO images)
+// ✅ SEO (no images)
 export async function generateMetadata({
   params,
 }: {
@@ -24,6 +29,13 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const data = await fetchProductDetail(slug);
+
+  if (!data || Object.keys(data).length === 0) {
+    return {
+      title: "Product Not Found - Caravans for Sale",
+      description: "The product you are looking for does not exist.",
+    };
+  }
 
   const seo = data?.seo ?? data?.product?.seo ?? {};
   const title =
@@ -38,32 +50,36 @@ export async function generateMetadata({
     seo.meta_description ||
     data?.short_description ||
     "View caravan details.";
+  const canonicalUrl = `https://www.caravansforsale.com.au/product/${slug}/`;
 
   return {
     title: { absolute: title },
     description,
-    openGraph: {
-      title,
-      description,
-    },
+    openGraph: { title, description },
     twitter: {
-      card: "summary", // no image card
+      card: "summary",
       title,
       description,
     },
-    other: {
-      "og:type": "product",
+    alternates: {
+      canonical: canonicalUrl, // ✅ canonical link
     },
+    other: { "og:type": "product" },
   };
 }
 
 export default async function ProductDetailPage({ params }: PageProps) {
-  const { slug } = await params;
+  const { slug } = await params; // ✅ no await
   const data = await fetchProductDetail(slug);
 
+  // ❌ If no product → 404 page
+  if (!data || Object.keys(data).length === 0) {
+    notFound();
+  }
+
   return (
-    <div>
+    <main className="container mx-auto">
       <ClientLogger data={data} />
-    </div>
+    </main>
   );
 }

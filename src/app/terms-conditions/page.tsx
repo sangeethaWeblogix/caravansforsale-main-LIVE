@@ -17,9 +17,11 @@ export async function generateMetadata(): Promise<Metadata> {
       description: metaDescription,
     },
     twitter: {
-      card: "summary_large_image",
       title: metaTitle,
       description: metaDescription,
+    },
+    alternates: {
+      canonical: "https://www.caravansforsale.com.au/terms-conditions/", // ✅ canonical link
     },
   };
 }

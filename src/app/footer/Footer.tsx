@@ -9,10 +9,14 @@ import {
   FaPinterestP,
 } from "react-icons/fa";
 import { BsChevronUp } from "react-icons/bs";
+import { useEffect, useState } from "react";
 
 const Footer = () => {
-  const currentYear = new Date().getFullYear();
-  // const siteUrl = "https://www.caravansforsale.com.au";
+  const [currentYear, setCurrentYear] = useState<number | null>(null);
+
+  useEffect(() => {
+    setCurrentYear(new Date().getFullYear());
+  }, []);
 
   return (
     <>
@@ -24,7 +28,7 @@ const Footer = () => {
               <div className="col-lg-6">
                 <p>
                   Caravan Marketplace (Web Logix) ABN 92 009 784 881. <br />
-                  Copyright © {currentYear}. All Rights Reserved.
+                  Copyright © {currentYear ?? "----"}. All Rights Reserved.
                 </p>
                 <div className="disclaimer" style={{ marginTop: "12px" }}>
                   <p>
@@ -46,14 +50,12 @@ const Footer = () => {
               </div>
 
               {/* About Us Column */}
-              <div className="col-lg-3">
+              <div className="col-lg-3 col-sm-6">
                 <h6 className="foot-title foot_xs">About Us</h6>
                 <ul className="menu footer_xs">
-                  {/* <li><Link href={`${siteUrl}/caravan-dealers/`}>Caravan Dealers</Link></li> */}
                   <li>
                     <Link href="/listings/">For Sale</Link>
                   </li>
-                  {/* <li><Link href={`${siteUrl}/caravan-manufacturers/all/`}>Manufacturer Range</Link></li> */}
                   <li>
                     <Link href="/blog/">Blog</Link>
                   </li>
@@ -78,38 +80,36 @@ const Footer = () => {
               </div>
 
               {/* Popular Pages Column */}
-              <div className="col-lg-3">
+              <div className="col-lg-3 col-sm-6">
                 <h6 className="foot-title foot_xs">Popular Pages</h6>
                 <ul className="menu footer_xs">
                   <li>
-                    <Link href="/blog/best-caravans-full-off-road-capabilities-australia/">
+                    <Link href="/best-caravans-full-off-road-capabilities-australia/">
                       Best Off Road Caravans
                     </Link>
                   </li>
                   <li>
-                    <Link href="/blog/best-semi-off-road-caravans-australia-guide/">
+                    <Link href="/best-semi-off-road-caravans-australia-guide/">
                       Best Semi Off Road Caravans
                     </Link>
                   </li>
                   <li>
-                    <Link href="/blog/best-caravans-for-extreme-off-road-travel/">
+                    <Link href="/best-caravans-for-extreme-off-road-travel/">
                       Best Extreme Off Road Caravans
                     </Link>
                   </li>
                   <li>
-                    <Link href="/blog/best-luxury-caravans-australia-highlights-features-reviews/">
+                    <Link href="/best-luxury-caravans-australia-highlights-features-reviews/">
                       Best Luxury Caravans
                     </Link>
                   </li>
                   <li>
-                    <Link href="/blog/top-family-off-road-caravans-australia/">
+                    <Link href="/top-family-off-road-caravans-australia/">
                       Best Family Caravans
                     </Link>
                   </li>
                   <li>
-                    <Link href="/blog/touring-caravans/">
-                      Best Touring Caravans
-                    </Link>
+                    <Link href="/touring-caravans/">Best Touring Caravans</Link>
                   </li>
                 </ul>
               </div>

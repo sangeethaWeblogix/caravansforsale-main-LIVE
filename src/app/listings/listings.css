@@ -200,17 +200,17 @@ h1.page-title {
   display: block !important;
 }
 .vehicleDetailsWithIcons.simple li {
-    color: #fff;
-    text-align: center;
-    vertical-align: top;
-    float: left;
-    align-items: center;
-    width: 35%;
-    margin-right: 25px;
-    padding: 3px;
-    font-size: 14px;
-    line-height: 19px;
-    display: flex;
+  color: #fff;
+  text-align: center;
+  vertical-align: top;
+  float: left;
+  align-items: center;
+  width: 35%;
+  margin-right: 25px;
+  padding: 3px;
+  font-size: 14px;
+  line-height: 19px;
+  display: flex;
 }
 .vehicleDetailsWithIcons.simple li span {
   display: inline-block;
@@ -898,6 +898,57 @@ input[type="number"]::-webkit-outer-spin-button {
 
 .offcanvas-header.mobile_filter_xs {
   background-color: #000;
+}
+
+@media (min-width: 992px) and (max-width: 1200px) {
+  .section-padding {
+    padding: 30px 0;
+  }
+  h1.page-title {
+    font-size: 1.8rem;
+    padding: 25px 0 40px;
+  }
+  .container,
+  .container-lg,
+  .container-md,
+  .container-sm {
+    max-width: 100%;
+  }
+  .vehicleSearch__column-poster .vehicleThumbDetails .title {
+    max-width: 100%;
+  }
+  .woocommerce-loop-product__title {
+    font-size: 1.2em;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  .section-padding {
+    padding: 30px 0;
+  }
+  .container,
+  .container-md,
+  .container-sm {
+    max-width: 100%;
+  }
+  h1.page-title {
+    padding: 25px 0 30px;
+    font-size: 1.5rem;
+  }
+  .filter_title {
+    font-size: 16px;
+  }
+  .show_count {
+    font-size: 16px;
+    margin: 0;
+  }
+  .vehicleSearch__column-poster .vehicleThumbDetails .title {
+    max-width: 100%;
+  }
+  .woocommerce-loop-product__title {
+    font-size: 1.2em;
+    font-weight: 700;
+  }
 }
 
 @media (max-width: 767px) {
