@@ -198,7 +198,7 @@ export async function generateMetadata({
       description,
       robots,
       openGraph: { title, description },
-      twitter: { card: "summary_large_image", title, description },
+      twitter: { title, description },
     };
   } catch (err) {
     console.error("[SEO] Failed to build metadata:", err);
@@ -213,7 +213,7 @@ export async function generateMetadata({
         description,
         images: [{ url: "/default-image.jpg" }],
       },
-      twitter: { card: "summary_large_image", title, description },
+      twitter: { title, description },
     };
   }
 }

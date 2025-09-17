@@ -9,10 +9,14 @@ import {
   FaPinterestP,
 } from "react-icons/fa";
 import { BsChevronUp } from "react-icons/bs";
+import { useEffect, useState } from "react";
 
 const Footer = () => {
-  const currentYear = new Date().getFullYear();
-  // const siteUrl = "https://www.caravansforsale.com.au";
+  const [currentYear, setCurrentYear] = useState<number | null>(null);
+
+  useEffect(() => {
+    setCurrentYear(new Date().getFullYear());
+  }, []);
 
   return (
     <>
@@ -24,7 +28,7 @@ const Footer = () => {
               <div className="col-lg-6">
                 <p>
                   Caravan Marketplace (Web Logix) ABN 92 009 784 881. <br />
-                  Copyright © {currentYear}. All Rights Reserved.
+                  Copyright © {currentYear ?? "----"}. All Rights Reserved.
                 </p>
                 <div className="disclaimer" style={{ marginTop: "12px" }}>
                   <p>
@@ -49,11 +53,9 @@ const Footer = () => {
               <div className="col-lg-3 col-sm-6">
                 <h6 className="foot-title foot_xs">About Us</h6>
                 <ul className="menu footer_xs">
-                  {/* <li><Link href={`${siteUrl}/caravan-dealers/`}>Caravan Dealers</Link></li> */}
                   <li>
                     <Link href="/listings/">For Sale</Link>
                   </li>
-                  {/* <li><Link href={`${siteUrl}/caravan-manufacturers/all/`}>Manufacturer Range</Link></li> */}
                   <li>
                     <Link href="/blog/">Blog</Link>
                   </li>
@@ -107,9 +109,7 @@ const Footer = () => {
                     </Link>
                   </li>
                   <li>
-                    <Link href="/touring-caravans/">
-                      Best Touring Caravans
-                    </Link>
+                    <Link href="/touring-caravans/">Best Touring Caravans</Link>
                   </li>
                 </ul>
               </div>

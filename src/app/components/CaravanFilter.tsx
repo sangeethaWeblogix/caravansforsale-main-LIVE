@@ -1471,14 +1471,16 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
 
         makeInitializedRef.current = true;
 
-        // Optional: sync filters
-        const updatedFilters: Filters = {
-          ...currentFilters,
-          make: matched.slug,
-        };
+        // // Optional: sync filters
+        // const updatedFilters: Filters = {
+        //   ...currentFilters,
+        //   make: matched.slug,
+        // };
 
-        setFilters(updatedFilters);
-        onFilterChange(updatedFilters);
+        // setFilters(updatedFilters);
+        // startTransition(() => {
+        //   updateAllFiltersAndURL(updatedFilters);
+        // });
       }
     }
   }, [pathname, selectedMake, makes, currentFilters.make]);
@@ -1548,17 +1550,17 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     }
   }, [model, selectedModel]);
 
-  useEffect(() => {
-    if (!selectedCategory && !selectedMake && !selectedStateName) {
-      console.warn("🚨 Important filters are null!", {
-        pathname,
-        filters,
-        selectedCategory,
-        selectedMake,
-        selectedStateName,
-      });
-    }
-  }, [filters, selectedCategory, selectedMake, selectedStateName]);
+  // useEffect(() => {
+  //   if (!selectedCategory && !selectedMake && !selectedStateName) {
+  //     console.warn("🚨 Important filters are null!", {
+  //       pathname,
+  //       filters,
+  //       selectedCategory,
+  //       selectedMake,
+  //       selectedStateName,
+  //     });
+  //   }
+  // }, [filters, selectedCategory, selectedMake, selectedStateName]);
 
   const isValidMakeSlug = (slug: string | null | undefined): slug is string =>
     !!slug && makes.some((m) => m.slug === slug);
@@ -1616,7 +1618,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
       onFilterChange(next);
     }
 
-    // 3) build URL once
+    // 3) build URL once0000000000000000
     const slugPath = buildSlugFromFilters(next);
     const query = new URLSearchParams();
     if (next.acustom_fromyears)

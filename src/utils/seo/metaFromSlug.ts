@@ -40,7 +40,6 @@ export async function metaFromSlug(
     robots,
     openGraph: { title, description, images: [{ url: "/favicon.ico" }] },
     twitter: {
-      card: "summary_large_image",
       title,
       description,
       images: ["/favicon.ico"],

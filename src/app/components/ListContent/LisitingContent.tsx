@@ -79,7 +79,7 @@ export default function ListingContent({
   onFilterChange,
   currentFilters,
 }: Props) {
-  const imageUrl = "public/favicon.ico";
+  // const imageUrl = "public/favicon.ico";
   const getHref = (p: Product) => {
     const slug = p.slug?.trim() || toSlug(p.name);
     return slug ? `/product/${slug}/` : ""; // trailing slash optional
@@ -105,7 +105,6 @@ export default function ListingContent({
         <meta property="og:description" content={metaDescription} />
         <meta name="twitter:title" content={metaTitle} />
         <meta name="twitter:description" content={metaDescription} />
-        <meta name="twitter:image" content={imageUrl} /> {/* Twitter image */}
       </Head>
 
       <div className="col-lg-6 col-md-8">
