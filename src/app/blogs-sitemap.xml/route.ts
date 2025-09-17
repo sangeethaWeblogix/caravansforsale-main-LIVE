@@ -20,7 +20,7 @@ export async function GET() {
     .map(
       (blog) => `
     <url>
-      <loc>${SITE_URL}/blog/${blog.slug}</loc>
+      <loc>${SITE_URL}/${blog.slug}</loc>
       <lastmod>${
         blog.date ? new Date(blog.date).toISOString() : new Date().toISOString()
       }</lastmod>
