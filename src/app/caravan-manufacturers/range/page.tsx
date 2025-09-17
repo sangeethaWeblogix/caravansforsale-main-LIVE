@@ -1,13 +1,13 @@
 import  Header  from "./Header";
-import  Middle  from "./Middle";
+import  CaravanInfo  from "./CaravanInfo";
 import  FaqSection  from "./FaqSection";
 import './comman.css'
 
 export async function generateMetadata(): Promise<Metadata> {
   const metaTitle =
-    "Top 10 Caravan Manufacturers in Australia: Best Brands of 2024";
+    "Experience Ultimate Off-Road Thrills with Everest Calibra";
   const metaDescription =
-    "See how top Australian caravan manufacturers excel with the best in innovative designs, quality construction, cost efficiency, and expert craftsmanship.";
+    "Explore rugged terrains with the Everest Calibra 20.6F, your perfect off-road companion for thrilling adventures and unmatched comfort on the trail.";
 
   const robots = "index, follow";
 
@@ -31,8 +31,8 @@ export default function Home() {
   return (
     <div>
       <Header />
-      <Middle />
-      <FaqSection />      
+      <CaravanInfo />    
+      <FaqSection />         
     </div>
   );
 }

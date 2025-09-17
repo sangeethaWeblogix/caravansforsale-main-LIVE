@@ -57,6 +57,11 @@ const Footer = () => {
                     <Link href="/listings/">For Sale</Link>
                   </li>
                   <li>
+                    <Link href="/caravan-manufacturers/all/">
+                      Manufacturer Range
+                    </Link>
+                  </li>
+                  <li>
                     <Link href="/blog/">Blog</Link>
                   </li>
                   <li>
@@ -86,6 +91,16 @@ const Footer = () => {
                   <li>
                     <Link href="/best-caravans-full-off-road-capabilities-australia/">
                       Best Off Road Caravans
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/off-road-caravan-manufacturers/">
+                      Best Off Road Caravan Manufacturers
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/caravan-manufacturers/">
+                      Best Caravan Manufacturers
                     </Link>
                   </li>
                   <li>
