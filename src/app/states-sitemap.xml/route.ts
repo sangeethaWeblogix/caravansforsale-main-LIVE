@@ -14,17 +14,16 @@ export async function GET() {
   const urls = states.flatMap((state) => {
     const stateSlug = state.value;
 
-    return (state.regions ?? []).map(
-      (region) => `
-        <url>
-          <loc>${SITE_URL}/listings/${stateSlug}-state/${
-        region.value
-      }-region/</loc>
-          <lastmod>${new Date().toISOString().split("T")[0]}</lastmod>
-          <changefreq>weekly</changefreq>
-          <priority>0.7</priority>
-        </url>`
-    );
+    // 1. Add state-level URL
+    const stateUrl = `
+      <url>
+        <loc>${SITE_URL}/listings/${stateSlug}-state/</loc>
+        <lastmod>${new Date().toISOString().split("T")[0]}</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.7</priority>
+      </url>`;
+
+    return [stateUrl];
   });
 
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
