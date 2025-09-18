@@ -31,7 +31,6 @@ export default function Home() {
   return (
     <div>
       <Header />
-      <CaravanInfo />
       <FaqSection />
     </div>
   );
