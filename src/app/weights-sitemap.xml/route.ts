@@ -12,39 +12,42 @@ const atm = [
 export async function GET() {
   let urls = "";
 
-  // under
+  // ✅ Under every value
   atm.forEach((w) => {
     urls += `
     <url>
       <loc>${SITE_URL}/listings/under-${w}-kg-atm</loc>
-      <lastmod>${new Date().toISOString()}</lastmod>
+      <lastmod>${new Date().toISOString().split("T")[0]}</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.6</priority>
     </url>`;
   });
 
-  // between
-  for (let i = 0; i < atm.length - 1; i++) {
+  // ✅ Over every value
+  atm.forEach((w) => {
     urls += `
     <url>
-      <loc>${SITE_URL}/listings/between-${atm[i]}-kg-and-${
-      atm[i + 1]
-    }-kg-atm</loc>
-      <lastmod>${new Date().toISOString()}</lastmod>
+      <loc>${SITE_URL}/listings/over-${w}-kg-atm</loc>
+      <lastmod>${new Date().toISOString().split("T")[0]}</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.6</priority>
     </url>`;
-  }
+  });
 
-  // over
-  const last = atm[atm.length - 1];
-  urls += `
-  <url>
-    <loc>${SITE_URL}/listings/over-${last}-kg-atm</loc>
-    <lastmod>${new Date().toISOString()}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>`;
+  // ✅ Between every possible pair (i < j)
+  for (let i = 0; i < atm.length; i++) {
+    for (let j = i + 1; j < atm.length; j++) {
+      urls += `
+      <url>
+        <loc>${SITE_URL}/listings/between-${atm[i]}-kg-and-${
+        atm[j]
+      }-kg-atm</loc>
+        <lastmod>${new Date().toISOString().split("T")[0]}</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+      </url>`;
+    }
+  }
 
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
   <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
