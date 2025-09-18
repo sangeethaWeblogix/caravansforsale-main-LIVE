@@ -11,6 +11,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: new Date(),
     },
     {
+      url: `${siteUrl}/general-sitemap.xml`,
+      lastModified: new Date(),
+    },
+    {
       url: `${siteUrl}/blogs-sitemap.xml`,
       lastModified: new Date(),
     },
