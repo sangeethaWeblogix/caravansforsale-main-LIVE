@@ -143,11 +143,27 @@ export default function ListingsPage({
   const router = useRouter();
 
   const [isUsingInitialData, setIsUsingInitialData] = useState(!!initialData);
+  const rawSearch = typeof window !== "undefined" ? window.location.search : "";
+
+  // 🚫 If there's an '&' in the raw query, block it
+  if (rawSearch.includes("&")) {
+    notFound();
+  }
+
   const rawPage = searchParams.get("page") ?? "1";
 
-  if (!/^\d+$/.test(rawPage)) notFound();
-  const page = parseInt(rawPage, 10);
-  if (page < 1) notFound();
+  // 🚫 Only allow digits
+  if (!/^[0-9]+$/.test(rawPage)) {
+    notFound();
+  }
+
+  const page = Number(rawPage);
+
+  // 🚫 Must be >= 1
+  if (!Number.isInteger(page) || page < 1) {
+    notFound();
+  }
+
   // Initialize state with initialData if provided
   const [products, setProducts] = useState<Product[]>(
     initialData?.data?.products
