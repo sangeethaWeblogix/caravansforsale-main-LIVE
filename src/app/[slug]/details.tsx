@@ -2,6 +2,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import FaqSection from "./FaqSection";
 import RelatedNews from "./RelatedNews";
+import "./details.css";
 
 type BlogDetail = {
   id: number;

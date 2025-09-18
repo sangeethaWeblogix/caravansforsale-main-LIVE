@@ -279,21 +279,22 @@ form.submitting .newsletter-content .wpcf7-spinner {
   overflow: hidden;
 }
 .blog-page.style-5 .blog-details-slider .content-card .img {
-    position: relative;
-    border-radius: 10px;
-    overflow: hidden;
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
 }
 .blog-page.style-5 .blog-details-slider .content-card .img img {
-    width: 100%;
-    height: auto;
+  width: 100%;
+  height: auto;
 }
-.small, small {
-    font-size: 13px;
-    line-height: 1.7;
-    display: inline-block;
+.small,
+small {
+  font-size: 13px;
+  line-height: 1.7;
+  display: inline-block;
 }
 .mt-10 {
-    margin-top: 10px !important;
+  margin-top: 10px !important;
 }
 
 .blog-page.style-5 h1 {
@@ -303,126 +304,130 @@ form.submitting .newsletter-content .wpcf7-spinner {
   background-color: #f1f1f1;
 }
 .bg_custom_d h2 {
-    font-size: 1.75rem;
-    line-height: 1.6;
-    font-weight: 700;
+  font-size: 1.75rem;
+  line-height: 1.6;
+  font-weight: 700;
 }
 .mb-30 {
-    margin-bottom: 30px !important;
+  margin-bottom: 30px !important;
 }
 
 /* --------------- faq styles --------------- */
 
 .faq.style-3 .accordion-item {
-    border: 0;
-    border-bottom: 1px solid #9995;
-    background: transparent;
+  border: 0;
+  border-bottom: 1px solid #9995;
+  background: transparent;
 }
 
 .faq.style-3 .accordion-item .accordion-button {
-    font-weight: bold;
-    font-size: 14px;
-    background-color: #fff;
-    -webkit-box-shadow: none;
-    box-shadow: none;
-    text-transform: capitalize;
-    padding: 25px 15px;
-    margin-bottom: 8px;
+  font-weight: bold;
+  font-size: 14px;
+  background-color: #fff;
+  -webkit-box-shadow: none;
+  box-shadow: none;
+  text-transform: capitalize;
+  padding: 25px 15px;
+  margin-bottom: 8px;
 }
 
 .faq.style-3 .accordion-item .accordion-button:not(.collapsed) {
-    background-color: #fff;
-    color: var(--color-blue2);
-    padding-top: 30px;
+  background-color: #fff;
+  color: var(--color-blue2);
+  padding-top: 30px;
 }
 
 .faq.style-3 .accordion-item .accordion-collapse {
-    background-color: #fff;
-    border: 1px solid #ddd;
-    border-top: none;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-top: none;
 }
 
 .bg-light-gray {
-    background-color: #f2f2f2;
+  background-color: #f2f2f2;
   border-bottom: solid 1px #e1e1e1;
   border-top: solid 1px #e1e1e1;
 }
 
 .faq.style-3 .accordion-item .accordion-collapse .accordion-body {
-    color: #000000;
-    padding-bottom: 30px;
-    font-size: 17px;
+  color: #000000;
+  padding-bottom: 30px;
+  font-size: 17px;
 }
 
 .faq.style-3 .accordion-item .accordion-collapse .accordion-body h4 {
-    font-size: 19px;
-    color: #000;
-    margin-bottom: 5px;
+  font-size: 19px;
+  color: #000;
+  margin-bottom: 5px;
 }
 
-
 .faq.style-3.style-4 .accordion-item {
-    border: 0 !important;
-    border-radius: 7px;
-    overflow: hidden;
+  border: 0 !important;
+  border-radius: 7px;
+  overflow: hidden;
 }
 
 .faq.style-3.style-4 .accordion-item .accordion-button {
-    padding: 15px 20px !important;
-    font-weight: 600;
-    font-family: 'Poppins';
-    font-size: 18px;
-    border: 1px solid #ddd;
+  padding: 15px 20px !important;
+  font-weight: 600;
+  font-family: "Poppins";
+  font-size: 18px;
+  border: 1px solid #ddd;
 }
 
 .faq.style-3.style-4 .accordion-item .accordion-button:not(.collapsed) {
-    background-color: #fff;
-    color: #000000;
-    padding-bottom: 10px;
-    margin-bottom: 0;
+  background-color: #fff;
+  color: #000000;
+  padding-bottom: 10px;
+  margin-bottom: 0;
 }
 
 .faq.style-3.style-4 .accordion-item .accordion-collapse {
-    background-color: #ffffff;
-    margin-bottom: 8px;
+  background-color: #ffffff;
+  margin-bottom: 8px;
 }
 
 .faq.style-3.style-4 .accordion-item .accordion-collapse .accordion-body p {
-    font-size: 17px;
-    color: #000;
-    line-height: 28px;
-    margin-bottom: 15px;
+  font-size: 17px;
+  color: #000;
+  line-height: 28px;
+  margin-bottom: 15px;
 }
 
 .faq.style-3.style-4 .accordion-item .accordion-collapse .accordion-body p a {
-    color: #0d6efd;
+  color: #0d6efd;
 }
 
-.faq.style-3.style-4 .accordion-item .accordion-collapse .accordion-body p a:hover {
-    color: #0d6efd !important;
-    text-decoration: underline !important
+.faq.style-3.style-4
+  .accordion-item
+  .accordion-collapse
+  .accordion-body
+  p
+  a:hover {
+  color: #0d6efd !important;
+  text-decoration: underline !important;
 }
 
 .wp-block-image img {
-    box-sizing: border-box;
-    vertical-align: bottom;
-    max-width: 100%;
-    height: auto;
-    width: 100%;
+  box-sizing: border-box;
+  vertical-align: bottom;
+  max-width: 100%;
+  height: auto;
+  width: 100%;
 }
 
 .all-news h2.wp-block-heading {
-    color: #000;
-    margin-bottom: 15px;
-    font-size: 26px;
-    font-weight: 700;
+  color: #000;
+  margin-bottom: 15px;
+  font-size: 26px;
+  font-weight: 700;
 }
 
 .all-news h3.wp-block-heading {
-    margin-bottom: 15px;
-    font-size: 23px;
-    color: #000;
-    font-weight: 700;
+  margin-bottom: 15px;
+  font-size: 23px;
+  color: #000;
+  font-weight: 700;
 }
 
 .all-news h4.wp-block-heading {
@@ -431,87 +436,90 @@ form.submitting .newsletter-content .wpcf7-spinner {
 }
 
 .all-news p {
-    font-size: 18px;
-    color: #000;
-    text-align: left;
-    margin-bottom: 12px;
+  font-size: 18px;
+  color: #000;
+  text-align: left;
+  margin-bottom: 12px;
 }
 
-.single_blog ul, .single_blog ol {
-    padding-left: 20px;
+.single_blog ul,
+.single_blog ol {
+  padding-left: 20px;
 }
 
 .single_blog ul li {
-    padding-bottom: 10px;
-    font-size: 17px;
-    list-style: disc;
-    color: #000;
+  padding-bottom: 10px;
+  font-size: 17px;
+  list-style: disc;
+  color: #000;
 }
 
 .single_blog {
-      border-top: 1px solid #e1e1e1;
+  border-top: 1px solid #e1e1e1;
 }
 
 .position-relative {
-    position: relative!important;
+  position: relative !important;
 }
 .related-products .title {
-    font-size: 25px;
-    margin-bottom: 35px;
+  font-size: 25px;
+  margin-bottom: 35px;
 }
 
 .tpof_tab {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 15px;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
 }
-.related-products h3, .search_quick_links h2 {
-    font-size: 26px;
-    text-decoration: none;
-    font-weight: 500;
+.related-products h3,
+.search_quick_links h2 {
+  font-size: 26px;
+  text-decoration: none;
+  font-weight: 500;
 }
 
 .viewall_bttn a {
-    font-size: 26px;
-    font-weight: 600;
-    color: #f58333;
-    text-transform: uppercase;
-    display: inline-block;
-    padding: 0px 0px;
-    line-height: 30px;
-    height: 30px;
+  font-size: 26px;
+  font-weight: 600;
+  color: #f58333;
+  text-transform: uppercase;
+  display: inline-block;
+  padding: 0px 0px;
+  line-height: 30px;
+  height: 30px;
 }
 
 .related-products .product-card .img {
-    max-height: 200px;
-    min-height: 200px;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-        position: relative !important;
+  max-height: 200px;
+  min-height: 200px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative !important;
 }
 
 .section-padding {
   padding: 30px 0;
 }
 
-@media (max-width: 767px) { 
-.section-padding {
+@media (max-width: 767px) {
+  .section-padding {
     padding: 30px 0;
-}
-.related-products .swiper-button-next:after, .related-products .swiper-button-prev:after {
+  }
+  .related-products .swiper-button-next:after,
+  .related-products .swiper-button-prev:after {
     color: #000;
     font-size: 18px !important;
-}
-.related-products .swiper-button-next {
+  }
+  .related-products .swiper-button-next {
     right: -10px !important;
-        width: 40px;
+    width: 40px;
     height: 40px;
-}
-.related-products .swiper-button-prev {
+  }
+  .related-products .swiper-button-prev {
     left: -10px !important;
-        width: 40px;
+    width: 40px;
     height: 40px;
-}
+  }
 }
