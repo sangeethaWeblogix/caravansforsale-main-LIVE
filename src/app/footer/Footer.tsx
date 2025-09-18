@@ -19,7 +19,7 @@ const Footer = () => {
 
   return (
     <>
-      <div className="style-8">
+      <footer className="style-8">
         <div className="container">
           <div className="foot py-4 border-1 border-top brd-gray">
             <div className="row">
@@ -174,7 +174,7 @@ const Footer = () => {
             </div>
           </div>
         </div>
-      </div>
+      </footer>
 
       {/* To Top Button */}
       <Link
