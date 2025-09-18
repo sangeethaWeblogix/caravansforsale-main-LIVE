@@ -2,9 +2,6 @@
 import { NextResponse } from "next/server";
 import { fetchListings } from "@/api/listings/api";
 
-const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL || "https://caravansforsale.com.au";
-
 export async function GET() {
   const firstPage = await fetchListings({ page: 1 });
   let allItems = firstPage.data?.products ?? [];
@@ -16,14 +13,16 @@ export async function GET() {
     }
   }
 
+  const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+
   const urls = allItems
     .map(
       (item) => `
     <url>
-      <loc>${SITE_URL}/listing/${item.slug}</loc>
-      <lastmod>${new Date().toISOString()}</lastmod>
+      <loc>product/${item.slug}</loc>
+      <lastmod>${today}</lastmod>
       <changefreq>daily</changefreq>
-      <priority>0.8</priority>
+      <priority>0.6</priority>
     </url>`
     )
     .join("");
