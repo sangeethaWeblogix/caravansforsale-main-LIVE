@@ -1,5 +1,5 @@
 import Header from "./Header";
-// import  CaravanInfo  from "./CaravanInfo";
+import CaravanInfo from "./CaravanInfo";
 import FaqSection from "./FaqSection";
 import "./comman.css";
 import { Metadata } from "next";
@@ -31,6 +31,7 @@ export default function Home() {
   return (
     <div>
       <Header />
+      <CaravanInfo />
       <FaqSection />
     </div>
   );

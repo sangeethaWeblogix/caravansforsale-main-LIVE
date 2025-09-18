@@ -1,6 +1,6 @@
-import  Header  from "./Header";
-import  CaravanList  from "./CaravanList";
-import './comman.css'
+import Header from "./Header";
+import CaravanList from "./CaravanList";
+import "./comman.css";
 import { Metadata } from "next";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -31,7 +31,7 @@ export default function Home() {
   return (
     <div>
       <Header />
-      <CaravanList />           
+      <CaravanList />
     </div>
   );
 }
