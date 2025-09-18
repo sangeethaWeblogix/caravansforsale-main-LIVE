@@ -12,7 +12,10 @@ export default function EverestCaravans() {
             <div className="col-lg-12">
               <ul className="breadcrumbs">
                 <li className="breadcrumbs-item">
-                  <Link className="breadcrumbs-link" href="https://www.admin.caravansforsale.com.au/">
+                  <Link
+                    className="breadcrumbs-link"
+                    href="https://www.admin.caravansforsale.com.au/"
+                  >
                     Home
                   </Link>
                 </li>
@@ -43,27 +46,32 @@ export default function EverestCaravans() {
             <div className="col-lg-12">
               <div className="section-head mb-60">
                 <p>
-                  Can’t find a caravan that fits your family? Everest Caravans has the answer. Instead of settling for a
-                  standard design, they build a custom caravan to your specs. Bye bye compromises, hello dream caravan.
+                  Can’t find a caravan that fits your family? Everest Caravans
+                  has the answer. Instead of settling for a standard design,
+                  they build a custom caravan to your specs. Bye bye
+                  compromises, hello dream caravan.
                 </p>
                 <p>
                   Everest Caravans build{" "}
-                  <a
+                  <Link
                     href="https://www.caravansforsale.com.au/top-family-off-road-caravans-australia/"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
                     top rated family caravans
-                  </a>
-                  , so every detail is designed for your family’s lifestyle. They work with you to ensure the design,
-                  features and functionality meets your needs.
+                  </Link>
+                  , so every detail is designed for your family’s lifestyle.
+                  They work with you to ensure the design, features and
+                  functionality meets your needs.
                 </p>
                 <h2>Hand Crafted for Every Journey</h2>
                 <h3>Built to Last</h3>
                 <p>
-                  Every van is hand built with premium materials to withstand the Australian climate. Structural strength
-                  and advanced engineering means these caravans are both durable and luxurious. With Everest you can
-                  travel the country knowing your van will last.
+                  Every van is hand built with premium materials to withstand
+                  the Australian climate. Structural strength and advanced
+                  engineering means these caravans are both durable and
+                  luxurious. With Everest you can travel the country knowing
+                  your van will last.
                 </p>
               </div>
             </div>

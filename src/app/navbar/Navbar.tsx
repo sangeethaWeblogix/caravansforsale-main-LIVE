@@ -1,7 +1,7 @@
 "use client";
 
 import "./navbar.css";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -37,6 +37,10 @@ export default function Navbar() {
     setIsOpen(false);
     setOpenDropdown(null);
   };
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const toggleDropdown = (name: Exclude<DropdownType, null>) => {
     setOpenDropdown((prev) => (prev === name ? null : name));
@@ -93,137 +97,142 @@ export default function Navbar() {
                 checked={isOpen}
                 onChange={toggleNav}
               />
-              <label htmlFor="openSideMenu" className="menuIconToggle">
-                <div className="hamb-line dia p-1"></div>
-                <div className="hamb-line hor"></div>
-                <div className="hamb-line dia p-2"></div>
-              </label>
+
+              {mounted && (
+                <label htmlFor="openSideMenu" className="menuIconToggle">
+                  <div className="hamb-line dia p-1"></div>
+                  <div className="hamb-line hor"></div>
+                  <div className="hamb-line dia p-2"></div>
+                </label>
+              )}
             </div>
           </div>
         </div>
       </nav>
 
       {/* Sidebar */}
-      <div id="mySidenav" className={`sidenav ${isOpen ? "open" : ""}`}>
-        <div className="sidebar-navigation">
-          <ul>
-            <li>
-              <a
-                href="#"
-                className="drop_down"
-                onClick={(e) => {
-                  e.preventDefault();
-                  toggleDropdown("state");
-                }}
-              >
-                Browse by State
-              </a>
-              <ul
-                className={
-                  openDropdown === "state" ? "submenu open" : "submenu"
-                }
-              >
-                {STATES.map((state) => (
-                  <li key={state}>
-                    <Link
-                      className="dropdown-item"
-                      href={`/listings/${state
-                        .toLowerCase()
-                        .replace(/ /g, "-")}-state/`}
-                      onClick={closeNav}
-                    >
-                      {state}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </li>
+      {mounted && (
+        <div id="mySidenav" className={`sidenav ${isOpen ? "open" : ""}`}>
+          <div className="sidebar-navigation">
+            <ul>
+              <li>
+                <a
+                  href="#"
+                  className="drop_down"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    toggleDropdown("state");
+                  }}
+                >
+                  Browse by State
+                </a>
+                <ul
+                  className={
+                    openDropdown === "state" ? "submenu open" : "submenu"
+                  }
+                >
+                  {STATES.map((state) => (
+                    <li key={state}>
+                      <Link
+                        className="dropdown-item"
+                        href={`/listings/${state
+                          .toLowerCase()
+                          .replace(/ /g, "-")}-state/`}
+                        onClick={closeNav}
+                      >
+                        {state}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </li>
 
-            <li>
-              <a
-                href="#"
-                className="drop_down"
-                onClick={(e) => {
-                  e.preventDefault();
-                  toggleDropdown("category");
-                }}
-              >
-                Browse by Category
-              </a>
-              <ul
-                className={
-                  openDropdown === "category" ? "submenu open" : "submenu"
-                }
-              >
-                {CATEGORIES.map((cat) => (
-                  <li key={cat}>
-                    <Link
-                      className="dropdown-item"
-                      href={`/listings/${cat}-category/`}
-                      onClick={closeNav}
-                    >
-                      {cat
-                        .replace(/-/g, " ")
-                        .replace(/\b\w/g, (c) => c.toUpperCase())}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </li>
+              <li>
+                <a
+                  href="#"
+                  className="drop_down"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    toggleDropdown("category");
+                  }}
+                >
+                  Browse by Category
+                </a>
+                <ul
+                  className={
+                    openDropdown === "category" ? "submenu open" : "submenu"
+                  }
+                >
+                  {CATEGORIES.map((cat) => (
+                    <li key={cat}>
+                      <Link
+                        className="dropdown-item"
+                        href={`/listings/${cat}-category/`}
+                        onClick={closeNav}
+                      >
+                        {cat
+                          .replace(/-/g, " ")
+                          .replace(/\b\w/g, (c) => c.toUpperCase())}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </li>
 
-            <li>
-              <a
-                href="#"
-                className="drop_down"
-                onClick={(e) => {
-                  e.preventDefault();
-                  toggleDropdown("price");
-                }}
-              >
-                Browse by Price
-              </a>
-              <ul
-                className={
-                  openDropdown === "price" ? "submenu open" : "submenu"
-                }
-              >
-                {PRICES.map((price) => (
-                  <li key={price}>
-                    <Link
-                      className="dropdown-item"
-                      href={`/listings/under-${price}/`}
-                      onClick={closeNav}
-                    >
-                      Under ${price.toLocaleString()}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </li>
+              <li>
+                <a
+                  href="#"
+                  className="drop_down"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    toggleDropdown("price");
+                  }}
+                >
+                  Browse by Price
+                </a>
+                <ul
+                  className={
+                    openDropdown === "price" ? "submenu open" : "submenu"
+                  }
+                >
+                  {PRICES.map((price) => (
+                    <li key={price}>
+                      <Link
+                        className="dropdown-item"
+                        href={`/listings/under-${price}/`}
+                        onClick={closeNav}
+                      >
+                        Under ${price.toLocaleString()}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </li>
 
-            {/* <li>
+              {/* <li>
               <Link href="/caravan-dealers/" onClick={closeNav}>
                 Caravan Dealers
               </Link>
             </li> */}
-            <li>
-              <Link href="/listings/" onClick={closeNav}>
-                All Listings
-              </Link>
-            </li>
-            <li>
-              <Link href="/blog/" onClick={closeNav}>
-                Blog
-              </Link>
-            </li>
-            <li>
-              <Link href="/contact/" onClick={closeNav}>
-                Contact
-              </Link>
-            </li>
-          </ul>
+              <li>
+                <Link href="/listings/" onClick={closeNav}>
+                  All Listings
+                </Link>
+              </li>
+              <li>
+                <Link href="/blog/" onClick={closeNav}>
+                  Blog
+                </Link>
+              </li>
+              <li>
+                <Link href="/contact/" onClick={closeNav}>
+                  Contact
+                </Link>
+              </li>
+            </ul>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Overlay */}
       <div

@@ -106,7 +106,6 @@ export default function blogDetailsPage({
               <div className="d-flex small align-items-center justify-content-between mt-10">
                 <div className="l_side d-flex align-items-center">
                   <i className="bi bi-clock me-1"></i>
-                  <span>{post.date}</span>
                 </div>
               </div>
 

@@ -1,7 +1,8 @@
-import  Header  from "./Header";
-import  Middle  from "./Middle";
-import  FaqSection  from "./FaqSection";
-import './comman.css'
+import Header from "./Header";
+import Middle from "./Middle";
+import FaqSection from "./FaqSection";
+import "./comman.css";
+import { Metadata } from "next";
 
 export async function generateMetadata(): Promise<Metadata> {
   const metaTitle =
@@ -32,7 +33,7 @@ export default function Home() {
     <div>
       <Header />
       <Middle />
-      <FaqSection />      
+      <FaqSection />
     </div>
   );
 }

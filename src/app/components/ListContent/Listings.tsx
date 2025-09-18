@@ -6,7 +6,12 @@ import Listing from "./LisitingContent";
 import CaravanFilter from "../CaravanFilter";
 import SkeletonListing from "../skelton";
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import {
+  notFound,
+  usePathname,
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
 import { buildSlugFromFilters } from "../slugBuilter";
 import { parseSlugToFilters } from "../../components/urlBuilder";
 import Head from "next/head";
@@ -138,7 +143,11 @@ export default function ListingsPage({
   const router = useRouter();
 
   const [isUsingInitialData, setIsUsingInitialData] = useState(!!initialData);
+  const rawPage = searchParams.get("page") ?? "1";
 
+  if (!/^\d+$/.test(rawPage)) notFound();
+  const page = parseInt(rawPage, 10);
+  if (page < 1) notFound();
   // Initialize state with initialData if provided
   const [products, setProducts] = useState<Product[]>(
     initialData?.data?.products
@@ -229,6 +238,15 @@ export default function ListingsPage({
       return out;
     }
     return f;
+  };
+  const validatePage = (raw: string | null): number => {
+    if (!raw) return 1; // no page → ok (page 1)
+    if (!/^\d+$/.test(raw)) {
+      notFound(); // non-numeric → 404
+    }
+    const page = parseInt(raw, 10);
+    if (page < 1) notFound(); // negative or zero → 404
+    return page;
   };
 
   const updateURLWithFilters = useCallback(
@@ -409,7 +427,8 @@ export default function ListingsPage({
     const slugParts = pathKey.split("/listings/")[1]?.split("/") || [];
     const parsedFromURL = parseSlugToFilters(slugParts);
 
-    const pageFromURL = parseInt(searchParams.get("page") || "1", 10);
+    // const pageFromURL = parseInt(searchParams.get("page") || "1", 10);
+    const pageFromURL = validatePage(searchParams.get("page"));
     const orderbyQP = searchParams.get("orderby") || undefined;
     const fromyear = searchParams.get("acustom_fromyears") || undefined;
     const toyear = searchParams.get("acustom_toyears") || undefined;

@@ -1,11 +1,11 @@
-import  Header  from "./Header";
-import  Middle  from "./Middle";
-import  Footer  from "./Footer";
-import './comman.css'
+import Header from "./Header";
+import Middle from "./Middle";
+import Footer from "./Footer";
+import "./comman.css";
+import { Metadata } from "next";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const metaTitle =
-    "Everest Caravans | Custom Built Full Off Road Caravans";
+  const metaTitle = "Everest Caravans | Custom Built Full Off Road Caravans";
   const metaDescription =
     "Custom-built full off-road, extreme off road caravans @ Everest Caravans with a 10 year structural warranty. Explore rugged durability &amp; premium features.";
 
@@ -32,7 +32,7 @@ export default function Home() {
     <div>
       <Header />
       <Middle />
-      <Footer />      
+      <Footer />
     </div>
   );
 }

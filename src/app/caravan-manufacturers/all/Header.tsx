@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 export default function ManufacturerRange() {
   return (
@@ -14,8 +14,8 @@ export default function ManufacturerRange() {
                 poptops, versatile touring models or luxury editions, and
                 innovative hybrid caravans. Whether you seek rugged durability
                 for remote journeys or luxurious comfort for leisurely escapes,
-                our curated list ensures there's a caravan perfectly suited to
-                your needs.
+                our curated list ensures there&apos;s a caravan perfectly suited
+                to your needs.
               </p>
               <p>
                 Embark on your journey with confidence, knowing that each
@@ -32,4 +32,3 @@ export default function ManufacturerRange() {
     </section>
   );
 }
-

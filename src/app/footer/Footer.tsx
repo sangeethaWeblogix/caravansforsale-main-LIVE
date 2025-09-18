@@ -12,24 +12,25 @@ import { BsChevronUp } from "react-icons/bs";
 import { useEffect, useState } from "react";
 
 const Footer = () => {
-  const [currentYear, setCurrentYear] = useState<number | null>(null);
-
-  useEffect(() => {
-    setCurrentYear(new Date().getFullYear());
-  }, []);
+  const currentYear = new Date().getFullYear();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  if (!mounted) return null;
 
   return (
     <>
-      <footer className="style-8">
+      <div className="style-8">
         <div className="container">
           <div className="foot py-4 border-1 border-top brd-gray">
             <div className="row">
               {/* Left Column */}
               <div className="col-lg-6">
-                <p>
-                  Caravan Marketplace (Web Logix) ABN 92 009 784 881. <br />
-                  Copyright © {currentYear ?? "----"}. All Rights Reserved.
-                </p>
+                <div>
+                  <p>
+                    Caravan Marketplace (Web Logix) ABN 92 009 784 881. <br />
+                    Copyright © {currentYear ?? "----"}. All Rights Reserved.
+                  </p>
+                </div>
                 <div className="disclaimer" style={{ marginTop: "12px" }}>
                   <p>
                     Disclaimer: Caravan marketplace is not affiliated with any
@@ -173,15 +174,15 @@ const Footer = () => {
             </div>
           </div>
         </div>
-      </footer>
+      </div>
 
       {/* To Top Button */}
-      <a
+      <Link
         href="#"
         className="to_top bg-gray rounded-circle icon-40 d-inline-flex align-items-center justify-content-center show"
       >
         <BsChevronUp className="fs-6 text-white" />
-      </a>
+      </Link>
     </>
   );
 };

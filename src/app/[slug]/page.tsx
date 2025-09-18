@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import DeatilsPage from "./details";
-import RelatedNews from "./RelatedNews";
-import FaqSection from "./FaqSection";
+
 import "./details.css";
 import { Card, CardContent, Typography, Button } from "@mui/material";
 import Link from "next/link";
@@ -165,16 +164,6 @@ export default async function ProductDetailPage({ params }: PageProps) {
   if (!data) {
     notFound(); // ✅ Show Next.js 404 page
   }
-  console.log("dataaaaa", data);
-
-  const hasRelatedBlogs =
-    Array.isArray(data?.data?.related_blogs) &&
-    data.data.related_blogs.length > 0;
-  console.log("dataaaaahasRelatedBlogs", hasRelatedBlogs);
-
-  // FAQ check
-  const hasFaqs = Array.isArray(data?.data?.faq) && data.data.faq.length > 0;
-  console.log("dataaaaahasRelatedFAQ", data);
 
   return (
     <div>

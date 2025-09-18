@@ -106,8 +106,8 @@ export default function CaravanManufacturers() {
                     warranty.
                   </li>
                   <li>
-                    What to Expect: If you're seeking the perfect caravan with
-                    off-road capabilities, whether full off-road or extreme
+                    What to Expect: If you&apos;re seeking the perfect caravan
+                    with off-road capabilities, whether full off-road or extreme
                     off-road, Everest is your destination.
                   </li>
                 </ul>
@@ -130,9 +130,9 @@ export default function CaravanManufacturers() {
               </p>
 
               <p>
-                <p>
-                  Everest Caravans' Falcon and Nitro Extreme are designed for
-                  the toughest terrain. For families the Calibra and Summitt
+                <span>
+                  Everest Caravans&apos; Falcon and Nitro Extreme are designed
+                  for the toughest terrain. For families the Calibra and Summitt
                   have practical layouts with plenty of space and amenities. The
                   Alpine range including the Alpine Freestyle and Alpine Quattro
                   is for compact off-road adventures without compromising on
@@ -143,7 +143,7 @@ export default function CaravanManufacturers() {
                   </Link>{" "}
                   in Australia—trusted by adventurers for performance, comfort,
                   and reliability.
-                </p>
+                </span>
               </p>
 
               {/* Example of Ad Image */}
@@ -164,7 +164,7 @@ export default function CaravanManufacturers() {
                 />
               </div>
 
-              <a
+              <Link
                 className="block border border-gray-300 shadow-md my-4"
                 href="https://www.caravansforsale.com.au/"
                 target="_blank"
@@ -184,19 +184,19 @@ export default function CaravanManufacturers() {
                   height={150}
                   className="hidden-lg hidden-md hidden-sm"
                 />
-              </a>
+              </Link>
               {/* Orbit Caravans Section */}
 
               <h3 className="text-xl font-bold mb-3">
                 2.{" "}
-                <a
+                <Link
                   href="https://www.orbitcaravans.com.au/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-blue-600 hover:underline"
                 >
                   Orbit Caravans
-                </a>
+                </Link>
               </h3>
 
               <div className="key_features">
@@ -241,12 +241,12 @@ export default function CaravanManufacturers() {
                     Australia.
                   </li>
                 </ul>
-                <a
+                <Link
                   href="/caravan-manufacturers/orbit-caravans"
                   className="text-blue-600 underline mt-2 inline-block"
                 >
                   View All Range
-                </a>
+                </Link>
               </div>
 
               <p className="mb-4">
@@ -278,14 +278,14 @@ export default function CaravanManufacturers() {
               {/* Grand City Caravans Section */}
               <h3 className="text-xl font-bold mb-3">
                 3.{" "}
-                <a
+                <Link
                   href="https://grandcitycaravans.com.au/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-blue-600 hover:underline"
                 >
                   Grand City Caravans
-                </a>
+                </Link>
               </h3>
 
               <div className="key_features">
@@ -326,12 +326,12 @@ export default function CaravanManufacturers() {
                     luxury experience.
                   </li>
                 </ul>
-                <a
+                <Link
                   href="/caravan-manufacturers/grand-city-caravans"
                   className="text-blue-600 underline mt-2 inline-block"
                 >
                   View All Range
-                </a>
+                </Link>{" "}
               </div>
 
               <p className="mb-2">
@@ -367,13 +367,13 @@ export default function CaravanManufacturers() {
 
               <h3>
                 4.{" "}
-                <a
+                <Link
                   href="https://www.coronetrv.com.au/"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
                   Coronet RV
-                </a>
+                </Link>{" "}
               </h3>
 
               <div className="key_features">
@@ -461,13 +461,13 @@ export default function CaravanManufacturers() {
 
               <h3>
                 5.{" "}
-                <a
+                <Link
                   href="https://www.silvervalleycaravans.com.au/"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
                   Silver Valley Caravans
-                </a>
+                </Link>{" "}
               </h3>
 
               <div className="key_features">
@@ -550,13 +550,13 @@ export default function CaravanManufacturers() {
 
               <h3>
                 6.{" "}
-                <a
+                <Link
                   href="https://redcentrecaravans.com.au/"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
                   Red Centre Caravans
-                </a>
+                </Link>{" "}
               </h3>
 
               <div className="key_features">
@@ -656,8 +656,8 @@ export default function CaravanManufacturers() {
                     construction.
                   </li>
                   <li>
-                    Strengths: Renowned for crafting some of Australia's most
-                    premium caravans.
+                    Strengths: Renowned for crafting some of Australia&apos;s
+                    most premium caravans.
                   </li>
                   <li>
                     Australian Owned &amp; Operated: Proudly based in Australia,
@@ -801,13 +801,13 @@ export default function CaravanManufacturers() {
 
               <h3>
                 9.{" "}
-                <a
+                <Link
                   href="https://willowrv.com.au/"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
                   Willow RV
-                </a>
+                </Link>{" "}
               </h3>
 
               <div className="key_features">
@@ -878,13 +878,13 @@ export default function CaravanManufacturers() {
 
               <h3>
                 10.{" "}
-                <a
+                <Link
                   href="https://apachecaravans.com.au/"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
                   Apache Caravans
-                </a>
+                </Link>{" "}
               </h3>
 
               <div className="key_features">
@@ -926,12 +926,12 @@ export default function CaravanManufacturers() {
                     built for durability, efficiency, and everyday adventure.
                   </li>
                 </ul>
-                <a
+                <Link
                   href="/caravan-manufacturers/apache-caravans/"
                   className="view-all-range"
                 >
                   View All Range
-                </a>
+                </Link>{" "}
               </div>
 
               <p>
