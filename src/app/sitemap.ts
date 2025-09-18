@@ -15,7 +15,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: new Date(),
     },
     {
-      url: `${siteUrl}/listigs-sitemap.xml`,
+      url: `${siteUrl}/listings-sitemap.xml`,
       lastModified: new Date(),
     },
     {
