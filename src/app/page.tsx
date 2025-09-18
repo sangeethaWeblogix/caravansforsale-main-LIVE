@@ -1,40 +1,32 @@
-import React from "react";
+import type { Metadata } from "next";
 import Home from "./home";
-import { Metadata } from "next";
 import "./globals.css";
 
-export async function generateMetadata(): Promise<Metadata> {
-  const metaTitle = "Caravans For Sale | New & Used Caravan Sales in Australia";
-  const metaDescription =
-    "Browse new & used caravans for sale across Australia. Compare prices on off-road, hybrid, pop top, touring, luxury models with size, weight & sleeping capacity.";
-
-  const robots = "index, follow";
-
-  return {
-    title: metaTitle,
-    description: metaDescription,
-    robots: robots,
-    openGraph: {
-      title: metaTitle,
-      description: metaDescription,
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: metaTitle,
-      description: metaDescription,
-    },
-    alternates: {
-      canonical: "https://www.caravansforsale.com.au/", // <-- change URL per page
-    },
-  };
-}
-
-const page = () => {
-  return (
-    <div>
-      <Home />
-    </div>
-  );
+export const metadata: Metadata = {
+  title: "Caravans For Sale | New & Used Caravan Sales in Australia",
+  description:
+    "Browse new & used caravans for sale across Australia. Compare prices on off-road, hybrid, pop top, touring, luxury models with size, weight & sleeping capacity.",
+  robots: "index, follow",
+  openGraph: {
+    title: "Caravans For Sale | New & Used Caravan Sales in Australia",
+    description:
+      "Browse new & used caravans for sale across Australia. Compare prices on off-road, hybrid, pop top, touring, luxury models with size, weight & sleeping capacity.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Caravans For Sale | New & Used Caravan Sales in Australia",
+    description:
+      "Browse new & used caravans for sale across Australia. Compare prices on off-road, hybrid, pop top, touring, luxury models with size, weight & sleeping capacity.",
+  },
+  alternates: {
+    canonical: "https://www.caravansforsale.com.au/",
+  },
 };
 
-export default page;
+const Page = () => (
+  <div>
+    <Home />
+  </div>
+);
+
+export default Page;
