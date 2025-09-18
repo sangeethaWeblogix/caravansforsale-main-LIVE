@@ -1,6 +1,7 @@
 import  Header  from "./Header";
 import  CaravanList  from "./CaravanList";
 import './comman.css'
+import { Metadata } from "next";
 
 export async function generateMetadata(): Promise<Metadata> {
   const metaTitle =

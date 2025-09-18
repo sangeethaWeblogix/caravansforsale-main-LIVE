@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";  // ✅ missing import
+import { useState } from "react"; // ✅ missing import
 import Image from "next/image";
 import Link from "next/link";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -10,8 +10,7 @@ import "swiper/css";
 import "swiper/css/navigation";
 
 export default function EverestCaravans() {
-  const [flippedCard, setFlippedCard] = useState(null); // ✅ track which card is flipped
-
+  const [flippedCard, setFlippedCard] = useState<number | null>(null);
   return (
     <>
       {/* Features Section */}
@@ -164,8 +163,8 @@ export default function EverestCaravans() {
                           <span>Western Australia</span>
                         </h6>
                         <h3 className="title">
-                          2024 Everest Warrior 19’6 Extreme Off Road with Ensuite – 4
-                          Berth
+                          2024 Everest Warrior 19’6 Extreme Off Road with
+                          Ensuite – 4 Berth
                         </h3>
                       </div>
                       <ul className="vehicleDetailsWithIcons simple">
@@ -203,7 +202,8 @@ export default function EverestCaravans() {
                           <span>Tasmania</span>
                         </h6>
                         <h3 className="title">
-                          2024 Everest Warrior 19’6 Extreme Off Road with Club Lounge
+                          2024 Everest Warrior 19’6 Extreme Off Road with Club
+                          Lounge
                         </h3>
                       </div>
                       <ul className="vehicleDetailsWithIcons simple">
