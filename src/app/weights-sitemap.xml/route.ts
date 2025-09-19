@@ -1,4 +1,4 @@
-// src/app/weights-sitemap.xml/route.ts
+ // src/app/weights-sitemap.xml/route.ts
 import { NextResponse } from "next/server";
 
 const SITE_URL =
@@ -16,7 +16,7 @@ export async function GET() {
   atm.forEach((w) => {
     urls += `
     <url>
-      <loc>${SITE_URL}/listings/under-${w}-kg-atm</loc>
+      <loc>${SITE_URL}/listings/under-${w}-kg-atm/</loc>
       <lastmod>${new Date().toISOString().split("T")[0]}</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.6</priority>
@@ -27,7 +27,7 @@ export async function GET() {
   atm.forEach((w) => {
     urls += `
     <url>
-      <loc>${SITE_URL}/listings/over-${w}-kg-atm</loc>
+      <loc>${SITE_URL}/listings/over-${w}-kg-atm/</loc>
       <lastmod>${new Date().toISOString().split("T")[0]}</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.6</priority>
@@ -39,9 +39,7 @@ export async function GET() {
     for (let j = i + 1; j < atm.length; j++) {
       urls += `
       <url>
-        <loc>${SITE_URL}/listings/between-${atm[i]}-kg-and-${
-        atm[j]
-      }-kg-atm</loc>
+        <loc>${SITE_URL}/listings/between-${atm[i]}-${atm[j]}-kg-atm/</loc>
         <lastmod>${new Date().toISOString().split("T")[0]}</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
