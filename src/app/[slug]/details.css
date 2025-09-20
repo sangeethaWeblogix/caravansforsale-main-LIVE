@@ -312,6 +312,120 @@ small {
   margin-bottom: 30px !important;
 }
 
+.blog-content-info #ez-toc-container {
+  padding: 20px;
+}
+
+/* table of content styles */
+
+div#ez-toc-container {
+  background: #f5f7fc;
+  border: 1px solid #d3daec;
+  width: 100%;
+}
+
+#ez-toc-container {
+  background: #f9f9f9;
+  border: 1px solid #aaa;
+  border-radius: 4px;
+  -webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+  display: table;
+  margin-bottom: 1em;
+  padding: 10px 20px 10px 10px;
+  position: relative;
+  width: auto;
+}
+
+.ez-toc-title-container {
+  display: table;
+  width: 100%;
+}
+
+.blog-content-info #ez-toc-container p.ez-toc-title {
+  font-weight: 600;
+  margin-bottom: 8px;
+  display: block;
+  font-size: 22px;
+}
+
+#ez-toc-container li,
+#ez-toc-container ul,
+#ez-toc-container ul li,
+div.ez-toc-widget-container,
+div.ez-toc-widget-container li {
+  background: 0 0;
+  list-style: none;
+  line-height: 1.6;
+  margin: 0;
+  overflow: hidden;
+  z-index: 1;
+}
+
+div#ez-toc-container ul li {
+  font-weight: 500;
+  font-size: 16px;
+}
+
+.ez-toc-counter ul {
+  counter-reset: item;
+}
+
+.ez-toc-counter nav ul li a::before {
+  content: counters(item, ".", decimal) ". ";
+  display: inline-block;
+  counter-increment: item;
+  flex-grow: 0;
+  flex-shrink: 0;
+  margin-right: 0.2em;
+  float: left;
+}
+
+#ez-toc-container a {
+  color: #000000;
+  box-shadow: none;
+  text-decoration: none;
+  text-shadow: none;
+  display: inline-flex;
+  align-items: stretch;
+  flex-wrap: nowrap;
+}
+
+div#ez-toc-container nav ul ul li {
+  font-size: 14px;
+}
+
+#ez-toc-container li,
+#ez-toc-container ul {
+  padding: 0;
+}
+
+#ez-toc-container ul ul,
+.ez-toc div.ez-toc-widget-container ul ul {
+  margin-left: 1.5em;
+}
+ul.ez-toc-list a.ez-toc-link {
+  padding: 5px 0 5px 0;
+}
+
+.ez-toc-title-toggle {
+  display: none;
+}
+
+button.more_less {
+  background-color: #133570;
+  border: 1px solid #133570;
+  padding: 9px 20px;
+  font-weight: 400;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 100px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 10px;
+  cursor: pointer;
+}
+
 /* --------------- faq styles --------------- */
 
 .faq.style-3 .accordion-item {
@@ -476,6 +590,10 @@ small {
   font-size: 26px;
   text-decoration: none;
   font-weight: 500;
+}
+
+.toc_hide_details .ez-toc-list {
+  display: none;
 }
 
 .viewall_bttn a {

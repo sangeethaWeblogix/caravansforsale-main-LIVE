@@ -1,8 +1,10 @@
+"use client";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import FaqSection from "./FaqSection";
 import RelatedNews from "./RelatedNews";
 import "./details.css";
+import { useEffect, useState } from "react";
 
 type BlogDetail = {
   id: number;
@@ -11,6 +13,7 @@ type BlogDetail = {
   date?: string;
   banner_image?: string;
   image?: string;
+  toc?: string; // HTML
   content?: string; // HTML
 };
 type FaqItem = {
@@ -42,7 +45,18 @@ export default function blogDetailsPage({
   data: BlogDetailResponse;
 }) {
   console.log("dataaa", data);
+  const [tocItems, setTocItems] = useState<Element[]>([]);
+
+  // ✅ Run DOMParser only on client
   const post = data?.data?.blog_detail;
+  useEffect(() => {
+    if (post?.toc) {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(post.toc, "text/html");
+      const items = Array.from(doc.querySelectorAll("li"));
+      setTocItems(items);
+    }
+  }, [post?.toc]);
   // put this near the top of the file (outside the component)
   const decodeEntities = (s = "") =>
     s
@@ -71,6 +85,7 @@ export default function blogDetailsPage({
   if (!post) {
     notFound();
   }
+  const [showFullToc, setShowFullToc] = useState(false);
 
   return (
     <div className="blog-page style-5 color-4">
@@ -113,6 +128,52 @@ export default function blogDetailsPage({
 
               <h1 className="mb-20 mt-10 color-000">{plainTitle}</h1>
               <div className="blog-content-info">
+                <div
+                  id="ez-toc-container"
+                  className="ez-toc-v2_0_69_1 counter-hierarchy ez-toc-counter ez-toc-custom ez-toc-container-direction"
+                >
+                  <div className="ez-toc-title-container">
+                    <p className="ez-toc-title ez-toc-toggle">
+                      Table of Contents
+                    </p>
+                  </div>
+                  <div className="toc-container">
+                    {tocItems.length > 0 ? (
+                      <div className="toc-content">
+                        <nav>
+                          <ul className="ez-toc-list ez-toc-list-level-1 ">
+                            {(showFullToc
+                              ? tocItems
+                              : tocItems.slice(0, 2)
+                            ).map((item, index) => (
+                              <li
+                                key={index}
+                                className="ez-toc-page-1 ez-toc-heading-level-2"
+                                dangerouslySetInnerHTML={{
+                                  __html: item.innerHTML,
+                                }}
+                              />
+                            ))}
+                          </ul>
+                        </nav>
+                        {tocItems.length > 2 && (
+                          <button
+                            className="mt-2 text-blue-600 underline more_less"
+                            onClick={() => setShowFullToc((prev) => !prev)}
+                          >
+                            {showFullToc ? "Show Less" : "Show More"}
+                          </button>
+                        )}
+                      </div>
+                    ) : (
+                      <p>No TOC available</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="blog-content-info toc_hide_details">
+                {" "}
                 {/* Content goes here: Use dangerouslySetInnerHTML if content is static and trusted */}
                 {/* Or convert entire content into JSX/MDX if editable */}
                 <div

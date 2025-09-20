@@ -15,6 +15,7 @@ import {
 import { buildSlugFromFilters } from "../slugBuilter";
 import { parseSlugToFilters } from "../../components/urlBuilder";
 import Head from "next/head";
+import "./loader.css";
 
 /* --------- GLOBAL de-dupe across StrictMode remounts --------- */
 let LAST_GLOBAL_REQUEST_KEY = "";
@@ -490,6 +491,7 @@ export default function ListingsPage({
 
   const handleFilterChange = useCallback(
     (newFilters: Filters) => {
+      setIsLoading(true);
       const mergedFilters = { ...filtersRef.current, ...newFilters };
 
       if ("orderby" in newFilters && !newFilters.orderby) {
@@ -568,9 +570,15 @@ export default function ListingsPage({
                       states={stateOptions}
                       onFilterChange={(partial) => {
                         handleFilterChange(partial);
+                        setIsLoading(true);
                       }}
                       currentFilters={filters}
                     />
+                    {isLoading && (
+                      <div className="fixed inset-0 z-[9999] bg-white/70 flex items-center justify-center">
+                        <div className="loader"></div>
+                      </div>
+                    )}
                   </Suspense>
                 </div>
               </div>
@@ -623,6 +631,7 @@ export default function ListingsPage({
               states={stateOptions}
               onFilterChange={(partial) => {
                 handleFilterChange(partial);
+                setIsLoading(true);
               }}
               currentFilters={filters}
             />
