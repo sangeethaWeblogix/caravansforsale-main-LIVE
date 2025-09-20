@@ -230,14 +230,6 @@ export default function ListingContent({
                       )}
                     </div>
                     <ul className="vehicleDetailsWithIcons simple">
-                      {product.condition && (
-                        <li>
-                          <span className="attribute3">
-                            {product.condition}
-                          </span>
-                        </li>
-                      )}
-
                       {product.categories && product.categories.length > 0 && (
                         <li className="attribute3_list">
                           <span className="attribute3">
@@ -325,6 +317,10 @@ export default function ListingContent({
                       <div className="vehicleThumbDetails__features__address">
                         <label>Seller Location</label>
                         <h3>{product.location}</h3>
+                      </div>
+                      <div className="vehicleThumbDetails__features__condition">
+                        <label>Condition</label>
+                        <h3>{product.condition}</h3>
                       </div>
                     </div>
                   </div>

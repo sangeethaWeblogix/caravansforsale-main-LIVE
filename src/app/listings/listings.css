@@ -297,6 +297,15 @@ h1.page-title {
 .vehicleSearch__column-poster .vehicleThumbDetails__part__finance bdi {
   display: flex;
 }
+.vehicleSearch__column-poster .vehicleThumbDetails__features__condition {
+  color: rgb(0, 0, 0);
+  border-right: 0.5px solid rgb(221, 221, 221);
+  align-items: center;
+  height: auto;
+  padding: 0px 12px;
+  display: block;
+  position: relative;
+}
 .vehicleSearch__column-poster .vehicleThumbDetails__features__address {
   color: rgb(0, 0, 0);
   border-left: 0.5px solid rgb(221, 221, 221);
@@ -314,7 +323,23 @@ h1.page-title {
   margin-bottom: 0px;
   font-size: 12px;
 }
+.vehicleSearch__column-poster .vehicleThumbDetails__features__condition h3 {
+  font-weight: 600;
+  font-size: 14px;
+  display: inline-block;
+}
+.vehicleSearch__column-poster .vehicleThumbDetails__features__condition label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 0px;
+  font-size: 12px;
+}
 .vehicleSearch__column-poster .vehicleThumbDetails__features__address h3 {
+  font-weight: 600;
+  font-size: 14px;
+  display: inline-block;
+}
+.vehicleSearch__column-poster .vehicleThumbDetails__features__condition h3 {
   font-weight: 600;
   font-size: 14px;
   display: inline-block;
