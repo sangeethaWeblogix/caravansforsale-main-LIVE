@@ -325,6 +325,7 @@ export default function ClientLogger({
   };
 
   const stateFields = [{ label: "Location", value: getAttr("Location") }];
+  const conditionfield = [{ label: "Condition", value: getAttr("Conditions") }];
 
   const parseAmount = (v: string | number | undefined) => {
     const n = Number(String(v ?? "").replace(/[^0-9.]/g, ""));
@@ -419,6 +420,15 @@ export default function ClientLogger({
 
                   <div className="attributes">
                     {stateFields
+                      .filter((f) => f.value)
+                      .map((f, index) => (
+                        <h6 className="category" key={index}>
+                          {f.label}- {f.value}
+                        </h6>
+                      ))}
+                  </div>
+                  <div className="attributes">
+                    {conditionfield
                       .filter((f) => f.value)
                       .map((f, index) => (
                         <h6 className="category" key={index}>
