@@ -39,7 +39,7 @@ type BlogDetailResponse = {
   };
   seo?: { metatitle?: string; metadescription?: string; index?: string };
 };
-export default function blogDetailsPage({
+export default function BlogDetailsPage({
   data,
 }: {
   data: BlogDetailResponse;
