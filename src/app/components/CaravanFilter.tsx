@@ -2284,6 +2284,11 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                     startTransition(() => {
                       updateAllFiltersAndURL(updatedFilters);
                     });
+                    setMakeOpen(false);
+
+                    setTimeout(() => {
+                      setModelOpen(true);
+                    }, 0);
                   }}
                 >
                   {make.name}
