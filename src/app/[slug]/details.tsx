@@ -161,7 +161,17 @@ export default function BlogDetailsPage({
                             className="mt-2 text-blue-600 underline more_less"
                             onClick={() => setShowFullToc((prev) => !prev)}
                           >
-                            {showFullToc ? "Show Less" : "Show More"}
+                            {showFullToc ? (
+                              <>
+                                Show Less{" "}
+                                <i className="bi bi-chevron-up ml-1"></i>
+                              </>
+                            ) : (
+                              <>
+                                Show More{" "}
+                                <i className="bi bi-chevron-down ml-1"></i>
+                              </>
+                            )}
                           </button>
                         )}
                       </div>
