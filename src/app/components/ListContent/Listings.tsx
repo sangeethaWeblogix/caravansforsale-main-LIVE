@@ -488,12 +488,13 @@ export default function ListingsPage({
 
     loadListings(pageFromURL, merged, true);
   }, [searchKey, pathKey, loadListings, DEFAULT_RADIUS, searchParams]);
-
   const handleFilterChange = useCallback(
-    (newFilters: Filters) => {
-      setIsLoading(true);
+    async (newFilters: Filters) => {
+      setIsLoading(true); // ✅ show skeleton immediately
+
       const mergedFilters = { ...filtersRef.current, ...newFilters };
 
+      // cleanup empty values
       if ("orderby" in newFilters && !newFilters.orderby) {
         mergedFilters.orderby = undefined;
       }
@@ -503,22 +504,60 @@ export default function ListingsPage({
       if ("acustom_toyears" in newFilters && !newFilters.acustom_toyears) {
         mergedFilters.acustom_toyears = undefined;
       }
-      setFilters(mergedFilters);
-      filtersRef.current = mergedFilters;
 
-      const pageFromURL = parseInt(searchParams.get("page") || "1", 10);
+      filtersRef.current = mergedFilters;
+      setFilters(mergedFilters);
+
+      // reset pagination when filters change
       setPagination({
-        current_page: pageFromURL,
+        current_page: 1,
         total_pages: 1,
         total_items: 0,
         per_page: 12,
         total_products: 0,
       });
 
+      // ✅ update URL
       updateURLWithFilters(mergedFilters, 1);
+
+      // ✅ fetch data immediately (don’t wait for URL watcher)
+      await loadListings(1, mergedFilters, true);
+
+      setIsLoading(false); // ✅ hide loader when done
     },
-    [searchParams, updateURLWithFilters]
+    [updateURLWithFilters, loadListings]
   );
+
+  // const handleFilterChange = useCallback(
+  //   (newFilters: Filters) => {
+  //     setIsLoading(true);
+  //     const mergedFilters = { ...filtersRef.current, ...newFilters };
+
+  //     if ("orderby" in newFilters && !newFilters.orderby) {
+  //       mergedFilters.orderby = undefined;
+  //     }
+  //     if ("acustom_fromyears" in newFilters && !newFilters.acustom_fromyears) {
+  //       mergedFilters.acustom_fromyears = undefined;
+  //     }
+  //     if ("acustom_toyears" in newFilters && !newFilters.acustom_toyears) {
+  //       mergedFilters.acustom_toyears = undefined;
+  //     }
+  //     setFilters(mergedFilters);
+  //     filtersRef.current = mergedFilters;
+
+  //     const pageFromURL = parseInt(searchParams.get("page") || "1", 10);
+  //     setPagination({
+  //       current_page: pageFromURL,
+  //       total_pages: 1,
+  //       total_items: 0,
+  //       per_page: 12,
+  //       total_products: 0,
+  //     });
+
+  //     updateURLWithFilters(mergedFilters, 1);
+  //   },
+  //   [searchParams, updateURLWithFilters]
+  // );
 
   // Mobile offcanvas filter state
   const mobileFiltersRef = useRef<HTMLDivElement>(null);
