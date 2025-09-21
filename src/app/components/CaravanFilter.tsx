@@ -649,6 +649,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
       setModel([]);
       setSelectedModel(null);
       setSelectedModelName(null);
+      setModelOpen(false);
       return;
     }
 
@@ -662,7 +663,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
         // ✅ Moved clearing logic here
         setSelectedModel(null);
         setSelectedModelName(null);
-
+        setModelOpen(true);
         const updatedFilters: Filters = {
           ...currentFilters,
           make: selectedMake || currentFilters.make,
@@ -1408,6 +1409,9 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
       if (match) {
         setSelectedModel(match.slug);
         setSelectedModelName(match.name);
+
+        // ✅ Auto-close dropdown once hydrated
+        setModelOpen(false);
       }
     }
 
@@ -1415,6 +1419,9 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
       const match = model.find((m) => m.slug === selectedModel);
       if (match) {
         setSelectedModelName(match.name);
+
+        // ✅ Close dropdown if model was restored
+        setModelOpen(false);
       }
     }
   }, [
@@ -1438,7 +1445,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
         model: filters.model,
       };
       setFilters(updatedFilters);
-      onFilterChange(updatedFilters);
+      // onFilterChange(updatedFilters);
       makeInitializedRef.current = true;
     }
   }, [selectedMake]);
@@ -1646,7 +1653,6 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
 
     setSelectedModel(mod.slug);
     setSelectedModelName(mod.name);
-    setModelOpen(false);
 
     const updatedFilters: Filters = {
       ...currentFilters,
@@ -1661,10 +1667,9 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
 
     setFilters(updatedFilters);
     filtersInitialized.current = true;
-
+    setModelOpen(false);
     startTransition(() => {
-      router.push(buildSlugFromFilters(updatedFilters));
-      // onFilterChange(updatedFilters); // ✅ correct model slug is used
+      updateAllFiltersAndURL(updatedFilters); // Trigger API + URL sync
     });
   };
 
@@ -2333,6 +2338,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                   };
                   setFilters(updatedFilters);
                   updateAllFiltersAndURL(updatedFilters);
+                  setModelOpen(true);
                 }}
 
                 // const updatedFilters: Filters = {
