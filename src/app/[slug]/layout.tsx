@@ -4,7 +4,6 @@ import "./details.css";
 import { ReactNode } from "react";
 
 type RouteParams = { slug: string };
-type PageProps = { params: Promise<RouteParams> };
 
 async function fetchBlogDetail(slug: string) {
   try {
