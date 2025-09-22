@@ -5,6 +5,7 @@ import { Card, CardContent, Typography, Button } from "@mui/material";
 import Link from "next/link";
 import TickIcon from "../../../public/images/tick.jpg";
 import Image from "next/image";
+
 type RouteParams = { slug: string };
 type PageProps = { params: Promise<RouteParams> };
 
