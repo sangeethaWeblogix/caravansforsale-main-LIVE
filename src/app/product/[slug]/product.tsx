@@ -360,9 +360,9 @@ export default function ClientLogger({
       const origin = window.location.origin;
 
       if (ref.startsWith(origin)) {
-        setCameFromSameSite(true); // same site → treat as search flow
+        setCameFromSameSite(false); // same site → treat as search flow
       } else {
-        setCameFromSameSite(false); // direct/external → similar caravans
+        setCameFromSameSite(true); // direct/external → similar caravans
       }
     }
   }, []);
