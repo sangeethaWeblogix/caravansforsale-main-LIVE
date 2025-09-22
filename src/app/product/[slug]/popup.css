@@ -113,11 +113,11 @@
 }
 
 .pop-top {
-    text-align: left;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 0;
-    display: flex;
+  text-align: left;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  display: flex;
 }
 .pop-top h3 {
   color: #fff;
@@ -125,8 +125,8 @@
   font-weight: 700;
 }
 .pop-top .vehicleThumbDetails__part__price {
-    text-align: right;
-    width: 300px;
+  text-align: right;
+  width: 300px;
 }
 .pop-top .vehicleThumbDetails__part__price span {
   font-size: 30px;
@@ -135,8 +135,8 @@
   color: #fff;
 }
 .pop-top .vehicleThumbDetails__part__price.pop_up_price span bdi {
-    display: flex;
-    justify-content: end;
+  display: flex;
+  justify-content: end;
 }
 .carava_details .swiper-wrapper {
   width: 100%;
@@ -204,7 +204,6 @@
   height: auto;
 }
 .sidebar-enquiry h4 {
-  font-family: "Poppins";
   font-size: 20px;
   font-weight: 500;
   margin-bottom: 15px;
@@ -278,13 +277,13 @@
 @media (min-width: 768px) and (max-width: 991px) {
   .pop-top {
     display: block;
-        padding-right: 50px;
+    padding-right: 50px;
   }
   .sidebar-enquiry {
     position: relative;
     top: 10px;
+  }
 }
- }
 
 @media screen and (min-width: 800px) {
   .custom-model-main:before {
