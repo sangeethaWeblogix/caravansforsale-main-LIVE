@@ -351,16 +351,25 @@ export default function ClientLogger({
       window.history.back();
     }
   };
+
+  const [cameFromSameSite, setCameFromSameSite] = useState(false);
+
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const shouldReload = sessionStorage.getItem("forceRefreshOnBack");
-      if (shouldReload === "true") {
-        sessionStorage.removeItem("forceRefreshOnBack");
-        window.location.reload(); // Force refresh
+    if (typeof document !== "undefined" && typeof window !== "undefined") {
+      const ref = document.referrer || "";
+      const origin = window.location.origin;
+
+      if (ref.startsWith(origin)) {
+        setCameFromSameSite(true); // same site → treat as search flow
+      } else {
+        setCameFromSameSite(false); // direct/external → similar caravans
       }
     }
   }, []);
-
+  const makeHref =
+    makeValue && makeValue.trim()
+      ? `/listings/${slugify(makeValue)}/`
+      : "/listings/";
   const productId: string | number | undefined =
     product.id ?? pd.id ?? product.name;
   const productSlug: string | undefined = product.slug ?? pd.slug;
@@ -373,13 +382,27 @@ export default function ClientLogger({
             <div className="row justify-content-center">
               {/* Left Column */}
               <div className="col-xl-8 col-lg-8 col-md-12">
-                <Link
-                  href="#"
-                  onClick={handleBackClick}
-                  className="back_to_search back_to_search_btn"
-                >
-                  <i className="bi bi-chevron-left fs-6"></i> Back to Search
-                </Link>
+                {cameFromSameSite ? (
+                  <Link
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      window.history.back();
+                    }}
+                    className="back_to_search back_to_search_btn"
+                  >
+                    <i className="bi bi-chevron-left fs-6"></i> Back to Search
+                  </Link>
+                ) : (
+                  <Link
+                    href={makeHref}
+                    className="back_to_search back_to_search_btn"
+                    prefetch={false}
+                  >
+                    <i className="bi bi-chevron-left fs-6"></i> Back to Similar
+                    Caravans
+                  </Link>
+                )}
 
                 <div className="product-info left-info">
                   <h1 className="title">{product.name}</h1>
