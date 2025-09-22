@@ -352,24 +352,20 @@ export default function ClientLogger({
   //   }
   // };
 
-  const [cameFromSameSite, setCameFromSameSite] = useState(false);
+  const [cameFromSameSite, setCameFromSameSite] = useState(true);
 
   useEffect(() => {
     if (typeof document !== "undefined" && typeof window !== "undefined") {
       const ref = document.referrer || "";
       const origin = window.location.origin;
 
-      // Check if history has at least one entry
-      const hasHistory = window.history.length > 1;
-
-      if (ref.startsWith(origin) && hasHistory) {
-        setCameFromSameSite(true); // came from search in same tab
+      if (ref.startsWith(origin)) {
+        setCameFromSameSite(false); // same site → treat as search flow
       } else {
-        setCameFromSameSite(false); // new tab / external → show Similar Caravans
+        setCameFromSameSite(true); // direct/external → similar caravans
       }
     }
   }, []);
-
   const makeHref =
     makeValue && makeValue.trim()
       ? `/listings/${slugify(makeValue)}/`
