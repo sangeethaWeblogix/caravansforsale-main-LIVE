@@ -2,9 +2,9 @@
 import type { Metadata } from "next";
 import ClientLogger from "./product";
 import { notFound } from "next/navigation";
+import { ReactNode } from "react";
 
 type RouteParams = { slug: string };
-type PageProps = { params: Promise<RouteParams> };
 
 async function fetchProductDetail(slug: string) {
   const API_BASE = process.env.NEXT_PUBLIC_CFS_API_BASE!;
@@ -68,18 +68,6 @@ export async function generateMetadata({
   };
 }
 
-export default async function ProductDetailPage({ params }: PageProps) {
-  const { slug } = await params; // ✅ no await
-  const data = await fetchProductDetail(slug);
-
-  // ❌ If no product → 404 page
-  if (!data || Object.keys(data).length === 0) {
-    notFound();
-  }
-
-  return (
-    <main className="container mx-auto">
-      <ClientLogger data={data} />
-    </main>
-  );
+export default function Layout({ children }: { children: ReactNode }) {
+  return <div>{children}</div>;
 }
