@@ -9,6 +9,7 @@ import {
   fetchHomeSearchList, // GET /home_search (base list)
   fetchKeywordSuggestions, // GET /home_search/?keyword=<q> (typed list)
 } from "@/api/homeSearch/api";
+import Image from "next/image";
 
 type Item = {
   title?: string;
@@ -289,7 +290,13 @@ export default function SearchSection() {
           aria-live="polite"
         >
           <div className="text-center">
-            <div className="spinner-border" role="status" />
+            <Image
+              src="/images/loader.gif" // place inside public/images
+              alt="Loading..."
+              width={80}
+              height={80}
+              unoptimized
+            />{" "}
             <div className="mt-2 fw-semibold">Loading…</div>
           </div>
         </div>

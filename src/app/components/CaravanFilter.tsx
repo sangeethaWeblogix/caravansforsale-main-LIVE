@@ -20,6 +20,7 @@ import {
   fetchKeywordSuggestions,
   fetchHomeSearchList,
 } from "@/api/homeSearch/api";
+import Image from "next/image";
 
 type LocationSuggestion = {
   key: string;
@@ -171,7 +172,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
   const [selectedSuburbName, setSelectedSuburbName] = useState<string | null>(
     null
   );
-  const [navigating, setNavigating] = useState(false);
+  // const [navigating, setNavigating] = useState(false);
 
   const [selectedSuggestion, setSelectedSuggestion] =
     useState<LocationSuggestion | null>(null);
@@ -678,6 +679,9 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
 
         setFilters(updatedFilters);
         // onFilterChange(updatedFilters);
+        startTransition(() => {
+          updateAllFiltersAndURL(updatedFilters);
+        });
       })
       .catch(console.error);
   }, [selectedMake]);
@@ -1891,7 +1895,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                       selectedCategory === cat.slug ? "selected" : ""
                     }`}
                     onClick={() => {
-                      setNavigating(true);
+                      // setNavigating(true);
                       setSelectedCategory(cat.slug);
                       setSelectedCategoryName(cat.name);
                       setCategoryOpen(false);
@@ -2292,9 +2296,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                       filtersInitialized.current = true;
 
                       // ✅ Update URL
-                      startTransition(() => {
-                        updateAllFiltersAndURL(updatedFilters);
-                      });
+
                       setMakeOpen(false);
                       setModelOpen(true);
                     }}
@@ -3154,7 +3156,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
           </div>
         )}
       </div>
-      {navigating && (
+      {/* {navigating && (
         <div
           className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
           style={{
@@ -3165,11 +3167,17 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
           aria-live="polite"
         >
           <div className="text-center">
-            <div className="spinner-border" role="status" />
+            <Image
+              src="/images/loader.gif" // place inside public/images
+              alt="Loading..."
+              width={80}
+              height={80}
+              unoptimized
+            />{" "}
             <div className="mt-2 fw-semibold">Loading…</div>
           </div>
         </div>
-      )}
+      )} */}
     </>
   );
 };
