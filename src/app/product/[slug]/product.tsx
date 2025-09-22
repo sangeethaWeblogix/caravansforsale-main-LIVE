@@ -344,13 +344,13 @@ export default function ClientLogger({
   const save = hasSale ? reg - sale : 0;
   const isPOA = !hasSale && (reg === 0 || Number.isNaN(reg));
 
-  const handleBackClick = () => {
-    // Set a flag in sessionStorage before going back
-    if (typeof window !== "undefined") {
-      sessionStorage.setItem("forceRefreshOnBack", "true");
-      window.history.back();
-    }
-  };
+  // const handleBackClick = () => {
+  //   // Set a flag in sessionStorage before going back
+  //   if (typeof window !== "undefined") {
+  //     sessionStorage.setItem("forceRefreshOnBack", "true");
+  //     window.history.back();
+  //   }
+  // };
 
   const [cameFromSameSite, setCameFromSameSite] = useState(false);
 
