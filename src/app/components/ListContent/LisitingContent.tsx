@@ -314,14 +314,19 @@ export default function ListingContent({
                           ) : null;
                         })()}
                       </div>
-                      <div className="vehicleThumbDetails__features__address">
-                        <label>Seller Location</label>
-                        <h3>{product.location}</h3>
-                      </div>
-                      <div className="vehicleThumbDetails__features__condition">
-                        <label>Condition</label>
-                        <h3>{product.condition}</h3>
-                      </div>
+                      {product.location && (
+                        <div className="vehicleThumbDetails__features__address">
+                          <label>Seller Location</label>
+                          <h3>{product.location}</h3>
+                        </div>
+                      )}
+
+                      {product.condition && (
+                        <div className="vehicleThumbDetails__features__condition">
+                          <label>Condition</label>
+                          <h3>{product.condition}</h3>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
