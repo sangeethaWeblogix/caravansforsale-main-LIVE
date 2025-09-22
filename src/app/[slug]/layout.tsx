@@ -1,10 +1,6 @@
 import type { Metadata } from "next";
-import DeatilsPage from "./details";
 import "./details.css";
-import { Card, CardContent, Typography, Button } from "@mui/material";
-import Link from "next/link";
-import TickIcon from "../../../public/images/tick.jpg";
-import Image from "next/image";
+
 import { ReactNode } from "react";
 
 type RouteParams = { slug: string };
