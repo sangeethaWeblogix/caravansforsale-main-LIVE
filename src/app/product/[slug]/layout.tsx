@@ -1,7 +1,6 @@
 // src/app/product-details/[slug]/page.tsx
 import type { Metadata } from "next";
-import ClientLogger from "./product";
-import { notFound } from "next/navigation";
+
 import { ReactNode } from "react";
 
 type RouteParams = { slug: string };
