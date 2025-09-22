@@ -72,9 +72,9 @@ export default async function ProductDetailPage({ params }: PageProps) {
   const data = await fetchProductDetail(slug);
 
   // ❌ If no product → 404 page
-  if (!data || Object.keys(data).length === 0) {
-    notFound();
-  }
+  // if (!data || Object.keys(data).length === 0) {
+  //   notFound();
+  // }
 
   return (
     <main className="container mx-auto">
