@@ -291,7 +291,6 @@
   font-size: 30px;
   line-height: 25px;
   padding: 3px 20px 0 20px;
-  font-family: Poppins !important;
 }
 
 .product_data .card-price:before {
@@ -320,7 +319,6 @@
 }
 
 .product_data .card-price span {
-  font-family: Poppins;
   display: block;
   font-size: 15px;
   font-weight: 600;
@@ -916,7 +914,6 @@ a.ignoretext {
   font-size: 30px;
   line-height: 25px;
   padding: 3px 20px 0 20px;
-  font-family: Poppins !important;
 }
 
 .product-page .other_items .product-card .price .metc2 .card-price:before {
@@ -964,7 +961,6 @@ a.ignoretext {
 }
 
 .product-page .other_items .product-card .price .metc2 .card-price span {
-  font-family: Poppins;
   display: block;
   font-size: 13px;
   font-weight: 600;
