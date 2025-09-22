@@ -34,6 +34,7 @@ const labelOf = (x: Item): string => {
 export default function SearchSection() {
   const router = useRouter();
   const searchInputRef = useRef<HTMLInputElement | null>(null);
+  const [navigating, setNavigating] = useState(false);
 
   const [isSuggestionBoxOpen, setIsSuggestionBoxOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -41,8 +42,7 @@ export default function SearchSection() {
   const [baseSuggestions, setBaseSuggestions] = useState<string[]>([]); // list for first-click
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
-  // ------------- base list (first click) -------------
+  // ------------- base list (first click) ---  const [loading, setLoading] = useState<string | null>(null);----------
   const loadBaseOnce = async () => {
     if (baseSuggestions.length) {
       setSuggestions(baseSuggestions);
@@ -250,20 +250,26 @@ export default function SearchSection() {
                   <Link
                     href="/listings/new-condition/"
                     className="btn btn-primary"
+                    onClick={() => setNavigating(true)}
                   >
-                    New
+                    NEW{" "}
                   </Link>
                 </div>
                 <div className="col-lg-3 col-4">
                   <Link
                     href="/listings/used-condition/"
                     className="btn btn-primary"
+                    onClick={() => setNavigating(true)}
                   >
                     Used
                   </Link>
                 </div>
                 <div className="col-lg-3 col-4">
-                  <Link href="/listings/" className="btn btn-primary">
+                  <Link
+                    href="/listings/"
+                    className="btn btn-primary"
+                    onClick={() => setNavigating(true)}
+                  >
                     All
                   </Link>
                 </div>
@@ -272,6 +278,22 @@ export default function SearchSection() {
           </div>
         </div>
       </div>
+      {navigating && (
+        <div
+          className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
+          style={{
+            background: "rgba(255,255,255,0.6)",
+            backdropFilter: "blur(2px)",
+            zIndex: 9999,
+          }}
+          aria-live="polite"
+        >
+          <div className="text-center">
+            <div className="spinner-border" role="status" />
+            <div className="mt-2 fw-semibold">Loading…</div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
