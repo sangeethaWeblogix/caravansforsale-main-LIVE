@@ -359,13 +359,17 @@ export default function ClientLogger({
       const ref = document.referrer || "";
       const origin = window.location.origin;
 
-      if (ref.startsWith(origin)) {
-        setCameFromSameSite(false); // same site → treat as search flow
+      // Check if history has at least one entry
+      const hasHistory = window.history.length > 1;
+
+      if (ref.startsWith(origin) && hasHistory) {
+        setCameFromSameSite(true); // came from search in same tab
       } else {
-        setCameFromSameSite(true); // direct/external → similar caravans
+        setCameFromSameSite(false); // new tab / external → show Similar Caravans
       }
     }
   }, []);
+
   const makeHref =
     makeValue && makeValue.trim()
       ? `/listings/${slugify(makeValue)}/`
