@@ -144,25 +144,23 @@ export default function ListingsPage({
   const router = useRouter();
 
   const [isUsingInitialData, setIsUsingInitialData] = useState(!!initialData);
-  const rawSearch = typeof window !== "undefined" ? window.location.search : "";
 
-  // 🚫 If there's an '&' in the raw query, block it
-  if (rawSearch.includes("&")) {
-    notFound();
-  }
+  const rawPage = searchParams.get("page");
 
-  const rawPage = searchParams.get("page") ?? "1";
+  // ✅ If page is missing → default to 1
+  const page = rawPage ? parseInt(rawPage, 10) : 1;
 
-  // 🚫 Only allow digits
-  if (!/^[0-9]+$/.test(rawPage)) {
-    notFound();
-  }
+  // ✅ Only validate `page`
+  if (rawPage !== null) {
+    // page must be all digits
+    if (!/^\d+$/.test(rawPage)) {
+      notFound();
+    }
 
-  const page = Number(rawPage);
-
-  // 🚫 Must be >= 1
-  if (!Number.isInteger(page) || page < 1) {
-    notFound();
+    // must be >= 1
+    if (!Number.isInteger(page) || page < 1) {
+      notFound();
+    }
   }
 
   // Initialize state with initialData if provided
@@ -257,12 +255,24 @@ export default function ListingsPage({
     return f;
   };
   const validatePage = (raw: string | null): number => {
-    if (!raw) return 1; // no page → ok (page 1)
-    if (!/^\d+$/.test(raw)) {
-      notFound(); // non-numeric → 404
+    if (raw === null) {
+      return 1; // no ?page → default to 1
     }
+
+    if (raw.trim() === "") {
+      notFound(); // 🚫 block empty ?page=
+    }
+
+    if (!/^\d+$/.test(raw)) {
+      notFound(); // 🚫 block non-numeric
+    }
+
     const page = parseInt(raw, 10);
-    if (page < 1) notFound(); // negative or zero → 404
+
+    if (!Number.isInteger(page) || page < 1) {
+      notFound(); // 🚫 block invalid numbers
+    }
+
     return page;
   };
 
