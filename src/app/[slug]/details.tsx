@@ -144,7 +144,7 @@ export default function BlogDetailsPage({
                           <ul className="ez-toc-list ez-toc-list-level-1 ">
                             {(showFullToc
                               ? tocItems
-                              : tocItems.slice(0, 2)
+                              : tocItems.slice(0, 4)
                             ).map((item, index) => (
                               <li
                                 key={index}
@@ -156,7 +156,7 @@ export default function BlogDetailsPage({
                             ))}
                           </ul>
                         </nav>
-                        {tocItems.length > 2 && (
+                        {tocItems.length > 4 && (
                           <button
                             className="mt-2 text-blue-600 underline more_less"
                             onClick={() => setShowFullToc((prev) => !prev)}
