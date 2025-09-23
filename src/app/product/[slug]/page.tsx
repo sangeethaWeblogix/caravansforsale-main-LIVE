@@ -63,6 +63,9 @@ export async function generateMetadata({
     alternates: {
       canonical: canonicalUrl, // ✅ canonical link
     },
+    verification: {
+      google: "6tT6MT6AJgGromLaqvdnyyDQouJXq0VHS-7HC194xEo", // ✅ this auto generates <meta name="google-site-verification" />
+    },
     other: { "og:type": "product" },
   };
 }

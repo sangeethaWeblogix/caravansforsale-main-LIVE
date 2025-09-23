@@ -53,6 +53,9 @@ export async function generateMetadata({
 
   return {
     title: { absolute: title },
+    verification: {
+      google: "6tT6MT6AJgGromLaqvdnyyDQouJXq0VHS-7HC194xEo", // ✅ Google site verification
+    },
     description,
     openGraph: { title, description },
     twitter: {
@@ -63,6 +66,7 @@ export async function generateMetadata({
     alternates: {
       canonical: canonicalUrl, // ✅ canonical link
     },
+
     other: { "og:type": "product" },
   };
 }

@@ -21,6 +21,9 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "https://www.caravansforsale.com.au/privacy-policy/",
   },
+  verification: {
+    google: "6tT6MT6AJgGromLaqvdnyyDQouJXq0VHS-7HC194xEo", // ✅ this auto generates <meta name="google-site-verification" />
+  },
 };
 export default function Home() {
   return <Privacy />;

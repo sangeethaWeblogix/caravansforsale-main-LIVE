@@ -21,6 +21,9 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "https://www.caravansforsale.com.au/contact/",
   },
+  verification: {
+    google: "6tT6MT6AJgGromLaqvdnyyDQouJXq0VHS-7HC194xEo", // ✅ add here
+  },
 };
 export default function Home() {
   return <Contacts />;
