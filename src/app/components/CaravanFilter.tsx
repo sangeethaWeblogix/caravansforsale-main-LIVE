@@ -20,7 +20,6 @@ import {
   fetchKeywordSuggestions,
   fetchHomeSearchList,
 } from "@/api/homeSearch/api";
-import Image from "next/image";
 
 type LocationSuggestion = {
   key: string;
