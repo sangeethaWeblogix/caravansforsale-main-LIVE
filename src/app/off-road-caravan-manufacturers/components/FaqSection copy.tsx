@@ -1,14 +1,8 @@
-"use client";
-import React, { useState } from "react";
+import React from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Link from "next/link";
 
 export default function FAQSection() {
-  const [activeIndex, setActiveIndex] = useState<number | null>(0);
-
-  const toggleAccordion = (index: number) => {
-    setActiveIndex((prev) => (prev === index ? null : index));
-  };
   return (
     <section className="faq section-padding style-4  bg_custom_d">
       <div className="container">
@@ -23,14 +17,11 @@ export default function FAQSection() {
                   <div className="accordion-item border-bottom rounded-0">
                     <h3 className="accordion-header" id="heading1">
                       <button
-                        className={`accordion-button rounded-0 py-4 ${
-                          activeIndex === 1 ? "" : "collapsed"
-                        }`}
-                        onClick={() => toggleAccordion(1)}
-                        aria-expanded={activeIndex === 1}
+                        className="accordion-button rounded-0 py-4"
                         type="button"
                         data-bs-toggle="collapse"
                         data-bs-target="#collapse1"
+                        aria-expanded="true"
                         aria-controls="collapse1"
                       >
                         Semi Off Road & Full Off Road Caravans
@@ -38,9 +29,7 @@ export default function FAQSection() {
                     </h3>
                     <div
                       id="collapse1"
-                      className={`accordion-collapse collapse ${
-                        activeIndex === 1 ? "" : "show"
-                      } rounded-0`}
+                      className="accordion-collapse collapse show rounded-0"
                       aria-labelledby="heading1"
                       data-bs-parent="#accordionSt4"
                     >
@@ -214,14 +203,11 @@ export default function FAQSection() {
                   <div className="accordion-item border-bottom rounded-0">
                     <h3 className="accordion-header" id="heading2">
                       <button
-                        className={`accordion-button rounded-0 py-4 ${
-                          activeIndex === 2 ? "" : "collapsed"
-                        }`}
-                        onClick={() => toggleAccordion(2)}
-                        aria-expanded={activeIndex === 2}
+                        className="accordion-button collapsed rounded-0 py-4"
                         type="button"
                         data-bs-toggle="collapse"
                         data-bs-target="#collapse2"
+                        aria-expanded="false"
                         aria-controls="collapse2"
                       >
                         Hybrid Off Road Caravans
@@ -229,9 +215,7 @@ export default function FAQSection() {
                     </h3>
                     <div
                       id="collapse2"
-                      className={`accordion-collapse collapse ${
-                        activeIndex === 2 ? "show" : ""
-                      } rounded-0`}
+                      className="accordion-collapse collapse rounded-0"
                       aria-labelledby="heading2"
                       data-bs-parent="#accordionSt4"
                     >
@@ -331,14 +315,11 @@ export default function FAQSection() {
                   <div className="accordion-item border-bottom rounded-0">
                     <h3 className="accordion-header" id="heading3">
                       <button
-                        className={`accordion-button rounded-0 py-4 ${
-                          activeIndex === 3 ? "" : "collapsed"
-                        }`}
-                        onClick={() => toggleAccordion(3)}
-                        aria-expanded={activeIndex === 3}
+                        className="accordion-button collapsed rounded-0 py-4"
                         type="button"
                         data-bs-toggle="collapse"
                         data-bs-target="#collapse3"
+                        aria-expanded="false"
                         aria-controls="collapse3"
                       >
                         Extreme Off Road Caravans
@@ -346,9 +327,7 @@ export default function FAQSection() {
                     </h3>
                     <div
                       id="collapse3"
-                      className={`accordion-collapse collapse ${
-                        activeIndex === 3 ? "show" : ""
-                      } rounded-0`}
+                      className="accordion-collapse collapse rounded-0"
                       aria-labelledby="heading3"
                       data-bs-parent="#accordionSt4"
                     >
