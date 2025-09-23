@@ -206,6 +206,9 @@ export async function generateMetadata({
     return {
       title: { absolute: title },
       description,
+      verification: {
+        google: "6tT6MT6AJgGromLaqvdnyyDQouJXq0VHS-7HC194xEo", // ✅ Google site verification
+      },
       keywords: "caravans, trailers, new caravans, used caravans",
       openGraph: {
         title,

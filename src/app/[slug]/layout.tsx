@@ -35,6 +35,9 @@ export async function generateMetadata({
     return {
       title: "Thank You",
       description: "Your enquiry was submitted successfully.",
+      verification: {
+        google: "6tT6MT6AJgGromLaqvdnyyDQouJXq0VHS-7HC194xEo", // ✅ Google site verification
+      },
       robots: "noindex, nofollow",
       alternates: {
         canonical: `https://www.caravansforsale.com.au/${slug}/`,
@@ -63,6 +66,9 @@ export async function generateMetadata({
     title,
     description,
     robots,
+    verification: {
+      google: "6tT6MT6AJgGromLaqvdnyyDQouJXq0VHS-7HC194xEo", // ✅ Google site verification
+    },
     alternates: {
       canonical: canonicalUrl, // ✅ canonical link
     },

@@ -37,6 +37,9 @@ export async function metaFromSlug(
   return {
     title,
     description,
+    verification: {
+      google: "6tT6MT6AJgGromLaqvdnyyDQouJXq0VHS-7HC194xEo", // ✅ Google site verification
+    },
     robots,
     openGraph: { title, description, images: [{ url: "/favicon.ico" }] },
     twitter: {

@@ -195,6 +195,9 @@ export async function generateMetadata({
 
     return {
       title: { absolute: title },
+      verification: {
+        google: "6tT6MT6AJgGromLaqvdnyyDQouJXq0VHS-7HC194xEo", // ✅ Google site verification
+      },
       description,
       robots,
       openGraph: { title, description },
