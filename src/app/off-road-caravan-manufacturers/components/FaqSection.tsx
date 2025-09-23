@@ -1,8 +1,6 @@
-"use client";
-
 import React from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import "bootstrap/dist/js/bootstrap.bundle.min.js";
+import Link from "next/link";
 
 export default function FAQSection() {
   return (
@@ -42,21 +40,21 @@ export default function FAQSection() {
                         </h4>
                         <p>
                           The{" "}
-                          <a
+                          <Link
                             href="https://orbitcaravans.com.au/range/discovery-x/"
                             target="_blank"
                             rel="noopener"
                           >
                             Discovery X
-                          </a>{" "}
+                          </Link>{" "}
                           and{" "}
-                          <a
+                          <Link
                             href="https://orbitcaravans.com.au/range/space/"
                             target="_blank"
                             rel="noopener"
                           >
                             Space V
-                          </a>{" "}
+                          </Link>{" "}
                           models from Orbit Caravans feature extremely tough
                           off-road chassis and suspension systems, ensuring
                           durability and performance in harsh conditions.
@@ -67,13 +65,13 @@ export default function FAQSection() {
                         </h4>
                         <p>
                           The{" "}
-                          <a
+                          <Link
                             href="https://orbitcaravans.com.au/range/eclipse/"
                             target="_blank"
                             rel="noopener"
                           >
                             Eclipse X
-                          </a>{" "}
+                          </Link>{" "}
                           caravan includes a robust off-road chassis and
                           suspension system, along with solar power, a lithium
                           battery, and water tanks, making it ideal for extreme
@@ -94,13 +92,13 @@ export default function FAQSection() {
                         </h4>
                         <p>
                           The{" "}
-                          <a
+                          <Link
                             href="https://grandcitycaravans.com.au/range/tracker/"
                             target="_blank"
                             rel="noopener"
                           >
                             Tracker
-                          </a>{" "}
+                          </Link>{" "}
                           15’6″ from Grand City Caravans features a 6-inch
                           chassis and Cruisemaster XT Freestyle Coil Suspension,
                           providing excellent off-road capabilities for rugged
@@ -112,13 +110,13 @@ export default function FAQSection() {
                         </h4>
                         <p>
                           The{" "}
-                          <a
+                          <Link
                             href="https://grandcitycaravans.com.au/range/nomad/"
                             target="_blank"
                             rel="noopener"
                           >
                             Nomad
-                          </a>{" "}
+                          </Link>{" "}
                           17′ caravan is designed with off-road features similar
                           to the Tracker, including a robust chassis and
                           suspension system to handle diverse terrains
@@ -130,13 +128,13 @@ export default function FAQSection() {
                         </h4>
                         <p>
                           The{" "}
-                          <a
+                          <Link
                             href="https://grandcitycaravans.com.au/range/explorer/"
                             target="_blank"
                             rel="noopener"
                           >
                             Explorer
-                          </a>{" "}
+                          </Link>{" "}
                           18’6″ boasts a 6-inch chassis, TEKO Tuff Ride 3000kg
                           Independent Coil Suspension, and 16-inch all-terrain
                           tyres, offering significant off-road advantages for
@@ -149,13 +147,13 @@ export default function FAQSection() {
                           </b>
                         </p>
                         <p>
-                          <a
+                          <Link
                             href="https://titaniumcaravans.com.au/"
                             target="_blank"
                             rel="noopener"
                           >
                             Titanium Caravans
-                          </a>{" "}
+                          </Link>{" "}
                           combine heavy-duty hot-dipped galvanised chassis,
                           advanced airbag suspension systems, and smart off-grid
                           features like solar power and lithium batteries—making
@@ -168,13 +166,13 @@ export default function FAQSection() {
                         </p>
                         <p>
                           Yes, the{" "}
-                          <a
+                          <Link
                             href="https://titaniumcaravans.com.au/models/hs1"
                             target="_blank"
                             rel="noopener"
                           >
                             HS1 Series
-                          </a>{" "}
+                          </Link>{" "}
                           offers 400W solar power, lithium batteries, diesel
                           heating, and smart energy management—ideal for remote
                           off-grid adventures.
@@ -187,13 +185,13 @@ export default function FAQSection() {
                         </p>
                         <p>
                           The{" "}
-                          <a
+                          <Link
                             href="https://titaniumcaravans.com.au/models/ti22-s1/"
                             target="_blank"
                             rel="noopener"
                           >
                             Ti22 S1
-                          </a>
+                          </Link>
                           , from Titanium Caravans, features 400W solar, lithium
                           batteries, a full kitchen, soft-close cabinetry, and
                           even a washing machine—making it a reliable and
@@ -229,13 +227,13 @@ export default function FAQSection() {
                           </b>
                         </p>
                         <p>
-                          <a
+                          <Link
                             href="https://xseriesrv.au/"
                             target="_blank"
                             rel="noopener"
                           >
                             X Series RV
-                          </a>{" "}
+                          </Link>{" "}
                           caravans are built tough for Australia’s harshest
                           terrains, offering rugged construction, high-quality
                           materials, and reliable off-road performance. Their
@@ -250,13 +248,13 @@ export default function FAQSection() {
                         </p>
                         <p>
                           The{" "}
-                          <a
+                          <Link
                             href="https://xseriesrv.au/hybrid-element/"
                             target="_blank"
                             rel="noopener"
                           >
                             X Element
-                          </a>{" "}
+                          </Link>{" "}
                           is a lightweight, compact caravan designed for singles
                           or couples. It includes a well-equipped kitchen and
                           bathroom, delivering cozy comfort and essential
@@ -284,13 +282,13 @@ export default function FAQSection() {
                         </p>
                         <p>
                           The{" "}
-                          <a
+                          <Link
                             href="https://xseriesrv.au/hybrid-commander/"
                             target="_blank"
                             rel="noopener"
                           >
                             X Commander
-                          </a>{" "}
+                          </Link>{" "}
                           is perfect for families, offering 2 or 3 bunks, a
                           private ensuite, a washing machine, and ample storage.
                           This 22ft hard roof hybrid caravan provides both
@@ -340,13 +338,13 @@ export default function FAQSection() {
                         </h4>
                         <p>
                           The{" "}
-                          <a
+                          <Link
                             href="https://www.everestcaravans.com.au/range/nitro-extreme/"
                             target="_blank"
                             rel="noopener"
                           >
                             Nitro Extreme
-                          </a>{" "}
+                          </Link>{" "}
                           from Everest Caravans is built with a robust 9”
                           chassis, a 6′ deck with a 3” riser, and a 6” extended
                           A-frame. These features, along with the Supergal
@@ -360,13 +358,13 @@ export default function FAQSection() {
                         </h4>
                         <p>
                           The{" "}
-                          <a
+                          <Link
                             href="https://www.everestcaravans.com.au/range/summitt/"
                             target="_blank"
                             rel="noopener"
                           >
                             Summitt
-                          </a>{" "}
+                          </Link>{" "}
                           model from Everest Caravans features a 9” chassis
                           constructed from RHS Australian Steel, a 6” extended
                           A-frame, and Supergal Australian RHS Steel Chassis. It
@@ -382,21 +380,21 @@ export default function FAQSection() {
                         <p>
                           Everest Caravans’ extreme off-road models, including
                           the{" "}
-                          <a
+                          <Link
                             href="https://www.everestcaravans.com.au/range/ice-glider/"
                             target="_blank"
                             rel="noopener"
                           >
                             Ice Glider
-                          </a>{" "}
+                          </Link>{" "}
                           and{" "}
-                          <a
+                          <Link
                             href="https://www.everestcaravans.com.au/range/warrior/"
                             target="_blank"
                             rel="noopener"
                           >
                             Warrior
-                          </a>
+                          </Link>
                           , come standard with a robust 9” chassis, a 6”
                           extended A-frame, Supergal Australian RHS Steel
                           Chassis, and 3.5 T Oz Trekker Suspension. These
@@ -409,13 +407,13 @@ export default function FAQSection() {
                         </h4>
                         <p>
                           The{" "}
-                          <a
+                          <Link
                             href="https://redcentrecaravans.com.au/kimberley-plus/"
                             target="_blank"
                             rel="noopener"
                           >
                             Kimberley Plus
-                          </a>{" "}
+                          </Link>{" "}
                           from Red Centre Caravans features a robust 4-inch main
                           chassis, a 6-inch drawbar with extension, a 4-inch
                           riser, and fully independent 3.7T dual shock
@@ -429,23 +427,23 @@ export default function FAQSection() {
                         </h4>
                         <p>
                           The{" "}
-                          <a
+                          <Link
                             href="https://redcentrecaravans.com.au/tanami-plus/"
                             target="_blank"
                             rel="noopener"
                           >
                             Tanami Plus
-                          </a>{" "}
+                          </Link>{" "}
                           offers enhanced stability and control with its
                           upgraded suspension, disc brakes, and D035 off-road
                           coupling, compared to the standard{" "}
-                          <a
+                          <Link
                             href="https://redcentrecaravans.com.au/tanami/"
                             target="_blank"
                             rel="noopener"
                           >
                             Tanami
-                          </a>{" "}
+                          </Link>{" "}
                           model, which also features a 6-inch main chassis and
                           6-inch drawbar but without the additional
                           enhancements.

@@ -1,8 +1,7 @@
 import React from "react";
-import "./offroad.css";
 import Link from "next/link";
 
-const OffRoadCaravanManufacturers = () => {
+const OffRoadCaravanHeader = () => {
   return (
     <div className="sc_recent_news sc_recent_news_style_news-announce">
       <article className="post_item post_size_big post hover14">
@@ -54,4 +53,4 @@ const OffRoadCaravanManufacturers = () => {
   );
 };
 
-export default OffRoadCaravanManufacturers;
+export default OffRoadCaravanHeader;

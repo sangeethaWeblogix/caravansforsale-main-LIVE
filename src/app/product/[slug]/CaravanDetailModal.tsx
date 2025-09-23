@@ -10,6 +10,7 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { createProductEnquiry } from "@/api/enquiry/api";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 type CaravanDetailModalProps = {
   isOpen: boolean;
@@ -353,20 +354,20 @@ export default function CaravanDetailModal({
                         <p className="terms_text">
                           By clicking &apos;Send Enquiry&apos;, you agree to
                           Caravan Marketplace{" "}
-                          <a
+                          <Link
                             href="/privacy-collection-statement"
                             target="_blank"
                           >
                             Collection Statement
-                          </a>
+                          </Link>
                           ,{" "}
-                          <a href="/privacy-policy" target="_blank">
+                          <Link href="/privacy-policy" target="_blank">
                             Privacy Policy
-                          </a>{" "}
+                          </Link>{" "}
                           and{" "}
-                          <a href="/terms-conditions" target="_blank">
+                          <Link href="/terms-conditions" target="_blank">
                             Terms and Conditions
-                          </a>
+                          </Link>
                           .
                         </p>
 

@@ -1,6 +1,8 @@
+import Image from "next/image";
+import Link from "next/link";
 import React from "react";
 
-export default function ManufactureContent() {
+export default function OffRoadCaravanMiddle() {
   return (
     <section
       className="services manufacture_content_area section-padding pt-30 pb-50 style-1"
@@ -11,43 +13,46 @@ export default function ManufactureContent() {
           <div className="col-lg-9 col-md-9">
             <div className="section-head mb-60">
               <div className="advertisement">
-                <img
+                <Image
                   className="hidden-xs"
                   src="/images/Best-Off-Road-Caravan-Manufacturers-You-Havent-Heard-Of.jpg"
                   alt="Best Off Road Caravan Manufacturers"
+                  width={100}
+                  height={100}
                 />
-                <img
+                <Image
                   className="hidden-lg hidden-md hidden-sm br-m-8"
                   src="/images/Best-Off-Road-Caravan-Manufacturers-You-Havent-Heard-Of-Mob.jpg"
                   alt="Best Off Road Caravan Manufacturers"
+                  width={100}
+                  height={100}
                 />
               </div>
               <h2 className="divide-orange pb-20">
-                {" "}
                 Explore the Full Range from Top-Quality Off-Road Caravan
-                Manufacturers{" "}
+                Manufacturers
               </h2>
               <p>
                 We understand that buying a caravan is a significant investment,
                 and we offer resources to help make the process easier and help
-                you finding some of the{" "}
-                <a href="https://www.caravansforsale.com.au/best-caravans-full-off-road-capabilities-australia/">
+                you finding some of the
+                <Link href="https://www.caravansforsale.com.au/best-caravans-full-off-road-capabilities-australia/">
                   best off-road caravans in Australia
-                </a>
+                </Link>
                 . We are here to make a difference and to genuinely help both
-                the consumer and the manufacturer.{" "}
+                the consumer and the manufacturer.
               </p>
               <p>
                 We have showcased below the best off-road caravan manufacturers
-                and brands that don't participate in all the big events and
+                and brands that don&apos;t participate in all the big events and
                 spend big on advertising. So, all the spend goes towards
                 building good quality off road vans.
               </p>
               <h3>
-                1.{" "}
-                <a href="https://www.orbitcaravans.com.au/" target="_blank">
+                1.
+                <Link href="https://www.orbitcaravans.com.au/" target="_blank">
                   Orbit Caravans
-                </a>
+                </Link>
               </h3>
               <div className="key_features">
                 <h4>
@@ -91,7 +96,7 @@ export default function ManufactureContent() {
                     Australia.
                   </li>
                 </ul>
-                {/* <a
+                {/* <Link
                    style={{
                      fontSize: "17px",
                      paddingLeft: "25px",
@@ -100,7 +105,7 @@ export default function ManufactureContent() {
                    href="/caravan-manufacturers/orbit-caravans"
                  >
                    View All Range
-                 </a> */}
+                 </Link> */}
               </div>
               <p>
                 Orbit Caravans, a best off road caravan manufacturer,
@@ -148,18 +153,22 @@ export default function ManufactureContent() {
                 home.
               </p>
               <div className="advertisement">
-                <img
+                <Image
                   className="hidden-xs"
+                  width={100}
+                  height={100}
                   src="/images/Orbit-tig-welded-aluminium-frame-off-road-caravan-manufacturer.jpg"
                   alt="Orbit Caravans - tig welded aluminium frame off road caravan manufacturer"
                 />
-                <img
+                <Image
+                  width={100}
+                  height={100}
                   className="hidden-lg hidden-md hidden-sm br-m-8"
                   src="/images/tig-welded-aluminium-frame-off-road-caravan-manufacturer-Orbit.jpg"
                   alt="Orbit Caravans - tig welded aluminium frame off road caravan manufacturer"
                 />
               </div>
-              <a
+              <Link
                 className="banner_ad_now"
                 href="https://www.caravansforsale.com.au/"
                 style={{
@@ -169,17 +178,26 @@ export default function ManufactureContent() {
                   marginTop: "10px",
                 }}
               >
-                <img className="hidden-xs" src="/images/index_link_dk.jpg" />
-                <img
+                <Image
+                  className="hidden-xs"
+                  src="/images/index_link_dk.jpg"
+                  alt=""
+                  width={100}
+                  height={100}
+                />
+                <Image
                   className="hidden-lg hidden-md hidden-sm"
                   src="/images/index_link_m.jpg"
+                  alt=""
+                  width={100}
+                  height={100}
                 />
-              </a>
+              </Link>
               <h3>
-                2.{" "}
-                <a href="https://grandcitycaravans.com.au/" target="_blank">
+                2.
+                <Link href="https://grandcitycaravans.com.au/" target="_blank">
                   Grand City Caravans
-                </a>
+                </Link>
               </h3>
               <div className="key_features">
                 <h4>
@@ -219,7 +237,7 @@ export default function ManufactureContent() {
                     luxury experience.
                   </li>
                 </ul>
-                {/* <a
+                {/* <Link
                    style={{
                      fontSize: "17px",
                      paddingLeft: "25px",
@@ -228,7 +246,7 @@ export default function ManufactureContent() {
                    href="/caravan-manufacturers/grand-city-caravans"
                  >
                    View All Range
-                 </a> */}
+                 </Link> */}
               </div>
               <p>
                 Grand City Caravans is a renowned luxury off-road caravan
@@ -267,23 +285,33 @@ export default function ManufactureContent() {
                 go-to choice among off-road caravan manufacturers for those
                 seeking quality and reliability.
               </p>
+
               <div className="advertisement">
-                <img
+                <Image
                   className="hidden-xs"
+                  width={100}
+                  height={100}
                   src="/images/Grand-City-luxury-off-road-caravan-manufacturer.jpg"
                   alt="Grand City Caravans - luxury off road caravan manufacturer"
                 />
-                <img
+
+                <Image
                   className="hidden-lg hidden-md hidden-sm br-m-8"
+                  width={100}
+                  height={100}
                   src="/images/luxury-off-road-caravan-manufacturer-Grand-City.jpg"
                   alt="Grand City Caravans - luxury off road caravan manufacturer"
                 />
               </div>
+
               <h3>
-                3.{" "}
-                <a href="https://www.everestcaravans.com.au/" target="_blank">
+                3.
+                <Link
+                  href="https://www.everestcaravans.com.au/"
+                  target="_blank"
+                >
                   Everest Caravans
-                </a>
+                </Link>
               </h3>
               <div className="key_features">
                 <h4>
@@ -320,12 +348,12 @@ export default function ManufactureContent() {
                     structural warranty.
                   </li>
                   <li>
-                    What to Expect: If you're seeking the perfect caravan with
-                    off-road capabilities, whether full off-road or extreme
+                    What to Expect: If you&apos;re seeking the perfect caravan
+                    with off-road capabilities, whether full off-road or extreme
                     off-road, Everest is your destination.
                   </li>
                 </ul>
-                {/* <a
+                {/* <Link
                    style={{
                      fontSize: "17px",
                      paddingLeft: "25px",
@@ -334,7 +362,7 @@ export default function ManufactureContent() {
                    href="/caravan-manufacturers/everest-caravans"
                  >
                    View All Range
-                 </a> */}
+                 </Link> */}
               </div>
               <p>
                 Everest Caravans is fast becoming the best extreme off-road
@@ -371,22 +399,26 @@ export default function ManufactureContent() {
                 caravanning.
               </p>
               <div className="advertisement">
-                <img
+                <Image
                   className="hidden-xs"
+                  width={100}
+                  height={100}
                   src="/images/Everest-extreme-off-road-caravan-manufacturer.jpg"
                   alt="Everest Caravans - extreme off road caravan manufacturer"
                 />
-                <img
+                <Image
                   className="hidden-lg hidden-md hidden-sm br-m-8"
+                  width={100}
+                  height={100}
                   src="/images/extreme-off-road-caravan-manufacturer-Everest.jpg"
                   alt="Everest Caravans - extreme off road caravan manufacturer"
                 />
               </div>
               <h3>
-                4.{" "}
-                <a href="https://redcentrecaravans.com.au/" target="_blank">
+                4.
+                <Link href="https://redcentrecaravans.com.au/" target="_blank">
                   Red Centre Caravans
-                </a>
+                </Link>
               </h3>
               <div className="key_features">
                 <h4>
@@ -424,7 +456,7 @@ export default function ManufactureContent() {
                     the extreme off-road caravan range.
                   </li>
                 </ul>
-                {/* <a
+                {/* <Link
                    style={{
                      fontSize: "17px",
                      paddingLeft: "25px",
@@ -433,7 +465,7 @@ export default function ManufactureContent() {
                    href="/caravan-manufacturers/red-centre-caravans"
                  >
                    View All Range
-                 </a> */}
+                 </Link> */}
               </div>
               <p>
                 Red Centre Caravans is becoming a prominent extreme off-road
@@ -465,22 +497,26 @@ export default function ManufactureContent() {
                 Australia&apos;s toughest conditions.
               </p>
               <div className="advertisement">
-                <img
+                <Image
                   className="hidden-xs"
+                  width={100}
+                  height={100}
                   src="/images/Red-Center-leading-extreme-off-road-caravan-manufacturer.jpg"
                   alt="Red Center Caravans - leading extreme off road caravan manufacturer"
                 />
-                <img
+                <Image
+                  width={100}
+                  height={100}
                   className="hidden-lg hidden-md hidden-sm br-m-8"
                   src="/images/leading-extreme-off-road-caravan-manufacturer-Red-Centre.jpg"
                   alt="Red Center Caravans - leading extreme off road caravan manufacturer"
                 />
               </div>
               <h3>
-                5.{" "}
-                <a href="https://www.coronetrv.com.au/" target="_blank">
+                5.
+                <Link href="https://www.coronetrv.com.au/" target="_blank">
                   Coronet RV
-                </a>
+                </Link>
               </h3>
               <div className="key_features">
                 <h4>
@@ -523,7 +559,7 @@ export default function ManufactureContent() {
                     semi-off-road and full off-road caravans.
                   </li>
                 </ul>
-                {/* <a
+                {/* <Link
                    style={{
                      fontSize: "17px",
                      paddingLeft: "25px",
@@ -532,7 +568,7 @@ export default function ManufactureContent() {
                    href="/caravan-manufacturers/coronet-rv"
                  >
                    View All Range
-                 </a> */}
+                 </Link> */}
               </div>
               <p>
                 Coronet RV is an established off road caravan manufacturer and
@@ -574,13 +610,17 @@ export default function ManufactureContent() {
                 family model Coronet RV has got it covered.
               </p>
               <div className="advertisement">
-                <img
+                <Image
                   className="hidden-xs"
+                  width={100}
+                  height={100}
                   src="/images/Coronet-RV-family-friendy-off-road-caravan-manufacturer.jpg"
                   alt="Coronet RV - family friendy off road caravan manufacturer"
                 />
-                <img
+                <Image
                   className="hidden-lg hidden-md hidden-sm br-m-8"
+                  width={100}
+                  height={100}
                   src="/images/family-friendy-off-road-caravan-manufacturer-Coronet-RV.jpg"
                   alt="Coronet RV - family friendy off road caravan manufacturer"
                 />
@@ -602,8 +642,8 @@ export default function ManufactureContent() {
                     construction.
                   </li>
                   <li>
-                    Strengths: Renowned for crafting some of Australia's most
-                    premium caravans.
+                    Strengths: Renowned for crafting some of Australia&apos;s
+                    most premium caravans.
                   </li>
                   <li>
                     Australian Owned & Operated: Proudly based in Australia,
@@ -627,7 +667,7 @@ export default function ManufactureContent() {
                     Australia has to offer.
                   </li>
                 </ul>
-                {/* <a
+                {/* <Link
                    style={{
                      fontSize: "17px",
                      paddingLeft: "25px",
@@ -636,7 +676,7 @@ export default function ManufactureContent() {
                    href="/caravan-manufacturers/masterpiece-caravans"
                  >
                    View All Range
-                 </a> */}
+                 </Link> */}
               </div>
               <p>
                 Masterpiece Caravans, a best off-road caravan manufacturer, has
@@ -674,13 +714,17 @@ export default function ManufactureContent() {
                 Caravans is all about the ultimate off-road adventure.
               </p>
               <div className="advertisement">
-                <img
+                <Image
                   className="hidden-xs"
+                  width={100}
+                  height={100}
                   src="/images/Masterpiece-extreme-off-road-caravan-manufacturer.jpg"
                   alt="Masterpiece Caravans - extreme off road caravan manufacturer"
                 />
-                <img
+                <Image
                   className="hidden-lg hidden-md hidden-sm br-m-8"
+                  width={100}
+                  height={100}
                   src="/images/extreme-off-road-caravan-manufacturer-Masterpiece.jpg"
                   alt="Masterpiece Caravans - extreme off road caravan manufacturer"
                 />
@@ -719,7 +763,7 @@ export default function ManufactureContent() {
                     adventurers.
                   </li>
                 </ul>
-                {/* <a
+                {/* <Link
                    style={{
                      fontSize: "17px",
                      paddingLeft: "25px",
@@ -728,7 +772,7 @@ export default function ManufactureContent() {
                    href="/caravan-manufacturers/apache-caravans"
                  >
                    View All Range
-                 </a> */}
+                 </Link> */}
               </div>
               <p>
                 Apache Caravans are built for off road and off grid camping,
@@ -775,15 +819,19 @@ export default function ManufactureContent() {
                 your off road adventures.
               </p>
               <div className="advertisement">
-                <img
+                <Image
                   className="hidden-xs"
                   src="/images/Apache-hybrid-off-road-caravan-manufacturer.jpg"
                   alt="Apache Caravans - hybrid off road caravan manufacturer"
+                  width={100}
+                  height={100}
                 />
-                <img
+                <Image
                   className="hidden-lg hidden-md hidden-sm br-m-8"
                   src="/images/hybrid-off-road-caravan-manufacturer-Apache.jpg"
                   alt="Apache Caravans - hybrid off road caravan manufacturer"
+                  width={100}
+                  height={100}
                 />
               </div>
               <h3>8. Villa Caravans</h3>
@@ -823,7 +871,7 @@ export default function ManufactureContent() {
                     road range.
                   </li>
                 </ul>
-                {/* <a
+                {/* <Link
                    style={{
                      fontSize: "17px",
                      paddingLeft: "25px",
@@ -832,7 +880,7 @@ export default function ManufactureContent() {
                    href="/caravan-manufacturers/villa-caravans"
                  >
                    View All Range
-                 </a> */}
+                 </Link> */}
               </div>
               <p>
                 Villa Caravans is a well-known name among semi off-road caravan
@@ -868,18 +916,22 @@ export default function ManufactureContent() {
                 touring trips.
               </p>
               <div className="advertisement">
-                <img
+                <Image
                   className="hidden-xs"
                   src="/images/Villa-best-semi-off-road-caravan-manufacturer.jpg"
                   alt="Villa Caravans - best semi off road caravan manufacturer"
+                  width={100}
+                  height={100}
                 />
-                <img
+                <Image
                   className="hidden-lg hidden-md hidden-sm br-m-8"
                   src="/images/best-semi-off-road-caravan-manufacturer-Villa.jpg"
                   alt="Villa Caravans - best semi off road caravan manufacturer"
+                  width={100}
+                  height={100}
                 />
               </div>
-              <a
+              <Link
                 className="banner_ad_now"
                 href="/listings/off-road-category/"
                 style={{
@@ -889,20 +941,26 @@ export default function ManufactureContent() {
                   marginTop: "10px",
                 }}
               >
-                <img
+                <Image
                   className="hidden-xs"
+                  alt="forsale_link_offroad_dk-3"
                   src="/images/forsale_link_offroad_dk-3.jpg"
+                  width={100}
+                  height={100}
                 />
-                <img
+                <Image
                   className="hidden-lg hidden-md hidden-sm"
+                  alt="forsale_link_offroad_mb-1"
                   src="/images/forsale_link_offroad_mb-1.jpg"
+                  width={100}
+                  height={100}
                 />
-              </a>
+              </Link>
               <h3>
-                9.{" "}
-                <a href="https://xseriesrv.au/" target="_blank">
+                9.
+                <Link href="https://xseriesrv.au/" target="_blank">
                   X Series RV
-                </a>
+                </Link>
               </h3>
               <div className="key_features">
                 <h4>
@@ -936,7 +994,7 @@ export default function ManufactureContent() {
                     any adventure.
                   </li>
                 </ul>
-                {/* <a
+                {/* <Link
                    style={{
                      fontSize: "17px",
                      paddingLeft: "25px",
@@ -945,7 +1003,7 @@ export default function ManufactureContent() {
                    href="/caravan-manufacturers/willow-rv"
                  >
                    View All Range
-                 </a> */}
+                 </Link> */}
               </div>
               <p>
                 X Series RV is a specialist off-road caravan manufacturer
@@ -978,22 +1036,26 @@ export default function ManufactureContent() {
                 to take you on extraordinary adventures.
               </p>
               <div className="advertisement">
-                <img
+                <Image
                   className="hidden-xs"
+                  width={100}
+                  height={100}
                   src="/images/X-Series-RV-Hybrid-Off-Road-Caravan-Manufacturer-for-the-Wild-at-Heart.jpg"
                   alt="X Series RV Hybrid Off-Road Caravan Manufacturer for the Wild at Heart"
                 />
-                <img
+                <Image
                   className="hidden-lg hidden-md hidden-sm br-m-8"
+                  width={100}
+                  height={100}
                   src="/images/X-Series-RV-Hybrid-Off-Road-Caravan-Manufacturer-for-the-Wild-at-Heart-Mob.jpg"
                   alt="X Series RV Hybrid Off-Road Caravan Manufacturer for the Wild at Heart"
                 />
               </div>
               <h3>
-                10.{" "}
-                <a href="https://titaniumcaravans.com.au/" target="_blank">
+                10.
+                <Link href="https://titaniumcaravans.com.au/" target="_blank">
                   Titanium Caravans
-                </a>
+                </Link>
               </h3>
               <div className="key_features">
                 <h4>
@@ -1037,7 +1099,7 @@ export default function ManufactureContent() {
                     reverse camera.
                   </li>
                 </ul>
-                {/* <a
+                {/* <Link
                    style={{
                      fontSize: "17px",
                      paddingLeft: "25px",
@@ -1046,7 +1108,7 @@ export default function ManufactureContent() {
                    href="/caravan-manufacturers/titanium-caravans"
                  >
                    View All Range
-                 </a> */}
+                 </Link> */}
               </div>
               <p>
                 Titanium Caravans is redefining what it means to own an off-road
@@ -1060,8 +1122,8 @@ export default function ManufactureContent() {
                 For weekend explorers and long-haul adventurers alike, the Ti22
                 S1 delivers rugged durability with comfort-first features. From
                 400W of solar power and lithium batteries to a full-sized
-                kitchen, washing machine, and soft-close cabinetry—it's your
-                ideal off-grid home on wheels.
+                kitchen, washing machine, and soft-close cabinetry—it&apos;s
+                your ideal off-grid home on wheels.
               </p>
               <p>
                 If you&apos;re after a more compact, hybrid solution, the HS1
@@ -1080,13 +1142,17 @@ export default function ManufactureContent() {
                 last—both on the road and off the beaten path.
               </p>
               <div className="advertisement">
-                <img
+                <Image
                   className="hidden-xs"
+                  width={100}
+                  height={100}
                   src="/images/Titanium-Caravans-Off-Road-Caravan-Manufacturer.jpg"
                   alt="Titanium Caravans - Off Road Caravan Manufacturer"
                 />
-                <img
+                <Image
                   className="hidden-lg hidden-md hidden-sm br-m-8"
+                  width={100}
+                  height={100}
                   src="/images/Titanium-Caravans-Off-Road-Caravan-Manufacturer - Mobile.jpg"
                   alt="Titanium Caravans - Off Road Caravan Manufacturer"
                 />

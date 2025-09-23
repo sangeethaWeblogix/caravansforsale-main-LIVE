@@ -89,13 +89,6 @@
   font-weight: bold;
 }
 
-.sc_recent_news_style_news-announce
-  .post_item.post_size_big
-  .post_info
-  h2
-  span {
-}
-
 .sc_recent_news_style_news-announce .post_item.post_size_big .post_info h2 em {
   font-style: normal;
   vertical-align: -12px;
@@ -533,9 +526,6 @@ main .section-head a {
   position: relative;
   z-index: 25;
   background-size: cover;
-}
-
-.clients.style-4 .client-logos {
 }
 
 .clients.style-4 .client-logos .img img {

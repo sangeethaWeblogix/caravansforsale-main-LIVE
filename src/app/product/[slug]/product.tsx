@@ -500,7 +500,7 @@ export default function ClientLogger({
                         className="img-fluid"
                       />
                     </div>
-                    <a href="#">
+                    <Link href="#">
                       <Image
                         src={activeImage || productImage}
                         width={800}
@@ -508,7 +508,7 @@ export default function ClientLogger({
                         alt="Large"
                         className="img-fluid"
                       />
-                    </a>
+                    </Link>
                   </div>
                 </div>
 

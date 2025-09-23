@@ -862,12 +862,12 @@ export default function CaravanManufacturers() {
               </p>
 
               <div className="advertisement">
-                <img
+                <Image
                   className="hidden-xs"
                   src="/images/Leading-Australian-Caravan-Manufacturer-of-Durable-Luxurious-Vehicles.jpg"
                   alt="Willow RV - Leading Australian Caravan Manufacturer of Durable & Luxurious Vehicles"
                 />
-                <img
+                <Image
                   className="hidden-lg hidden-md hidden-sm br-m-8"
                   src="/images/Leading-Australian-Caravan-Manufacturer-of-Durable-Luxurious-Vehicles-Mob.jpg"
                   alt="Willow RV - Leading Australian Caravan Manufacturer of Durable & Luxurious Vehicles"
@@ -951,12 +951,12 @@ export default function CaravanManufacturers() {
               </p>
 
               <div className="advertisement">
-                <img
+                <Image
                   className="hidden-xs"
                   src="/images/Apache-Caravans-Hybrid-Caravan-Manufacturer.jpg"
                   alt="Apache caravans - hybrid caravan manufacturer"
                 />
-                <img
+                <Image
                   className="hidden-lg hidden-md hidden-sm br-m-8"
                   src="/images/Apache-Caravans-Hybrid-Caravan-Manufacturer-Mobile.jpg"
                   alt="Apache caravans - hybrid caravan manufacturer"
