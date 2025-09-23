@@ -115,9 +115,9 @@ export default function Navbar() {
         <div id="mySidenav" className={`sidenav ${isOpen ? "open" : ""}`}>
           <div className="sidebar-navigation">
             <ul>
-              <li>
-                <a
-                  href="#"
+              <li className={openDropdown === "state" ? "selected" : ""}>
+                {" "}
+                <div
                   className="drop_down"
                   onClick={(e) => {
                     e.preventDefault();
@@ -125,7 +125,7 @@ export default function Navbar() {
                   }}
                 >
                   Browse by State
-                </a>
+                </div>
                 <ul
                   className={
                     openDropdown === "state" ? "submenu open" : "submenu"
@@ -147,9 +147,8 @@ export default function Navbar() {
                 </ul>
               </li>
 
-              <li>
-                <a
-                  href="#"
+              <li className={openDropdown === "category" ? "selected" : ""}>
+                <div
                   className="drop_down"
                   onClick={(e) => {
                     e.preventDefault();
@@ -157,7 +156,7 @@ export default function Navbar() {
                   }}
                 >
                   Browse by Category
-                </a>
+                </div>
                 <ul
                   className={
                     openDropdown === "category" ? "submenu open" : "submenu"
@@ -179,9 +178,8 @@ export default function Navbar() {
                 </ul>
               </li>
 
-              <li>
-                <a
-                  href="#"
+              <li className={openDropdown === "price" ? "selected" : ""}>
+                <div
                   className="drop_down"
                   onClick={(e) => {
                     e.preventDefault();
@@ -189,7 +187,7 @@ export default function Navbar() {
                   }}
                 >
                   Browse by Price
-                </a>
+                </div>
                 <ul
                   className={
                     openDropdown === "price" ? "submenu open" : "submenu"
