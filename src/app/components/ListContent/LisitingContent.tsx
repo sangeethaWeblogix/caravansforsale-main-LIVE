@@ -150,8 +150,8 @@ export default function ListingContent({
                       <option value="featured">Featured</option>
                       <option value="price_asc">Price (Low to High)</option>
                       <option value="price_desc">Price (High to Low)</option>
-                      <option value="year_desc">Year Made (High to Low)</option>
-                      <option value="year_asc">Year Made (Low to High)</option>
+                      <option value="year-desc">Year Made (High to Low)</option>
+                      <option value="year-asc">Year Made (Low to High)</option>
                     </select>
 
                     {/* <input type="hidden" name="paged" value={filters.orderby} /> */}
