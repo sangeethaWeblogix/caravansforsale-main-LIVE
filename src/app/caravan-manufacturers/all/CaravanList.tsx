@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
-import { fetchManufacturers, Manufacturer } from "@/api/manufactures/api";
+// import { fetchManufacturers, Manufacturer } from "@/api/manufactures/api";
 
 type FeatureCardProps = {
   image: string;
@@ -66,15 +66,15 @@ function FeatureCard({
 }
 
 export default function CaravanManufacturers() {
-  const [manufacturers, setManufacturers] = useState<Manufacturer[]>([]);
+  // const [manufacturers, setManufacturers] = useState<Manufacturer[]>([]);
 
-  useEffect(() => {
-    fetchManufacturers().then((data) => {
-      if (data) setManufacturers(data);
-    });
-  }, []);
+  // useEffect(() => {
+  //   fetchManufacturers().then((data) => {
+  //     if (data) setManufacturers(data);
+  //   });
+  // }, []);
 
-  console.log("manufacturers", manufacturers);
+  // console.log("manufacturers", manufacturers);
 
   return (
     <>
