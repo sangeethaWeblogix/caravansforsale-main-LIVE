@@ -1603,12 +1603,8 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
   //     });
   //   }
   // }, [filters]);
-  useEffect(() => {
-    mountedRef.current = true;
-  }, []);
-  // ✅ Update all filters and URL with validation
+
   const lastSentFiltersRef = useRef<Filters | null>(null);
-  const mountedRef = useRef(false);
 
   // ✅ Update all filters and URL with validation
   // 🔁 replace this whole function
@@ -1629,10 +1625,10 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     if (typeof next.radius_kms !== "number") next.radius_kms = DEFAULT_RADIUS;
 
     // 2) notify parent only if changed
-    // if (!filtersEqual(lastSentFiltersRef.current, next)) {
-    //   lastSentFiltersRef.current = next;
-    //   onFilterChange(next);
-    // }
+    if (!filtersEqual(lastSentFiltersRef.current, next)) {
+      lastSentFiltersRef.current = next;
+      onFilterChange(next);
+    }
 
     // 3) build URL once0000000000000000
     const slugPath = buildSlugFromFilters(next);
@@ -1651,11 +1647,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     const finalURL = query.toString() ? `${slugPath}?${query}` : safeSlugPath;
     if (lastPushedURLRef.current !== finalURL) {
       lastPushedURLRef.current = finalURL;
-
-      if (mountedRef.current) {
-        // after mount → update URL silently
-        router.replace(finalURL);
-      }
+      router.push(finalURL);
     }
   };
 
