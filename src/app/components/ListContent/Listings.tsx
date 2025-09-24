@@ -317,22 +317,22 @@ export default function ListingsPage({
       updateURLWithFilters(filtersRef.current, prevPage);
     }
   };
-  useEffect(() => {
-    if (initialData?.data?.products) {
-      const transformed = transformApiItemsToProducts(
-        initialData.data.products
-      );
-      setProducts(transformed);
-      setCategories(initialData.data.all_categories || []);
-      setMakes(initialData.data.make_options || []);
-      setStateOptions(initialData.data.states || []);
-      setModels(initialData.data.model_options || []);
-      setPageTitle(initialData.title || "Caravan Listings");
-      setMetaTitle(initialData.seo?.metatitle || "");
-      setMetaDescription(initialData.seo?.metadescription || "");
-      if (initialData.pagination) setPagination(initialData.pagination);
-    }
-  }, [initialData]);
+  // useEffect(() => {
+  //   if (initialData?.data?.products) {
+  //     const transformed = transformApiItemsToProducts(
+  //       initialData.data.products
+  //     );
+  //     setProducts(transformed);
+  //     setCategories(initialData.data.all_categories || []);
+  //     setMakes(initialData.data.make_options || []);
+  //     setStateOptions(initialData.data.states || []);
+  //     setModels(initialData.data.model_options || []);
+  //     setPageTitle(initialData.title || "Caravan Listings");
+  //     setMetaTitle(initialData.seo?.metatitle || "");
+  //     setMetaDescription(initialData.seo?.metadescription || "");
+  //     if (initialData.pagination) setPagination(initialData.pagination);
+  //   }
+  // }, [initialData]);
 
   const loadListings = useCallback(
     async (
@@ -405,6 +405,8 @@ export default function ListingsPage({
         } else if (hasFilters) {
           setProducts([]);
           setPageTitle("No results found. Redirecting...");
+          setMetaTitle("No listings found");
+          setMetaDescription("We couldn't find listings for your filters.");
           setTimeout(() => {
             const empty: Filters = {};
             filtersRef.current = empty;
