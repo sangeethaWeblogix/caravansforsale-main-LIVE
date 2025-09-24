@@ -24,7 +24,7 @@ export async function metaFromSlug(
   // ✅ option 2: if fetchListings expects filters object (more likely)
   const res = await fetchListings(finalFilters);
 
-  const title = res?.seo?.metatitle || "Caravan Listings";
+  const title = res?.seo?.metatitle || " ";
   const description =
     res?.seo?.metadescription || "Browse all available caravans.";
   const rawIndex = (res?.seo?.index ?? "").toLowerCase().trim();
