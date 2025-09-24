@@ -198,6 +198,9 @@ export async function generateMetadata({
       verification: {
         google: "6tT6MT6AJgGromLaqvdnyyDQouJXq0VHS-7HC194xEo", // ✅ Google site verification
       },
+      alternates: {
+        canonical: url, // ✅ canonical based on built querystring
+      },
       description,
       robots,
       openGraph: { title, description },

@@ -1,6 +1,7 @@
 import { fetchListings } from "@/api/listings/api";
 import { parseSlugToFilters } from "@/app/components/urlBuilder";
 import type { Metadata } from "next";
+import { buildCanonicalUrl } from "./buildCanonical";
 
 export async function metaFromSlug(
   filters: string[] = [],
@@ -8,23 +9,14 @@ export async function metaFromSlug(
 ): Promise<Metadata> {
   const parsed = parseSlugToFilters(filters, searchParams);
 
-  // ✅ page as number
-  const finalFilters = {
-    ...parsed,
-    page: parsed.page ? Number(parsed.page) : 1,
-  };
+  // ✅ normalize page
+  const page = parsed.page ? Number(parsed.page) : 1;
+  const finalFilters = { ...parsed, page };
 
-  // ✅ build querystring
-  // const qs = buildQuery(finalFilters);
-  // const url = `https://www.caravansforsale.com.au/wp-json/cfs/v1/new-list?${qs.toString()}`;
-
-  // ✅ option 1: if fetchListings accepts full URL
-  // const res = await fetchListings(url);
-
-  // ✅ option 2: if fetchListings expects filters object (more likely)
+  // ✅ fetch SEO data
   const res = await fetchListings(finalFilters);
 
-  const title = res?.seo?.metatitle || " ";
+  const title = res?.seo?.metatitle || "Caravans for Sale";
   const description =
     res?.seo?.metadescription || "Browse all available caravans.";
   const rawIndex = (res?.seo?.index ?? "").toLowerCase().trim();
@@ -34,18 +26,24 @@ export async function metaFromSlug(
       ? { index: false, follow: false }
       : { index: true, follow: true };
 
+  // ✅ canonical
+  const canonical = buildCanonicalUrl(
+    "https://www.caravansforsale.com.au/listings",
+    filters,
+    { page }
+  );
+
   return {
     title,
     description,
     verification: {
-      google: "6tT6MT6AJgGromLaqvdnyyDQouJXq0VHS-7HC194xEo", // ✅ Google site verification
+      google: "6tT6MT6AJgGromLaqvdnyyDQouJXq0VHS-7HC194xEo",
     },
     robots,
-    openGraph: { title, description, images: [{ url: "/favicon.ico" }] },
-    twitter: {
-      title,
-      description,
-      images: ["/favicon.ico"],
+    alternates: {
+      canonical,
     },
+    openGraph: { title, description, url: canonical },
+    twitter: { title, description },
   };
 }
