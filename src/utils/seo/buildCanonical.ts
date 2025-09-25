@@ -4,17 +4,17 @@ export function buildCanonicalUrl(
   slugSegments: string[] = [],
   filters: Record<string, string | number | undefined> = {}
 ): string {
-  // Ensure no double slashes
+  // Build path
   let path = slugSegments.length
     ? `${basePath}/${slugSegments.join("/")}`
     : basePath;
 
-  // 🔑 strip trailing slash if it exists
+  // 🔑 Normalize: strip trailing slash
   if (path.endsWith("/")) {
     path = path.slice(0, -1);
   }
 
-  // Only include ?page=N if N > 1
+  // ✅ Only keep "page" in canonical if > 1
   const qs = new URLSearchParams();
   if (filters.page && typeof filters.page === "number" && filters.page > 1) {
     qs.append("page", String(filters.page));
