@@ -1,4 +1,3 @@
- // app/robots.ts
 import { MetadataRoute } from "next";
 
 const BASE_URL = "https://www.caravansforsale.com.au";
@@ -8,11 +7,11 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: "*", // applies to all crawlers
-        allow: "/",     // allow all public pages
+        allow: "/", // allow all public pages
         disallow: [
-          "/admin",     // block admin area
+          "/admin", // block admin area
           "/dashboard", // block dashboard
-          "/api",       // block backend APIs
+          "/api", // block backend APIs
         ],
       },
     ],
