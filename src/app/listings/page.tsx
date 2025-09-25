@@ -18,6 +18,12 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: { absolute: metaTitle }, // ✅ Prevents global "| Caravan" suffix
     description: metaDescription,
+    alternates: {
+      canonical: "https://www.caravansforsale.com.au/listings/",
+    },
+    verification: {
+      google: "6tT6MT6AJgGromLaqvdnyyDQouJXq0VHS-7HC194xEo", // ✅ add here
+    },
     openGraph: {
       title: metaTitle,
       description: metaDescription,
