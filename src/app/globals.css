@@ -38,6 +38,11 @@ img {
   width: auto;
 }
 
+.loader_image {
+  height: 60px;
+  width: 60px;
+}
+
 .navbar.style-4.header-white {
   background: #fff;
   position: relative;

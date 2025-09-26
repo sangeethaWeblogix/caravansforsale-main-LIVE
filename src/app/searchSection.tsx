@@ -291,6 +291,7 @@ export default function SearchSection() {
         >
           <div className="text-center">
             <Image
+              className="loader_image"
               src="/images/loader.gif" // place inside public/images
               alt="Loading..."
               width={80}
