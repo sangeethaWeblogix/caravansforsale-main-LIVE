@@ -404,14 +404,12 @@ export default function ListingsPage({
           setMetaTitle(response.seo?.metatitle ?? "");
         } else if (hasFilters) {
           setProducts([]);
-          setPageTitle("No results found. Redirecting...");
-          setMetaTitle("No listings found");
-          setMetaDescription("We couldn't find listings for your filters.");
+
           setTimeout(() => {
             const empty: Filters = {};
             filtersRef.current = empty;
             setFilters(empty);
-            router.push("/listings");
+            router.push("/not-found");
           }, 2500);
         } else {
           setProducts([]);
@@ -680,7 +678,6 @@ export default function ListingsPage({
               states={stateOptions}
               onFilterChange={(partial) => {
                 handleFilterChange(partial);
-                setIsLoading(true);
               }}
               currentFilters={filters}
             />
