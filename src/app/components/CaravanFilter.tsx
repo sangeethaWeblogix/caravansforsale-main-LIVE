@@ -1603,6 +1603,10 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
   //     });
   //   }
   // }, [filters]);
+  useEffect(() => {
+    mountedRef.current = true;
+  }, []);
+  const mountedRef = useRef(false);
 
   const lastSentFiltersRef = useRef<Filters | null>(null);
 
@@ -1647,7 +1651,9 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     const finalURL = query.toString() ? `${slugPath}?${query}` : safeSlugPath;
     if (lastPushedURLRef.current !== finalURL) {
       lastPushedURLRef.current = finalURL;
-      router.push(finalURL);
+      if (mountedRef.current) {
+        router.push(finalURL);
+      }
     }
   };
 
