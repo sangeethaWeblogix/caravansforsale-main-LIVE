@@ -392,6 +392,31 @@ input[type="checkbox"]:checked ~ .menuIconToggle > .dia.p-2 {
   transition: transform 0.3s ease;
 }
 
+.mobile_cta {
+  border-top: 1px solid #bebebe;
+  padding-top: 10px;
+  text-align: center;
+}
+
+.mobile_cta span {
+  padding-bottom: 5px;
+  font-weight: 600;
+  display: block;
+  font-size: 18px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.mobile_cta a.btn {
+  background-color: #ec7200;
+  border-color: #ec7200;
+  display: inline-block;
+  padding: 10px 10px;
+  color: #fff;
+  width: 90%;
+  text-align: center;
+}
+
 /* Rotate arrow when open */
 .sidebar-navigation ul li.selected .drop_down::after {
   transform: rotate(180deg);
