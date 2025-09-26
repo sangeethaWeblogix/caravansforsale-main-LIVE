@@ -76,18 +76,18 @@ export default function Navbar() {
               <span className="navbar-toggler-icon"></span>
             </button>
 
-            {/* <div
+            <div
               className="collapse navbar-collapse justify-content-end"
               id="navbarSupportedContent"
             >
-              <ul className="navbar-nav mb-2 mb-lg-0">
+              {/* <ul className="navbar-nav mb-2 mb-lg-0">
                 <li className="nav-item">
                   <Link className="nav-link" href="/listings/">
                     About Our Deals
                   </Link>
                 </li>
-              </ul>
-            </div> */}
+              </ul> */}
+            </div>
 
             <div className="left_menu">
               <input
