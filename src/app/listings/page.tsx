@@ -10,7 +10,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
   const response = await fetchListings({});
 
-  const metaTitle = response?.seo?.metatitle || "Caravan Listings";
+  const metaTitle = response?.seo?.metatitle || "";
   const metaDescription =
     response?.seo?.metadescription ||
     "Browse all available caravans across Australia.";
