@@ -76,7 +76,7 @@ export default function Navbar() {
               <span className="navbar-toggler-icon"></span>
             </button>
 
-            <div
+            {/* <div
               className="collapse navbar-collapse justify-content-end"
               id="navbarSupportedContent"
             >
@@ -87,7 +87,7 @@ export default function Navbar() {
                   </Link>
                 </li>
               </ul>
-            </div>
+            </div> */}
 
             <div className="left_menu">
               <input
