@@ -1426,6 +1426,21 @@ a.ignoretext {
   }
   .home-post_head {
     margin-bottom: 0;
+    padding-bottom: 0;
+  }
+  .top_cta {
+    margin-top: 0;
+    padding-bottom: 20px;
+  }
+
+  .top_cta .swiper-horizontal > .swiper-pagination-bullets,
+  .swiper-pagination-bullets.swiper-pagination-horizontal {
+    bottom: -5px;
+  }
+
+  .top_cta .swiper-pagination-bullet-active {
+    opacity: var(--swiper-pagination-bullet-opacity, 1);
+    background: #ec7200;
   }
   .home-post__item {
     display: block !important;

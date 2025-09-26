@@ -2,9 +2,14 @@
 import React, { useEffect, useState } from "react";
 import { fetchRequirements, Requirement } from "@/api/postRquirements/api";
 import Link from "next/link";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Pagination, Autoplay } from "swiper/modules"; // ✅ import autoplay
+import "swiper/css";
+import "swiper/css/pagination"; // ✅ import pagination styles
 
 const PostRequirement = () => {
   const [items, setItems] = useState<Requirement[]>([]);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -15,6 +20,13 @@ const PostRequirement = () => {
         console.error("Failed to fetch requirements:", err);
       }
     })();
+  }, []);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   return (
@@ -36,57 +48,117 @@ const PostRequirement = () => {
 
           <div className="home-post__items info top_cta_container">
             <div className="top_cta bg-white">
-              <div className="home_post_middle hidden-xs hidden-sm">
-                <div className="type">Type</div>
-                <div className="condition">Condition</div>
-                <div className="requirements">Requirements</div>
-                <div className="status">Status</div>
-                <div className="location">Location</div>
-                <div className="budget">Budget</div>
-              </div>
+              {/* ✅ Table header for desktop */}
+              {!isMobile && (
+                <div className="home_post_middle hidden-xs hidden-sm">
+                  <div className="type">Type</div>
+                  <div className="condition">Condition</div>
+                  <div className="requirements">Requirements</div>
+                  <div className="status">Status</div>
+                  <div className="location">Location</div>
+                  <div className="budget">Budget</div>
+                </div>
+              )}
 
-              {items.map((item, index) => (
-                <div className="post_flip" key={index}>
-                  {/* ⬇️ outer container is a div, not <a> */}
-                  <div className="home-post__item d-flex">
-                    <div className="type">
-                      <span className="m_label hidden-lg hidden-md">Type : </span>
-                      <Link
-                        href={`/listings/${item.type.toLowerCase()}-category/`}
-                      >
-                        {item.type}
-                      </Link>
-                    </div>
+              {/* ✅ Mobile view → slider with pagination */}
+              {isMobile ? (
+                <Swiper
+                  spaceBetween={0}
+                  slidesPerView={1}
+                  pagination={{ clickable: true }}
+                  autoplay={{
+                    delay: 6000, // ⏱ every 3 seconds
+                    disableOnInteraction: false, // keep autoplay after swipe
+                  }}
+                  modules={[Pagination, Autoplay]}
+                >
+                  {items.map((item, index) => (
+                    <SwiperSlide key={index}>
+                      <div className="post_flip">
+                        <div className="home-post__item d-flex">
+                          <div className="type">
+                            <span className="m_label">Type : </span>
+                            <Link
+                              href={`/listings/${item.type.toLowerCase()}-category/`}
+                            >
+                              {item.type}
+                            </Link>
+                          </div>
 
-                    <div className="condition">
-                      <span className="m_label hidden-lg hidden-md">Condition : </span>
-                      <Link
-                        href={`/listings/${item.condition.toLowerCase()}-condition/`}
-                      >
-                        {item.condition}
-                      </Link>
-                    </div>
+                          <div className="condition">
+                            <span className="m_label">Condition : </span>
+                            <Link
+                              href={`/listings/${item.condition.toLowerCase()}-condition/`}
+                            >
+                              {item.condition}
+                            </Link>
+                          </div>
 
-                    <div className="requirements"><span className="m_label hidden-lg hidden-md">Requirements : </span>{item.requirements}</div>
+                          <div className="requirements">
+                            <span className="m_label">Requirements : </span>
+                            {item.requirements}
+                          </div>
 
-                    <div className="status">
-                      <span className="m_label hidden-lg hidden-md hidden-sm">Status : </span>
-                      <i className="fa fa-check" />{" "}
-                      {item.active === "1" ? "Active" : "Inactive"}
-                    </div>
+                          <div className="status">
+                            <span className="m_label">Status : </span>
+                            <i className="fa fa-check" />{" "}
+                            {item.active === "1" ? "Active" : "Inactive"}
+                          </div>
 
-                    <div className="location"><span className="m_label hidden-lg hidden-md">Location : </span>{item.location}</div>
-                    <div className="budget">
-                      <span className="m_label hidden-lg hidden-md">Budget</span>
-                      {new Intl.NumberFormat("en-US", {
-                        style: "currency",
-                        currency: "USD",
-                        minimumFractionDigits: 0,
-                      }).format(Number(item.budget))}{" "}
+                          <div className="location">
+                            <span className="m_label">Location : </span>
+                            {item.location}
+                          </div>
+
+                          <div className="budget">
+                            <span className="m_label">Budget : </span>
+                            {new Intl.NumberFormat("en-US", {
+                              style: "currency",
+                              currency: "USD",
+                              minimumFractionDigits: 0,
+                            }).format(Number(item.budget))}
+                          </div>
+                        </div>
+                      </div>
+                    </SwiperSlide>
+                  ))}
+                </Swiper>
+              ) : (
+                /* ✅ Desktop normal list */
+                items.map((item, index) => (
+                  <div className="post_flip" key={index}>
+                    <div className="home-post__item d-flex">
+                      <div className="type">
+                        <Link
+                          href={`/listings/${item.type.toLowerCase()}-category/`}
+                        >
+                          {item.type}
+                        </Link>
+                      </div>
+                      <div className="condition">
+                        <Link
+                          href={`/listings/${item.condition.toLowerCase()}-condition/`}
+                        >
+                          {item.condition}
+                        </Link>
+                      </div>
+                      <div className="requirements">{item.requirements}</div>
+                      <div className="status">
+                        <i className="fa fa-check" />{" "}
+                        {item.active === "1" ? "Active" : "Inactive"}
+                      </div>
+                      <div className="location">{item.location}</div>
+                      <div className="budget">
+                        {new Intl.NumberFormat("en-US", {
+                          style: "currency",
+                          currency: "USD",
+                          minimumFractionDigits: 0,
+                        }).format(Number(item.budget))}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
 

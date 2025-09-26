@@ -42,6 +42,10 @@ img {
   background: #fff;
   position: relative;
   z-index: 999;
+  position: sticky;
+  top: 0;
+  padding: 10px 0;
+  border-bottom: 1px solid #e1e1e1;
 }
 .header-white .hamb-line {
   background-color: #333333;
@@ -103,9 +107,18 @@ img {
   justify-content: center;
 }
 
-.btn:hover, .btn:focus {
+.btn:hover,
+.btn:focus {
   background: #ec7200;
   border-color: transparent !important;
+}
+
+.banner_ad_now {
+  border-radius: 6px;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid #000;
+  box-shadow: 0px 0px 15px rgb(0 0 0 / 13%);
 }
 
 /*media hidden */
@@ -334,13 +347,13 @@ small {
 }
 
 .product-page .related-products .product-card .img {
-    justify-content: center;
-    align-items: center;
-    min-height: 250px;
-    max-height: 250px;
-    display: flex;
-    overflow: hidden;
-    background: #eee;
+  justify-content: center;
+  align-items: center;
+  min-height: 250px;
+  max-height: 250px;
+  display: flex;
+  overflow: hidden;
+  background: #eee;
 }
 
 .product-page .product-card .img {
