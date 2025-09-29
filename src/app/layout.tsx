@@ -7,7 +7,6 @@ import Footer from "./footer/Footer";
 import React from "react";
 import { Metadata } from "next";
 import ScrollToTop from "./ScrollToTop";
-import Script from "next/script";
 
 export const metadata: Metadata = {
   title: {
@@ -46,19 +45,20 @@ export default function RootLayout({
         />
 
         {/* ✅ Google Tag Manager (Head) */}
-        <Script
-          strategy="afterInteractive"
+        <script
+          async
           src="https://www.googletagmanager.com/gtag/js?id=G-86MYWLZRTY"
+        ></script>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-86MYWLZRTY');
+    `,
+          }}
         />
-
-        <Script id="google-analytics" strategy="afterInteractive">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', 'G-86MYWLZRTY');
-          `}
-        </Script>
       </head>
       <body
         className="flex flex-col min-h-screen new_font"
