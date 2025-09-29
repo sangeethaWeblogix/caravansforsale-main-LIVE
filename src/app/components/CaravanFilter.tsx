@@ -1242,27 +1242,74 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     make: sanitizeMake(f.make),
   });
 
+  // useEffect(() => {
+  //   // Only push if we already have a selected location context
+  //   if (!selectedSuggestion) return;
+
+  //   if (radiusDebounceRef.current) clearTimeout(radiusDebounceRef.current);
+  //   radiusDebounceRef.current = window.setTimeout(() => {
+  //     const base: Filters = {
+  //       // start from LOCAL filters (freshest)
+  //       ...filters,
+  //       // ensure location is present from the UI selections
+  //       state: selectedStateName ?? filters.state,
+  //       make: sanitizeMake(filters.make),
+  //       region: getValidRegionName(
+  //         selectedStateName ?? filters.state,
+  //         selectedRegionName ?? filters.region,
+  //         states
+  //       ),
+  //       suburb: selectedSuburbName ?? filters.suburb,
+  //       pincode: selectedpincode ?? filters.pincode,
+  //     };
+  //     const updated = buildUpdatedFilters(base, { radius_kms: radiusKms });
+  //     setFilters(updated);
+  //     filtersInitialized.current = true;
+
+  //     startTransition(() => {
+  //       updateAllFiltersAndURL(updated);
+  //     });
+  //   }, 250);
+
+  //   return () => {
+  //     if (radiusDebounceRef.current) clearTimeout(radiusDebounceRef.current);
+  //   };
+  // }, [
+  //   radiusKms,
+  //   selectedState,
+  //   selectedRegionName,
+  //   selectedSuburbName,
+  //   selectedpincode,
+  // ]); // ✅
+
+  // 1) Make a stable key for `states`
+
   useEffect(() => {
-    // Only push if we already have a selected location context
     if (!selectedSuggestion) return;
 
     if (radiusDebounceRef.current) clearTimeout(radiusDebounceRef.current);
+
     radiusDebounceRef.current = window.setTimeout(() => {
+      // ✅ Always start from both currentFilters + filters
       const base: Filters = {
-        // start from LOCAL filters (freshest)
+        ...currentFilters,
         ...filters,
-        // ensure location is present from the UI selections
-        state: selectedStateName ?? filters.state,
-        make: sanitizeMake(filters.make),
+        state: selectedStateName ?? currentFilters.state ?? filters.state,
         region: getValidRegionName(
-          selectedStateName ?? filters.state,
-          selectedRegionName ?? filters.region,
+          selectedStateName ?? currentFilters.state ?? filters.state,
+          selectedRegionName ?? currentFilters.region ?? filters.region,
           states
         ),
-        suburb: selectedSuburbName ?? filters.suburb,
-        pincode: selectedpincode ?? filters.pincode,
+        suburb: selectedSuburbName ?? currentFilters.suburb ?? filters.suburb,
+        pincode: selectedpincode ?? currentFilters.pincode ?? filters.pincode,
+        make: sanitizeMake(selectedMake || filters.make || currentFilters.make),
+        model: selectedModel || filters.model || currentFilters.model,
+        category:
+          selectedCategory || filters.category || currentFilters.category,
       };
+
       const updated = buildUpdatedFilters(base, { radius_kms: radiusKms });
+
       setFilters(updated);
       filtersInitialized.current = true;
 
@@ -1276,13 +1323,14 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     };
   }, [
     radiusKms,
-    selectedState,
+    selectedStateName,
     selectedRegionName,
     selectedSuburbName,
     selectedpincode,
-  ]); // ✅
-
-  // 1) Make a stable key for `states`
+    selectedMake,
+    selectedModel,
+    selectedCategory,
+  ]);
 
   const statesKey = useMemo(() => {
     if (!Array.isArray(states)) return "";
