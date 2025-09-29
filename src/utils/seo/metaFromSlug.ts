@@ -33,6 +33,27 @@ export async function metaFromSlug(
     { page }
   );
 
+  // ✅ prev/next
+  const totalPages = res?.pagination?.total_pages ?? 1;
+
+  const prev =
+    page > 1
+      ? buildCanonicalUrl(
+          "https://www.caravansforsale.com.au/listings",
+          filters,
+          { page: page - 1 }
+        )
+      : undefined;
+
+  const next =
+    page < totalPages
+      ? buildCanonicalUrl(
+          "https://www.caravansforsale.com.au/listings",
+          filters,
+          { page: page + 1 }
+        )
+      : undefined;
+
   return {
     title,
     description,
@@ -45,5 +66,9 @@ export async function metaFromSlug(
     },
     openGraph: { title, description, url: canonical },
     twitter: { title, description },
+    other: {
+      ...(prev ? { "link:prev": `<${prev}>; rel="prev"` } : {}),
+      ...(next ? { "link:next": `<${next}>; rel="next"` } : {}),
+    },
   };
 }

@@ -59,6 +59,7 @@ export interface ApiPagination {
   total_items?: number;
   per_page: number;
   total_products: number;
+  hasNext?: boolean; // 👈 add this
 }
 
 // This mirrors what Listings.tsx actually reads:

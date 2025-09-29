@@ -3,7 +3,7 @@ import React, { Suspense } from "react";
 import Listing from "../components/ListContent/Listings"; // Adjust path as needed
 import { fetchListings } from "@/api/listings/api";
 import { Metadata } from "next";
-
+export const revalidate = 60;
 // ✅ Server-side metadata generation
 export async function generateMetadata(): Promise<Metadata> {
   const imageUrl = "/favicon.ico"; // ✅ public/ is auto-mapped
@@ -47,7 +47,6 @@ export async function generateMetadata(): Promise<Metadata> {
 // ✅ No props here — App Router handles metadata separately
 export default async function ListingsPage() {
   const initialData = await fetchListings({});
-
   return (
     <Suspense>
       <Listing initialData={initialData} />
