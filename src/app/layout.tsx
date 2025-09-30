@@ -7,6 +7,7 @@ import Footer from "./footer/Footer";
 import React from "react";
 import { Metadata } from "next";
 import ScrollToTop from "./ScrollToTop";
+import UTMTracker from "./UTMTracker";
 
 export const metadata: Metadata = {
   title: {
@@ -77,6 +78,7 @@ export default function RootLayout({
           ></iframe>
         </noscript>
 
+        <UTMTracker />
         <Navbar />
         <ScrollToTop />
         <main className="product-page style-5">{children}</main>
