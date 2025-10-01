@@ -14,7 +14,7 @@ export async function metaFromSlug(
 
   const res = await fetchListings(finalFilters);
 
-  const title = res?.seo?.metatitle || "Caravans for Sale";
+  const title = res?.seo?.metatitle || "";
   const description =
     res?.seo?.metadescription || "Browse all available caravans.";
 
