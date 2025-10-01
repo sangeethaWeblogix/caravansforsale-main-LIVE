@@ -9,31 +9,27 @@ export async function metaFromSlug(
 ): Promise<Metadata> {
   const parsed = parseSlugToFilters(filters, searchParams);
 
-  // ✅ normalize page
   const page = parsed.page ? Number(parsed.page) : 1;
   const finalFilters = { ...parsed, page };
 
-  // ✅ fetch SEO data
   const res = await fetchListings(finalFilters);
 
   const title = res?.seo?.metatitle || "Caravans for Sale";
   const description =
     res?.seo?.metadescription || "Browse all available caravans.";
-  const rawIndex = (res?.seo?.index ?? "").toLowerCase().trim();
 
+  const rawIndex = (res?.seo?.index ?? "").toLowerCase().trim();
   const robots =
     rawIndex === "noindex"
       ? { index: false, follow: false }
       : { index: true, follow: true };
 
-  // ✅ canonical
   const canonical = buildCanonicalUrl(
     "https://www.caravansforsale.com.au/listings",
     filters,
     { page }
   );
 
-  // ✅ prev/next
   const totalPages = res?.pagination?.total_pages ?? 1;
 
   const prev =
@@ -57,18 +53,21 @@ export async function metaFromSlug(
   return {
     title,
     description,
+    robots,
     verification: {
       google: "6tT6MT6AJgGromLaqvdnyyDQouJXq0VHS-7HC194xEo",
     },
-    robots,
     alternates: {
       canonical,
+      languages: {},
+      media: {},
+      // 👇 This ensures prev/next show up in <head> properly
+      types: {
+        ...(prev ? { "application/prev": prev } : {}),
+        ...(next ? { "application/next": next } : {}),
+      },
     },
     openGraph: { title, description, url: canonical },
     twitter: { title, description },
-    other: {
-      ...(prev ? { "link:prev": `<${prev}>; rel="prev"` } : {}),
-      ...(next ? { "link:next": `<${next}>; rel="next"` } : {}),
-    },
   };
 }
