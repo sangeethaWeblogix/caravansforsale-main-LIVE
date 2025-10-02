@@ -64,15 +64,17 @@ export async function metaFromSlug(
       media: {},
 
       // 👇 This ensures prev/next show up in <head> properly
-      types: {
-        ...(prev ? { previous: prev } : {}),
-        ...(next ? { next } : {}),
-      },
+      // types: {
+      //   ...(prev ? { previous: prev } : {}),
+      //   ...(next ? { next } : {}),
+      // },
     },
-    // other: {
-    //   ...(prev ? { linkPrev: `<link rel="prev" href="${prev}">` } : {}),
-    //   ...(next ? { linkNext: `<link rel="next" href="${next}">` } : {}),
-    // },
+    icons: {
+      other: [
+        ...(prev ? [{ rel: "prev", url: prev }] : []),
+        ...(next ? [{ rel: "next", url: next }] : []),
+      ],
+    },
     openGraph: { title, description, url: canonical },
     twitter: { title, description },
   };
