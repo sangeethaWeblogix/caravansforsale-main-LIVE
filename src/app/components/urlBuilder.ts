@@ -103,7 +103,7 @@ export function parseSlugToFilters(
 
     // ATM: support canonical and legacy patterns
     if (part.includes("-kg-atm")) {
-      const canon = part.match(/^between-(\d+)-(\d+)-kg-atm$/);
+      const canon = part.match(/^between-(\d+)-kg-(\d+)-kg-atm$/);
       if (canon) {
         filters.minKg = canon[1];
         filters.maxKg = canon[2];
