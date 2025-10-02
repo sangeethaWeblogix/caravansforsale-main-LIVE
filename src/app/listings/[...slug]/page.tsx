@@ -5,7 +5,6 @@ import { parseSlugToFilters } from "../../components/urlBuilder";
 import { metaFromSlug } from "../../../utils/seo/metaFromSlug";
 import type { Metadata } from "next";
 import { fetchListings } from "@/api/listings/api";
-import { notFound } from "next/navigation";
 // import { fetchListings } from "@/api/listings/api";
 
 // Define types for the async params
@@ -37,46 +36,29 @@ export default async function Listings({
   params: Params;
   searchParams: SearchParams;
 }) {
+  // Await both params and searchParams
   const [resolvedParams, resolvedSearchParams] = await Promise.all([
     params,
     searchParams,
   ]);
 
   const { slug = [] } = resolvedParams;
+
   const filters = parseSlugToFilters(slug, resolvedSearchParams);
 
-  // 🚫 validate `page`
-  let page = 1;
-  if (resolvedSearchParams.page) {
-    const raw =
-      typeof resolvedSearchParams.page === "string"
-        ? resolvedSearchParams.page
-        : Array.isArray(resolvedSearchParams.page)
-        ? resolvedSearchParams.page[0]
-        : "";
-
-    // only digits allowed
-    if (!/^[0-9]+$/.test(raw)) {
-      notFound();
-    }
-
-    page = Number(raw);
-
-    if (!Number.isInteger(page) || page < 1) {
-      notFound();
-    }
-  }
-
-  // 🚫 block extra params besides "page"
-  const keys = Object.keys(resolvedSearchParams);
-  if (keys.length > 1 || (keys.length === 1 && keys[0] !== "page")) {
-    notFound();
-  }
+  // ✅ Always use "page", not "paged"
+  const page =
+    typeof resolvedSearchParams.page === "string"
+      ? parseInt(resolvedSearchParams.page, 10)
+      : Array.isArray(resolvedSearchParams.page)
+      ? parseInt(resolvedSearchParams.page[0], 10)
+      : 1;
 
   const response = await fetchListings({
     ...filters,
     page,
   });
+  // return <ListingsPage {...filters} page={page} />;
 
   return <ListingsPage {...filters} page={page} initialData={response} />;
 }

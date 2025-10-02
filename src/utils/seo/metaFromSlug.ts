@@ -27,7 +27,7 @@ export async function metaFromSlug(
   const canonical = buildCanonicalUrl(
     "https://www.caravansforsale.com.au/listings",
     filters,
-    { page }
+    {}
   );
 
   const totalPages = res?.pagination?.total_pages ?? 1;
@@ -57,16 +57,22 @@ export async function metaFromSlug(
     verification: {
       google: "6tT6MT6AJgGromLaqvdnyyDQouJXq0VHS-7HC194xEo",
     },
+
     alternates: {
       canonical,
       languages: {},
       media: {},
+
       // 👇 This ensures prev/next show up in <head> properly
       types: {
-        ...(prev ? { "application/prev": prev } : {}),
-        ...(next ? { "application/next": next } : {}),
+        ...(prev ? { previous: prev } : {}),
+        ...(next ? { next } : {}),
       },
     },
+    // other: {
+    //   ...(prev ? { linkPrev: `<link rel="prev" href="${prev}">` } : {}),
+    //   ...(next ? { linkNext: `<link rel="next" href="${next}">` } : {}),
+    // },
     openGraph: { title, description, url: canonical },
     twitter: { title, description },
   };
