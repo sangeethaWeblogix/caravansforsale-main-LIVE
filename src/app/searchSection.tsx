@@ -16,10 +16,12 @@ type Item = {
   name?: string;
   heading?: string;
   make?: string;
+  url?: string;
   model?: string;
   variant?: string;
   slug?: string | number;
   id?: string | number;
+  label?: string;
 } & Record<string, unknown>;
 
 // Safe label extractor (avoid mixing ?? and || without parens)
@@ -39,8 +41,8 @@ export default function SearchSection() {
 
   const [isSuggestionBoxOpen, setIsSuggestionBoxOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const [suggestions, setSuggestions] = useState<string[]>([]);
-  const [baseSuggestions, setBaseSuggestions] = useState<string[]>([]); // list for first-click
+  const [suggestions, setSuggestions] = useState<Item[]>([]);
+  const [baseSuggestions, setBaseSuggestions] = useState<Item[]>([]); // list for first-click
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   // ------------- base list (first click) ---  const [loading, setLoading] = useState<string | null>(null);----------
@@ -53,16 +55,15 @@ export default function SearchSection() {
       setLoading(true);
       setError("");
       const data = await fetchHomeSearchList();
-      const labels = Array.from(
-        new Set(
-          data
-            .map(labelOf)
-            .filter(Boolean)
-            .map((s) => s.trim())
-        )
-      ).slice(0, 15);
+
+      const labels: Item[] = data.map((x: any) => ({
+        id: x.id,
+        label: (x.name || "").toString().trim(), // ✅ normalize "name"
+        url: x.url || "",
+      }));
+
       setBaseSuggestions(labels);
-      setSuggestions(labels); // show immediately
+      setSuggestions(labels);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to load");
     } finally {
@@ -91,10 +92,22 @@ export default function SearchSection() {
       const t = setTimeout(async () => {
         try {
           const list = await fetchKeywordSuggestions(query, controller.signal);
-          const uniq = Array.from(new Set(list.map((s) => s.trim()))).slice(
-            0,
-            15
-          );
+          console.log("list", list);
+          // Normalize into Item[]
+          const uniq: Item[] = Array.from(
+            new Map(
+              list.map((x: any, idx: number) => [
+                (x.keyword || "").toString().trim(),
+                {
+                  id: x.id ?? idx, // fallback id
+                  label: (x.keyword || "").toString().trim(), // ✅ always set label
+                  url: (x.url || "").toString(),
+                },
+              ])
+            ).values()
+          ).slice(0, 15);
+
+          console.log("search suggestions", uniq); // 🐞 debug log
           setSuggestions(uniq);
         } catch (e: unknown) {
           if (e instanceof DOMException && e.name === "AbortError") return;
@@ -109,7 +122,6 @@ export default function SearchSection() {
         clearTimeout(t);
       };
     } else {
-      // Under threshold: keep/show base list
       setSuggestions(baseSuggestions);
       setLoading(false);
       return () => controller.abort();
@@ -132,21 +144,28 @@ export default function SearchSection() {
   //     setIsSuggestionBoxOpen(false);
   //   };
   // ------------- navigate helper (two routes) -------------
-  const navigateWithKeyword = (kwRaw: string) => {
-    const human = kwRaw.trim();
+  const navigateWithKeyword = (s: Item) => {
+    const human = s.label?.trim();
     if (!human) return;
 
     flushSync(() => setQuery(human));
     setIsSuggestionBoxOpen(false);
 
-    // Encode but show + for spaces
-    const encoded = encodeURIComponent(human).replace(/%20/g, "+");
-    router.push(`/listings/search=${encoded}`, { scroll: true });
+    if (s.url && s.url.trim().length > 0) {
+      router.push(s.url, { scroll: true });
+    } else {
+      const encoded = encodeURIComponent(human).replace(/%20/g, "+");
+      router.push(`/listings/?search=${encoded}`, { scroll: true });
+    }
   };
 
   const handleKeyDown: React.KeyboardEventHandler<HTMLInputElement> = (e) => {
     if (e.key === "Enter") {
-      navigateWithKeyword((e.currentTarget as HTMLInputElement).value);
+      // Enter uses typed query directly
+      const kw = (e.currentTarget as HTMLInputElement).value.trim();
+      if (kw) {
+        navigateWithKeyword({ name: kw });
+      }
     }
     if (e.key === "Escape") closeSuggestions();
   };
@@ -222,19 +241,18 @@ export default function SearchSection() {
                   {!error && !loading && (
                     <ul className="text-left" id="suggestionList">
                       {suggestions?.length ? (
-                        suggestions.map((keyword, idx) => (
+                        suggestions.map((s, idx) => (
                           <li
-                            key={`${keyword}-${idx}`}
-                            // Use onMouseDown so it fires before blur
+                            key={`${s.label}-${idx}`}
                             onPointerDown={(e) => {
                               e.preventDefault();
-                              navigateWithKeyword(keyword);
+                              navigateWithKeyword(s);
                             }}
                             style={{ cursor: "pointer" }}
                             role="option"
                             aria-selected="false"
                           >
-                            {keyword}
+                            {s.label}
                           </li>
                         ))
                       ) : (

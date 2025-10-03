@@ -1,6 +1,10 @@
 // src/api/homeSearch/api.ts
 const API_BASE = process.env.NEXT_PUBLIC_CFS_API_BASE;
 
+export interface KeywordSuggestion {
+  keyword: string;
+  url: string;
+}
 export type HomeSearchItem = Record<string, unknown>;
 
 type UnknownRecord = Record<string, unknown>;
@@ -54,7 +58,7 @@ export async function fetchHomeSearchList(): Promise<HomeSearchItem[]> {
 export async function fetchKeywordSuggestions(
   query: string,
   signal?: AbortSignal
-): Promise<string[]> {
+): Promise<KeywordSuggestion[]> {
   if (!API_BASE) throw new Error("Missing NEXT_PUBLIC_CFS_API_BASE");
   const url = `${API_BASE}/home_search/?keyword=${encodeURIComponent(query)}`;
 
@@ -63,9 +67,16 @@ export async function fetchKeywordSuggestions(
 
   const json = (await res.json()) as {
     success?: boolean;
-    data?: { keyword?: string }[];
+    data?: { keyword?: string; url?: string }[];
   };
 
   const arr = Array.isArray(json?.data) ? json.data : [];
-  return arr.map((x) => String(x?.keyword ?? "")).filter(Boolean);
+
+  // ✅ return both keyword + url
+  return arr
+    .map((x) => ({
+      keyword: String(x?.keyword ?? "").trim(),
+      url: String(x?.url ?? "").trim(),
+    }))
+    .filter((x) => !!x.keyword);
 }
