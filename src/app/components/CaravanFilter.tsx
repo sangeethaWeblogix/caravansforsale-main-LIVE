@@ -125,6 +125,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
   const [radiusKms, setRadiusKms] = useState<number>(RADIUS_OPTIONS[0]);
   const [categoryOpen, setCategoryOpen] = useState(false);
   const [categories, setCategories] = useState<Option[]>([]);
+
   const [makes, setMakes] = useState<Option[]>([]);
   const [model, setModel] = useState<Model[]>([]);
   const [states, setStates] = useState<StateOption[]>([]);
@@ -288,7 +289,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
           new Map(items.map((i) => [i.label.trim(), i])).values()
         ).filter((i) => i.label);
 
-        setBaseKeywords(uniq);
+        setBaseKeywords(sortKeywords(uniq));
       })
       .catch(() => setBaseKeywords([]))
       .finally(() => setBaseLoading(false));
@@ -316,8 +317,10 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
         }));
 
         setKeywordSuggestions(
-          Array.from(new Set(items.map((i) => i.label))).map(
-            (label) => items.find((i) => i.label === label)!
+          sortKeywords(
+            Array.from(new Set(items.map((i) => i.label.toLowerCase()))).map(
+              (label) => items.find((i) => i.label.toLowerCase() === label)!
+            )
           )
         );
       } catch (e: unknown) {
@@ -634,6 +637,23 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
       if (locationInput !== "") setLocationInput("");
     }
   }, [selectedSuburbName, selectedpincode, selectedStateName]);
+
+  // keywordSuggestions sort செய்யும் helper
+  const sortKeywords = (items: KeywordItem[]): KeywordItem[] => {
+    return [...items].sort((a, b) => {
+      const al = a.label.toLowerCase();
+      const bl = b.label.toLowerCase();
+
+      const isNumA = /^\d/.test(al);
+      const isNumB = /^\d/.test(bl);
+
+      // numbers last
+      if (!isNumA && isNumB) return -1;
+      if (isNumA && !isNumB) return 1;
+
+      return al.localeCompare(bl); // normal alphabetical
+    });
+  };
 
   useEffect(() => {
     if (!filtersInitialized.current) {
@@ -3187,107 +3207,83 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                     className="filter-dropdown cfs-select-input"
                     autoComplete="off"
                     value={modalKeyword}
+                    onFocus={() => setShowSuggestions(true)} // ✅ only show when focusing
                     onChange={(e) => {
                       pickedSourceRef.current = "typed";
                       setModalKeyword(e.target.value);
-                    }}
-                    onFocus={() => {
-                      // load base list if empty
-                      if (!baseKeywords.length) {
-                        setBaseLoading(true);
-                        fetchHomeSearchList()
-                          .then((list) => {
-                            const items: KeywordItem[] = (
-                              list as Array<HomeSearchItem | string>
-                            ).map((x) =>
-                              typeof x === "string"
-                                ? { label: x }
-                                : {
-                                    label:
-                                      x.label ??
-                                      x.name ??
-                                      x.title ??
-                                      x.keyword ??
-                                      x.value ??
-                                      x.slug ??
-                                      "",
-                                    url: (x as HomeSearchItem).url || "",
-                                  }
-                            );
-
-                            const uniq = Array.from(
-                              new Map(
-                                items.map((i) => [i.label.trim(), i])
-                              ).values()
-                            ).filter((i) => i.label);
-
-                            setBaseKeywords(uniq);
-                          })
-                          .catch(() => setBaseKeywords([]))
-                          .finally(() => setBaseLoading(false));
-                      }
                     }}
                     onKeyDown={(e) => {
                       if (e.key === "Enter") applyKeywordFromModal();
                     }}
                   />
-
-                  {/* Show base list when field is empty (<2 chars) */}
-                  {modalKeyword.trim().length < 2 &&
-                    (baseLoading ? (
-                      <div style={{ marginTop: 8 }}>Loading…</div>
-                    ) : (
-                      <ul
-                        className="location-suggestions"
-                        style={{ marginTop: 8 }}
-                      >
-                        {baseKeywords.length ? (
-                          baseKeywords.map((k, i) => (
-                            <li
-                              key={`${k.label}-${i}`}
-                              className="suggestion-item"
-                              onMouseDown={(e) => {
-                                e.preventDefault();
-                                pickedSourceRef.current = "base";
-                                setModalKeyword(k.label);
-                              }}
-                            >
-                              {k.label}
-                            </li>
-                          ))
+                  {showSuggestions && (
+                    <>
+                      {/* Show base list when field is empty (<2 chars) */}
+                      {modalKeyword.trim().length < 2 &&
+                        (baseLoading ? (
+                          <div style={{ marginTop: 8 }}>Loading…</div>
                         ) : (
-                          <li className="suggestion-item">No popular items</li>
-                        )}
-                      </ul>
-                    ))}
+                          <ul
+                            className="location-suggestions"
+                            style={{ marginTop: 8 }}
+                          >
+                            {baseKeywords.length ? (
+                              baseKeywords.map((k, i) => (
+                                <li
+                                  key={`${k.label}-${i}`}
+                                  className="suggestion-item"
+                                  onMouseDown={(e) => {
+                                    e.preventDefault();
+                                    pickedSourceRef.current = "base";
+                                    setModalKeyword(k.label);
+                                  }}
+                                >
+                                  {k.label}
+                                </li>
+                              ))
+                            ) : (
+                              <li className="suggestion-item">
+                                No popular items
+                              </li>
+                            )}
+                          </ul>
+                        ))}
 
-                  {/* Show typed suggestions when >=2 chars */}
-                  {modalKeyword.trim().length >= 2 &&
-                    (keywordLoading ? (
-                      <div style={{ marginTop: 8 }}>Loading…</div>
-                    ) : (
-                      <ul
-                        className="location-suggestions"
-                        style={{ marginTop: 8 }}
-                      >
-                        {keywordSuggestions.length ? (
-                          keywordSuggestions.map((k, i) => (
-                            <li
-                              key={`${k.label}-${i}`}
-                              className="suggestion-item"
-                              onMouseDown={() => {
-                                pickedSourceRef.current = "typed";
-                                setModalKeyword(k.label);
-                              }}
-                            >
-                              {k.label}
-                            </li>
-                          ))
+                      {/* Show typed suggestions when >=2 chars */}
+                      {modalKeyword.trim().length >= 2 &&
+                        (keywordLoading ? (
+                          <div style={{ marginTop: 8 }}>Loading…</div>
                         ) : (
-                          <li className="suggestion-item">No matches</li>
-                        )}
-                      </ul>
-                    ))}
+                          <ul
+                            className="location-suggestions"
+                            style={{ marginTop: 8 }}
+                          >
+                            {keywordSuggestions.length ? (
+                              keywordSuggestions.map((k, i) => (
+                                <li
+                                  key={`${k.label}-${i}`}
+                                  className="suggestion-item"
+                                  onMouseDown={() => {
+                                    pickedSourceRef.current = "typed";
+                                    setModalKeyword(k.label);
+                                    setKeywordSuggestions([]);
+                                    setBaseKeywords([]);
+                                    setShowSuggestions(false);
+
+                                    // ✅ Prevent re-trigger of fetch
+                                    setKeywordLoading(false);
+                                  }}
+                                >
+                                  {k.label}
+                                </li>
+                              ))
+                            ) : (
+                              <li className="suggestion-item">No matches</li>
+                            )}
+                          </ul>
+                        ))}
+                    </>
+                  )}
                 </div>
               </div>
 
