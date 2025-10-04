@@ -235,8 +235,8 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     "Northern Territory": "NT",
     "Australian Capital Territory": "ACT",
   };
-  const isNonEmpty = (s: string | undefined | null): s is string =>
-    typeof s === "string" && s.trim().length > 0;
+  // const isNonEmpty = (s: string | undefined | null): s is string =>
+  //   typeof s === "string" && s.trim().length > 0;
   // 🔽 put this inside the component, under updateAllFiltersAndURL
   const commit = (next: Filters) => {
     setFilters(next);
@@ -248,20 +248,9 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
   };
 
   // pick a human-readable text from item
-  const toHuman = (it: HomeSearchItem) =>
-    (
-      it.label ??
-      it.name ??
-      it.title ??
-      it.keyword ??
-      it.value ??
-      it.slug ??
-      ""
-    ).toString();
 
   // works for (HomeSearchItem | string)[]
-  const labelsFrom = (arr: Array<HomeSearchItem | string> = []): string[] =>
-    arr.map((x) => (typeof x === "string" ? x : toHuman(x))).filter(isNonEmpty);
+
   useEffect(() => {
     if (!isKeywordModalOpen) return;
     setBaseLoading(true);
