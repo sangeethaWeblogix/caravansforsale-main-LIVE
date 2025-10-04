@@ -105,7 +105,7 @@ export default function SearchSection() {
                 },
               ])
             ).values()
-          ).slice(0, 15);
+          );
 
           console.log("search suggestions", uniq); // 🐞 debug log
           setSuggestions(uniq);
