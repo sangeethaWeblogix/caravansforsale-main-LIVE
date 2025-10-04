@@ -112,6 +112,7 @@ type HomeSearchItem = {
   slug?: string;
 };
 
+type KeywordItem = { label: string; url?: string };
 const CaravanFilter: React.FC<CaravanFilterProps> = ({
   onFilterChange,
   currentFilters,
@@ -176,8 +177,10 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
   const [selectedSuggestion, setSelectedSuggestion] =
     useState<LocationSuggestion | null>(null);
   const [keywordInput, setKeywordInput] = useState("");
-  const [keywordSuggestions, setKeywordSuggestions] = useState<string[]>([]);
-  const [baseKeywords, setBaseKeywords] = useState<string[]>([]);
+  const [keywordSuggestions, setKeywordSuggestions] = useState<KeywordItem[]>(
+    []
+  );
+  const [baseKeywords, setBaseKeywords] = useState<KeywordItem[]>([]);
   const [keywordLoading, setKeywordLoading] = useState(false);
   const [baseLoading, setBaseLoading] = useState(false);
   const pickedSourceRef = useRef<"base" | "typed" | null>(null);
@@ -262,9 +265,29 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     setBaseLoading(true);
     fetchHomeSearchList()
       .then((list) => {
-        // list: HomeSearchItem[] | string[]
-        const names = labelsFrom(list).slice(0, 20);
-        setBaseKeywords([...new Set(names)]);
+        const items: KeywordItem[] = (
+          list as Array<HomeSearchItem | string>
+        ).map((x) =>
+          typeof x === "string"
+            ? { label: x }
+            : {
+                label:
+                  x.label ??
+                  x.name ??
+                  x.title ??
+                  x.keyword ??
+                  x.value ??
+                  x.slug ??
+                  "",
+                url: (x as any).url || "",
+              }
+        );
+
+        const uniq = Array.from(
+          new Map(items.map((i) => [i.label.trim(), i])).values()
+        ).filter((i) => i.label);
+
+        setBaseKeywords(uniq);
       })
       .catch(() => setBaseKeywords([]))
       .finally(() => setBaseLoading(false));
@@ -286,8 +309,16 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     const t = setTimeout(async () => {
       try {
         const list = await fetchKeywordSuggestions(q, ctrl.signal);
-        const names = labelsFrom(list).slice(0, 20);
-        setKeywordSuggestions(Array.from(new Set(names)));
+        const items: KeywordItem[] = list.map((x: any) => ({
+          label: (x.keyword || "").trim(),
+          url: (x.url || "").trim(),
+        }));
+
+        setKeywordSuggestions(
+          Array.from(new Set(items.map((i) => i.label))).map(
+            (label) => items.find((i) => i.label === label)!
+          )
+        );
       } catch (e: unknown) {
         if (e instanceof DOMException && e.name === "AbortError") return;
         console.warn("[keyword] fetch failed:", e);
@@ -350,12 +381,26 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
   const applyKeywordFromModal = () => {
     const raw = modalKeyword.trim();
     if (!raw) return;
+
+    const allItems = [...baseKeywords, ...keywordSuggestions];
+    const match = allItems.find(
+      (x) => x.label.toLowerCase() === raw.toLowerCase()
+    );
+
+    if (match?.url && match.url.trim().length > 0) {
+      router.push(match.url);
+      setIsKeywordModalOpen(false);
+      setModalKeyword("");
+      return;
+    }
+
     const next: Filters = {
       ...currentFilters,
-      ...keepCategory(), // ⬅️ preserve selected category
+      ...keepCategory(),
       search: toQueryPlus(raw),
       keyword: undefined,
     };
+
     setIsKeywordModalOpen(false);
     setModalKeyword("");
     setFilters(next);
@@ -2954,7 +2999,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
             type="text"
             className="cfs-select-input"
             placeholder="Click to choose / type"
-            value={toHumanFromQuery(keywordInput)} // ⬅️ show nicely
+            value={keywordInput} // ⬅️ show nicely
             onClick={() => {
               pickedSourceRef.current = null;
               setModalKeyword(""); // always empty on open
@@ -2967,7 +3012,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
 
           {keywordText && (
             <div className="filter-chip">
-              <span>{toHumanFromQuery(keywordInput)}</span>
+              <span>{keywordInput}</span>
               <span
                 className="filter-chip-close"
                 onClick={() => {
@@ -3152,26 +3197,31 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                         setBaseLoading(true);
                         fetchHomeSearchList()
                           .then((list) => {
-                            const names = (
+                            const items: KeywordItem[] = (
                               list as Array<HomeSearchItem | string>
-                            )
-                              .map((x) =>
-                                typeof x === "string"
-                                  ? x
-                                  : x.label ??
-                                    x.name ??
-                                    x.title ??
-                                    x.keyword ??
-                                    x.value ??
-                                    x.slug ??
-                                    ""
-                              )
-                              .filter(
-                                (s): s is string =>
-                                  typeof s === "string" && s.trim().length > 0
-                              );
+                            ).map((x) =>
+                              typeof x === "string"
+                                ? { label: x }
+                                : {
+                                    label:
+                                      x.label ??
+                                      x.name ??
+                                      x.title ??
+                                      x.keyword ??
+                                      x.value ??
+                                      x.slug ??
+                                      "",
+                                    url: (x as any).url || "",
+                                  }
+                            );
 
-                            setBaseKeywords([...new Set(names)].slice(0, 20));
+                            const uniq = Array.from(
+                              new Map(
+                                items.map((i) => [i.label.trim(), i])
+                              ).values()
+                            ).filter((i) => i.label);
+
+                            setBaseKeywords(uniq);
                           })
                           .catch(() => setBaseKeywords([]))
                           .finally(() => setBaseLoading(false));
@@ -3194,15 +3244,15 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                         {baseKeywords.length ? (
                           baseKeywords.map((k, i) => (
                             <li
-                              key={`${k}-${i}`}
+                              key={`${k.label}-${i}`}
                               className="suggestion-item"
                               onMouseDown={(e) => {
                                 e.preventDefault();
-                                pickedSourceRef.current = "base";
-                                setModalKeyword(k);
+                                setModalKeyword(k.label);
+                                applyKeywordFromModal();
                               }}
                             >
-                              {k}
+                              {k.label}
                             </li>
                           ))
                         ) : (
@@ -3223,14 +3273,14 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                         {keywordSuggestions.length ? (
                           keywordSuggestions.map((k, i) => (
                             <li
-                              key={`${k}-${i}`}
+                              key={`${k.label}-${i}`}
                               className="suggestion-item"
                               onMouseDown={() => {
-                                pickedSourceRef.current = "typed";
-                                setModalKeyword(k);
+                                setModalKeyword(k.label);
+                                applyKeywordFromModal();
                               }}
                             >
-                              {k}
+                              {k.label}
                             </li>
                           ))
                         ) : (

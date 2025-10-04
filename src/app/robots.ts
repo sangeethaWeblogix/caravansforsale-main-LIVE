@@ -9,6 +9,8 @@ export default function robots(): MetadataRoute.Robots {
         userAgent: "*", // applies to all crawlers
         allow: "/", // allow all public pages
         disallow: [
+          "/*?add-to-cart=", // block WooCommerce cart query URLs
+          "/*&add-to-cart=",
           "/admin", // block admin area
           "/dashboard", // block dashboard
           "/api", // block backend APIs
