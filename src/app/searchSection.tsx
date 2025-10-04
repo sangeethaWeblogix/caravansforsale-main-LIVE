@@ -145,7 +145,7 @@ export default function SearchSection() {
       router.push(s.url, { scroll: true });
     } else {
       const encoded = encodeURIComponent(human).replace(/%20/g, "+");
-      router.push(`/listings/?search=${encoded}`, { scroll: true });
+      router.push(`/listings/search=${encoded}`, { scroll: true });
     }
   };
 

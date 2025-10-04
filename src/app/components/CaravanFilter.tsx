@@ -234,8 +234,8 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     "Northern Territory": "NT",
     "Australian Capital Territory": "ACT",
   };
-  // const isNonEmpty = (s: string | undefined | null): s is string =>
-  //   typeof s === "string" && s.trim().length > 0;
+  const isNonEmpty = (s: string | undefined | null): s is string =>
+    typeof s === "string" && s.trim().length > 0;
   // 🔽 put this inside the component, under updateAllFiltersAndURL
   const commit = (next: Filters) => {
     setFilters(next);
@@ -247,20 +247,20 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
   };
 
   // pick a human-readable text from item
-  // const toHuman = (it: HomeSearchItem) =>
-  //   (
-  //     it.label ??
-  //     it.name ??
-  //     it.title ??
-  //     it.keyword ??
-  //     it.value ??
-  //     it.slug ??
-  //     ""
-  //   ).toString();
+  const toHuman = (it: HomeSearchItem) =>
+    (
+      it.label ??
+      it.name ??
+      it.title ??
+      it.keyword ??
+      it.value ??
+      it.slug ??
+      ""
+    ).toString();
 
   // works for (HomeSearchItem | string)[]
-  // const labelsFrom = (arr: Array<HomeSearchItem | string> = []): string[] =>
-  //   arr.map((x) => (typeof x === "string" ? x : toHuman(x))).filter(isNonEmpty);
+  const labelsFrom = (arr: Array<HomeSearchItem | string> = []): string[] =>
+    arr.map((x) => (typeof x === "string" ? x : toHuman(x))).filter(isNonEmpty);
   useEffect(() => {
     if (!isKeywordModalOpen) return;
     setBaseLoading(true);
@@ -1018,7 +1018,6 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     setLocationInput("");
     setRadiusKms(RADIUS_OPTIONS[0]); // reset radius to default
     setLocationSuggestions([]);
-
     // ✅ rehydrate suburb list for the currently selected region
     if (selectedStateName && selectedRegionName) {
       const st = states.find(
@@ -3000,7 +2999,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
             type="text"
             className="cfs-select-input"
             placeholder="Click to choose / type"
-            value={keywordInput} // ⬅️ show nicely
+            value={toHumanFromQuery(keywordInput)} // ⬅️ show nicely
             onClick={() => {
               pickedSourceRef.current = null;
               setModalKeyword(""); // always empty on open
@@ -3249,8 +3248,8 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                               className="suggestion-item"
                               onMouseDown={(e) => {
                                 e.preventDefault();
+                                pickedSourceRef.current = "base";
                                 setModalKeyword(k.label);
-                                applyKeywordFromModal();
                               }}
                             >
                               {k.label}
@@ -3277,8 +3276,8 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                               key={`${k.label}-${i}`}
                               className="suggestion-item"
                               onMouseDown={() => {
+                                pickedSourceRef.current = "typed";
                                 setModalKeyword(k.label);
-                                applyKeywordFromModal();
                               }}
                             >
                               {k.label}
