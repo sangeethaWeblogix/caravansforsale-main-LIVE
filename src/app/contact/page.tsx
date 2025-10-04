@@ -3,20 +3,20 @@ import "./contact.css";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Contact Off Road Caravans - offroadcaravans.com",
+  title: "Contact Caravans For Sale | Australia’s Caravan Marketplace",
   description:
-    "Contact offroadcaravans.com Australia . Fill in our contact form if you have any questions related to buying an off road caravan & we will get back to you.",
+    "Have a question about caravans in Australia? Contact Caravans For Sale for support, inquiries, or help finding your next caravan today.",
   robots: "index, follow",
   openGraph: {
-    title: "Contact Off Road Caravans - offroadcaravans.com",
+    title: "Contact Caravans For Sale | Australia’s Caravan Marketplace",
     description:
-      "Contact offroadcaravans.com Australia . Fill in our contact form if you have any questions related to buying an off road caravan & we will get back to you.",
+      "Have a question about caravans in Australia? Contact Caravans For Sale for support, inquiries, or help finding your next caravan today.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Contact Off Road Caravans - offroadcaravans.com",
+    title: "Contact Caravans For Sale | Australia’s Caravan Marketplace",
     description:
-      "Contact offroadcaravans.com Australia . Fill in our contact form if you have any questions related to buying an off road caravan & we will get back to you.",
+      "Have a question about caravans in Australia? Contact Caravans For Sale for support, inquiries, or help finding your next caravan today.",
   },
   alternates: {
     canonical: "https://www.caravansforsale.com.au/contact/",
