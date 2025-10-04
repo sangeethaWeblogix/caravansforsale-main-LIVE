@@ -4,9 +4,14 @@ const API_BASE = process.env.NEXT_PUBLIC_CFS_API_BASE;
 export interface KeywordSuggestion {
   keyword: string;
   url: string;
+  id: string | number;
 }
-export type HomeSearchItem = Record<string, unknown>;
-
+// export type HomeSearchItem = Record<string, unknown>;
+export interface HomeSearchItem {
+  id: string | number;
+  name?: string;
+  url?: string;
+}
 type UnknownRecord = Record<string, unknown>;
 const isRecord = (v: unknown): v is UnknownRecord =>
   typeof v === "object" && v !== null && !Array.isArray(v);
@@ -67,7 +72,7 @@ export async function fetchKeywordSuggestions(
 
   const json = (await res.json()) as {
     success?: boolean;
-    data?: { keyword?: string; url?: string }[];
+    data?: { keyword?: string; url?: string; id?: string | number }[];
   };
 
   const arr = Array.isArray(json?.data) ? json.data : [];
@@ -75,6 +80,7 @@ export async function fetchKeywordSuggestions(
   // ✅ return both keyword + url
   return arr
     .map((x) => ({
+      id: x?.id ?? "",
       keyword: String(x?.keyword ?? "").trim(),
       url: String(x?.url ?? "").trim(),
     }))

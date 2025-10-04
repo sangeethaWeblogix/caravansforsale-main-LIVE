@@ -110,6 +110,7 @@ type HomeSearchItem = {
   keyword?: string;
   value?: string;
   slug?: string;
+  url?: string;
 };
 
 type KeywordItem = { label: string; url?: string };
@@ -233,8 +234,8 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     "Northern Territory": "NT",
     "Australian Capital Territory": "ACT",
   };
-  const isNonEmpty = (s: string | undefined | null): s is string =>
-    typeof s === "string" && s.trim().length > 0;
+  // const isNonEmpty = (s: string | undefined | null): s is string =>
+  //   typeof s === "string" && s.trim().length > 0;
   // 🔽 put this inside the component, under updateAllFiltersAndURL
   const commit = (next: Filters) => {
     setFilters(next);
@@ -246,20 +247,20 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
   };
 
   // pick a human-readable text from item
-  const toHuman = (it: HomeSearchItem) =>
-    (
-      it.label ??
-      it.name ??
-      it.title ??
-      it.keyword ??
-      it.value ??
-      it.slug ??
-      ""
-    ).toString();
+  // const toHuman = (it: HomeSearchItem) =>
+  //   (
+  //     it.label ??
+  //     it.name ??
+  //     it.title ??
+  //     it.keyword ??
+  //     it.value ??
+  //     it.slug ??
+  //     ""
+  //   ).toString();
 
   // works for (HomeSearchItem | string)[]
-  const labelsFrom = (arr: Array<HomeSearchItem | string> = []): string[] =>
-    arr.map((x) => (typeof x === "string" ? x : toHuman(x))).filter(isNonEmpty);
+  // const labelsFrom = (arr: Array<HomeSearchItem | string> = []): string[] =>
+  //   arr.map((x) => (typeof x === "string" ? x : toHuman(x))).filter(isNonEmpty);
   useEffect(() => {
     if (!isKeywordModalOpen) return;
     setBaseLoading(true);
@@ -279,7 +280,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                   x.value ??
                   x.slug ??
                   "",
-                url: (x as any).url || "",
+                url: (x as HomeSearchItem).url || "",
               }
         );
 
@@ -309,7 +310,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     const t = setTimeout(async () => {
       try {
         const list = await fetchKeywordSuggestions(q, ctrl.signal);
-        const items: KeywordItem[] = list.map((x: any) => ({
+        const items: KeywordItem[] = list.map((x) => ({
           label: (x.keyword || "").trim(),
           url: (x.url || "").trim(),
         }));
@@ -2693,7 +2694,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
           )}
         </div>
         {/* 8883944599
-                      9524163042 */}
+                       9524163042 */}
         {/* Condition Accordion */}
         <div className="cs-full_width_section">
           <div
@@ -3012,7 +3013,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
 
           {keywordText && (
             <div className="filter-chip">
-              <span>{keywordInput}</span>
+              <span>{toHumanFromQuery(keywordInput)}</span>
               <span
                 className="filter-chip-close"
                 onClick={() => {
@@ -3211,7 +3212,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                                       x.value ??
                                       x.slug ??
                                       "",
-                                    url: (x as any).url || "",
+                                    url: (x as HomeSearchItem).url || "",
                                   }
                             );
 
@@ -3306,27 +3307,27 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
         )}
       </div>
       {/* {navigating && (
-         <div
-           className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
-           style={{
-             background: "rgba(255,255,255,0.6)",
-             backdropFilter: "blur(2px)",
-             zIndex: 9999,
-           }}
-           aria-live="polite"
-         >
-           <div className="text-center">
-             <Image
-               src="/images/loader.gif" // place inside public/images
-               alt="Loading..."
-               width={80}
-               height={80}
-               unoptimized
-             />{" "}
-             <div className="mt-2 fw-semibold">Loading…</div>
-           </div>
-         </div>
-       )} */}
+          <div
+            className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
+            style={{
+              background: "rgba(255,255,255,0.6)",
+              backdropFilter: "blur(2px)",
+              zIndex: 9999,
+            }}
+            aria-live="polite"
+          >
+            <div className="text-center">
+              <Image
+                src="/images/loader.gif" // place inside public/images
+                alt="Loading..."
+                width={80}
+                height={80}
+                unoptimized
+              />{" "}
+              <div className="mt-2 fw-semibold">Loading…</div>
+            </div>
+          </div>
+        )} */}
     </>
   );
 };

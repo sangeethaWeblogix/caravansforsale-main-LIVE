@@ -25,14 +25,6 @@ type Item = {
 } & Record<string, unknown>;
 
 // Safe label extractor (avoid mixing ?? and || without parens)
-const labelOf = (x: Item): string => {
-  const basic =
-    x?.title ??
-    x?.name ??
-    x?.heading ??
-    [x?.make, x?.model, x?.variant].filter(Boolean).join(" ");
-  return (basic && String(basic).trim()) || String(x?.slug ?? x?.id ?? "");
-};
 
 export default function SearchSection() {
   const router = useRouter();
@@ -56,10 +48,10 @@ export default function SearchSection() {
       setError("");
       const data = await fetchHomeSearchList();
 
-      const labels: Item[] = data.map((x: any) => ({
+      const labels: Item[] = data.map((x) => ({
         id: x.id,
-        label: (x.name || "").toString().trim(), // ✅ normalize "name"
-        url: x.url || "",
+        label: (x.name ?? "").toString().trim(),
+        url: (x.url ?? "").toString(),
       }));
 
       setBaseSuggestions(labels);
@@ -92,11 +84,10 @@ export default function SearchSection() {
       const t = setTimeout(async () => {
         try {
           const list = await fetchKeywordSuggestions(query, controller.signal);
-          console.log("list", list);
           // Normalize into Item[]
           const uniq: Item[] = Array.from(
             new Map(
-              list.map((x: any, idx: number) => [
+              list.map((x, idx: number) => [
                 (x.keyword || "").toString().trim(),
                 {
                   id: x.id ?? idx, // fallback id
@@ -107,7 +98,6 @@ export default function SearchSection() {
             ).values()
           );
 
-          console.log("search suggestions", uniq); // 🐞 debug log
           setSuggestions(uniq);
         } catch (e: unknown) {
           if (e instanceof DOMException && e.name === "AbortError") return;
