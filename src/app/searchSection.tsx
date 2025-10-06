@@ -53,9 +53,23 @@ export default function SearchSection() {
         label: (x.name ?? "").toString().trim(),
         url: (x.url ?? "").toString(),
       }));
+      const sortedLabels = labels.sort((a, b) => {
+        const aLabel = (a.label || "").trim().toLowerCase();
+        const bLabel = (b.label || "").trim().toLowerCase();
 
-      setBaseSuggestions(labels);
-      setSuggestions(labels);
+        const aIsNumber = /^[0-9]/.test(aLabel);
+        const bIsNumber = /^[0-9]/.test(bLabel);
+
+        // ✅ Letters first, numbers later
+        if (!aIsNumber && bIsNumber) return -1;
+        if (aIsNumber && !bIsNumber) return 1;
+
+        // Then sort alphabetically (case-insensitive)
+        return aLabel.localeCompare(bLabel);
+      });
+
+      setBaseSuggestions(sortedLabels);
+      setSuggestions(sortedLabels);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to load");
     } finally {
@@ -98,7 +112,22 @@ export default function SearchSection() {
             ).values()
           );
 
-          setSuggestions(uniq);
+          const sortedUniq = uniq.sort((a, b) => {
+            const aLabel = (a.label || "").trim().toLowerCase();
+            const bLabel = (b.label || "").trim().toLowerCase();
+
+            const aIsNumber = /^[0-9]/.test(aLabel);
+            const bIsNumber = /^[0-9]/.test(bLabel);
+
+            // ✅ Letters first, numbers later
+            if (!aIsNumber && bIsNumber) return -1;
+            if (aIsNumber && !bIsNumber) return 1;
+
+            // Then A-Z order
+            return aLabel.localeCompare(bLabel);
+          });
+
+          setSuggestions(sortedUniq);
         } catch (e: unknown) {
           if (e instanceof DOMException && e.name === "AbortError") return;
           setError(e instanceof Error ? e.message : "Failed");

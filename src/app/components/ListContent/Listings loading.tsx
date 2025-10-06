@@ -181,9 +181,7 @@ export default function ListingsPage({
   const [models, setModels] = useState<MakeOption[]>(
     initialData?.data?.model_options || []
   );
-  const [pageTitle, setPageTitle] = useState(
-    initialData?.title || "Caravan Listings"
-  );
+  const [pageTitle, setPageTitle] = useState(initialData?.title || " ");
   const [metaTitle, setMetaTitle] = useState(initialData?.seo?.metatitle || "");
   const [metaDescription, setMetaDescription] = useState(
     initialData?.seo?.metadescription || ""
@@ -398,7 +396,7 @@ export default function ListingsPage({
           setMakes(response.data?.make_options ?? []);
           setStateOptions(response.data?.states ?? []);
           setModels(response.data?.model_options ?? []);
-          setPageTitle(response.title ?? "Caravan Listings");
+          setPageTitle(response.title ?? "");
           if (response.pagination) setPagination(response.pagination);
           setMetaDescription(response.seo?.metadescription ?? "");
           setMetaTitle(response.seo?.metatitle ?? "");
