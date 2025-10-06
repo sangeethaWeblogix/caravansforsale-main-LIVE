@@ -1054,6 +1054,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
 
     setFilters(updatedFilters);
     filtersInitialized.current = true;
+    lastSentFiltersRef.current = updatedFilters;
 
     startTransition(() => {
       updateAllFiltersAndURL(updatedFilters);
