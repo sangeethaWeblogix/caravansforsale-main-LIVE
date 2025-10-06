@@ -82,16 +82,16 @@ export function buildSlugFromFilters(f: Filters): string {
   //   query.set("radius_kms", String(f.radius_kms));
   // }
   // 9) Search (APPEND at the end — never replace other segments)
-  const search = (f.search ?? f.keyword)?.trim();
-  if (search) {
-    // keep '+' symbols; collapse whitespace to '+'
-    const plus = decodeURIComponent(search)
-      .replace(/%20/g, "+")
-      .replace(/%2B/gi, "+")
-      .replace(/\s+/g, "+");
-    segments.push(`search=${plus}`);
-  }
+  if (f.search) {
+    // Normalize for SEO URL: spaces → hyphen, remove junk
+    const slug = f.search
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, "-") // replace spaces/symbols with "-"
+      .replace(/^-+|-+$/g, "");
 
+    segments.push(`${slug}-search`);
+  }
   //  const path = `/listings/${segments.join("/")}`;
   //  const urlWithQuery = query.toString() ? `${path}?${query.toString()}` : path;
   //  if (!urlWithQuery.endsWith("/") && !urlWithQuery.includes("?")) {

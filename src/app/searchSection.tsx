@@ -173,8 +173,14 @@ export default function SearchSection() {
     if (s.url && s.url.trim().length > 0) {
       router.push(s.url, { scroll: true });
     } else {
-      const encoded = encodeURIComponent(human).replace(/%20/g, "+");
-      router.push(`/listings/search=${encoded}`, { scroll: true });
+      // Convert spaces or special chars to hyphen and add -search
+      const slug = human
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, "-") // replace spaces/symbols with "-"
+        .replace(/^-+|-+$/g, ""); // trim leading/trailing hyphens
+
+      router.push(`/listings/${slug}-search`, { scroll: true });
     }
   };
 

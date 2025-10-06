@@ -183,10 +183,21 @@ export function parseSlugToFilters(
     }
 
     // Search + fallback
-    if (part.startsWith("search=")) {
-      filters.search = decodeURIComponent(part.replace("search=", ""));
+    // if (part.startsWith("search=")) {
+    //   filters.search = decodeURIComponent(part.replace("search=", ""));
+    //   return;
+    // }
+
+    if (part.endsWith("-search")) {
+      const keyword = part
+        .replace(/-search$/, "")
+        .replace(/-/g, " ")
+        .trim();
+
+      filters.search = keyword;
       return;
     }
+
     if (part.startsWith("radius_kms=")) {
       const radiusVal = part.replace("radius_kms=", "");
       if (!isNaN(Number(radiusVal))) {
