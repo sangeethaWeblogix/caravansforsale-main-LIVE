@@ -1,0 +1,152 @@
+.page-wrap {
+  box-sizing: border-box;
+  justify-content: flex-start;
+  align-items: center;
+  min-height: 100%;
+  padding: 0;
+  padding-bottom: 30px;
+  display: flex;
+  border-top: 1px solid #e1e1e1;
+}
+
+.card {
+  box-sizing: border-box;
+  background: #fff;
+  border-radius: 10px;
+  width: 100%;
+  max-width: 720px;
+  padding: 38px;
+  border: none;
+  margin: 0 auto;
+}
+
+.logo {
+  display: block;
+  max-width: 320px;
+  margin: 0 auto 14px;
+  text-align: center;
+}
+.logo img {
+  max-width: 100%;
+  height: auto;
+  display: inline-block;
+}
+
+.err-number {
+  font-size: 124px;
+  font-weight: 700;
+  text-align: center;
+  color: #000000;
+  margin: 6px 0 8px;
+  line-height: 1;
+}
+
+.err-sub {
+  text-align: center;
+  color: #363636;
+  margin: 0 0 22px;
+  font-size: 16px;
+}
+
+.search-wrap {
+  width: 100%;
+  display: block;
+  margin: 0 auto;
+}
+
+.search-wrap input[type="search"] {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  font-size: 15px;
+  box-sizing: border-box;
+  outline: none;
+}
+.search-wrap input[type="search"]:focus {
+  box-shadow: 0 0 0 3px rgba(11, 132, 230, 0.12);
+  border-color: rgba(11, 132, 230, 0.9);
+}
+
+.actions {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  margin: 15px 0 20px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  text-align: center;
+  box-sizing: border-box;
+  border-radius: 8px;
+  min-width: 230px;
+  padding: 12px 22px;
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.btn-primary {
+  color: #fff;
+  background: #ec7200;
+  border: 1px solid #ec7200;
+}
+
+.btn-outline {
+  background: #ffffff;
+  color: #ec7200;
+  border: 2px solid #ec7200;
+}
+
+.btn-primary:hover,
+.btn-outline:hover {
+  background: #da6900;
+  border-color: #da6900;
+  color: #fff;
+}
+
+.popular {
+  text-align: center;
+  margin-top: 8px;
+}
+.popular h4 {
+  margin: 6px 0 10px;
+  font-size: 18px;
+}
+.popular li {
+  margin: 8px 0;
+  width: 50%;
+  float: left;
+  list-style: none;
+  margin-bottom: 0;
+  text-transform: capitalize;
+}
+
+.popular a {
+  text-decoration: none;
+  color: #2b78d8;
+  font-size: 15px;
+}
+
+.popular a:hover {
+  text-decoration: underline !important;
+}
+
+@media (max-width: 520px) {
+  .card {
+    padding: 22px;
+    border-radius: 8px;
+  }
+  .err-number {
+    font-size: 48px;
+  }
+  .btn {
+    min-width: 140px;
+    padding: 10px 16px;
+  }
+  .page-wrap {
+    padding: 20px;
+    justify-content: center;
+  }
+}

@@ -1,92 +1,84 @@
 "use client";
-import { Button } from "@mui/material";
+
 import Link from "next/link";
-import React from "react";
+import "./not-found.css";
 
 export default function NotFoundPage() {
   return (
-    <>
-      <style jsx>{`
-        * {
-          color: #fff;
-          text-align: center;
-          margin: 0;
-          padding: 0;
-          box-sizing: border-box;
-        }
+    <div className="page-wrap">
+      <div className="card" role="main" aria-labelledby="page-title">
+        <h1 id="page-title" className="err-number">
+          404
+        </h1>
+        <p className="err-sub">
+          Oops! The caravan or page you’re looking for isn’t available.
+        </p>
 
-        body,
-        .page {
-          background: url("https://images.pexels.com/photos/974471/nature-night-sky-stars-974471.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940");
-          background-size: cover;
-          background-position: center;
-          background-attachment: fixed;
-          background-repeat: no-repeat;
-          overflow: hidden;
-          height: 100vh;
-          width: 100%;
-        }
+        <div className="search-wrap">
+          <form action="/search" method="get" role="search">
+            <input
+              type="search"
+              name="q"
+              placeholder="Search caravans, brands, or models..."
+            />
+          </form>
+        </div>
 
-        section {
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-        }
-
-        h1 {
-          font-size: 150px;
-        }
-
-        .btn {
-          padding: 15px;
-          width: 200px;
-          height: 60px;
-          border-radius: 50px;
-          border: none;
-          outline: none;
-          background: #fff;
-          color: #000;
-          font-size: 20px;
-          margin-top: 50px;
-          cursor: pointer;
-        }
-
-        #rocket {
-          position: absolute;
-          width: 80px;
-        }
-
-        @media only screen and (max-width: 600px) {
-          h1 {
-            font-size: 120px;
-          }
-        }
-      `}</style>
-
-      <div className="page">
-        <section>
-          <h1>404</h1>
-          <h2>Page Not Found</h2>
-
-          <p>We can&apos;t seem to find the page you&apos;re looking for.</p>
-          <Link href="/" style={{ textDecoration: "none" }}>
-            <Button
-              variant="contained"
-              sx={{
-                mt: 3,
-                backgroundColor: "orange", // Set background to orange
-                color: "white", // Make text white
-                "&:hover": {
-                  backgroundColor: "#ec7200", // Darker orange on hover
-                },
-              }}
-            >
-              Go to Home
-            </Button>
+        <div className="actions">
+          <Link className="btn btn-primary" href="/">
+            Go to Homepage
           </Link>
-        </section>
+          <Link className="btn btn-outline" href="/listings/">
+            Browse Caravans
+          </Link>
+        </div>
+
+        <div className="popular">
+          <h4>Popular Searches:</h4>
+          <ul>
+            <li>
+              <Link href="/listings/couples-caravan-search/">
+                couples caravan
+              </Link>
+            </li>
+            <li>
+              <Link href="/listings/tandem-axle-caravans-search/">
+                tandem axle caravans
+              </Link>
+            </li>
+            <li>
+              <Link href="/listings/cafe-lounge-caravans-search/">
+                cafe lounge caravans
+              </Link>
+            </li>
+            <li>
+              <Link href="/listings/bunk-bed-caravans-search/">
+                bunk bed caravans
+              </Link>
+            </li>
+            <li>
+              <Link href="/listings/triple-bunk-caravans-search/">
+                triple bunk caravans
+              </Link>
+            </li>
+            <li>
+              <Link href="/listings/caravan-with-bunk-beds-search/">
+                caravan with bunk beds
+              </Link>
+            </li>
+            <li>
+              <Link href="/listings/caravan-with-ensuite-search/">
+                caravan with ensuite
+              </Link>
+            </li>
+            <li>
+              <Link href="/listings/caravan-with-toilet-and-shower-search/">
+                caravan with toilet and shower
+              </Link>
+            </li>
+          </ul>
+        </div>
       </div>
-    </>
+    </div>
   );
 }
