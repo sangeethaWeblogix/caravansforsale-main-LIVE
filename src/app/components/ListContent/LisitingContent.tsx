@@ -255,11 +255,6 @@ export default function ListingContent({
                           <span className="attribute3">{product.people}</span>
                         </li>
                       )}
-                      {product.make && (
-                        <li>
-                          <span className="attribute3">{product.make}</span>
-                        </li>
-                      )}
                     </ul>
 
                     <div className="vehicleThumbDetails__part">
