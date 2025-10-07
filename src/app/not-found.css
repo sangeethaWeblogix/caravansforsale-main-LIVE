@@ -153,27 +153,31 @@
 /* --- Two Column Layout for Browse Section --- */
 /* --- Perfectly Centered Browse Section --- */
 /* --- Perfectly Centered Browse Section with Left-Aligned Lists --- */
+/* --- Center the Browse Section perfectly under the buttons --- */
 .browse-grid {
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  gap: 100px; /* spacing between Category & State */
+  gap: 50px;
   margin-top: 40px;
   flex-wrap: wrap;
+  max-width: 640px; /* ✅ keeps both columns centered within button width */
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .browse-column {
   display: flex;
   flex-direction: column;
-  align-items: flex-start; /* ✅ ensures text starts directly under heading */
-  min-width: 240px;
+  align-items: flex-start;
+  min-width: 220px;
 }
 
 .browse-column h4 {
   font-size: 18px;
   margin-bottom: 10px;
   color: #222;
-  text-align: left; /* ✅ heading and list both left aligned */
+  text-align: left;
 }
 
 .browse-column ul {
@@ -198,12 +202,13 @@
   text-decoration: underline;
 }
 
-/* --- Responsive --- */
+/* --- Responsive (Mobile) --- */
 @media (max-width: 768px) {
   .browse-grid {
     flex-direction: column;
     align-items: center;
     gap: 30px;
+    max-width: 100%;
   }
 
   .browse-column {
