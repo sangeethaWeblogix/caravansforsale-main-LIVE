@@ -150,3 +150,163 @@
     justify-content: center;
   }
 }
+/* --- Two Column Layout for Browse Section --- */
+.browse-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 40px;
+  margin-top: 30px;
+}
+
+.browse-column h4 {
+  font-size: 18px;
+  margin-bottom: 10px;
+  color: #222;
+}
+
+.browse-column ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.browse-column li a {
+  display: inline-block;
+  color: #0070f3;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.browse-column li a:hover {
+  color: #0056b3;
+  text-decoration: underline;
+}
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+  .browse-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
+
+.search-container {
+  width: 100%;
+  max-width: 800px;
+  position: relative;
+  margin: 0 auto;
+  margin-bottom: 35px;
+  z-index: 2;
+}
+
+.search-wrapper {
+  position: relative;
+}
+
+.search-box {
+  width: 100%;
+  padding: 12px 18px 12px 40px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  /* box-shadow: 0 2px 5px rgba(0,0,0,0.1); */
+  outline: none;
+  height: 50px;
+  line-height: 60px;
+}
+
+.search-icon {
+  position: absolute;
+
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #888;
+  font-size: 18px;
+}
+
+.overlay_search {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: 2;
+}
+
+.search-container .suggestions {
+  z-index: 1002;
+  background: #fff;
+  border: none;
+  border-radius: 5px;
+  margin-top: 5px;
+  padding: 8px 0;
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  text-align: left;
+}
+
+.search-container .suggestions h4 {
+  margin: 0;
+  padding: 12px 16px 8px;
+  font-size: 14px;
+  color: #ec7200;
+  border-bottom: none;
+}
+
+.search-container .suggestions h4 svg {
+  width: 20px;
+  fill: #ec7200;
+  margin-right: 5px;
+}
+
+.search-container .suggestions ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.search-container .suggestions li {
+  padding: 7px 16px;
+  cursor: pointer;
+  transition: background 0.2s;
+  position: relative;
+  color: #333;
+  font-size: 16px;
+}
+
+.search-container .suggestions li:before {
+  content: "\f52a";
+  font-family: bootstrap-icons !important;
+  font-style: normal;
+  font-weight: 400 !important;
+  margin-right: 15px;
+  color: #9f9f9f;
+  font-size: 13px;
+}
+
+.search-container .suggestions li:hover {
+  background: #f9f9f9;
+}
+
+.close-btn {
+  position: absolute;
+  top: -80px;
+  right: 0;
+  font-size: 20px;
+  background: transparent;
+  padding: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  color: #fff;
+  z-index: 1003;
+  display: none;
+  font-size: 30px;
+}

@@ -2,8 +2,32 @@
 
 import Link from "next/link";
 import "./not-found.css";
+import Notfound from "./searchError";
 
 export default function NotFoundPage() {
+  const categories = [
+    { name: "off Road Caravans", slug: "off-road-category" },
+    { name: "Hybrid Caravans", slug: "hybrid-category" },
+    { name: "Pop Top Caravans", slug: "pop-top-category" },
+    { name: "Luxury Caravans", slug: "luxury-category" },
+    { name: "Family Caravans", slug: "family-category" },
+    { name: "Touring Caravans", slug: "touring-category" },
+  ];
+
+  const states = [
+    {
+      name: "Australian Capital Territory",
+      slug: "australian-capital-territory-state",
+    },
+    { name: "New South Wales", slug: "new-south-wales-state" },
+    { name: "Northern Territory", slug: "northern-territory-state" },
+    { name: "Queensland", slug: "queensland-state" },
+    { name: "South Australia", slug: "south-australia-state" },
+    { name: "Victoria", slug: "victoria-state" },
+    { name: "Western Australia", slug: "western-australia-state" },
+    { name: "Tasmania", slug: "tasmania-state" },
+  ];
+
   return (
     <div className="page-wrap">
       <div className="card" role="main" aria-labelledby="page-title">
@@ -16,11 +40,7 @@ export default function NotFoundPage() {
 
         <div className="search-wrap">
           <form action="/search" method="get" role="search">
-            <input
-              type="search"
-              name="q"
-              placeholder="Search caravans, brands, or models..."
-            />
+            <Notfound />
           </form>
         </div>
 
@@ -33,50 +53,33 @@ export default function NotFoundPage() {
           </Link>
         </div>
 
-        <div className="popular">
-          <h4>Popular Searches:</h4>
-          <ul>
-            <li>
-              <Link href="/listings/couples-caravan-search/">
-                couples caravan
-              </Link>
-            </li>
-            <li>
-              <Link href="/listings/tandem-axle-caravans-search/">
-                tandem axle caravans
-              </Link>
-            </li>
-            <li>
-              <Link href="/listings/cafe-lounge-caravans-search/">
-                cafe lounge caravans
-              </Link>
-            </li>
-            <li>
-              <Link href="/listings/bunk-bed-caravans-search/">
-                bunk bed caravans
-              </Link>
-            </li>
-            <li>
-              <Link href="/listings/triple-bunk-caravans-search/">
-                triple bunk caravans
-              </Link>
-            </li>
-            <li>
-              <Link href="/listings/caravan-with-bunk-beds-search/">
-                caravan with bunk beds
-              </Link>
-            </li>
-            <li>
-              <Link href="/listings/caravan-with-ensuite-search/">
-                caravan with ensuite
-              </Link>
-            </li>
-            <li>
-              <Link href="/listings/caravan-with-toilet-and-shower-search/">
-                caravan with toilet and shower
-              </Link>
-            </li>
-          </ul>
+        {/* ✅ Browse by Category & State Side by Side */}
+        <div className="browse-grid">
+          {/* Left: Category */}
+          <div className="browse-column">
+            <h4>Browse by Category:</h4>
+            <ul>
+              {categories.map((cat) => (
+                <li key={cat.slug}>
+                  <Link href={`/listings/${cat.slug}/`}>{cat.name}</Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Right: State */}
+          <div className="browse-column">
+            <h4>Browse by State Caravans:</h4>
+            <ul>
+              {states.map((state) => (
+                <li key={state.slug}>
+                  <Link href={`/listings/${state.slug}-state/`}>
+                    {state.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </div>
     </div>
