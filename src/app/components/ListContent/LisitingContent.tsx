@@ -170,7 +170,14 @@ export default function ListingContent({
                 key={product.id}
               >
                 <div className="vehicleSearch__column-poster">
-                  <Link href={href}>
+                  <Link
+                    href={href}
+                    onClick={() => {
+                      if (typeof window !== "undefined") {
+                        sessionStorage.setItem("cameFromListings", "true");
+                      }
+                    }}
+                  >
                     {" "}
                     <div>
                       {product.is_exclusive && (
@@ -217,7 +224,17 @@ export default function ListingContent({
                   <div className="vehicleThumbDetails">
                     <div className="title">
                       {product.link ? (
-                        <Link href={href}>
+                        <Link
+                          href={href}
+                          onClick={() => {
+                            if (typeof window !== "undefined") {
+                              sessionStorage.setItem(
+                                "cameFromListings",
+                                "true"
+                              );
+                            }
+                          }}
+                        >
                           {" "}
                           <h3 className="woocommerce-loop-product__title">
                             {product.name}

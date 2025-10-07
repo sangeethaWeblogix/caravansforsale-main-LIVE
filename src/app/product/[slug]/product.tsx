@@ -351,21 +351,36 @@ export default function ClientLogger({
   //     window.history.back();
   //   }
   // };
-
-  const [cameFromSameSite, setCameFromSameSite] = useState(true);
+  const [cameFromSameSite, setCameFromSameSite] = useState(false);
 
   useEffect(() => {
-    if (typeof document !== "undefined" && typeof window !== "undefined") {
-      const ref = document.referrer || "";
-      const origin = window.location.origin;
+    if (typeof window === "undefined") return;
 
-      if (ref.startsWith(origin)) {
-        setCameFromSameSite(false); // same site → treat as search flow
-      } else {
-        setCameFromSameSite(true); // direct/external → similar caravans
-      }
+    const referrer = document.referrer;
+    const origin = window.location.origin;
+    const cameFromFlag = sessionStorage.getItem("cameFromListings");
+
+    // ✅ Case 1: User clicked from listings
+    if (cameFromFlag === "true") {
+      setCameFromSameSite(true);
+      sessionStorage.removeItem("cameFromListings");
+      return;
+    }
+
+    // ✅ Case 2: Opened directly or via copy-paste (no referrer)
+    if (!referrer) {
+      setCameFromSameSite(false); // Back to Similar Caravans
+      return;
+    }
+
+    // ✅ Case 3: Came from same domain listings
+    if (referrer.startsWith(origin) && referrer.includes("/listings")) {
+      setCameFromSameSite(true); // Back to Search
+    } else {
+      setCameFromSameSite(false); // Back to Similar Caravans
     }
   }, []);
+
   const makeHref =
     makeValue && makeValue.trim()
       ? `/listings/${slugify(makeValue)}/`
@@ -450,7 +465,6 @@ export default function ClientLogger({
                       ))}
                   </div>
                 </div>
-
                 {/* Image Gallery */}
                 <div className="caravan_slider_visible">
                   <button
@@ -511,7 +525,6 @@ export default function ClientLogger({
                     </Link>
                   </div>
                 </div>
-
                 {/* Tabs */}
                 <section className="product-details">
                   <ul className="nav nav-pills">
@@ -587,7 +600,6 @@ export default function ClientLogger({
                     )}
                   </div>
                 </section>
-
                 {/* Community Section */}
                 <section className="community product_dt_lower style-5 pt-4">
                   <div className="content">
@@ -639,7 +651,6 @@ export default function ClientLogger({
                     </div>
                   </div>
                 </section>
-
                 {/* Mobile Bottom Bar */}
                 <div className="fixed-bottom-bar d-lg-none">
                   <button
