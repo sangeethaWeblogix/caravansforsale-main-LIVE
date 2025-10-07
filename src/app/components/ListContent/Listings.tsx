@@ -751,11 +751,6 @@ export default function ListingsPage({
                       }}
                       currentFilters={filters}
                     />
-                    {isLoading && (
-                      <div className="fixed inset-0 z-[9999] bg-white/70 flex items-center justify-center">
-                        <div className="loader"></div>
-                      </div>
-                    )}
                   </Suspense>
                 </div>
               </div>
