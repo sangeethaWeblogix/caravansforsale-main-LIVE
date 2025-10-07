@@ -1372,6 +1372,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
   }, [
     radiusKms,
     selectedStateName,
+    selectedRegion,
     selectedRegionName,
     selectedSuburbName,
     selectedpincode,

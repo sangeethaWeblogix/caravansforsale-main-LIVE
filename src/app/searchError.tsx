@@ -2,14 +2,12 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { flushSync } from "react-dom";
 import {
   fetchHomeSearchList, // GET /home_search (base list)
   fetchKeywordSuggestions, // GET /home_search/?keyword=<q> (typed list)
 } from "@/api/homeSearch/api";
-import Image from "next/image";
 import "./not-found.css";
 
 type Item = {
@@ -30,7 +28,6 @@ type Item = {
 export default function SearchSection() {
   const router = useRouter();
   const searchInputRef = useRef<HTMLInputElement | null>(null);
-  const [navigating, setNavigating] = useState(false);
 
   const [isSuggestionBoxOpen, setIsSuggestionBoxOpen] = useState(false);
   const [query, setQuery] = useState("");
