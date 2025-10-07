@@ -5,13 +5,12 @@ import { parseSlugToFilters } from "../../components/urlBuilder";
 import { metaFromSlug } from "../../../utils/seo/metaFromSlug";
 import type { Metadata } from "next";
 import { fetchListings } from "@/api/listings/api";
-// import { fetchListings } from "@/api/listings/api";
+import { ensureValidPage } from "@/utils/seo/validatePage";
+import { notFound } from "next/navigation";
 
-// Define types for the async params
 type Params = Promise<{ slug?: string[] }>;
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
-// Generate metadata (SEO)
 export async function generateMetadata({
   params,
   searchParams,
@@ -19,16 +18,13 @@ export async function generateMetadata({
   params: Params;
   searchParams: SearchParams;
 }): Promise<Metadata> {
-  // Await the params and searchParams
   const [resolvedParams, resolvedSearchParams] = await Promise.all([
     params,
     searchParams,
   ]);
-
   return metaFromSlug(resolvedParams.slug || [], resolvedSearchParams);
 }
 
-// Main Listings page
 export default async function Listings({
   params,
   searchParams,
@@ -36,29 +32,43 @@ export default async function Listings({
   params: Params;
   searchParams: SearchParams;
 }) {
-  // Await both params and searchParams
   const [resolvedParams, resolvedSearchParams] = await Promise.all([
     params,
     searchParams,
   ]);
-
   const { slug = [] } = resolvedParams;
 
+  // ✅ Slug validation
+  if (
+    !slug ||
+    !Array.isArray(slug) ||
+    slug.length === 0 ||
+    slug.join("").match(/[^\w-]/) ||
+    /[&*%$#@!=<>?,]/.test(slug.join("")) ||
+    slug.join("").includes("..") ||
+    slug.join("").includes("//")
+  ) {
+    notFound();
+  }
+
+  // ✅ Build query and validate page
+  const fullQuery = Object.entries(resolvedSearchParams)
+    .map(([k, v]) => `${k}=${Array.isArray(v) ? v.join(",") : v}`)
+    .join("&");
+
+  const page = ensureValidPage(resolvedSearchParams.page, fullQuery);
   const filters = parseSlugToFilters(slug, resolvedSearchParams);
 
-  // ✅ Always use "page", not "paged"
-  const page =
-    typeof resolvedSearchParams.page === "string"
-      ? parseInt(resolvedSearchParams.page, 10)
-      : Array.isArray(resolvedSearchParams.page)
-      ? parseInt(resolvedSearchParams.page[0], 10)
-      : 1;
-
-  const response = await fetchListings({
-    ...filters,
-    page,
-  });
-  // return <ListingsPage {...filters} page={page} />;
+  const response = await fetchListings({ ...filters, page });
+  if (
+    !response ||
+    response.success === false ||
+    !response.data ||
+    !Array.isArray(response.data.products) ||
+    response.data.products.length === 0
+  ) {
+    notFound();
+  }
 
   return <ListingsPage {...filters} page={page} initialData={response} />;
 }
