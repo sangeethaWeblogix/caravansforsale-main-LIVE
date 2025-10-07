@@ -18,7 +18,7 @@ import Head from "next/head";
 import "./loader.css";
 
 /* --------- GLOBAL de-dupe across StrictMode remounts --------- */
-let LAST_GLOBAL_REQUEST_KEY = "";
+// let LAST_GLOBAL_REQUEST_KEY = "";
 
 /** ------------ Local types (match what UI renders) ------------ */
 
