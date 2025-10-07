@@ -191,7 +191,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
   const [lengthFrom, setLengthFrom] = useState<number | null>(null);
   const [lengthTo, setLengthTo] = useState<number | null>(null);
 
-  const conditionDatas = ["Near New", "New", "Used"];
+  const conditionDatas = ["New", "Used"];
   const [minPrice, setMinPrice] = useState<number | null>(null);
   const [maxPrice, setMaxPrice] = useState<number | null>(null);
   const [selectedSleepName, setSelectedSleepName] = useState<string | null>(
@@ -726,32 +726,14 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
       return;
     }
 
-    isModelFetchCompleteRef.current = false;
-
+    // Just fetch models — no URL updates
     fetchModelsByMake(selectedMake)
       .then((models) => {
         setModel(models || []);
         isModelFetchCompleteRef.current = true;
-
-        // ✅ Moved clearing logic here
         setSelectedModel(null);
         setSelectedModelName(null);
         setModelOpen(true);
-        const updatedFilters: Filters = {
-          ...currentFilters,
-          make: selectedMake || currentFilters.make,
-          category: selectedCategory || currentFilters.category,
-          state: selectedStateName || currentFilters.state,
-          region: selectedRegionName || selectedRegion || currentFilters.region,
-          suburb: selectedSuburbName || currentFilters.suburb,
-          pincode: selectedpincode || currentFilters.pincode,
-        };
-
-        setFilters(updatedFilters);
-        // onFilterChange(updatedFilters);
-        startTransition(() => {
-          updateAllFiltersAndURL(updatedFilters);
-        });
       })
       .catch(console.error);
   }, [selectedMake]);
@@ -2464,6 +2446,9 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
 
                       setMakeOpen(false);
                       setModelOpen(true);
+                      startTransition(() => {
+                        updateAllFiltersAndURL(updatedFilters);
+                      });
                     }}
                   >
                     {make.name}
