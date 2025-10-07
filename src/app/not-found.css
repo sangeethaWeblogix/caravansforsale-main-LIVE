@@ -151,25 +151,39 @@
   }
 }
 /* --- Two Column Layout for Browse Section --- */
+/* --- Perfectly Centered Browse Section --- */
+/* --- Perfectly Centered Browse Section with Left-Aligned Lists --- */
 .browse-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 40px;
-  margin-top: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 100px; /* spacing between Category & State */
+  margin-top: 40px;
+  flex-wrap: wrap;
+}
+
+.browse-column {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* ✅ ensures text starts directly under heading */
+  min-width: 240px;
 }
 
 .browse-column h4 {
   font-size: 18px;
   margin-bottom: 10px;
   color: #222;
+  text-align: left; /* ✅ heading and list both left aligned */
 }
 
 .browse-column ul {
   list-style: none;
   margin: 0;
   padding: 0;
-  display: grid;
-  gap: 6px;
+}
+
+.browse-column li {
+  margin: 6px 0;
 }
 
 .browse-column li a {
@@ -187,8 +201,21 @@
 /* --- Responsive --- */
 @media (max-width: 768px) {
   .browse-grid {
-    grid-template-columns: 1fr;
-    gap: 20px;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+  }
+
+  .browse-column {
+    align-items: center;
+  }
+
+  .browse-column h4 {
+    text-align: center;
+  }
+
+  .browse-column ul {
+    text-align: left;
   }
 }
 
