@@ -6,7 +6,7 @@ import Notfound from "./searchError";
 
 export default function NotFoundPage() {
   const categories = [
-    { name: "off Road Caravans", slug: "off-road-category" },
+    { name: "Off Road Caravans", slug: "off-road-category" },
     { name: "Hybrid Caravans", slug: "hybrid-category" },
     { name: "Pop Top Caravans", slug: "pop-top-category" },
     { name: "Luxury Caravans", slug: "luxury-category" },
@@ -69,7 +69,7 @@ export default function NotFoundPage() {
 
           {/* Right: State */}
           <div className="browse-column">
-            <h4>Browse by State Caravans:</h4>
+            <h4>Browse by State:</h4>
             <ul>
               {states.map((state) => (
                 <li key={state.slug}>
