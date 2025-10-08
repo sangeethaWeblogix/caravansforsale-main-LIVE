@@ -38,7 +38,6 @@ export function parseSlugToFilters(
   const conditionMap: Record<string, string> = {
     new: "New",
     used: "Used",
-    "near-new": "Near New",
   };
   function toNumber(val: string | string[] | undefined): number | undefined {
     if (!val) return undefined;
