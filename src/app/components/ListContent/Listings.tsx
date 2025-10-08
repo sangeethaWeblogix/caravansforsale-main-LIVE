@@ -631,7 +631,7 @@ export default function ListingsPage({
       // setIsLoading(true); // ✅ show skeleton immediately
 
       const mergedFilters = { ...filtersRef.current, ...newFilters };
-
+      console.log("filters", newFilters, mergedFilters);
       // cleanup empty values
       if ("orderby" in newFilters && !newFilters.orderby) {
         mergedFilters.orderby = undefined;
