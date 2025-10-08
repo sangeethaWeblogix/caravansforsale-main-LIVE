@@ -628,7 +628,7 @@ export default function ListingsPage({
 
   const handleFilterChange = useCallback(
     async (newFilters: Filters) => {
-      setIsLoading(true); // ✅ show skeleton immediately
+      // setIsLoading(true); // ✅ show skeleton immediately
 
       const mergedFilters = { ...filtersRef.current, ...newFilters };
 
@@ -747,7 +747,6 @@ export default function ListingsPage({
                       states={stateOptions}
                       onFilterChange={(partial) => {
                         handleFilterChange(partial);
-                        setIsLoading(true);
                       }}
                       currentFilters={filters}
                     />
@@ -757,7 +756,9 @@ export default function ListingsPage({
 
               {/* Listings */}
               {isLoading ? (
-                <SkeletonListing />
+                <div className="skeleton-wrapper">
+                  <SkeletonListing count={8} />
+                </div>
               ) : (
                 <Listing
                   products={products}

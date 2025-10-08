@@ -1,34 +1,34 @@
 // src/app/listings-sitemap.xml/route.ts
 import { NextResponse } from "next/server";
-import { fetchHomeSearchList } from "@/api/homeSearch/api";
+import { fetchSearchkeywords } from "@/api/sitemapSearchKeyword/api";
 
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "https://caravansforsale.com.au";
 
 export async function GET() {
   try {
-    const searchItems = await fetchHomeSearchList();
+    const searchItems = await fetchSearchkeywords();
     const today = new Date().toISOString().split("T")[0];
 
-    // ✅ Build URL entries using /listings/<slug>-search/
     const urls = searchItems
       .map((item) => {
-        // derive slug
-        let slug =
-          item.url?.trim() ||
-          item.name?.toLowerCase().replace(/\s+/g, "-").trim() ||
-          "";
+        let finalUrl = "";
 
-        // remove leading/trailing slashes if any
-        slug = slug.replace(/^\/+|\/+$/g, "");
+        if (item.url && item.url.trim() !== "") {
+          // ✅ use API-provided URL directly
+          finalUrl = item.url.trim();
+        } else {
+          // ✅ fallback to generated slug
+          let slug = item.name?.toLowerCase().replace(/\s+/g, "-").trim() || "";
 
-        // ✅ ensure URL ends with "-search/"
-        if (!slug.endsWith("-search")) {
-          slug = slug.endsWith("/") ? slug.slice(0, -1) : slug;
-          slug = `${slug}-search`;
+          // remove leading/trailing slashes
+          slug = slug.replace(/^\/+|\/+$/g, "");
+
+          // ensure "-search" suffix
+          if (!slug.endsWith("-search")) slug = `${slug}-search`;
+
+          finalUrl = `${SITE_URL}/listings/${slug}/`;
         }
-
-        const finalUrl = `${SITE_URL}/listings/${slug}/`;
 
         return `
         <url>

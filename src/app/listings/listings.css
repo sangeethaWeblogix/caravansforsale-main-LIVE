@@ -1039,3 +1039,15 @@ input[type="number"]::-webkit-outer-spin-button {
   }
 }
 /* nhhhfg */
+.skeleton-wrapper {
+  animation: fadeIn 0.2s ease-in forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
