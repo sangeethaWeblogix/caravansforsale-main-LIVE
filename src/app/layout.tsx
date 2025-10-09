@@ -8,6 +8,8 @@ import React from "react";
 import { Metadata } from "next";
 import ScrollToTop from "./ScrollToTop";
 import UTMTracker from "./UTMTracker";
+// import TabLoader from "./TabLoader";
+// import RouteProgress from "./RouteProgress";
 
 export const metadata: Metadata = {
   title: {

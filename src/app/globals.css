@@ -486,3 +486,15 @@ small {
   font-size: 15px;
   overflow: hidden;
 }
+@keyframes spin-favicon {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+link[rel="icon"].loading {
+  animation: spin-favicon 1s linear infinite;
+}

@@ -9,6 +9,8 @@ import React, {
   useMemo,
 } from "react";
 import { BiChevronDown } from "react-icons/bi";
+import { setFaviconLoading } from "@/utils/faviconLoader";
+
 import { usePathname, useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 import { fetchProductList } from "@/api/productList/api";
@@ -1740,6 +1742,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
   // ✅ Update all filters and URL with validation
   // 🔁 replace this whole function
   const updateAllFiltersAndURL = (override?: Filters) => {
+    setIsGlobalLoading(true); // 🔥 Start favicon
     const DEFAULT_RADIUS = 50;
     // const nextRaw: Filters = override ?? filters;
     // const next: Filters = hydrateLocation(normalizeFilters(nextRaw));
@@ -1780,9 +1783,11 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
       lastPushedURLRef.current = finalURL;
       if (mountedRef.current) {
         router.replace(finalURL);
+
         // onFilterChange(next);
       }
     }
+    setTimeout(() => setIsGlobalLoading(false), 1000);
   };
 
   // ✅ Update handleModelSelect with valid check
@@ -2005,6 +2010,16 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     // 👇 only locKey; this prevents re-running just because we set state above
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [locKey]);
+  const [isGlobalLoading, setIsGlobalLoading] = useState(false);
+
+  useEffect(() => {
+    if (isPending || isGlobalLoading) {
+      setFaviconLoading(true);
+    } else {
+      const t = setTimeout(() => setFaviconLoading(false), 300);
+      return () => clearTimeout(t);
+    }
+  }, [isPending, isGlobalLoading]);
 
   return (
     <>
@@ -2044,6 +2059,8 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                     }`}
                     onClick={() => {
                       // setNavigating(true);
+                      setFaviconLoading(true);
+                      setIsGlobalLoading(true);
                       setSelectedCategory(cat.slug);
                       setSelectedCategoryName(cat.name);
                       setCategoryOpen(false);
@@ -2054,7 +2071,8 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                       setFilters(updatedFilters);
                       filtersInitialized.current = true;
                       startTransition(() => {
-                        updateAllFiltersAndURL(updatedFilters); // ✅ this triggers the API + URL update
+                        updateAllFiltersAndURL(updatedFilters);
+                        setIsGlobalLoading(false);
                       });
                     }}
                   >
