@@ -17,6 +17,7 @@
     "@mui/material": "^7.1.2",
     "bootstrap": "^5.3.7",
     "bootstrap-icons": "^1.13.1",
+    "critters": "^0.0.23",
     "dompurify": "^3.2.6",
     "html-react-parser": "^5.2.6",
     "lucide-react": "^0.518.0",
