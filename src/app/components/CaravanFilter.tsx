@@ -2021,6 +2021,11 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     }
   }, [isPending, isGlobalLoading]);
 
+  useEffect(() => {
+    setFaviconLoading(true);
+    setTimeout(() => setFaviconLoading(false), 4000);
+  }, []);
+
   return (
     <>
       <div className="filter-card mobile-search">
