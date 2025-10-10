@@ -25,11 +25,8 @@ export async function generateListingsMetadata(
       : null;
   const next = page < totalPages ? `${baseUrl}/?page=${page + 1}` : null;
 
-  const metaTitle =
-    response?.seo?.metatitle ||
-    "Caravans For Sale in Australia -Find Exclusive Deals";
+  const metaTitle = "Caravans For Sale in Australia -Find Exclusive Deals";
   const metaDescription =
-    response?.seo?.metadescription ||
     "Browse new & used caravans for sale across Australia. Compare off-road, hybrid, pop-top & luxury models by price, size, weight and sleeping capacity.";
 
   return {
