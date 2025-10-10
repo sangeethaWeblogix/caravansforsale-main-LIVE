@@ -214,8 +214,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
 
   const years = [
     2025, 2024, 2023, 2022, 2021, 2020, 2019, 2018, 2017, 2016, 2015, 2014,
-    2013, 2012, 2011, 2010, 2009, 2008, 2007, 2006, 2005, 2004, 1994, 1984,
-    1974, 1964, 1954, 1944, 1934, 1924, 1914,
+    2013, 2012, 2011, 2010, 2009, 2008, 2007, 2006, 2005, 2004,
   ];
 
   const length = [
@@ -955,63 +954,20 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     setFilters(updatedFilters);
     onFilterChange(updatedFilters);
   };
+
+  const formatted = (s: string) =>
+    s
+      .replace(/ - /g, "  ") // replace hyphen separators with double spaces
+      .replace(/\s+/g, " "); 
+
+  
   const formatLocationInput = (s: string) =>
     s
       .replace(/_/g, " ") // underscores -> space
       .replace(/\s*-\s*/g, "  ") // hyphen (with any spaces) -> double space
       .replace(/\s{3,}/g, "  ") // collapse 3+ spaces -> 2
       .trim()
-      .replace(/\b\w/g, (char) => char.toUpperCase()); // capitalize each word
-
-  // 👇 current put this back near your other location effects
-  // useEffect(() => {
-  //   const noLocationInFilters =
-  //     !currentFilters.state &&
-  //     !currentFilters.region &&
-  //     !currentFilters.suburb &&
-  //     !currentFilters.pincode;
-
-  //   // Only reset if nothing is selected in filters
-  //   if (noLocationInFilters) {
-  //     setSelectedState(null);
-  //     setSelectedStateName(null);
-  //     setSelectedRegionName(null);
-  //     setSelectedSuburbName(null);
-  //     setSelectedpincode(null);
-  //     setFilteredSuburbs([]);
-  //     setLocationInput("");
-  //   }
-  // }, [
-  //   currentFilters.state,
-  //   currentFilters.region,
-  //   currentFilters.suburb,
-  //   currentFilters.pincode,
-  // ]);
-
-  // useEffect(() => {
-  //   const noLocationInFilters =
-  //     !currentFilters.state &&
-  //     !currentFilters.region &&
-  //     !currentFilters.suburb &&
-  //     !currentFilters.pincode;
-
-  //   if (noLocationInFilters && selectedStateName) {
-  //     // only runs on full location reset
-  //     setSelectedState(null);
-  //     setSelectedStateName(null);
-  //     setSelectedRegionName(null);
-  //     setSelectedSuburbName(null);
-  //     setFilteredSuburbs([]);
-  //     setLocationInput("");
-  //   }
-  // }, [
-  //   currentFilters.state,
-  //   currentFilters.region,
-  //   currentFilters.suburb,
-  //   currentFilters.pincode,
-  //   selectedStateName,
-  // ]);
-
+      .replace(/\b\w/g, (char) => char.toUpperCase());
   const resetSuburbFilters = () => {
     // ✅ keep state & region
     // suppressLocationAutoClearRef.current = true; // 👈 tell the auto-clear effect to skip once
@@ -1495,7 +1451,18 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     const t = setTimeout(() => {
       const suburb = q.split(" ")[0];
       fetchLocations(suburb)
-        .then((data) => setLocationSuggestions(data))
+        .then((data) => {
+          // 🔥 FIX: Filter the results based on current input
+          const formattedValue = formatLocationInput(q);
+          const filtered = data.filter(
+            (item) =>
+              item.short_address
+                .toLowerCase()
+                .includes(formattedValue.toLowerCase()) ||
+              item.address.toLowerCase().includes(formattedValue.toLowerCase())
+          );
+          setLocationSuggestions(filtered);
+        })
         .catch(console.error);
     }, 300);
 
@@ -3064,12 +3031,42 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                     placeholder="Suburb or postcode..."
                     className="filter-dropdown cfs-select-input"
                     autoComplete="off"
-                    value={formatLocationInput(modalInput)} // 👈 use modalInput
+                    value={formatted(modalInput)} // 👈 modalInput} // 👈 use modalInput
                     onFocus={() => setShowSuggestions(true)}
                     onChange={(e) => {
-                      isUserTypingRef.current = true;
+                      // isUserTypingRef.current = true;
                       setShowSuggestions(true);
-                      setModalInput(e.target.value); // 👈 update modalInput
+
+                      const rawValue = e.target.value;
+                      // Format for filtering suggestions only
+                      setModalInput(rawValue); // 👈 Store raw value
+                      const formattedValue = formatLocationInput(modalInput);
+
+                      // Use the existing locationSuggestions state or fetch new data
+                      // Since you're already fetching locations in useEffect, you can filter the existing suggestions
+                      // OR trigger the same API call logic here
+                      if (formattedValue.length < 2) {
+                        setLocationSuggestions([]);
+                        return;
+                      }
+
+                      // Use the same API call logic as in your useEffect
+                      const suburb = formattedValue.split(" ")[0];
+                      fetchLocations(suburb)
+                        .then((data) => {
+                          // Filter the API results based on the formatted input
+                          const filtered = data.filter(
+                            (item) =>
+                              item.short_address
+                                .toLowerCase()
+                                .includes(formattedValue.toLowerCase()) ||
+                              item.address
+                                .toLowerCase()
+                                .includes(formattedValue.toLowerCase())
+                          );
+                          setLocationSuggestions(filtered);
+                        })
+                        .catch(console.error);
                     }}
                     onBlur={() =>
                       setTimeout(() => setShowSuggestions(false), 150)
