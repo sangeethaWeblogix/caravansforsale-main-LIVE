@@ -8,7 +8,7 @@ const SITE_URL =
 const staticUrls = [
   "",
   "caravan-manufacturers",
-  "off-road-caravan-manufacturers",
+  "off-road-caravans-manufacturers",
   "listings",
   "blog",
   "terms-conditions",
