@@ -9,12 +9,15 @@ type State = { value: string; regions?: Region[] };
 
 export async function GET() {
   const data = await fetchProductList();
+  console.log("API response:", JSON.stringify(data, null, 2)); // 👈 Add this
+
   const states: State[] = data?.data?.states ?? [];
+
+  console.log("States:", states); // 👈 Check if this logs anything
 
   const urls = states.flatMap((state) => {
     const stateSlug = state.value;
 
-    // 1. Add state-level URL
     const stateUrl = `
       <url>
         <loc>${SITE_URL}/listings/${stateSlug}-state/</loc>
