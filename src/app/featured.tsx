@@ -118,11 +118,6 @@ export default function DealsOnlyCFS() {
         <div className="tab-content" id="pills-tabContent">
           <div className="tab-pane fade show active">
             {/* HERO */}
-            <Link
-                            
-                            href={productHref(hero)}
-                            prefetch={false}
-                          >
             <div className="content-info text-center pb-0">
               <div className="product_data">
                 {loading[active] ? (
@@ -197,12 +192,13 @@ export default function DealsOnlyCFS() {
                         </div>
 
                         <div className="sub_bttn">
-                          <span
+                          <Link
                             className="btn"
-                            
+                            href={productHref(hero)}
+                            prefetch={false}
                           >
                             VIEW THIS DEAL
-                          </span>
+                          </Link>
                         </div>
                       </div>
                     </div>
@@ -214,7 +210,6 @@ export default function DealsOnlyCFS() {
                 )}
               </div>
             </div>
-            </Link>
 
             {/* LIST / CAROUSEL */}
             {loading[active] ? (
@@ -231,10 +226,23 @@ export default function DealsOnlyCFS() {
               !!rest.length && (
                 <div className="other_items">
                   <div className="related-products">
-                    <h3>
-                      Featured {categories.find((c) => c.alt === active)?.name}{" "}
-                      Caravans For Sale
-                    </h3>
+                    <div className="d-flex align-items-center justify-content-between">
+                      <h3>
+                        Featured{" "}
+                        {categories.find((c) => c.alt === active)?.name}{" "}
+                        Caravans For Sale
+                      </h3>
+
+                      <Link
+                        className="floating_links hidden-xs"
+                        href={
+                          categories.find((c) => c.alt === active)?.listLink ??
+                          "#"
+                        }
+                      >
+                        See All <i className="bi bi-chevron-right" />
+                      </Link>
+                    </div>
                     <div className="featured-deals position-relative">
                       <Swiper
                         modules={[Navigation, Autoplay]}
@@ -354,18 +362,6 @@ export default function DealsOnlyCFS() {
                         className={`swiper-button-prev swiper-button-prev-${active}`}
                       />
                     </div>
-                  </div>
-
-                  <div className="d-flex justify-content-end">
-                    <Link
-                      className="floating_links"
-                      href={
-                        categories.find((c) => c.alt === active)?.listLink ??
-                        "#"
-                      }
-                    >
-                      See All <i className="bi bi-chevron-right" />
-                    </Link>
                   </div>
                 </div>
               )
