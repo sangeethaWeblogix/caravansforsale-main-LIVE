@@ -7,22 +7,30 @@ const SITE_URL =
 type Region = { value: string };
 type State = { value: string; regions?: Region[] };
 
+interface ApiState {
+  state?: string;
+  value?: string;
+  regions?: (string | { value: string })[];
+  regions_list?: (string | { value: string })[];
+}
+
 export async function GET() {
   try {
     const data = await fetchProductList();
     console.log("🧠 fetchProductList():", JSON.stringify(data, null, 2));
 
-    // Try multiple shapes (since API response varies)
     let states: State[] = [];
 
     if (data?.data?.states) {
-      states = data.data.states;
+      states = data.data.states as State[];
     } else if (data?.data?.all_states) {
-      states = data.data.all_states.map((s: any) => ({
-        value: s.state || s.value,
-        regions: (s.regions || s.regions_list || []).map((r: any) => ({
-          value: r.value || r,
-        })),
+      states = (data.data.all_states as ApiState[]).map((s) => ({
+        value: s.state || s.value || "",
+        regions: (
+          (s.regions || s.regions_list || []) as (string | { value: string })[]
+        ).map((r) =>
+          typeof r === "string" ? { value: r } : { value: r.value }
+        ),
       }));
     }
 
