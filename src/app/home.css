@@ -187,12 +187,12 @@
   height: 100%;
 }
 .floating_links {
-  position: absolute;
-  bottom: 0;
-  font-size: 15px;
-  text-transform: uppercase;
-  font-weight: 500;
-  color: #0066f0;
+    text-transform: uppercase;
+    color: #0066f0;
+    font-size: 15px;
+    font-weight: 500;
+    position: relative;
+    bottom: 0;
 }
 .caravan_type {
   margin-bottom: 10px;
@@ -328,17 +328,18 @@
 }
 
 .post-requirements {
-  background-repeat: no-repeat;
-  padding-top: 30px;
-  position: relative;
-  z-index: 1;
+    z-index: 1;
+    background: #000;
+    padding-top: 30px;
+    position: relative;
+    padding-bottom: 30px;
 }
 
 .home-post_head {
-  text-align: center;
-  color: #333;
-  margin-bottom: 20px;
-  padding-bottom: 20px;
+    text-align: left;
+    color: #333;
+    margin-bottom: 20px;
+    padding-bottom: 0;
 }
 
 .home-post_head h2 {
@@ -357,6 +358,15 @@
   color: #e9e9e9;
 }
 
+.top_cta.bg-white .swiper-pagination-clickable .swiper-pagination-bullet.swiper-pagination-bullet-active {
+  background-color: #f2bd8c;
+}
+
+.top_cta.bg-white .swiper-pagination-clickable .swiper-pagination-bullet{
+width: 10px;
+height: 10px;
+}
+
 .top_cta_container {
   position: relative;
   border-radius: 20px;
@@ -366,9 +376,7 @@
   content: "";
   width: 100%;
   height: 100%;
-  background: transparent
-    linear-gradient(98deg, #ff0935 0, #ffd119 53%, #0dcea6 100%) 0 0 no-repeat
-    padding-box;
+  background: #fff;
   position: absolute;
   left: 0;
   top: 0;
@@ -401,7 +409,7 @@
 }
 
 .post_bgs {
-  padding: 30px 40px;
+  padding: 0px;
   border-radius: 30px;
   background: #000;
   position: relative;
@@ -409,67 +417,104 @@
 }
 
 .type {
-  width: 10%;
-  padding: 5px;
+ 
 }
 
 .condition {
-  width: 10%;
-  padding: 5px;
+  
 }
 
 .requirements {
-  width: 50%;
-  padding: 5px 30px;
+  
 }
 
 .status {
-  width: 10%;
-  padding: 5px;
+  
 }
 
 .location {
-  width: 10%;
-  padding: 5px 20px;
+  
 }
 
 .budget {
-  width: 12%;
-  padding: 5px;
+  
 }
 
 .status i {
   color: #ec7200;
-  margin-right: 3px;
+  
 }
 
 .home-post__item .status {
 }
 
 .final_post_btn {
-  text-align: center;
+    text-align: left;
 }
 
 .home-post__item .budget {
-  background: #ec7200;
-  padding: 40px 15px;
-  text-align: center;
-  color: #fff;
-  font-size: 25px;
-  font-weight: 700;
-  border-radius: 10px;
+    text-align: left;
+    color: #000000;
+    background: #ffffff;
+    border-radius: 10px;
+    padding: 20px 15px;
+    font-size: 45px;
+    font-weight: 700;
+}
+
+.home-post__item .budget span.slugn {
+    display: block;
+    font-size: 19px;
+    line-height: 20px;
+    text-transform: uppercase;
 }
 
 .home-post__item {
-  border-radius: 0;
-  overflow: hidden;
-  position: relative;
-  padding: 10px 25px;
-  color: #171717;
-  font-weight: 400;
-  align-items: center;
-  margin-bottom: 10px;
-  font-size: 15px;
+    color: #171717;
+    border-radius: 0;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 35px 45px;
+    font-size: 15px;
+    font-weight: 400;
+    position: relative;
+    overflow: hidden;
+}
+
+.fet_feild {
+    justify-content: space-between;
+    gap: 15px;
+    width: 100%;
+    display: flex;
+    margin-bottom: 15px;
+}
+
+.fet_feild .pst_table {
+    background-color: #ededed;
+    padding: 10px;
+    border-radius: 5px;
+    width: 33.33%;
+    color: #000;
+    font-weight: 600;
+}
+
+.fet_feild .pst_table.status {
+    background-color: rgb(76 175 80 / 31%);
+}
+
+.fet_feild .pst_table span {
+    font-size: 12px;
+    display: block;
+    font-weight: 300;
+}
+
+.requirements {
+    padding-bottom: 15px;
+    font-size: 17px;
+    border-top: 1px solid #ddd;
+    height: 130px;
+    padding-top: 15px;
+    border-bottom: 1px solid #ddd;
 }
 
 .post_flip {
@@ -481,26 +526,30 @@
 }
 
 .home-post__item:hover {
-  background: #ffffff;
+  
   color: #171717;
 }
 
 .final_post_btn .btn {
-  display: block;
-  border: 2px solid #ffffff;
-  color: #fff;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin: 0 auto;
-  max-width: 400px;
-  margin-top: 25px;
-  background: transparent;
+    color: #ffffff;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    background: none;
+    border: 2px solid #ec7200;
+    background-color: #ec7200;
+    max-width: 350px;
+    margin: 0;
+    display: block;
+    height: 55px;
+    line-height: 55px;
+    padding: 0;
+    font-weight: 600;
 }
 
 .final_post_btn .btn:hover {
-  background-color: #ec7200;
-  border-color: #ec7200;
-  color: #fff;
+  background-color: #ffffff;
+  border-color: #ffffff;
+  color: #000000;
 }
 
 .caravans_by_state h2 {
@@ -1297,20 +1346,18 @@ a.ignoretext {
 .blog.style-8 .side-posts .item .info h4.title {
       font-size: 15px;
 }
-  .type,
-  .condition,
-  .requirements,
-  .status,
-  .location,
-  .budget {
+
+  .requirements {
+    height: auto;
+  }
+  .fet_feild {
+    display: inline-block;
     width: 100%;
   }
-  .requirements {
-    padding: 5px 5px;
-  }
-  .location {
-    padding: 5px 5px;
-    padding-bottom: 15px;
+  .fet_feild .pst_table {
+    width: 48%;
+    float: left;
+    margin: 1%;
   }
   .home-post__item .budget .m_label {
     display: block;
@@ -1319,14 +1366,7 @@ a.ignoretext {
     font-weight: 400;
     margin-bottom: 0px;
   }
-  .home-post__item .budget {
-    background: #ec7200;
-    padding: 10px 3px;
-    text-align: center;
-    color: #fff;
-    font-weight: 700;
-    border-radius: 10px;
-  }
+ 
   .caravans_by_state .service-box h5 a {
     font-size: 20px;
   }

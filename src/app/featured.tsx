@@ -226,10 +226,22 @@ export default function DealsOnlyCFS() {
               !!rest.length && (
                 <div className="other_items">
                   <div className="related-products">
+                    <div className="d-flex align-items-center justify-content-between">
                     <h3>
                       Featured {categories.find((c) => c.alt === active)?.name}{" "}
                       Caravans For Sale
                     </h3>
+                    
+                    <Link
+                      className="floating_links hidden-xs"
+                      href={
+                        categories.find((c) => c.alt === active)?.listLink ??
+                        "#"
+                      }
+                    >
+                      See All <i className="bi bi-chevron-right" />
+                    </Link>
+                  </div>
                     <div className="featured-deals position-relative">
                       <Swiper
                         modules={[Navigation, Autoplay]}
@@ -351,17 +363,7 @@ export default function DealsOnlyCFS() {
                     </div>
                   </div>
 
-                  <div className="d-flex justify-content-end">
-                    <Link
-                      className="floating_links"
-                      href={
-                        categories.find((c) => c.alt === active)?.listLink ??
-                        "#"
-                      }
-                    >
-                      See All <i className="bi bi-chevron-right" />
-                    </Link>
-                  </div>
+                  
                 </div>
               )
             )}
