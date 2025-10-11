@@ -8,29 +8,44 @@ const SITE_URL =
 type Category = { slug: string; name: string };
 
 export async function GET() {
-  const data = await fetchProductList();
-  const categories: Category[] = data?.data?.all_categories ?? [];
+  try {
+    const data = await fetchProductList();
+    console.log(
+      "✅ fetchProductList() response:",
+      JSON.stringify(data, null, 2)
+    );
 
-  const today = new Date().toISOString().split("T")[0];
+    const categories: Category[] =
+      data?.data?.all_categories || data?.data?.categories || [];
 
-  const urls = categories
-    .map(
-      (cat) => `
-      <url>
-        <loc>${SITE_URL}/listings/${cat.slug}-category/</loc>
-        <lastmod>${today}</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.6</priority>
-      </url>`
-    )
-    .join("");
+    const today = new Date().toISOString().split("T")[0];
 
-  const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
-  <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-    ${urls}
-  </urlset>`;
+    if (!categories.length) {
+      console.warn("⚠️ No categories found for sitemap");
+    }
 
-  return new NextResponse(sitemap, {
-    headers: { "Content-Type": "application/xml" },
-  });
+    const urls = categories
+      .map(
+        (cat) => `
+        <url>
+          <loc>${SITE_URL}/listings/${cat.slug}-category/</loc>
+          <lastmod>${today}</lastmod>
+          <changefreq>weekly</changefreq>
+          <priority>0.6</priority>
+        </url>`
+      )
+      .join("");
+
+    const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+      <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+        ${urls}
+      </urlset>`;
+
+    return new NextResponse(sitemap, {
+      headers: { "Content-Type": "application/xml" },
+    });
+  } catch (error) {
+    console.error("❌ Error generating sitemap:", error);
+    return new NextResponse("Sitemap generation failed", { status: 500 });
+  }
 }
