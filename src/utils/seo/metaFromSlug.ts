@@ -14,9 +14,11 @@ export async function metaFromSlug(
 
   const res = await fetchListings(finalFilters);
 
-  const title = res?.seo?.metatitle || "";
-  const description =
-    res?.seo?.metadescription || "Browse all available caravans.";
+  // ✅ Trim metatitle to remove unwanted spaces
+  const title = (res?.seo?.metatitle || "").trim();
+  const description = (
+    res?.seo?.metadescription || "Browse all available caravans."
+  ).trim();
 
   const rawIndex = (res?.seo?.index ?? "").toLowerCase().trim();
   const robots =
@@ -57,17 +59,10 @@ export async function metaFromSlug(
     verification: {
       google: "6tT6MT6AJgGromLaqvdnyyDQouJXq0VHS-7HC194xEo",
     },
-
     alternates: {
       canonical,
       languages: {},
       media: {},
-
-      // 👇 This ensures prev/next show up in <head> properly
-      // types: {
-      //   ...(prev ? { previous: prev } : {}),
-      //   ...(next ? { next } : {}),
-      // },
     },
     icons: {
       other: [
