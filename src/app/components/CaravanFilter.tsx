@@ -298,7 +298,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     const t = setTimeout(async () => {
       try {
         const list = await fetchKeywordSuggestions(q, ctrl.signal);
-        const items: KeywordItem[] = list.map((x: any) => ({
+        const items: KeywordItem[] = list.map((x) => ({
           label: (x.keyword || "").trim(),
           url: (x.url || "").trim(),
         }));
