@@ -53,23 +53,9 @@ export default function SearchSection() {
         label: (x.name ?? "").toString().trim(),
         url: (x.url ?? "").toString(),
       }));
-      const sortedLabels = labels.sort((a, b) => {
-        const aLabel = (a.label || "").trim().toLowerCase();
-        const bLabel = (b.label || "").trim().toLowerCase();
 
-        const aIsNumber = /^[0-9]/.test(aLabel);
-        const bIsNumber = /^[0-9]/.test(bLabel);
-
-        // ✅ Letters first, numbers later
-        if (!aIsNumber && bIsNumber) return -1;
-        if (aIsNumber && !bIsNumber) return 1;
-
-        // Then sort alphabetically (case-insensitive)
-        return aLabel.localeCompare(bLabel);
-      });
-
-      setBaseSuggestions(sortedLabels);
-      setSuggestions(sortedLabels);
+      setBaseSuggestions(labels);
+      setSuggestions(labels);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to load");
     } finally {
@@ -112,22 +98,7 @@ export default function SearchSection() {
             ).values()
           );
 
-          const sortedUniq = uniq.sort((a, b) => {
-            const aLabel = (a.label || "").trim().toLowerCase();
-            const bLabel = (b.label || "").trim().toLowerCase();
-
-            const aIsNumber = /^[0-9]/.test(aLabel);
-            const bIsNumber = /^[0-9]/.test(bLabel);
-
-            // ✅ Letters first, numbers later
-            if (!aIsNumber && bIsNumber) return -1;
-            if (aIsNumber && !bIsNumber) return 1;
-
-            // Then A-Z order
-            return aLabel.localeCompare(bLabel);
-          });
-
-          setSuggestions(sortedUniq);
+          setSuggestions(uniq);
         } catch (e: unknown) {
           if (e instanceof DOMException && e.name === "AbortError") return;
           setError(e instanceof Error ? e.message : "Failed");
@@ -163,33 +134,58 @@ export default function SearchSection() {
   //     setIsSuggestionBoxOpen(false);
   //   };
   // ------------- navigate helper (two routes) -------------
+  // final working
+  // const navigateWithKeyword = (s: Item) => {
+  //   const human = s.label?.trim();
+  //   if (!human) return;
+
+  //   flushSync(() => setQuery(human));
+  //   setIsSuggestionBoxOpen(false);
+
+  //   if (s.url && s.url.trim().length > 0) {
+  //     router.push(s.url, { scroll: true });
+  //   } else {
+  //     // Convert spaces or special chars to hyphen and add -search
+  //     const slug = human
+  //       .toLowerCase()
+  //       .trim()
+  //       .replace(/[^a-z0-9]+/g, "-") // replace spaces/symbols with "-"
+  //       .replace(/^-+|-+$/g, ""); // trim leading/trailing hyphens
+
+  //     router.push(`/listings/${slug}-search`, { scroll: true });
+  //   }
+  // };
   const navigateWithKeyword = (s: Item) => {
     const human = s.label?.trim();
     if (!human) return;
 
-    flushSync(() => setQuery(human));
+    flushSync(() => {
+      setQuery(human);
+      setNavigating(true); // ✅ show loader immediately
+    });
     setIsSuggestionBoxOpen(false);
 
-    if (s.url && s.url.trim().length > 0) {
-      router.push(s.url, { scroll: true });
-    } else {
-      // Convert spaces or special chars to hyphen and add -search
-      const slug = human
-        .toLowerCase()
-        .trim()
-        .replace(/[^a-z0-9]+/g, "-") // replace spaces/symbols with "-"
-        .replace(/^-+|-+$/g, ""); // trim leading/trailing hyphens
-
-      router.push(`/listings/${slug}-search`, { scroll: true });
-    }
+    // Small delay ensures loader renders before navigation
+    setTimeout(() => {
+      if (s.url && s.url.trim().length > 0) {
+        router.push(s.url, { scroll: true });
+      } else {
+        const slug = human
+          .toLowerCase()
+          .trim()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-+|-+$/g, "");
+        router.push(`/listings/${slug}-search`, { scroll: true });
+      }
+    }, 50);
   };
 
   const handleKeyDown: React.KeyboardEventHandler<HTMLInputElement> = (e) => {
     if (e.key === "Enter") {
-      // Enter uses typed query directly
       const kw = (e.currentTarget as HTMLInputElement).value.trim();
       if (kw) {
-        navigateWithKeyword({ name: kw });
+        setNavigating(true);
+        navigateWithKeyword({ label: kw });
       }
     }
     if (e.key === "Escape") closeSuggestions();

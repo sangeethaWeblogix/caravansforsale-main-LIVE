@@ -15,7 +15,10 @@ export async function metaFromSlug(
   const res = await fetchListings(finalFilters);
 
   // ✅ Trim metatitle to remove unwanted spaces
-  const title = (res?.seo?.metatitle || "").trim();
+  const title = (res?.seo?.metatitle || "")
+    .replace(/\u00A0/g, " ") // replace non-breaking spaces
+    .replace(/\s+/g, " ")
+    .trim(); // remove leading/trailing spaces
   const description = (
     res?.seo?.metadescription || "Browse all available caravans."
   ).trim();

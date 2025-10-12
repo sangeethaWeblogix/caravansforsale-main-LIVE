@@ -282,7 +282,6 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
       .catch(() => setBaseKeywords([]))
       .finally(() => setBaseLoading(false));
   }, [isKeywordModalOpen]);
-
   useEffect(() => {
     if (!isKeywordModalOpen) return;
 
@@ -299,27 +298,14 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     const t = setTimeout(async () => {
       try {
         const list = await fetchKeywordSuggestions(q, ctrl.signal);
-        // const items: KeywordItem[] = list.map((x) => ({
-        //   label: (x.keyword || "").trim(),
-        //   url: (x.url || "").trim(),
-        // }));
-        const items: KeywordItem[] = Array.from(
-          new Map(
-            list.map((x, idx: number) => [
-              (x.keyword || "").toString().trim(),
-              {
-                id: x.id ?? idx, // fallback id
-                label: (x.keyword || "").toString().trim(), // ✅ always set label
-                url: (x.url || "").toString(),
-              },
-            ])
-          ).values()
-        );
+        const items: KeywordItem[] = list.map((x: any) => ({
+          label: (x.keyword || "").trim(),
+          url: (x.url || "").trim(),
+        }));
+
         setKeywordSuggestions(
-          sortKeywords(
-            Array.from(new Set(items.map((i) => i.label.toLowerCase()))).map(
-              (label) => items.find((i) => i.label.toLowerCase() === label)!
-            )
+          Array.from(new Set(items.map((i) => i.label))).map(
+            (label) => items.find((i) => i.label === label)!
           )
         );
       } catch (e: unknown) {
@@ -335,6 +321,58 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
       clearTimeout(t);
     };
   }, [isKeywordModalOpen, modalKeyword]);
+  // useEffect(() => {
+  //   if (!isKeywordModalOpen) return;
+
+  //   const q = modalKeyword.trim();
+  //   if (q.length < 2) {
+  //     setKeywordSuggestions([]);
+  //     setKeywordLoading(false);
+  //     return;
+  //   }
+
+  //   const ctrl = new AbortController();
+  //   setKeywordLoading(true);
+
+  //   const t = setTimeout(async () => {
+  //     try {
+  //       const list = await fetchKeywordSuggestions(q, ctrl.signal);
+  //       // const items: KeywordItem[] = list.map((x) => ({
+  //       //   label: (x.keyword || "").trim(),
+  //       //   url: (x.url || "").trim(),
+  //       // }));
+  //       const items: KeywordItem[] = Array.from(
+  //         new Map(
+  //           list.map((x, idx: number) => [
+  //             (x.keyword || "").toString().trim(),
+  //             {
+  //               id: x.id ?? idx, // fallback id
+  //               label: (x.keyword || "").toString().trim(), // ✅ always set label
+  //               url: (x.url || "").toString(),
+  //             },
+  //           ])
+  //         ).values()
+  //       );
+  //       setKeywordSuggestions(
+  //         sortKeywords(
+  //           Array.from(new Set(items.map((i) => i.label.toLowerCase()))).map(
+  //             (label) => items.find((i) => i.label.toLowerCase() === label)!
+  //           )
+  //         )
+  //       );
+  //     } catch (e: unknown) {
+  //       if (e instanceof DOMException && e.name === "AbortError") return;
+  //       console.warn("[keyword] fetch failed:", e);
+  //     } finally {
+  //       setKeywordLoading(false);
+  //     }
+  //   }, 300);
+
+  //   return () => {
+  //     ctrl.abort();
+  //     clearTimeout(t);
+  //   };
+  // }, [isKeywordModalOpen, modalKeyword]);
 
   // ✅ Base list apply → search=<raw>
 
@@ -638,21 +676,21 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
   }, [selectedSuburbName, selectedpincode, selectedStateName]);
 
   // keywordSuggestions sort செய்யும் helper
-  const sortKeywords = (items: KeywordItem[]): KeywordItem[] => {
-    return [...items].sort((a, b) => {
-      const al = a.label.toLowerCase();
-      const bl = b.label.toLowerCase();
+  // const sortKeywords = (items: KeywordItem[]): KeywordItem[] => {
+  //   return [...items].sort((a, b) => {
+  //     const al = a.label.toLowerCase();
+  //     const bl = b.label.toLowerCase();
 
-      const isNumA = /^\d/.test(al);
-      const isNumB = /^\d/.test(bl);
+  //     const isNumA = /^\d/.test(al);
+  //     const isNumB = /^\d/.test(bl);
 
-      // numbers last
-      if (!isNumA && isNumB) return -1;
-      if (isNumA && !isNumB) return 1;
+  //     // numbers last
+  //     if (!isNumA && isNumB) return -1;
+  //     if (isNumA && !isNumB) return 1;
 
-      return al.localeCompare(bl); // normal alphabetical
-    });
-  };
+  //     return al.localeCompare(bl); // normal alphabetical
+  //   });
+  // };
 
   useEffect(() => {
     if (!filtersInitialized.current) {
@@ -958,9 +996,8 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
   const formatted = (s: string) =>
     s
       .replace(/ - /g, "  ") // replace hyphen separators with double spaces
-      .replace(/\s+/g, " "); 
+      .replace(/\s+/g, " ");
 
-  
   const formatLocationInput = (s: string) =>
     s
       .replace(/_/g, " ") // underscores -> space
