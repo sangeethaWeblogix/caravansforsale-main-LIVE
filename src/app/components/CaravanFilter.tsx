@@ -2021,11 +2021,11 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
           {stateRegionOpen && !!selectedStateName && !selectedSuburbName && (
             <div
               className="filter-accordion-items"
-              style={{
-                maxHeight: 250, // limit height to make scroll visible
-                overflowY: "auto",
-                overflowX: "hidden",
-              }}
+              // style={{
+              //   maxHeight: 250, // limit height to make scroll visible
+              //   overflowY: "auto",
+              //   overflowX: "hidden",
+              // }}
               onScroll={(e) => {
                 const el = e.currentTarget;
                 if (el.scrollTop + el.clientHeight >= el.scrollHeight - 10) {
