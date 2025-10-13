@@ -247,7 +247,13 @@ export default function SearchSection() {
                 {/* dropdown */}
                 <div
                   className="suggestions"
-                  style={{ display: isSuggestionBoxOpen ? "block" : "none" }}
+                  style={{
+                    display: isSuggestionBoxOpen ? "block" : "none",
+                    maxHeight: "300px", // 👈 limit dropdown height
+                    overflowY: "auto", // 👈 enable scrolling
+                    scrollbarWidth: "thin", // Firefox
+                    overscrollBehavior: "contain", // prevent page scroll when reaching end
+                  }}
                   role="listbox"
                 >
                   <h4>
