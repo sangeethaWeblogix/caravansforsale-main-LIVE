@@ -516,30 +516,6 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     return out;
   };
 
-  // near other handlers
-  // const clearKeyword = () => {
-  //   // reset local UI
-  //   pickedSourceRef.current = null;
-  //   setKeywordInput("");
-  //   setKeywordSuggestions([]);
-  //   // if you keep a base list in state:
-  //   // setBaseKeywords([]);
-
-  //   // reset filters
-  //   const next: Filters = {
-  //     ...currentFilters,
-  //     keyword: undefined,
-  //     search: undefined,
-  //   };
-
-  //   setFilters(next);
-  //   filtersInitialized.current = true;
-
-  //   startTransition(() => {
-  //     onFilterChange(next); // parent -> API payload clear
-  //     updateAllFiltersAndURL(next); // URL params keyword/search remove + page=1
-  //   });
-  // };
   const clearKeyword = () => {
     const next: Filters = {
       ...currentFilters,
@@ -945,35 +921,6 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
       // });
     }, 0); // Allow React to flush UI state
   };
-  // const suppressLocationAutoClearRef = useRef(false);
-  // useEffect(() => {
-  //   // 👇 prevent unintended region/state clearing when we explicitly reset only suburb
-  //   if (suppressLocationAutoClearRef.current) {
-  //     suppressLocationAutoClearRef.current = false;
-  //     return;
-  //   }
-
-  //   const noLocationInFilters =
-  //     !currentFilters.state &&
-  //     !currentFilters.region &&
-  //     !currentFilters.suburb &&
-  //     !currentFilters.pincode;
-
-  //   if (noLocationInFilters && selectedStateName) {
-  //     setSelectedState(null);
-  //     setSelectedStateName(null);
-  //     setSelectedRegionName(null);
-  //     setSelectedSuburbName(null);
-  //     setFilteredSuburbs([]);
-  //     setLocationInput("");
-  //   }
-  // }, [
-  //   currentFilters.state,
-  //   currentFilters.region,
-  //   currentFilters.suburb,
-  //   currentFilters.pincode,
-  //   selectedStateName,
-  // ]);
 
   const resetRegionFilters = () => {
     setSelectedRegion("");
@@ -1046,94 +993,6 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
       updateAllFiltersAndURL(updatedFilters);
     });
   };
-
-  // const handleSearchClick = () => {
-  //   // If you don't want the auto-clear here, you can remove this call
-  //   resetSuburbFilters();
-
-  //   // ❌ remove any alert("enter")
-  //   // user must pick a suggestion
-  //   if (!suburbClickedRef.current || !selectedSuggestion) return;
-
-  //   // uri looks like: "<suburb>-suburb/<region>-region/<state>-state/<pincode>"
-  //   const parts = selectedSuggestion.uri.split("/");
-  //   const suburbSlug = parts[0] || "";
-  //   const regionSlug = parts[1] || "";
-  //   const stateSlug = parts[2] || "";
-  //   let pincode = parts[3] || "";
-
-  //   const suburb = suburbSlug
-  //     .replace(/-suburb$/, "")
-  //     .replace(/-/g, " ")
-  //     .trim();
-  //   const region = regionSlug
-  //     .replace(/-region$/, "")
-  //     .replace(/-/g, " ")
-  //     .trim();
-  //   const state = stateSlug
-  //     .replace(/-state$/, "")
-  //     .replace(/-/g, " ")
-  //     .trim();
-
-  //   // fallback: pull 4-digit pincode from address if needed
-  //   if (!/^\d{4}$/.test(pincode)) {
-  //     const m = selectedSuggestion.address.match(/\b\d{4}\b/);
-  //     if (m) pincode = m[0];
-  //   }
-
-  //   // ✅ validate region from suggestion against our states list
-  //   const regionFromSug = region; // parsed from suggestion
-  //   const validRegion = getValidRegionName(state, regionFromSug, states);
-
-  //   // set UI selections (normalize region to valid or clear it)
-  //   setSelectedState(stateSlug);
-  //   setSelectedStateName(state);
-  //   setSelectedRegionName(validRegion || null); // ⬅️ only keep if valid
-  //   setSelectedSuburbName(suburb);
-  //   setSelectedpincode(pincode || null);
-
-  //   const radiusForFilters =
-  //     typeof radiusKms === "number" ? radiusKms : RADIUS_OPTIONS[0];
-
-  //   // ✅ build filters with validated region
-  //   const updatedFilters = buildUpdatedFilters(currentFilters, {
-  //     // make: (selectedMake || filters.make || currentFilters.make)?.includes("=")
-  //     //   ? undefined
-  //     //   : selectedMake || filters.make || currentFilters.make,
-  //     make: sanitizeMake(selectedMake || filters.make || currentFilters.make),
-  //     model: selectedModel || filters.model || currentFilters.model,
-  //     category: selectedCategory || filters.category || currentFilters.category,
-  //     suburb: suburb.toLowerCase(),
-  //     pincode: pincode || undefined,
-  //     state,
-  //     region: validRegion, // undefined if invalid → API gets state+suburb only
-  //     radius_kms: radiusForFilters,
-  //   });
-
-  //   setFilters(updatedFilters);
-  //   filtersInitialized.current = true;
-
-  //   // triggers URL update + onFilterChange (API payload)
-  //   startTransition(() => updateAllFiltersAndURL(updatedFilters));
-
-  //   const shortAddr =
-  //     selectedSuggestion?.short_address ||
-  //     buildShortAddress(suburb, state, pincode);
-  //   isUserTypingRef.current = false;
-  //   setLocationInput(shortAddr);
-
-  //   setShowSuggestions(false);
-  //   // setRadiusKms(RADIUS_OPTIONS[0]);
-  //   setIsModalOpen(false);
-  //   setLocationSuggestions([]);
-  //   suburbClickedRef.current = false;
-  // };
-
-  // useEffect(() => {
-  //   if (!selectedSuggestion && filters.suburb && filters.pincode) {
-  //     setLocationInput(`${filters.suburb} ${filters.pincode}`);
-  //   }
-  // }, [selectedSuggestion, filters.suburb, filters.pincode]);
 
   const handleSearchClick = () => {
     // Remove resetSuburbFilters call here as it clears the selections
@@ -1283,48 +1142,6 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     make: sanitizeMake(f.make),
   });
 
-  // useEffect(() => {
-  //   // Only push if we already have a selected location context
-  //   if (!selectedSuggestion) return;
-
-  //   if (radiusDebounceRef.current) clearTimeout(radiusDebounceRef.current);
-  //   radiusDebounceRef.current = window.setTimeout(() => {
-  //     const base: Filters = {
-  //       // start from LOCAL filters (freshest)
-  //       ...filters,
-  //       // ensure location is present from the UI selections
-  //       state: selectedStateName ?? filters.state,
-  //       make: sanitizeMake(filters.make),
-  //       region: getValidRegionName(
-  //         selectedStateName ?? filters.state,
-  //         selectedRegionName ?? filters.region,
-  //         states
-  //       ),
-  //       suburb: selectedSuburbName ?? filters.suburb,
-  //       pincode: selectedpincode ?? filters.pincode,
-  //     };
-  //     const updated = buildUpdatedFilters(base, { radius_kms: radiusKms });
-  //     setFilters(updated);
-  //     filtersInitialized.current = true;
-
-  //     startTransition(() => {
-  //       updateAllFiltersAndURL(updated);
-  //     });
-  //   }, 250);
-
-  //   return () => {
-  //     if (radiusDebounceRef.current) clearTimeout(radiusDebounceRef.current);
-  //   };
-  // }, [
-  //   radiusKms,
-  //   selectedState,
-  //   selectedRegionName,
-  //   selectedSuburbName,
-  //   selectedpincode,
-  // ]); // ✅
-
-  // 1) Make a stable key for `states`
-
   useEffect(() => {
     if (!selectedSuggestion) return;
 
@@ -1428,16 +1245,6 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
   ]);
 
   const suburbFilterReadyRef = useRef(false);
-  // useEffect(() => {
-  //   if (
-  //     !selectedRegionName &&
-  //     currentFilters.region &&
-  //     !selectedSuburbName && // avoid conflict
-  //     !pathname.includes("-region") // ← only if not in URL
-  //   ) {
-  //     setSelectedRegionName(currentFilters.region);
-  //   }
-  // }, [currentFilters.region, selectedRegionName, selectedSuburbName]);
 
   useEffect(() => {
     if (

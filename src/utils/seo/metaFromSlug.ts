@@ -15,10 +15,10 @@ export async function metaFromSlug(
   const res = await fetchListings(finalFilters);
 
   // ✅ Trim metatitle to remove unwanted spaces
-  const title = (res?.seo?.metatitle || "")
-    .replace(/\u00A0/g, " ") // replace non-breaking spaces
-    .replace(/\s+/g, " ")
-    .trim(); // remove leading/trailing spaces
+  const rawTitle =
+    res?.seo?.metatitle?.trim() ||
+    "Caravans for Sale in Australia - Find Exclusive Deals";
+  const title = rawTitle.trim();
   const description = (
     res?.seo?.metadescription || "Browse all available caravans."
   ).trim();
@@ -56,7 +56,7 @@ export async function metaFromSlug(
       : undefined;
 
   return {
-    title,
+    title: { absolute: title },
     description,
     robots,
     verification: {
