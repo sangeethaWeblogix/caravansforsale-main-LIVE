@@ -1,4 +1,4 @@
-// src/app/products-sitemap-[page].xml/route.ts
+// src/app/products-sitemap-[page]/route.ts
 import { NextResponse } from "next/server";
 
 const SITE_URL =
@@ -32,34 +32,45 @@ export async function GET(
   { params }: { params: { page: string } }
 ) {
   try {
-    const sitemapNum = Number(params.page);
+    // Handle ".xml" suffix from index URLs
+    const sitemapNum = Number(params.page.replace(".xml", ""));
     if (isNaN(sitemapNum) || sitemapNum < 1)
       return new NextResponse("Invalid sitemap number", { status: 400 });
 
-    // 10,000 products per sitemap file
-    const perFile = 10000;
-    const perPage = 100; // from API
-    const pagesPerSitemap = perFile / perPage;
+    const perFile = 3000;
+    const perPage = 100; // WooCommerce limit
+    const pagesPerSitemap = perFile / perPage; // = 30
+
     const startPage = (sitemapNum - 1) * pagesPerSitemap + 1;
     const endPage = startPage + pagesPerSitemap - 1;
 
-    console.log(`🌀 Fetching product pages ${startPage}-${endPage}`);
+    console.log(`🌀 Fetching WooCommerce pages ${startPage}–${endPage}`);
 
     const pageNumbers = Array.from(
       { length: pagesPerSitemap },
       (_, i) => startPage + i
     );
 
-    const results = await Promise.allSettled<ProductPageResult>(
-      pageNumbers.map((p) => fetchProductPage(p))
-    );
+    const concurrency = 5;
+    const allResults: ProductPageResult[] = [];
 
-    const fulfilled = results.filter(
-      (r): r is PromiseFulfilledResult<ProductPageResult> =>
-        r.status === "fulfilled"
-    );
+    for (let i = 0; i < pageNumbers.length; i += concurrency) {
+      const batch = pageNumbers.slice(i, i + concurrency);
+      const results = await Promise.allSettled(
+        batch.map((page) => fetchProductPage(page))
+      );
+      const fulfilled = results.filter(
+        (r): r is PromiseFulfilledResult<ProductPageResult> =>
+          r.status === "fulfilled"
+      );
+      allResults.push(...fulfilled.map((r) => r.value));
+    }
 
-    const products = fulfilled.flatMap((r) => r.value.data);
+    const products = allResults.flatMap((r) => r.data);
+
+    console.log(
+      `✅ Sitemap #${sitemapNum} generated with ${products.length} products`
+    );
 
     const urls = products
       .filter((p) => p.slug)
@@ -85,7 +96,7 @@ export async function GET(
       headers: { "Content-Type": "application/xml" },
     });
   } catch (err) {
-    console.error("❌ Error generating split sitemap:", err);
+    console.error("❌ Error generating sitemap:", err);
     return new NextResponse("Internal Server Error", { status: 500 });
   }
 }
