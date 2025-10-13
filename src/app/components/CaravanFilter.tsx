@@ -796,8 +796,13 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
   };
 
   const closeIconStyle = {
-    fontWeight: "bold",
     cursor: "pointer",
+    background: "#999", // 👈 same bg color as category X
+    borderRadius: "50%",
+    padding: "2px 6px",
+    marginLeft: 6,
+    fontWeight: 600,
+    fontSize: 12,
   };
 
   const arrowStyle = (isOpen: boolean) => ({
@@ -1816,6 +1821,10 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     // 👇 only locKey; this prevents re-running just because we set state above
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [locKey]);
+  const [visibleCount, setVisibleCount] = useState(10);
+  useEffect(() => {
+    setVisibleCount(10);
+  }, [selectedStateName]);
 
   return (
     <>
@@ -1898,7 +1907,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
           {/* STATE CHIP */}
           {selectedStateName && (
             <div
-              className="filter-accordion-item"
+              className="filter-chip"
               style={accordionStyle(!selectedRegionName && !selectedSuburbName)}
             >
               <span style={{ flexGrow: 1 }} onClick={() => openOnly("state")}>
@@ -1907,7 +1916,10 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
 
               {!selectedRegionName && (
                 <div style={iconRowStyle}>
-                  <span onClick={resetStateFilters} style={closeIconStyle}>
+                  <span
+                    onClick={resetStateFilters}
+                    className="filter-chip-close"
+                  >
                     ×
                   </span>
                   {/* This arrow toggles the REGION panel */}
@@ -1928,7 +1940,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
           {/* REGION CHIP */}
           {selectedRegionName && (
             <div
-              className="filter-accordion-item"
+              className="filter-chip"
               style={accordionRegionStyle(!selectedSuburbName)}
             >
               <span style={{ flexGrow: 1 }} onClick={() => openOnly("region")}>
@@ -1937,7 +1949,10 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
 
               {!selectedSuburbName && (
                 <div style={iconRowStyle}>
-                  <span onClick={resetRegionFilters} style={closeIconStyle}>
+                  <span
+                    onClick={resetRegionFilters}
+                    className="filter-chip-close"
+                  >
                     ×
                   </span>
                   {/* This arrow toggles the SUBURB panel */}
@@ -1955,12 +1970,9 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
 
           {/* SUBURB CHIP */}
           {selectedSuburbName && (
-            <div
-              className="filter-accordion-item"
-              style={accordionSubStyle(true)}
-            >
+            <div className="filter-chip" style={accordionSubStyle(true)}>
               <span style={{ flexGrow: 1 }}>{selectedSuburbName}</span>
-              <span onClick={resetSuburbFilters} style={closeIconStyle}>
+              <span onClick={resetSuburbFilters} className="filter-chip-close">
                 ×
               </span>
             </div>
@@ -2017,51 +2029,67 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
 
           {/* REGION LIST (only if a state is chosen and suburb not yet chosen) */}
           {stateRegionOpen && !!selectedStateName && !selectedSuburbName && (
-            <div className="filter-accordion-items">
+            <div
+              className="filter-accordion-items"
+              style={{
+                maxHeight: 250, // limit height to make scroll visible
+                overflowY: "auto",
+                overflowX: "hidden",
+              }}
+              onScroll={(e) => {
+                const el = e.currentTarget;
+                if (el.scrollTop + el.clientHeight >= el.scrollHeight - 10) {
+                  // Load next 10 regions when reaching bottom
+                  setVisibleCount((prev) => prev + 10);
+                }
+              }}
+            >
               {(
                 states.find(
                   (s) =>
                     s.name.toLowerCase().trim() ===
                     selectedStateName?.toLowerCase().trim()
                 )?.regions || []
-              ).map((region, idx) => (
-                <div
-                  key={idx}
-                  className="filter-accordion-item"
-                  style={{ marginLeft: 16, cursor: "pointer" }}
-                  onClick={() => {
-                    setSelectedRegionName(region.name);
-                    setSelectedRegion(region.value);
-                    setFilteredSuburbs(region.suburbs || []);
-                    setSelectedSuburbName(null);
+              )
+                .slice(0, visibleCount)
+                .map((region, idx) => (
+                  <div
+                    key={idx}
+                    className="filter-accordion-item"
+                    style={{ marginLeft: 16, cursor: "pointer" }}
+                    onClick={() => {
+                      setSelectedRegionName(region.name);
+                      setSelectedRegion(region.value);
+                      setFilteredSuburbs(region.suburbs || []);
+                      setSelectedSuburbName(null);
 
-                    // Open Suburb immediately
-                    setStateRegionOpen(false);
-                    setStateSuburbOpen(true);
+                      // Open Suburb immediately
+                      setStateRegionOpen(false);
+                      setStateSuburbOpen(true);
 
-                    const updatedFilters: Filters = {
-                      ...currentFilters,
-                      state: selectedStateName || currentFilters.state,
-                      region: region.name,
-                      suburb: undefined,
-                      pincode: undefined,
-                    };
-                    setFilters(updatedFilters);
-                    filtersInitialized.current = true;
+                      const updatedFilters: Filters = {
+                        ...currentFilters,
+                        state: selectedStateName || currentFilters.state,
+                        region: region.name,
+                        suburb: undefined,
+                        pincode: undefined,
+                      };
+                      setFilters(updatedFilters);
+                      filtersInitialized.current = true;
 
-                    startTransition(() => {
-                      updateAllFiltersAndURL(updatedFilters);
-                      // keep Suburb open after router.push
-                      setTimeout(() => {
-                        setStateRegionOpen(false);
-                        setStateSuburbOpen(true);
-                      }, 0);
-                    });
-                  }}
-                >
-                  {region.name}
-                </div>
-              ))}
+                      startTransition(() => {
+                        updateAllFiltersAndURL(updatedFilters);
+                        // keep Suburb open after router.push
+                        setTimeout(() => {
+                          setStateRegionOpen(false);
+                          setStateSuburbOpen(true);
+                        }, 0);
+                      });
+                    }}
+                  >
+                    {region.name}
+                  </div>
+                ))}
             </div>
           )}
 
