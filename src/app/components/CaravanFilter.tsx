@@ -795,16 +795,6 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     gap: "8px",
   };
 
-  const closeIconStyle = {
-    cursor: "pointer",
-    background: "#999", // 👈 same bg color as category X
-    borderRadius: "50%",
-    padding: "2px 6px",
-    marginLeft: 6,
-    fontWeight: 600,
-    fontSize: 12,
-  };
-
   const arrowStyle = (isOpen: boolean) => ({
     transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
     transition: "0.3s",
