@@ -32,7 +32,7 @@ export async function GET() {
 
         return `
         <url>
-          <loc>${finalUrl}</loc>
+          <loc>${finalUrl}/</loc>
           <lastmod>${today}</lastmod>
           <changefreq>weekly</changefreq>
           <priority>0.6</priority>

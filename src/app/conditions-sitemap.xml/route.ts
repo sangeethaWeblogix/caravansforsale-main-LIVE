@@ -13,7 +13,7 @@ export async function GET() {
   conditions.forEach((c) => {
     urls += `
     <url>
-      <loc>${SITE_URL}/listings/${c}-condition</loc>
+      <loc>${SITE_URL}/listings/${c}-condition/</loc>
       <lastmod>${new Date().toISOString()}</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.7</priority>

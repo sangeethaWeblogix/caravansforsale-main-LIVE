@@ -13,7 +13,7 @@ export async function GET() {
     .map(
       (make) => `
     <url>
-      <loc>${SITE_URL}/listings/${make.slug}</loc>
+      <loc>${SITE_URL}/listings/${make.slug}/</loc>
       <lastmod>${new Date().toISOString()}</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.6</priority>

@@ -69,7 +69,7 @@ export async function GET() {
       .map(
         (p) => `
       <url>
-        <loc>${SITE_URL}/product/${p.slug}</loc>
+        <loc>${SITE_URL}/product/${p.slug}/</loc>
          <lastmod>${new Date().toISOString()}</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.6</priority>
