@@ -26,10 +26,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
       url: `${siteUrl}/listings-sitemap.xml`,
       lastModified: new Date(),
     },
-    {
-      url: `${siteUrl}/products-sitemap.xml`,
-      lastModified: new Date(),
-    },
+    // {
+    //   url: `${siteUrl}/products-sitemap.xml`,
+    //   lastModified: new Date(),
+    // },
     {
       url: `${siteUrl}/makes-sitemap.xml`,
       lastModified: new Date(),

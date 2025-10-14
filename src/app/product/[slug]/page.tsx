@@ -43,7 +43,7 @@ export async function generateMetadata({
     data?.title ||
     data?.name ||
     "Product - Caravans for Sale";
-
+  const robots = "index, follow";
   const description =
     seo.metadescription ||
     seo.meta_description ||
@@ -54,6 +54,7 @@ export async function generateMetadata({
   return {
     title: { absolute: title },
     description,
+    robots,
     openGraph: { title, description },
     twitter: {
       card: "summary",

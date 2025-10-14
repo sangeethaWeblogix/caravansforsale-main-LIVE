@@ -20,8 +20,7 @@ interface ProductPageResult {
 
 // ✅ 1. Fetch single WooCommerce product page
 async function fetchProductPage(page: number): Promise<ProductPageResult> {
-  const url = `${API_BASE}/products?per_page=100&page=${page}&_fields=slug,date_modified&consumer_key=${CONSUMER_KEY}&consumer_secret=${CONSUMER_SECRET}`;
-
+  const url = `${API_BASE}/products?status=publish&per_page=100&page=${page}&_fields=slug,date_modified&consumer_key=${CONSUMER_KEY}&consumer_secret=${CONSUMER_SECRET}`;
   const res = await fetch(url, {
     method: "GET",
     headers: { Accept: "application/json" },
@@ -71,11 +70,9 @@ export async function GET() {
         (p) => `
       <url>
         <loc>${SITE_URL}/product/${p.slug}</loc>
-        <lastmod>${new Date(
-          p.date_modified || Date.now()
-        ).toISOString()}</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.7</priority>
+         <lastmod>${new Date().toISOString()}</lastmod>
+      <changefreq>weekly</changefreq>
+      <priority>0.6</priority>
       </url>`
       )
       .join("");
