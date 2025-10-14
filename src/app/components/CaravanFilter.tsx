@@ -2902,12 +2902,15 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                       const rawValue = e.target.value;
                       // Format for filtering suggestions only
                       setModalInput(rawValue); // 👈 Store raw value
-                      const formattedValue = formatLocationInput(modalInput);
+                      // const formattedValue = formatLocationInput(modalInput);
+                      const formattedValue = /^\d+$/.test(rawValue)
+                        ? rawValue // if user types only numbers, don’t format
+                        : formatLocationInput(rawValue);
 
                       // Use the existing locationSuggestions state or fetch new data
                       // Since you're already fetching locations in useEffect, you can filter the existing suggestions
                       // OR trigger the same API call logic here
-                      if (formattedValue.length < 2) {
+                      if (formattedValue.length < 1) {
                         setLocationSuggestions([]);
                         return;
                       }
@@ -2917,15 +2920,19 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                       fetchLocations(suburb)
                         .then((data) => {
                           // Filter the API results based on the formatted input
-                          const filtered = data.filter(
-                            (item) =>
+                          const filtered = data.filter((item) => {
+                            const searchValue = formattedValue.toLowerCase();
+                            return (
                               item.short_address
                                 .toLowerCase()
-                                .includes(formattedValue.toLowerCase()) ||
+                                .includes(searchValue) ||
                               item.address
                                 .toLowerCase()
-                                .includes(formattedValue.toLowerCase())
-                          );
+                                .includes(searchValue) ||
+                              (item.postcode &&
+                                item.postcode.toString().includes(searchValue)) // ✅ added
+                            );
+                          });
                           setLocationSuggestions(filtered);
                         })
                         .catch(console.error);
