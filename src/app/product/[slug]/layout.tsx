@@ -50,9 +50,11 @@ export async function generateMetadata({
     data?.short_description ||
     "View caravan details.";
   const canonicalUrl = `https://www.caravansforsale.com.au/product/${slug}/`;
+  const robots = "index, follow";
 
   return {
     title: { absolute: title },
+    robots,
     verification: {
       google: "6tT6MT6AJgGromLaqvdnyyDQouJXq0VHS-7HC194xEo", // ✅ Google site verification
     },
