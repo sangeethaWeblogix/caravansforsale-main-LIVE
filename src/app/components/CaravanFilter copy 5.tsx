@@ -1841,7 +1841,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
   useEffect(() => {
     setVisibleCount(10);
   }, [selectedStateName]);
-
+  console.log("count", visibleCount);
   return (
     <>
       <div className="filter-card mobile-search">

@@ -802,13 +802,13 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     cursor: "pointer",
   });
 
-  const suburbStyle = (isSelected: boolean) => ({
-    marginLeft: "24px",
-    cursor: "pointer",
-    padding: "6px 12px",
-    borderRadius: "4px",
-    backgroundColor: isSelected ? "#e8f0fe" : "transparent",
-  });
+  // const suburbStyle = (isSelected: boolean) => ({
+  //   marginLeft: "24px",
+  //   cursor: "pointer",
+  //   padding: "6px 12px",
+  //   borderRadius: "4px",
+  //   backgroundColor: isSelected ? "#e8f0fe" : "transparent",
+  // });
   const resetMakeFilters = () => {
     setSelectedMake(null);
     setSelectedMakeName(null);
@@ -1136,10 +1136,10 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     suburbClickedRef.current = false;
   };
 
-  // Add this helper function to reset the flag when you actually want auto-detection
-  const enableRegionAutoDetection = () => {
-    regionSetAfterSuburbRef.current = false;
-  };
+  // // Add this helper function to reset the flag when you actually want auto-detection
+  // const enableRegionAutoDetection = () => {
+  //   regionSetAfterSuburbRef.current = false;
+  // };
 
   // Call this when you want to allow auto-detection again (e.g., when manually selecting a new suburb)
   const resetFilters = () => {
@@ -1708,27 +1708,27 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
   };
 
   // Add this helper function
-  const fetchSuburbsByRegion = async (
-    regionName: string,
-    stateName: string
-  ) => {
-    try {
-      const matchedState = states.find(
-        (s) =>
-          s.name.toLowerCase() === stateName.toLowerCase() ||
-          s.value.toLowerCase() === stateName.toLowerCase()
-      );
+  // const fetchSuburbsByRegion = async (
+  //   regionName: string,
+  //   stateName: string
+  // ) => {
+  //   try {
+  //     const matchedState = states.find(
+  //       (s) =>
+  //         s.name.toLowerCase() === stateName.toLowerCase() ||
+  //         s.value.toLowerCase() === stateName.toLowerCase()
+  //     );
 
-      const matchedRegion = matchedState?.regions?.find(
-        (r) => r.name.toLowerCase() === regionName.toLowerCase()
-      );
+  //     const matchedRegion = matchedState?.regions?.find(
+  //       (r) => r.name.toLowerCase() === regionName.toLowerCase()
+  //     );
 
-      return matchedRegion?.suburbs ?? [];
-    } catch (error) {
-      console.error("Error fetching suburbs:", error);
-      return [];
-    }
-  };
+  //     return matchedRegion?.suburbs ?? [];
+  //   } catch (error) {
+  //     console.error("Error fetching suburbs:", error);
+  //     return [];
+  //   }
+  // };
   useEffect(() => {
     // 🚫 STRONG GUARD: Don't run if we already have everything we need
     if (
