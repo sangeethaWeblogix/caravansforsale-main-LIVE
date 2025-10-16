@@ -3,7 +3,7 @@ import type { MetadataRoute } from "next";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const siteUrl =
-    process.env.NEXT_PUBLIC_SITE_URL || "https://caravansforsale.com.au";
+    process.env.NEXT_PUBLIC_SITE_URL || "https://www.caravansforsale.com.au";
 
   return [
     {
