@@ -1,8 +1,8 @@
- // src/app/prices-sitemap.xml/route.ts
+// src/app/prices-sitemap.xml/route.ts
 import { NextResponse } from "next/server";
 
 const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL || "https://caravansforsale.com.au";
+  process.env.NEXT_PUBLIC_SITE_URL || "https://www.caravansforsale.com.au";
 
 const prices = [
   10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000, 125000,

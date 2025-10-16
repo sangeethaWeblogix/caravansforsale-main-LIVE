@@ -1,8 +1,8 @@
- // src/app/length-sitemap.xml/route.ts
+// src/app/length-sitemap.xml/route.ts
 import { NextResponse } from "next/server";
 
 const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL || "https://caravansforsale.com.au";
+  process.env.NEXT_PUBLIC_SITE_URL || "https://www.caravansforsale.com.au";
 
 const lengths = [
   12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28,

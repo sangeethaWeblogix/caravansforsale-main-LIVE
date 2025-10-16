@@ -2,7 +2,7 @@
 import { NextResponse } from "next/server";
 
 const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL || "https://caravansforsale.com.au";
+  process.env.NEXT_PUBLIC_SITE_URL || "https://www.caravansforsale.com.au";
 
 // ✅ only these three
 const conditions = ["new", "used"];

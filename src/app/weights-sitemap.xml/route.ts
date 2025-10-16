@@ -2,7 +2,7 @@
 import { NextResponse } from "next/server";
 
 const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL || "https://caravansforsale.com.au";
+  process.env.NEXT_PUBLIC_SITE_URL || "https://www.caravansforsale.com.au";
 
 const atm = [
   600, 800, 1000, 1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000, 3500, 4000,

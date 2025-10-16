@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { fetchBlogs } from "@/api/blog/api";
 
 const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL || "https://caravansforsale.com.au";
+  process.env.NEXT_PUBLIC_SITE_URL || "https://www.caravansforsale.com.au";
 
 export async function GET() {
   const firstPage = await fetchBlogs(1);

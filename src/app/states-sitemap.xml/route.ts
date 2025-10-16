@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { fetchProductList } from "@/api/productList/api";
 
 const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL || "https://caravansforsale.com.au";
+  process.env.NEXT_PUBLIC_SITE_URL || "https://www.caravansforsale.com.au";
 
 type Region = { value: string };
 type State = { value: string; regions?: Region[] };

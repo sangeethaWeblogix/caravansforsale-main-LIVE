@@ -2,7 +2,7 @@
 import { NextResponse } from "next/server";
 
 const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL || "https://caravansforsale.com.au";
+  process.env.NEXT_PUBLIC_SITE_URL || "https://www.caravansforsale.com.au";
 
 const API_BASE = "https://www.admin.caravansforsale.com.au/wp-json/wc/v3";
 const CONSUMER_KEY = "ck_73393ca56ac29867aa71c9beeba4714a49c4116b";
