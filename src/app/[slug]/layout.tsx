@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import "./details.css";
-
 import { ReactNode } from "react";
 
 type RouteParams = { slug: string };
@@ -13,80 +13,112 @@ async function fetchBlogDetail(slug: string) {
       )}`,
       { cache: "no-store", headers: { Accept: "application/json" } }
     );
-
-    if (!res.ok) {
-      return null; // ❌ Don't throw error, return null
-    }
-
+    if (!res.ok) return null;
     return res.json();
   } catch (error) {
     console.error("Blog fetch error:", error);
-    return null; // ❌ Return null on fetch failure
+    return null;
   }
 }
-// ✅ SEO from product.seo (NO images)
+
 export async function generateMetadata({
   params,
 }: {
   params: Promise<RouteParams>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  if (slug.startsWith("thank-you-")) {
-    return {
-      title: "Thank You",
-      description: "Your enquiry was submitted successfully.",
-      verification: {
-        google: "6tT6MT6AJgGromLaqvdnyyDQouJXq0VHS-7HC194xEo", // ✅ Google site verification
-      },
-      robots: "noindex, nofollow",
-      alternates: {
-        canonical: `https://www.caravansforsale.com.au/${slug}/`,
-      },
-    };
-  }
   const data = await fetchBlogDetail(slug);
 
-  const seo = data?.seo ?? data?.product?.seo ?? {};
+  const seo = data?.seo ?? {};
   const title =
-    seo.metatitle ||
-    seo.meta_title ||
-    data?.title ||
-    data?.name ||
-    "Product - Caravans for Sale";
-
+    seo.metatitle || data?.data?.blog_detail?.title || "Caravans for Sale Blog";
   const description =
     seo.metadescription ||
-    seo.meta_description ||
-    data?.short_description ||
-    "View caravan details.";
-  const robots = "index, follow";
-  const canonicalUrl = `https://www.caravansforsale.com.au/${slug}/`;
+    data?.data?.blog_detail?.short_description ||
+    "Read more on Caravans for Sale.";
 
   return {
     title,
     description,
-    robots,
-    verification: {
-      google: "6tT6MT6AJgGromLaqvdnyyDQouJXq0VHS-7HC194xEo", // ✅ Google site verification
-    },
     alternates: {
-      canonical: canonicalUrl, // ✅ canonical link
+      canonical: `https://www.caravansforsale.com.au/${slug}/`,
     },
-    openGraph: {
-      title,
-      description,
-    },
-    twitter: {
-      card: "summary", // no image card
-      title,
-      description,
-    },
-    other: {
-      "og:type": "blog",
-    },
+    openGraph: { title, description },
+    twitter: { card: "summary", title, description },
   };
 }
 
-export default function Layout({ children }: { children: ReactNode }) {
-  return <div>{children}</div>;
+function safeJsonLdString(json: object) {
+  return JSON.stringify(json).replace(/</g, "\\u003c");
+}
+
+export default async function Layout({
+  children,
+  params,
+}: {
+  children: ReactNode;
+  params: Promise<RouteParams>;
+}) {
+  const { slug } = await params;
+  const data = await fetchBlogDetail(slug);
+  if (!data) return <div>{children}</div>;
+
+  // ✅ Dynamic fields
+  const post = data?.data?.blog_detail || {};
+  const seo = data?.seo || {};
+  const canonical = `https://www.caravansforsale.com.au/${slug}/`;
+
+  const title = seo.metatitle || post.title || "Caravans for Sale Blog";
+  const description =
+    seo.metadescription ||
+    post.short_description ||
+    "Read more on Caravans for Sale.";
+
+  const bannerImage =
+    post.banner_image ||
+    post.image ||
+    "https://www.caravansforsale.com.au/load.svg";
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": canonical,
+      url: canonical,
+    },
+    headline: title,
+    description: description,
+    image: [bannerImage],
+    author: {
+      "@type": "Person",
+      name: post.author || "Caravans for Sale",
+      url: canonical,
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "Caravans for Sale",
+      logo: {
+        "@type": "ImageObject",
+        url: "https://www.caravansforsale.com.au/images/cfs-logo-black.svg",
+      },
+      favicon: "https://www.caravansforsale.com.au/favicon.ico",
+    },
+    datePublished: post.date || new Date().toISOString(),
+    dateModified: post.date || new Date().toISOString(),
+  };
+
+  return (
+    <>
+      <Script
+        id="blog-schema"
+        type="application/ld+json"
+        strategy="afterInteractive"
+        dangerouslySetInnerHTML={{
+          __html: safeJsonLdString(jsonLd),
+        }}
+      />
+      <div>{children}</div>
+    </>
+  );
 }
