@@ -1994,7 +1994,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     setVisibleCount(10);
   }, [selectedStateName]);
 
-  return (                                                                                                                                
+  return (
     <>
       <div className="filter-card mobile-search">
         <div className="card-title align-items-center d-flex justify-content-between hidden-xs">
@@ -2300,9 +2300,8 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
             <div className="filter-accordion-items">
               {Array.isArray(filteredSuburbs) &&
               filteredSuburbs.length === 0 ? (
-                <p style={{ marginLeft: 20 }}></p>
+                <p style={{ marginLeft: 20 }}>No suburbs found</p>
               ) : (
-                // 🚫 STRONG DEDUPLICATION
                 Array.from(
                   new Map(
                     filteredSuburbs.map((suburb) => [suburb.name, suburb])
@@ -2323,8 +2322,25 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                           ? "#e8f0fe"
                           : "transparent",
                     }}
-                    onClick={async () => {
-                      // Your existing click handler
+                    onClick={() => {
+                      setSelectedSuburbName(suburb.name);
+                      setSelectedpincode(suburb.value);
+                      setStateSuburbOpen(false);
+
+                      const updatedFilters: Filters = {
+                        ...currentFilters,
+                        state: selectedStateName || currentFilters.state,
+                        region: selectedRegionName || currentFilters.region,
+                        suburb: suburb.name,
+                        pincode: suburb.value,
+                      };
+
+                      setFilters(updatedFilters);
+                      filtersInitialized.current = true;
+
+                      startTransition(() => {
+                        updateAllFiltersAndURL(updatedFilters);
+                      });
                     }}
                   >
                     {suburb.name}
