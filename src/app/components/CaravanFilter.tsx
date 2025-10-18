@@ -407,6 +407,41 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     return [suburb, abbr, pincode].filter(Boolean).join(" ");
   };
 
+  const resetStateFilters = () => {
+    // ✅ Clear all location-related UI state
+    setSelectedState(null);
+    setSelectedStateName(null);
+    setSelectedRegion("");
+    setSelectedRegionName(null);
+    setSelectedSuburbName(null);
+    setSelectedpincode(null);
+    // setFilteredRegions([]);
+    setFilteredSuburbs([]);
+    setLocationInput("");
+    setStateRegionOpen(false);
+
+    // ✅ Delay filter clearing until React state updates apply
+    setTimeout(() => {
+      const updatedFilters: Filters = {
+        ...currentFilters,
+        ...filters,
+        state: undefined,
+        region: undefined,
+        suburb: undefined,
+        pincode: undefined,
+        location: null,
+      };
+      setFilters(updatedFilters);
+      onFilterChange(updatedFilters);
+      // filtersInitialized.current = true;
+      // setFilters(updatedFilters);
+
+      // startTransition(() => {
+      //   updateAllFiltersAndURL(updatedFilters);
+      // });
+    }, 0); // Allow React to flush UI state
+  };
+
   useEffect(() => {
     if (!showSuggestions || !isUserTypingRef.current) return;
 
@@ -794,40 +829,6 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     currentFilters.search,
   ]);
 
-  const resetStateFilters = () => {
-    // ✅ Clear all location-related UI state
-    setSelectedState(null);
-    setSelectedStateName(null);
-    setSelectedRegion("");
-    setSelectedRegionName(null);
-    setSelectedSuburbName(null);
-    setSelectedpincode(null);
-    // setFilteredRegions([]);
-    setFilteredSuburbs([]);
-    setLocationInput("");
-    setStateRegionOpen(false);
-
-    // ✅ Delay filter clearing until React state updates apply
-    setTimeout(() => {
-      const updatedFilters: Filters = {
-        ...currentFilters,
-        ...filters,
-        state: undefined,
-        region: undefined,
-        suburb: undefined,
-        pincode: undefined,
-        location: null,
-      };
-      setFilters(updatedFilters);
-      onFilterChange(updatedFilters);
-      // filtersInitialized.current = true;
-      // setFilters(updatedFilters);
-
-      // startTransition(() => {
-      //   updateAllFiltersAndURL(updatedFilters);
-      // });
-    }, 0); // Allow React to flush UI state
-  };
   const resetRegionFilters = () => {
     // �️ Clear region AND suburb data (since suburb depends on region)
     setSelectedRegion("");
@@ -1760,6 +1761,29 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
   );
 
   const hydratedKeyRef = useRef("");
+  useEffect(() => {
+    // 🚫 Strong guard — don’t reset region if suburb cleared
+    // Only auto-select region if suburb exists and region is empty
+    if (!selectedStateName || !selectedSuburbName || selectedRegionName) return;
+
+    const matchedState = states.find(
+      (s) =>
+        s.name.toLowerCase() === selectedStateName?.toLowerCase() ||
+        s.value.toLowerCase() === selectedStateName?.toLowerCase()
+    );
+
+    const matchedRegion = matchedState?.regions?.find((region) =>
+      region.suburbs?.some(
+        (sub) =>
+          sub.name.toLowerCase().trim() ===
+          selectedSuburbName?.toLowerCase().trim()
+      )
+    );
+
+    if (matchedRegion) {
+      setSelectedRegionName(matchedRegion.name || matchedRegion.value);
+    }
+  }, [selectedSuburbName, selectedStateName, states]);
 
   useEffect(() => {
     if (!selectedSuburbName || !selectedStateName) return;
@@ -1919,66 +1943,66 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
           )}
 
           {/* REGION CHIP */}
-          {(selectedRegionName ||
-            (selectedSuburbName && !selectedRegionName)) && (
+          {(selectedRegionName || selectedSuburbName) && (
             <div
               className="filter-chip"
               style={accordionRegionStyle(!selectedSuburbName)}
             >
               <span style={{ flexGrow: 1 }} onClick={() => openOnly("region")}>
-                {selectedRegionName
-                  ? selectedRegionName
-                  : (() => {
-                      const matchedState = states.find(
-                        (s) =>
-                          s.name.toLowerCase() ===
-                            selectedStateName?.toLowerCase() ||
-                          s.value.toLowerCase() ===
-                            selectedStateName?.toLowerCase()
-                      );
-                      const matchedRegion = matchedState?.regions?.find(
-                        (region) =>
-                          region.suburbs?.some(
-                            (sub) =>
-                              sub.name.toLowerCase().trim() ===
-                              selectedSuburbName?.toLowerCase().trim()
-                          )
-                      );
+                {(() => {
+                  // 🧩 Always prefer existing region name
+                  if (selectedRegionName) return selectedRegionName;
 
-                      // 🧩 If no region found, extract from URI
-                      if (!matchedRegion && selectedSuggestion?.uri) {
-                        const parts = selectedSuggestion.uri.split("/");
-                        const regionPart = parts.find((p) =>
-                          p.endsWith("-region")
-                        );
-                        return regionPart
-                          ? regionPart.replace("-region", "").replace(/-/g, " ")
-                          : "Region";
-                      }
+                  // 🔍 Try to find region from selected suburb
+                  const matchedState = states.find(
+                    (s) =>
+                      s.name.toLowerCase() ===
+                        selectedStateName?.toLowerCase() ||
+                      s.value.toLowerCase() === selectedStateName?.toLowerCase()
+                  );
 
-                      return (
-                        matchedRegion?.value || matchedRegion?.name || "Region"
-                      );
-                    })()}
+                  const matchedRegion = matchedState?.regions?.find((region) =>
+                    region.suburbs?.some(
+                      (sub) =>
+                        sub.name.toLowerCase().trim() ===
+                        selectedSuburbName?.toLowerCase().trim()
+                    )
+                  );
+
+                  // 🌐 Fallback from URI if not found
+                  if (!matchedRegion && selectedSuggestion?.uri) {
+                    const parts = selectedSuggestion.uri.split("/");
+                    const regionPart = parts.find((p) => p.endsWith("-region"));
+                    return regionPart
+                      ? regionPart.replace("-region", "").replace(/-/g, " ")
+                      : selectedRegionName || "Region";
+                  }
+
+                  return (
+                    matchedRegion?.value ||
+                    matchedRegion?.name ||
+                    selectedRegionName ||
+                    "Region"
+                  );
+                })()}
               </span>
 
-              {!selectedSuburbName && (
-                <div style={iconRowStyle}>
-                  <span
-                    onClick={resetRegionFilters}
-                    className="filter-chip-close"
-                  >
-                    ×
-                  </span>
-                  <BiChevronDown
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setStateSuburbOpen(!stateSuburbOpen);
-                    }}
-                    style={arrowStyle(stateSuburbOpen)}
-                  />
-                </div>
-              )}
+              {/* 🧠 IMPORTANT — Don't reset region when suburb is cleared */}
+              <div style={iconRowStyle}>
+                <span
+                  onClick={resetRegionFilters}
+                  className="filter-chip-close"
+                >
+                  ×
+                </span>
+                <BiChevronDown
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setStateSuburbOpen(!stateSuburbOpen);
+                  }}
+                  style={arrowStyle(stateSuburbOpen)}
+                />
+              </div>
             </div>
           )}
 
@@ -2498,7 +2522,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
           )}
         </div>
         {/* 8883944599
-                        9524163042 */}
+                         9524163042 */}
         {/* Condition Accordion */}
         <div className="cs-full_width_section">
           <div
@@ -3079,27 +3103,27 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
         )}
       </div>
       {/* {navigating && (
-           <div
-             className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
-             style={{
-               background: "rgba(255,255,255,0.6)",
-               backdropFilter: "blur(2px)",
-               zIndex: 9999,
-             }}
-             aria-live="polite"
-           >
-             <div className="text-center">
-               <Image
-                 src="/images/loader.gif" // place inside public/images
-                 alt="Loading..."
-                 width={80}
-                 height={80}
-                 unoptimized
-               />{" "}
-               <div className="mt-2 fw-semibold">Loading…</div>
-             </div>
-           </div>
-         )} */}
+            <div
+              className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
+              style={{
+                background: "rgba(255,255,255,0.6)",
+                backdropFilter: "blur(2px)",
+                zIndex: 9999,
+              }}
+              aria-live="polite"
+            >
+              <div className="text-center">
+                <Image
+                  src="/images/loader.gif" // place inside public/images
+                  alt="Loading..."
+                  width={80}
+                  height={80}
+                  unoptimized
+                />{" "}
+                <div className="mt-2 fw-semibold">Loading…</div>
+              </div>
+            </div>
+          )} */}
     </>
   );
 };
