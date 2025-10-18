@@ -28,6 +28,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const data = await fetchBlogDetail(slug);
+  // Format date to "Month DD, YYYY"
 
   const seo = data?.seo ?? {};
   const post = data?.data?.blog_detail || {};
@@ -80,7 +81,14 @@ export default async function Layout({
   const canonical = `https://www.caravansforsale.com.au/${slug}/`;
 
   const title = seo.metatitle || post.title || "Caravans for Sale Blog";
-
+  function formatDate(dateStr?: string) {
+    const date = new Date(dateStr || Date.now());
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  }
   const description =
     seo.metadescription ||
     post.short_description ||
@@ -117,8 +125,8 @@ export default async function Layout({
         url: "https://www.caravansforsale.com.au/images/cfs-logo-black.svg",
       },
     },
-    datePublished: post.date || new Date().toISOString(),
-    dateModified: post.date || new Date().toISOString(),
+    datePublished: formatDate(post.date),
+    dateModified: formatDate(post.date),
   };
 
   return (
