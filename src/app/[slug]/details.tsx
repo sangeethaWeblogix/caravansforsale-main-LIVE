@@ -5,12 +5,13 @@ import FaqSection from "./FaqSection";
 import RelatedNews from "./RelatedNews";
 import "./details.css";
 import { useEffect, useState } from "react";
+import { formatPostDate } from "@/utils/date";
 
 type BlogDetail = {
   id: number;
   slug: string;
   title: string;
-  date?: string;
+  date: string;
   banner_image?: string;
   image?: string;
   toc?: string; // HTML
@@ -44,11 +45,11 @@ export default function BlogDetailsPage({
 }: {
   data: BlogDetailResponse;
 }) {
-  console.log("dataaa", data);
   const [tocItems, setTocItems] = useState<Element[]>([]);
 
   // ✅ Run DOMParser only on client
   const post = data?.data?.blog_detail;
+  console.log("dataaa", post);
   useEffect(() => {
     if (post?.toc) {
       const parser = new DOMParser();
@@ -122,7 +123,8 @@ export default function BlogDetailsPage({
               <div className="d-flex small align-items-center justify-content-between mt-10">
                 <div className="l_side d-flex align-items-center">
                   <i className="bi bi-clock me-1"></i>
-                  <span>{post.date}</span>
+
+                  <span>{formatPostDate(post.date)}</span>
                 </div>
               </div>
 

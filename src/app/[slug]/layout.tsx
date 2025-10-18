@@ -29,6 +29,14 @@ export async function generateMetadata({
   const { slug } = await params;
   const data = await fetchBlogDetail(slug);
   // Format date to "Month DD, YYYY"
+  function formatDate(dateStr?: string) {
+    const date = new Date(dateStr || Date.now());
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  }
 
   const seo = data?.seo ?? {};
   const post = data?.data?.blog_detail || {};
@@ -81,31 +89,6 @@ export default async function Layout({
   const canonical = `https://www.caravansforsale.com.au/${slug}/`;
 
   const title = seo.metatitle || post.title || "Caravans for Sale Blog";
-  // Utility: format to ISO 8601 with timezone offset (e.g. 2025-10-15T23:11:15+11:00)
-  function formatDateWithOffset(dateStr?: string) {
-    const date = new Date(dateStr || Date.now());
-    const tzo = -date.getTimezoneOffset();
-    const dif = tzo >= 0 ? "+" : "-";
-    const pad = (num: number) =>
-      String(Math.floor(Math.abs(num))).padStart(2, "0");
-    return (
-      date.getFullYear() +
-      "-" +
-      pad(date.getMonth() + 1) +
-      "-" +
-      pad(date.getDate()) +
-      "T" +
-      pad(date.getHours()) +
-      ":" +
-      pad(date.getMinutes()) +
-      ":" +
-      pad(date.getSeconds()) +
-      dif +
-      pad(tzo / 60) +
-      ":" +
-      pad(tzo % 60)
-    );
-  }
 
   const description =
     seo.metadescription ||
@@ -143,24 +126,20 @@ export default async function Layout({
         url: "https://www.caravansforsale.com.au/images/cfs-logo-black.svg",
       },
     },
-    datePublished: formatDateWithOffset(post.date),
-    dateModified: formatDateWithOffset(post.date),
+    datePublished: post.date || new Date().toISOString(),
+    dateModified: post.date || new Date().toISOString(),
   };
 
   return (
-    <html lang="en">
-      <head>
-        {/* ✅ JSON-LD structured data (SSR-visible) */}
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: safeJsonLdString(jsonLd),
-          }}
-        />
-      </head>
-      <body>
-        <div>{children}</div>
-      </body>
-    </html>
+    <>
+      {/* ✅ JSON-LD structured data in head (will be moved by Next.js) */}
+      <script
+        type="applicahion/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: safeJsonLdString(jsonLd),
+        }}
+      />
+      <div>{children}</div>
+    </>
   );
 }
