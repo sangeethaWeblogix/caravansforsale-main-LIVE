@@ -81,14 +81,32 @@ export default async function Layout({
   const canonical = `https://www.caravansforsale.com.au/${slug}/`;
 
   const title = seo.metatitle || post.title || "Caravans for Sale Blog";
-  function formatDate(dateStr?: string) {
+  // Utility: format to ISO 8601 with timezone offset (e.g. 2025-10-15T23:11:15+11:00)
+  function formatDateWithOffset(dateStr?: string) {
     const date = new Date(dateStr || Date.now());
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
+    const tzo = -date.getTimezoneOffset();
+    const dif = tzo >= 0 ? "+" : "-";
+    const pad = (num: number) =>
+      String(Math.floor(Math.abs(num))).padStart(2, "0");
+    return (
+      date.getFullYear() +
+      "-" +
+      pad(date.getMonth() + 1) +
+      "-" +
+      pad(date.getDate()) +
+      "T" +
+      pad(date.getHours()) +
+      ":" +
+      pad(date.getMinutes()) +
+      ":" +
+      pad(date.getSeconds()) +
+      dif +
+      pad(tzo / 60) +
+      ":" +
+      pad(tzo % 60)
+    );
   }
+
   const description =
     seo.metadescription ||
     post.short_description ||
@@ -125,8 +143,8 @@ export default async function Layout({
         url: "https://www.caravansforsale.com.au/images/cfs-logo-black.svg",
       },
     },
-    datePublished: formatDate(post.date),
-    dateModified: formatDate(post.date),
+    datePublished: formatDateWithOffset(post.date),
+    dateModified: formatDateWithOffset(post.date),
   };
 
   return (
