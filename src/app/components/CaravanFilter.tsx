@@ -2071,15 +2071,28 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                     key={idx}
                     className="filter-accordion-item"
                     style={{ marginLeft: 16, cursor: "pointer" }}
-                    onClick={() => {
+                    onClick={async () => {
                       setSelectedRegionName(region.name);
                       setSelectedRegion(region.value);
-                      setFilteredSuburbs(region.suburbs || []);
                       setSelectedSuburbName(null);
 
-                      // Open Suburb immediately
+                      // 🩵 Load suburbs safely
+                      let suburbs = region.suburbs;
+                      if (!suburbs || suburbs.length === 0) {
+                        suburbs = await fetchSuburbsByRegion(
+                          region.name,
+                          selectedStateName!
+                        );
+                      }
+
+                      const uniqueSuburbs = Array.from(
+                        new Map(suburbs.map((s) => [s.name, s])).values()
+                      );
+                      setFilteredSuburbs(uniqueSuburbs);
+
+                      // 🩵 Temporarily close region and open suburb later
                       setStateRegionOpen(false);
-                      setStateSuburbOpen(true);
+                      setStateSuburbOpen(false);
 
                       const updatedFilters: Filters = {
                         ...currentFilters,
@@ -2088,16 +2101,18 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                         suburb: undefined,
                         pincode: undefined,
                       };
+
                       setFilters(updatedFilters);
                       filtersInitialized.current = true;
 
                       startTransition(() => {
                         updateAllFiltersAndURL(updatedFilters);
-                        // keep Suburb open after router.push
+
+                        // 🩵 Wait a tick — then force open suburb dropdown
                         setTimeout(() => {
                           setStateRegionOpen(false);
                           setStateSuburbOpen(true);
-                        }, 0);
+                        }, 150);
                       });
                     }}
                   >
