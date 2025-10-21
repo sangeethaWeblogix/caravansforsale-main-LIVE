@@ -632,8 +632,6 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     );
     return reg?.name; // return canonical name if valid, else undefined
   };
-
-  console.log("region", selectedRegionName);
   // neww
 
   // useEffect(() => {
@@ -1260,32 +1258,6 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
   //
 
   useEffect(() => {
-    if (!selectedStateName || !selectedRegionName || !states.length) return;
-
-    const matchedState = states.find(
-      (s) =>
-        s.name.toLowerCase() === selectedStateName.toLowerCase() ||
-        s.value.toLowerCase() === selectedStateName.toLowerCase()
-    );
-    if (!matchedState) return;
-
-    const matchedRegion = matchedState.regions?.find(
-      (r) =>
-        r.name.toLowerCase() === selectedRegionName.toLowerCase() ||
-        r.value.toLowerCase() === selectedRegionName.toLowerCase()
-    );
-
-    const nextSubs = matchedRegion?.suburbs ?? [];
-    const nextKey = suburbsKey(nextSubs);
-
-    if (prevSuburbsKeyRef.current !== nextKey) {
-      prevSuburbsKeyRef.current = nextKey;
-      setFilteredSuburbs(nextSubs);
-    }
-    // 👇 DON'T write else { setFilteredSuburbs([]) } here repeatedly.
-  }, [selectedStateName, selectedRegionName, statesKey]);
-
-  useEffect(() => {
     if (currentFilters.state) setSelectedStateName(currentFilters.state);
     if (currentFilters.region) setSelectedRegionName(currentFilters.region); // only set if present
     if (currentFilters.suburb) setSelectedSuburbName(currentFilters.suburb);
@@ -1826,21 +1798,6 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     setStateRegionOpen(which === "region");
     setStateSuburbOpen(which === "suburb");
   };
-
-  // Add this useEffect to maintain the correct panel state
-  useEffect(() => {
-    // If we have a region selected but no suburb, keep suburb panel open
-    if (selectedRegionName && !selectedSuburbName) {
-      setStateRegionOpen(false);
-      setStateSuburbOpen(true);
-    }
-
-    // If we have a state selected but no region, keep region panel open
-    if (selectedStateName && !selectedRegionName) {
-      setStateLocationOpen(false);
-      setStateRegionOpen(true);
-    }
-  }, [selectedStateName, selectedRegionName, selectedSuburbName]);
   // useEffect(() => {
   //   if (selectedRegionName && !selectedSuburbName) {
   //     setStateRegionOpen(false);
@@ -2215,19 +2172,23 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                     className="filter-accordion-item"
                     style={{ marginLeft: 16, cursor: "pointer" }}
                     onClick={() => {
-                      // ✅ Always trigger even if same region clicked
-                      setSelectedRegionName((prev) => {
-                        if (prev === region.name) return region.name + " "; // force re-render
-                        return region.name;
-                      });
-
+                      setSelectedRegionName(region.name);
                       setSelectedRegion(region.value);
                       const suburbs = region.suburbs || [];
                       setFilteredSuburbs(suburbs);
                       setSelectedSuburbName(null);
 
-                      setStateRegionOpen(false);
-                      setStateSuburbOpen(true);
+                      // ✅ If region has suburbs, open suburb list; else keep region open
+                      if (suburbs.length > 0) {
+                        setStateRegionOpen(false);
+                        setStateSuburbOpen(true);
+                      } else {
+                        console.warn(
+                          `⚠️ No suburbs found for region: ${region.name}`
+                        );
+                        setStateRegionOpen(false);
+                        setStateSuburbOpen(true);
+                      }
 
                       const updatedFilters: Filters = {
                         ...currentFilters,
@@ -2239,14 +2200,17 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                       setFilters(updatedFilters);
                       filtersInitialized.current = true;
 
-                      // 🚀 Update URL + Reopen suburb after navigation
-                      updateAllFiltersAndURL(updatedFilters);
-
-                      // 🧩 Reopen suburb panel *after* navigation completes
-                      setTimeout(() => {
-                        setStateRegionOpen(false);
-                        setStateSuburbOpen(true);
-                      }, 400);
+                      startTransition(() => {
+                        updateAllFiltersAndURL(updatedFilters);
+                        // ✅ maintain correct open state
+                        requestAnimationFrame(() => {
+                          if (suburbs.length > 0) {
+                            setStateSuburbOpen(true);
+                          } else {
+                            setStateRegionOpen(true);
+                          }
+                        });
+                      });
                     }}
                   >
                     {region.name}
@@ -2257,62 +2221,59 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
 
           {/* SUBURB LIST */}
           {/* SUBURB LIST - WITH STRONG DEDUPLICATION */}
-          {stateSuburbOpen &&
-            selectedStateName &&
-            selectedRegionName &&
-            !selectedSuburbName && (
-              <div className="filter-accordion-items">
-                {Array.isArray(filteredSuburbs) &&
-                filteredSuburbs.length === 0 ? (
-                  <p style={{ marginLeft: 20 }}>No suburbs found</p>
-                ) : (
-                  Array.from(
-                    new Map(
-                      filteredSuburbs.map((suburb) => [suburb.name, suburb])
-                    ).values()
-                  ).map((suburb, idx) => (
-                    <div
-                      key={`${suburb.name}-${suburb.value}-${idx}`}
-                      className={`filter-accordion-item ${
-                        suburb.name === selectedSuburbName ? "selected" : ""
-                      }`}
-                      style={{
-                        marginLeft: "24px",
-                        cursor: "pointer",
-                        padding: "6px 12px",
-                        borderRadius: "4px",
-                        backgroundColor:
-                          suburb.name === selectedSuburbName
-                            ? "#e8f0fe"
-                            : "transparent",
-                      }}
-                      onClick={() => {
-                        setSelectedSuburbName(suburb.name);
-                        setSelectedpincode(suburb.value);
-                        setStateSuburbOpen(false);
+          {stateSuburbOpen && selectedStateName && selectedRegionName && (
+            <div className="filter-accordion-items">
+              {Array.isArray(filteredSuburbs) &&
+              filteredSuburbs.length === 0 ? (
+                <p style={{ marginLeft: 20 }}>No suburbs found</p>
+              ) : (
+                Array.from(
+                  new Map(
+                    filteredSuburbs.map((suburb) => [suburb.name, suburb])
+                  ).values()
+                ).map((suburb, idx) => (
+                  <div
+                    key={`${suburb.name}-${suburb.value}-${idx}`}
+                    className={`filter-accordion-item ${
+                      suburb.name === selectedSuburbName ? "selected" : ""
+                    }`}
+                    style={{
+                      marginLeft: "24px",
+                      cursor: "pointer",
+                      padding: "6px 12px",
+                      borderRadius: "4px",
+                      backgroundColor:
+                        suburb.name === selectedSuburbName
+                          ? "#e8f0fe"
+                          : "transparent",
+                    }}
+                    onClick={() => {
+                      setSelectedSuburbName(suburb.name);
+                      setSelectedpincode(suburb.value);
+                      setStateSuburbOpen(false);
 
-                        const updatedFilters: Filters = {
-                          ...currentFilters,
-                          state: selectedStateName || currentFilters.state,
-                          region: selectedRegionName || currentFilters.region,
-                          suburb: suburb.name,
-                          pincode: suburb.value,
-                        };
+                      const updatedFilters: Filters = {
+                        ...currentFilters,
+                        state: selectedStateName || currentFilters.state,
+                        region: selectedRegionName || currentFilters.region,
+                        suburb: suburb.name,
+                        pincode: suburb.value,
+                      };
 
-                        setFilters(updatedFilters);
-                        filtersInitialized.current = true;
+                      setFilters(updatedFilters);
+                      filtersInitialized.current = true;
 
-                        startTransition(() => {
-                          updateAllFiltersAndURL(updatedFilters);
-                        });
-                      }}
-                    >
-                      {suburb.name}
-                    </div>
-                  ))
-                )}
-              </div>
-            )}
+                      startTransition(() => {
+                        updateAllFiltersAndURL(updatedFilters);
+                      });
+                    }}
+                  >
+                    {suburb.name}
+                  </div>
+                ))
+              )}
+            </div>
+          )}
         </div>
         {/* Keyword (opens its own modal) */}
         {/* Keyword (opens its own modal) */}
