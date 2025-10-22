@@ -7,7 +7,7 @@ type RouteParams = { slug: string };
 async function fetchBlogDetail(slug: string) {
   try {
     const res = await fetch(
-      `https://www.admin.caravansforsale.com.au/wp-json/cfs/v1/blog-detail/${encodeURIComponent(
+      `https://www.admin.caravansforsale.com.au/wp-json/cfs/v1/blog-detail/slug=${encodeURIComponent(
         slug
       )}`,
       { cache: "no-store", headers: { Accept: "application/json" } }
@@ -103,42 +103,42 @@ export default async function Layout({
   const authorName = post.author || "Caravans for Sale";
 
   // ✅ Build JSON-LD Schema (SSR output)
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "BlogPosting",
-    mainEntityOfPage: {
-      "@type": "WebPage",
-      "@id": canonical,
-    },
-    headline: title,
-    description: description,
-    image: bannerImage,
-    author: {
-      "@type": "Person",
-      name: authorName,
-      url: `https://www.caravansforsale.com.au/author/${authorName}/`,
-    },
-    publisher: {
-      "@type": "Organization",
-      name: "Caravans for Sale",
-      logo: {
-        "@type": "ImageObject",
-        url: "https://www.caravansforsale.com.au/images/cfs-logo-black.svg",
-      },
-    },
-    datePublished: post.date || new Date().toISOString(),
-    dateModified: post.date || new Date().toISOString(),
-  };
+  // const jsonLd = {
+  //   "@context": "https://schema.org",
+  //   "@type": "BlogPosting",
+  //   mainEntityOfPage: {
+  //     "@type": "WebPage",
+  //     "@id": canonical,
+  //   },
+  //   headline: title,
+  //   description: description,
+  //   image: bannerImage,
+  //   author: {
+  //     "@type": "Person",
+  //     name: authorName,
+  //     url: `https://www.caravansforsale.com.au/author/${authorName}/`,
+  //   },
+  //   publisher: {
+  //     "@type": "Organization",
+  //     name: "Caravans for Sale",
+  //     logo: {
+  //       "@type": "ImageObject",
+  //       url: "https://www.caravansforsale.com.au/images/cfs-logo-black.svg",
+  //     },
+  //   },
+  //   datePublished: post.date || new Date().toISOString(),
+  //   dateModified: post.date || new Date().toISOString(),
+  // };
 
   return (
     <>
       {/* ✅ JSON-LD structured data in head (will be moved by Next.js) */}
-      <script
+      {/* <script
         type="applicahion/ld+json"
         dangerouslySetInnerHTML={{
           __html: safeJsonLdString(jsonLd),
         }}
-      />
+      /> */}
       <div>{children}</div>
     </>
   );

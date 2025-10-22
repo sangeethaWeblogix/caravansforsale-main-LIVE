@@ -14,11 +14,14 @@ export async function fetchBlogDetail(
   slug: string
 ): Promise<BlogDetail | null> {
   if (!slug) return null;
-  const res = await fetch(`${BASE}/blog-detail/${encodeURIComponent(slug)}`, {
-    headers: { Accept: "application/json" },
-    // cache strategy: tweak as you like
-    next: { revalidate: 60 },
-  });
+  const res = await fetch(
+    `${BASE}/blog-detail/slug=${encodeURIComponent(slug)}`,
+    {
+      headers: { Accept: "application/json" },
+      // cache strategy: tweak as you like
+      next: { revalidate: 60 },
+    }
+  );
   if (!res.ok) return null;
   const data = await res.json();
   // Some APIs wrap in {data: {...}} — unwrap if needed
