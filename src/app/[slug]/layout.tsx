@@ -29,14 +29,14 @@ export async function generateMetadata({
   const { slug } = await params;
   const data = await fetchBlogDetail(slug);
   // Format date to "Month DD, YYYY"
-  function formatDate(dateStr?: string) {
-    const date = new Date(dateStr || Date.now());
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  }
+  // function formatDate(dateStr?: string) {
+  //   const date = new Date(dateStr || Date.now());
+  //   return date.toLocaleDateString("en-US", {
+  //     year: "numeric",
+  //     month: "long",
+  //     day: "numeric",
+  //   });
+  // }
 
   const seo = data?.seo ?? {};
   const post = data?.data?.blog_detail || {};
@@ -69,9 +69,9 @@ export async function generateMetadata({
 }
 
 // ✅ Safe JSON encode for script tag
-function safeJsonLdString(json: object) {
-  return JSON.stringify(json, null, 2).replace(/</g, "\\u003c");
-}
+// function safeJsonLdString(json: object) {
+//   return JSON.stringify(json, null, 2).replace(/</g, "\\u003c");
+// }
 
 // ✅ Layout (renders schema script in <head> SSR)
 export default async function Layout({
@@ -82,25 +82,25 @@ export default async function Layout({
   params: Promise<RouteParams>;
 }) {
   const { slug } = await params;
-  const data = await fetchBlogDetail(slug);
-  const post = data?.data?.blog_detail || {};
-  const seo = data?.seo || {};
+  // const data = await fetchBlogDetail(slug);
+  // const post = data?.data?.blog_detail || {};
+  // const seo = data?.seo || {};
 
-  const canonical = `https://www.caravansforsale.com.au/${slug}/`;
+  // const canonical = `https://www.caravansforsale.com.au/${slug}/`;
 
-  const title = seo.metatitle || post.title || "Caravans for Sale Blog";
+  // const title = seo.metatitle || post.title || "Caravans for Sale Blog";
 
-  const description =
-    seo.metadescription ||
-    post.short_description ||
-    "Read more on Caravans for Sale.";
+  // const description =
+  //   seo.metadescription ||
+  //   post.short_description ||
+  //   "Read more on Caravans for Sale.";
 
-  const bannerImage =
-    post.banner_image ||
-    post.image ||
-    "https://www.caravansforsale.com.au/load.svg";
+  // const bannerImage =
+  //   post.banner_image ||
+  //   post.image ||
+  //   "https://www.caravansforsale.com.au/load.svg";
 
-  const authorName = post.author || "Caravans for Sale";
+  // const authorName = post.author || "Caravans for Sale";
 
   // ✅ Build JSON-LD Schema (SSR output)
   // const jsonLd = {
