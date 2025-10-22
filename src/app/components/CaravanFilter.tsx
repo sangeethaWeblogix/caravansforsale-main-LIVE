@@ -1056,30 +1056,17 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
       if (m) pincode = m[0];
     }
 
+    // ✅ PRESERVE EXISTING REGION or use detected one
     const validRegion = getValidRegionName(state, region, states);
-    // 🩵 Ensure region auto-detected if not found
-    let autoRegion = validRegion;
-    if (!autoRegion && state) {
-      const matchedState = states.find(
-        (s) =>
-          s.name.toLowerCase() === state.toLowerCase() ||
-          s.value.toLowerCase() === state.toLowerCase()
-      );
-      autoRegion = matchedState?.regions?.find((r) =>
-        r.suburbs?.some(
-          (sub) => sub.name.toLowerCase() === suburb.toLowerCase()
-        )
-      )?.name;
-    }
-    setSelectedRegionName(autoRegion || validRegion || null);
+    const finalRegion = selectedRegionName || validRegion; // Keep existing if available
+
+    // 🚫 Don't auto-set region name here - let the auto-detection handle it
+    // setSelectedRegionName(autoRegion || validRegion || null);
 
     setSelectedState(stateSlug);
     setSelectedStateName(AUS_ABBR[state] || state);
     setSelectedSuburbName(suburb);
     setSelectedpincode(pincode || null);
-
-    // const radiusForFilters =
-    //   typeof radiusKms === "number" ? radiusKms : RADIUS_OPTIONS[0];
 
     const updatedFilters = buildUpdatedFilters(currentFilters, {
       make: sanitizeMake(selectedMake || filters.make || currentFilters.make),
@@ -1088,7 +1075,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
       suburb: suburb.toLowerCase(),
       pincode: pincode || undefined,
       state,
-      region: validRegion,
+      region: finalRegion, // ✅ Use preserved region
       radius_kms: radiusKms,
     });
 
@@ -1671,18 +1658,17 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     }
   };
   useEffect(() => {
-    // 🚫 STRONG GUARD: Don't run if we already have everything we need
     if (
       regionSetAfterSuburbRef.current ||
-      selectedRegionName || // Already have region
-      !selectedSuburbName || // No suburb selected
-      !selectedStateName || // No state selected
-      states.length === 0
+      !selectedSuburbName ||
+      !selectedStateName ||
+      states.length === 0 ||
+      suburbClickedRef.current
     ) {
       return;
     }
 
-    console.log("Auto-detecting region for suburb:", selectedSuburbName);
+    console.log("🧭 Auto-detecting region for suburb:", selectedSuburbName);
 
     const matchedState = states.find(
       (s) =>
@@ -1697,25 +1683,25 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
           selectedSuburbName.toLowerCase().trim()
       )
     );
-
+    console.log("🔎 Matched region:", matchedRegion?.name);
     if (!matchedRegion) {
-      console.log("No region found for suburb:", selectedSuburbName);
+      console.log("❌ No region found for suburb:", selectedSuburbName);
       return;
     }
 
-    console.log("Auto-detected region:", matchedRegion.name);
+    console.log("✅ Auto-detected region:", matchedRegion.name);
 
-    // Set the detected region
+    // 🧠 Immediately mark as set BEFORE state updates to stop looping
+    regionSetAfterSuburbRef.current = true;
+
     setSelectedRegionName(matchedRegion.name);
     setSelectedRegion(matchedRegion.value);
 
-    // Update filters
     setFilters((prev) => ({
       ...prev,
       region: matchedRegion.name,
     }));
 
-    // Update location input with proper format
     const short_address = buildAddress(
       selectedSuburbName,
       matchedState?.name || selectedStateName,
@@ -1726,17 +1712,24 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
       isUserTypingRef.current = false;
       setLocationInput(short_address);
     }
+  }, [selectedSuburbName, selectedStateName, states, selectedpincode]);
 
-    // Set flag to prevent re-running
-    regionSetAfterSuburbRef.current = true;
-  }, [
-    selectedSuburbName,
-    selectedStateName,
-    states,
-    selectedpincode,
-    selectedRegionName,
-    locationInput,
-  ]);
+  // Add this for debugging
+  useEffect(() => {
+    console.log("🔍 Region Auto-detection State:", {
+      selectedSuburbName,
+      selectedStateName,
+      selectedRegionName,
+      hasStates: states.length > 0,
+      regionSetAfterSuburb: regionSetAfterSuburbRef.current,
+      suburbClicked: suburbClickedRef.current,
+      shouldAutoDetect:
+        selectedSuburbName &&
+        selectedStateName &&
+        !regionSetAfterSuburbRef.current &&
+        !suburbClickedRef.current,
+    });
+  }, [selectedSuburbName, selectedStateName, selectedRegionName, states]);
   // Use this when you need to repopulate suburbs after region changes
   // useEffect(() => {
   //   // Only auto-detect region if:
@@ -3082,14 +3075,30 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                             onMouseDown={(e) => {
                               e.preventDefault();
 
-                              // use onMouseDown to avoid blur race
-                              isUserTypingRef.current = false; // programmatic update
+                              // ✅ PRESERVE CURRENT REGION when selecting from search
+                              const currentRegion = selectedRegionName;
+
+                              isUserTypingRef.current = false;
                               setSelectedSuggestion(item);
                               setLocationInput(item.short_address);
                               setModalInput(item.short_address);
                               setLocationSuggestions([]);
-                              setShowSuggestions(false); // ✅ keep closed
+                              setShowSuggestions(false);
                               suburbClickedRef.current = true;
+
+                              // ✅ Store region info in the selected suggestion for later use
+                              const parts = item.uri.split("/");
+                              const regionFromSuggestion = parts[1]
+                                ? parts[1]
+                                    .replace(/-region$/, "")
+                                    .replace(/-/g, " ")
+                                    .trim()
+                                : null;
+
+                              // ✅ Update region state but don't clear existing one unnecessarily
+                              if (regionFromSuggestion && !currentRegion) {
+                                setSelectedRegionName(regionFromSuggestion);
+                              }
                             }}
                           >
                             {item.address}
