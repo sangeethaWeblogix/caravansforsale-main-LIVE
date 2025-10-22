@@ -15,7 +15,7 @@ export async function fetchBlogDetail(
 ): Promise<BlogDetail | null> {
   if (!slug) return null;
   const res = await fetch(
-    `${BASE}/blog-detail/slug=${encodeURIComponent(slug)}`,
+    `${BASE}/blog-detail-new/?slug=${encodeURIComponent(slug)}`,
     {
       headers: { Accept: "application/json" },
       // cache strategy: tweak as you like
