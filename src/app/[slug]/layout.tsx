@@ -76,12 +76,12 @@ export async function generateMetadata({
 // ✅ Layout (renders schema script in <head> SSR)
 export default async function Layout({
   children,
-  params,
-}: {
+}: // params,
+{
   children: ReactNode;
-  params: Promise<RouteParams>;
+  // params: Promise<RouteParams>;
 }) {
-  const { slug } = await params;
+  // const { slug } = await params;
   // const data = await fetchBlogDetail(slug);
   // const post = data?.data?.blog_detail || {};
   // const seo = data?.seo || {};
