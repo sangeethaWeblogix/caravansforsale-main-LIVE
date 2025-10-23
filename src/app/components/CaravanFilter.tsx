@@ -1816,44 +1816,6 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
       cancelled = true;
     };
   }, [locKey]);
-  // const hydratedKeyRef = useRef("");
-
-  // useEffect(() => {
-  //   // 🧠 Only run if we have suburb + state
-  //   if (!selectedSuburbName || !selectedStateName) return;
-
-  //   // ✅ Prevent re-running for same combination
-  //   if (hydratedKeyRef.current === locKey) return;
-  //   hydratedKeyRef.current = locKey;
-
-  //   // ✅ Skip if this came from manual click (avoid auto override)
-  //   if (suburbClickedRef.current || regionSetAfterSuburbRef.current) return;
-
-  //   // ✅ No API call needed — we already know the correct location
-  //   const match = findSuggestionFor(
-  //     selectedSuburbName,
-  //     selectedStateName,
-  //     selectedpincode
-  //   );
-
-  //   // If no selectedSuggestion yet, create a minimal one for display
-  //   if (!selectedSuggestion) {
-  //     setSelectedSuggestion({
-  //       key: locKey,
-  //       uri: `${selectedSuburbName}-suburb/${
-  //         selectedRegionName || ""
-  //       }-region/${selectedStateName}-state/${selectedpincode || ""}`,
-  //       address: shortAddr,
-  //       short_address: shortAddr,
-  //     });
-  //   }
-
-  //   // ✅ Sync input field display
-  //   if (locationInput !== shortAddr) {
-  //     isUserTypingRef.current = false;
-  //     setLocationInput(shortAddr);
-  //   }
-  // }, [locKey]);
 
   const [visibleCount, setVisibleCount] = useState(10);
   useEffect(() => {
@@ -1979,7 +1941,52 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
               style={accordionRegionStyle(!selectedSuburbName)}
             >
               <span style={{ flexGrow: 1 }} onClick={() => openOnly("region")}>
-                {selectedRegionName}
+                {selectedRegionName
+                  ? selectedRegionName
+                  : (() => {
+                      // 🧩 Try extracting region directly from URI first
+                      if (selectedSuggestion?.uri) {
+                        const parts = selectedSuggestion.uri.split("/");
+                        const regionPart = parts.find((p) =>
+                          p.endsWith("-region")
+                        );
+                        if (regionPart) {
+                          const regionName = regionPart
+                            .replace("-region", "")
+                            .replace(/-/g, " ")
+                            .replace(/\b\w/g, (c) => c.toUpperCase()); // Capitalize
+                          console.log("🧭 Region from URI:", regionName);
+                          return regionName;
+                        }
+                      }
+
+                      // 🧩 If URI not found, fallback to static region match
+                      const matchedState = states.find(
+                        (s) =>
+                          s.name.toLowerCase() ===
+                            selectedStateName?.toLowerCase() ||
+                          s.value.toLowerCase() ===
+                            selectedStateName?.toLowerCase()
+                      );
+
+                      const matchedRegion = matchedState?.regions?.find(
+                        (region) =>
+                          region.suburbs?.some(
+                            (sub) =>
+                              sub.name.toLowerCase().trim() ===
+                              selectedSuburbName?.toLowerCase().trim()
+                          )
+                      );
+
+                      console.log(
+                        "🧩 Matched Region (Fallback):",
+                        matchedRegion
+                      );
+
+                      return (
+                        matchedRegion?.value || matchedRegion?.name || "Region"
+                      );
+                    })()}
               </span>
 
               {!selectedSuburbName && (
