@@ -1028,11 +1028,13 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
       setStateRegionOpen(!!currentRegionName);
     });
   };
+  // Add this to track region state changes
 
   const handleSearchClick = () => {
     if (!suburbClickedRef.current || !selectedSuggestion) return;
 
     const parts = selectedSuggestion.uri.split("/");
+    console.log("parts", parts);
     const suburbSlug = parts[0] || "";
     const regionSlug = parts[1] || "";
     const stateSlug = parts[2] || "";
@@ -1056,15 +1058,13 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
       if (m) pincode = m[0];
     }
 
-    // ✅ PRESERVE EXISTING REGION or use detected one
-    const validRegion = getValidRegionName(state, region, states);
-    const finalRegion = selectedRegionName || validRegion; // Keep existing if available
+    console.log("📍 Search click - setting region:", state, region, suburb);
 
-    // 🚫 Don't auto-set region name here - let the auto-detection handle it
-    // setSelectedRegionName(autoRegion || validRegion || null);
-
+    // ✅ Set ALL location data
     setSelectedState(stateSlug);
     setSelectedStateName(AUS_ABBR[state] || state);
+    setSelectedRegionName(region); // ✅ THIS IS KEY!
+    setSelectedRegion(region);
     setSelectedSuburbName(suburb);
     setSelectedpincode(pincode || null);
 
@@ -1074,8 +1074,8 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
       category: selectedCategory || filters.category || currentFilters.category,
       suburb: suburb.toLowerCase(),
       pincode: pincode || undefined,
-      state,
-      region: finalRegion, // ✅ Use preserved region
+      state: state,
+      region: region, // ✅ Include region
       radius_kms: radiusKms,
     });
 
@@ -1635,85 +1635,6 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     return [suburb, abbr, pincode].filter(Boolean).join(" - ");
   };
 
-  // Add this helper function
-  const fetchSuburbsByRegion = async (
-    regionName: string,
-    stateName: string
-  ) => {
-    try {
-      const matchedState = states.find(
-        (s) =>
-          s.name.toLowerCase() === stateName.toLowerCase() ||
-          s.value.toLowerCase() === stateName.toLowerCase()
-      );
-
-      const matchedRegion = matchedState?.regions?.find(
-        (r) => r.name.toLowerCase() === regionName.toLowerCase()
-      );
-
-      return matchedRegion?.suburbs ?? [];
-    } catch (error) {
-      console.error("Error fetching suburbs:", error);
-      return [];
-    }
-  };
-  useEffect(() => {
-    if (
-      regionSetAfterSuburbRef.current ||
-      !selectedSuburbName ||
-      !selectedStateName ||
-      states.length === 0 ||
-      suburbClickedRef.current
-    ) {
-      return;
-    }
-
-    console.log("🧭 Auto-detecting region for suburb:", selectedSuburbName);
-
-    const matchedState = states.find(
-      (s) =>
-        s.name.toLowerCase() === selectedStateName.toLowerCase() ||
-        s.value.toLowerCase() === selectedStateName.toLowerCase()
-    );
-
-    const matchedRegion = matchedState?.regions?.find((region) =>
-      region.suburbs?.some(
-        (sub) =>
-          sub.name.toLowerCase().trim() ===
-          selectedSuburbName.toLowerCase().trim()
-      )
-    );
-    console.log("🔎 Matched region:", matchedRegion?.name);
-    if (!matchedRegion) {
-      console.log("❌ No region found for suburb:", selectedSuburbName);
-      return;
-    }
-
-    console.log("✅ Auto-detected region:", matchedRegion.name);
-
-    // 🧠 Immediately mark as set BEFORE state updates to stop looping
-    regionSetAfterSuburbRef.current = true;
-
-    setSelectedRegionName(matchedRegion.name);
-    setSelectedRegion(matchedRegion.value);
-
-    setFilters((prev) => ({
-      ...prev,
-      region: matchedRegion.name,
-    }));
-
-    const short_address = buildAddress(
-      selectedSuburbName,
-      matchedState?.name || selectedStateName,
-      selectedpincode || ""
-    );
-
-    if (locationInput !== short_address) {
-      isUserTypingRef.current = false;
-      setLocationInput(short_address);
-    }
-  }, [selectedSuburbName, selectedStateName, states, selectedpincode]);
-
   // Add this for debugging
   useEffect(() => {
     console.log("🔍 Region Auto-detection State:", {
@@ -1730,72 +1651,6 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
         !suburbClickedRef.current,
     });
   }, [selectedSuburbName, selectedStateName, selectedRegionName, states]);
-  // Use this when you need to repopulate suburbs after region changes
-  // useEffect(() => {
-  //   // Only auto-detect region if:
-  //   // - We have a suburb but no region
-  //   // - We haven't already set the region for this suburb
-  //   // - We're not in the middle of a manual selection
-  //   if (
-  //     regionSetAfterSuburbRef.current ||
-  //     !selectedSuburbName ||
-  //     selectedRegionName || // If we already have a region, don't auto-detect
-  //     !selectedStateName ||
-  //     states.length === 0
-  //   ) {
-  //     return;
-  //   }
-
-  //   const matchedState = states.find(
-  //     (s) =>
-  //       s.name.toLowerCase() === selectedStateName.toLowerCase() ||
-  //       s.value.toLowerCase() === selectedStateName.toLowerCase()
-  //   );
-
-  //   const matchedRegion = matchedState?.regions?.find((region) =>
-  //     region.suburbs?.some(
-  //       (sub) =>
-  //         sub.name.toLowerCase().trim() ===
-  //         selectedSuburbName.toLowerCase().trim()
-  //     )
-  //   );
-
-  //   if (!matchedRegion) return;
-
-  //   // Set the detected region
-  //   setSelectedRegionName(matchedRegion.name);
-  //   setSelectedRegion(matchedRegion.value);
-
-  //   // Update filters but don't trigger full URL push
-  //   setFilters((prev) => ({
-  //     ...prev,
-  //     region: matchedRegion.name,
-  //   }));
-
-  //   // Update location input
-  //   const short_address = buildAddress(
-  //     selectedSuburbName,
-  //     matchedState?.name || selectedStateName,
-  //     selectedpincode || ""
-  //   );
-
-  //   if (locationInput !== short_address) {
-  //     isUserTypingRef.current = false;
-  //     setLocationInput(short_address);
-  //   }
-
-  //   regionSetAfterSuburbRef.current = true;
-  // }, [
-  //   selectedSuburbName,
-  //   selectedStateName,
-  //   states,
-  //   selectedpincode,
-  //   selectedRegionName,
-  // ]);
-  // Added selectedRegionName to dependencies
-
-  // const [mounted, setMounted] = useState(false);
-  // useEffect(() => setMounted(true), []);
 
   const resetCategoryFilter = () => {
     setSelectedCategory(null);
@@ -1834,6 +1689,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
       setStateRegionOpen(true);
     }
   }, [selectedStateName, selectedRegionName, selectedSuburbName]);
+
   // useEffect(() => {
   //   if (selectedRegionName && !selectedSuburbName) {
   //     setStateRegionOpen(false);
@@ -1884,19 +1740,19 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     return byText || null;
   };
   const isUserTypingRef = useRef(false);
-  const locKey = useMemo(
-    () =>
-      [
-        selectedSuburbName ?? "",
-        selectedRegionName ?? "",
-        selectedStateName ?? "",
-        selectedpincode ?? "",
-      ].join("|"),
-    [selectedSuburbName, selectedRegionName, selectedStateName, selectedpincode]
-  );
+  const getLocKey = () => {
+    return [
+      selectedSuburbName ?? "",
+      selectedRegionName ?? "",
+      selectedStateName ?? "",
+      selectedpincode ?? "",
+    ].join("|");
+  };
+
+  const locKey = getLocKey();
+  console.log("🏙️ Location Key:", locKey);
 
   const hydratedKeyRef = useRef("");
-
   useEffect(() => {
     if (!selectedSuburbName || !selectedStateName) return;
 
@@ -1909,21 +1765,46 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     (async () => {
       try {
         const data = await fetchLocations(selectedSuburbName);
+        console.log("🌆 location data sub:", selectedSuburbName);
+        console.log("🌆 location data fetched:", data);
+
+        // ✅ Normalize input suburb for safe comparison
+        const target = selectedSuburbName
+          .trim()
+          .toLowerCase()
+          .replace(/\s+/g, " ");
+
+        // ✅ Filter only exact suburb matches (ignore East/North variations)
+        const exactMatches = (data || []).filter((item) => {
+          // normalize fetched suburb from URI
+          const suburbFromUri = item.uri
+            ?.split("/")[0]
+            ?.replace(/-suburb$/, "")
+            ?.replace(/-/g, " ")
+            ?.trim()
+            ?.toLowerCase();
+
+          return suburbFromUri === target;
+        });
+
+        console.log("🎯 exact suburb matches:", exactMatches);
+
         const match = findSuggestionFor(
           selectedSuburbName,
           selectedRegionName,
           selectedStateName,
           selectedpincode || null,
-          data || []
+          exactMatches || []
         );
+
         if (!match || cancelled) return;
 
-        // set only if different
         if (!selectedSuggestion || selectedSuggestion.key !== match.key) {
           setSelectedSuggestion(match);
         }
+        console.log("🌇 location input Hydrating:", locationInput);
         if (locationInput !== match.short_address) {
-          isUserTypingRef.current = false; // programmatic update
+          isUserTypingRef.current = false;
           setLocationInput(match.short_address);
         }
       } catch (e) {
@@ -1934,9 +1815,45 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     return () => {
       cancelled = true;
     };
-    // 👇 only locKey; this prevents re-running just because we set state above
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [locKey]);
+  // const hydratedKeyRef = useRef("");
+
+  // useEffect(() => {
+  //   // 🧠 Only run if we have suburb + state
+  //   if (!selectedSuburbName || !selectedStateName) return;
+
+  //   // ✅ Prevent re-running for same combination
+  //   if (hydratedKeyRef.current === locKey) return;
+  //   hydratedKeyRef.current = locKey;
+
+  //   // ✅ Skip if this came from manual click (avoid auto override)
+  //   if (suburbClickedRef.current || regionSetAfterSuburbRef.current) return;
+
+  //   // ✅ No API call needed — we already know the correct location
+  //   const match = findSuggestionFor(
+  //     selectedSuburbName,
+  //     selectedStateName,
+  //     selectedpincode
+  //   );
+
+  //   // If no selectedSuggestion yet, create a minimal one for display
+  //   if (!selectedSuggestion) {
+  //     setSelectedSuggestion({
+  //       key: locKey,
+  //       uri: `${selectedSuburbName}-suburb/${
+  //         selectedRegionName || ""
+  //       }-region/${selectedStateName}-state/${selectedpincode || ""}`,
+  //       address: shortAddr,
+  //       short_address: shortAddr,
+  //     });
+  //   }
+
+  //   // ✅ Sync input field display
+  //   if (locationInput !== shortAddr) {
+  //     isUserTypingRef.current = false;
+  //     setLocationInput(shortAddr);
+  //   }
+  // }, [locKey]);
 
   const [visibleCount, setVisibleCount] = useState(10);
   useEffect(() => {
@@ -2062,40 +1979,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
               style={accordionRegionStyle(!selectedSuburbName)}
             >
               <span style={{ flexGrow: 1 }} onClick={() => openOnly("region")}>
-                {selectedRegionName
-                  ? selectedRegionName
-                  : (() => {
-                      const matchedState = states.find(
-                        (s) =>
-                          s.name.toLowerCase() ===
-                            selectedStateName?.toLowerCase() ||
-                          s.value.toLowerCase() ===
-                            selectedStateName?.toLowerCase()
-                      );
-                      const matchedRegion = matchedState?.regions?.find(
-                        (region) =>
-                          region.suburbs?.some(
-                            (sub) =>
-                              sub.name.toLowerCase().trim() ===
-                              selectedSuburbName?.toLowerCase().trim()
-                          )
-                      );
-
-                      // 🧩 If no region found, extract from URI
-                      if (!matchedRegion && selectedSuggestion?.uri) {
-                        const parts = selectedSuggestion.uri.split("/");
-                        const regionPart = parts.find((p) =>
-                          p.endsWith("-region")
-                        );
-                        return regionPart
-                          ? regionPart.replace("-region", "").replace(/-/g, " ")
-                          : "Region";
-                      }
-
-                      return (
-                        matchedRegion?.value || matchedRegion?.name || "Region"
-                      );
-                    })()}
+                {selectedRegionName}
               </span>
 
               {!selectedSuburbName && (
@@ -3075,9 +2959,49 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                             onMouseDown={(e) => {
                               e.preventDefault();
 
-                              // ✅ PRESERVE CURRENT REGION when selecting from search
-                              const currentRegion = selectedRegionName;
+                              console.log("🎯 Search selection:", item);
 
+                              // Extract location details from the suggestion
+                              const parts = item.uri.split("/");
+                              const suburbSlug = parts[0] || "";
+                              const regionSlug = parts[1] || "";
+                              const stateSlug = parts[2] || "";
+                              let pincode = parts[3] || "";
+
+                              const suburb = suburbSlug
+                                .replace(/-suburb$/, "")
+                                .replace(/-/g, " ")
+                                .trim();
+                              const region = regionSlug
+                                .replace(/-region$/, "")
+                                .replace(/-/g, " ")
+                                .trim();
+                              const state = stateSlug
+                                .replace(/-state$/, "")
+                                .replace(/-/g, " ")
+                                .trim();
+
+                              if (!/^\d{4}$/.test(pincode)) {
+                                const m = item.address.match(/\b\d{4}\b/);
+                                if (m) pincode = m[0];
+                              }
+
+                              console.log("📍 Extracted location:", {
+                                suburb,
+                                region,
+                                state,
+                                pincode,
+                              });
+
+                              // ✅ Set ALL location states immediately
+                              setSelectedState(stateSlug);
+                              setSelectedStateName(AUS_ABBR[state] || state);
+                              setSelectedRegionName(region);
+                              setSelectedRegion(region);
+                              setSelectedSuburbName(suburb);
+                              setSelectedpincode(pincode || null);
+
+                              // Update UI
                               isUserTypingRef.current = false;
                               setSelectedSuggestion(item);
                               setLocationInput(item.short_address);
@@ -3086,19 +3010,29 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                               setShowSuggestions(false);
                               suburbClickedRef.current = true;
 
-                              // ✅ Store region info in the selected suggestion for later use
-                              const parts = item.uri.split("/");
-                              const regionFromSuggestion = parts[1]
-                                ? parts[1]
-                                    .replace(/-region$/, "")
-                                    .replace(/-/g, " ")
-                                    .trim()
-                                : null;
+                              // ✅ Update filters with ALL location data
+                              const updatedFilters = buildUpdatedFilters(
+                                currentFilters,
+                                {
+                                  suburb: suburb.toLowerCase(),
+                                  pincode: pincode || undefined,
+                                  state: state,
+                                  region: region,
+                                  radius_kms: radiusKms,
+                                }
+                              );
 
-                              // ✅ Update region state but don't clear existing one unnecessarily
-                              if (regionFromSuggestion && !currentRegion) {
-                                setSelectedRegionName(regionFromSuggestion);
-                              }
+                              setFilters(updatedFilters);
+                              filtersInitialized.current = true;
+
+                              startTransition(() => {
+                                updateAllFiltersAndURL(updatedFilters);
+                              });
+
+                              console.log(
+                                "✅ Search selection complete - Region set:",
+                                region
+                              );
                             }}
                           >
                             {item.address}
