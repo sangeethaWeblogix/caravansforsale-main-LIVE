@@ -108,13 +108,14 @@ export default function ExculisiveContent({
       <div className="col-lg-6 col-md-8">
         <div className="row align-items-center">
           <div className="flex flex-col items-center justify-center text-center py-10 search-icon">
-            <Image
+            {/* <Image
               src="/images/search.png"
               alt="No Results"
               width={30}
               height={30}
               className="search-icon"
-            />
+            /> */}
+            <i className="bi bi-search" />
             <h4 className="text-lg font-semibold text-gray-800">
               No caravans match your filters
             </h4>
