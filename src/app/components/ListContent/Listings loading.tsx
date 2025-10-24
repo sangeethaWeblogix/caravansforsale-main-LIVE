@@ -635,6 +635,7 @@ export default function ListingsPage({
                 <SkeletonListing />
               ) : (
                 <Listing
+                  data={products}
                   products={products}
                   pagination={pagination}
                   onNext={handleNextPage}
