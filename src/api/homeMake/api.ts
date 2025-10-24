@@ -34,7 +34,7 @@ export const fetchRangeFeaturedCategories = async (): Promise<
   if (!API_BASE) throw new Error("Missing NEXT_PUBLIC_CFS_API_BASE");
 
   const url = `${API_BASE}/range-featured-categories`; // ✅ new endpoint
-  if (typeof window !== "undefined") console.log("[Products API] GET", url);
+  // if (typeof window !== "undefined") console.log("[Products API] GET", url);
 
   try {
     const res = await fetch(url, { cache: "no-store" });
