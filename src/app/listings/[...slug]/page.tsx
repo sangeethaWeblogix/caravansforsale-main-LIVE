@@ -6,6 +6,7 @@ import { metaFromSlug } from "../../../utils/seo/metaFromSlug";
 import type { Metadata } from "next";
 import { fetchListings } from "@/api/listings/api";
 import { ensureValidPage } from "@/utils/seo/validatePage";
+import { redirect } from "next/navigation";
 
 type Params = Promise<{ slug?: string[] }>;
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
@@ -49,6 +50,22 @@ export default async function Listings({
   // ) {
   //   redirect("/404Page");
   // }
+  if (
+    !slug ||
+    !Array.isArray(slug) ||
+    slug.length === 0 ||
+    slug.join("").match(/[^\w-]/) ||
+    /[&*%$#@!=<>?,]/.test(slug.join("")) ||
+    slug.join("").includes("..") ||
+    slug.join("").includes("//") ||
+    // 🚫 New rules:
+    // if any part is just numbers or plain letters → 404
+    slug.some((part) => /^\d+$/.test(part) || /^[a-zA-Z]+$/.test(part)) ||
+    // if more than 1 segment and the extra part is invalid → 404
+    slug.length > 1
+  ) {
+    redirect("/404Page");
+  }
 
   // ✅ Build query and validate page
   const fullQuery = Object.entries(resolvedSearchParams)
