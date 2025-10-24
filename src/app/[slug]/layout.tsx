@@ -115,7 +115,7 @@ export default async function Layout({
     image: bannerImage,
     author: {
       "@type": "Person",
-      name: authorName,
+      name: "Tom",
       url: `https://www.caravansforsale.com.au/author/tom/`,
     },
     publisher: {
