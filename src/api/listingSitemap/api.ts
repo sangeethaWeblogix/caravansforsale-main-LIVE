@@ -42,7 +42,7 @@ export async function fetchProductsBatch(
     (_, i) => startPage + i
   );
 
-  console.log(`🌀 Fetching pages ${startPage} to ${endPage} in parallel...`);
+  // console.log(`🌀 Fetching pages ${startPage} to ${endPage} in parallel...`);
 
   const results = await Promise.allSettled(pageNumbers.map(fetchProductPage));
 
@@ -54,9 +54,9 @@ export async function fetchProductsBatch(
   // ✅ Flatten only the data part
   const allProducts = fulfilledResults.flatMap((r) => r.value.data);
 
-  console.log(
-    `✅ Loaded ${allProducts.length} products from pages ${startPage}-${endPage}`
-  );
+  // console.log(
+  //   `✅ Loaded ${allProducts.length} products from pages ${startPage}-${endPage}`
+  // );
 
   return allProducts;
 }

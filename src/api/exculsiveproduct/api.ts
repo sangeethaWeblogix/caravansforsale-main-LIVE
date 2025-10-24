@@ -49,7 +49,7 @@ export const fetchExclusiveListings = async (
   if (!API_BASE) throw new Error("Missing NEXT_PUBLIC_CFS_API_BASE");
 
   const url = `${API_BASE}/exclusive-list?page=${page}`;
-  console.log("📡 Fetching Exclusive API:", url);
+  // console.log("📡 Fetching Exclusive API:", url);
 
   const res = await fetch(url, {
     method: "GET",
@@ -64,7 +64,7 @@ export const fetchExclusiveListings = async (
   const products = data?.data?.products ?? [];
   const { current_page, total_pages, total_products, per_page } =
     data?.pagination ?? {};
-  console.log("api pagination", data?.pagination);
+  // console.log("api pagination", data?.pagination);
   return {
     items: products,
     currentPage: current_page,

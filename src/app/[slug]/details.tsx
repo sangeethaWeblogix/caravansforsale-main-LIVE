@@ -49,7 +49,7 @@ export default function BlogDetailsPage({
 
   // ✅ Run DOMParser only on client
   const post = data?.data?.blog_detail;
-  console.log("dataaa", post);
+  // console.log("dataaa", post);
   useEffect(() => {
     if (post?.toc) {
       const parser = new DOMParser();

@@ -19,7 +19,7 @@ type BlogPost = {
 
 export default function RelatedNews({ blogs }: { blogs: BlogPost[] }) {
   if (!blogs || blogs.length === 0) return null;
-  console.log("dataablog", blogs);
+  // console.log("dataablog", blogs);
   const getHref = (p: BlogPost) => {
     const slug = (p.slug ?? "").trim() || toSlug(p.title ?? "");
     return slug ? `/${slug}/` : "#";

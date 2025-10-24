@@ -51,7 +51,7 @@ export async function fetchHomeSearchList(): Promise<HomeSearchItem[]> {
   if (!API_BASE) throw new Error("Missing NEXT_PUBLIC_CFS_API_BASE");
 
   const url = `${API_BASE}/home_search`;
-  if (typeof window !== "undefined") console.log("[HomeSearch API] GET", url);
+  // if (typeof window !== "undefined") console.log("[HomeSearch API] GET", url);
 
   const res = await fetch(url, { cache: "no-store" });
   if (!res.ok) throw new Error(`HomeSearch API failed: ${res.status}`);

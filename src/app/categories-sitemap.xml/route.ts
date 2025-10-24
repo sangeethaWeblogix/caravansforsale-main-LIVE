@@ -10,10 +10,10 @@ type Category = { slug: string; name: string };
 export async function GET() {
   try {
     const data = await fetchProductList();
-    console.log(
-      "✅ fetchProductList() response:",
-      JSON.stringify(data, null, 2)
-    );
+    // console.log(
+    //   "✅ fetchProductList() response:",
+    //   JSON.stringify(data, null, 2)
+    // );
 
     const categories: Category[] =
       data?.data?.all_categories || data?.data?.categories || [];

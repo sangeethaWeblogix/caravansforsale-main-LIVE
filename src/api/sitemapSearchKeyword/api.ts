@@ -24,6 +24,6 @@ export async function fetchSearchkeywords(
     url: x?.url?.trim() || "",
   }));
 
-  console.log("✅ Keywords fetched:", result);
+  // console.log("✅ Keywords fetched:", result);
   return result;
 }

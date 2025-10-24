@@ -8,7 +8,7 @@ type FaqItem = {
 };
 
 export default function FaqSection({ data }: { data: FaqItem[] }) {
-  console.log("faqs", data);
+  // console.log("faqs", data);
 
   const [activeIndex, setActiveIndex] = useState<number | null>(0);
 

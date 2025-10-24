@@ -978,7 +978,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
       );
       setFilteredSuburbs(uniqueSuburbs);
     }
-    console.log("Resetting ONLY suburb");
+    // console.log("Resetting ONLY suburb");
 
     // Clear ONLY suburb-related data
     setSelectedSuburbName(null);
@@ -1039,14 +1039,14 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
       const uniqueNames = [...new Set(suburbNames)];
 
       if (suburbNames.length !== uniqueNames.length) {
-        console.log("🚨 DUPLICATE SUBURBS FOUND:", {
-          total: filteredSuburbs.length,
-          unique: uniqueNames.length,
-          duplicates: suburbNames.filter(
-            (name, index) => suburbNames.indexOf(name) !== index
-          ),
-          allSuburbs: filteredSuburbs,
-        });
+        // console.log("🚨 DUPLICATE SUBURBS FOUND:", {
+        //   total: filteredSuburbs.length,
+        //   unique: uniqueNames.length,
+        //   duplicates: suburbNames.filter(
+        //     (name, index) => suburbNames.indexOf(name) !== index
+        //   ),
+        //   allSuburbs: filteredSuburbs,
+        // });
       }
     }
   }, [filteredSuburbs]);
@@ -1741,7 +1741,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
       return;
     }
 
-    console.log("Auto-detecting region for suburb:", selectedSuburbName);
+    // console.log("Auto-detecting region for suburb:", selectedSuburbName);
 
     const matchedState = states.find(
       (s) =>
@@ -1758,11 +1758,11 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     );
 
     if (!matchedRegion) {
-      console.log("No region found for suburb:", selectedSuburbName);
+      // console.log("No region found for suburb:", selectedSuburbName);
       return;
     }
 
-    console.log("Auto-detected region:", matchedRegion.name);
+    // console.log("Auto-detected region:", matchedRegion.name);
 
     // Set the detected region
     setSelectedRegionName(matchedRegion.name);
