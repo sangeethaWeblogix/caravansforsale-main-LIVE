@@ -6,7 +6,7 @@ import { metaFromSlug } from "../../../utils/seo/metaFromSlug";
 import type { Metadata } from "next";
 import { fetchListings } from "@/api/listings/api";
 import { ensureValidPage } from "@/utils/seo/validatePage";
-import { notFound } from "next/navigation";
+import { redirect } from "next/navigation"; // ✅ only redirect, no notFound()
 
 type Params = Promise<{ slug?: string[] }>;
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
@@ -38,18 +38,18 @@ export default async function Listings({
   ]);
   const { slug = [] } = resolvedParams;
 
-  // ✅ Slug validation
-  if (
-    !slug ||
-    !Array.isArray(slug) ||
-    slug.length === 0 ||
-    slug.join("").match(/[^\w-]/) ||
-    /[&*%$#@!=<>?,]/.test(slug.join("")) ||
-    slug.join("").includes("..") ||
-    slug.join("").includes("//")
-  ) {
-    notFound();
-  }
+  // ✅ Validate slug — if broken or invalid → redirect to /listings
+  // if (
+  //   !slug ||
+  //   !Array.isArray(slug) ||
+  //   slug.length === 0 ||
+  //   slug.join("").match(/[^\w-]/) ||
+  //   /[&*%$#@!=<>?,]/.test(slug.join("")) ||
+  //   slug.join("").includes("..") ||
+  //   slug.join("").includes("//")
+  // ) {
+  //   redirect("/404Page");
+  // }
 
   // ✅ Build query and validate page
   const fullQuery = Object.entries(resolvedSearchParams)
@@ -59,16 +59,20 @@ export default async function Listings({
   const page = ensureValidPage(resolvedSearchParams.page, fullQuery);
   const filters = parseSlugToFilters(slug, resolvedSearchParams);
 
+  // ✅ Fetch listings
   const response = await fetchListings({ ...filters, page });
-  if (
-    !response ||
-    response.success === false ||
-    !response.data ||
-    !Array.isArray(response.data.products) ||
-    response.data.products.length === 0
-  ) {
-    notFound();
-  }
 
+  // ✅ If API fails or products are empty → redirect to /listings
+  // if (
+  //   !response ||
+  //   response.success === false ||
+  //   !response.data ||
+  //   !Array.isArray(response.data.products) ||
+  //   response.data.products.length === 0
+  // ) {
+  //   redirect("/404Page");
+  // }
+
+  // ✅ Otherwise render as usual
   return <ListingsPage {...filters} page={page} initialData={response} />;
 }

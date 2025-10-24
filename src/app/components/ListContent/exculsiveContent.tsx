@@ -10,6 +10,7 @@ import Head from "next/head";
 import { toSlug } from "../../../utils/seo/slug";
 import { useMemo } from "react";
 import Exculisive from "../../../../public/images/exclusive-deal.webp";
+
 interface Product {
   id: number;
   name: string;
@@ -59,7 +60,6 @@ export interface Filters {
   slug?: string | undefined;
 }
 interface Props {
-  products: Product[];
   data: Product[];
   pagination: Pagination;
   onNext: () => void;
@@ -70,8 +70,8 @@ interface Props {
   currentFilters: Filters;
 }
 
-export default function ListingContent({
-  products,
+export default function ExculisiveContent({
+  data,
   pagination,
   onNext,
   onPrev,
@@ -79,7 +79,6 @@ export default function ListingContent({
   metaDescription,
   onFilterChange,
   currentFilters,
-  data,
 }: Props) {
   // const imageUrl = "public/favicon.ico";
   const getHref = (p: Product) => {
@@ -88,14 +87,14 @@ export default function ListingContent({
   };
   const uniqueProducts = useMemo(() => {
     const seen = new Set<string>();
-    return (products || []).filter((p) => {
+    return (data || []).filter((p) => {
       const k = String(p?.id ?? p?.slug ?? p?.link);
       if (seen.has(k)) return false;
       seen.add(k);
       return true;
     });
-  }, [products]);
-  console.log("data", uniqueProducts);
+  }, [data]);
+  console.log("pagoination", pagination);
   return (
     <>
       <Head>
@@ -111,58 +110,18 @@ export default function ListingContent({
 
       <div className="col-lg-6 col-md-8">
         <div className="top-filter mb-10">
-          <div className="row align-items-center">
-            <div className="col-lg-6 col-sm-6">
-              <p className="show_count">
-                Showing{" "}
-                {(pagination.current_page - 1) * pagination.per_page + 1}–
-                {Math.min(
-                  pagination.current_page * pagination.per_page,
-                  pagination.total_products
-                )}{" "}
-                of {pagination.total_products} results
-              </p>
-            </div>
-            <div className="col-4 d-lg-none d-md-none">
-              <button
-                type="button"
-                className="mobile_fltn navbar-toggler mytogglebutton"
-                data-bs-toggle="offcanvas"
-                data-bs-target="#mobileFilters"
-                aria-controls="mobileFilters"
-              >
-                <i className="bi bi-search" /> &nbsp;Filter
-              </button>
-            </div>
-            <div className="col-lg-6 col-sm-6 col-8">
-              <div className="r-side">
-                <form className="woocommerce-ordering" method="get">
-                  <div className="form-group shot-buy">
-                    <select
-                      name="orderby"
-                      className="orderby form-select"
-                      aria-label="Shop order"
-                      onChange={(e) =>
-                        onFilterChange({
-                          orderby: e.target.value || "featured",
-                        })
-                      }
-                      value={currentFilters.orderby ?? "featured"} // <— default to "featured"
-                    >
-                      <option value="featured">Featured</option>
-                      <option value="price_asc">Price (Low to High)</option>
-                      <option value="price_desc">Price (High to Low)</option>
-                      <option value="year-desc">Year Made (High to Low)</option>
-                      <option value="year-asc">Year Made (Low to High)</option>
-                    </select>
-
-                    {/* <input type="hidden" name="paged" value={filters.orderby} /> */}
-                  </div>
-                </form>
-              </div>
-            </div>
+          <div className="flex flex-col items-center justify-center text-center py-10 search-icon">
+            <i className="bi bi-search" />
+            <h4 className="text-lg font-semibold text-gray-800">
+              No caravans match your filters
+            </h4>
+            <p className="text-gray-500 mt-1 max-w-md">
+              Try adjusting the price, year, or keyword filters for more
+              results.
+            </p>
           </div>
         </div>
+
         <div className="dealers-section product-type">
           {uniqueProducts.map((product) => {
             const href = getHref(product);
@@ -347,37 +306,6 @@ export default function ListingContent({
               </article>
             );
           })}
-        </div>
-
-        <div className="pagination-wrapper mt-4">
-          <nav className="woocommerce-pagination custom-pagination mt-4">
-            <ul className="pagination-icons">
-              <li className="">
-                <span>
-                  <button
-                    onClick={onPrev}
-                    disabled={pagination.current_page === 1}
-                    className="prev-icon"
-                  >
-                    Back
-                  </button>
-                </span>
-              </li>
-              <li className="page-count">
-                {" "}
-                page {pagination.current_page} of {pagination.total_pages}
-              </li>
-              <li className="">
-                <button
-                  className="next-icon"
-                  onClick={onNext}
-                  disabled={pagination.current_page === pagination.total_pages}
-                >
-                  Next
-                </button>
-              </li>
-            </ul>
-          </nav>
         </div>
       </div>
     </>

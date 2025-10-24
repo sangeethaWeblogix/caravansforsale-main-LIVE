@@ -3,6 +3,7 @@
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { fetchListings, ApiResponse, Item } from "../../../api/listings/api";
 import Listing from "./LisitingContent";
+import ExculsiveContent from "./exculsiveContent";
 import CaravanFilter from "../CaravanFilter";
 import SkeletonListing from "../skelton";
 import Link from "next/link";
@@ -16,7 +17,10 @@ import { buildSlugFromFilters } from "../slugBuilter";
 import { parseSlugToFilters } from "../../components/urlBuilder";
 import Head from "next/head";
 import "./loader.css";
-
+import {
+  fetchExclusiveListings,
+  ExclusiveProduct,
+} from "@/api/exculsiveproduct/api";
 /* --------- GLOBAL de-dupe across StrictMode remounts --------- */
 // let LAST_GLOBAL_REQUEST_KEY = "";
 
@@ -182,6 +186,8 @@ export default function ListingsPage({
       ? transformApiItemsToProducts(initialData.data.products)
       : []
   );
+  const [data, setData] = useState<Product[]>([]);
+
   const [categories, setCategories] = useState<Category[]>(
     initialData?.data?.all_categories || []
   );
@@ -344,23 +350,54 @@ export default function ListingsPage({
       if (initialData.pagination) setPagination(initialData.pagination);
     }
   }, [initialData]);
+  const [loading, setLoading] = useState(false);
+  const [items, setItems] = useState<ExclusiveProduct[]>([]);
 
+  useEffect(() => {
+    console.log("🚀 Running Exclusive Listings fetch...");
+
+    const loadExclusiveListings = async () => {
+      try {
+        setLoading(true);
+        const res = await fetchExclusiveListings(1);
+        console.log("✅ Exclusive Listings Response:", res);
+
+        if (res.items && res.items.length > 0) {
+          setItems(res.items); // ✅ store in state
+          console.log(`🧾 Stored ${res.items.length} items in state`);
+        } else {
+          console.warn("⚠️ No exclusive items found.");
+          setItems([]);
+        }
+      } catch (err: any) {
+        console.error("❌ Exclusive Listings Error:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadExclusiveListings();
+  }, []);
+
+  console.log("🔥 Exclusive Listings State:", items);
   const loadListings = useCallback(
     async (
       pageNum = 1,
       appliedFilters: Filters = filtersRef.current,
       skipInitialCheck = false
     ): Promise<ApiResponse | undefined> => {
-      // ✅ <— return type added
+      // 🧠 Return cached initial data (first render)
       if (initialData && !skipInitialCheck && isUsingInitialData) {
         setIsUsingInitialData(false);
-        return initialData; // ✅ return data for chaining
+        return initialData;
       }
 
       setIsLoading(true);
       window.scrollTo({ top: 0, behavior: "smooth" });
 
       try {
+        console.log("🚀 Starting loadListings with filters:", appliedFilters);
+
         const safeFilters = normalizeSearchFromMake(appliedFilters);
         const radiusNum = asNumber(safeFilters.radius_kms);
         const radiusParam =
@@ -368,7 +405,8 @@ export default function ListingsPage({
             ? String(radiusNum)
             : undefined;
 
-        const response = await fetchListings({
+        // ✅ Step 1 — Fetch main caravan listings
+        const response: ApiResponse = await fetchListings({
           ...safeFilters,
           page: pageNum,
           condition: safeFilters.condition,
@@ -393,36 +431,98 @@ export default function ListingsPage({
           radius_kms: radiusParam,
         });
 
-        const productsFound = response?.data?.products?.length ?? 0;
-        if (productsFound > 0) {
-          const transformedProducts = transformApiItemsToProducts(
-            response.data?.products || []
+        console.log("📦 Main API Response:", response);
+
+        // ✅ Step 2 — Check if products exist (FIXED CONDITION)
+        const products = response?.data?.products ?? [];
+
+        // 🔍 BETTER CHECK: Handle empty array, null, undefined, or invalid array
+        const isProductsArray = Array.isArray(products);
+        const validProducts = isProductsArray
+          ? products.filter((item) => item != null)
+          : [];
+        const hasValidProducts =
+          Array.isArray(products) &&
+          products.some(
+            (p) => p && Object.keys(p).length > 0 && (p.id || p.slug) // any key you expect to exist
           );
+
+        console.log("🔍 Products Analysis:", {
+          rawProducts: products,
+          isArray: isProductsArray,
+          validProductsCount: validProducts.length,
+          hasValidProducts: hasValidProducts,
+        });
+
+        if (hasValidProducts) {
+          console.log(
+            `✅ Found ${validProducts.length} valid caravans in main listings.`
+          );
+
+          const transformedProducts =
+            transformApiItemsToProducts(validProducts);
           setProducts(transformedProducts);
-          setCategories(response.data?.all_categories ?? []);
-          setMakes(response.data?.make_options ?? []);
-          setStateOptions(response.data?.states ?? []);
-          setModels(response.data?.model_options ?? []);
-          setPageTitle(response.title ?? " ");
+          setCategories(response?.data?.all_categories ?? []);
+          setMakes(response?.data?.make_options ?? []);
+          setStateOptions(response?.data?.states ?? []);
+          setModels(response?.data?.model_options ?? []);
+          setPageTitle(response?.title ?? " ");
           if (response.pagination) setPagination(response.pagination);
-          setMetaDescription(response.seo?.metadescription ?? "");
-          setMetaTitle(response.seo?.metatitle ?? "");
+          setMetaDescription(response?.seo?.metadescription ?? "");
+          setMetaTitle(response?.seo?.metatitle ?? "");
         } else {
-          setProducts([]);
+          // 🚨 Step 3 — No valid products → Fetch Exclusive Listings fallback
+          console.warn(
+            "⚠️ No valid caravans found — fetching Exclusive Listings..."
+          );
+
+          try {
+            alert("no data found");
+            const fallback = await fetchExclusiveListings(pageNum);
+            console.log("🔁 Exclusive API Response:", fallback);
+
+            const fallbackItems = fallback?.items ?? [];
+            console.log(`🔁 Exclusive items count: ${fallbackItems.length}`);
+
+            if (fallbackItems.length > 0) {
+              console.log(`✅ Loaded ${fallbackItems.length} exclusive items`);
+              setProducts(fallbackItems as unknown as Product[]);
+              setPageTitle("Exclusive Listings");
+              setMetaTitle("Exclusive Caravans for Sale");
+              setMetaDescription(
+                "Explore our exclusive collection of caravans."
+              );
+              setPagination({
+                current_page: fallback.currentPage || 1,
+                per_page: fallback.perPage || 12,
+                total_products: fallback.totalProducts || fallbackItems.length,
+                total_pages: fallback.totalPages || 1,
+                total_items: fallback.totalProducts || fallbackItems.length,
+              });
+            } else {
+              console.warn("⚠️ No exclusive items found either.");
+              setProducts([]);
+            }
+          } catch (err) {
+            console.error("❌ Failed to fetch exclusive fallback:", err);
+            setProducts([]);
+          }
         }
 
-        return response; // ✅ return for later .then()
+        return response;
       } catch (error) {
         console.error("❌ Failed to fetch listings:", error);
         setProducts([]);
         return undefined;
       } finally {
         setIsLoading(false);
+        console.log("✅ loadListings complete.");
       }
     },
     [DEFAULT_RADIUS, router, initialData, isUsingInitialData]
   );
 
+  console.log("paginationapi", pagination);
   // const loadListings = useCallback(
   //   async (
   //     pageNum = 1,
@@ -755,13 +855,26 @@ export default function ListingsPage({
               </div>
 
               {/* Listings */}
+              {/* Listings */}
               {isLoading ? (
                 <div className="skeleton-wrapper">
                   <SkeletonListing count={8} />
                 </div>
-              ) : (
+              ) : products.length > 0 ? (
                 <Listing
                   products={products}
+                  data={data}
+                  pagination={pagination}
+                  onNext={handleNextPage}
+                  onPrev={handlePrevPage}
+                  metaDescription={metaDescription}
+                  metaTitle={metaTitle}
+                  onFilterChange={handleFilterChange}
+                  currentFilters={filters}
+                />
+              ) : (
+                <ExculsiveContent
+                  data={items}
                   pagination={pagination}
                   onNext={handleNextPage}
                   onPrev={handlePrevPage}
