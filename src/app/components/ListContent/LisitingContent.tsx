@@ -79,7 +79,6 @@ export default function ListingContent({
   metaDescription,
   onFilterChange,
   currentFilters,
-  data,
 }: Props) {
   // const imageUrl = "public/favicon.ico";
   const getHref = (p: Product) => {

@@ -186,7 +186,6 @@ export default function ListingsPage({
       ? transformApiItemsToProducts(initialData.data.products)
       : []
   );
-  const [data, setData] = useState<Product[]>([]);
 
   const [categories, setCategories] = useState<Category[]>(
     initialData?.data?.all_categories || []
@@ -350,7 +349,6 @@ export default function ListingsPage({
       if (initialData.pagination) setPagination(initialData.pagination);
     }
   }, [initialData]);
-  const [loading, setLoading] = useState(false);
   const [items, setItems] = useState<ExclusiveProduct[]>([]);
 
   useEffect(() => {
@@ -358,7 +356,6 @@ export default function ListingsPage({
 
     const loadExclusiveListings = async () => {
       try {
-        setLoading(true);
         const res = await fetchExclusiveListings(1);
         console.log("✅ Exclusive Listings Response:", res);
 
@@ -369,10 +366,8 @@ export default function ListingsPage({
           console.warn("⚠️ No exclusive items found.");
           setItems([]);
         }
-      } catch (err: any) {
-        console.error("❌ Exclusive Listings Error:", err);
-      } finally {
-        setLoading(false);
+      } catch {
+        console.error("❌ Exclusive Listings Error:");
       }
     };
 
@@ -863,7 +858,7 @@ export default function ListingsPage({
               ) : products.length > 0 ? (
                 <Listing
                   products={products}
-                  data={data}
+                  data={items}
                   pagination={pagination}
                   onNext={handleNextPage}
                   onPrev={handlePrevPage}

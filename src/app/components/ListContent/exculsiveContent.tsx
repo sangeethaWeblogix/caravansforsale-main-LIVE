@@ -73,12 +73,9 @@ interface Props {
 export default function ExculisiveContent({
   data,
   pagination,
-  onNext,
-  onPrev,
+
   metaTitle,
   metaDescription,
-  onFilterChange,
-  currentFilters,
 }: Props) {
   // const imageUrl = "public/favicon.ico";
   const getHref = (p: Product) => {
@@ -112,6 +109,13 @@ export default function ExculisiveContent({
         <div className="top-filter mb-10">
           <div className="flex flex-col items-center justify-center text-center py-10 search-icon">
             <i className="bi bi-search" />
+            {/* <Image
+              src="/images/search.png"
+              alt="No Results"
+              width={10}
+              height={10}
+              className="search-icon"
+            /> */}
             <h4 className="text-lg font-semibold text-gray-800">
               No caravans match your filters
             </h4>
