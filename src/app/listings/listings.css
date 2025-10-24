@@ -926,8 +926,8 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 .serach-icon {
-  width: 10px !important;
-  height: 10px !important;
+  width: 30px !important;
+  height: 30px !important;
 }
 
 @media (min-width: 992px) and (max-width: 1200px) {

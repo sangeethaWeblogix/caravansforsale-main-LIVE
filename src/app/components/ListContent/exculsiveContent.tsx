@@ -10,7 +10,7 @@ import Head from "next/head";
 import { toSlug } from "../../../utils/seo/slug";
 import { useMemo } from "react";
 import Exculisive from "../../../../public/images/exclusive-deal.webp";
-
+import "./exculisve.css";
 interface Product {
   id: number;
   name: string;
@@ -106,16 +106,15 @@ export default function ExculisiveContent({
       </Head>
 
       <div className="col-lg-6 col-md-8">
-        <div className="top-filter mb-10">
+        <div className="row align-items-center">
           <div className="flex flex-col items-center justify-center text-center py-10 search-icon">
-            <i className="bi bi-search" />
-            {/* <Image
+            <Image
               src="/images/search.png"
               alt="No Results"
-              width={10}
-              height={10}
+              width={30}
+              height={30}
               className="search-icon"
-            /> */}
+            />
             <h4 className="text-lg font-semibold text-gray-800">
               No caravans match your filters
             </h4>
