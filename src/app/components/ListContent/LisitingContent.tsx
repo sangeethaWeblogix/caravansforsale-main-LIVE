@@ -2,14 +2,16 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
-import "../../listings/listings.css";
+import "swiper/css/pagination";
+import { Navigation, Autoplay, Pagination } from "swiper/modules";
+
+import "./newList.css";
 import Head from "next/head";
 import { toSlug } from "../../../utils/seo/slug";
-import { useMemo } from "react";
-import Exculisive from "../../../../public/images/exclusive-deal.webp";
+import { useEffect, useMemo, useRef, useState } from "react";
+
 interface Product {
   id: number;
   name: string;
@@ -79,7 +81,34 @@ export default function ListingContent({
   metaDescription,
   onFilterChange,
   currentFilters,
+  data,
 }: Props) {
+  const [orderBy, setOrderBy] = useState("featured");
+  const [showInfo, setShowInfo] = useState(false);
+  const [showContact, setShowContact] = useState(false);
+  const prevRef = useRef(null);
+  const nextRef = useRef(null);
+
+  const handleChange = (e) => {
+    setOrderBy(e.target.value);
+  };
+
+  // ✅ Disable background scroll when popup is open
+  useEffect(() => {
+    if (showInfo || showContact) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [showInfo, showContact]);
+
+  // Example placeholder function for product links
+  const productHref = (slug) => `/listing/${slug}`;
+
   // const imageUrl = "public/favicon.ico";
   const getHref = (p: Product) => {
     const slug = p.slug?.trim() || toSlug(p.name);
@@ -108,10 +137,10 @@ export default function ListingContent({
         <meta name="twitter:description" content={metaDescription} />
       </Head>
 
-      <div className="col-lg-6 col-md-8">
+      <div className="col-lg-9 ">
         <div className="top-filter mb-10">
           <div className="row align-items-center">
-            <div className="col-lg-6 col-sm-6">
+            <div className="col-lg-8">
               <p className="show_count">
                 Showing{" "}
                 {(pagination.current_page - 1) * pagination.per_page + 1}–
@@ -133,7 +162,7 @@ export default function ListingContent({
                 <i className="bi bi-search" /> &nbsp;Filter
               </button>
             </div>
-            <div className="col-lg-6 col-sm-6 col-8">
+            <div className="col-lg-4 col-8">
               <div className="r-side">
                 <form className="woocommerce-ordering" method="get">
                   <div className="form-group shot-buy">
@@ -162,192 +191,305 @@ export default function ListingContent({
             </div>
           </div>
         </div>
-        <div className="dealers-section product-type">
-          {uniqueProducts.map((product) => {
-            const href = getHref(product);
-            return (
-              <article
-                className="vehicleSearch html general null pro"
-                key={product.id}
-              >
-                <div className="vehicleSearch__column-poster">
-                  <Link
-                    href={href}
-                    onClick={() => {
-                      if (typeof window !== "undefined") {
-                        sessionStorage.setItem("cameFromListings", "true");
-                      }
-                    }}
-                  >
-                    {" "}
-                    <div>
-                      {product.is_exclusive && (
-                        <span className="lab">
+        <div className="other_items featured_items">
+          <div className="related-products">
+            <div className="d-flex align-items-center justify-content-between mb-3">
+              <h3 className="featured_head">Featured listings</h3>
+              <div className="d-flex gap-2">
+                <button
+                  ref={prevRef}
+                  className="swiper-button-prev-custom btn btn-light btn-sm"
+                >
+                  <i className="bi bi-chevron-left"></i>
+                </button>
+                <button
+                  ref={nextRef}
+                  className="swiper-button-next-custom btn btn-light btn-sm"
+                >
+                  <i className="bi bi-chevron-right"></i>
+                </button>
+              </div>
+            </div>
+
+            <Swiper
+              modules={[Navigation, Autoplay]}
+              spaceBetween={10}
+              slidesPerView={1}
+              breakpoints={{
+                640: { slidesPerView: 1 },
+                768: { slidesPerView: 2 },
+                1024: { slidesPerView: 3 },
+              }}
+              autoplay={{ delay: 5000, disableOnInteraction: false }}
+              navigation={{
+                prevEl: prevRef.current,
+                nextEl: nextRef.current,
+              }}
+              onInit={(swiper) => {
+                if (
+                  swiper.params.navigation &&
+                  typeof swiper.params.navigation !== "boolean"
+                ) {
+                  swiper.params.navigation.prevEl = prevRef.current;
+                  swiper.params.navigation.nextEl = nextRef.current;
+                  swiper.navigation.init();
+                  swiper.navigation.update();
+                }
+              }}
+              className="featured-swiper"
+            >
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((item) => (
+                <SwiperSlide key={item}>
+                  <Link href={productHref("grand-explorer")} prefetch={false}>
+                    <div className="product-card">
+                      <div className="img">
+                        <div className="background_thumb">
                           <Image
-                            src={Exculisive}
-                            alt="Exclusive Deal"
+                            src="/images/sample3.jpg"
+                            alt="Caravan"
+                            width={300}
+                            height={200}
                             unoptimized
-                            width={0}
-                            height={0}
-                            sizes="100vw"
-                            style={{ width: "auto", height: "auto" }}
                           />
-                        </span>
-                      )}
-                      <Swiper
-                        navigation
-                        modules={[Navigation]}
-                        className="mySwiper"
-                      >
-                        <SwiperSlide>
-                          <div className="swiper-zoom-container">
-                            {product.image && product.image.trim() !== "" ? (
-                              <Image
-                                src={product.image}
-                                alt="Caravan"
-                                width={1593}
-                                height={1195}
-                              />
-                            ) : (
-                              <Image
-                                src="/images/img.png"
-                                alt="Fallback Caravan"
-                                width={1593}
-                                height={1195}
-                              />
-                            )}
+                        </div>
+                        <div className="main_thumb">
+                          <Image
+                            src="/images/sample3.jpg"
+                            alt="Caravan"
+                            width={300}
+                            height={200}
+                            unoptimized
+                          />
+                        </div>
+                      </div>
+                      <div className="product_de">
+                        <div className="info">
+                          <h3 className="title">
+                            2024 Grand Explorer 18'6 Off Road Luxury Ensuite
+                          </h3>
+                        </div>
+                        <div className="price">
+                          <div className="metc2">
+                            <h5 className="slog">
+                              $94,999 <s>$99,990</s>
+                            </h5>
+                            <p className="card-price">
+                              <span>SAVE</span> $4,991
+                            </p>
+                            <div className="more_info">
+                              <button
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  setShowInfo(true);
+                                }}
+                              >
+                                <i className="fa fa-info-circle"></i> Info
+                              </button>
+                            </div>
                           </div>
-                        </SwiperSlide>
-                      </Swiper>
+                        </div>
+                        <ul className="vehicleDetailsWithIcons simple">
+                          <li>
+                            <span className="attribute3">Used</span>
+                          </li>
+                          <li className="attribute3_list">
+                            <span className="attribute3">Touring</span>
+                          </li>
+                          <li>
+                            <span className="attribute3">22 ft</span>
+                          </li>
+                          <li>
+                            <span className="attribute3">2986 Kg</span>
+                          </li>
+                          <li>
+                            <span className="attribute3">Empire</span>
+                          </li>
+                        </ul>
+                        <div className="bottom_mid">
+                          <span>
+                            <i className="bi bi-check-circle-fill"></i>{" "}
+                            Condition New
+                          </span>
+                          <span>
+                            <i className="fa fa-map-marker-alt"></i> Victoria
+                          </span>
+                        </div>
+                        <div className="bottom_button">
+                          <button
+                            className="btn"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setShowContact(true);
+                            }}
+                          >
+                            Contact Dealer
+                          </button>
+                          <button className="btn btn-primary">
+                            View Details
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   </Link>
-
-                  <div className="vehicleThumbDetails">
-                    <div className="title">
-                      {product.link ? (
-                        <Link
-                          href={href}
-                          onClick={() => {
-                            if (typeof window !== "undefined") {
-                              sessionStorage.setItem(
-                                "cameFromListings",
-                                "true"
-                              );
-                            }
-                          }}
-                        >
-                          {" "}
-                          <h3 className="woocommerce-loop-product__title">
-                            {product.name}
-                          </h3>
-                        </Link>
-                      ) : (
-                        <h3 className="woocommerce-loop-product__title">
-                          {product.name}
-                        </h3>
-                      )}
-                    </div>
-                    <ul className="vehicleDetailsWithIcons simple">
-                      {product.categories && product.categories.length > 0 && (
-                        <li className="attribute3_list">
-                          <span className="attribute3">
-                            {product.categories.join(", ")}
-                          </span>
-                        </li>
-                      )}
-
-                      {product.length && (
-                        <li>
-                          <span className="attribute3">{product.length}</span>
-                        </li>
-                      )}
-
-                      {product.kg && (
-                        <li>
-                          <span className="attribute3">{product.kg}</span>
-                        </li>
-                      )}
-
-                      {product.people && (
-                        <li>
-                          <span className="attribute3">{product.people}</span>
-                        </li>
-                      )}
-                    </ul>
-
-                    <div className="vehicleThumbDetails__part">
-                      <div className="price">
-                        <div className="vehicleThumbDetails__part__price">
-                          {/* If regular price is 0, show POA */}
-                          {Number(product.regular_price) === 0 ? (
-                            <span className="woocommerce-Price-amount amount">
-                              <bdi>POA</bdi>
-                            </span>
-                          ) : product.sale_price ? (
-                            <>
-                              <del>
-                                <span className="woocommerce-Price-amount old-price amount">
-                                  <bdi>{product.regular_price}</bdi>
-                                </span>
-                              </del>
-                              <ins>
-                                <span className="woocommerce-Price-amount amount">
-                                  <bdi>{product.sale_price}</bdi>
-                                </span>
-                              </ins>
-                            </>
-                          ) : (
-                            <span className="woocommerce-Price-amount amount">
-                              <bdi>
-                                {parseFloat(
-                                  String(product.regular_price).replace(
-                                    /[^0-9.]/g,
-                                    ""
-                                  )
-                                ) === 0
-                                  ? "POA"
-                                  : product.regular_price}
-                              </bdi>{" "}
-                            </span>
-                          )}
-                        </div>
-
-                        {(() => {
-                          const cleaned = (
-                            product.price_difference || ""
-                          ).replace(/[^0-9.]/g, "");
-                          const numericValue = parseFloat(cleaned);
-                          return numericValue > 0 ? (
-                            <div className="vehicleThumbDetails__part__finance">
-                              <span className="n_price">
-                                <small>Save</small>
-                                <span>{product.price_difference}</span>
-                              </span>
-                            </div>
-                          ) : null;
-                        })()}
-                      </div>
-                      {product.location && (
-                        <div className="vehicleThumbDetails__features__address">
-                          <label>Seller Location</label>
-                          <h3>{product.location}</h3>
-                        </div>
-                      )}
-
-                      {product.condition && (
-                        <div className="vehicleThumbDetails__features__condition">
-                          <label>Condition</label>
-                          <h3>{product.condition}</h3>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </article>
-            );
-          })}
+                </SwiperSlide>
+              ))}
+            </Swiper>
+          </div>
         </div>
 
+        <div className="dealers-section product-type">
+          <div className="other_items">
+            <div className="related-products">
+              <div className="row">
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((item) => (
+                  <div className="col-lg-4 mb-3" key={item}>
+                    <Link
+                      href={productHref("grand-explorer")}
+                      prefetch={false}
+                      className="lli_head"
+                    >
+                      <div className="product-card">
+                        <div className="img">
+                          <div className="background_thumb">
+                            <Image
+                              src="/images/sample3.jpg"
+                              alt="Caravan"
+                              width={300}
+                              height={200}
+                              unoptimized
+                            />
+                          </div>
+                          <div className="main_thumb position-relative">
+                            <span className="lab">Spotlight Van</span>
+                            <Swiper
+                              modules={[Navigation, Pagination]}
+                              spaceBetween={10}
+                              slidesPerView={1}
+                              navigation
+                              pagination={{
+                                clickable: true,
+                                //dynamicBullets: true, // adds smooth, minimal bullets
+                              }}
+                              onSlideChange={(swiper) => {
+                                const isLast =
+                                  swiper.activeIndex ===
+                                  swiper.slides.length - 1;
+                                const viewMoreBtn = document.querySelector(
+                                  `#view-more-btn-${item}`
+                                );
+                                if (viewMoreBtn instanceof HTMLElement) {
+                                  viewMoreBtn.style.display = isLast
+                                    ? "block"
+                                    : "none";
+                                }
+                              }}
+                              className="main_thumb_swiper"
+                            >
+                              {[
+                                "/images/thumb-1.jpg",
+                                "/images/thumb-2.jpg",
+                                "/images/thumb-3.jpg",
+                                "/images/thumb-4.jpg",
+                              ].map((img, i) => (
+                                <SwiperSlide key={i}>
+                                  <div className="thumb_img">
+                                    <Image
+                                      src={img}
+                                      alt={`Caravan ${i + 1}`}
+                                      width={300}
+                                      height={200}
+                                      unoptimized
+                                    />
+                                  </div>
+                                </SwiperSlide>
+                              ))}
+                            </Swiper>
+
+                            {/* Hidden "View More" button that appears after last slide */}
+                            <div
+                              id={`view-more-btn-${item}`}
+                              className="view-more-btn-wrapper"
+                            >
+                              <Link
+                                href="/related-links"
+                                className="view-more-btn"
+                              >
+                                View More
+                              </Link>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="product_de">
+                          <div className="info">
+                            <h3 className="title">
+                              2024 Grand Explorer 18'6 Off Road Luxury Ensuite
+                            </h3>
+                          </div>
+                          <div className="price">
+                            <div className="metc2">
+                              <h5 className="slog">$94,999</h5>
+
+                              <div className="more_info">
+                                <button
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    setShowInfo(true);
+                                  }}
+                                >
+                                  <i className="fa fa-info-circle"></i> Info
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                          <ul className="vehicleDetailsWithIcons simple">
+                            <li>
+                              <span className="attribute3">Used</span>
+                            </li>
+                            <li className="attribute3_list">
+                              <span className="attribute3">Touring</span>
+                            </li>
+                            <li>
+                              <span className="attribute3">22 ft</span>
+                            </li>
+                            <li>
+                              <span className="attribute3">2986 Kg</span>
+                            </li>
+                            <li>
+                              <span className="attribute3">Empire</span>
+                            </li>
+                          </ul>
+                          <div className="bottom_mid">
+                            <span>
+                              <i className="bi bi-check-circle-fill"></i>{" "}
+                              Condition New
+                            </span>
+                            <span>
+                              <i className="fa fa-map-marker-alt"></i> Victoria
+                            </span>
+                          </div>
+                          <div className="bottom_button">
+                            <button
+                              className="btn"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                setShowContact(true);
+                              }}
+                            >
+                              Contact Dealer
+                            </button>
+                            <button className="btn btn-primary">
+                              View Details
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </Link>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
         <div className="pagination-wrapper mt-4">
           <nav className="woocommerce-pagination custom-pagination mt-4">
             <ul className="pagination-icons">
@@ -379,6 +521,178 @@ export default function ListingContent({
           </nav>
         </div>
       </div>
+      {showInfo && (
+        <div className="popup-overlay">
+          <div className="popup-box">
+            <button className="close-popup" onClick={() => setShowInfo(false)}>
+              ×
+            </button>
+            <h4>Description</h4>
+            <div className="popup-content">
+              <p>
+                Introducing the Explorer 18’6 – one of Australia’s best 18ft off
+                road caravans with an ensuite, built using state-of-the-art 3D
+                modelling technology. This caravan is built to handle any
+                terrain with its 6-inch chassis, TEKO Tuff Ride 3000kg
+                Independent Coil Suspension, and 16 inch all-terrain tyres.
+                Standard features in this caravan include Tuson Sway Control,
+                reverse camera, large dual slide out toolbox & a Victron energy
+                system.
+              </p>
+              <p>
+                Choose between a comfortable café dinette lounge or L shape
+                lounge in this popular rear door 18ft 6 caravan layout. Custom
+                built to your needs, from the exterior and interior colours, to
+                every option and upgrade you can think of, every Grand City is
+                built to the highest quality. Plus, with 2 x 200w solar panels
+                and 2 x 110Ah lithium batteries and 2 x 95L fresh water and a
+                95L grey water tank, you can go off grid and stay off grid for
+                longer. Choose the Explorer for your next adventure where you
+                dare to explore where others won’t!
+              </p>
+              <h3>CHASSIS</h3>
+              <ul>
+                <li>Built by FP Chassis with Australian Made Steel</li>
+                <li>One Piece Honeycomb Composite Floor</li>
+                <li>6 inch Extended A-Frame</li>
+                <li>AL-KO Electronic Stability Control</li>
+                <li>TEKO Tuff Ride Coil Suspension</li>
+                <li>Cruisemaster DO35</li>
+                <li>Corner Drop Down Stabiliser Legs</li>
+                <li>Trail Safe Bluetooth Break-Away Safety System</li>
+                <li>16 inch Wheels</li>
+                <li>All Terrain Tyres (265/75/R16)</li>
+                <li>3 Arm Rear Bumper</li>
+                <li>Kojack Hydraulic Caravan Jack with Wheel Brace</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* === Contact Dealer Popup === */}
+      {showContact && (
+        <div className="popup-overlay">
+          <div className="popup-box">
+            <button
+              type="button"
+              className="close-popup"
+              onClick={() => setShowContact(false)}
+            >
+              ×
+            </button>
+            <h4>Contact Dealer</h4>
+            <div className="sidebar-enquiry">
+              <form className="wpcf7-form" noValidate>
+                <div className="form">
+                  <div className="form-item">
+                    <p>
+                      <input
+                        id="enquiry2-name"
+                        className="wpcf7-form-control"
+                        required
+                        autoComplete="off"
+                        aria-invalid="false"
+                        aria-describedby="err-name"
+                        type="text"
+                        name="enquiry2-name"
+                      />
+                      <label htmlFor="enquiry2-name">Name</label>
+                    </p>
+                  </div>
+
+                  <div className="form-item">
+                    <p>
+                      <input
+                        id="enquiry2-email"
+                        className="wpcf7-form-control"
+                        required
+                        autoComplete="off"
+                        aria-invalid="false"
+                        aria-describedby="err-email"
+                        type="email"
+                        name="enquiry2-email"
+                      />
+                      <label htmlFor="enquiry2-email">Email</label>
+                    </p>
+                  </div>
+
+                  <div className="form-item">
+                    <p className="phone_country">
+                      <span className="phone-label">+61</span>
+                      <input
+                        id="enquiry2-phone"
+                        inputMode="numeric"
+                        className="wpcf7-form-control"
+                        required
+                        autoComplete="off"
+                        aria-invalid="false"
+                        aria-describedby="err-phone"
+                        type="tel"
+                        name="enquiry2-phone"
+                      />
+                      <label htmlFor="enquiry2-phone">Phone</label>
+                    </p>
+                  </div>
+
+                  <div className="form-item">
+                    <p>
+                      <input
+                        id="enquiry2-postcode"
+                        inputMode="numeric"
+                        maxLength={4}
+                        className="wpcf7-form-control"
+                        required
+                        autoComplete="off"
+                        aria-invalid="false"
+                        aria-describedby="err-postcode"
+                        type="text"
+                        name="enquiry2-postcode"
+                      />
+                      <label htmlFor="enquiry2-postcode">Postcode</label>
+                    </p>
+                  </div>
+
+                  <div className="form-item">
+                    <p>
+                      <label htmlFor="enquiry4-message">
+                        Message (optional)
+                      </label>
+                      <textarea
+                        id="enquiry4-message"
+                        name="enquiry4-message"
+                        className="wpcf7-form-control wpcf7-textarea"
+                      ></textarea>
+                    </p>
+                  </div>
+
+                  <p className="terms_text">
+                    By clicking 'Send Enquiry', you agree to Caravan Marketplace{" "}
+                    <Link target="_blank" href="/privacy-collection-statement/">
+                      Collection Statement
+                    </Link>
+                    ,{" "}
+                    <Link target="_blank" href="/privacy-policy/">
+                      Privacy Policy
+                    </Link>{" "}
+                    and{" "}
+                    <Link target="_blank" href="/terms-conditions/">
+                      Terms and Conditions
+                    </Link>
+                    .
+                  </p>
+
+                  <div className="submit-btn">
+                    <button type="submit" className="btn btn-primary">
+                      Send Enquiry
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

@@ -819,8 +819,8 @@ export default function ListingsPage({
       </Head>
 
       <section className="services product_listing bg-gray-100 section-padding pb-30 style-1">
-        <div className="container-fluid">
-          <div className="content mb-4">
+        <div className="container">
+          <div className="content">
             <div className="text-sm text-gray-600 header">
               <Link href="/" className="hover:underline">
                 Home
