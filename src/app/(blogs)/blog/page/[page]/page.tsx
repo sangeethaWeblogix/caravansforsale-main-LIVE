@@ -96,12 +96,14 @@ export default function BlogPage() {
       <section className="all-news bg-light-gray blog-listing section-padding blog bg-transparent style-3">
         <div className="container">
           <div className="section-head mb-60 style-5">
-            <h2>
-              Valuable News, Reviews &amp; Advice From Caravan Marketplace
-            </h2>
+            <div className="section-head mb-60 style-5">
+              <h2>
+                Valuable News, Reviews &amp; Advice From Caravan Marketplace
+              </h2>
+            </div>
+            ;
           </div>
         </div>
-
         <div className="container">
           <div className="row">
             <div className="col-lg-9">
@@ -140,6 +142,12 @@ export default function BlogPage() {
                         <div className="col-lg-7 col-sm-6">
                           <div className="card-body p-0">
                             <small className="d-block date text">
+                              <Link
+                                href={"/author/tom/"}
+                                className="text-uppercase border-end brd-gray pe-2 me-2 color-blue4"
+                              >
+                                Tom
+                              </Link>
                               <Link href={href} className="op-8">
                                 {formatPostDate(post.date)}
                               </Link>
