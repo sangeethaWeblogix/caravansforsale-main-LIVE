@@ -100,8 +100,6 @@ export default async function Layout({
     post.image ||
     "https://www.caravansforsale.com.au/load.svg";
 
-  const authorName = post.author || "Caravans for Sale";
-
   // ✅ Build JSON-LD Schema (SSR output)
   const jsonLd = {
     "@context": "https://schema.org",
