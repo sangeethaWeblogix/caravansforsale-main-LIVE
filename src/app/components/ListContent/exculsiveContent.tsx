@@ -111,8 +111,8 @@ export default function ExculisiveContent({
             {/* <Image
               src="/images/search.png"
               alt="No Results"
-              width={30}
-              height={30}
+              width={10}
+              height={10}
               className="search-icon"
             /> */}
             <i className="bi bi-search" />
@@ -120,8 +120,7 @@ export default function ExculisiveContent({
               No caravans match your filters
             </h4>
             <p className="text-gray-500 mt-1 max-w-md">
-              Try adjusting the price, year, or keyword filters for more
-              results.
+              Here are some Spotlight Vans that may interest you.
             </p>
           </div>
         </div>
