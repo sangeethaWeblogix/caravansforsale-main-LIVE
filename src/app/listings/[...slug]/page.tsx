@@ -6,7 +6,7 @@ import { metaFromSlug } from "../../../utils/seo/metaFromSlug";
 import type { Metadata } from "next";
 import { fetchListings } from "@/api/listings/api";
 import { ensureValidPage } from "@/utils/seo/validatePage";
-import { redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 
 type Params = Promise<{ slug?: string[] }>;
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
@@ -64,7 +64,7 @@ export default async function Listings({
     // if more than 1 segment and the extra part is invalid → 404
     slug.length > 1
   ) {
-    redirect("/404Page");
+    notFound();
   }
 
   // ✅ Build query and validate page
