@@ -38,37 +38,67 @@ export default async function Listings({
   ]);
   const { slug = [] } = resolvedParams;
 
-  // ✅ Slug validation
+  const slugJoined = slug.join("/");
+
+  // 1️⃣ Basic safety checks
   if (
     !slug ||
     !Array.isArray(slug) ||
     slug.length === 0 ||
-    slug.join("").match(/[^\w-]/) ||
-    /[&*%$#@!=<>?,]/.test(slug.join("")) ||
-    slug.join("").includes("..") ||
-    slug.join("").includes("//")
+    slugJoined.match(/[^\w/-]/) || // allow only letters, numbers, -, /
+    slugJoined.includes("..") ||
+    slugJoined.includes("//") ||
+    slugJoined.includes("&") ||
+    slugJoined.includes("?") ||
+    slugJoined.includes("=")
   ) {
     notFound();
   }
 
-  // ✅ Build query and validate page
+  // 2️⃣ Detect invalid "extra number" at the end of the URL
+  // Example: /listings/.../55 or /listings/.../123/
+  const lastPart = slug[slug.length - 1];
+
+  // Match pure numbers (1–5 digits typical)
+  if (/^\d{1,6}$/.test(lastPart)) {
+    notFound(); // 🚫 Invalid extra numeric path
+  }
+
+  // 3️⃣ Suburb + pincode check — ensure nothing comes after
+  const suburbPinMatch = slug.find((part) =>
+    /^([a-z0-9-]+)-(\d{4})$/.test(part)
+  );
+  const suburbPinIndex = suburbPinMatch ? slug.indexOf(suburbPinMatch) : -1;
+
+  if (suburbPinIndex !== -1 && suburbPinIndex < slug.length - 1) {
+    notFound(); // 🚫 Example: /windsor-2756/55 → invalid
+  }
+
+  // 4️⃣ Maximum segments allowed — prevent overly deep paths
+  if (slug.length > 5) {
+    notFound();
+  }
+
+  // ✅ 4️⃣ Parse slug into filters
+  const filters = parseSlugToFilters(slug, resolvedSearchParams);
+  if (!filters || Object.keys(filters).length === 0) {
+    notFound();
+  }
+
+  // ✅ 5️⃣ Build query
   const fullQuery = Object.entries(resolvedSearchParams)
     .map(([k, v]) => `${k}=${Array.isArray(v) ? v.join(",") : v}`)
     .join("&");
 
   const page = ensureValidPage(resolvedSearchParams.page, fullQuery);
-  const filters = parseSlugToFilters(slug, resolvedSearchParams);
 
+  // ✅ 6️⃣ Fetch listings
   const response = await fetchListings({ ...filters, page });
-  if (
-    !response ||
-    response.success === false ||
-    !response.data ||
-    !Array.isArray(response.data.products) ||
-    response.data.products.length === 0
-  ) {
-    notFound();
-  }
+
+  // ✅ 7️⃣ Optional: show 404 if no data
+  // if (!response?.data?.products?.length) {
+  //   notFound();
+  // }
 
   return <ListingsPage {...filters} page={page} initialData={response} />;
 }

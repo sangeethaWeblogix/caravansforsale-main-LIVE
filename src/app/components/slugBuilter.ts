@@ -35,14 +35,18 @@ export function buildSlugFromFilters(f: Filters): string {
   const suburb = f.suburb ? toSlug(f.suburb) : undefined;
   const pin = f.pincode?.trim();
 
-  if (suburb) {
-    // When suburb exists, we emit: suburb-suburb / state-state / pincode? ; region is omitted
-    segments.push(`${suburb}-suburb`);
-    if (state) segments.push(`${state}-state`);
-    if (pin) segments.push(pin);
-  } else if (state) {
+  if (suburb && state) {
+    // Suburb-level: /state-state/suburb-pincode
     segments.push(`${state}-state`);
-    if (region) segments.push(`${region}-region`);
+    if (pin) segments.push(`${suburb}-${pin}`);
+    else segments.push(suburb);
+  } else if (region && state) {
+    // Region-level: /state-state/region-region
+    segments.push(`${state}-state`);
+    segments.push(`${region}-region`);
+  } else if (state) {
+    // State-level: /state-state
+    segments.push(`${state}-state`);
   }
 
   // 5) Price
