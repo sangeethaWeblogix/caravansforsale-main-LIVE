@@ -226,15 +226,10 @@ export default function ListingContent({
                 nextEl: nextRef.current,
               }}
               onInit={(swiper) => {
-                if (
-                  swiper.params.navigation &&
-                  typeof swiper.params.navigation !== "boolean"
-                ) {
-                  swiper.params.navigation.prevEl = prevRef.current;
-                  swiper.params.navigation.nextEl = nextRef.current;
-                  swiper.navigation.init();
-                  swiper.navigation.update();
-                }
+                swiper.params.navigation.prevEl = prevRef.current;
+                swiper.params.navigation.nextEl = nextRef.current;
+                swiper.navigation.init();
+                swiper.navigation.update();
               }}
               className="featured-swiper"
             >
@@ -377,7 +372,7 @@ export default function ListingContent({
                                 const viewMoreBtn = document.querySelector(
                                   `#view-more-btn-${item}`
                                 );
-                                if (viewMoreBtn instanceof HTMLElement) {
+                                if (viewMoreBtn) {
                                   viewMoreBtn.style.display = isLast
                                     ? "block"
                                     : "none";

@@ -1,5 +1,10 @@
-.bg-gray-100 {
-  background-color: #f2f2f2;
+@media (min-width: 1200px) {
+  .container-xxl {
+    max-width: 1440px;
+  }
+}
+.new_listing.bg-gray-100 {
+  background-color: #ffffff;
   border-top: 1px solid #e1e1e1;
   border-bottom: 1px solid #e1e1e1;
 }
@@ -526,15 +531,15 @@ h1.page-title {
 }
 
 .new_listing .other_items.featured_items {
-  padding: 30px;
-  background: #fff;
+  padding: 20px;
+  background: #f1f7fd;
   border: 1px solid #ddd;
   border-radius: 8px;
   margin-bottom: 30px;
 }
 
 .new_listing .other_items.featured_items .product_de {
-  background: #f1f7fd;
+  background: #ffffff;
   padding: 15px;
 }
 
@@ -565,6 +570,10 @@ h1.page-title {
   font-weight: 500;
   text-transform: uppercase;
   display: none;
+}
+
+.product-page .product-card:hover {
+  box-shadow: var(--boxshadow-100);
 }
 
 @media (max-width: 767px) {

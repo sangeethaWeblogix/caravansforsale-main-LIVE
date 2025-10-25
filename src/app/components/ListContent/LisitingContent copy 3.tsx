@@ -218,7 +218,7 @@ export default function ListingContent({
               breakpoints={{
                 640: { slidesPerView: 1 },
                 768: { slidesPerView: 2 },
-                1024: { slidesPerView: 2 },
+                1024: { slidesPerView: 3 },
               }}
               autoplay={{ delay: 5000, disableOnInteraction: false }}
               navigation={{
@@ -340,9 +340,9 @@ export default function ListingContent({
         <div className="dealers-section product-type">
           <div className="other_items">
             <div className="related-products">
-              <div className="row g-3">
+              <div className="row">
                 {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((item) => (
-                  <div className="col-lg-6 mb-0" key={item}>
+                  <div className="col-lg-4 mb-3" key={item}>
                     <Link
                       href={productHref("grand-explorer")}
                       prefetch={false}
