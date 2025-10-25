@@ -20,7 +20,7 @@ async function fetchBlogDetail(slug: string) {
   }
 }
 
-// ✅ SEO Metadata (title, description only)
+// ✅ SEO Metadata (title, description, canonical, OG tags)
 export async function generateMetadata({
   params,
 }: {
@@ -28,26 +28,14 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const data = await fetchBlogDetail(slug);
-  // Format date to "Month DD, YYYY"
-  // function formatDate(dateStr?: string) {
-  //   const date = new Date(dateStr || Date.now());
-  //   return date.toLocaleDateString("en-US", {
-  //     year: "numeric",
-  //     month: "long",
-  //     day: "numeric",
-  //   });
-  // }
-
   const seo = data?.seo ?? {};
   const post = data?.data?.blog_detail || {};
 
   const title = seo.metatitle || post.title || "Caravans for Sale Blog";
-
   const description =
     seo.metadescription ||
     post.short_description ||
     "Read more on Caravans for Sale.";
-
   const canonical = `https://www.caravansforsale.com.au/${slug}/`;
 
   return {
@@ -68,12 +56,12 @@ export async function generateMetadata({
   };
 }
 
-// ✅ Safe JSON encode for script tag
+// ✅ Safe JSON encode for <script> tag
 function safeJsonLdString(json: object) {
   return JSON.stringify(json, null, 2).replace(/</g, "\\u003c");
 }
 
-// ✅ Layout (renders schema script in <head> SSR)
+// ✅ Layout (includes structured data in head SSR)
 export default async function Layout({
   children,
   params,
@@ -87,9 +75,7 @@ export default async function Layout({
   const seo = data?.seo || {};
 
   const canonical = `https://www.caravansforsale.com.au/${slug}/`;
-
   const title = seo.metatitle || post.title || "Caravans for Sale Blog";
-
   const description =
     seo.metadescription ||
     post.short_description ||
@@ -100,7 +86,7 @@ export default async function Layout({
     post.image ||
     "https://www.caravansforsale.com.au/load.svg";
 
-  // ✅ Build JSON-LD Schema (SSR output)
+  // ✅ JSON-LD schema (Google Rich Result compatible)
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
@@ -110,11 +96,16 @@ export default async function Layout({
     },
     headline: title,
     description: description,
-    image: bannerImage,
+    image: {
+      "@type": "ImageObject",
+      url: bannerImage,
+      width: 1600,
+      height: 900,
+    },
     author: {
       "@type": "Person",
       name: "Tom",
-      url: `https://www.caravansforsale.com.au/author/tom/`,
+      url: "https://www.caravansforsale.com.au/author/tom/",
     },
     publisher: {
       "@type": "Organization",
@@ -122,17 +113,23 @@ export default async function Layout({
       logo: {
         "@type": "ImageObject",
         url: "https://www.caravansforsale.com.au/images/cfs-logo-black.svg",
+        width: 300,
+        height: 60,
       },
     },
-    datePublished: post.date || new Date().toISOString(),
-    dateModified: post.date || new Date().toISOString(),
+    datePublished: post.date
+      ? new Date(post.date).toISOString()
+      : new Date().toISOString(),
+    dateModified: post.date
+      ? new Date(post.date).toISOString()
+      : new Date().toISOString(),
   };
 
   return (
     <>
-      {/* ✅ JSON-LD structured data in head (will be moved by Next.js) */}
+      {/* ✅ Correct MIME type (no more detection issue) */}
       <script
-        type="applicahion/ld+json"
+        type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: safeJsonLdString(jsonLd),
         }}
