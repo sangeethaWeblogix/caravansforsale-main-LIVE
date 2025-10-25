@@ -5,14 +5,12 @@ import { parseSlugToFilters } from "../../components/urlBuilder";
 import { metaFromSlug } from "../../../utils/seo/metaFromSlug";
 import type { Metadata } from "next";
 import { fetchListings } from "@/api/listings/api";
+import { ensureValidPage } from "@/utils/seo/validatePage";
 import { notFound } from "next/navigation";
-// import { fetchListings } from "@/api/listings/api";
 
-// Define types for the async params
 type Params = Promise<{ slug?: string[] }>;
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
-// Generate metadata (SEO)
 export async function generateMetadata({
   params,
   searchParams,
@@ -20,16 +18,13 @@ export async function generateMetadata({
   params: Params;
   searchParams: SearchParams;
 }): Promise<Metadata> {
-  // Await the params and searchParams
   const [resolvedParams, resolvedSearchParams] = await Promise.all([
     params,
     searchParams,
   ]);
-
   return metaFromSlug(resolvedParams.slug || [], resolvedSearchParams);
 }
 
-// Main Listings page
 export default async function Listings({
   params,
   searchParams,
@@ -41,42 +36,69 @@ export default async function Listings({
     params,
     searchParams,
   ]);
-
   const { slug = [] } = resolvedParams;
-  const filters = parseSlugToFilters(slug, resolvedSearchParams);
 
-  // 🚫 validate `page`
-  let page = 1;
-  if (resolvedSearchParams.page) {
-    const raw =
-      typeof resolvedSearchParams.page === "string"
-        ? resolvedSearchParams.page
-        : Array.isArray(resolvedSearchParams.page)
-        ? resolvedSearchParams.page[0]
-        : "";
+  const slugJoined = slug.join("/");
 
-    // only digits allowed
-    if (!/^[0-9]+$/.test(raw)) {
-      notFound();
-    }
-
-    page = Number(raw);
-
-    if (!Number.isInteger(page) || page < 1) {
-      notFound();
-    }
-  }
-
-  // 🚫 block extra params besides "page"
-  const keys = Object.keys(resolvedSearchParams);
-  if (keys.length > 1 || (keys.length === 1 && keys[0] !== "page")) {
+  // 1️⃣ Basic safety checks
+  if (
+    !slug ||
+    !Array.isArray(slug) ||
+    slug.length === 0 ||
+    slugJoined.match(/[^\w/-]/) || // allow only letters, numbers, -, /
+    slugJoined.includes("..") ||
+    slugJoined.includes("//") ||
+    slugJoined.includes("&") ||
+    slugJoined.includes("?") ||
+    slugJoined.includes("=")
+  ) {
     notFound();
   }
 
-  const response = await fetchListings({
-    ...filters,
-    page,
-  });
+  // 2️⃣ Detect invalid "extra number" at the end of the URL
+  // Example: /listings/.../55 or /listings/.../123/
+  const lastPart = slug[slug.length - 1];
+
+  // Match pure numbers (1–5 digits typical)
+  if (/^\d{1,6}$/.test(lastPart)) {
+    notFound(); // 🚫 Invalid extra numeric path
+  }
+
+  // 3️⃣ Suburb + pincode check — ensure nothing comes after
+  const suburbPinMatch = slug.find((part) =>
+    /^([a-z0-9-]+)-(\d{4})$/.test(part)
+  );
+  const suburbPinIndex = suburbPinMatch ? slug.indexOf(suburbPinMatch) : -1;
+
+  if (suburbPinIndex !== -1 && suburbPinIndex < slug.length - 1) {
+    notFound(); // 🚫 Example: /windsor-2756/55 → invalid
+  }
+
+  // 4️⃣ Maximum segments allowed — prevent overly deep paths
+  if (slug.length > 5) {
+    notFound();
+  }
+
+  // ✅ 4️⃣ Parse slug into filters
+  const filters = parseSlugToFilters(slug, resolvedSearchParams);
+  if (!filters || Object.keys(filters).length === 0) {
+    notFound();
+  }
+
+  // ✅ 5️⃣ Build query
+  const fullQuery = Object.entries(resolvedSearchParams)
+    .map(([k, v]) => `${k}=${Array.isArray(v) ? v.join(",") : v}`)
+    .join("&");
+
+  const page = ensureValidPage(resolvedSearchParams.page, fullQuery);
+
+  // ✅ 6️⃣ Fetch listings
+  const response = await fetchListings({ ...filters, page });
+
+  // ✅ 7️⃣ Optional: show 404 if no data
+  // if (!response?.data?.products?.length) {
+  //   notFound();
+  // }
 
   return <ListingsPage {...filters} page={page} initialData={response} />;
 }

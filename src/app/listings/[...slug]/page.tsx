@@ -78,7 +78,6 @@ export default async function Listings({
   if (slug.length > 5) {
     notFound();
   }
-
   // ✅ 4️⃣ Parse slug into filters
   const filters = parseSlugToFilters(slug, resolvedSearchParams);
   if (!filters || Object.keys(filters).length === 0) {

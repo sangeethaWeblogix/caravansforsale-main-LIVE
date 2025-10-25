@@ -17,128 +17,234 @@ export interface Filters {
   make?: string;
   model?: string;
   orderby?: string;
+  radius_kms?: string;
+  page?: string;
+  acustom_fromyears?: number | string;
+  acustom_toyears?: number | string;
   search?: string;
-  keyword?: string;
+  keyword?: string; // parsed -> canonicalized to `search`
 }
 
-const conditionMap: Record<string, string> = {
-  new: "New",
-  used: "Used",
-  "near-new": "Near New",
-};
-
-export function parseSlugToFilters(slugParts: string[]): Filters {
+/**
+ * Parse path segments & query params into a Filters object.
+ * @param slugParts Array of path segments (already decoded if possible)
+ * @param query Optional query params object (e.g. from req.query or searchParams)
+ */
+export function parseSlugToFilters(
+  slugParts: string[],
+  query?: Record<string, string | string[] | undefined> // Works with most frameworks
+): Filters {
   const filters: Filters = {};
+  const conditionMap: Record<string, string> = {
+    new: "New",
+    used: "Used",
+  };
+  function toNumber(val: string | string[] | undefined): number | undefined {
+    if (!val) return undefined;
+    const str = Array.isArray(val) ? val[0] : val;
+    const num = Number(str);
+    return isNaN(num) ? undefined : num;
+  }
+  const hasReservedSuffix = (s: string) =>
+    /-(category|condition|state|region|suburb|keyword)$/.test(s) ||
+    /-(kg-atm|length-in-feet|people-sleeping-capacity)$/.test(s) ||
+    /^over-\d+/.test(s) ||
+    /^under-\d+/.test(s) ||
+    /^between-/.test(s) ||
+    /^\d{4}$/.test(s) ||
+    s.includes("="); // e.g. search=, keyword=
 
-  slugParts.forEach((part) => {
+  slugParts.forEach((_part) => {
+    const decoded = decodeURIComponent(_part);
+    const part = decoded.split("?")[0];
+    if (!part) return;
+
+    // --- Typed segments ---
     if (part.endsWith("-category")) {
       filters.category = part.replace("-category", "");
-    } else if (part.endsWith("-condition")) {
+      return;
+    }
+
+    if (part.endsWith("-condition")) {
       const slug = part.replace("-condition", "").toLowerCase();
       filters.condition = conditionMap[slug] || slug;
-    } else if (part.endsWith("-state")) {
+      return;
+    }
+
+    if (part.endsWith("-state")) {
       filters.state = part
         .replace("-state", "")
         .replace(/-/g, " ")
         .toLowerCase();
-    } else if (part.endsWith("-region")) {
-      // region can be present in URL, but we'll drop it later if suburb exists
+      return;
+    }
+
+    if (part.endsWith("-region")) {
       filters.region = part
         .replace("-region", "")
         .replace(/-/g, " ")
         .toLowerCase();
-    } else if (part.endsWith("-suburb")) {
-      filters.suburb = part.replace("-suburb", "").replace(/-/g, " ");
-    } else if (/^\d{4}$/.test(part)) {
+      return;
+    }
+    const suburbPinMatch = part.match(/^([a-z0-9-]+)-(\d{4})$/);
+    if (suburbPinMatch) {
+      const [suburbPart, pincode] = suburbPinMatch;
+      filters.suburb = suburbPart.replace(/-/g, " ").toLowerCase();
+      filters.pincode = pincode;
+      return;
+    }
+
+    if (/^\d{4}$/.test(part)) {
       filters.pincode = part;
-    } else if (part.includes("-kg-atm")) {
-      if (part.startsWith("between-")) {
-        const match = part.match(/between-(\d+)-kg-(\d+)-kg-atm/);
-        if (match) {
-          filters.minKg = match[1];
-          filters.maxKg = match[2];
-        }
-      } else if (part.startsWith("over-")) {
-        filters.minKg = part.replace("over-", "").replace("-kg-atm", "");
-      } else if (part.startsWith("under-")) {
-        filters.maxKg = part.replace("under-", "").replace("-kg-atm", "");
+      return;
+    }
+
+    // ATM: support canonical and legacy patterns
+    if (part.includes("-kg-atm")) {
+      const canon = part.match(/^between-(\d+)-kg-(\d+)-kg-atm$/);
+      if (canon) {
+        filters.minKg = canon[1];
+        filters.maxKg = canon[2];
+        return;
       }
-    } else if (part.includes("length-in-feet")) {
-      if (part.startsWith("between-")) {
-        const match = part.match(/between-(\d+)-(\d+)-length-in-feet/);
-        if (match) {
-          filters.from_length = match[1];
-          filters.to_length = match[2];
-        }
-      } else if (part.startsWith("over-")) {
-        filters.from_length = part
-          .replace("over-", "")
-          .replace("-length-in-feet", "");
-      } else if (part.startsWith("under-")) {
-        filters.to_length = part
-          .replace("under-", "")
-          .replace("-length-in-feet", "");
+      const legacy = part.match(/^between-(\d+)-kg-(\d+)-kg-atm$/);
+      if (legacy) {
+        filters.minKg = legacy[1];
+        filters.maxKg = legacy[2];
+        return;
       }
-    } else if (part.includes("-people-sleeping-capacity")) {
-      if (/^between-\d+-and-\d+-people-sleeping-capacity$/.test(part)) {
-        const match = part.match(
-          /between-(\d+)-and-(\d+)-people-sleeping-capacity/
-        );
-        if (match) filters.sleeps = `${match[1]}-people`;
-      } else {
-        const raw = part.replace("-people-sleeping-capacity", "");
-        const cleaned = raw.replace(/^over-/, "").replace(/^under-/, "");
-        if (!isNaN(Number(cleaned))) filters.sleeps = `${cleaned}-people`;
+      const over = part.match(/^over-(\d+)-kg-atm$/);
+      if (over) {
+        filters.minKg = over[1];
+        return;
       }
-    } else if (/^over-\d+$/.test(part)) {
+      const under = part.match(/^under-(\d+)-kg-atm$/);
+      if (under) {
+        filters.maxKg = under[1];
+        return;
+      }
+    }
+
+    // Length (feet)
+    if (part.includes("length-in-feet")) {
+      const between = part.match(/^between-(\d+)-(\d+)-length-in-feet$/);
+      if (between) {
+        filters.from_length = between[1];
+        filters.to_length = between[2];
+        return;
+      }
+      const over = part.match(/^over-(\d+)-length-in-feet$/);
+      if (over) {
+        filters.from_length = over[1];
+        return;
+      }
+      const under = part.match(/^under-(\d+)-length-in-feet$/);
+      if (under) {
+        filters.to_length = under[1];
+        return;
+      }
+    }
+
+    // Sleeps (single-value)
+    if (part.includes("-people-sleeping-capacity")) {
+      const between = part.match(
+        /^between-(\d+)-and-(\d+)-people-sleeping-capacity$/
+      );
+      if (between) {
+        filters.sleeps = `${between[1]}-people`;
+        return;
+      }
+      const raw = part.replace("-people-sleeping-capacity", "");
+      const cleaned = raw.replace(/^over-/, "").replace(/^under-/, "");
+      if (!isNaN(Number(cleaned))) {
+        filters.sleeps = `${cleaned}-people`;
+        return;
+      }
+    }
+
+    // Price
+    if (/^over-\d+$/.test(part)) {
       filters.from_price = part.replace("over-", "");
-    } else if (/^under-\d+$/.test(part)) {
+      return;
+    }
+    if (/^under-\d+$/.test(part)) {
       filters.to_price = part.replace("under-", "");
-    } else if (/^between-\d+-\d+$/.test(part)) {
+      return;
+    }
+    if (/^between-\d+-\d+$/.test(part)) {
       const match = part.match(/between-(\d+)-(\d+)/);
       if (match) {
         filters.from_price = match[1];
         filters.to_price = match[2];
       }
-    } else if (!filters.make && isNaN(Number(part))) {
-      filters.make = part;
-    } else if (!filters.model && isNaN(Number(part))) {
-      filters.model = part;
-    } else if (part.startsWith("search=")) {
-      const rhs = part.slice("search=".length);
-      // decode defensively, but keep '+' as '+'
-      const val = decodeURIComponent(rhs)
-        .replace(/%20/g, "+")
-        .replace(/%2B/gi, "+")
-        .replace(/\s+/g, "+");
-      filters.search = val;
-      filters.keyword = undefined;
       return;
     }
-    if (part.startsWith("keyword=")) {
-      const rhs = part.slice("keyword=".length);
-      const val = decodeURIComponent(rhs)
-        .replace(/%20/g, "+")
-        .replace(/%2B/gi, "+")
-        .replace(/\s+/g, "+");
-      // canonicalize to `search` so the rest of the app has a single source
-      filters.search = val;
-      filters.keyword = undefined;
+
+    // Search + fallback
+    // if (part.startsWith("search=")) {
+    //   filters.search = decodeURIComponent(part.replace("search=", ""));
+    //   return;
+    // }
+
+    if (part.endsWith("-search")) {
+      const keyword = part
+        .replace(/-search$/, "")
+        .replace(/-/g, " ")
+        .trim();
+
+      filters.search = keyword;
       return;
+    }
+
+    if (part.startsWith("radius_kms=")) {
+      const radiusVal = part.replace("radius_kms=", "");
+      if (!isNaN(Number(radiusVal))) {
+        filters.radius_kms = radiusVal;
+        return;
+      }
+    }
+
+    // make / model fallback — only if safe and no search is present
+    if (
+      !hasReservedSuffix(part) &&
+      !part.includes("=") &&
+      isNaN(Number(part)) &&
+      !filters.search // prevent make/model if search is there
+    ) {
+      if (!filters.make) {
+        filters.make = part;
+        return;
+      }
+      if (!filters.model) {
+        filters.model = part;
+        return;
+      }
     }
   });
 
-  // ✅ if suburb present, ignore region
+  // If suburb present, ignore region due to canonical URL structure
+  if (filters.suburb) {
+    filters.region = undefined;
+  }
+
+  // ---- QUERY STRING SUPPORT ----
+  if (query) {
+    // Helper: handle arrays from query (e.g., Next.js gives string[])
+    const getScalar = (v: string | string[] | undefined): string | undefined =>
+      Array.isArray(v) ? v[0] : v;
+    filters.acustom_fromyears = toNumber(query.acustom_fromyears);
+
+    if (query.radius_kms) filters.radius_kms = getScalar(query.radius_kms);
+
+    if (query.acustom_toyears)
+      filters.acustom_toyears = getScalar(query.acustom_toyears);
+    if (query.page) filters.page = getScalar(query.page);
+    if (query.orderby) filters.orderby = getScalar(query.orderby);
+    if (query.search) filters.search = getScalar(query.search);
+    if (query.keyword && !filters.search)
+      filters.search = getScalar(query.keyword); // fallback
+    // You can add any other fields you support in query here.
+  }
 
   return filters;
 }
-// export function buildListingsUrl(filters: Filters): string {
-//   // precedence: keyword > search
-//   if (filters.keyword?.trim()) {
-//     return `/listings/keyword=${encodeURIComponent(filters.keyword.trim())}`;
-//   }
-//   if (filters.search?.trim()) {
-//     return `/listings/search=${encodeURIComponent(filters.search.trim())}`;
-//   }
-//   return "/listings";
-// }

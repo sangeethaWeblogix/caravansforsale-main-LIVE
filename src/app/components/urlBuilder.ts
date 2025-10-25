@@ -88,7 +88,7 @@ export function parseSlugToFilters(
     }
     const suburbPinMatch = part.match(/^([a-z0-9-]+)-(\d{4})$/);
     if (suburbPinMatch) {
-      const [suburbPart, pincode] = suburbPinMatch;
+      const [, suburbPart, pincode] = suburbPinMatch;
       filters.suburb = suburbPart.replace(/-/g, " ").toLowerCase();
       filters.pincode = pincode;
       return;
