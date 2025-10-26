@@ -3014,43 +3014,58 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                     value={formatted(modalInput)} // 👈 modalInput} // 👈 use modalInput
                     onFocus={() => setShowSuggestions(true)}
                     onChange={(e) => {
-                      // isUserTypingRef.current = true;
                       setShowSuggestions(true);
-
                       const rawValue = e.target.value;
-                      // Format for filtering suggestions only
-                      setModalInput(rawValue); // 👈 Store raw value
-                      // const formattedValue = formatLocationInput(modalInput);
-                      const formattedValue = /^\d+$/.test(rawValue)
-                        ? rawValue // if user types only numbers, don’t format
-                        : formatLocationInput(rawValue);
+                      setModalInput(rawValue);
 
-                      // Use the existing locationSuggestions state or fetch new data
-                      // Since you're already fetching locations in useEffect, you can filter the existing suggestions
-                      // OR trigger the same API call logic here
-                      if (formattedValue.length < 1) {
+                      const trimmed = rawValue.trim();
+
+                      // Skip empty input
+                      if (!trimmed) {
                         setLocationSuggestions([]);
                         return;
                       }
 
-                      // Use the same API call logic as in your useEffect
+                      // Detect if user typed only digits
+                      const isNumeric = /^\d+$/.test(trimmed);
+
+                      // Format words properly (capitalize suburb etc)
+                      const formattedValue = isNumeric
+                        ? trimmed
+                        : formatLocationInput(trimmed);
+
                       const suburb = formattedValue.split(" ")[0];
                       fetchLocations(suburb)
                         .then((data) => {
-                          // Filter the API results based on the formatted input
+                          const searchValue = formattedValue.toLowerCase();
+
                           const filtered = data.filter((item) => {
-                            const searchValue = formattedValue.toLowerCase();
-                            return (
-                              item.short_address
-                                .toLowerCase()
-                                .includes(searchValue) ||
-                              item.address
-                                .toLowerCase()
-                                .includes(searchValue) ||
-                              (item.postcode &&
-                                item.postcode.toString().includes(searchValue)) // ✅ added
-                            );
+                            const addr = item.address?.toLowerCase() || "";
+                            const shortAddr =
+                              item.short_address?.toLowerCase() || "";
+
+                            // 🧠 Extract 4-digit postcode from address if present
+                            const postcodeMatch = addr.match(/\b\d{4}\b/);
+                            const postcode = postcodeMatch
+                              ? postcodeMatch[0]
+                              : "";
+
+                            // ✅ Match logic: if user typed digits → match in postcode or address
+                            // ✅ if user typed words → match suburb/state/address text
+                            if (isNumeric) {
+                              return (
+                                postcode.includes(searchValue) ||
+                                addr.includes(searchValue) ||
+                                shortAddr.includes(searchValue)
+                              );
+                            } else {
+                              return (
+                                addr.includes(searchValue) ||
+                                shortAddr.includes(searchValue)
+                              );
+                            }
                           });
+
                           setLocationSuggestions(filtered);
                         })
                         .catch(console.error);
