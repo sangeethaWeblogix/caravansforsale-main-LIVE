@@ -792,13 +792,6 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     cursor: "pointer",
     background: highlight ? "#f7f7f7" : "transparent",
   });
-  const suburbStyle = (isSelected: boolean) => ({
-    marginLeft: "24px",
-    cursor: "pointer",
-    padding: "6px 12px",
-    borderRadius: "4px",
-    backgroundColor: isSelected ? "#e8f0fe" : "transparent",
-  });
   const iconRowStyle = {
     display: "flex",
     alignItems: "center",
@@ -2103,98 +2096,47 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
               <div className="filter-accordion-items">
                 {Array.isArray(filteredSuburbs) &&
                 filteredSuburbs.length === 0 ? (
-                  // <p style={{ marginLeft: 20 }}>❌ No suburbs available</p>
-                  <p style={{ marginLeft: 20 }}></p>
+                  <p style={{ marginLeft: 20 }}>No suburbs found</p>
                 ) : (
-                  filteredSuburbs.map((suburb, idx) => (
+                  Array.from(
+                    new Map(
+                      filteredSuburbs.map((suburb) => [suburb.name, suburb])
+                    ).values()
+                  ).map((suburb, idx) => (
                     <div
-                      key={`${suburb.value}-${idx}`}
-                      className="filter-accordion-item"
-                      style={suburbStyle(suburb.name === selectedSuburbName)}
-                      onClick={async () => {
-                        const pincode =
-                          suburb.value?.match(/\d{4}$/)?.[0] || null;
-
-                        // fetch suggestion (optional – keeps your existing logic)
-                        let match: LocationSuggestion | null = null;
-                        try {
-                          const res = await fetchLocations(suburb.name);
-                          match = findSuggestionFor(
-                            suburb.name,
-                            selectedRegionName,
-                            selectedStateName,
-                            pincode,
-                            res || []
-                          );
-                        } catch {}
-
-                        // build a fallback suggestion if API doesn't match
-                        if (!match) {
-                          const uSub = slug(suburb.name);
-                          const uReg = slug(selectedRegionName || "");
-                          const uSta = slug(selectedStateName || "");
-                          match = {
-                            key: `${uSub}-${uReg}-${uSta}-${pincode || ""}`,
-                            uri: `${uSub}-suburb/${uReg}-region/${uSta}-state/${
-                              pincode || ""
-                            }`,
-                            address: [
-                              suburb.name,
-                              selectedRegionName || "",
-                              selectedStateName || "",
-                              pincode || "",
-                            ]
-                              .filter(Boolean)
-                              .join(", "),
-                            short_address: `${suburb.name}${
-                              pincode ? ` ${pincode}` : ""
-                            }`,
-                          };
-                        }
-
-                        // ✅ validate region against the selected state
-                        const safeState =
-                          selectedStateName || currentFilters.state || null;
-                        const validRegion = getValidRegionName(
-                          safeState,
-                          selectedRegionName,
-                          states
-                        );
-
-                        // drive UI
-                        setSelectedSuggestion(match);
-                        setLocationInput(match.short_address);
+                      key={`${suburb.name}-${suburb.value}-${idx}`}
+                      className={`filter-accordion-item ${
+                        suburb.name === selectedSuburbName ? "selected" : ""
+                      }`}
+                      style={{
+                        marginLeft: "24px",
+                        cursor: "pointer",
+                        padding: "6px 12px",
+                        borderRadius: "4px",
+                        backgroundColor:
+                          suburb.name === selectedSuburbName
+                            ? "#e8f0fe"
+                            : "transparent",
+                      }}
+                      onClick={() => {
                         setSelectedSuburbName(suburb.name);
-                        setSelectedpincode(pincode || null);
-                        setSelectedRegionName(validRegion || null); // drop invalid region in UI
-
-                        // close panels
-                        setStateLocationOpen(false);
-                        setStateRegionOpen(false);
+                        setSelectedpincode(suburb.value);
                         setStateSuburbOpen(false);
 
-                        // ✅ build filters (region only if valid)
-                        const updatedFilters: Filters = hydrateLocation({
+                        const updatedFilters: Filters = {
                           ...currentFilters,
-                          state: safeState || undefined,
-                          region: validRegion, // undefined if invalid
-                          suburb: suburb.name.toLowerCase(),
-                          pincode: pincode || undefined,
-                          radius_kms:
-                            typeof radiusKms === "number" && radiusKms !== 50
-                              ? radiusKms
-                              : undefined,
-                        });
+                          state: selectedStateName || currentFilters.state,
+                          region: selectedRegionName || currentFilters.region,
+                          suburb: suburb.name,
+                          pincode: suburb.value,
+                        };
 
                         setFilters(updatedFilters);
                         filtersInitialized.current = true;
 
-                        // fire API + URL sync
-                        // onFilterChange(updatedFilters);
-                        lastSentFiltersRef.current = updatedFilters;
-                        // startTransition(() =>
-                        //   updateAllFiltersAndURL(updatedFilters)
-                        // );
+                        startTransition(() => {
+                          updateAllFiltersAndURL(updatedFilters);
+                        });
                       }}
                     >
                       {suburb.name}
@@ -2669,7 +2611,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
         </div>
 
         {/* Sleeps Accordion */}
-        {/* <div className="cs-full_width_section">
+        <div className="cs-full_width_section">
           <div
             className="filter-accordion"
             onClick={() => toggle(setSleepsOpen)}
@@ -2716,7 +2658,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
               ))}
             </div>
           )}
-        </div> */}
+        </div>
         {/* Year Range */}
         <div className="cs-full_width_section">
           <h5 className="cfs-filter-label">Year</h5>
@@ -3072,43 +3014,58 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                     value={formatted(modalInput)} // 👈 modalInput} // 👈 use modalInput
                     onFocus={() => setShowSuggestions(true)}
                     onChange={(e) => {
-                      // isUserTypingRef.current = true;
                       setShowSuggestions(true);
-
                       const rawValue = e.target.value;
-                      // Format for filtering suggestions only
-                      setModalInput(rawValue); // 👈 Store raw value
-                      // const formattedValue = formatLocationInput(modalInput);
-                      const formattedValue = /^\d+$/.test(rawValue)
-                        ? rawValue // if user types only numbers, don’t format
-                        : formatLocationInput(rawValue);
+                      setModalInput(rawValue);
 
-                      // Use the existing locationSuggestions state or fetch new data
-                      // Since you're already fetching locations in useEffect, you can filter the existing suggestions
-                      // OR trigger the same API call logic here
-                      if (formattedValue.length < 1) {
+                      const trimmed = rawValue.trim();
+
+                      // Skip empty input
+                      if (!trimmed) {
                         setLocationSuggestions([]);
                         return;
                       }
 
-                      // Use the same API call logic as in your useEffect
+                      // Detect if user typed only digits
+                      const isNumeric = /^\d+$/.test(trimmed);
+
+                      // Format words properly (capitalize suburb etc)
+                      const formattedValue = isNumeric
+                        ? trimmed
+                        : formatLocationInput(trimmed);
+
                       const suburb = formattedValue.split(" ")[0];
                       fetchLocations(suburb)
                         .then((data) => {
-                          // Filter the API results based on the formatted input
+                          const searchValue = formattedValue.toLowerCase();
+
                           const filtered = data.filter((item) => {
-                            const searchValue = formattedValue.toLowerCase();
-                            return (
-                              item.short_address
-                                .toLowerCase()
-                                .includes(searchValue) ||
-                              item.address
-                                .toLowerCase()
-                                .includes(searchValue) ||
-                              (item.postcode &&
-                                item.postcode.toString().includes(searchValue)) // ✅ added
-                            );
+                            const addr = item.address?.toLowerCase() || "";
+                            const shortAddr =
+                              item.short_address?.toLowerCase() || "";
+
+                            // 🧠 Extract 4-digit postcode from address if present
+                            const postcodeMatch = addr.match(/\b\d{4}\b/);
+                            const postcode = postcodeMatch
+                              ? postcodeMatch[0]
+                              : "";
+
+                            // ✅ Match logic: if user typed digits → match in postcode or address
+                            // ✅ if user typed words → match suburb/state/address text
+                            if (isNumeric) {
+                              return (
+                                postcode.includes(searchValue) ||
+                                addr.includes(searchValue) ||
+                                shortAddr.includes(searchValue)
+                              );
+                            } else {
+                              return (
+                                addr.includes(searchValue) ||
+                                shortAddr.includes(searchValue)
+                              );
+                            }
                           });
+
                           setLocationSuggestions(filtered);
                         })
                         .catch(console.error);
