@@ -70,8 +70,12 @@ export default async function Listings({
   );
   const suburbPinIndex = suburbPinMatch ? slug.indexOf(suburbPinMatch) : -1;
 
-  if (suburbPinIndex !== -1 && suburbPinIndex < slug.length - 1) {
-    notFound(); // 🚫 Example: /windsor-2756/55 → invalid
+  // allow suburb+postcode followed by filters like price/atm etc.
+  if (
+    suburbPinIndex !== -1 &&
+    slug[suburbPinIndex + 1]?.match(/^\d{1,6}$/) // only block pure numeric after suburb-pin
+  ) {
+    notFound();
   }
 
   // 4️⃣ Maximum segments allowed — prevent overly deep paths

@@ -950,14 +950,19 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
       .trim()
       .replace(/\b\w/g, (char) => char.toUpperCase());
   const resetSuburbFilters = () => {
-    // ✅ keep state & region
-    // suppressLocationAutoClearRef.current = true; // 👈 tell the auto-clear effect to skip once
+    // ✅ Clear suburb-related state
     setSelectedSuburbName(null);
     setSelectedpincode(null);
     setLocationInput("");
-    setRadiusKms(RADIUS_OPTIONS[0]); // reset radius to default
+    setRadiusKms(RADIUS_OPTIONS[0]);
     setLocationSuggestions([]);
-    // ✅ rehydrate suburb list for the currently selected region
+    setSelectedSuggestion(null); // ✅ Clear the selected suggestion too
+
+    // ✅ Reopen region panel and close suburb panel
+    setStateSuburbOpen(false);
+    setStateRegionOpen(true); // ✅ This ensures region list shows again
+
+    // ✅ Rehydrate suburb list for the currently selected region
     if (selectedStateName && selectedRegionName) {
       const st = states.find(
         (s) =>
@@ -974,17 +979,16 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
 
     const updatedFilters: Filters = {
       ...currentFilters,
-      // ✅ explicitly preserve state & region
+      // ✅ preserve state & region
       state: selectedStateName || currentFilters.state,
       region: selectedRegionName || currentFilters.region,
       suburb: undefined,
       pincode: undefined,
-      radius_kms: RADIUS_OPTIONS[0], // reset radius to default
+      radius_kms: RADIUS_OPTIONS[0],
     };
 
     setFilters(updatedFilters);
     filtersInitialized.current = true;
-    lastSentFiltersRef.current = updatedFilters;
 
     startTransition(() => {
       updateAllFiltersAndURL(updatedFilters);
@@ -1524,6 +1528,11 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
       page: 1, // ← Add this line to reset page
     };
     next.make = sanitizeMake(next.make); // belt & suspenders
+    if (!next.suburb && !next.pincode) {
+      delete next.suburb;
+      delete next.pincode;
+    }
+
     setFilters((prev) => (filtersEqual(prev, next) ? (prev as Filters) : next));
     filtersInitialized.current = true;
     if (typeof next.radius_kms !== "number") next.radius_kms = DEFAULT_RADIUS;
