@@ -13,7 +13,7 @@ const nextConfig: NextConfig = {
   },
 
   compiler: {
-    removeConsole: false,
+    removeConsole: true,
   },
 
   // ✅ Redirect malformed URLs like /feedfeedfeedfeed → clean version
