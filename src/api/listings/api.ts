@@ -25,6 +25,8 @@ interface Filters {
   search?: string;
   keyword?: string;
   is_exclusive?: boolean;
+  from_sleep?: string | number; // from_sleep
+  to_sleep?: string | number; //
 }
 
 /** Minimal item shape needed here (no `any`) */
@@ -108,6 +110,8 @@ export const fetchListings = async (
     search,
     acustom_fromyears,
     acustom_toyears,
+    from_sleep,
+    to_sleep,
   } = filters;
 
   const params = new URLSearchParams();
@@ -121,6 +125,8 @@ export const fetchListings = async (
   if (region) params.append("region", region);
   if (suburb) params.append("suburb", suburb);
   if (from_price) params.append("from_price", `${from_price}`);
+  if (from_sleep) params.append("from_sleep", `${from_sleep}`);
+  if (to_sleep) params.append("to_sleep", `${to_sleep}`);
   if (to_price) params.append("to_price", `${to_price}`);
   if (minKg) params.append("from_atm", `${minKg}kg`);
   if (maxKg) params.append("to_atm", `${maxKg}kg`);

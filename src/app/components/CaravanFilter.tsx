@@ -70,6 +70,8 @@ export interface Filters {
   acustom_toyears?: number | string;
   from_length?: string | number;
   to_length?: string | number;
+  from_sleep?: string | number;
+  to_sleep?: string | number;
   model?: string;
   state?: string;
   region?: string;
@@ -207,7 +209,6 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
   const [yearTo, setYearTo] = useState<number | null>(null);
   const [sleepFrom, setSleepFrom] = useState<number | null>(null);
   const [sleepTo, setSleepTo] = useState<number | null>(null);
-  const [showAllMakes, setShowAllMakes] = useState(false);
 
   const atm = [
     600, 800, 1000, 1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000, 3500, 4000,
@@ -256,6 +257,19 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
   // pick a human-readable text from item
 
   // works for (HomeSearchItem | string)[]
+  useEffect(() => {
+    if (currentFilters.from_sleep) {
+      setSleepFrom(Number(currentFilters.from_sleep));
+    } else {
+      setSleepFrom(null);
+    }
+
+    if (currentFilters.to_sleep) {
+      setSleepTo(Number(currentFilters.to_sleep));
+    } else {
+      setSleepTo(null);
+    }
+  }, [currentFilters.from_sleep, currentFilters.to_sleep]);
 
   useEffect(() => {
     if (!isKeywordModalOpen) return;
@@ -2197,7 +2211,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
             </div>
           )}
 
-          <div
+          {/* <div
             className="filter-accordion-subitem"
             style={{
               cursor: "pointer",
@@ -2208,7 +2222,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
             onClick={() => setShowAllMakes((prev) => !prev)}
           >
             <h6>Search By Suburb </h6>
-          </div>
+          </div> */}
         </div>
         {/* Keyword (opens its own modal) */}
         {/* Keyword (opens its own modal) */}
@@ -2260,7 +2274,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
           {makeOpen && (
             <div className="filter-accordion-items">
               {Array.isArray(makes) &&
-                (showAllMakes
+                (makes.length <= 10
                   ? [...makes].sort((a, b) => a.name.localeCompare(b.name))
                   : [...makes]
                       .sort((a, b) => a.name.localeCompare(b.name))
@@ -2595,9 +2609,10 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
           )}
         </div>
 
-        {/* <div className="cs-full_width_section">
+        <div className="cs-full_width_section">
           <h5 className="cfs-filter-label">Sleep</h5>
           <div className="row">
+            {/* FROM SLEEP */}
             <div className="col-6">
               <h6 className="cfs-filter-label-sub">From</h6>
               <select
@@ -2606,10 +2621,11 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                 onChange={(e) => {
                   const val = e.target.value ? parseInt(e.target.value) : null;
                   setSleepFrom(val);
+
                   commit({
                     ...currentFilters,
-                    acustom_fromyears: val ?? undefined,
-                    acustom_toyears: yearTo ?? filters.acustom_toyears,
+                    from_sleep: val ?? undefined,
+                    to_sleep: sleepTo ?? currentFilters.to_sleep,
                   });
                 }}
               >
@@ -2621,6 +2637,8 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                 ))}
               </select>
             </div>
+
+            {/* TO SLEEP */}
             <div className="col-6">
               <h6 className="cfs-filter-label-sub">To</h6>
               <select
@@ -2629,10 +2647,11 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                 onChange={(e) => {
                   const val = e.target.value ? parseInt(e.target.value) : null;
                   setSleepTo(val);
+
                   commit({
                     ...currentFilters,
-                    acustom_fromyears: yearFrom ?? filters.acustom_fromyears,
-                    acustom_toyears: val ?? undefined,
+                    from_sleep: sleepFrom ?? currentFilters.from_sleep,
+                    to_sleep: val ?? undefined,
                   });
                 }}
               >
@@ -2645,36 +2664,24 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
               </select>
             </div>
           </div>
-          {(yearFrom || yearTo) && (
+
+          {/* FILTER CHIP */}
+          {(sleepFrom || sleepTo) && (
             <div className="filter-chip">
               <span>
-                {yearFrom ? yearFrom : "Min"} – {yearTo ? yearTo : "Max"}
+                {sleepFrom ? sleepFrom : "Min"} – {sleepTo ? sleepTo : "Max"}{" "}
+                People
               </span>
               <span
                 className="filter-chip-close"
-                // onClick={() => {
-                //   setYearFrom(null);
-                //   setYearTo(null);
-
-                //   const updatedFilters: Filters = {
-                //     ...currentFilters,
-                //     acustom_fromyears: undefined,
-                //     acustom_toyears: undefined,
-                //   };
-
-                //   setFilters(updatedFilters);
-
-                //   startTransition(() => {
-                //     updateAllFiltersAndURL(updatedFilters); // ✅ pass it here
-                //   });
-                // }}
                 onClick={() => {
-                  setYearFrom(null);
-                  setYearTo(null);
+                  setSleepFrom(null);
+                  setSleepTo(null);
+
                   commit({
                     ...currentFilters,
-                    acustom_fromyears: undefined,
-                    acustom_toyears: undefined,
+                    from_sleep: undefined,
+                    to_sleep: undefined,
                   });
                 }}
               >
@@ -2682,7 +2689,8 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
               </span>
             </div>
           )}
-        </div> */}
+        </div>
+
         {/* Sleeps Accordion */}
         <div className="cs-full_width_section">
           <div

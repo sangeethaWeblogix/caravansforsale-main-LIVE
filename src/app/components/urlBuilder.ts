@@ -22,6 +22,8 @@ export interface Filters {
   acustom_fromyears?: number | string;
   acustom_toyears?: number | string;
   search?: string;
+  from_sleep?: string | number;
+  to_sleep?: string | number;
   keyword?: string; // parsed -> canonicalized to `search`
 }
 
@@ -146,18 +148,52 @@ export function parseSlugToFilters(
     }
 
     // Sleeps (single-value)
+    // if (part.includes("-people-sleeping-capacity")) {
+    //   const between = part.match(
+    //     /^between-(\d+)-and-(\d+)-people-sleeping-capacity$/
+    //   );
+    //   if (between) {
+    //     filters.sleeps = `${between[1]}-people`;
+    //     return;
+    //   }
+    //   const raw = part.replace("-people-sleeping-capacity", "");
+    //   const cleaned = raw.replace(/^over-/, "").replace(/^under-/, "");
+    //   if (!isNaN(Number(cleaned))) {
+    //     filters.sleeps = `${cleaned}-people`;
+    //     return;
+    //   }
+    // }
+    // Sleeps (range-based)
     if (part.includes("-people-sleeping-capacity")) {
+      // between-x-y-people-sleeping-capacity
       const between = part.match(
-        /^between-(\d+)-and-(\d+)-people-sleeping-capacity$/
+        /^between-(\d+)-(\d+)-people-sleeping-capacity$/
       );
       if (between) {
-        filters.sleeps = `${between[1]}-people`;
+        filters.from_sleep = between[1];
+        filters.to_sleep = between[2];
         return;
       }
-      const raw = part.replace("-people-sleeping-capacity", "");
-      const cleaned = raw.replace(/^over-/, "").replace(/^under-/, "");
-      if (!isNaN(Number(cleaned))) {
-        filters.sleeps = `${cleaned}-people`;
+
+      // over-x-people-sleeping-capacity
+      const over = part.match(/^over-(\d+)-people-sleeping-capacity$/);
+      if (over) {
+        filters.from_sleep = over[1];
+        return;
+      }
+
+      // under-x-people-sleeping-capacity
+      const under = part.match(/^under-(\d+)-people-sleeping-capacity$/);
+      if (under) {
+        filters.to_sleep = under[1];
+        return;
+      }
+
+      // fallback: single value like 2-people-sleeping-capacity
+      const single = part.match(/^(\d+)-people-sleeping-capacity$/);
+      if (single) {
+        filters.from_sleep = single[1];
+        filters.to_sleep = single[1];
         return;
       }
     }

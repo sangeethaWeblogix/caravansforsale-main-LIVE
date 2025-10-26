@@ -100,6 +100,8 @@ export interface Filters {
   search?: string;
   keyword?: string;
   radius_kms?: number | string;
+  from_sleep?: string | number;
+  to_sleep?: string | number;
 }
 
 interface Props extends Filters {
@@ -114,6 +116,7 @@ function transformApiItemsToProducts(items: Item[]): Product[] {
   return items.map((item) => ({
     id: typeof item.id === "number" ? item.id : parseInt(String(item.id)) || 0,
     name: item.name || "",
+    sleep: item.people || "",
     length: item.length || "",
     kg: item.kg || "",
     regular_price: item.regular_price || "",
@@ -423,6 +426,8 @@ export default function ListingsPage({
           orderby: safeFilters.orderby,
           search: safeFilters.search,
           keyword: safeFilters.keyword,
+          from_sleep: safeFilters.from_sleep?.toString(),
+          to_sleep: safeFilters.to_sleep?.toString(),
           radius_kms: radiusParam,
         });
 

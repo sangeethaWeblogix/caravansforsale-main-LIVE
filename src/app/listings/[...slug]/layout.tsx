@@ -50,6 +50,8 @@ export async function generateMetadata({
     orderby,
     atm,
     radius_kms,
+    from_sleep,
+    to_sleep,
     search,
   ] = slug;
 
@@ -77,6 +79,8 @@ export async function generateMetadata({
     radius_kms?: number | string;
     search?: string;
     keyword?: string;
+    from_sleep?: string | number;
+    to_sleep?: string | number;
   } = {
     page: 1,
     category: categorySlug,
@@ -100,6 +104,8 @@ export async function generateMetadata({
     atm,
     radius_kms,
     search,
+    from_sleep,
+    to_sleep,
   };
   const qs = new URLSearchParams();
   qs.append("page", String(filters.page ?? 1));
@@ -115,6 +121,8 @@ export async function generateMetadata({
   if (filters.to_price) qs.append("to_price", `${filters.to_price}`);
   if (filters.minKg) qs.append("from_atm", `${filters.minKg}kg`);
   if (filters.maxKg) qs.append("to_atm", `${filters.maxKg}kg`);
+  if (filters.from_sleep) qs.append("from_sleep", `${filters.from_sleep}`);
+  if (filters.to_sleep) qs.append("to_sleep", `${filters.to_sleep}`);
   if (filters.from_length) qs.append("from_length", `${filters.from_length}`);
   if (filters.to_length) qs.append("to_length", `${filters.to_length}`);
   if (filters.acustom_fromyears)

@@ -75,10 +75,22 @@ export function buildSlugFromFilters(f: Filters): string {
   else if (toLen) segments.push(`under-${toLen}-length-in-feet`);
 
   // 8) Sleeps (single-value)
-  if (f.sleeps) {
-    const n = String(f.sleeps).replace("-people", "");
-    if (!isNaN(Number(n))) segments.push(`${n}-people-sleeping-capacity`);
+  // if (f.sleeps) {
+  //   const n = String(f.sleeps).replace("-people", "");
+  //   if (!isNaN(Number(n))) segments.push(`${n}-people-sleeping-capacity`);
+  // }
+  // 8) Sleeps (range-based)
+  const fromSleep = asNum(f.from_sleep);
+  const toSleep = asNum(f.to_sleep);
+
+  if (fromSleep && toSleep) {
+    segments.push(`between-${fromSleep}-${toSleep}-people-sleeping-capacity`);
+  } else if (fromSleep) {
+    segments.push(`over-${fromSleep}-people-sleeping-capacity`);
+  } else if (toSleep) {
+    segments.push(`under-${toSleep}-people-sleeping-capacity`);
   }
+
   const query = new URLSearchParams();
 
   // Add radius_kms to query only if it's number greater than default
