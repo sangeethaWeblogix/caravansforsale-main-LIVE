@@ -182,6 +182,11 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
   const [keywordSuggestions, setKeywordSuggestions] = useState<KeywordItem[]>(
     []
   );
+  const [isMakeModalOpen, setIsMakeModalOpen] = useState(false);
+  const [searchMake, setSearchMake] = useState("");
+  const [filteredMakes, setFilteredMakes] = useState(makes);
+  const [selectedMakeTemp, setSelectedMakeTemp] = useState<string | null>(null);
+
   const [baseKeywords, setBaseKeywords] = useState<KeywordItem[]>([]);
   const [keywordLoading, setKeywordLoading] = useState(false);
   const [baseLoading, setBaseLoading] = useState(false);
@@ -200,6 +205,8 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
   const filtersInitialized = useRef(false);
   const [yearFrom, setYearFrom] = useState<number | null>(null);
   const [yearTo, setYearTo] = useState<number | null>(null);
+  const [sleepFrom, setSleepFrom] = useState<number | null>(null);
+  const [sleepTo, setSleepTo] = useState<number | null>(null);
   const [showAllMakes, setShowAllMakes] = useState(false);
 
   const atm = [
@@ -2189,6 +2196,19 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
               )}
             </div>
           )}
+
+          <div
+            className="filter-accordion-subitem"
+            style={{
+              cursor: "pointer",
+              color: "#007BFF",
+              marginTop: "8px",
+              fontWeight: 500,
+            }}
+            onClick={() => setShowAllMakes((prev) => !prev)}
+          >
+            <h6>Search By Suburb </h6>
+          </div>
         </div>
         {/* Keyword (opens its own modal) */}
         {/* Keyword (opens its own modal) */}
@@ -2296,9 +2316,9 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                     marginTop: "8px",
                     fontWeight: 500,
                   }}
-                  onClick={() => setShowAllMakes((prev) => !prev)}
+                  onClick={() => setIsMakeModalOpen(true)} // ✅ open modal
                 >
-                  {showAllMakes ? "Show Less ▲" : "Show More ▼"}
+                  Search By Manufacturer
                 </div>
               )}
             </div>
@@ -2575,6 +2595,94 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
           )}
         </div>
 
+        {/* <div className="cs-full_width_section">
+          <h5 className="cfs-filter-label">Sleep</h5>
+          <div className="row">
+            <div className="col-6">
+              <h6 className="cfs-filter-label-sub">From</h6>
+              <select
+                className="cfs-select-input"
+                value={sleepFrom?.toString() || ""}
+                onChange={(e) => {
+                  const val = e.target.value ? parseInt(e.target.value) : null;
+                  setSleepFrom(val);
+                  commit({
+                    ...currentFilters,
+                    acustom_fromyears: val ?? undefined,
+                    acustom_toyears: yearTo ?? filters.acustom_toyears,
+                  });
+                }}
+              >
+                <option value="">Min</option>
+                {sleep.map((value) => (
+                  <option key={value} value={value}>
+                    {value}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="col-6">
+              <h6 className="cfs-filter-label-sub">To</h6>
+              <select
+                className="cfs-select-input"
+                value={sleepTo?.toString() || ""}
+                onChange={(e) => {
+                  const val = e.target.value ? parseInt(e.target.value) : null;
+                  setSleepTo(val);
+                  commit({
+                    ...currentFilters,
+                    acustom_fromyears: yearFrom ?? filters.acustom_fromyears,
+                    acustom_toyears: val ?? undefined,
+                  });
+                }}
+              >
+                <option value="">Max</option>
+                {sleep.map((value) => (
+                  <option key={value} value={value}>
+                    {value}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+          {(yearFrom || yearTo) && (
+            <div className="filter-chip">
+              <span>
+                {yearFrom ? yearFrom : "Min"} – {yearTo ? yearTo : "Max"}
+              </span>
+              <span
+                className="filter-chip-close"
+                // onClick={() => {
+                //   setYearFrom(null);
+                //   setYearTo(null);
+
+                //   const updatedFilters: Filters = {
+                //     ...currentFilters,
+                //     acustom_fromyears: undefined,
+                //     acustom_toyears: undefined,
+                //   };
+
+                //   setFilters(updatedFilters);
+
+                //   startTransition(() => {
+                //     updateAllFiltersAndURL(updatedFilters); // ✅ pass it here
+                //   });
+                // }}
+                onClick={() => {
+                  setYearFrom(null);
+                  setYearTo(null);
+                  commit({
+                    ...currentFilters,
+                    acustom_fromyears: undefined,
+                    acustom_toyears: undefined,
+                  });
+                }}
+              >
+                ×
+              </span>
+            </div>
+          )}
+        </div> */}
         {/* Sleeps Accordion */}
         <div className="cs-full_width_section">
           <div
@@ -2656,22 +2764,6 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
               <select
                 className="cfs-select-input"
                 value={yearTo?.toString() || ""}
-                // onChange={(e) => {
-                //   const val = e.target.value ? parseInt(e.target.value) : null;
-                //   setYearTo(val);
-
-                //   const updatedFilters: Filters = {
-                //     ...currentFilters,
-                //     acustom_fromyears: yearFrom ?? filters.acustom_fromyears,
-                //     acustom_toyears: val ?? undefined, // ✅ Use val directly!
-                //   };
-
-                //   setFilters(updatedFilters);
-                //   filtersInitialized.current = true;
-                //   startTransition(() => {
-                //     updateAllFiltersAndURL(updatedFilters);
-                //   });
-                // }}
                 onChange={(e) => {
                   const val = e.target.value ? parseInt(e.target.value) : null;
                   setYearTo(val);
@@ -2872,7 +2964,106 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
         <button onClick={resetFilters} className="btn cfs-btn fullwidth_btn">
           Reset Filters
         </button>
+
         {/* Modal */}
+
+        {isMakeModalOpen && (
+          <div className="cfs-modal">
+            <div className="cfs-modal-content">
+              <div className="cfs-modal-header">
+                <span
+                  onClick={() => setIsMakeModalOpen(false)}
+                  className="cfs-close"
+                >
+                  ×
+                </span>
+              </div>
+
+              <div className="cfs-modal-body">
+                <div className="cfs-modal-search-section">
+                  <h5 className="cfs-filter-label">Search Manufacturer</h5>
+
+                  {/* 🔍 Search Input */}
+                  <input
+                    type="text"
+                    placeholder="Search make..."
+                    className="filter-dropdown cfs-select-input"
+                    autoComplete="off"
+                    value={searchMake}
+                    onChange={(e) => {
+                      const query = e.target.value.toLowerCase();
+                      setSearchMake(e.target.value);
+                      if (!query.trim()) {
+                        setFilteredMakes([]);
+                        return;
+                      }
+                      setFilteredMakes(
+                        makes.filter((m) =>
+                          m.name.toLowerCase().includes(query)
+                        )
+                      );
+                    }}
+                  />
+
+                  {/* 🔽 Filtered Makes */}
+                  {filteredMakes.length > 0 && (
+                    <ul className="location-suggestions">
+                      {filteredMakes.map((make) => (
+                        <li
+                          key={make.slug}
+                          className={`suggestion-item ${
+                            selectedMakeTemp === make.slug ? "selected" : ""
+                          }`}
+                          onMouseDown={() => {
+                            // ✅ Click: fill input and hide suggestions
+                            setSearchMake(make.name);
+                            setSelectedMakeTemp(make.slug);
+                            setSelectedMakeName(make.name);
+                            setFilteredMakes([]); // hide list
+                          }}
+                        >
+                          {make.name}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              </div>
+
+              <div className="cfs-modal-footer">
+                <button
+                  type="button"
+                  className="cfs-btn btn"
+                  onClick={() => {
+                    if (!selectedMakeTemp) return;
+
+                    const updatedFilters: Filters = {
+                      ...currentFilters,
+                      make: selectedMakeTemp,
+                      model: undefined,
+                    };
+
+                    setSelectedMake(selectedMakeTemp);
+                    setFilters(updatedFilters);
+                    filtersInitialized.current = true;
+
+                    // ✅ Close modal & open model dropdown
+                    setIsMakeModalOpen(false);
+                    setMakeOpen(false);
+                    setModelOpen(true);
+
+                    startTransition(() =>
+                      updateAllFiltersAndURL(updatedFilters)
+                    );
+                  }}
+                >
+                  Search
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {isModalOpen && (
           <div className="cfs-modal">
             <div className="cfs-modal-content">
