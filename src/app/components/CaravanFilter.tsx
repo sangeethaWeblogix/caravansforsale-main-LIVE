@@ -137,7 +137,6 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
   const [filteredSuburbs, setFilteredSuburbs] = useState<Suburb[]>([]);
   const [filters, setFilters] = useState<Filters>({});
   const [conditionOpen, setConditionOpen] = useState(false);
-  const [sleepsOpen, setSleepsOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isKeywordModalOpen, setIsKeywordModalOpen] = useState(false);
 
@@ -201,9 +200,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
   const conditionDatas = ["New", "Used"];
   const [minPrice, setMinPrice] = useState<number | null>(null);
   const [maxPrice, setMaxPrice] = useState<number | null>(null);
-  const [selectedSleepName, setSelectedSleepName] = useState<string | null>(
-    null
-  );
+
   const filtersInitialized = useRef(false);
   const [yearFrom, setYearFrom] = useState<number | null>(null);
   const [yearTo, setYearTo] = useState<number | null>(null);
@@ -713,11 +710,6 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
         : null
     );
 
-    setSelectedSleepName(
-      currentFilters.sleeps
-        ? currentFilters.sleeps.replace("-people", "")
-        : null
-    );
     setSelectedConditionName(currentFilters.condition ?? null);
   }, [
     currentFilters.minKg,
@@ -1082,6 +1074,8 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
       pincode: undefined,
       from_price: undefined,
       to_price: undefined,
+      from_sleep: undefined,
+      to_sleep: undefined,
       minKg: undefined,
       maxKg: undefined,
       sleeps: undefined,
@@ -1101,7 +1095,6 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     setSelectedModel(null);
     setSelectedModelName(null);
     setSelectedConditionName(null);
-    setSelectedSleepName(null);
     setModel([]);
     // setFilteredRegions([]);
     setFilteredSuburbs([]);
@@ -1117,6 +1110,8 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     setAtmTo(null);
     setYearFrom(null);
     setYearTo(null);
+    setSleepFrom(null);
+    setSleepTo(null);
     setLengthFrom(null);
     setLengthTo(null);
     setRadiusKms(RADIUS_OPTIONS[0]);
