@@ -957,38 +957,11 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
       .replace(/\b\w/g, (char) => char.toUpperCase());
 
   const resetSuburbFilters = () => {
-    // Preserve current region and state
+    // Keep region and state intact
     const currentRegionName = selectedRegionName;
     const currentStateName = selectedStateName;
-    if (currentRegionName && currentStateName) {
-      const matchedState = states.find(
-        (s) =>
-          s.name.toLowerCase() === currentStateName.toLowerCase() ||
-          s.value.toLowerCase() === currentStateName.toLowerCase()
-      );
 
-      const matchedRegion = matchedState?.regions?.find(
-        (r) =>
-          r.name.toLowerCase() === currentRegionName.toLowerCase() ||
-          r.value.toLowerCase() === currentRegionName.toLowerCase()
-      );
-
-      const suburbs = matchedRegion?.suburbs ?? [];
-      // 🚫 REMOVE DUPLICATES
-      const uniqueSuburbs = suburbs.filter(
-        (suburb, index, self) =>
-          index === self.findIndex((s) => s.name === suburb.name)
-      );
-      setFilteredSuburbs(uniqueSuburbs);
-    }
-    console.log("Resetting ONLY suburb");
-
-    // Clear ONLY suburb-related data
-
-    // Prevent auto-region detection
-    regionSetAfterSuburbRef.current = true;
-
-    // Re-populate suburbs for the preserved region
+    // Preserve existing suburb list for region
     if (currentRegionName && currentStateName) {
       const matchedState = states.find(
         (s) =>
@@ -1005,14 +978,18 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
       setFilteredSuburbs(matchedRegion?.suburbs ?? []);
     }
 
-    // Update filters - preserve state and region
+    // Clear ONLY suburb-related values
+    setSelectedSuburbName(null);
+    setSelectedpincode(null);
+    setLocationInput("");
+
     const updatedFilters: Filters = {
       ...currentFilters,
       suburb: undefined,
       pincode: undefined,
       radius_kms: RADIUS_OPTIONS[0],
       state: currentStateName || undefined,
-      region: currentRegionName || undefined,
+      region: currentRegionName || undefined, // ✅ explicitly keep region
     };
 
     setFilters(updatedFilters);
@@ -1022,12 +999,13 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
       updateAllFiltersAndURL(updatedFilters);
     });
 
-    // Update UI
-    requestAnimationFrame(() => {
+    // ✅ Keep Region panel open
+    setTimeout(() => {
       setStateSuburbOpen(false);
-      setStateRegionOpen(!!currentRegionName);
-    });
+      setStateRegionOpen(true);
+    }, 50);
   };
+
   // Add this to track region state changes
 
   const handleSearchClick = () => {
@@ -1287,6 +1265,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
   const suburbFilterReadyRef = useRef(false);
 
   const regionSetAfterSuburbRef = useRef(false);
+
   useEffect(() => {
     if (!isModalOpen || !showSuggestions || !isUserTypingRef.current) return;
 
@@ -1956,6 +1935,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                             .replace(/-/g, " ")
                             .replace(/\b\w/g, (c) => c.toUpperCase()); // Capitalize
                           console.log("🧭 Region from URI:", regionName);
+                          setSelectedRegionName(regionName); // cache it
                           return regionName;
                         }
                       }
