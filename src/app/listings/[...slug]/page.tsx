@@ -112,13 +112,23 @@ export default async function Listings({
     "width",
     "weight",
     "price",
+    "suburb", // ✅ allow “-suburb”
+    "suburbs",
   ];
 
   const looksInvalid = slug.some((part) => {
+    const lower = part.toLowerCase();
+
+    // ✅ if part ends with suburb/suburbs/region/regions → skip validation
+    if (lower.endsWith("-suburb") || lower.endsWith("-suburbs")) {
+      return false;
+    }
+
     const isAllowedFilter = allowedFilterPrefixes.some((prefix) =>
-      part.startsWith(prefix)
+      lower.startsWith(prefix)
     );
-    return !isAllowedFilter && invalidPatterns.some((r) => r.test(part));
+
+    return !isAllowedFilter && invalidPatterns.some((r) => r.test(lower));
   });
 
   if (!filters || Object.keys(filters).length === 0 || looksInvalid) {
