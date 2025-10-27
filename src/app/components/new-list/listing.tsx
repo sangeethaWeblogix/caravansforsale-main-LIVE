@@ -147,7 +147,7 @@ export default function ListingsPage({
   const [isUsingInitialData, setIsUsingInitialData] = useState(!!initialData);
 
   const rawPage = searchParams.get("page");
-  console.log("dataa", initialData);
+  console.log("initialData", initialData);
   // ✅ If page is missing → default to 1
   const page = rawPage ? parseInt(rawPage, 10) : 1;
 
@@ -183,7 +183,21 @@ export default function ListingsPage({
       ? transformApiItemsToProducts(initialData.data.products)
       : []
   );
-
+  const [exculisiveProducts, setExculisiveProducts] = useState<Product[]>(
+    initialData?.data?.exclusive_products
+      ? transformApiItemsToProducts(initialData.data.exclusive_products)
+      : []
+  );
+  const [fetauredProducts, setFeaturedProducts] = useState<Product[]>(
+    initialData?.data?.featured_products
+      ? transformApiItemsToProducts(initialData.data.featured_products)
+      : []
+  );
+  const [preminumProducts, setPremiumProducts] = useState<Product[]>(
+    initialData?.data?.premium_products
+      ? transformApiItemsToProducts(initialData.data.premium_products)
+      : []
+  );
   const [categories, setCategories] = useState<Category[]>(
     initialData?.data?.all_categories || []
   );
@@ -209,10 +223,12 @@ export default function ListingsPage({
         total_pages: initialData.pagination.total_pages || 1,
         per_page: initialData.pagination.per_page || 12,
         total_products: initialData.pagination.total_products || 0,
-        total_items: initialData.pagination.total_items || 0,
+        total_items: initialData.pagination.total_products || 0,
       };
     }
-
+    // console.log("data-product", products);
+    // console.log("data-premium", preminumProducts);
+    // console.log("data-featu", fetauredProducts);
     const fromURL =
       typeof window !== "undefined"
         ? parseInt(
@@ -426,17 +442,18 @@ export default function ListingsPage({
         console.log("📦 Main API Response:", response);
 
         // ✅ Step 2 — Check if products exist (FIXED CONDITION)
-        const products = response?.data?.products ?? [];
+        const products = response?.data ?? [];
+        const productsdata = response?.data?.products ?? [];
 
         // 🔍 BETTER CHECK: Handle empty array, null, undefined, or invalid array
-        const isProductsArray = Array.isArray(products);
+        const isProductsArray = Array.isArray(productsdata);
         const validProducts = isProductsArray
-          ? products.filter((item) => item != null)
+          ? productsdata.filter((item) => item != null)
           : [];
         const hasValidProducts =
           Array.isArray(products) &&
           products.some(
-            (p) => p && Object.keys(p).length > 0 && (p.id || p.slug) // any key you expect to exist
+            (p) => p && Object.keys(p).length > 0 // any key you expect to exist
           );
 
         console.log("🔍 Products Analysis:", {
@@ -454,6 +471,10 @@ export default function ListingsPage({
           const transformedProducts =
             transformApiItemsToProducts(validProducts);
           setProducts(transformedProducts);
+          setPremiumProducts(response?.data?.premium_products ?? []);
+          setFeaturedProducts(response?.data?.featured_products ?? []);
+          setExculisiveProducts(response?.data?.exclusive_products ?? []);
+
           setCategories(response?.data?.all_categories ?? []);
           setMakes(response?.data?.make_options ?? []);
           setStateOptions(response?.data?.states ?? []);
@@ -863,6 +884,9 @@ export default function ListingsPage({
                   metaTitle={metaTitle}
                   onFilterChange={handleFilterChange}
                   currentFilters={filters}
+                  preminumProducts={preminumProducts}
+                  fetauredProducts={fetauredProducts}
+                  exculisiveProducts={exculisiveProducts}
                 />
               ) : (
                 <ExculsiveContent

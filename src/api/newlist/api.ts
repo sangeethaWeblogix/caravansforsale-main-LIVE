@@ -45,24 +45,26 @@ export type Item = {
   make?: string;
   slug?: string;
 };
+
 export interface ApiSEO {
   metadescription?: string;
   metatitle?: string;
   metaimage?: string;
-  index?: string; // "index" | "noindex" | etc.
+  index?: string;
 }
+
 export interface ApiPagination {
   current_page: number;
   total_pages: number;
-  total_items?: number;
-  per_page: number;
   total_products: number;
-  hasNext?: boolean; // 👈 add this
+  per_page: number;
 }
 
 export interface ApiData {
-  products?: Item[]; // or your full Product shape if you prefer
+  products?: Item[];
   exclusive_products?: Item[];
+  featured_products?: Item[];
+  premium_products?: Item[];
   all_categories?: { name: string; slug: string }[];
   make_options?: { name: string; slug: string }[];
   model_options?: { name: string; slug: string }[];
@@ -154,14 +156,21 @@ export const fetchNewListings = async (
     throw new Error("Invalid API response");
   }
 
-  // ✅ Return only the needed structure
+  // ✅ Return all useful sections from API
   return {
     success: json.success,
-    pagination: json.pagination,
     title: json.title,
     seo: json.seo,
+    pagination: json.pagination,
     data: {
       products: json.data?.products ?? [],
+      exclusive_products: json.data?.exclusive_products ?? [],
+      featured_products: json.data?.featured_products ?? [],
+      premium_products: json.data?.premium_products ?? [],
+      make_options: json.data?.make_options ?? [],
+      model_options: json.data?.model_options ?? [],
+      all_categories: json.data?.all_categories ?? [],
+      states: json.data?.states ?? [],
     },
   };
 };

@@ -68,6 +68,9 @@ interface Props {
   metaDescription: string; // Add metaDescription prop
   onFilterChange: (filters: Filters) => void;
   currentFilters: Filters;
+  preminumProducts: Product[];
+  fetauredProducts: Product[];
+  exculisiveProducts: Product[];
 }
 
 export default function ListingContent({
@@ -79,15 +82,53 @@ export default function ListingContent({
   metaDescription,
   onFilterChange,
   currentFilters,
+  preminumProducts,
+  fetauredProducts,
+  exculisiveProducts,
 }: Props) {
   const [showInfo, setShowInfo] = useState(false);
   const [showContact, setShowContact] = useState(false);
   const prevRef = useRef(null);
   const nextRef = useRef(null);
+  console.log("data-prod", products);
 
+  console.log("data-product", exculisiveProducts);
+  console.log("data-premium", preminumProducts);
+  console.log("data-featu", fetauredProducts);
   // const handleChange = (e) => {
   //   setOrderBy(e.target.value);
   // };
+  const mergedProducts = useMemo(() => {
+    const merged: Product[] = [];
+    const exclusive = exculisiveProducts || [];
+    const normal = products || [];
+
+    let exclusiveIndex = 0;
+
+    for (let i = 0; i < normal.length; i++) {
+      merged.push(normal[i]);
+
+      // 🔁 After every 10 products, insert one exclusive product if available
+      if ((i + 1) % 10 === 0 && exclusiveIndex < exclusive.length) {
+        merged.push({
+          ...exclusive[exclusiveIndex],
+          name: `[Exclusive] ${exclusive[exclusiveIndex].name || "Caravan"}`,
+        });
+        exclusiveIndex++;
+      }
+    }
+
+    // If there are remaining exclusive products, push them at the end
+    while (exclusiveIndex < exclusive.length) {
+      merged.push({
+        ...exclusive[exclusiveIndex],
+        name: `[Exclusive] ${exclusive[exclusiveIndex].name || "Caravan"}`,
+      });
+      exclusiveIndex++;
+    }
+
+    return merged;
+  }, [products, exculisiveProducts]);
 
   // ✅ Disable background scroll when popup is open
   useEffect(() => {
@@ -234,8 +275,8 @@ export default function ListingContent({
               }}
               className="featured-swiper"
             >
-              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((item) => (
-                <SwiperSlide key={item}>
+              {fetauredProducts.map((item, index) => (
+                <SwiperSlide key={index}>
                   <Link href={productHref("grand-explorer")} prefetch={false}>
                     <div className="product-card">
                       <div className="img">
@@ -260,57 +301,102 @@ export default function ListingContent({
                       </div>
                       <div className="product_de">
                         <div className="info">
-                          <h3 className="title">
-                            2024 Grand Explorer 18&lsquo;6 Off Road Luxury
-                            Ensuite
-                          </h3>
+                          {item.name && <h3 className="title">{item.name}</h3>}
                         </div>
-                        <div className="price">
-                          <div className="metc2">
-                            <h5 className="slog">
-                              $94,999 <s>$99,990</s>
-                            </h5>
-                            <p className="card-price">
-                              <span>SAVE</span> $4,991
-                            </p>
-                            <div className="more_info">
-                              <button
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  setShowInfo(true);
-                                }}
-                              >
-                                <i className="fa fa-info-circle"></i> Info
-                              </button>
+
+                        {/* --- PRICE SECTION --- */}
+                        {(item.regular_price ||
+                          item.sale_price ||
+                          item.price_difference) && (
+                          <div className="price">
+                            <div className="metc2">
+                              {(item.regular_price || item.sale_price) && (
+                                <h5 className="slog">
+                                  {item.regular_price && (
+                                    <>{item.regular_price}</>
+                                  )}
+                                  {item.sale_price && <s>{item.sale_price}</s>}
+                                </h5>
+                              )}
+
+                              {item.price_difference &&
+                                item.price_difference !== "0" &&
+                                item.price_difference !== "$0" && (
+                                  <p className="card-price">
+                                    <span>SAVE</span> {item.price_difference}
+                                  </p>
+                                )}
+
+                              <div className="more_info">
+                                <button
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    setShowInfo(true);
+                                  }}
+                                >
+                                  <i className="fa fa-info-circle"></i> Info
+                                </button>
+                              </div>
                             </div>
                           </div>
-                        </div>
+                        )}
+
+                        {/* --- DETAILS LIST --- */}
                         <ul className="vehicleDetailsWithIcons simple">
-                          <li>
-                            <span className="attribute3">Used</span>
-                          </li>
-                          <li className="attribute3_list">
-                            <span className="attribute3">Touring</span>
-                          </li>
-                          <li>
-                            <span className="attribute3">22 ft</span>
-                          </li>
-                          <li>
-                            <span className="attribute3">2986 Kg</span>
-                          </li>
-                          <li>
-                            <span className="attribute3">Empire</span>
-                          </li>
+                          {item.condition && (
+                            <li>
+                              <span className="attribute3">
+                                {item.condition}
+                              </span>
+                            </li>
+                          )}
+
+                          {item.categories && item.categories.length > 0 && (
+                            <li className="attribute3_list">
+                              <span className="attribute3">
+                                {item.categories.join(", ")}
+                              </span>
+                            </li>
+                          )}
+
+                          {item.length && (
+                            <li>
+                              <span className="attribute3">{item.length}</span>
+                            </li>
+                          )}
+
+                          {item.kg && (
+                            <li>
+                              <span className="attribute3">{item.kg}</span>
+                            </li>
+                          )}
+
+                          {item.make && (
+                            <li>
+                              <span className="attribute3">{item.make}</span>
+                            </li>
+                          )}
                         </ul>
-                        <div className="bottom_mid">
-                          <span>
-                            <i className="bi bi-check-circle-fill"></i>{" "}
-                            Condition New
-                          </span>
-                          <span>
-                            <i className="fa fa-map-marker-alt"></i> Victoria
-                          </span>
-                        </div>
+
+                        {/* --- CONDITION + LOCATION --- */}
+                        {(item.condition || item.location) && (
+                          <div className="bottom_mid">
+                            {item.condition && (
+                              <span>
+                                <i className="bi bi-check-circle-fill"></i>{" "}
+                                Condition {item.condition}
+                              </span>
+                            )}
+                            {item.location && (
+                              <span>
+                                <i className="fa fa-map-marker-alt"></i>{" "}
+                                {item.location}
+                              </span>
+                            )}
+                          </div>
+                        )}
+
+                        {/* --- BUTTONS --- */}
                         <div className="bottom_button">
                           <button
                             className="btn"
@@ -333,12 +419,12 @@ export default function ListingContent({
             </Swiper>
           </div>
         </div>
-
+        {/* {premium section } */}
         <div className="dealers-section product-type">
           <div className="other_items">
             <div className="related-products">
               <div className="row g-3">
-                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((item, index) => (
+                {preminumProducts.map((item, index) => (
                   <div className="col-lg-6 mb-0" key={index}>
                     <Link
                       href={productHref("grand-explorer")}
@@ -418,53 +504,317 @@ export default function ListingContent({
                         </div>
                         <div className="product_de">
                           <div className="info">
-                            <h3 className="title">
-                              2024 Grand Explorer 18&lsquo;6 Off Road Luxury
-                              Ensuite
-                            </h3>
+                            {item.name && (
+                              <h3 className="title">{item.name}</h3>
+                            )}
                           </div>
-                          <div className="price">
-                            <div className="metc2">
-                              <h5 className="slog">$94,999</h5>
 
-                              <div className="more_info">
-                                <button
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    setShowInfo(true);
-                                  }}
-                                >
-                                  <i className="fa fa-info-circle"></i> Info
-                                </button>
+                          {/* --- PRICE SECTION --- */}
+                          {(item.regular_price ||
+                            item.sale_price ||
+                            item.price_difference) && (
+                            <div className="price">
+                              <div className="metc2">
+                                {(item.regular_price || item.sale_price) && (
+                                  <h5 className="slog">
+                                    {item.regular_price && (
+                                      <>{item.regular_price}</>
+                                    )}
+                                    {item.sale_price && (
+                                      <s>{item.sale_price}</s>
+                                    )}
+                                  </h5>
+                                )}
+
+                                {item.price_difference &&
+                                  item.price_difference !== "0" &&
+                                  item.price_difference !== "$0" && (
+                                    <p className="card-price">
+                                      <span>SAVE</span> {item.price_difference}
+                                    </p>
+                                  )}
+
+                                <div className="more_info">
+                                  <button
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      setShowInfo(true);
+                                    }}
+                                  >
+                                    <i className="fa fa-info-circle"></i> Info
+                                  </button>
+                                </div>
                               </div>
                             </div>
-                          </div>
+                          )}
+
+                          {/* --- DETAILS LIST --- */}
                           <ul className="vehicleDetailsWithIcons simple">
-                            <li>
-                              <span className="attribute3">Used</span>
-                            </li>
-                            <li className="attribute3_list">
-                              <span className="attribute3">Touring</span>
-                            </li>
-                            <li>
-                              <span className="attribute3">22 ft</span>
-                            </li>
-                            <li>
-                              <span className="attribute3">2986 Kg</span>
-                            </li>
-                            <li>
-                              <span className="attribute3">Empire</span>
-                            </li>
+                            {item.condition && (
+                              <li>
+                                <span className="attribute3">
+                                  {item.condition}
+                                </span>
+                              </li>
+                            )}
+
+                            {item.categories && item.categories.length > 0 && (
+                              <li className="attribute3_list">
+                                <span className="attribute3">
+                                  {item.categories.join(", ")}
+                                </span>
+                              </li>
+                            )}
+
+                            {item.length && (
+                              <li>
+                                <span className="attribute3">
+                                  {item.length}
+                                </span>
+                              </li>
+                            )}
+
+                            {item.kg && (
+                              <li>
+                                <span className="attribute3">{item.kg}</span>
+                              </li>
+                            )}
+
+                            {item.make && (
+                              <li>
+                                <span className="attribute3">{item.make}</span>
+                              </li>
+                            )}
                           </ul>
-                          <div className="bottom_mid">
-                            <span>
-                              <i className="bi bi-check-circle-fill"></i>{" "}
-                              Condition New
-                            </span>
-                            <span>
-                              <i className="fa fa-map-marker-alt"></i> Victoria
-                            </span>
+
+                          {/* --- CONDITION + LOCATION --- */}
+                          {(item.condition || item.location) && (
+                            <div className="bottom_mid">
+                              {item.condition && (
+                                <span>
+                                  <i className="bi bi-check-circle-fill"></i>{" "}
+                                  Condition {item.condition}
+                                </span>
+                              )}
+                              {item.location && (
+                                <span>
+                                  <i className="fa fa-map-marker-alt"></i>{" "}
+                                  {item.location}
+                                </span>
+                              )}
+                            </div>
+                          )}
+
+                          {/* --- BUTTONS --- */}
+                          <div className="bottom_button">
+                            <button
+                              className="btn"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                setShowContact(true);
+                              }}
+                            >
+                              Contact Dealer
+                            </button>
+                            <button className="btn btn-primary">
+                              View Details
+                            </button>
                           </div>
+                        </div>
+                      </div>
+                    </Link>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="dealers-section product-type">
+          <div className="other_items">
+            <div className="related-products">
+              <div className="row g-3">
+                {mergedProducts.map((item, index) => (
+                  <div className="col-lg-6 mb-0" key={index}>
+                    <Link
+                      href={productHref("grand-explorer")}
+                      prefetch={false}
+                      className="lli_head"
+                    >
+                      <div className="product-card">
+                        <div className="img">
+                          <div className="background_thumb">
+                            <Image
+                              src="/images/sample3.jpg"
+                              alt="Caravan"
+                              width={300}
+                              height={200}
+                              unoptimized
+                            />
+                          </div>
+                          <div className="main_thumb position-relative">
+                            <span className="lab">Spotlight Van</span>
+                            <Swiper
+                              modules={[Navigation, Pagination]}
+                              spaceBetween={10}
+                              slidesPerView={1}
+                              navigation
+                              pagination={{
+                                clickable: true,
+                                //dynamicBullets: true, // adds smooth, minimal bullets
+                              }}
+                              onSlideChange={(swiper) => {
+                                const isLast =
+                                  swiper.activeIndex ===
+                                  swiper.slides.length - 1;
+                                const viewMoreBtn = document.querySelector(
+                                  `#view-more-btn-${item}`
+                                );
+                                if (viewMoreBtn instanceof HTMLElement) {
+                                  viewMoreBtn.style.display = isLast
+                                    ? "block"
+                                    : "none";
+                                }
+                              }}
+                              className="main_thumb_swiper"
+                            >
+                              {[
+                                "/images/thumb-1.jpg",
+                                "/images/thumb-2.jpg",
+                                "/images/thumb-3.jpg",
+                                "/images/thumb-4.jpg",
+                              ].map((img, i) => (
+                                <SwiperSlide key={i}>
+                                  <div className="thumb_img">
+                                    <Image
+                                      src={img}
+                                      alt={`Caravan ${i + 1}`}
+                                      width={300}
+                                      height={200}
+                                      unoptimized
+                                    />
+                                  </div>
+                                </SwiperSlide>
+                              ))}
+                            </Swiper>
+
+                            {/* Hidden "View More" button that appears after last slide */}
+                            <div
+                              id={`view-more-btn-${item}`}
+                              className="view-more-btn-wrapper"
+                            >
+                              <Link
+                                href="/related-links"
+                                className="view-more-btn"
+                              >
+                                View More
+                              </Link>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="product_de">
+                          <div className="info">
+                            {item.name && (
+                              <h3 className="title">{item.name}</h3>
+                            )}
+                          </div>
+
+                          {/* --- PRICE SECTION --- */}
+                          {(item.regular_price ||
+                            item.sale_price ||
+                            item.price_difference) && (
+                            <div className="price">
+                              <div className="metc2">
+                                {(item.regular_price || item.sale_price) && (
+                                  <h5 className="slog">
+                                    {item.regular_price && (
+                                      <>{item.regular_price}</>
+                                    )}
+                                    {item.sale_price && (
+                                      <s>{item.sale_price}</s>
+                                    )}
+                                  </h5>
+                                )}
+
+                                {item.price_difference &&
+                                  item.price_difference !== "0" &&
+                                  item.price_difference !== "$0" && (
+                                    <p className="card-price">
+                                      <span>SAVE</span> {item.price_difference}
+                                    </p>
+                                  )}
+
+                                <div className="more_info">
+                                  <button
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      setShowInfo(true);
+                                    }}
+                                  >
+                                    <i className="fa fa-info-circle"></i> Info
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* --- DETAILS LIST --- */}
+                          <ul className="vehicleDetailsWithIcons simple">
+                            {item.condition && (
+                              <li>
+                                <span className="attribute3">
+                                  {item.condition}
+                                </span>
+                              </li>
+                            )}
+
+                            {item.categories && item.categories.length > 0 && (
+                              <li className="attribute3_list">
+                                <span className="attribute3">
+                                  {item.categories.join(", ")}
+                                </span>
+                              </li>
+                            )}
+
+                            {item.length && (
+                              <li>
+                                <span className="attribute3">
+                                  {item.length}
+                                </span>
+                              </li>
+                            )}
+
+                            {item.kg && (
+                              <li>
+                                <span className="attribute3">{item.kg}</span>
+                              </li>
+                            )}
+
+                            {item.make && (
+                              <li>
+                                <span className="attribute3">{item.make}</span>
+                              </li>
+                            )}
+                          </ul>
+
+                          {/* --- CONDITION + LOCATION --- */}
+                          {(item.condition || item.location) && (
+                            <div className="bottom_mid">
+                              {item.condition && (
+                                <span>
+                                  <i className="bi bi-check-circle-fill"></i>{" "}
+                                  Condition {item.condition}
+                                </span>
+                              )}
+                              {item.location && (
+                                <span>
+                                  <i className="fa fa-map-marker-alt"></i>{" "}
+                                  {item.location}
+                                </span>
+                              )}
+                            </div>
+                          )}
+
+                          {/* --- BUTTONS --- */}
                           <div className="bottom_button">
                             <button
                               className="btn"
