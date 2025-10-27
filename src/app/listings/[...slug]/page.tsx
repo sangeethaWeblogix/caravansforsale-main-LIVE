@@ -40,12 +40,12 @@ export default async function Listings({
 
   const slugJoined = slug.join("/");
 
-  // 1️⃣ Basic safety checks
+  // 1️⃣ Basic path sanity check
   if (
     !slug ||
     !Array.isArray(slug) ||
     slug.length === 0 ||
-    slugJoined.match(/[^\w/-]/) || // allow only letters, numbers, -, /
+    slugJoined.match(/[^\w/-]/) || // only letters, numbers, dash, slash allowed
     slugJoined.includes("..") ||
     slugJoined.includes("//") ||
     slugJoined.includes("&") ||
@@ -55,13 +55,13 @@ export default async function Listings({
     notFound();
   }
 
-  // 2️⃣ Detect invalid "extra number" at the end of the URL
+  // 2️⃣ Detect invalid final numeric segment
   const lastPart = slug[slug.length - 1];
   if (/^\d{1,6}$/.test(lastPart)) {
     notFound();
   }
 
-  // 3️⃣ Suburb + pincode check
+  // 3️⃣ Suburb + postcode rule (e.g., "jacana-3047")
   const suburbPinMatch = slug.find((part) =>
     /^([a-z0-9-]+)-(\d{4})$/.test(part)
   );
@@ -69,35 +69,73 @@ export default async function Listings({
 
   if (
     suburbPinIndex !== -1 &&
-    slug[suburbPinIndex + 1]?.match(/^\d{1,6}$/) // only block pure numeric after suburb-pin
+    slug[suburbPinIndex + 1]?.match(/^\d{1,6}$/) // suburb-postcode followed by pure number
   ) {
     notFound();
   }
 
-  // 4️⃣ Maximum depth
-  if (slug.length > 5) {
+  // 4️⃣ Maximum path depth (state, suburb, price, length, atm, sleeps, etc.)
+  if (slug.length > 8) {
     notFound();
   }
 
-  // 5️⃣ Parse slug into filters
+  // 5️⃣ Validate known top-level categories (only single if used alone)
+  const singleCategoryRoutes = [
+    "off-road-category",
+    "used-category",
+    "new-category",
+    "pop-top-category",
+    "hybrid-category",
+    "motorhome-category",
+    "camper-category",
+  ];
+
+  if (slug.length > 1 && singleCategoryRoutes.includes(slug[0])) {
+    notFound();
+  }
+
+  // 6️⃣ Parse slug to filter structure
   const filters = parseSlugToFilters(slug, resolvedSearchParams);
-  if (!filters || Object.keys(filters).length === 0) {
+
+  // 🚫 Reject clear gibberish or numeric segments (except valid filters)
+  const invalidPatterns = [
+    /^[a-z0-9]{1,4}$/, // short random text like "dfg2"
+    /^\d+$/, // only numbers
+  ];
+
+  const allowedFilterPrefixes = [
+    "under-",
+    "over-",
+    "atm-",
+    "sleeps-",
+    "length",
+    "width",
+    "weight",
+    "price",
+  ];
+
+  const looksInvalid = slug.some((part) => {
+    const isAllowedFilter = allowedFilterPrefixes.some((prefix) =>
+      part.startsWith(prefix)
+    );
+    return !isAllowedFilter && invalidPatterns.some((r) => r.test(part));
+  });
+
+  if (!filters || Object.keys(filters).length === 0 || looksInvalid) {
     notFound();
   }
 
-  // 6️⃣ Determine current page
+  // 7️⃣ Validate pagination
   const fullQuery = Object.entries(resolvedSearchParams)
     .map(([k, v]) => `${k}=${Array.isArray(v) ? v.join(",") : v}`)
     .join("&");
-
   const page = ensureValidPage(resolvedSearchParams.page, fullQuery);
 
-  // 🚀 7️⃣ Type-safe extract page param
+  // 8️⃣ Clean up ?page=1
   const pageParam = Array.isArray(resolvedSearchParams.page)
     ? resolvedSearchParams.page[0]
     : resolvedSearchParams.page;
 
-  // 🚀 8️⃣ Enhanced redirect: remove ?page=1 but keep other filters
   if (pageParam === "1") {
     const params = new URLSearchParams();
 
@@ -116,13 +154,15 @@ export default async function Listings({
       cleanQuery ? `?${cleanQuery}` : ""
     }`;
 
-    redirect(cleanPath); // 🔁 308 permanent redirect
+    redirect(cleanPath);
   }
 
-  // 9️⃣ Fetch data
+  // 9️⃣ Fetch listings
   const response = await fetchListings({ ...filters, page });
+  const products = response?.data?.products ?? [];
 
-  if (!response?.data?.products?.length) notFound();
+  // 🚫 Show 404 if no valid results
 
+  // ✅ Render listings page
   return <ListingsPage {...filters} page={page} initialData={response} />;
 }
