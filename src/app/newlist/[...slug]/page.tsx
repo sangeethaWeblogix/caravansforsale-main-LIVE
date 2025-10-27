@@ -4,7 +4,7 @@ import ListingsPage from "@/app/components/new-list/listing";
 import { parseSlugToFilters } from "../../components/urlBuilder";
 import { metaFromSlug } from "../../../utils/seo/metaFromSlug";
 import type { Metadata } from "next";
-import { fetchListings } from "@/api/listings/api";
+import { fetchNewListings } from "@/api/newlist/api";
 import { ensureValidPage } from "@/utils/seo/validatePage";
 import { notFound } from "next/navigation";
 
@@ -96,7 +96,7 @@ export default async function Listings({
   const page = ensureValidPage(resolvedSearchParams.page, fullQuery);
 
   // ✅ 6️⃣ Fetch listings
-  const response = await fetchListings({ ...filters, page });
+  const response = await fetchNewListings({ ...filters, page });
 
   // ✅ 7️⃣ Optional: show 404 if no data
   // if (!response?.data?.products?.length) {

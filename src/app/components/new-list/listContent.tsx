@@ -27,7 +27,6 @@ interface Product {
   people?: string;
   make?: string;
   slug?: string;
-  is_exclusive: boolean;
 }
 
 interface Pagination {
@@ -339,8 +338,8 @@ export default function ListingContent({
           <div className="other_items">
             <div className="related-products">
               <div className="row g-3">
-                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((item) => (
-                  <div className="col-lg-6 mb-0" key={item}>
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((item, index) => (
+                  <div className="col-lg-6 mb-0" key={index}>
                     <Link
                       href={productHref("grand-explorer")}
                       prefetch={false}

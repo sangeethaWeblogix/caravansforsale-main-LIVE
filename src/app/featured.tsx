@@ -204,9 +204,7 @@ export default function DealsOnlyCFS() {
                     </div>
                   </div>
                 ) : (
-                  <div className="py-4 text-muted">
-                    No featured items found.
-                  </div>
+                  <div className="py-4 text-muted"></div>
                 )}
               </div>
             </div>

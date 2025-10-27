@@ -1,6 +1,6 @@
 import React, { Suspense } from "react";
 import Listing from "../components/new-list/listing";
-import { fetchListings } from "@/api/listings/api";
+import { fetchNewListings } from "@/api/newlist/api";
 import type { Metadata } from "next";
 import { generateListingsMetadata } from "@/utils/seo/listingsMetadata";
 import { ensureValidPage } from "@/utils/seo/validatePage";
@@ -30,7 +30,7 @@ export default async function ListingsPage({
 
   const page = ensureValidPage(resolvedSearchParams.page, fullQuery);
 
-  const response = await fetchListings({ page });
+  const response = await fetchNewListings({ page });
   if (
     !response ||
     response.success === false ||

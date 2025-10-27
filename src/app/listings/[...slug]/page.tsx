@@ -6,7 +6,7 @@ import { metaFromSlug } from "../../../utils/seo/metaFromSlug";
 import type { Metadata } from "next";
 import { fetchListings } from "@/api/listings/api";
 import { ensureValidPage } from "@/utils/seo/validatePage";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 type Params = Promise<{ slug?: string[] }>;
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
@@ -56,21 +56,17 @@ export default async function Listings({
   }
 
   // 2️⃣ Detect invalid "extra number" at the end of the URL
-  // Example: /listings/.../55 or /listings/.../123/
   const lastPart = slug[slug.length - 1];
-
-  // Match pure numbers (1–5 digits typical)
   if (/^\d{1,6}$/.test(lastPart)) {
-    notFound(); // 🚫 Invalid extra numeric path
+    notFound();
   }
 
-  // 3️⃣ Suburb + pincode check — ensure nothing comes after
+  // 3️⃣ Suburb + pincode check
   const suburbPinMatch = slug.find((part) =>
     /^([a-z0-9-]+)-(\d{4})$/.test(part)
   );
   const suburbPinIndex = suburbPinMatch ? slug.indexOf(suburbPinMatch) : -1;
 
-  // allow suburb+postcode followed by filters like price/atm etc.
   if (
     suburbPinIndex !== -1 &&
     slug[suburbPinIndex + 1]?.match(/^\d{1,6}$/) // only block pure numeric after suburb-pin
@@ -78,30 +74,55 @@ export default async function Listings({
     notFound();
   }
 
-  // 4️⃣ Maximum segments allowed — prevent overly deep paths
+  // 4️⃣ Maximum depth
   if (slug.length > 5) {
     notFound();
   }
-  // ✅ 4️⃣ Parse slug into filters
+
+  // 5️⃣ Parse slug into filters
   const filters = parseSlugToFilters(slug, resolvedSearchParams);
   if (!filters || Object.keys(filters).length === 0) {
     notFound();
   }
 
-  // ✅ 5️⃣ Build query
+  // 6️⃣ Determine current page
   const fullQuery = Object.entries(resolvedSearchParams)
     .map(([k, v]) => `${k}=${Array.isArray(v) ? v.join(",") : v}`)
     .join("&");
 
   const page = ensureValidPage(resolvedSearchParams.page, fullQuery);
 
-  // ✅ 6️⃣ Fetch listings
+  // 🚀 7️⃣ Type-safe extract page param
+  const pageParam = Array.isArray(resolvedSearchParams.page)
+    ? resolvedSearchParams.page[0]
+    : resolvedSearchParams.page;
+
+  // 🚀 8️⃣ Enhanced redirect: remove ?page=1 but keep other filters
+  if (pageParam === "1") {
+    const params = new URLSearchParams();
+
+    Object.entries(resolvedSearchParams).forEach(([key, value]) => {
+      if (key !== "page" && value !== undefined) {
+        if (Array.isArray(value)) {
+          value.forEach((v) => params.append(key, v));
+        } else {
+          params.append(key, value);
+        }
+      }
+    });
+
+    const cleanQuery = params.toString();
+    const cleanPath = `/listings/${slug.join("/")}${
+      cleanQuery ? `?${cleanQuery}` : ""
+    }`;
+
+    redirect(cleanPath); // 🔁 308 permanent redirect
+  }
+
+  // 9️⃣ Fetch data
   const response = await fetchListings({ ...filters, page });
 
-  // ✅ 7️⃣ Optional: show 404 if no data
-  // if (!response?.data?.products?.length) {
-  //   notFound();
-  // }
+  if (!response?.data?.products?.length) notFound();
 
   return <ListingsPage {...filters} page={page} initialData={response} />;
 }

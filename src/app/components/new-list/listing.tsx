@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
-import { fetchListings, ApiResponse, Item } from "../../../api/listings/api";
+import { fetchNewListings, ApiResponse, Item } from "../../../api/newlist/api";
 import Listing from "./listContent";
 import ExculsiveContent from "../ListContent/exculsiveContent";
 import CaravanFilter from "../CaravanFilter";
@@ -41,7 +41,6 @@ interface Product {
   people?: string;
   make?: string;
   slug?: string;
-  is_exclusive: boolean;
   // Include additional properties that might come from API
   title?: string;
   weight?: string;
@@ -126,7 +125,6 @@ function transformApiItemsToProducts(items: Item[]): Product[] {
     people: item.people || "",
     make: item.make || "",
     slug: item.slug,
-    is_exclusive: item.is_exclusive ?? false,
     // keep extra props
   }));
 }
@@ -149,7 +147,7 @@ export default function ListingsPage({
   const [isUsingInitialData, setIsUsingInitialData] = useState(!!initialData);
 
   const rawPage = searchParams.get("page");
-
+  console.log("dataa", initialData);
   // ✅ If page is missing → default to 1
   const page = rawPage ? parseInt(rawPage, 10) : 1;
 
@@ -400,7 +398,7 @@ export default function ListingsPage({
             : undefined;
 
         // ✅ Step 1 — Fetch main caravan listings
-        const response: ApiResponse = await fetchListings({
+        const response: ApiResponse = await fetchNewListings({
           ...safeFilters,
           page: pageNum,
           condition: safeFilters.condition,
