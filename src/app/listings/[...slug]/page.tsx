@@ -159,7 +159,6 @@ export default async function Listings({
 
   // 9️⃣ Fetch listings
   const response = await fetchListings({ ...filters, page });
-  const products = response?.data?.products ?? [];
 
   // 🚫 Show 404 if no valid results
 
