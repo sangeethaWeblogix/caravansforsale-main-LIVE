@@ -12,6 +12,15 @@ const nextConfig: NextConfig = {
       "www.caravansforsale.com.au",
     ],
   },
+  async rewrites() {
+    return [
+      {
+        source: "/blob/:path*",
+        destination:
+          "https://wb79vudhmjvv4ng6.public.blob.vercel-storage.com/:path*",
+      },
+    ];
+  },
   experimental: {
     // ✅ Built-in critical CSS inlining
     optimizeCss: true,
