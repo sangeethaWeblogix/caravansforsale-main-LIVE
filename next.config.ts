@@ -5,8 +5,22 @@ const nextConfig: NextConfig = {
 
   images: {
     unoptimized: true,
+    domains: [
+      // allow both your blob domain and custom domain
+      "wb79vudhmjvv4ng6.public.blob.vercel-storage.com",
+      "media.caravansforsale.com.au",
+      "www.caravansforsale.com.au",
+    ],
   },
-
+  async rewrites() {
+    return [
+      {
+        source: "/blob/:path*",
+        destination:
+          "https://wb79vudhmjvv4ng6.public.blob.vercel-storage.com/:path*",
+      },
+    ];
+  },
   experimental: {
     // ✅ Built-in critical CSS inlining
     optimizeCss: true,

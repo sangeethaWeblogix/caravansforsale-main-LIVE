@@ -2398,6 +2398,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
 
         {/* ATM Range */}
         {/* ATM Range */}
+        {/* ATM Range */}
         <div className="cs-full_width_section">
           <h5 className="cfs-filter-label">ATM</h5>
           <div className="row">
@@ -2433,11 +2434,13 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                 }}
               >
                 <option value="">Max</option>
-                {atm.map((val) => (
-                  <option key={val} value={val}>
-                    {val.toLocaleString()} kg
-                  </option>
-                ))}
+                {atm
+                  .filter((val) => !atmFrom || val >= atmFrom) // ✅ Show only values >= From
+                  .map((val) => (
+                    <option key={val} value={val}>
+                      {val.toLocaleString()} kg
+                    </option>
+                  ))}
               </select>
             </div>
           </div>
@@ -2462,11 +2465,9 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                   };
 
                   setFilters(updatedFilters);
-                  // onFilterChange(updatedFilters);
-                  //                 onFilterChange(updatedFilters);
 
                   startTransition(() => {
-                    updateAllFiltersAndURL(updatedFilters); // ✅ pass it here
+                    updateAllFiltersAndURL(updatedFilters);
                   });
                 }}
               >
@@ -2504,6 +2505,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                 ))}
               </select>
             </div>
+
             <div className="col-6">
               <h6 className="cfs-filter-label-sub">To</h6>
               <select
@@ -2521,14 +2523,17 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                 }}
               >
                 <option value="">Max</option>
-                {price.map((value, idx) => (
-                  <option key={idx} value={value}>
-                    ${value.toLocaleString()}{" "}
-                  </option>
-                ))}
+                {price
+                  .filter((val) => !minPrice || val >= minPrice)
+                  .map((val) => (
+                    <option key={val} value={val}>
+                      ${val.toLocaleString()}
+                    </option>
+                  ))}
               </select>
             </div>
           </div>
+
           {(minPrice || maxPrice) && (
             <div className="filter-chip">
               <span>
@@ -2601,7 +2606,6 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
         <div className="cs-full_width_section">
           <h5 className="cfs-filter-label">Sleep</h5>
           <div className="row">
-            {/* FROM SLEEP */}
             <div className="col-6">
               <h6 className="cfs-filter-label-sub">From</h6>
               <select
@@ -2610,7 +2614,6 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                 onChange={(e) => {
                   const val = e.target.value ? parseInt(e.target.value) : null;
                   setSleepFrom(val);
-
                   commit({
                     ...currentFilters,
                     from_sleep: val ?? undefined,
@@ -2627,7 +2630,6 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
               </select>
             </div>
 
-            {/* TO SLEEP */}
             <div className="col-6">
               <h6 className="cfs-filter-label-sub">To</h6>
               <select
@@ -2636,7 +2638,6 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                 onChange={(e) => {
                   const val = e.target.value ? parseInt(e.target.value) : null;
                   setSleepTo(val);
-
                   commit({
                     ...currentFilters,
                     from_sleep: sleepFrom ?? currentFilters.from_sleep,
@@ -2645,16 +2646,17 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                 }}
               >
                 <option value="">Max</option>
-                {sleep.map((value) => (
-                  <option key={value} value={value}>
-                    {value}
-                  </option>
-                ))}
+                {sleep
+                  .filter((value) => !sleepFrom || value >= sleepFrom)
+                  .map((value) => (
+                    <option key={value} value={value}>
+                      {value}
+                    </option>
+                  ))}
               </select>
             </div>
           </div>
 
-          {/* FILTER CHIP */}
           {(sleepFrom || sleepTo) && (
             <div className="filter-chip">
               <span>
@@ -2666,7 +2668,6 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                 onClick={() => {
                   setSleepFrom(null);
                   setSleepTo(null);
-
                   commit({
                     ...currentFilters,
                     from_sleep: undefined,
@@ -2862,14 +2863,17 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                 }}
               >
                 <option value="">Max</option>
-                {length.map((value, idx) => (
-                  <option key={idx} value={value}>
-                    {value} ft
-                  </option>
-                ))}
+                {length
+                  .filter((value) => !lengthFrom || value >= lengthFrom)
+                  .map((value, idx) => (
+                    <option key={idx} value={value}>
+                      {value} ft
+                    </option>
+                  ))}
               </select>
             </div>
           </div>
+
           {(lengthFrom || lengthTo) && (
             <div className="filter-chip">
               <span>
@@ -2878,31 +2882,6 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
               </span>
               <span
                 className="filter-chip-close"
-                // onClick={() => {
-                //   setLengthFrom(null);
-                //   setLengthTo(null);
-
-                //   const updatedFilters: Filters = {
-                //     ...currentFilters,
-                //     from_length: undefined,
-                //     to_length: undefined,
-                //   };
-                //   setFilters(updatedFilters);
-
-                //   // Remove slug segments related to length
-                //   const segments = pathname.split("/").filter(Boolean);
-                //   const newSegments = segments.filter(
-                //     (s) =>
-                //       !s.match(/^between-\d+-\d+-length-in-feet$/) &&
-                //       !s.match(/^over-\d+-length-in-feet$/) &&
-                //       !s.match(/^under-\d+-length-in-feet$/)
-                //   );
-
-                //   const newPath = `/${newSegments.join("/")}`;
-                //   router.push(
-                //     newPath + (searchParams.toString() ? `?${searchParams}` : "")
-                //   );
-                // }}
                 onClick={() => {
                   setLengthFrom(null);
                   setLengthTo(null);
