@@ -215,6 +215,19 @@ export function parseSlugToFilters(
       }
       return;
     }
+  // ✅ Year (single-year range only)
+    if (part.includes("-caravans-range")) {
+      const yearMatch = part.match(/^(\d{4})-caravans-range$/);
+      if (yearMatch) {
+        filters.acustom_fromyears = yearMatch[1];
+        filters.acustom_toyears = yearMatch[1];
+        return;
+      }
+
+      
+      
+ 
+    }
 
     // Search + fallback
     // if (part.startsWith("search=")) {
@@ -268,12 +281,10 @@ export function parseSlugToFilters(
     // Helper: handle arrays from query (e.g., Next.js gives string[])
     const getScalar = (v: string | string[] | undefined): string | undefined =>
       Array.isArray(v) ? v[0] : v;
-    filters.acustom_fromyears = toNumber(query.acustom_fromyears);
-
+ 
     if (query.radius_kms) filters.radius_kms = getScalar(query.radius_kms);
 
-    if (query.acustom_toyears)
-      filters.acustom_toyears = getScalar(query.acustom_toyears);
+    
     if (query.page) filters.page = getScalar(query.page);
     if (query.orderby) filters.orderby = getScalar(query.orderby);
     if (query.search) filters.search = getScalar(query.search);

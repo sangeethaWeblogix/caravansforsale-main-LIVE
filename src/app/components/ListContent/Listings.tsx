@@ -302,14 +302,7 @@ export default function ListingsPage({
 
       if (nextFilters.orderby)
         query.set("orderby", String(nextFilters.orderby));
-      if (nextFilters.acustom_fromyears)
-        query.set(
-          "acustom_fromyears",
-          nextFilters.acustom_fromyears.toString()
-        );
-      if (nextFilters.acustom_toyears)
-        query.set("acustom_toyears", nextFilters.acustom_toyears.toString());
-
+      
       const r = Number(nextFilters.radius_kms);
       if (!Number.isNaN(r) && r !== DEFAULT_RADIUS) {
         query.set("radius_kms", String(r));
@@ -736,12 +729,7 @@ export default function ListingsPage({
       if ("orderby" in newFilters && !newFilters.orderby) {
         mergedFilters.orderby = undefined;
       }
-      if ("acustom_fromyears" in newFilters && !newFilters.acustom_fromyears) {
-        mergedFilters.acustom_fromyears = undefined;
-      }
-      if ("acustom_toyears" in newFilters && !newFilters.acustom_toyears) {
-        mergedFilters.acustom_toyears = undefined;
-      }
+     
 
       filtersRef.current = mergedFilters;
       setFilters(mergedFilters);

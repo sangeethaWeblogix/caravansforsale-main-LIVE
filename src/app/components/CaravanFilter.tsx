@@ -137,6 +137,8 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
   const [filteredSuburbs, setFilteredSuburbs] = useState<Suburb[]>([]);
   const [filters, setFilters] = useState<Filters>({});
   const [conditionOpen, setConditionOpen] = useState(false);
+    const [yearOpen, setYearOpen] = useState(false);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isKeywordModalOpen, setIsKeywordModalOpen] = useState(false);
 
@@ -1303,17 +1305,18 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
   }, [currentFilters.category, selectedCategory, categories]);
 
   // adaa
-  useEffect(() => {
-    const fromYearParam = searchParams.get("acustom_fromyears");
-    const toYearParam = searchParams.get("acustom_toyears");
+ 
+// 👇 Add this inside your component
+useEffect(() => {
+  if (currentFilters?.acustom_fromyears) {
+    setYearFrom(Number(currentFilters.acustom_fromyears));
+    setYearTo(Number(currentFilters.acustom_toyears));
+  } else {
+    setYearFrom(null);
+    setYearTo(null);
+  }
+}, [currentFilters?.acustom_fromyears, currentFilters?.acustom_toyears]);
 
-    if (fromYearParam) {
-      setYearFrom(parseInt(fromYearParam));
-    }
-    if (toYearParam) {
-      setYearTo(parseInt(toYearParam));
-    }
-  }, [searchParams]);
 
   useEffect(() => {
     if (
@@ -1554,10 +1557,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     // 3) build URL once0000000000000000
     const slugPath = buildSlugFromFilters(next);
     const query = new URLSearchParams();
-    if (next.acustom_fromyears)
-      query.set("acustom_fromyears", String(next.acustom_fromyears));
-    if (next.acustom_toyears)
-      query.set("acustom_toyears", String(next.acustom_toyears));
+   
     if (next.radius_kms && next.radius_kms !== DEFAULT_RADIUS)
       query.set("radius_kms", String(next.radius_kms));
     if (next.page && Number(next.page) > 1) {
@@ -2681,144 +2681,69 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
           )}
         </div>
 
-        {/* Sleeps Accordion */}
-        {/* <div className="cs-full_width_section">
-          <div
-            className="filter-accordion"
-            onClick={() => toggle(setSleepsOpen)}
-          >
-            <h5 className="cfs-filter-label">Sleep</h5>
-            <BiChevronDown />
-          </div>
-          {selectedSleepName && (
-            <div className="filter-chip">
-              <span>{selectedSleepName} People</span>
-              <span
-                className="filter-chip-close"
-                onClick={() => {
-                  setSelectedSleepName("");
-                  commit({ ...currentFilters, sleeps: undefined });
-                }}
-              >
-                ×
-              </span>
-            </div>
-          )}
-
-          {sleepsOpen && (
-            <div className="filter-accordion-items">
-              {sleep.map((sleepValue, index) => (
-                <div
-                  key={index}
-                  className={`filter-accordion-item ${
-                    selectedSleepName === String(sleepValue) ? "selected" : ""
-                  }`}
-                  onClick={() => {
-                    const selectedValue = String(sleepValue);
-                    const already = selectedSleepName === selectedValue;
-                    setSelectedSleepName(already ? null : selectedValue);
-                    setSleepsOpen(false);
-                    commit({
-                      ...currentFilters,
-                      sleeps: already ? undefined : `${selectedValue}-people`,
-                    });
-                  }}
-                >
-                  {sleepValue} People
-                </div>
-              ))}
-            </div>
-          )}
-        </div> */}
+      
         {/* Year Range */}
-        <div className="cs-full_width_section">
-          <h5 className="cfs-filter-label">Year</h5>
-          <div className="row">
-            <div className="col-6">
-              <h6 className="cfs-filter-label-sub">From</h6>
-              <select
-                className="cfs-select-input"
-                value={yearFrom?.toString() || ""}
-                onChange={(e) => {
-                  const val = e.target.value ? parseInt(e.target.value) : null;
-                  setYearFrom(val);
-                  commit({
-                    ...currentFilters,
-                    acustom_fromyears: val ?? undefined,
-                    acustom_toyears: yearTo ?? filters.acustom_toyears,
-                  });
-                }}
-              >
-                <option value="">Min</option>
-                {years.map((value) => (
-                  <option key={value} value={value}>
-                    {value}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="col-6">
-              <h6 className="cfs-filter-label-sub">To</h6>
-              <select
-                className="cfs-select-input"
-                value={yearTo?.toString() || ""}
-                onChange={(e) => {
-                  const val = e.target.value ? parseInt(e.target.value) : null;
-                  setYearTo(val);
-                  commit({
-                    ...currentFilters,
-                    acustom_fromyears: yearFrom ?? filters.acustom_fromyears,
-                    acustom_toyears: val ?? undefined,
-                  });
-                }}
-              >
-                <option value="">Max</option>
-                {years.map((value) => (
-                  <option key={value} value={value}>
-                    {value}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-          {(yearFrom || yearTo) && (
-            <div className="filter-chip">
-              <span>
-                {yearFrom ? yearFrom : "Min"} – {yearTo ? yearTo : "Max"}
-              </span>
-              <span
-                className="filter-chip-close"
-                // onClick={() => {
-                //   setYearFrom(null);
-                //   setYearTo(null);
+    
+ <div className="cs-full_width_section">
+  {/* Accordion Header */}
+  <div className="filter-accordion" onClick={() => toggle(setYearOpen)}>
+    <h5 className="cfs-filter-label">Year</h5>
+    <BiChevronDown />
+  </div>
 
-                //   const updatedFilters: Filters = {
-                //     ...currentFilters,
-                //     acustom_fromyears: undefined,
-                //     acustom_toyears: undefined,
-                //   };
+  {/* Selected Year Chip */}
+  {yearFrom && (
+    <div className="filter-chip">
+      <span>{yearFrom}</span>
+      <span
+        className="filter-chip-close"
+        onClick={() => {
+          setYearFrom(null);
+          setYearTo(null);
+          commit({
+            ...currentFilters,
+            acustom_fromyears: undefined,
+            acustom_toyears: undefined,
+          });
+        }}
+      >
+        ×
+      </span>
+    </div>
+  )}
 
-                //   setFilters(updatedFilters);
+  {/* Dropdown Items */}
+  {yearOpen && (
+    <div className="filter-accordion-items">
+      {years.map((yearValue, index) => (
+        <div
+          key={index}
+          className={`filter-accordion-item ${
+            yearFrom === yearValue ? "selected" : ""
+          }`}
+          onClick={() => {
+            const already = yearFrom === yearValue;
+            const selectedValue = already ? null : yearValue;
 
-                //   startTransition(() => {
-                //     updateAllFiltersAndURL(updatedFilters); // ✅ pass it here
-                //   });
-                // }}
-                onClick={() => {
-                  setYearFrom(null);
-                  setYearTo(null);
-                  commit({
-                    ...currentFilters,
-                    acustom_fromyears: undefined,
-                    acustom_toyears: undefined,
-                  });
-                }}
-              >
-                ×
-              </span>
-            </div>
-          )}
+            setYearFrom(selectedValue);
+            setYearTo(selectedValue);
+            setYearOpen(false);
+
+            commit({
+              ...currentFilters,
+              acustom_fromyears: selectedValue ?? undefined,
+              acustom_toyears: selectedValue ?? undefined,
+            });
+          }}
+        >
+          {yearValue}
         </div>
+      ))}
+    </div>
+  )}
+</div>
+
+
         {/* Length Range */}
         <div className="cs-full_width_section">
           <h5 className="cfs-filter-label">Length</h5>

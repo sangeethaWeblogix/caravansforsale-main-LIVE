@@ -83,6 +83,7 @@ export function buildSlugFromFilters(f: Filters): string {
   // 8) Sleeps (range-based)
   const fromSleep = asNum(f.from_sleep);
   const toSleep = asNum(f.to_sleep);
+  
 
   if (fromSleep && toSleep) {
     segments.push(`between-${fromSleep}-${toSleep}-people-sleeping-capacity`);
@@ -92,6 +93,22 @@ export function buildSlugFromFilters(f: Filters): string {
     segments.push(`under-${toSleep}-people-sleeping-capacity`);
   }
 
+
+  const fromYear = asNum(f.acustom_fromyears);
+const toYear = asNum(f.acustom_toyears);
+
+if (fromYear !== undefined && toYear !== undefined) {
+  if (fromYear === toYear) {
+    segments.push(`${fromYear}-caravans-range`);
+  } else {
+    // two different years → ignore or skip adding year slug
+    // just don’t add anything or fallback
+  }
+} else if (fromYear !== undefined) {
+  segments.push(`${fromYear}-caravans-range`);
+} else if (toYear !== undefined) {
+  segments.push(`${toYear}-caravans-range`);
+}
   const query = new URLSearchParams();
 
   // Add radius_kms to query only if it's number greater than default
