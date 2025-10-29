@@ -10,7 +10,7 @@ import React, {
 } from "react";
 import { BiChevronDown } from "react-icons/bi";
 import { usePathname, useRouter } from "next/navigation";
-import { useSearchParams } from "next/navigation";
+// import { useSearchParams } from "next/navigation";
 import { fetchProductList } from "@/api/productList/api";
 import { fetchModelsByMake } from "@/api/model/api";
 import "./filter.css";
