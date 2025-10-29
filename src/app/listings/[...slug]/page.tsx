@@ -78,7 +78,13 @@ export default async function Listings({
   if (slug.length > 8) {
     notFound();
   }
-
+// 🚫 Reject suburb/suburbs word in URL
+const hasInvalidSuburbWord = slug.some((part) =>
+  /-(suburb|suburbs)$/i.test(part)
+);
+if (hasInvalidSuburbWord) {
+  notFound();
+}
   
 
   // 6️⃣ Parse slug to filter structure
@@ -99,8 +105,7 @@ export default async function Listings({
     "width",
     "weight",
     "price",
-    "suburb", // ✅ allow “-suburb”
-    "suburbs",
+    
   ];
 
   const looksInvalid = slug.some((part) => {
