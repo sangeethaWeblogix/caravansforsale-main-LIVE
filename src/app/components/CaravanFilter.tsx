@@ -122,7 +122,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
 }) => {
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
+  // const searchParams = useSearchParams();
   const RADIUS_OPTIONS = [50, 100, 250, 500, 1000] as const;
   const [radiusKms, setRadiusKms] = useState<number>(RADIUS_OPTIONS[0]);
   const [categoryOpen, setCategoryOpen] = useState(false);
@@ -2692,7 +2692,7 @@ useEffect(() => {
   </div>
 
   {/* Selected Year Chip */}
-  {yearFrom && (
+  {yearFrom && yearTo && (
     <div className="filter-chip">
       <span>{yearFrom}</span>
       <span

@@ -41,12 +41,12 @@ export function parseSlugToFilters(
     new: "New",
     used: "Used",
   };
-  function toNumber(val: string | string[] | undefined): number | undefined {
-    if (!val) return undefined;
-    const str = Array.isArray(val) ? val[0] : val;
-    const num = Number(str);
-    return isNaN(num) ? undefined : num;
-  }
+  // function toNumber(val: string | string[] | undefined): number | undefined {
+  //   if (!val) return undefined;
+  //   const str = Array.isArray(val) ? val[0] : val;
+  //   const num = Number(str);
+  //   return isNaN(num) ? undefined : num;
+  // }
   const hasReservedSuffix = (s: string) =>
     /-(category|condition|state|region|suburb|keyword)$/.test(s) ||
     /-(kg-atm|length-in-feet|people-sleeping-capacity)$/.test(s) ||
