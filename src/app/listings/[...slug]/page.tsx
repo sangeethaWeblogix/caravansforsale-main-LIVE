@@ -79,20 +79,7 @@ export default async function Listings({
     notFound();
   }
 
-  // 5️⃣ Validate known top-level categories (only single if used alone)
-  const singleCategoryRoutes = [
-    "off-road-category",
-    "used-category",
-    "new-category",
-    "pop-top-category",
-    "hybrid-category",
-    "motorhome-category",
-    "camper-category",
-  ];
-
-  if (slug.length > 1 && singleCategoryRoutes.includes(slug[0])) {
-    notFound();
-  }
+  
 
   // 6️⃣ Parse slug to filter structure
   const filters = parseSlugToFilters(slug, resolvedSearchParams);

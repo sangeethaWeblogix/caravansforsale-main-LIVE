@@ -20,6 +20,7 @@ export function getValidPage(param: unknown, fullQuery: string): number | null {
     /&&/.test(query) ||
     /##/.test(query) ||
     // Invalid page assignments
+     /\bpage[^=]/.test(query) ||
     /page=$/.test(query) ||
     /page=&/.test(query) ||
     /page=\D/.test(query) || // page=letters or symbols
