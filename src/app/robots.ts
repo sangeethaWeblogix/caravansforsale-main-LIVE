@@ -14,6 +14,12 @@ export default function robots(): MetadataRoute.Robots {
           "/admin", // block admin area
           "/dashboard", // block dashboard
           "/api", // block backend APIs
+          "/*feed*",
+          "*/feed/",
+          "/*feedfeed*",
+          "/*feedfeedfeed*",
+          "/range/",
+          
         ],
       },
     ],
