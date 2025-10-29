@@ -242,14 +242,22 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
   // const isNonEmpty = (s: string | undefined | null): s is string =>
   //   typeof s === "string" && s.trim().length > 0;
   // 🔽 put this inside the component, under updateAllFiltersAndURL
-  const commit = (next: Filters) => {
-    setFilters(next);
-    filtersInitialized.current = true;
-    lastSentFiltersRef.current = next; // dedupe
-    startTransition(() => {
-      updateAllFiltersAndURL(next); // ← pass the fresh object
-    });
+ const commit = (next: Filters) => {
+  // Preserve existing filters that aren't being explicitly updated
+  const mergedFilters = {
+    ...currentFilters,
+    ...filters, // Include any pending local filter changes
+    ...next,    // Apply the new changes
   };
+  
+  setFilters(mergedFilters);
+  filtersInitialized.current = true;
+  lastSentFiltersRef.current = mergedFilters;
+  
+  startTransition(() => {
+    updateAllFiltersAndURL(mergedFilters);
+  });
+};
 
   // pick a human-readable text from item
 
