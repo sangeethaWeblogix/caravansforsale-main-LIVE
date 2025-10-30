@@ -6,7 +6,7 @@
  import "swiper/css/navigation";
  import "swiper/css/pagination";
  import { Navigation, Autoplay, Pagination } from "swiper/modules";
- 
+ import Skelton from '../skelton'
  import "./newlist.css";
  import Head from "next/head";
  import { useEffect, useMemo, useRef, useState } from "react";
@@ -88,6 +88,8 @@
  }: Props) {
    const [showInfo, setShowInfo] = useState(false);
    const [showContact, setShowContact] = useState(false);
+   const [isLoading, setIsLoading] = useState(false);
+
    const prevRef = useRef(null);
    const nextRef = useRef(null);
    console.log("data-prod", products);
@@ -98,6 +100,23 @@
    // const handleChange = (e) => {
    //   setOrderBy(e.target.value);
    // };
+
+   const handleNextPage = async () => {
+  if (pagination.current_page < pagination.total_pages) {
+    setIsLoading(true);
+    await onNext(); // call the prop function
+    setIsLoading(false);
+  }
+};
+
+const handlePrevPage = async () => {
+  if (pagination.current_page > 1) {
+    setIsLoading(true);
+    await onPrev();
+    setIsLoading(false);
+  }
+};
+
    const mergedProducts = useMemo(() => {
      const merged: Product[] = [];
      const exclusive = exculisiveProducts || [];
@@ -632,6 +651,9 @@
          <div className="dealers-section product-type">
            <div className="other_items">
              <div className="related-products">
+               {isLoading ? (
+        <Skelton count={6} />
+      ) : (
                <div className="row g-3">
                  {mergedProducts.map((item, index) => (
                    <div className="col-lg-6 mb-0" key={index}>
@@ -835,6 +857,7 @@
                    </div>
                  ))}
                </div>
+               )}
              </div>
            </div>
          </div>
@@ -844,7 +867,7 @@
                <li className="">
                  <span>
                    <button
-                     onClick={onPrev}
+                     onClick={handlePrevPage}
                      disabled={pagination.current_page === 1}
                      className="prev-icon"
                    >
@@ -859,7 +882,7 @@
                <li className="">
                  <button
                    className="next-icon"
-                   onClick={onNext}
+                   onClick={handleNextPage}
                    disabled={pagination.current_page === pagination.total_pages}
                  >
                    Next

@@ -147,7 +147,9 @@ export default function ListingsPage({
   const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-
+  const [isMainLoading, setIsMainLoading] = useState(false);
+  const [isFeaturedLoading, setIsFeaturedLoading] = useState(false);
+  const [isPremiumLoading, setIsPremiumLoading] = useState(false);
   const [isUsingInitialData, setIsUsingInitialData] = useState(!!initialData);
 
   const rawPage = searchParams.get("page");
@@ -323,24 +325,12 @@ export default function ListingsPage({
 
       const safeSlug = slug.endsWith("/") ? slug : `${slug}/`; // 👈 important
       const finalURL = query.toString() ? `${safeSlug}?${query}` : safeSlug;
-      router.push(finalURL);
+      router.push(finalURL, { scroll: false }); // ✅ Prevent auto-scroll
     },
     [router, DEFAULT_RADIUS]
   );
 
-  const handleNextPage = () => {
-    if (pagination.current_page < pagination.total_pages) {
-      const nextPage = pagination.current_page + 1;
-      updateURLWithFilters(filtersRef.current, nextPage);
-    }
-  };
 
-  const handlePrevPage = () => {
-    if (pagination.current_page > 1) {
-      const prevPage = pagination.current_page - 1;
-      updateURLWithFilters(filtersRef.current, prevPage);
-    }
-  };
   useEffect(() => {
     if (initialData?.data?.products) {
       const transformed = transformApiItemsToProducts(
@@ -389,17 +379,14 @@ export default function ListingsPage({
       appliedFilters: Filters = filtersRef.current,
       skipInitialCheck = false
     ): Promise<ApiResponse | undefined> => {
-      // 🧠 Return cached initial data (first render)
+      // Return cached initial data (first render)
       if (initialData && !skipInitialCheck && isUsingInitialData) {
         setIsUsingInitialData(false);
         return initialData;
       }
 
-      setIsLoading(true);
-      window.scrollTo({ top: 0, behavior: "smooth" });
-
       try {
-        console.log("🚀 Starting loadListings with filters:", appliedFilters);
+           window.scrollTo({ top: 0, behavior: "smooth" });
 
         const safeFilters = normalizeSearchFromMake(appliedFilters);
         const radiusNum = asNumber(safeFilters.radius_kms);
@@ -408,7 +395,6 @@ export default function ListingsPage({
             ? String(radiusNum)
             : undefined;
 
-        // ✅ Step 1 — Fetch main caravan listings
         const response: ApiResponse = await fetchListings({
           ...safeFilters,
           page: pageNum,
@@ -436,38 +422,16 @@ export default function ListingsPage({
           radius_kms: radiusParam,
         });
 
-        console.log("📦 Main API Response:", response);
-
-        // ✅ Step 2 — Check if products exist (FIXED CONDITION)
+        // ✅ Update all product states
         const products = response?.data?.products ?? [];
-
-        // 🔍 BETTER CHECK: Handle empty array, null, undefined, or invalid array
-        const isProductsArray = Array.isArray(products);
-        const validProducts = isProductsArray
+        const validProducts = Array.isArray(products) 
           ? products.filter((item) => item != null)
           : [];
-        const hasValidProducts =
-          Array.isArray(products) &&
-          products.some(
-            (p) => p && Object.keys(p).length > 0 && (p.id || p.slug) // any key you expect to exist
-          );
 
-        console.log("🔍 Products Analysis:", {
-          rawProducts: products,
-          isArray: isProductsArray,
-          validProductsCount: validProducts.length,
-          hasValidProducts: hasValidProducts,
-        });
-
-        if (hasValidProducts) {
-          console.log(
-            `✅ Found ${validProducts.length} valid caravans in main listings.`
-          );
-
-          const transformedProducts =
-            transformApiItemsToProducts(validProducts);
+        if (validProducts.length > 0) {
+          const transformedProducts = transformApiItemsToProducts(validProducts);
           setProducts(transformedProducts);
-           setPremiumProducts(response?.data?.premium_products ?? []);
+          setPremiumProducts(response?.data?.premium_products ?? []);
           setFeaturedProducts(response?.data?.featured_products ?? []);
           setExculisiveProducts(response?.data?.exclusive_products ?? []);
 
@@ -476,46 +440,10 @@ export default function ListingsPage({
           setStateOptions(response?.data?.states ?? []);
           setModels(response?.data?.model_options ?? []);
           setPageTitle(response?.title ?? " ");
+          
           if (response.pagination) setPagination(response.pagination);
           setMetaDescription(response?.seo?.metadescription ?? "");
           setMetaTitle(response?.seo?.metatitle ?? "");
-        } else {
-          // 🚨 Step 3 — No valid products → Fetch Exclusive Listings fallback
-          console.warn(
-            "⚠️ No valid caravans found — fetching Exclusive Listings..."
-          );
-
-          try {
-            alert("no data found");
-            const fallback = await fetchExclusiveListings(pageNum);
-            console.log("🔁 Exclusive API Response:", fallback);
-
-            const fallbackItems = fallback?.items ?? [];
-            console.log(`🔁 Exclusive items count: ${fallbackItems.length}`);
-
-            if (fallbackItems.length > 0) {
-              console.log(`✅ Loaded ${fallbackItems.length} exclusive items`);
-              setProducts(fallbackItems as unknown as Product[]);
-              setPageTitle("Exclusive Listings");
-              setMetaTitle("Exclusive Caravans for Sale");
-              setMetaDescription(
-                "Explore our exclusive collection of caravans."
-              );
-              setPagination({
-                current_page: fallback.currentPage || 1,
-                per_page: fallback.perPage || 12,
-                total_products: fallback.totalProducts || fallbackItems.length,
-                total_pages: fallback.totalPages || 1,
-                total_items: fallback.totalProducts || fallbackItems.length,
-              });
-            } else {
-              console.warn("⚠️ No exclusive items found either.");
-              setProducts([]);
-            }
-          } catch (err) {
-            console.error("❌ Failed to fetch exclusive fallback:", err);
-            setProducts([]);
-          }
         }
 
         return response;
@@ -523,14 +451,63 @@ export default function ListingsPage({
         console.error("❌ Failed to fetch listings:", error);
         setProducts([]);
         return undefined;
-      } finally {
-        setIsLoading(false);
-        console.log("✅ loadListings complete.");
       }
     },
-    [DEFAULT_RADIUS, router, initialData, isUsingInitialData]
+    [DEFAULT_RADIUS, initialData, isUsingInitialData]
   );
 
+   const handleNextPage = useCallback(async () => {
+    if (pagination.current_page < pagination.total_pages) {
+      // ✅ Show skeleton immediately for ALL sections
+      setIsMainLoading(true);
+      setIsFeaturedLoading(true);
+      setIsPremiumLoading(true);
+
+      const nextPage = pagination.current_page + 1;
+      
+      try {
+        // ✅ Update URL first
+        updateURLWithFilters(filtersRef.current, nextPage);
+        
+        // ✅ Load data for the next page
+        await loadListings(nextPage, filtersRef.current, true);
+      } catch (error) {
+        console.error("Error loading next page:", error);
+      } finally {
+        // ✅ Hide loading states
+        setIsMainLoading(false);
+        setIsFeaturedLoading(false);
+        setIsPremiumLoading(false);
+      }
+    }
+  }, [pagination.current_page, pagination.total_pages, loadListings, updateURLWithFilters]);
+
+  // ✅ FIXED: Proper handlePrevPage function
+  const handlePrevPage = useCallback(async () => {
+    if (pagination.current_page > 1) {
+      // ✅ Show skeleton immediately for ALL sections
+      setIsMainLoading(true);
+      setIsFeaturedLoading(true);
+      setIsPremiumLoading(true);
+
+      const prevPage = pagination.current_page - 1;
+      
+      try {
+        // ✅ Update URL first
+        updateURLWithFilters(filtersRef.current, prevPage);
+        
+        // ✅ Load data for the previous page
+        await loadListings(prevPage, filtersRef.current, true);
+      } catch (error) {
+        console.error("Error loading previous page:", error);
+      } finally {
+        // ✅ Hide loading states
+        setIsMainLoading(false);
+        setIsFeaturedLoading(false);
+        setIsPremiumLoading(false);
+      }
+    }
+  }, [pagination.current_page, loadListings, updateURLWithFilters]);
   console.log("paginationapi", pagination);
   // const loadListings = useCallback(
   //   async (
@@ -628,7 +605,40 @@ export default function ListingsPage({
   //   },
   //   [DEFAULT_RADIUS, router, initialData, isUsingInitialData]
   // );
+//  const handleFilterChange = useCallback(
+//     async (newFilters: Filters) => {
+//       setIsLoading(true); // ✅ show skeleton immediately
 
+//       const mergedFilters = { ...filtersRef.current, ...newFilters };
+//       console.log("filters", newFilters, mergedFilters);
+//       // cleanup empty values
+//       if ("orderby" in newFilters && !newFilters.orderby) {
+//         mergedFilters.orderby = undefined;
+//       }
+     
+
+//       filtersRef.current = mergedFilters;
+//       setFilters(mergedFilters);
+
+//       // reset pagination when filters change
+//       setPagination({
+//         current_page: 1,
+//         total_pages: 1,
+//         total_items: 0,
+//         per_page: 12,
+//         total_products: 0,
+//       });
+
+//       // ✅ update URL
+//       updateURLWithFilters(mergedFilters, 1);
+
+//       // ✅ fetch data immediately (don’t wait for URL watcher)
+//       await loadListings(1, mergedFilters, true);
+
+//       setIsLoading(false); // ✅ hide loader when done
+//     },
+//     [updateURLWithFilters, loadListings]
+//   );
   /* ---- SINGLE source of truth: URL -> fetch ---- */
   const searchKey = searchParams.toString();
   const pathKey = pathname;
@@ -737,15 +747,17 @@ export default function ListingsPage({
 
   const handleFilterChange = useCallback(
     async (newFilters: Filters) => {
-      setIsLoading(true); // ✅ show skeleton immediately
+      // ✅ Show skeleton for ALL sections immediately
+      setIsMainLoading(true);
+      setIsFeaturedLoading(true);
+      setIsPremiumLoading(true);
 
       const mergedFilters = { ...filtersRef.current, ...newFilters };
-      console.log("filters", newFilters, mergedFilters);
+      
       // cleanup empty values
       if ("orderby" in newFilters && !newFilters.orderby) {
         mergedFilters.orderby = undefined;
       }
-     
 
       filtersRef.current = mergedFilters;
       setFilters(mergedFilters);
@@ -759,16 +771,24 @@ export default function ListingsPage({
         total_products: 0,
       });
 
-      // ✅ update URL
-      updateURLWithFilters(mergedFilters, 1);
+      try {
+        // ✅ update URL
+        updateURLWithFilters(mergedFilters, 1);
 
-      // ✅ fetch data immediately (don’t wait for URL watcher)
-      await loadListings(1, mergedFilters, true);
-
-      setIsLoading(false); // ✅ hide loader when done
+        // ✅ fetch data immediately
+        await loadListings(1, mergedFilters, true);
+      } catch (error) {
+        console.error("Error applying filters:", error);
+      } finally {
+        // ✅ Hide all loaders when done
+        setIsMainLoading(false);
+        setIsFeaturedLoading(false);
+        setIsPremiumLoading(false);
+      }
     },
     [updateURLWithFilters, loadListings]
   );
+
 
   // const handleFilterChange = useCallback(
   //   (newFilters: Filters) => {
@@ -861,10 +881,8 @@ export default function ListingsPage({
                {/* Listings */}
  
                {isLoading ? (
-                 <div className="skeleton-wrapper">
-                   <SkeletonListing count={8} />
-                 </div>
-               ) : products.length > 0 ? (
+                    <SkeletonListing count={8} />
+                ) : products.length > 0 ? (
                  <Listing
                    products={products}
                    data={items}
