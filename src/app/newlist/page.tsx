@@ -43,7 +43,10 @@ export default async function ListingsPage({
 
   return (
     <Suspense>
+    <div>
+
       <Listing initialData={response} page={page} />
+    </div>
     </Suspense>
   );
 }
