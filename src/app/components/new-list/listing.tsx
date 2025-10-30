@@ -4,7 +4,7 @@ import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { fetchNewListings, ApiResponse, Item } from "../../../api/newlist/api";
 import Listing from "./listContent";
 import ExculsiveContent from "../ListContent/exculsiveContent";
-import CaravanFilter from "../CaravanFilter";
+import CaravanFilter from "../CaravanFilternew";
 import SkeletonListing from "../skelton";
 import Link from "next/link";
 import {
@@ -13,8 +13,8 @@ import {
   useRouter,
   useSearchParams,
 } from "next/navigation";
-import { buildSlugFromFilters } from "../slugBuilter";
-import { parseSlugToFilters } from "../urlBuilder";
+import { buildSlugFromFilters } from "../slugBuilternew";
+import { parseSlugToFilters } from "../urlBuildernew";
 import Head from "next/head";
 import {
   fetchExclusiveListings,
@@ -262,7 +262,7 @@ export default function ListingsPage({
     initializedRef.current = true;
 
     const path = pathname;
-    const slugParts = path.split("/listings/")[1]?.split("/") || [];
+    const slugParts = path.split("/newlist/")[1]?.split("/") || [];
     const parsed = parseSlugToFilters(slugParts);
 
     const merged = { ...parsed, ...incomingFilters };
@@ -651,7 +651,7 @@ export default function ListingsPage({
   // useEffect(() => {
   //   if (!initializedRef.current) return;
 
-  //   const slugParts = pathKey.split("/listings/")[1]?.split("/") || [];
+  //   const slugParts = pathKey.split("/newlist/")[1]?.split("/") || [];
   //   const parsedFromURL = parseSlugToFilters(slugParts);
 
   //   // const pageFromURL = parseInt(searchParams.get("page") || "1", 10);
@@ -702,7 +702,7 @@ export default function ListingsPage({
   useEffect(() => {
     if (!initializedRef.current) return;
 
-    const slugParts = pathKey.split("/listings/")[1]?.split("/") || [];
+    const slugParts = pathKey.split("/newlist/")[1]?.split("/") || [];
     const parsedFromURL = parseSlugToFilters(slugParts);
 
     const pageFromURL = validatePage(searchParams.get("page"));

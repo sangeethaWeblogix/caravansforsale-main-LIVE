@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import ListingsPage from "@/app/components/new-list/listing";
-import { parseSlugToFilters } from "../../components/urlBuilder";
+import { parseSlugToFilters } from "../../components/urlBuildernew";
 import { metaFromSlug } from "../../../utils/seo/metaFromSlug";
 import type { Metadata } from "next";
 import { fetchNewListings } from "@/api/newlist/api";

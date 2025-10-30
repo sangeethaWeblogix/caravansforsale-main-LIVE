@@ -25,6 +25,8 @@ interface Filters {
   search?: string;
   keyword?: string;
   is_exclusive?: boolean;
+  from_sleep?: string | number; // from_sleep
+  to_sleep?: string | number; //
 }
 
 /** Minimal item shape needed here (no `any`) */
@@ -59,6 +61,7 @@ export interface ApiPagination {
   total_items?: number;
   per_page: number;
   total_products: number;
+  hasNext?: boolean; // 👈 add this
 }
 
 // This mirrors what Listings.tsx actually reads:
@@ -107,6 +110,8 @@ export const fetchListings = async (
     search,
     acustom_fromyears,
     acustom_toyears,
+    from_sleep,
+    to_sleep,
   } = filters;
 
   const params = new URLSearchParams();
@@ -120,6 +125,8 @@ export const fetchListings = async (
   if (region) params.append("region", region);
   if (suburb) params.append("suburb", suburb);
   if (from_price) params.append("from_price", `${from_price}`);
+  if (from_sleep) params.append("from_sleep", `${from_sleep}`);
+  if (to_sleep) params.append("to_sleep", `${to_sleep}`);
   if (to_price) params.append("to_price", `${to_price}`);
   if (minKg) params.append("from_atm", `${minKg}kg`);
   if (maxKg) params.append("to_atm", `${maxKg}kg`);
@@ -139,18 +146,8 @@ export const fetchListings = async (
   const s = normalizeQuery(search);
   if (s) params.append("search", s);
 
-  let res: Response;
-  try {
-    res = await fetch(`${API_BASE}/new-list?${params.toString()}`);
-  } catch (err) {
-    console.error("API network error:", err);
-    throw new Error("API request failed"); // ❌ real error
-  }
-
-  if (!res.ok) {
-    console.error("API returned error:", res.status);
-    throw new Error("API failed with " + res.status); // ❌ real error
-  }
+  const res = await fetch(`${API_BASE}/new-list?${params.toString()}`);
+  if (!res.ok) throw new Error("API failed");
   const raw = await res.text(); // read body only once
 
   let json: ApiResponse;

@@ -1,4 +1,4 @@
-const API_BASE = process.env.NEXT_PUBLIC_CFS_API_BASE;
+ const API_BASE = process.env.NEXT_PUBLIC_CFS_API_BASE;
 
 interface Filters {
   page?: number;
@@ -24,12 +24,10 @@ interface Filters {
   radius_kms?: string;
   search?: string;
   keyword?: string;
-  is_exclusive?: boolean;
-  from_sleep?: string | number; // from_sleep
-  to_sleep?: string | number; //
+  from_sleep?: string | number;
+  to_sleep?: string | number;
 }
 
-/** Minimal item shape needed here (no `any`) */
 export type Item = {
   id: number;
   name: string;
@@ -46,28 +44,27 @@ export type Item = {
   people?: string;
   make?: string;
   slug?: string;
-  is_exclusive: boolean;
 };
+
 export interface ApiSEO {
   metadescription?: string;
   metatitle?: string;
   metaimage?: string;
-  index?: string; // "index" | "noindex" | etc.
+  index?: string;
 }
 
 export interface ApiPagination {
   current_page: number;
   total_pages: number;
-  total_items?: number;
-  per_page: number;
   total_products: number;
-  hasNext?: boolean; // 👈 add this
+  per_page: number;
 }
 
-// This mirrors what Listings.tsx actually reads:
 export interface ApiData {
-  products?: Item[]; // or your full Product shape if you prefer
+  products?: Item[];
   exclusive_products?: Item[];
+  featured_products?: Item[];
+  premium_products?: Item[];
   all_categories?: { name: string; slug: string }[];
   make_options?: { name: string; slug: string }[];
   model_options?: { name: string; slug: string }[];
@@ -117,7 +114,6 @@ export const fetchListings = async (
   const params = new URLSearchParams();
   params.append("page", page.toString());
   if (category) params.append("category", category);
-  if (radius_kms) params.append("radius_kms", radius_kms);
   if (slug) params.append("category", slug);
   if (make) params.append("make", make);
   if (pincode) params.append("pincode", pincode);
@@ -125,137 +121,56 @@ export const fetchListings = async (
   if (region) params.append("region", region);
   if (suburb) params.append("suburb", suburb);
   if (from_price) params.append("from_price", `${from_price}`);
-  if (from_sleep) params.append("from_sleep", `${from_sleep}`);
-  if (to_sleep) params.append("to_sleep", `${to_sleep}`);
   if (to_price) params.append("to_price", `${to_price}`);
   if (minKg) params.append("from_atm", `${minKg}kg`);
   if (maxKg) params.append("to_atm", `${maxKg}kg`);
   if (from_length) params.append("from_length", `${from_length}`);
   if (to_length) params.append("to_length", `${to_length}`);
   if (acustom_fromyears)
-    params.append("acustom_fromyears", `${filters.acustom_fromyears}`);
-  if (acustom_toyears)
-    params.append("acustom_toyears", `${filters.acustom_toyears}`);
-
-  if (filters.model) params.append("model", filters.model);
+    params.append("acustom_fromyears", `${acustom_fromyears}`);
+  if (acustom_toyears) params.append("acustom_toyears", `${acustom_toyears}`);
   if (condition)
     params.append("condition", condition.toLowerCase().replace(/\s+/g, "-"));
   if (filters.sleeps) params.append("sleep", filters.sleeps);
   if (orderby) params.append("orderby", orderby);
+  if (radius_kms) params.append("radius_kms", radius_kms);
+  if (from_sleep) params.append("from_sleep", `${from_sleep}`);
+  if (to_sleep) params.append("to_sleep", `${to_sleep}`);
 
   const s = normalizeQuery(search);
   if (s) params.append("search", s);
 
-  const res = await fetch(`${API_BASE}/new-list?${params.toString()}`);
-  if (!res.ok) throw new Error("API failed");
-  const raw = await res.text(); // read body only once
+  const res = await fetch(`${API_BASE}/product-list?${params}`);
+  if (!res.ok) {
+    const errText = await res.text();
+    console.error("API Error:", res.status, errText);
+    throw new Error(`API failed: ${res.status}`);
+  }
 
+  const raw = await res.text();
   let json: ApiResponse;
   try {
-    json = JSON.parse(raw) as ApiResponse;
+    json = JSON.parse(raw);
   } catch {
-    console.error("API did not return valid JSON. Response:", raw);
-    throw new Error("Invalid API response: " + raw);
-  }
-  const all: Item[] = json?.data?.products ?? [];
-  const exFromApi: Item[] = json?.data?.exclusive_products ?? [];
-
-  const keyOf = (x: Item): string => String(x?.id ?? x?.slug ?? x?.link ?? "");
-
-  // Build exclusive id set (API list + items already flagged as exclusive)
-  const exIdSet = new Set<string>(exFromApi.map(keyOf));
-  all.forEach((p) => {
-    if (p.is_exclusive === true) exIdSet.add(keyOf(p));
-  });
-
-  // Exclusive pool (unique, keep API order; add flagged-only items if missing)
-  const exMap = new Map<string, Item>();
-  exFromApi.forEach((p) => exMap.set(keyOf(p), p));
-  all.forEach((p) => {
-    const k2 = keyOf(p);
-    if (exIdSet.has(k2) && !exMap.has(k2)) exMap.set(k2, p);
-  });
-  const exclusivePool: Item[] = Array.from(exMap.values());
-
-  // ✅ FIX: If no normal products, and user didn't ask for exclusives, show nothing
-  if (!all.length && exclusivePool.length) {
-    if (filters.is_exclusive === true) {
-      return {
-        ...json,
-        data: {
-          ...json.data,
-          products: exclusivePool.map((p) => ({ ...p, is_exclusive: true })),
-          exclusive_products: exclusivePool,
-        },
-      };
-    } else {
-      // User didn't ask for exclusive, and there are no normals → return nothing
-      return {
-        ...json,
-        data: {
-          ...json.data,
-          products: [],
-          exclusive_products: [],
-        },
-      };
-    }
+    console.error("Invalid JSON response:", raw);
+    throw new Error("Invalid API response");
   }
 
-  // Normals = products minus exclusives (exclusives won't count inside 12)
-  const normals: Item[] = all.filter((p) => !exIdSet.has(keyOf(p)));
-
-  // Pattern: 2N - E - 2N - E - 8N  (12 normals + up to 2 exclusives)
-  const NORMAL_TARGET = 12;
-  const pattern: (number | "E")[] = [2, "E", 2, "E", 8];
-
-  const arranged: Item[] = [];
-  let ni = 0,
-    ei = 0,
-    nAdded = 0;
-
-  for (const slot of pattern) {
-    if (slot === "E") {
-      if (ei < exclusivePool.length) arranged.push(exclusivePool[ei++]);
-    } else {
-      for (
-        let i = 0;
-        i < slot && nAdded < NORMAL_TARGET && ni < normals.length;
-        i++
-      ) {
-        arranged.push(normals[ni++]);
-        nAdded++;
-      }
-    }
-  }
-
-  // Top up with more normals to reach 12, if few exclusives
-  while (nAdded < NORMAL_TARGET && ni < normals.length) {
-    arranged.push(normals[ni++]);
-    nAdded++;
-  }
-
-  // Final de-dupe and exclusive flag tagging
-  const seen = new Set<string>();
-  const arrangedUnique: Item[] = arranged
-    .filter((p) => {
-      const k3 = keyOf(p);
-      if (seen.has(k3)) return false;
-      seen.add(k3);
-      return true;
-    })
-    .map((p) => {
-      const exclusive = exIdSet.has(keyOf(p));
-      if (exclusive) return { ...p, is_exclusive: true };
-      const { ...rest } = p;
-      return rest;
-    });
-
+  // ✅ Return all useful sections from API
   return {
-    ...json,
+    success: json.success,
+    title: json.title,
+    seo: json.seo,
+    pagination: json.pagination,
     data: {
-      ...json.data,
-      products: arrangedUnique,
+      products: json.data?.products ?? [],
       exclusive_products: json.data?.exclusive_products ?? [],
+      featured_products: json.data?.featured_products ?? [],
+      premium_products: json.data?.premium_products ?? [],
+      make_options: json.data?.make_options ?? [],
+      model_options: json.data?.model_options ?? [],
+      all_categories: json.data?.all_categories ?? [],
+      states: json.data?.states ?? [],
     },
   };
 };

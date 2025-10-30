@@ -22,8 +22,8 @@ export async function metaFromSlug(
   const description = (
     res?.seo?.metadescription || "Browse all available caravans."
   ).trim();
-
-  const rawIndex = (res?.seo?.index ?? "").toLowerCase().trim();
+ 
+const rawIndex = String(res?.seo?.index ?? "").toLowerCase().trim();
   const robots =
     rawIndex === "noindex"
       ? { index: false, follow: false }

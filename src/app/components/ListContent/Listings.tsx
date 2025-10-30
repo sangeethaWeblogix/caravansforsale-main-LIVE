@@ -42,8 +42,7 @@ interface Product {
   people?: string;
   make?: string;
   slug?: string;
-  is_exclusive: boolean;
-  // Include additional properties that might come from API
+   // Include additional properties that might come from API
   title?: string;
   weight?: string;
   price?: string;
@@ -130,8 +129,7 @@ function transformApiItemsToProducts(items: Item[]): Product[] {
     people: item.people || "",
     make: item.make || "",
     slug: item.slug,
-    is_exclusive: item.is_exclusive ?? false,
-    // keep extra props
+     // keep extra props
   }));
 }
 
@@ -189,7 +187,21 @@ export default function ListingsPage({
       ? transformApiItemsToProducts(initialData.data.products)
       : []
   );
-
+  const [exculisiveProducts, setExculisiveProducts] = useState<Product[]>(
+    initialData?.data?.exclusive_products
+      ? transformApiItemsToProducts(initialData.data.exclusive_products)
+      : []
+  );
+    const [fetauredProducts, setFeaturedProducts] = useState<Product[]>(
+      initialData?.data?.featured_products
+        ? transformApiItemsToProducts(initialData.data.featured_products)
+        : []
+    );
+      const [preminumProducts, setPremiumProducts] = useState<Product[]>(
+        initialData?.data?.premium_products
+          ? transformApiItemsToProducts(initialData.data.premium_products)
+          : []
+      );
   const [categories, setCategories] = useState<Category[]>(
     initialData?.data?.all_categories || []
   );
@@ -215,7 +227,7 @@ export default function ListingsPage({
         total_pages: initialData.pagination.total_pages || 1,
         per_page: initialData.pagination.per_page || 12,
         total_products: initialData.pagination.total_products || 0,
-        total_items: initialData.pagination.total_items || 0,
+        total_items: initialData.pagination.total_products || 0,
       };
     }
 
@@ -455,6 +467,10 @@ export default function ListingsPage({
           const transformedProducts =
             transformApiItemsToProducts(validProducts);
           setProducts(transformedProducts);
+           setPremiumProducts(response?.data?.premium_products ?? []);
+          setFeaturedProducts(response?.data?.featured_products ?? []);
+          setExculisiveProducts(response?.data?.exclusive_products ?? []);
+
           setCategories(response?.data?.all_categories ?? []);
           setMakes(response?.data?.make_options ?? []);
           setStateOptions(response?.data?.states ?? []);
@@ -792,126 +808,128 @@ export default function ListingsPage({
   }, []);
 
   return (
-    <>
-      <Head>
-        <title>{metaTitle || "Default Title"}</title>
-        <meta
-          name="description"
-          content={metaDescription || "Default Description"}
-        />
-        <meta property="og:title" content={metaTitle || "Default Title"} />
-        <meta
-          property="og:description"
-          content={metaDescription || "Default Description"}
-        />
-        <meta name="twitter:title" content={metaTitle || "Default Title"} />
-        <meta
-          name="twitter:description"
-          content={metaDescription || "Default Description"}
-        />
-      </Head>
-
-      <section className="services product_listing bg-gray-100 section-padding pb-30 style-1">
-        <div className="container">
-          <div className="content">
-            <div className="text-sm text-gray-600 header">
-              <Link href="/" className="hover:underline">
-                Home
-              </Link>{" "}
-              &gt; <span className="font-medium text-black"> Listings</span>
-            </div>
-
-            <h1 className="page-title">{pageTitle}</h1>
-
-            <div className="row">
-              {/* Desktop sidebar */}
-              <div className="col-lg-3 col-sm-4 hidden-xs">
-                <div className="filter">
-                  <Suspense fallback={<div>Loading filters...</div>}>
-                    <CaravanFilter
-                      categories={categories}
-                      makes={makes}
-                      models={models}
-                      states={stateOptions}
-                      onFilterChange={(partial) => {
-                        handleFilterChange(partial);
-                        setIsLoading(true);
-                      }}
-                      currentFilters={filters}
-                    />
-                  </Suspense>
-                </div>
-              </div>
-
-              {/* Listings */}
-              {/* Listings */}
-              {isLoading ? (
-                <div className="skeleton-wrapper">
-                  <SkeletonListing count={8} />
-                </div>
-              ) : products.length > 0 ? (
-                <Listing
-                  products={products}
-                  data={items}
-                  pagination={pagination}
-                  onNext={handleNextPage}
-                  onPrev={handlePrevPage}
-                  metaDescription={metaDescription}
-                  metaTitle={metaTitle}
-                  onFilterChange={handleFilterChange}
-                  currentFilters={filters}
-                />
-              ) : (
-                <ExculsiveContent
-                  data={items}
-                  pagination={pagination}
-                  onNext={handleNextPage}
-                  onPrev={handlePrevPage}
-                  metaDescription={metaDescription}
-                  metaTitle={metaTitle}
-                  onFilterChange={handleFilterChange}
-                  currentFilters={filters}
-                />
-              )}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Mobile Offcanvas */}
-      <div
-        ref={mobileFiltersRef}
-        id="mobileFilters"
-        className="offcanvas offcanvas-end d-lg-none"
-        tabIndex={-1}
-        aria-labelledby="mobileFiltersLabel"
-        data-bs-scroll="true"
-        data-bs-backdrop="true"
-        style={{ maxHeight: "100dvh" }}
-      >
-        <div className="offcanvas-header mobile_filter_xs sticky-top bg-white">
-          <button
-            type="button"
-            className="btn-close"
-            data-bs-dismiss="offcanvas"
-            aria-label="Close"
-          />
-        </div>
-        <div className="offcanvas-body pt-2">
-          <Suspense fallback={<div>Loading filters...</div>}>
-            <CaravanFilter
-              categories={categories}
-              makes={makes}
-              models={models}
-              states={stateOptions}
-              onFilterChange={(partial) => {
-                handleFilterChange(partial);
-              }}
-              currentFilters={filters}
-            />
-          </Suspense>
-        </div>
-      </div>
-    </>
+  <>
+       <Head>
+         <title>{metaTitle || "Default Title"}</title>
+         <meta
+           name="description"
+           content={metaDescription || "Default Description"}
+         />
+         <meta property="og:title" content={metaTitle || "Default Title"} />
+         <meta
+           property="og:description"
+           content={metaDescription || "Default Description"}
+         />
+         <meta name="twitter:title" content={metaTitle || "Default Title"} />
+         <meta
+           name="twitter:description"
+           content={metaDescription || "Default Description"}
+         />
+       </Head>
+       <section className="services product_listing new_listing bg-gray-100 section-padding pb-30 style-1">
+         <div className="container container-xxl">
+           <div className="content mb-4">
+             <div className="text-sm text-gray-600 header">
+               <Link href="/" className="hover:underline">
+                 Home
+               </Link>{" "}
+               &gt; <span className="font-medium text-black"> Listings</span>
+             </div>
+ 
+             <h1 className="page-title">{pageTitle}</h1>
+ 
+             <div className="row">
+               {/* Desktop sidebar */}
+               <div className="col-lg-3">
+                 <div className="filter">
+                   <Suspense fallback={<div>Loading filters...</div>}>
+                     <CaravanFilter
+                       categories={categories}
+                       makes={makes}
+                       models={models}
+                       states={stateOptions}
+                       onFilterChange={(partial) => {
+                         handleFilterChange(partial);
+                       }}
+                       currentFilters={filters}
+                     />
+                   </Suspense>
+                 </div>
+               </div>
+ 
+               {/* Listings */}
+               {/* Listings */}
+ 
+               {isLoading ? (
+                 <div className="skeleton-wrapper">
+                   <SkeletonListing count={8} />
+                 </div>
+               ) : products.length > 0 ? (
+                 <Listing
+                   products={products}
+                   data={items}
+                   pagination={pagination}
+                   onNext={handleNextPage}
+                   onPrev={handlePrevPage}
+                   metaDescription={metaDescription}
+                   metaTitle={metaTitle}
+                   onFilterChange={handleFilterChange}
+                   currentFilters={filters}
+                   preminumProducts={preminumProducts}
+                   fetauredProducts={fetauredProducts}
+                   exculisiveProducts={exculisiveProducts}
+                 />
+               ) : (
+                 <ExculsiveContent
+                   data={items}
+                   pagination={pagination}
+                   onNext={handleNextPage}
+                   onPrev={handlePrevPage}
+                   metaDescription={metaDescription}
+                   metaTitle={metaTitle}
+                   onFilterChange={handleFilterChange}
+                   currentFilters={filters}
+                 />
+               )}
+             </div>
+           </div>
+         </div>
+       </section>
+ 
+       {/* Mobile Offcanvas */}
+       <div
+         ref={mobileFiltersRef}
+         id="mobileFilters"
+         className="offcanvas offcanvas-end d-lg-none"
+         tabIndex={-1}
+         aria-labelledby="mobileFiltersLabel"
+         data-bs-scroll="true"
+         data-bs-backdrop="true"
+         style={{ maxHeight: "100dvh" }}
+       >
+         <div className="offcanvas-header mobile_filter_xs sticky-top bg-white">
+           <button
+             type="button"
+             className="btn-close"
+             data-bs-dismiss="offcanvas"
+             aria-label="Close"
+           />
+         </div>
+         <div className="offcanvas-body pt-2">
+           <Suspense fallback={<div>Loading filters...</div>}>
+             <CaravanFilter
+               categories={categories}
+               makes={makes}
+               models={models}
+               states={stateOptions}
+               onFilterChange={(partial) => {
+                 handleFilterChange(partial);
+               }}
+               currentFilters={filters}
+             />
+           </Suspense>
+         </div>
+       </div>
+     </>
   );
 }
