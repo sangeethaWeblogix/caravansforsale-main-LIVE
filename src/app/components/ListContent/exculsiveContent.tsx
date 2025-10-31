@@ -27,6 +27,7 @@ interface Product {
   people?: string;
   make?: string;
   slug?: string;
+  is_exclusive?: boolean;
  }
 
 interface Pagination {
