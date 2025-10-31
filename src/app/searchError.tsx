@@ -232,7 +232,7 @@ export default function SearchSection() {
                     style={{ display: isSuggestionBoxOpen ? "block" : "none" }}
                     onClick={closeSuggestions}
                     role="button"
-                      // eslint-disable-next-line jsx-a11y/role-supports-aria-props
+                       
 
                     aria-label="Close suggestions"
                   >
