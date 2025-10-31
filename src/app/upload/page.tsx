@@ -1,43 +1,41 @@
-"use client";
-import { useState } from "react";
+ 'use client'
+import { useState } from 'react'
+import { upload } from '@vercel/blob/client'
 
-export default function UploadPage() {
-  const [url, setUrl] = useState("");
+export const useImageUploader = () => {
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const [uploadedUrl, setUploadedUrl] = useState<string | null>(null)
+  const [isUploading, setIsUploading] = useState<boolean>(false)
+  const [uploadingFileName, setUploadingFileName] = useState<string | null>(null)
 
-  async function handleUpload(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
+  const handleImageUpload = async (file: File): Promise<string> => {
+    const localUrl = URL.createObjectURL(file)
+    setPreviewUrl(localUrl)
+    setUploadingFileName(file.name)
+    setIsUploading(true)
 
-    const res = await fetch("/api/upload", {
-      method: "POST",
-      body: formData,
-    });
-    const data = await res.json();
-    setUrl(`/blob/${data.pathname}`); // ✅ shows under your domain
+    try {
+      const sanitizedFile = new File([file], file.name.replace(/[^a-z0-9.\-]/gi, ''), { type: file.type })
+
+      const result = await upload(sanitizedFile.name, sanitizedFile, {
+        access: 'public',
+        handleUploadUrl: '/api/avatar/upload',
+      })
+
+      await new Promise(resolve => setTimeout(resolve, 1000))
+
+      setUploadedUrl(result.url)
+      return result.url
+    } finally {
+      setIsUploading(false)
+      setUploadingFileName(null)
+    }
   }
 
-  return (
-    <div className="p-8">
-      <h2 className="text-lg font-bold mb-4">Upload Image</h2>
-      <form onSubmit={handleUpload}>
-        <input type="file" name="file" accept="image/*" required />
-        <button
-          type="submit"
-          className="bg-blue-500 text-white px-4 py-2 rounded-lg ml-4"
-        >
-          Upload
-        </button>
-      </form>
+  const clearPreview = () => {
+    setPreviewUrl(null)
+    setUploadedUrl(null)
+  }
 
-      {url && (
-        <div className="mt-6">
-          <p>Uploaded Image:</p>
-          <a href={url} target="_blank" rel="noopener noreferrer">
-            <img src={url} alt="Uploaded" className="w-64 mt-2 rounded-lg" />
-          </a>
-          <p className="text-sm text-gray-500 mt-2">{url}</p>
-        </div>
-      )}
-    </div>
-  );
+  return { previewUrl, uploadedUrl, handleImageUpload, clearPreview, isUploading, uploadingFileName }
 }
