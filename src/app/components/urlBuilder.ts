@@ -88,21 +88,13 @@ export function parseSlugToFilters(
         .toLowerCase();
       return;
     }
- const suburbMatch = part.match(/^([a-z0-9-]+)-(\d{4})-suburb$/);
-if (suburbMatch) {
-  const [, suburbPart, pincode] = suburbMatch;
-  filters.suburb = suburbPart.replace(/-/g, " ").toLowerCase();
-  filters.pincode = pincode;
-  return;
-}
-
-// Suburb only (no pincode)
-const suburbOnlyMatch = part.match(/^([a-z0-9-]+)-suburb$/);
-if (suburbOnlyMatch) {
-  const [, suburbPart] = suburbOnlyMatch;
-  filters.suburb = suburbPart.replace(/-/g, " ").toLowerCase();
-  return;
-}
+    const suburbPinMatch = part.match(/^([a-z0-9-]+)-(\d{4})$/);
+    if (suburbPinMatch) {
+      const [, suburbPart, pincode] = suburbPinMatch;
+      filters.suburb = suburbPart.replace(/-/g, " ").toLowerCase();
+      filters.pincode = pincode;
+      return;
+    }
 
     if (/^\d{4}$/.test(part)) {
       filters.pincode = part;
