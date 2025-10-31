@@ -79,13 +79,17 @@ export default async function Listings({
     notFound();
   }
 // 🚫 Reject suburb/suburbs word in URL
-const hasInvalidSuburbWord = slug.some((part) =>
-  /-(suburb|suburbs)$/i.test(part)
-);
+const hasInvalidSuburbWord = slug.some((part) => {
+  // Allow jacana-3047-suburb and <suburb>-suburb formats
+  if (/^[a-z0-9-]+-\d{4}-suburb$/i.test(part)) return false;
+  if (/^[a-z0-9-]+-suburb$/i.test(part)) return false;
+
+  // Block others like just "suburb" or "suburbs"
+  return /(^|\b)(suburb|suburbs)\b$/i.test(part);
+});
 if (hasInvalidSuburbWord) {
   notFound();
 }
-  
 
   // 6️⃣ Parse slug to filter structure
   const filters = parseSlugToFilters(slug, resolvedSearchParams);
@@ -111,11 +115,7 @@ if (hasInvalidSuburbWord) {
   const looksInvalid = slug.some((part) => {
     const lower = part.toLowerCase();
 
-    // ✅ if part ends with suburb/suburbs/region/regions → skip validation
-    if (lower.endsWith("-suburb") || lower.endsWith("-suburbs")) {
-      return false;
-    }
-
+ 
     const isAllowedFilter = allowedFilterPrefixes.some((prefix) =>
       lower.startsWith(prefix)
     );

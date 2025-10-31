@@ -88,19 +88,27 @@ export function parseSlugToFilters(
         .toLowerCase();
       return;
     }
-    const suburbPinMatch = part.match(/^([a-z0-9-]+)-(\d{4})$/);
-    if (suburbPinMatch) {
-      const [, suburbPart, pincode] = suburbPinMatch;
+   const suburbWithPin = part.match(/^([a-z0-9-]+)-(\d{4})-suburb$/);
+    if (suburbWithPin) {
+      const [, suburbPart, pincode] = suburbWithPin;
       filters.suburb = suburbPart.replace(/-/g, " ").toLowerCase();
       filters.pincode = pincode;
       return;
     }
 
+    // ✅ Suburb only (e.g., jacana-suburb)
+    const suburbOnly = part.match(/^([a-z0-9-]+)-suburb$/);
+    if (suburbOnly) {
+      const [, suburbPart] = suburbOnly;
+      filters.suburb = suburbPart.replace(/-/g, " ").toLowerCase();
+      return;
+    }
+
+    // ✅ Pincode only (rare case)
     if (/^\d{4}$/.test(part)) {
       filters.pincode = part;
       return;
     }
-
     // ATM: support canonical and legacy patterns
     if (part.includes("-kg-atm")) {
       const canon = part.match(/^between-(\d+)-kg-(\d+)-kg-atm$/);

@@ -44,10 +44,13 @@ export function buildSlugFromFilters(f: Filters): string {
     }
 
     // ✅ Suburb + Pincode (optional)
-    if (suburb) {
-      if (pin) segments.push(`${suburb}-${pin}`);
-      else segments.push(`${suburb}-suburb`);
-    }
+  
+  if (region){ segments.push(`${region}-region`);
+  if (suburb) {
+    if (pin) segments.push(`${suburb}-${pin}-suburb`);
+    else segments.push(`${suburb}-suburb`);
+  }
+}
   }
 
   // 5) Price
