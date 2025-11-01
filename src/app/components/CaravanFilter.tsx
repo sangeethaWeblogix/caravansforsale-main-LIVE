@@ -1005,76 +1005,91 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     });
   };
 
-  const handleSearchClick = () => {
-    // Remove resetSuburbFilters call here as it clears the selections
-    // resetSuburbFilters();
+ const handleSearchClick = () => {
+  if (!suburbClickedRef.current || !selectedSuggestion) return;
 
-    if (!suburbClickedRef.current || !selectedSuggestion) return;
+  const parts = selectedSuggestion.uri.split("/");
+  const suburbSlug = parts[0] || "";
+  const regionSlug = parts[1] || "";
+  const stateSlug = parts[2] || "";
+  let pincode = parts[3] || "";
 
-    const parts = selectedSuggestion.uri.split("/");
-    const suburbSlug = parts[0] || "";
-    const regionSlug = parts[1] || "";
-    const stateSlug = parts[2] || "";
-    let pincode = parts[3] || "";
+  const suburb = suburbSlug
+    .replace(/-suburb$/, "")
+    .replace(/-/g, " ")
+    .trim();
+  const region = regionSlug
+    .replace(/-region$/, "")
+    .replace(/-/g, " ")
+    .trim();
+  const state = stateSlug
+    .replace(/-state$/, "")
+    .replace(/-/g, " ")
+    .trim();
 
-    const suburb = suburbSlug
-      .replace(/-suburb$/, "")
-      .replace(/-/g, " ")
-      .trim();
-    const region = regionSlug
-      .replace(/-region$/, "")
-      .replace(/-/g, " ")
-      .trim();
-    const state = stateSlug
-      .replace(/-state$/, "")
-      .replace(/-/g, " ")
-      .trim();
+  if (!/^\d{4}$/.test(pincode)) {
+    const m = selectedSuggestion.address.match(/\b\d{4}\b/);
+    if (m) pincode = m[0];
+  }
 
-    if (!/^\d{4}$/.test(pincode)) {
-      const m = selectedSuggestion.address.match(/\b\d{4}\b/);
-      if (m) pincode = m[0];
-    }
+  const validRegion = getValidRegionName(state, region, states);
 
-    const validRegion = getValidRegionName(state, region, states);
+  // ✅ CRITICAL: Update ALL location state variables
+  setSelectedState(stateSlug);
+  setSelectedStateName(AUS_ABBR[state] || state);
+  setSelectedRegionName(validRegion || null);
+  setSelectedSuburbName(suburb);
+  setSelectedpincode(pincode || null);
 
-    setSelectedState(stateSlug);
-    setSelectedStateName(AUS_ABBR[state] || state);
-    setSelectedRegionName(validRegion || null);
-    setSelectedSuburbName(suburb);
-    setSelectedpincode(pincode || null);
+  // ✅ Also update the filtered suburbs for the region
+  if (validRegion) {
+    const matchedState = states.find(
+      (s) =>
+        s.name.toLowerCase() === state.toLowerCase() ||
+        s.value.toLowerCase() === state.toLowerCase()
+    );
+    const matchedRegion = matchedState?.regions?.find(
+      (r) =>
+        r.name.toLowerCase() === validRegion.toLowerCase() ||
+        r.value.toLowerCase() === validRegion.toLowerCase()
+    );
+    setFilteredSuburbs(matchedRegion?.suburbs || []);
+  }
 
-    // const radiusForFilters =
-    //   typeof radiusKms === "number" ? radiusKms : RADIUS_OPTIONS[0];
+  const updatedFilters = buildUpdatedFilters(currentFilters, {
+    make: sanitizeMake(selectedMake || filters.make || currentFilters.make),
+    model: selectedModel || filters.model || currentFilters.model,
+    category: selectedCategory || filters.category || currentFilters.category,
+    suburb: suburb.toLowerCase(),
+    pincode: pincode || undefined,
+    state: AUS_ABBR[state] || state, // Use abbreviation
+    region: validRegion,
+    radius_kms: radiusKms,
+  });
 
-    const updatedFilters = buildUpdatedFilters(currentFilters, {
-      make: sanitizeMake(selectedMake || filters.make || currentFilters.make),
-      model: selectedModel || filters.model || currentFilters.model,
-      category: selectedCategory || filters.category || currentFilters.category,
-      suburb: suburb.toLowerCase(),
-      pincode: pincode || undefined,
-      state,
-      region: validRegion,
-      radius_kms: radiusKms,
-    });
+  setFilters(updatedFilters);
+  filtersInitialized.current = true;
 
-    setFilters(updatedFilters);
-    filtersInitialized.current = true;
+  // ✅ Close location panels appropriately
+  setStateLocationOpen(false);
+  setStateRegionOpen(false);
+  setStateSuburbOpen(false);
 
-    startTransition(() => {
-      updateAllFiltersAndURL(updatedFilters);
-    });
+  const shortAddr =
+    selectedSuggestion?.short_address ||
+    buildShortAddress(suburb, state, pincode);
+  isUserTypingRef.current = false;
+  setLocationInput(shortAddr);
 
-    const shortAddr =
-      selectedSuggestion?.short_address ||
-      buildShortAddress(suburb, state, pincode);
-    isUserTypingRef.current = false;
-    setLocationInput(shortAddr);
+  setShowSuggestions(false);
+  setIsModalOpen(false);
+  setLocationSuggestions([]);
+  suburbClickedRef.current = false;
 
-    setShowSuggestions(false);
-    setIsModalOpen(false);
-    setLocationSuggestions([]);
-    suburbClickedRef.current = false;
-  };
+  startTransition(() => {
+    updateAllFiltersAndURL(updatedFilters);
+  });
+};
 
   const resetFilters = () => {
     const reset: Filters = {
@@ -1494,6 +1509,43 @@ useEffect(() => {
   const isValidModelSlug = (slug: string | null | undefined): slug is string =>
     !!slug && isNaN(Number(slug)) && model.some((m) => m.slug === slug);
 
+
+  // ✅ Sync location accordion state from URL/filters
+useEffect(() => {
+  if (!filtersInitialized.current) return;
+
+  // Only update if we have location data in filters but not in accordion state
+  if (currentFilters.state && !selectedStateName) {
+    setSelectedStateName(currentFilters.state);
+  }
+  
+  if (currentFilters.region && !selectedRegionName) {
+    setSelectedRegionName(currentFilters.region);
+  }
+  
+  if (currentFilters.suburb && !selectedSuburbName) {
+    setSelectedSuburbName(currentFilters.suburb);
+    
+    // Also load the corresponding suburbs for the region
+    if (currentFilters.state && currentFilters.region) {
+      const matchedState = states.find(
+        (s) =>
+          s.name.toLowerCase() === currentFilters.state?.toLowerCase() ||
+          s.value.toLowerCase() === currentFilters.state?.toLowerCase()
+      );
+      const matchedRegion = matchedState?.regions?.find(
+        (r) =>
+          r.name.toLowerCase() === currentFilters.region?.toLowerCase() ||
+          r.value.toLowerCase() === currentFilters.region?.toLowerCase()
+      );
+      setFilteredSuburbs(matchedRegion?.suburbs || []);
+    }
+  }
+
+  if (currentFilters.pincode && !selectedpincode) {
+    setSelectedpincode(currentFilters.pincode);
+  }
+}, [currentFilters.state, currentFilters.region, currentFilters.suburb, currentFilters.pincode, selectedStateName, selectedRegionName, selectedSuburbName, selectedpincode, states]);
   // useEffect(() => {
   //   if (!filtersInitialized.current) return;
 
