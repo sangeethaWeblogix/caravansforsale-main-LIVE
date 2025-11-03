@@ -55,6 +55,38 @@ export default async function Listings({
     notFound();
   }
 
+
+  // 🚫 Reject unknown or gibberish slug segments (e.g., "mgnngj", "kjgkdf", "gk25")
+const invalidSegment = slug.some((part) => {
+  const lower = part.toLowerCase();
+
+  // ✅ Allow known patterns
+  const allowedPatterns = [
+    /-state$/,       // state names like "new-south-wales-state"
+    /-category$/,    // categories like "off-road-category"
+    /^under-\d+$/,   // under-30000 etc.
+    /^over-\d+$/,
+    /^atm-\d+$/,
+    /^sleeps-\d+$/,
+    /^length-\d+$/,
+    /^width-\d+$/,
+    /^weight-\d+$/,
+    /^price-\d+$/,
+    /^([a-z0-9-]+)-\d{4}$/, // suburb-postcode like "jacana-3047"
+  ];
+
+  const isAllowed = allowedPatterns.some((r) => r.test(lower));
+
+  // ❌ reject any slug part that’s pure gibberish or too short
+  const looksGibberish = /^[a-z0-9]{1,6}$/.test(lower) && !isAllowed;
+
+  return looksGibberish || (!isAllowed && lower.length < 4);
+});
+
+if (invalidSegment) {
+  notFound();
+}
+
   // 2️⃣ Detect invalid final numeric segment
   const lastPart = slug[slug.length - 1];
   if (/^\d{1,6}$/.test(lastPart)) {
