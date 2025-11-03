@@ -8,8 +8,7 @@ import CaravanFilter from "../CaravanFilter";
 import SkeletonListing from "../skelton";
 import Link from "next/link";
 import {
-  notFound,
-  usePathname,
+   usePathname,
   useRouter,
   useSearchParams,
 } from "next/navigation";
