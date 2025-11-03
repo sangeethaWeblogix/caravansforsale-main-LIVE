@@ -247,27 +247,7 @@ const [emptyProduct, setEmptyProduct] = useState(false);
     }
     return f;
   };
-  const validatePage = (raw: string | null): number => {
-    if (raw === null) {
-      return 1; // no ?page → default to 1
-    }
-
-    if (raw.trim() === "") {
-      notFound(); // 🚫 block empty ?page=
-    }
-
-    if (!/^\d+$/.test(raw)) {
-      notFound(); // 🚫 block non-numeric
-    }
-
-    const page = parseInt(raw, 10);
-
-    if (!Number.isInteger(page) || page < 1) {
-      notFound(); // 🚫 block invalid numbers
-    }
-
-    return page;
-  };
+  
 
   const updateURLWithFilters = useCallback(
     (nextFilters: Filters, pageNum: number) => {
