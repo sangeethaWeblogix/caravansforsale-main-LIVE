@@ -21,6 +21,7 @@ import {
   fetchExclusiveListings,
   ExclusiveProduct,
 } from "@/api/exculsiveproduct/api";
+import { ensureValidPage } from "@/utils/seo/validatePage";
 /* --------- GLOBAL de-dupe across StrictMode remounts --------- */
 // let LAST_GLOBAL_REQUEST_KEY = "";
 
@@ -149,39 +150,14 @@ export default function ListingsPage({
   const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-
+const [emptyProduct, setEmptyProduct] = useState(false);
   const [isUsingInitialData, setIsUsingInitialData] = useState(!!initialData);
 
   const rawPage = searchParams.get("page");
 
   // ✅ If page is missing → default to 1
   const page = rawPage ? parseInt(rawPage, 10) : 1;
-
-  // ✅ Only validate `page`
-  if (rawPage !== null) {
-    // page must be all digits
-    if (!/^\d+$/.test(rawPage)) {
-      notFound();
-    }
-
-    // must be >= 1
-    if (!Number.isInteger(page) || page < 1) {
-      notFound();
-    }
-  }
-
-  // ✅ Validate malformed URLs (client-side guard)
-  useEffect(() => {
-    const rawQuery = window.location.search;
-    if (
-      /[&#*+]+$/.test(rawQuery) || // Ends with & or special chars
-      /page=$/.test(rawQuery) || // Empty ?page=
-      /page=[A-Za-z]+/.test(rawQuery) || // Letters in page value
-      /page=\d+[A-Za-z]+/.test(rawQuery) // Numbers followed by letters (2a, 5b)
-    ) {
-      window.location.href = "/not-found";
-    }
-  }, []);
+ 
 
   // Initialize state with initialData if provided
   const [products, setProducts] = useState<Product[]>(
@@ -458,18 +434,20 @@ export default function ListingsPage({
           setCategories(response?.data?.all_categories ?? []);
           setMakes(response?.data?.make_options ?? []);
           setStateOptions(response?.data?.states ?? []);
-          setModels(response?.data?.model_options ?? []);
+          setModels(response?.data?.model_options ?? []); 
           setPageTitle(response?.title ?? " ");
           if (response.pagination) setPagination(response.pagination);
           setMetaDescription(response?.seo?.metadescription ?? "");
           setMetaTitle(response?.seo?.metatitle ?? "");
         } else {
+          setEmptyProduct(true);
           // 🚨 Step 3 — No valid products → Fetch Exclusive Listings fallback
           console.warn(
             "⚠️ No valid caravans found — fetching Exclusive Listings..."
           );
 
           try {
+
             alert("no data found");
             const fallback = await fetchExclusiveListings(pageNum);
             console.log("🔁 Exclusive API Response:", fallback);
@@ -678,46 +656,47 @@ export default function ListingsPage({
 
   //   loadListings(pageFromURL, merged, true);
   // }, [searchKey, pathKey, loadListings, DEFAULT_RADIUS, searchParams]);
-
+  
   useEffect(() => {
-    if (!initializedRef.current) return;
+  if (!initializedRef.current) return;
 
-    const slugParts = pathKey.split("/listings/")[1]?.split("/") || [];
-    const parsedFromURL = parseSlugToFilters(slugParts);
+  const slugParts = pathKey.split("/listings/")[1]?.split("/") || [];
+  const parsedFromURL = parseSlugToFilters(slugParts);
 
-    const pageFromURL = validatePage(searchParams.get("page"));
+  // ✅ Use shared validator
+  const fullQuery = typeof window !== "undefined" ? window.location.search : "";
+  const pageFromURL = ensureValidPage(searchParams.get("page"), fullQuery);
 
-    const merged: Filters = {
-      ...parsedFromURL,
-      ...incomingFiltersRef.current,
-    };
+  const merged: Filters = {
+    ...parsedFromURL,
+    ...incomingFiltersRef.current,
+  };
 
-    const filtersChanged =
-      JSON.stringify(merged) !== JSON.stringify(prevFiltersRef.current);
-    const pageChanged = pageFromURL !== prevPageRef.current;
+  const filtersChanged =
+    JSON.stringify(merged) !== JSON.stringify(prevFiltersRef.current);
+  const pageChanged = pageFromURL !== prevPageRef.current;
 
-    if (!filtersChanged && !pageChanged) return;
+  if (!filtersChanged && !pageChanged) return;
 
-    prevFiltersRef.current = { ...merged };
-    prevPageRef.current = pageFromURL;
+  prevFiltersRef.current = { ...merged };
+  prevPageRef.current = pageFromURL;
 
-    filtersRef.current = merged;
-    setFilters(merged);
-    setPagination((prev) => ({ ...prev, current_page: pageFromURL }));
+  filtersRef.current = merged;
+  setFilters(merged);
+  setPagination((prev) => ({ ...prev, current_page: pageFromURL }));
 
-    // ✅ Prevent re-fetch on initial load (SSR already has data)
-    if (isUsingInitialData && initialData) {
-      setIsUsingInitialData(false);
-      return;
+  // ✅ Prevent re-fetch on SSR initial load
+  if (isUsingInitialData && initialData) {
+    setIsUsingInitialData(false);
+    return;
+  }
+
+  loadListings(pageFromURL, merged, true).then((res) => {
+    if (!res?.data?.products?.length) {
+      setEmptyProduct(true);
     }
-
-    // ✅ If client-side navigation happens and no data → 404
-    loadListings(pageFromURL, merged, true).then((res) => {
-      if (!res?.data?.products?.length) {
-        window.location.href = "/not-found"; // instant client redirect
-      }
-    });
-  }, [searchKey, pathKey, loadListings, DEFAULT_RADIUS, searchParams]);
+  });
+}, [searchKey, pathKey, loadListings, DEFAULT_RADIUS, searchParams]);
 
   const handleFilterChange = useCallback(
     async (newFilters: Filters) => {
@@ -861,8 +840,8 @@ export default function ListingsPage({
                   onFilterChange={handleFilterChange}
                   currentFilters={filters}
                 />
-              ) : (
-                <ExculsiveContent
+              ) : emptyProduct ? (
+                 <ExculsiveContent
                   data={items}
                   pagination={pagination}
                   onNext={handleNextPage}
@@ -872,7 +851,7 @@ export default function ListingsPage({
                   onFilterChange={handleFilterChange}
                   currentFilters={filters}
                 />
-              )}
+              ) :  " "}
             </div>
           </div>
         </div>
