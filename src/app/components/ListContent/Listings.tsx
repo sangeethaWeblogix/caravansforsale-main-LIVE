@@ -153,11 +153,9 @@ export default function ListingsPage({
 const [emptyProduct, setEmptyProduct] = useState(false);
   const [isUsingInitialData, setIsUsingInitialData] = useState(!!initialData);
 
-  const rawPage = searchParams.get("page");
-
-  // ✅ If page is missing → default to 1
-  const page = rawPage ? parseInt(rawPage, 10) : 1;
  
+  // ✅ If page is missing → default to 1
+  
 
   // Initialize state with initialData if provided
   const [products, setProducts] = useState<Product[]>(
