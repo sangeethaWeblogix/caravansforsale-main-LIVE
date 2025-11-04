@@ -1,4 +1,4 @@
- const API_BASE = process.env.NEXT_PUBLIC_CFS_API_BASE;
+  const API_BASE = process.env.NEXT_PUBLIC_CFS_API_BASE;
 
 interface Filters {
   page?: number;
@@ -147,6 +147,7 @@ export const fetchListings = async (
   if (s) params.append("search", s);
 
   const res = await fetch(`${API_BASE}/new-list?${params.toString()}`);
+  console.log("[list API] GET", res.url)
   if (!res.ok) throw new Error("API failed");
   const raw = await res.text(); // read body only once
 

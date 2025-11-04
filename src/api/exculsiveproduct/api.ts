@@ -16,6 +16,7 @@ export interface ExclusiveProduct {
   people?: string;
   make?: string;
   slug?: string;
+  description?: string;
   is_exclusive: boolean;
 }
 

@@ -15,6 +15,9 @@ export interface Product {
   model?: string;
   year?: string;
   category?: string;
+    description?: string;
+    sku?: string;
+
 }
 
 // Categories
