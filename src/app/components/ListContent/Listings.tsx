@@ -378,7 +378,7 @@ const [emptyProduct, setEmptyProduct] = useState(false);
         });
 
         console.log("📦 Main API Response:", response);
-
+ 
         // ✅ Step 2 — Check if products exist (FIXED CONDITION)
         const products = response?.data?.products ?? [];
 

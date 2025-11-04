@@ -147,6 +147,7 @@ export const fetchListings = async (
   if (s) params.append("search", s);
 
   const res = await fetch(`${API_BASE}/new-list?${params.toString()}`);
+  console.log("[list API] GET", res.url)
   if (!res.ok) throw new Error("API failed");
   const raw = await res.text(); // read body only once
 
