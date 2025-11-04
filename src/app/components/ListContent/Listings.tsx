@@ -947,6 +947,9 @@
                     preminumProducts={preminumProducts}
                     fetauredProducts={fetauredProducts}
                     exculisiveProducts={exculisiveProducts}
+                    isMainLoading={isMainLoading}
+                    isFeaturedLoading={isFeaturedLoading}
+                    isPremiumLoading={isPremiumLoading}
                   />
                 ) : (
                   <ExculsiveContent

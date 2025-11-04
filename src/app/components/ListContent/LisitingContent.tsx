@@ -75,8 +75,11 @@ import { toSlug } from "@/utils/seo/slug";
     preminumProducts: Product[];
     fetauredProducts: Product[];
     exculisiveProducts: Product[];
+    isMainLoading: boolean;
+    isFeaturedLoading: boolean;
+    isPremiumLoading: boolean;
   }
-  
+                  
   export default function ListingContent({
     products,
     pagination,
@@ -89,6 +92,9 @@ import { toSlug } from "@/utils/seo/slug";
     preminumProducts,
     fetauredProducts,
     exculisiveProducts,
+    isFeaturedLoading,
+    isPremiumLoading,
+    isMainLoading,
   }: Props) {
     const [showInfo, setShowInfo] = useState(false);
     const [showContact, setShowContact] = useState(false);
@@ -298,7 +304,9 @@ useEffect(() => {
                   </button>
                 </div>
               </div>
-  
+  {isFeaturedLoading ? (
+  <Skelton count={3} /> // ✅ show skeletons
+) : (
               <Swiper
                 modules={[Navigation, Autoplay]}
                 spaceBetween={10}
@@ -476,10 +484,15 @@ useEffect(() => {
                       </div>
                     </Link>
                   </SwiperSlide>
+
+
             );
           })}
                 
-              </Swiper>
+          
+  </Swiper>
+)}
+
             </div>
           </div>
           {/* {premium section } */}
@@ -516,7 +529,9 @@ href={href}
                             </div>
                             <div className="main_thumb position-relative">
                               <span className="lab">Spotlight Van</span>
-
+{isPremiumLoading ? (
+  <Skelton count={2} /> // ✅ show skeletons
+) : (
                               <Swiper
                                 modules={[Navigation, Pagination]}
                                 spaceBetween={10}
@@ -555,6 +570,7 @@ href={href}
                                   </SwiperSlide>
                                 ))}
                               </Swiper>
+                              )}
   
                               {/* Hidden "View More" button that appears after last slide */}
                               <div
