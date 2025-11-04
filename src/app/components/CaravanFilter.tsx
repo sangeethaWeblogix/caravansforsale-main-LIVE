@@ -507,37 +507,22 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
   }, [locationInput, showSuggestions]);
 
  // 🔧 FIXED hydrateLocation function
-const hydrateLocation = (next: Filters): Filters => {
+ const hydrateLocation = (next: Filters): Filters => {
   const out: Filters = { ...next };
 
-  // ✅ Preserve existing location data if it's valid
-  if (out.state && !out.state.trim()) {
-    delete out.state;
-  }
-  if (out.region && !out.region.trim()) {
-    delete out.region;
-  }
-  if (out.suburb && !out.suburb.trim()) {
-    delete out.suburb;
-  }
-  if (out.pincode && !out.pincode.trim()) {
-    delete out.pincode;
+  // remove only truly empty strings, not missing fields
+  for (const key of ["state", "region", "suburb", "pincode"] as const) {
+    if (typeof out[key] === "string" && !out[key]?.trim()) delete out[key];
   }
 
-  // ✅ Don't override valid region with undefined
-  const validRegion = getValidRegionName(
-    out.state || selectedStateName,
-    out.region,
-    states
-  );
-
-  // Only update region if we found a valid one AND current region is invalid
-  if (validRegion && out.region !== validRegion) {
-    out.region = validRegion;
-  }
+  // ✅ preserve region/suburb if already set
+  if (!out.region && selectedRegionName) out.region = selectedRegionName;
+  if (!out.suburb && selectedSuburbName) out.suburb = selectedSuburbName;
+  if (!out.pincode && selectedpincode) out.pincode = selectedpincode;
 
   return out;
 };
+
   const clearKeyword = () => {
     const next: Filters = {
       ...currentFilters,
@@ -953,51 +938,49 @@ const hydrateLocation = (next: Filters): Filters => {
       .replace(/\s{3,}/g, "  ") // collapse 3+ spaces -> 2
       .trim()
       .replace(/\b\w/g, (char) => char.toUpperCase());
-  const resetSuburbFilters = () => {
-    // ✅ Clear suburb-related state
-    setSelectedSuburbName(null);
-    setSelectedpincode(null);
-    setLocationInput("");
-    setRadiusKms(RADIUS_OPTIONS[0]);
-    setLocationSuggestions([]);
-    setSelectedSuggestion(null); // ✅ Clear the selected suggestion too
 
-    // ✅ Reopen region panel and close suburb panel
-    setStateSuburbOpen(false);
-    setStateRegionOpen(true); // ✅ This ensures region list shows again
+   const resetSuburbFilters = () => {
+     // ✅ keep state & region
+     // suppressLocationAutoClearRef.current = true; // 👈 tell the auto-clear effect to skip once
+     setSelectedSuburbName(null);
+     setSelectedpincode(null);
+     setLocationInput("");
+     setRadiusKms(RADIUS_OPTIONS[0]); // reset radius to default
+     setLocationSuggestions([]);
+ 
+     // ✅ rehydrate suburb list for the currently selected region
+     if (selectedStateName && selectedRegionName) {
+       const st = states.find(
+         (s) =>
+           s.name.toLowerCase() === selectedStateName.toLowerCase() ||
+           s.value.toLowerCase() === selectedStateName.toLowerCase()
+       );
+       const reg = st?.regions?.find(
+         (r) =>
+           r.name.toLowerCase() === selectedRegionName.toLowerCase() ||
+           r.value.toLowerCase() === selectedRegionName.toLowerCase()
+       );
+       setFilteredSuburbs(reg?.suburbs ?? []);
+     }
+ 
+     const updatedFilters: Filters = {
+       ...currentFilters,
+       // ✅ explicitly preserve state & region
+       state: selectedStateName || currentFilters.state,
+       region: selectedRegionName || currentFilters.region,
+       suburb: undefined,
+       pincode: undefined,
+       radius_kms: RADIUS_OPTIONS[0], // reset radius to default
+     };
+ 
+     setFilters(updatedFilters);
+     filtersInitialized.current = true;
+ 
+     startTransition(() => {
+       updateAllFiltersAndURL(updatedFilters);
+     });
+   };
 
-    // ✅ Rehydrate suburb list for the currently selected region
-    if (selectedStateName && selectedRegionName) {
-      const st = states.find(
-        (s) =>
-          s.name.toLowerCase() === selectedStateName.toLowerCase() ||
-          s.value.toLowerCase() === selectedStateName.toLowerCase()
-      );
-      const reg = st?.regions?.find(
-        (r) =>
-          r.name.toLowerCase() === selectedRegionName.toLowerCase() ||
-          r.value.toLowerCase() === selectedRegionName.toLowerCase()
-      );
-      setFilteredSuburbs(reg?.suburbs ?? []);
-    }
-
-    const updatedFilters: Filters = {
-      ...currentFilters,
-      // ✅ preserve state & region
-      state: selectedStateName || currentFilters.state,
-      region: selectedRegionName || currentFilters.region,
-      suburb: undefined,
-      pincode: undefined,
-      radius_kms: RADIUS_OPTIONS[0],
-    };
-
-    setFilters(updatedFilters);
-    filtersInitialized.current = true;
-
-    startTransition(() => {
-      updateAllFiltersAndURL(updatedFilters);
-    });
-  };
 
   const handleSearchClick = () => {
     // Remove resetSuburbFilters call here as it clears the selections
@@ -1054,10 +1037,10 @@ const hydrateLocation = (next: Filters): Filters => {
     setFilters(updatedFilters);
     filtersInitialized.current = true;
 
-    startTransition(() => {
-      updateAllFiltersAndURL(updatedFilters);
-    });
-
+   suburbClickedRef.current = true;
+setTimeout(() => {
+  updateAllFiltersAndURL(updatedFilters);
+ }, 100);
     const shortAddr =
       selectedSuggestion?.short_address ||
       buildShortAddress(suburb, state, pincode);
@@ -1535,24 +1518,20 @@ useEffect(() => {
 
 
     next.make = sanitizeMake(next.make); // belt & suspenders
-    if (next.state && next.region && next.suburb) {
-    // All location levels are present - perfect for URL structure
-  } else if (next.state && next.region) {
-    // Only state and region - suburb will be omitted from URL
-    delete next.suburb;
-    delete next.pincode;
-  } else if (next.state) {
-    // Only state - region and suburb will be omitted
-    delete next.region;
-    delete next.suburb;
-    delete next.pincode;
-  } else {
-    // No state - clear all location data
-    delete next.state;
-    delete next.region;
-    delete next.suburb;
-    delete next.pincode;
-  }
+   // ✅ safer location preservation logic
+if (next.state) {
+  // only delete region/suburb if they're explicitly empty strings
+  if (next.region === "" || next.region === undefined) delete next.region;
+  if (next.suburb === "" || next.suburb === undefined) delete next.suburb;
+  if (next.pincode === "" || next.pincode === undefined) delete next.pincode;
+} else {
+  // if no state, clear all location data
+  delete next.state;
+  delete next.region;
+  delete next.suburb;
+  delete next.pincode;
+}
+
 
     setFilters((prev) => (filtersEqual(prev, next) ? (prev as Filters) : next));
     filtersInitialized.current = true;

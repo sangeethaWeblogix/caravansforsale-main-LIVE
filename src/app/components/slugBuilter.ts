@@ -9,6 +9,8 @@ const conditionToSlug: Record<string, string> = {
   used: "used",
 };
 
+const cleanSlug = (v?: string) =>
+  v ? toSlug(v.replace(/-state|-region|-suburb/g, "").trim()) : undefined;
 const asNum = (v?: string | number) =>
   typeof v === "number" ? v : v && v.trim() ? Number(v) : undefined;
 
@@ -30,28 +32,26 @@ export function buildSlugFromFilters(f: Filters): string {
   if (f.category) segments.push(`${toSlug(f.category)}-category`);
 
   // 4) Location
-  const state = f.state ? toSlug(f.state) : undefined;
-  const region = f.region ? toSlug(f.region) : undefined;
-  const suburb = f.suburb ? toSlug(f.suburb) : undefined;
+   const state = cleanSlug(f.state);
+  const region = cleanSlug(f.region);
+  const suburb = cleanSlug(f.suburb);
   const pin = f.pincode?.trim();
 
   if (state) {
     segments.push(`${state}-state`);
 
-    // ✅ Region (only if suburb not provided)
-    if (region && !suburb) {
-      segments.push(`${region}-region`);
+    // ✅ Region only if suburb is NOT selected
+    if (region) {
+      segments.push(region.endsWith("-region") ? region : `${region}-region`);
     }
 
-    // ✅ Suburb + Pincode (optional)
-  
-  if (region){ segments.push(`${region}-region`);
-  if (suburb) {
-    if (pin) segments.push(`${suburb}-${pin}-suburb`);
-    else segments.push(`${suburb}-suburb`);
+    // ✅ Suburb (with optional pincode)
+    if (suburb) {
+      if (pin) segments.push(`${suburb}-${pin}-suburb`);
+      else segments.push(`${suburb}-suburb`);
+    }
   }
-}
-  }
+
 
   // 5) Price
   const fromPrice = asNum(f.from_price);

@@ -280,9 +280,7 @@ export function parseSlugToFilters(
   });
 
   // If suburb present, ignore region due to canonical URL structure
-  if (filters.suburb) {
-    filters.region = undefined;
-  }
+  
 
   // ---- QUERY STRING SUPPORT ----
   if (query) {
