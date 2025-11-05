@@ -35,25 +35,25 @@ const rawIndex = String(res?.seo?.index ?? "").toLowerCase().trim();
     {}
   );
 
-  const totalPages = res?.pagination?.total_pages ?? 1;
+  // const totalPages = res?.pagination?.total_pages ?? 1;
 
-  const prev =
-    page > 1
-      ? buildCanonicalUrl(
-          "https://www.caravansforsale.com.au/listings",
-          filters,
-          { page: page - 1 }
-        )
-      : undefined;
+  // const prev =
+  //   page > 1
+  //     ? buildCanonicalUrl(
+  //         "https://www.caravansforsale.com.au/listings",
+  //         filters,
+  //         { page: page - 1 }
+  //       )
+  //     : undefined;
 
-  const next =
-    page < totalPages
-      ? buildCanonicalUrl(
-          "https://www.caravansforsale.com.au/listings",
-          filters,
-          { page: page + 1 }
-        )
-      : undefined;
+  // const next =
+  //   page < totalPages
+  //     ? buildCanonicalUrl(
+  //         "https://www.caravansforsale.com.au/listings",
+  //         filters,
+  //         { page: page + 1 }
+  //       )
+  //     : undefined;
 
   return {
     title: { absolute: title },
@@ -67,12 +67,12 @@ const rawIndex = String(res?.seo?.index ?? "").toLowerCase().trim();
       languages: {},
       media: {},
     },
-    icons: {
-      other: [
-        ...(prev ? [{ rel: "prev", url: prev }] : []),
-        ...(next ? [{ rel: "next", url: next }] : []),
-      ],
-    },
+    // icons: {
+    //   other: [
+    //     ...(prev ? [{ rel: "prev", url: prev }] : []),
+    //     ...(next ? [{ rel: "next", url: next }] : []),
+    //   ],
+    // },
     openGraph: { title, description, url: canonical },
     twitter: { title, description },
   };
