@@ -492,12 +492,13 @@ useEffect(() => {
 
                     <div className="col-lg-6 mb-0" key={index}>
                       <Link
-href={href}
+             href={href}
                     onClick={() => {
                       if (typeof window !== "undefined") {
                         sessionStorage.setItem("cameFromListings", "true");
                       }
-                    }}                        prefetch={false}
+                    }}                      
+                      prefetch={false}
                         className="lli_head"
                       >
                         <div className="product-card">
@@ -557,7 +558,7 @@ href={href}
                               )}
   
                               {/* Hidden "View More" button that appears after last slide */}
-                              <div
+                              {/* <div
                                 id={`view-more-btn-${item}`}
                                 className="view-more-btn-wrapper"
                               >
@@ -567,7 +568,7 @@ href={href}
                                 >
                                   View More
                                 </Link>
-                              </div>
+                              </div> */}
                             </div>
                           </div>
                           <div className="product_de">
@@ -712,6 +713,7 @@ href={href}
 
             return (
                     <div className="col-lg-6 mb-0" key={index}>
+                      
                       <Link
                        href={href}
                     onClick={() => {
@@ -778,17 +780,18 @@ href={href}
                               </Swiper>
   
                               {/* Hidden "View More" button that appears after last slide */}
-                              <div
+                              {/* <div
                                 id={`view-more-btn-${item}`}
                                 className="view-more-btn-wrapper"
                               >
                                 <Link
                                   href="/related-links"
                                   className="view-more-btn"
+
                                 >
                                   View More
                                 </Link>
-                              </div>
+                              </div> */}
                             </div>
                           </div>
                           <div className="product_de">

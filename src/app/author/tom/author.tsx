@@ -118,9 +118,9 @@ export default function BlogPage() {
               <div className="author-info">
                 <p>
                   Tom is a passionate caravan enthusiast and content writer at{" "}
-                  <a href="https://www.caravansforsale.com.au/">
+                  <Link href="https://www.caravansforsale.com.au/">
                     CaravansForSale.com.au
-                  </a>{" "}
+                  </Link>{" "}
                   — Australia’s trusted destination for buying, selling, and
                   researching caravans.
                 </p>
