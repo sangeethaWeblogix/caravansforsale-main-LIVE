@@ -22,7 +22,7 @@ export async function GET() {
       <url>
         <loc>${SITE_URL}/listings/${stateSlug}-state/</loc>
         <lastmod>${new Date().toISOString().split("T")[0]}</lastmod>
-        <changefreq>weekly</changefreq>
+        <changefreq>Daily</changefreq>
         <priority>0.7</priority>
       </url>`;
 

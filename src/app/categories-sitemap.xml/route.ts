@@ -30,8 +30,8 @@ export async function GET() {
         <url>
           <loc>${SITE_URL}/listings/${cat.slug}-category/</loc>
           <lastmod>${today}</lastmod>
-          <changefreq>weekly</changefreq>
-          <priority>0.6</priority>
+          <changefreq>Daily</changefreq>
+          <priority>0.7</priority>
         </url>`
       )
       .join("");

@@ -25,7 +25,7 @@ export async function GET() {
         <url>
           <loc>${SITE_URL}/${path}/</loc>
           <lastmod>${new Date().toISOString().split("T")[0]}</lastmod>
-          <changefreq>daily</changefreq>
+          <changefreq>Daily</changefreq>
           <priority>0.8</priority>
         </url>
       `;

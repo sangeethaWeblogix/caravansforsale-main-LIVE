@@ -38,8 +38,8 @@ export async function GET() {
       <url>
         <loc>${loc}</loc>
        <lastmod>${new Date().toISOString()}</lastmod>
-      <changefreq>weekly</changefreq>
-      <priority>0.6</priority>
+      <changefreq>Daily</changefreq>
+      <priority>0.7</priority>
       </url>`
       )
       .join("")}
