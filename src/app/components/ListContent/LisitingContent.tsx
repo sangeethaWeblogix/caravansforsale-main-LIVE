@@ -7,8 +7,7 @@
   import "swiper/css/pagination";
   import { Navigation, Autoplay, Pagination } from "swiper/modules";
   import Skelton from '../skelton'
-  import "./newlist.css";
-  import Head from "next/head";
+   import Head from "next/head";
   import { useEffect, useMemo, useRef, useState } from "react";
 import { toSlug } from "@/utils/seo/slug";
   

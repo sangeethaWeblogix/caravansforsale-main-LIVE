@@ -9,6 +9,7 @@
  import Link from "next/link";
  import { flushSync } from "react-dom";
  import { v4 as uuidv4 } from "uuid";
+ import "./newList.css"
 
 
  import {
