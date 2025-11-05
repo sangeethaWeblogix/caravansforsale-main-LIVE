@@ -22,10 +22,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
       url: `${siteUrl}/blogs-sitemap.xml`,
       lastModified: new Date(),
     },
-    {
-      url: `${siteUrl}/listings-sitemap.xml`,
-      lastModified: new Date(),
-    },
+    // {
+    //   url: `${siteUrl}/listings-sitemap.xml`,
+    //   lastModified: new Date(),
+    // },
     // {
     //   url: `${siteUrl}/products-sitemap.xml`,
     //   lastModified: new Date(),

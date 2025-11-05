@@ -49,7 +49,7 @@ export default async function ListingsPage({
             src="/no-results.svg"
             alt="No caravans found"
             width={180}
-            height={180}
+            height={180}                              
             className="mb-6 opacity-80"
           />
           <h2 className="text-2xl font-semibold mb-2">No caravans found</h2>
