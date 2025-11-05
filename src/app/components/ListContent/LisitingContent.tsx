@@ -103,30 +103,16 @@ import { toSlug } from "@/utils/seo/slug";
 
     const prevRef = useRef(null);
     const nextRef = useRef(null);
-    console.log("data-prod", products);
+    // console.log("data-prod", products);
   
-    console.log("data-product", exculisiveProducts);
-    console.log("data-premium", preminumProducts);
-    console.log("data-featu", fetauredProducts);
+    // console.log("data-product", exculisiveProducts);
+    // console.log("data-premium", preminumProducts);
+    // console.log("data-featu", fetauredProducts);
     // const handleChange = (e) => {
     //   setOrderBy(e.target.value);
     // };
  
-    const handleNextPage = async () => {
-   if (pagination.current_page < pagination.total_pages) {
-     setIsLoading(true);
-     await onNext(); // call the prop function
-     setIsLoading(false);
-   }
- };
  
- const handlePrevPage = async () => {
-   if (pagination.current_page > 1) {
-     setIsLoading(true);
-     await onPrev();
-     setIsLoading(false);
-   }
- };
  
     const mergedProducts = useMemo(() => {
       const merged: Product[] = [];
@@ -943,8 +929,8 @@ href={href}
                 <li className="">
                   <span>
                     <button
-                      onClick={handlePrevPage}
-                      disabled={pagination.current_page === 1}
+ onClick={onPrev}
+                                       disabled={pagination.current_page === 1}
                       className="prev-icon"
                     >
                       Back
@@ -958,7 +944,7 @@ href={href}
                 <li className="">
                   <button
                     className="next-icon"
-                    onClick={handleNextPage}
+                    onClick={onNext}
                     disabled={pagination.current_page === pagination.total_pages}
                   >
                     Next

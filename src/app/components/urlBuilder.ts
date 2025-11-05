@@ -24,6 +24,7 @@ export interface Filters {
   search?: string;
   from_sleep?: string | number;
   to_sleep?: string | number;
+    msid?: string | null; 
   keyword?: string; // parsed -> canonicalized to `search`
 }
 
@@ -291,7 +292,7 @@ export function parseSlugToFilters(
     if (query.radius_kms) filters.radius_kms = getScalar(query.radius_kms);
 
     
-    if (query.page) filters.page = getScalar(query.page);
+     if(query.msid)  filters.msid = getScalar(query.msid);
     if (query.orderby) filters.orderby = getScalar(query.orderby);
     if (query.search) filters.search = getScalar(query.search);
     if (query.keyword && !filters.search)

@@ -8,6 +8,8 @@
  import SkeletonListing from "../skelton";
  import Link from "next/link";
  import { flushSync } from "react-dom";
+ import { v4 as uuidv4 } from "uuid";
+
 
  import {
    notFound,
@@ -159,6 +161,8 @@
    const [isFeaturedLoading, setIsFeaturedLoading] = useState(false);
    const [isPremiumLoading, setIsPremiumLoading] = useState(false);
    const [isUsingInitialData, setIsUsingInitialData] = useState(!!initialData);
+
+ const [msid, setMsid] = useState<string | null>(null);
  
    const rawPage = searchParams.get("page");
  
@@ -270,7 +274,27 @@
  
    // Parse slug ONCE on mount; do not fetch here
    const initializedRef = useRef(false);
- 
+ useEffect(() => {
+  // This runs every time the current page changes
+  if (pagination.current_page > 1) {
+    // Generate new msid every time user navigates beyond first page
+    const newMsid = uuidv4();
+    setMsid(newMsid);
+    sessionStorage.setItem("msid", newMsid);
+
+    const url = new URL(window.location.href);
+    url.searchParams.set("msid", newMsid);
+    window.history.replaceState({}, "", url.toString());
+  } else {
+    // On page 1, remove msid from URL
+    setMsid(null);
+    sessionStorage.removeItem("msid");
+    const url = new URL(window.location.href);
+    url.searchParams.delete("msid");
+    window.history.replaceState({}, "", url.toString());
+  }
+}, [pagination.current_page]);
+
    useEffect(() => {
      if (initializedRef.current) return;
      initializedRef.current = true;
@@ -331,7 +355,7 @@
        if (!Number.isNaN(r) && r !== DEFAULT_RADIUS) {
          query.set("radius_kms", String(r));
        }
-       if (pageNum > 1) query.set("page", String(pageNum));
+if (msid) query.set("msid", msid);
  
        const safeSlug = slug.endsWith("/") ? slug : `${slug}/`; // 👈 important
        const finalURL = query.toString() ? `${safeSlug}?${query}` : safeSlug;
@@ -339,7 +363,15 @@
      },
      [router, DEFAULT_RADIUS]
    );
- 
+ useEffect(() => {
+  if (msid) {
+    const url = new URL(window.location.href);
+    url.searchParams.set("msid", msid);
+    url.searchParams.delete("page");
+    window.history.replaceState({}, "", url.toString());
+  }
+}, [pagination.current_page, msid]);
+
  
    useEffect(() => {
      if (initialData?.data?.products) {
@@ -509,58 +541,63 @@
            );
          
  
-    const handleNextPage = useCallback(async () => {
-     if (pagination.current_page < pagination.total_pages) {
-       // ✅ Show skeleton immediately for ALL sections
-       setIsMainLoading(true);
-       setIsFeaturedLoading(true);
-       setIsPremiumLoading(true);
- 
-       const nextPage = pagination.current_page + 1;
-       
-       try {
-         // ✅ Update URL first
-         updateURLWithFilters(filtersRef.current, nextPage);
-         
-         // ✅ Load data for the next page
-         await loadListings(nextPage, filtersRef.current, true);
-       } catch (error) {
-         console.error("Error loading next page:", error);
-       } finally {
-         // ✅ Hide loading states
-         setIsMainLoading(false);
-         setIsFeaturedLoading(false);
-         setIsPremiumLoading(false);
-       }
-     }
-   }, [pagination.current_page, pagination.total_pages, loadListings, updateURLWithFilters]);
- 
+ const handleNextPage = useCallback(async () => {
+  if (pagination.current_page < pagination.total_pages) {
+    setIsMainLoading(true);
+    setIsFeaturedLoading(true);
+    setIsPremiumLoading(true);
+
+    const nextPage = pagination.current_page + 1;
+    sessionStorage.setItem(`page_${msid}`, nextPage.toString()); // ✅ store in session
+
+    try {
+      await loadListings(nextPage, filtersRef.current, true);
+    } catch (error) {
+      console.error("Error loading next page:", error);
+    } finally {
+      setIsMainLoading(false);
+      setIsFeaturedLoading(false);
+      setIsPremiumLoading(false);
+    }
+  }
+}, [pagination, loadListings, msid]);
+
    // ✅ FIXED: Proper handlePrevPage function
-   const handlePrevPage = useCallback(async () => {
-     if (pagination.current_page > 1) {
-       // ✅ Show skeleton immediately for ALL sections
-       setIsMainLoading(true);
-       setIsFeaturedLoading(true);
-       setIsPremiumLoading(true);
- 
-       const prevPage = pagination.current_page - 1;
-       
-       try {
-         // ✅ Update URL first
-         updateURLWithFilters(filtersRef.current, prevPage);
-         
-         // ✅ Load data for the previous page
-         await loadListings(prevPage, filtersRef.current, true);
-       } catch (error) {
-         console.error("Error loading previous page:", error);
-       } finally {
-         // ✅ Hide loading states
-         setIsMainLoading(false);
-         setIsFeaturedLoading(false);
-         setIsPremiumLoading(false);
-       }
-     }
-   }, [pagination.current_page, loadListings, updateURLWithFilters]);
+const handlePrevPage = useCallback(async () => {
+  if (pagination.current_page > 1) {
+    setIsMainLoading(true);
+    setIsFeaturedLoading(true);
+    setIsPremiumLoading(true);
+
+    const prevPage = pagination.current_page - 1;
+    sessionStorage.setItem(`page_${msid}`, prevPage.toString()); // ✅ store in session
+
+    try {
+      await loadListings(prevPage, filtersRef.current, true);
+    } catch (error) {
+      console.error("Error loading previous page:", error);
+    } finally {
+      setIsMainLoading(false);
+      setIsFeaturedLoading(false);
+      setIsPremiumLoading(false);
+    }
+  }
+}, [pagination, loadListings, msid]);
+
+useEffect(() => {
+  if (!msid) return;
+
+  const savedPage = sessionStorage.getItem(`page_${msid}`);
+  if (savedPage) {
+    const pageNum = parseInt(savedPage, 10);
+    if (pageNum > 0) {
+      setPagination((prev) => ({ ...prev, current_page: pageNum }));
+      loadListings(pageNum, filtersRef.current, true);
+    }
+  }
+}, [msid]);
+
+
    console.log("paginationapi", pagination);
    // const loadListings = useCallback(
    //   async (

@@ -1558,10 +1558,7 @@ if (next.state) {
    
     if (next.radius_kms && next.radius_kms !== DEFAULT_RADIUS)
       query.set("radius_kms", String(next.radius_kms));
-    if (next.page && Number(next.page) > 1) {
-      query.set("page", String(next.page));
-    }
-
+  
     const safeSlugPath = slugPath.endsWith("/") ? slugPath : `${slugPath}/`;
     const finalURL = query.toString() ? `${slugPath}?${query}` : safeSlugPath;
     if (lastPushedURLRef.current !== finalURL) {

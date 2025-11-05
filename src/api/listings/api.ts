@@ -26,6 +26,7 @@
     keyword?: string;
     from_sleep?: string | number;
     to_sleep?: string | number;
+      msid?: string | null; 
   }
   
   export type Item = {
@@ -81,6 +82,7 @@
     seo?: ApiSEO;
     pagination?: ApiPagination;
     data?: ApiData;
+      msid?: string | null; 
   };
   
   /** Normalize "+", spaces for search/keyword */
