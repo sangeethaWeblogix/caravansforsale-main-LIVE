@@ -7,6 +7,8 @@
  import CaravanFilter from "../CaravanFilter";
  import SkeletonListing from "../skelton";
  import Link from "next/link";
+ import { flushSync } from "react-dom";
+
  import {
    notFound,
    usePathname,
@@ -799,9 +801,12 @@
    const handleFilterChange = useCallback(
      async (newFilters: Filters) => {
        // ✅ Show skeleton for ALL sections immediately
-       setIsMainLoading(true);
-       setIsFeaturedLoading(true);
-       setIsPremiumLoading(true);
+      flushSync(() => {
+      setIsLoading(true);
+      setIsMainLoading(true);
+      setIsFeaturedLoading(true);
+      setIsPremiumLoading(true);
+    });
  
        const mergedFilters = { ...filtersRef.current, ...newFilters };
        
@@ -832,6 +837,7 @@
          console.error("Error applying filters:", error);
        } finally {
          // ✅ Hide all loaders when done
+          setIsLoading(false);
          setIsMainLoading(false);
          setIsFeaturedLoading(false);
          setIsPremiumLoading(false);
@@ -839,7 +845,10 @@
      },
      [updateURLWithFilters, loadListings]
    );
- 
+ useEffect(() => {
+  console.log("Loading state:", { isLoading, isMainLoading, isFeaturedLoading, isPremiumLoading });
+}, [isLoading, isMainLoading, isFeaturedLoading, isPremiumLoading]);
+
  
    // const handleFilterChange = useCallback(
    //   (newFilters: Filters) => {
@@ -923,6 +932,9 @@
                           handleFilterChange(partial);
                         }}
                         currentFilters={filters}
+                        setIsFeaturedLoading={setIsFeaturedLoading}
+                        setIsPremiumLoading={setIsPremiumLoading}
+                        setIsMainLoading={setIsMainLoading}
                       />
                     </Suspense>
                   </div>
@@ -930,9 +942,11 @@
   
                 {/* Listings */}
                 {/* Listings */}
-  
-                {isLoading ? (
-                     <SkeletonListing count={8} />
+ 
+{isLoading || isMainLoading || isFeaturedLoading || isPremiumLoading ? (
+                     <div className="col-lg-6">
+      <SkeletonListing count={8} />
+    </div>
                  ) : products.length > 0 ? (
                   <Listing
                     products={products}
@@ -963,7 +977,8 @@
                     currentFilters={filters}
                   />
                 )}
-              </div>
+
+               </div>
             </div>
           </div>
         </section>

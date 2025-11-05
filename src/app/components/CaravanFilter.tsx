@@ -20,6 +20,7 @@ import {
   fetchKeywordSuggestions,
   fetchHomeSearchList,
 } from "@/api/homeSearch/api";
+import { flushSync } from "react-dom";
 
 type LocationSuggestion = {
   key: string;
@@ -86,6 +87,10 @@ interface CaravanFilterProps {
   categories: Category[];
   makes: Make[];
   models: Model[];
+   setIsLoading?: (val: boolean) => void;
+  setIsMainLoading?: (val: boolean) => void;
+  setIsFeaturedLoading?: (val: boolean) => void;
+  setIsPremiumLoading?: (val: boolean) => void;
   states: StateOption[];
   currentFilters: Filters;
   onFilterChange: (filters: Filters) => void;
@@ -119,7 +124,11 @@ type KeywordItem = { label: string; url?: string };
 const CaravanFilter: React.FC<CaravanFilterProps> = ({
   onFilterChange,
   currentFilters,
-}) => {
+  setIsFeaturedLoading,
+  setIsPremiumLoading,
+  setIsMainLoading,
+  setIsLoading,
+ }) => {
   const router = useRouter();
   const pathname = usePathname();
   // const searchParams = useSearchParams();
@@ -1811,6 +1820,12 @@ if (next.state) {
                       selectedCategory === cat.slug ? "selected" : ""
                     }`}
                     onClick={() => {
+                       flushSync(() => {
+    if (setIsLoading) setIsLoading(true);
+    if (setIsMainLoading) setIsMainLoading(true);
+    if (setIsFeaturedLoading) setIsFeaturedLoading(true);
+    if (setIsPremiumLoading) setIsPremiumLoading(true);
+  });
                       // setNavigating(true);
                       setSelectedCategory(cat.slug);
                       setSelectedCategoryName(cat.name);
