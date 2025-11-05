@@ -71,7 +71,7 @@ export async function GET() {
       <url>
         <loc>${SITE_URL}/product/${p.slug}/</loc>
          <lastmod>${new Date().toISOString()}</lastmod>
-      <changefreq>Daily</changefreq>
+      <changefreq>daily</changefreq>
       <priority>0.7</priority>
       </url>`
       )

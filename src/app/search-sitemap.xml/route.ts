@@ -34,7 +34,7 @@ export async function GET() {
         <url>
           <loc>${finalUrl}</loc>
           <lastmod>${today}</lastmod>
-          <changefreq>Daily</changefreq>
+          <changefreq>daily</changefreq>
           <priority>0.7</priority>
         </url>`;
       })

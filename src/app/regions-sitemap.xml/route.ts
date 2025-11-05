@@ -53,7 +53,7 @@ export async function GET() {
           <url>
             <loc>${SITE_URL}/listings/${stateSlug}-state/${region.value}-region/</loc>
             <lastmod>${today}</lastmod>
-            <changefreq>Daily</changefreq>
+            <changefreq>daily</changefreq>
             <priority>0.7</priority>
           </url>`
       );

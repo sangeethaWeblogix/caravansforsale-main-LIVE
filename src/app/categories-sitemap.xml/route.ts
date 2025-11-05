@@ -30,7 +30,7 @@ export async function GET() {
         <url>
           <loc>${SITE_URL}/listings/${cat.slug}-category/</loc>
           <lastmod>${today}</lastmod>
-          <changefreq>Daily</changefreq>
+          <changefreq>daily</changefreq>
           <priority>0.7</priority>
         </url>`
       )
