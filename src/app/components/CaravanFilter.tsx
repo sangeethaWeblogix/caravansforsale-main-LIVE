@@ -270,6 +270,15 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
   });
 };
 
+const triggerGlobalLoaders = () => {
+  flushSync(() => {
+    if (setIsLoading) setIsLoading(true);
+    if (setIsMainLoading) setIsMainLoading(true);
+    if (setIsFeaturedLoading) setIsFeaturedLoading(true);
+    if (setIsPremiumLoading) setIsPremiumLoading(true);
+  });
+};
+
   // pick a human-readable text from item
 
   // works for (HomeSearchItem | string)[]
@@ -1817,12 +1826,7 @@ if (next.state) {
                       selectedCategory === cat.slug ? "selected" : ""
                     }`}
                     onClick={() => {
-                       flushSync(() => {
-    if (setIsLoading) setIsLoading(true);
-    if (setIsMainLoading) setIsMainLoading(true);
-    if (setIsFeaturedLoading) setIsFeaturedLoading(true);
-    if (setIsPremiumLoading) setIsPremiumLoading(true);
-  });
+                      triggerGlobalLoaders();
                       // setNavigating(true);
                       setSelectedCategory(cat.slug);
                       setSelectedCategoryName(cat.name);

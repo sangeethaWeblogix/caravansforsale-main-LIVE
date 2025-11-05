@@ -147,6 +147,8 @@
     if (s) params.append("search", s);
   
     const res = await fetch(`${API_BASE}/product-list?${params}`);
+      console.log("[list API] GET", res.url)
+
     if (!res.ok) {
       const errText = await res.text();
       console.error("API Error:", res.status, errText);

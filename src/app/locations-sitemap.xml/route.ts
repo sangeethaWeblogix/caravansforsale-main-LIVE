@@ -11,7 +11,7 @@ export async function GET() {
   const items = data?.pincode_location_region_state || [];
 
   // Build proper URLs
-  const urls = items.map((item: any) => {
+  const urls = items.map((item) => {
     const uri = item?.uri || "";
     if (!uri) return null;
 

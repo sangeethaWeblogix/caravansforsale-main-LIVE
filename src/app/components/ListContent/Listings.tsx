@@ -345,6 +345,7 @@
  
    const updateURLWithFilters = useCallback(
      (nextFilters: Filters, pageNum: number) => {
+      console.log(pageNum)
        const slug = buildSlugFromFilters(nextFilters);
        const query = new URLSearchParams();
  
@@ -1002,8 +1003,7 @@ useEffect(() => {
                     isFeaturedLoading={isFeaturedLoading}
                     isPremiumLoading={isPremiumLoading}
                   />
-                ) : (
-                  
+                ) :  emptyProduct ? (
                   <ExculsiveContent
                     data={items}
                      pagination={pagination}
@@ -1011,9 +1011,10 @@ useEffect(() => {
                     onPrev={handlePrevPage}
                     metaDescription={metaDescription}
                     metaTitle={metaTitle}
-                    
+                                        isPremiumLoading={isPremiumLoading}
+
                   />
-                )}
+                 ) :  " "}
 
                </div>
             </div>

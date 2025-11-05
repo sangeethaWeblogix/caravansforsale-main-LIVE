@@ -2,7 +2,7 @@
  import Image from "next/image";
  import Link from "next/link";
  import { Swiper, SwiperSlide } from "swiper/react";
-    import { Navigation, Autoplay, Pagination } from "swiper/modules";
+    import { Navigation,   Pagination } from "swiper/modules";
  
  import "swiper/css";
  import "swiper/css/navigation";
@@ -12,9 +12,8 @@
    import Skelton from '../skelton'
  
  import { toSlug } from "../../../utils/seo/slug";
- import { useEffect, useMemo, useRef, useState } from "react";
- import Exculisive from "../../../../public/images/exclusive-deal.webp";
- import "./exculisve.css";
+ import { useEffect, useMemo, useState } from "react";
+  import "./exculisve.css";
  interface Product {
    id: number;
    name: string;
@@ -71,7 +70,7 @@
     onPrev: () => void;
     metaTitle: string; // Add metaTitle prop
     metaDescription: string; // Add metaDescription prop
-     
+     isPremiumLoading: boolean; // Add isMainLoading prop
  }
  
  export default function ExculisiveContent({
@@ -81,16 +80,14 @@
     onPrev,
     metaTitle,
     metaDescription,
-     
+     isPremiumLoading,
  }: Props) {
    // const imageUrl = "public/favicon.ico";
     const [showInfo, setShowInfo] = useState(false);
        const [showContact, setShowContact] = useState(false);
-       const [isLoading, setIsLoading] = useState(false);
-    const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
    
-       const prevRef = useRef(null);
-       const nextRef = useRef(null);
+       
    const getHref = (p: Product) => {
      const slug = p.slug?.trim() || toSlug(p.name);
      return slug ? `/product/${slug}/` : ""; // trailing slash optional
@@ -155,229 +152,227 @@
              </p>
            </div>
          </div>
+         
  
-         <div className="dealers-section product-type">
-                   <div className="other_items">
-                     <div className="related-products">
-                       {isLoading ? (
-                <Skelton count={6} />
-              ) : (
-                       <div className="row g-3">
-                         {uniqueProducts.map((item, index) => {
+          <div className="dealers-section product-type">
+                     <div className="other_items">
+                       <div className="related-products">
+                         <div className="row g-3">
+                           {uniqueProducts.map((item, index) => {  
                              const href = getHref(item);
-                                                 const images = getProductImages(item.sku);
-       
-                   return (
-                           <div className="col-lg-6 mb-0" key={index}>
-                             <Link
-                              href={href}
-                           onClick={() => {
-                             if (typeof window !== "undefined") {
-                               sessionStorage.setItem("cameFromListings", "true");
-                             }
-                           }}
-                               prefetch={false}
-                               className="lli_head"
-                             >
-                               <div 
-                               
-                              className="product-card">
-                                 <div className="img">
-                                   <div className="background_thumb">
-                                     <Image
-                                              src={images[1]}
-       
-                                       alt="Caravan"
-                                       width={300}
-                                       height={200}
-                                       unoptimized
-                                     />
-                                   </div>
-                                   <div className="main_thumb position-relative">
-                                     <span className="lab">Spotlight Van</span>
-                                     <Swiper
-                                       modules={[Navigation, Pagination]}
-                                       spaceBetween={10}
-                                       slidesPerView={1}
-                                       navigation
-                                       pagination={{
-                                         clickable: true,
-                                         //dynamicBullets: true, // adds smooth, minimal bullets
-                                       }}
-                                       onSlideChange={(swiper) => {
-                                         const isLast =
-                                           swiper.activeIndex ===
-                                           swiper.slides.length - 1;
-                                         const viewMoreBtn = document.querySelector(
-                                           `#view-more-btn-${item}`
-                                         );
-                                         if (viewMoreBtn instanceof HTMLElement) {
-                                           viewMoreBtn.style.display = isLast
-                                             ? "block"
-                                             : "none";
-                                         }
-                                       }}
-                                       className="main_thumb_swiper"
-                                     >
-                                       {images.map((img, i) => (
-                                         <SwiperSlide key={i}>
-                                           <div className="thumb_img">
-                                             <Image
-                                               src={img}
-                                               alt={`Caravan ${i + 1}`}
-                                               width={300}
-                                               height={200}
-                                               unoptimized
-                                             />
-                                           </div>
-                                         </SwiperSlide>
-                                       ))}
-                                     </Swiper>
+                             const images = getProductImages(item.sku);
          
-                                     {/* Hidden "View More" button that appears after last slide */}
-                                     <div
-                                       id={`view-more-btn-${item}`}
-                                       className="view-more-btn-wrapper"
-                                     >
-                                       <Link
-                                         href="/related-links"
-                                         className="view-more-btn"
-                                       >
-                                         View More
-                                       </Link>
+                     return (
+         
+                             <div className="col-lg-6 mb-0" key={index}>
+                               <Link
+         href={href}
+                             onClick={() => {
+                               if (typeof window !== "undefined") {
+                                 sessionStorage.setItem("cameFromListings", "true");
+                               }
+                             }}                        prefetch={false}
+                                 className="lli_head"
+                               >
+                                 <div className="product-card">
+                                   <div className="img">
+                                     <div className="background_thumb">
+                                       <Image
+               src={images[1]}
+                                         alt="Caravan"
+                                         width={300}
+                                         height={200}
+                                         unoptimized
+                                       />
                                      </div>
-                                   </div>
-                                 </div>
-                                 <div className="product_de">
-                                   <div className="info">
-                                     {item.name && (
-                                       <h3 className="title">{item.name}</h3>
-                                     )}
-                                   </div>
-         
-                                   {/* --- PRICE SECTION --- */}
-                                   {(item.regular_price ||
-                                     item.sale_price ||
-                                     item.price_difference) && (
-                                     <div className="price">
-                                       <div className="metc2">
-                                         {(item.regular_price || item.sale_price) && (
-                                           <h5 className="slog">
-                                             {item.regular_price && (
-                                               <>{item.regular_price}</>
-                                             )}
-                                             {item.sale_price && (
-                                               <s>{item.sale_price}</s>
-                                             )}
-                                           </h5>
-                                         )}
-         
-                                         {item.price_difference &&
-                                           item.price_difference !== "0" &&
-                                           item.price_difference !== "$0" && (
-                                             <p className="card-price">
-                                               <span>SAVE</span> {item.price_difference}
-                                             </p>
-                                           )}
-         
-                                         <div className="more_info">
-                                           <button
-                                             onClick={(e) => {
-                                               e.preventDefault();
-                                                setSelectedProduct(item);
-                                               setShowInfo(true);
-                                             }}
-                                           >
-                                             <i className="fa fa-info-circle"></i> Info
-                                           </button>
-                                         </div>
+                                     <div className="main_thumb position-relative">
+                                       <span className="lab">Spotlight Van</span>
+         {isPremiumLoading ? (
+           <Skelton count={2} /> // ✅ show skeletons
+         ) : (
+                                       <Swiper
+                                         modules={[Navigation, Pagination]}
+                                         spaceBetween={10}
+                                         slidesPerView={1}
+                                         navigation
+                                         pagination={{
+                                           clickable: true,
+                                           //dynamicBullets: true, // adds smooth, minimal bullets
+                                         }}
+                                         onSlideChange={(swiper) => {
+                                           const isLast =
+                                             swiper.activeIndex ===
+                                             swiper.slides.length - 1;
+                                           const viewMoreBtn = document.querySelector(
+                                             `#view-more-btn-${item}`
+                                           );
+                                           if (viewMoreBtn instanceof HTMLElement) {
+                                             viewMoreBtn.style.display = isLast
+                                               ? "block"
+                                               : "none";
+                                           }
+                                         }}
+                                         className="main_thumb_swiper"
+                                       >
+                                         {images.map((img, i) => (
+                                           <SwiperSlide key={i}>
+                                             <div className="thumb_img">
+                                               <Image
+                                                 src={img}
+                                                 alt={`Caravan ${i + 1}`}
+                                                 width={300}
+                                                 height={200}
+                                                 unoptimized
+                                               />
+                                             </div>
+                                           </SwiperSlide>
+                                         ))}
+                                       </Swiper>
+                                       )}
+           
+                                       {/* Hidden "View More" button that appears after last slide */}
+                                       <div
+                                         id={`view-more-btn-${item}`}
+                                         className="view-more-btn-wrapper"
+                                       >
+                                         <Link
+                                           href="/related-links"
+                                           className="view-more-btn"
+                                         >
+                                           View More
+                                         </Link>
                                        </div>
                                      </div>
-                                   )}
-         
-                                   {/* --- DETAILS LIST --- */}
-                                   <ul className="vehicleDetailsWithIcons simple">
-                                     {item.condition && (
-                                       <li>
-                                         <span className="attribute3">
-                                           {item.condition}
-                                         </span>
-                                       </li>
-                                     )}
-         
-                                     {item.categories && item.categories.length > 0 && (
-                                       <li className="attribute3_list">
-                                         <span className="attribute3">
-                                           {item.categories.join(", ")}
-                                         </span>
-                                       </li>
-                                     )}
-         
-                                     {item.length && (
-                                       <li>
-                                         <span className="attribute3">
-                                           {item.length}
-                                         </span>
-                                       </li>
-                                     )}
-         
-                                     {item.kg && (
-                                       <li>
-                                         <span className="attribute3">{item.kg}</span>
-                                       </li>
-                                     )}
-         
-                                     {item.make && (
-                                       <li>
-                                         <span className="attribute3">{item.make}</span>
-                                       </li>
-                                     )}
-                                   </ul>
-         
-                                   {/* --- CONDITION + LOCATION --- */}
-                                   {(item.condition || item.location) && (
-                                     <div className="bottom_mid">
-                                       {item.condition && (
-                                         <span>
-                                           <i className="bi bi-check-circle-fill"></i>{" "}
-                                           Condition {item.condition}
-                                         </span>
-                                       )}
-                                       {item.location && (
-                                         <span>
-                                           <i className="fa fa-map-marker-alt"></i>{" "}
-                                           {item.location}
-                                         </span>
+                                   </div>
+                                   <div className="product_de">
+                                     <div className="info">
+                                       {item.name && (
+                                         <h3 className="title">{item.name}</h3>
                                        )}
                                      </div>
-                                   )}
-         
-                                   {/* --- BUTTONS --- */}
-                                   <div className="bottom_button">
-                                     <button
-                                       className="btn"
-                                       onClick={(e) => {
-                                         e.preventDefault();
-                                         setShowContact(true);
-                                       }}
-                                     >
-                                       Contact Dealer
-                                     </button>
-                                     <button className="btn btn-primary">
-                                       View Details
-                                     </button>
+           
+                                     {/* --- PRICE SECTION --- */}
+                                     {(item.regular_price ||
+                                       item.sale_price ||
+                                       item.price_difference) && (
+                                       <div className="price">
+                                         <div className="metc2">
+                                           {(item.regular_price || item.sale_price) && (
+                                             <h5 className="slog">
+                                               {item.regular_price && (
+                                                 <>{item.regular_price}</>
+                                               )}
+                                               {item.sale_price && (
+                                                 <s>{item.sale_price}</s>
+                                               )}
+                                             </h5>
+                                           )}
+           
+                                           {item.price_difference &&
+                                             item.price_difference !== "0" &&
+                                             item.price_difference !== "$0" && (
+                                               <p className="card-price">
+                                                 <span>SAVE</span> {item.price_difference}
+                                               </p>
+                                             )}
+           
+                                           <div className="more_info">
+                                             <button
+                                               onClick={(e) => {
+                                                 e.preventDefault();
+                                                  setSelectedProduct(item);
+                                                 setShowInfo(true);
+                                               }}
+                                             >
+                                               <i className="fa fa-info-circle"></i> Info
+                                             </button>
+                                           </div>
+                                         </div>
+                                       </div>
+                                     )}
+           
+                                     {/* --- DETAILS LIST --- */}
+                                     <ul className="vehicleDetailsWithIcons simple">
+                                       {item.condition && (
+                                         <li>
+                                           <span className="attribute3">
+                                             {item.condition}
+                                           </span>
+                                         </li>
+                                       )}
+           
+                                       {item.categories && item.categories.length > 0 && (
+                                         <li className="attribute3_list">
+                                           <span className="attribute3">
+                                             {item.categories.join(", ")}
+                                           </span>
+                                         </li>
+                                       )}
+           
+                                       {item.length && (
+                                         <li>
+                                           <span className="attribute3">
+                                             {item.length}
+                                           </span>
+                                         </li>
+                                       )}
+           
+                                       {item.kg && (
+                                         <li>
+                                           <span className="attribute3">{item.kg}</span>
+                                         </li>
+                                       )}
+           
+                                       {item.make && (
+                                         <li>
+                                           <span className="attribute3">{item.make}</span>
+                                         </li>
+                                       )}
+                                     </ul>
+           
+                                     {/* --- CONDITION + LOCATION --- */}
+                                     {(item.condition || item.location) && (
+                                       <div className="bottom_mid">
+                                         {item.condition && (
+                                           <span>
+                                             <i className="bi bi-check-circle-fill"></i>{" "}
+                                             Condition {item.condition}
+                                           </span>
+                                         )}
+                                         {item.location && (
+                                           <span>
+                                             <i className="fa fa-map-marker-alt"></i>{" "}
+                                             {item.location}
+                                           </span>
+                                         )}
+                                       </div>
+                                     )}
+           
+                                     {/* --- BUTTONS --- */}
+                                     <div className="bottom_button">
+                                       <button
+                                         className="btn"
+                                         onClick={(e) => {
+                                           e.preventDefault();
+                                           setShowContact(true);
+                                         }}
+                                       >
+                                         Contact Dealer
+                                       </button>
+                                       <button className="btn btn-primary">
+                                         View Details
+                                       </button>
+                                     </div>
                                    </div>
                                  </div>
-                               </div>
-                             </Link>
-                           </div>
-                        );
-                 })}
+                               </Link>
+                             </div>
+                           );
+                   })}
+                         </div>
                        </div>
-                       )}
                      </div>
                    </div>
-                 </div>
                   <div className="pagination-wrapper mt-4">
             <nav className="woocommerce-pagination custom-pagination mt-4">
               <ul className="pagination-icons">

@@ -98,8 +98,7 @@ import { toSlug } from "@/utils/seo/slug";
   }: Props) {
     const [showInfo, setShowInfo] = useState(false);
     const [showContact, setShowContact] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
- const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
     const prevRef = useRef(null);
     const nextRef = useRef(null);
@@ -160,8 +159,7 @@ import { toSlug } from "@/utils/seo/slug";
     }, [showInfo, showContact]);
   
     // Example placeholder function for product links
-    const productHref = (slug) => `/listing/${slug}`;
-  
+   
     // const imageUrl = "public/favicon.ico";
     const getHref = (p: Product) => {
       const slug = p.slug?.trim() || toSlug(p.name);
@@ -704,7 +702,7 @@ href={href}
           <div className="dealers-section product-type">
             <div className="other_items">
               <div className="related-products">
-                {isLoading ? (
+                {isMainLoading ? (
          <Skelton count={6} />
        ) : (
                 <div className="row g-3">
