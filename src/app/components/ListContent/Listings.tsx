@@ -1003,15 +1003,15 @@ useEffect(() => {
                     isPremiumLoading={isPremiumLoading}
                   />
                 ) : (
+                  
                   <ExculsiveContent
                     data={items}
-                    pagination={pagination}
+                     pagination={pagination}
                     onNext={handleNextPage}
                     onPrev={handlePrevPage}
                     metaDescription={metaDescription}
                     metaTitle={metaTitle}
-                    onFilterChange={handleFilterChange}
-                    currentFilters={filters}
+                    
                   />
                 )}
 
