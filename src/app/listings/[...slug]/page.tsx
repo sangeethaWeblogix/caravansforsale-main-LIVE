@@ -37,12 +37,12 @@ export default async function Listings({
     searchParams,
   ]);
   const { slug = [] } = resolvedParams;
-
   const slugJoined = slug.join("/");
 
-  // ✅ Allow empty slug for root listings page, only validate if slug exists
+  // ✅ Allow empty slug for root listings page
   if (
-    slug.length > 0 && (
+    slug.length > 0 &&
+    (
       !Array.isArray(slug) ||
       slugJoined.match(/[^\w/-]/) || // only letters, numbers, dash, slash allowed
       slugJoined.includes("..") ||
@@ -55,17 +55,16 @@ export default async function Listings({
     notFound();
   }
 
-  // 🚫 Reject unknown or gibberish slug segments (e.g., "mgnngj", "kjgkdf", "gk25")
-  // Only run this validation if we have slug segments
+  // ✅ Only reject truly invalid gibberish, not normal words like "avan"
   if (slug.length > 0) {
     const invalidSegment = slug.some((part) => {
       const lower = part.toLowerCase();
 
-      // ✅ Allow known patterns
+      // Allowed patterns (filters, suburb-postcode, etc.)
       const allowedPatterns = [
-        /-state$/,       // state names like "new-south-wales-state"
-        /-category$/,    // categories like "off-road-category"
-        /^under-\d+$/,   // under-30000 etc.
+        /-state$/,
+        /-category$/,
+        /^under-\d+$/,
         /^over-\d+$/,
         /^atm-\d+$/,
         /^sleeps-\d+$/,
@@ -73,96 +72,50 @@ export default async function Listings({
         /^width-\d+$/,
         /^weight-\d+$/,
         /^price-\d+$/,
-        /^[a-z0-9-]{3,20}$/,
         /^([a-z0-9-]+)-\d{4}$/, // suburb-postcode like "jacana-3047"
       ];
 
       const isAllowed = allowedPatterns.some((r) => r.test(lower));
 
-      // ❌ reject any slug part that's pure gibberish or too short
-      const looksGibberish = /^[a-z0-9]{1,6}$/.test(lower) && !isAllowed;
+      // ❌ Reject only if it’s pure numeric or nonsense symbols
+      const looksGibberish =
+        /^[0-9]+$/.test(lower) || /^[^a-z0-9-]+$/.test(lower);
 
-      return looksGibberish || (!isAllowed && lower.length < 4);
+      return looksGibberish && !isAllowed;
     });
 
-    if (invalidSegment) {
-      notFound();
-    }
+    if (invalidSegment) notFound();
 
-    // 2️⃣ Detect invalid final numeric segment
+    // Reject final numeric-only segment like /listings/123/
     const lastPart = slug[slug.length - 1];
-    if (/^\d{1,6}$/.test(lastPart)) {
-      notFound();
-    }
+    if (/^\d+$/.test(lastPart)) notFound();
 
-    // 3️⃣ Suburb + postcode rule (e.g., "jacana-3047")
+    // Suburb + postcode rule safety
     const suburbPinMatch = slug.find((part) =>
       /^([a-z0-9-]+)-(\d{4})$/.test(part)
     );
     const suburbPinIndex = suburbPinMatch ? slug.indexOf(suburbPinMatch) : -1;
-
     if (
       suburbPinIndex !== -1 &&
-      slug[suburbPinIndex + 1]?.match(/^\d{1,6}$/) // suburb-postcode followed by pure number
+      slug[suburbPinIndex + 1]?.match(/^\d{1,6}$/)
     ) {
       notFound();
     }
 
-    // 4️⃣ Maximum path depth (state, suburb, price, length, atm, sleeps, etc.)
-    if (slug.length > 8) {
-      notFound();
-    }
-
-    // 🚫 Reject suburb/suburbs word in URL
+    // Block just "suburb" or "suburbs"
     const hasInvalidSuburbWord = slug.some((part) => {
-      // Allow jacana-3047-suburb and <suburb>-suburb formats
       if (/^[a-z0-9-]+-\d{4}-suburb$/i.test(part)) return false;
       if (/^[a-z0-9-]+-suburb$/i.test(part)) return false;
-
-      // Block others like just "suburb" or "suburbs"
       return /(^|\b)(suburb|suburbs)\b$/i.test(part);
     });
-    
-    if (hasInvalidSuburbWord) {
-      notFound();
-    }
+    if (hasInvalidSuburbWord) notFound();
   }
 
-  // 6️⃣ Parse slug to filter structure (handles empty slug)
+  // 6️⃣ Parse slug into filters
   const filters = parseSlugToFilters(slug, resolvedSearchParams);
 
-  // 🚫 Reject clear gibberish or numeric segments (except valid filters)
-  // Only run this validation if we have slug segments
-  if (slug.length > 0) {
-    const invalidPatterns = [
-      /^[a-z0-9]{1,4}$/, // short random text like "dfg2"
-      /^\d+$/, // only numbers
-    ];
-
-    const allowedFilterPrefixes = [
-      "under-",
-      "over-",
-      "atm-",
-      "sleeps-",
-      "length",
-      "width",
-      "weight",
-      "price",
-    ];
-
-    const looksInvalid = slug.some((part) => {
-      const lower = part.toLowerCase();
-      const isAllowedFilter = allowedFilterPrefixes.some((prefix) =>
-        lower.startsWith(prefix)
-      );
-
-      return !isAllowedFilter && invalidPatterns.some((r) => r.test(lower));
-    });
-
-    if (!filters || Object.keys(filters).length === 0 || looksInvalid) {
-      notFound();
-    }
-  }
+  // If filters are empty, that’s okay — we still render listings (like brand-only pages)
+  // Don’t block here anymore
 
   // 7️⃣ Validate pagination
   const fullQuery = Object.entries(resolvedSearchParams)
@@ -177,34 +130,22 @@ export default async function Listings({
 
   if (pageParam === "1") {
     const params = new URLSearchParams();
-
     Object.entries(resolvedSearchParams).forEach(([key, value]) => {
       if (key !== "page" && value !== undefined) {
-        if (Array.isArray(value)) {
-          value.forEach((v) => params.append(key, v));
-        } else {
-          params.append(key, value);
-        }
+        if (Array.isArray(value)) value.forEach((v) => params.append(key, v));
+        else params.append(key, value);
       }
     });
-
     const cleanQuery = params.toString();
     const cleanPath = `/listings/${slug.join("/")}${
       cleanQuery ? `?${cleanQuery}` : ""
     }`;
-
     redirect(cleanPath);
   }
 
-  // 9️⃣ Fetch listings
+  // 9️⃣ Fetch listings data
   const response = await fetchListings({ ...filters, page });
 
-  // 🚫 Show 404 if no valid results
-  // Note: You might want to adjust this condition for empty slug case
-  // if (!response || !response.data || response.data.length === 0) {
-  //   notFound();
-  // }
-
-  // ✅ Render listings page
+  // ✅ Always render listings page even if data empty
   return <ListingsPage {...filters} page={page} initialData={response} />;
 }

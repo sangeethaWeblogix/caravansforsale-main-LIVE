@@ -349,6 +349,8 @@ small {
   -o-transition: all 0.4s ease;
   transition: all 0.4s ease;
   background: #fff;
+  height: 100%;
+   
 }
 
 .product-page .related-products .product-card .img {
@@ -412,6 +414,7 @@ small {
   text-decoration: inherit;
   height: 70px;
   color: #000;
+   margin-top: 0;
 }
 
 .product-page .product-card .price {
