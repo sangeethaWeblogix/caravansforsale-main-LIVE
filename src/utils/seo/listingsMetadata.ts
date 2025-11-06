@@ -28,10 +28,10 @@ export async function generateListingsMetadata(
   const metaTitle = "Caravans For Sale in Australia - Find Exclusive Deals";
   const metaDescription =
     "Browse new & used caravans for sale across Australia. Compare off-road, hybrid, pop-top & luxury models by price, size, weight and sleeping capacity.";
-
-  return {
+   return {
     title: { absolute: metaTitle },
     description: metaDescription,
+      robots: "index, follow",
     metadataBase: new URL("https://www.caravansforsale.com.au"),
     alternates: {
       canonical,
