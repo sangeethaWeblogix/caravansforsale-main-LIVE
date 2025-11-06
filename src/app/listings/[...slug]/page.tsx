@@ -114,9 +114,6 @@ export default async function Listings({
   // 6️⃣ Parse slug into filters
   const filters = parseSlugToFilters(slug, resolvedSearchParams);
 
-  // If filters are empty, that’s okay — we still render listings (like brand-only pages)
-  // Don’t block here anymore
-
   // 7️⃣ Validate pagination
   const fullQuery = Object.entries(resolvedSearchParams)
     .map(([k, v]) => `${k}=${Array.isArray(v) ? v.join(",") : v}`)
@@ -146,6 +143,20 @@ export default async function Listings({
   // 9️⃣ Fetch listings data
   const response = await fetchListings({ ...filters, page });
 
-  // ✅ Always render listings page even if data empty
+  // 🚫 If API returns "success": false or "Validation failed" → show 404
+  if (
+    !response ||
+    response.success === false ||
+    (response.message &&
+      response.message.toLowerCase().includes("validation failed")) ||
+    (Array.isArray(response.errors) &&
+      response.errors.some((e) =>
+        e.toLowerCase().includes("invalid make")
+      ))
+  ) {
+    notFound();
+  }
+
+  // ✅ Render listings page
   return <ListingsPage {...filters} page={page} initialData={response} />;
 }
