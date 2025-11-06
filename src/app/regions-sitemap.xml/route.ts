@@ -52,7 +52,8 @@ export async function GET() {
         (region) => `
           <url>
             <loc>${SITE_URL}/listings/${stateSlug}-state/${region.value}-region/</loc>
-            <lastmod>${today}</lastmod>
+           <lastmod>${new Date().toISOString()}</lastmod>
+
             <changefreq>daily</changefreq>
             <priority>0.7</priority>
           </url>`

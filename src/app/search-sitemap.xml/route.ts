@@ -33,7 +33,8 @@ export async function GET() {
         return `
         <url>
           <loc>${finalUrl}</loc>
-          <lastmod>${today}</lastmod>
+         <lastmod>${new Date().toISOString()}</lastmod>
+
           <changefreq>daily</changefreq>
           <priority>0.7</priority>
         </url>`;

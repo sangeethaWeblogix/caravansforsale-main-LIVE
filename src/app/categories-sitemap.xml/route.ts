@@ -18,8 +18,7 @@ export async function GET() {
     const categories: Category[] =
       data?.data?.all_categories || data?.data?.categories || [];
 
-    const today = new Date().toISOString().split("T")[0];
-
+ 
     if (!categories.length) {
       console.warn("⚠️ No categories found for sitemap");
     }
@@ -29,7 +28,8 @@ export async function GET() {
         (cat) => `
         <url>
           <loc>${SITE_URL}/listings/${cat.slug}-category/</loc>
-          <lastmod>${today}</lastmod>
+         <lastmod>${new Date().toISOString()}</lastmod>
+
           <changefreq>daily</changefreq>
           <priority>0.7</priority>
         </url>`
