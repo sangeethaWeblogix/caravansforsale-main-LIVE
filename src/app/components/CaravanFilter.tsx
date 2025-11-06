@@ -466,7 +466,7 @@ const triggerGlobalLoaders = () => {
 
   // Modal primary button -> always search=<plus joined>
   const applyKeywordFromModal = () => {
-    const raw = modalKeyword.trim();
+     const raw = modalKeyword.trim();
     if (!raw) return;
 
     const allItems = [...baseKeywords, ...keywordSuggestions];
@@ -621,6 +621,7 @@ const triggerGlobalLoaders = () => {
   }, [currentFilters.radius_kms]);
 
   const handleATMChange = (newFrom: number | null, newTo: number | null) => {
+    triggerGlobalLoaders();
     setAtmFrom(newFrom);
     setAtmTo(newTo);
 
@@ -1003,7 +1004,7 @@ const triggerGlobalLoaders = () => {
   const handleSearchClick = () => {
     // Remove resetSuburbFilters call here as it clears the selections
     // resetSuburbFilters();
-
+triggerGlobalLoaders();
     if (!suburbClickedRef.current || !selectedSuggestion) return;
 
     const parts = selectedSuggestion.uri.split("/");
@@ -1586,7 +1587,7 @@ if (next.state) {
 
     setSelectedModel(mod.slug);
     setSelectedModelName(mod.name);
-
+triggerGlobalLoaders();
     const updatedFilters: Filters = {
       ...currentFilters,
       make: safeMake,
@@ -1618,7 +1619,7 @@ if (next.state) {
   // useEffect(() => setMounted(true), []);
 
   const resetCategoryFilter = () => {
-    setSelectedCategory(null);
+     setSelectedCategory(null);
     setSelectedCategoryName(null);
 
     const updatedFilters: Filters = {
@@ -1809,7 +1810,11 @@ if (next.state) {
           {selectedCategoryName && (
             <div className="filter-chip">
               <span>{selectedCategoryName}</span>
-              <span className="filter-chip-close" onClick={resetCategoryFilter}>
+              <span className="filter-chip-close" 
+              onClick={() => {
+                  triggerGlobalLoaders();
+                  resetCategoryFilter()
+              }}>
                 ×
               </span>
             </div>
@@ -1884,9 +1889,12 @@ if (next.state) {
               {!selectedRegionName && !selectedSuburbName && (
                 <div style={iconRowStyle}>
                   <span
-                    onClick={resetStateFilters}
                     className="filter-chip-close"
-                  >
+                  onClick={() => {
+                  triggerGlobalLoaders();
+                  resetStateFilters()
+              }}>
+                  
                     ×
                   </span>
                   {/* This arrow toggles the REGION panel */}
@@ -1964,8 +1972,12 @@ if (next.state) {
               {!selectedSuburbName && (
                 <div style={iconRowStyle}>
                   <span
-                    onClick={resetRegionFilters}
+ 
                     className="filter-chip-close"
+                       onClick={() => {
+                  triggerGlobalLoaders();
+                  resetRegionFilters()
+              }}
                   >
                     ×
                   </span>
@@ -1985,7 +1997,11 @@ if (next.state) {
           {selectedSuburbName && (
             <div className="filter-chip" style={accordionSubStyle(true)}>
               <span style={{ flexGrow: 1 }}>{selectedSuburbName}</span>
-              <span onClick={resetSuburbFilters} className="filter-chip-close">
+              <span  className="filter-chip-close"   
+               onClick={() => {
+                  triggerGlobalLoaders();
+                  resetSuburbFilters()
+              }}>
                 ×
               </span>
             </div>
@@ -2001,6 +2017,7 @@ if (next.state) {
                     selectedState === state.value ? "selected" : ""
                   }`}
                   onClick={() => {
+                    triggerGlobalLoaders();
                     setSelectedState(state.value);
                     setSelectedStateName(state.name);
                     setSelectedRegionName(null);
@@ -2071,6 +2088,7 @@ if (next.state) {
                     className="filter-accordion-item"
                     style={{ marginLeft: 16, cursor: "pointer" }}
                     onClick={() => {
+                      triggerGlobalLoaders();
                       // ✅ Always trigger even if same region clicked
                       setSelectedRegionName((prev) => {
                         if (prev === region.name) return region.name + " "; // force re-render
@@ -2129,6 +2147,7 @@ if (next.state) {
                       className="filter-accordion-item"
                       style={suburbStyle(suburb.name === selectedSuburbName)}
                       onClick={async () => {
+                        triggerGlobalLoaders();
                         const pincode =
                           suburb.value?.match(/\d{4}$/)?.[0] || null;
 
@@ -2238,7 +2257,10 @@ if (next.state) {
           {selectedSuburbName && selectedStateName && selectedpincode && (
             <div className="filter-chip">
               {locationInput}
-              <span className="filter-chip-close" onClick={resetSuburbFilters}>
+              <span className="filter-chip-close"  onClick={() => {
+                  triggerGlobalLoaders();
+                  resetSuburbFilters()
+              }} >
                 ×
               </span>
             </div>
@@ -2260,7 +2282,10 @@ if (next.state) {
           {selectedMakeName && (
             <div className="filter-chip">
               <span>{selectedMakeName}</span>
-              <span className="filter-chip-close" onClick={resetMakeFilters}>
+              <span className="filter-chip-close"     onClick={() => {
+                  triggerGlobalLoaders();
+                  resetMakeFilters()
+              }}>
                 ×
               </span>
             </div>
@@ -2280,6 +2305,7 @@ if (next.state) {
                       selectedMake === make.slug ? "selected" : ""
                     }`}
                     onClick={() => {
+                      triggerGlobalLoaders();
                       // ✅ Reset model state
                       setSelectedModel(null);
                       setSelectedModelName(null);
@@ -2347,6 +2373,7 @@ if (next.state) {
                 <span
                   className="filter-chip-close"
                   onClick={() => {
+                    
                     setSelectedModel(null);
                     setSelectedModelName(null);
                     const updatedFilters: Filters = {
@@ -2492,6 +2519,7 @@ if (next.state) {
                 className="cfs-select-input"
                 value={minPrice?.toString() || ""}
                 onChange={(e) => {
+                  triggerGlobalLoaders();
                   const val = e.target.value ? parseInt(e.target.value) : null;
                   setMinPrice(val);
                   const updated: Filters = {
@@ -2517,6 +2545,7 @@ if (next.state) {
                 className="cfs-select-input"
                 value={maxPrice?.toString() || ""}
                 onChange={(e) => {
+                  triggerGlobalLoaders();
                   const val = e.target.value ? parseInt(e.target.value) : null;
                   setMaxPrice(val);
                   const updated: Filters = {
@@ -2548,6 +2577,7 @@ if (next.state) {
               <span
                 className="filter-chip-close"
                 onClick={() => {
+                  triggerGlobalLoaders();
                   setMinPrice(null);
                   setMaxPrice(null);
                   commit({
@@ -2579,6 +2609,7 @@ if (next.state) {
               <span
                 className="filter-chip-close"
                 onClick={() => {
+                  triggerGlobalLoaders();
                   setSelectedConditionName(null);
                   commit({ ...currentFilters, condition: undefined });
                 }}
@@ -2596,6 +2627,7 @@ if (next.state) {
                     selectedConditionName === condition ? "selected" : ""
                   }`}
                   onClick={() => {
+                    triggerGlobalLoaders();
                     setSelectedConditionName(condition);
                     setConditionOpen(false);
                     commit({ ...currentFilters, condition });
@@ -2617,6 +2649,7 @@ if (next.state) {
                 className="cfs-select-input"
                 value={sleepFrom?.toString() || ""}
                 onChange={(e) => {
+                  triggerGlobalLoaders();
                   const val = e.target.value ? parseInt(e.target.value) : null;
                   setSleepFrom(val);
                   commit({
@@ -2641,6 +2674,7 @@ if (next.state) {
                 className="cfs-select-input"
                 value={sleepTo?.toString() || ""}
                 onChange={(e) => {
+                  triggerGlobalLoaders();
                   const val = e.target.value ? parseInt(e.target.value) : null;
                   setSleepTo(val);
                   commit({
@@ -2727,6 +2761,7 @@ if (next.state) {
             yearFrom === yearValue ? "selected" : ""
           }`}
           onClick={() => {
+            triggerGlobalLoaders();
             const already = yearFrom === yearValue;
             const selectedValue = already ? null : yearValue;
 
@@ -2759,6 +2794,7 @@ if (next.state) {
                 className="cfs-select-input"
                 value={lengthFrom || ""}
                 onChange={(e) => {
+                  triggerGlobalLoaders();
                   const val = e.target.value ? parseInt(e.target.value) : null;
                   setLengthFrom(val);
                   commit({
@@ -2783,6 +2819,7 @@ if (next.state) {
                 className="cfs-select-input"
                 value={lengthTo?.toString() || ""}
                 onChange={(e) => {
+                  triggerGlobalLoaders();
                   const val = e.target.value ? parseInt(e.target.value) : null;
                   setLengthTo(val);
                   commit({
@@ -2813,6 +2850,7 @@ if (next.state) {
               <span
                 className="filter-chip-close"
                 onClick={() => {
+                  
                   setLengthFrom(null);
                   setLengthTo(null);
                   commit({
@@ -2836,7 +2874,7 @@ if (next.state) {
             placeholder="Click to choose / type"
             value={toHumanFromQuery(keywordInput)} // ⬅️ show nicely
             onClick={() => {
-              pickedSourceRef.current = null;
+               pickedSourceRef.current = null;
               setModalKeyword(""); // always empty on open
               setKeywordSuggestions([]); // clear list
               setBaseKeywords([]); // optional
@@ -2867,7 +2905,11 @@ if (next.state) {
           )}
         </div>
         {/* Reset Button */}
-        <button onClick={resetFilters} className="btn cfs-btn fullwidth_btn">
+        <button   className="btn cfs-btn fullwidth_btn"
+          onClick={() => {
+                  triggerGlobalLoaders();
+                  resetFilters()
+              }}>
           Reset Filters
         </button>
 
