@@ -8,8 +8,7 @@ const SITE_URL =
 export async function GET() {
   try {
     const searchItems = await fetchSearchkeywords();
-    const today = new Date().toISOString().split("T")[0];
-
+ 
     const urls = searchItems
       .map((item) => {
         let finalUrl = "";

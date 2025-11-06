@@ -38,8 +38,8 @@ export async function GET() {
       console.warn("⚠️ No states found in product list data");
     }
 
-    const today = new Date().toISOString().split("T")[0];
 
+    
     const urls = states.flatMap((state) => {
       const stateSlug = state.value;
       const regions = state.regions ?? [];
