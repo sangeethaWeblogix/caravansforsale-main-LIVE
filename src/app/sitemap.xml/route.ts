@@ -11,6 +11,14 @@ export async function GET() {
     "blogs-sitemap.xml",
     "makes-sitemap.xml",
     "locations-sitemap.xml",
+    "categories-sitemap.xml",
+    "prices-sitemap.xml",
+       "weights-sitemap.xml",   
+       "sleeps-sitemap.xml",   
+       "length-sitemap.xml",  
+        "conditions-sitemap.xml",
+    
+
   ];
 
   const lastModified = new Date().toISOString().split("T")[0];
