@@ -73,6 +73,7 @@ export default async function Listings({
         /^width-\d+$/,
         /^weight-\d+$/,
         /^price-\d+$/,
+        /^[a-z0-9-]{3,20}$/,
         /^([a-z0-9-]+)-\d{4}$/, // suburb-postcode like "jacana-3047"
       ];
 
