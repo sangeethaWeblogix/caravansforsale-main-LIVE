@@ -82,6 +82,8 @@
     seo?: ApiSEO;
     pagination?: ApiPagination;
     data?: ApiData;
+    message?: string;
+    errors?:string[];
       msid?: string | null; 
   };
   
