@@ -21,7 +21,8 @@ export async function GET() {
     const stateUrl = `
       <url>
         <loc>${SITE_URL}/listings/${stateSlug}-state/</loc>
-        <lastmod>${new Date().toISOString().split("T")[0]}</lastmod>
+         <lastmod>${new Date().toISOString()}</lastmod>
+
         <changefreq>daily</changefreq>
         <priority>0.7</priority>
       </url>`;
