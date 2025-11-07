@@ -2305,8 +2305,8 @@ triggerGlobalLoaders();
                       selectedMake === make.slug ? "selected" : ""
                     }`}
                     onClick={() => {
-                      triggerGlobalLoaders();
-                      // ✅ Reset model state
+                       // ✅ Reset model state
+                       triggerGlobalLoaders();
                       setSelectedModel(null);
                       setSelectedModelName(null);
 
@@ -2983,6 +2983,8 @@ triggerGlobalLoaders();
                   type="button"
                   className="cfs-btn btn"
                   onClick={() => {
+                                        triggerGlobalLoaders();
+
                     if (!selectedMakeTemp) return;
 
                     const updatedFilters: Filters = {
