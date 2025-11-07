@@ -101,7 +101,7 @@ export default async function Listings({
     if (hasInvalidSuburbWord) notFound();
   }
 
-  // 🚫 NEW RULE: If slug or search params contain "page" or "feed" → 404
+  // 🚫 Block "page" or "feed" anywhere in slug or query
   const urlHasBlockedWord =
     slug.some((s) => /(page|feed)/i.test(s)) ||
     Object.keys(resolvedSearchParams).some((k) => /(page|feed)/i.test(k)) ||
@@ -111,19 +111,38 @@ export default async function Listings({
         : /(page|feed)/i.test(String(v))
     );
 
-  if (urlHasBlockedWord) {
+  if (urlHasBlockedWord) notFound();
+
+  // ✅ Parse filters
+  const filters = parseSlugToFilters(slug, resolvedSearchParams);
+
+  // 🧩 New Location Hierarchy Rule
+  const hasState = !!filters.state;
+  const hasRegion = !!filters.region;
+  const hasSuburb = !!filters.suburb;
+
+  const validLocationCombo =
+    hasState ||
+    (hasState && hasRegion) ||
+    (hasState && hasRegion && hasSuburb);
+
+  // ❌ Invalid if region/suburb exist without state
+  if (!validLocationCombo && (hasRegion || hasSuburb)) {
     notFound();
   }
-const filters = parseSlugToFilters(slug, resolvedSearchParams);
 
-const pageParam = resolvedSearchParams.page;
-const page =
-  typeof pageParam === "string" ? parseInt(pageParam, 10) :
-  Array.isArray(pageParam) ? parseInt(pageParam[0] || "1", 10) :
-  undefined;
+  // ✅ Convert page param safely
+  const pageParam = resolvedSearchParams.page;
+  const page =
+    typeof pageParam === "string"
+      ? parseInt(pageParam, 10)
+      : Array.isArray(pageParam)
+      ? parseInt(pageParam[0] || "1", 10)
+      : undefined;
 
-// Then include it in the call
-const response = await fetchListings({ ...filters, page });
+  // ✅ Fetch listings
+  const response = await fetchListings({ ...filters, page });
+
   if (
     !response ||
     response.success === false ||
