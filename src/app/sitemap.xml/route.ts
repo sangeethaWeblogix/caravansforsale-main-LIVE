@@ -19,6 +19,7 @@ export async function GET() {
        "sleeps-sitemap.xml",   
        "length-sitemap.xml",  
         "conditions-sitemap.xml",
+        "years-sitemap.xml",
     
 
   ];
