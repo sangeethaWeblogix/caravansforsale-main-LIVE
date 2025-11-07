@@ -362,6 +362,9 @@ if (msid) query.set("msid", msid);
        const safeSlug = slug.endsWith("/") ? slug : `${slug}/`; // 👈 important
        const finalURL = query.toString() ? `${safeSlug}?${query}` : safeSlug;
        router.push(finalURL, { scroll: false }); // ✅ Prevent auto-scroll
+         setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }, 150);
      },
      [router, DEFAULT_RADIUS]
    );
