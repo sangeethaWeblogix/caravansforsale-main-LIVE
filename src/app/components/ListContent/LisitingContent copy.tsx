@@ -904,7 +904,7 @@ useEffect(() => {
       </div>
     </div>
   </div>
-)}y
+)}
   
                             {/* --- DETAILS LIST --- */}
                             <ul className="vehicleDetailsWithIcons simple">

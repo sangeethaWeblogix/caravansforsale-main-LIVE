@@ -5,8 +5,7 @@ import { parseSlugToFilters } from "../../components/urlBuilder";
 import { metaFromSlug } from "../../../utils/seo/metaFromSlug";
 import type { Metadata } from "next";
 import { fetchListings } from "@/api/listings/api";
-import { ensureValidPage } from "@/utils/seo/validatePage";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 
 type Params = Promise<{ slug?: string[] }>;
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
@@ -44,7 +43,7 @@ export default async function Listings({
     slug.length > 0 &&
     (
       !Array.isArray(slug) ||
-      slugJoined.match(/[^\w/-]/) || // only letters, numbers, dash, slash allowed
+      slugJoined.match(/[^\w/-]/) ||
       slugJoined.includes("..") ||
       slugJoined.includes("//") ||
       slugJoined.includes("&") ||
@@ -55,12 +54,10 @@ export default async function Listings({
     notFound();
   }
 
-  // ✅ Only reject truly invalid gibberish, not normal words like "avan"
+  // ❌ Reject gibberish slugs
   if (slug.length > 0) {
     const invalidSegment = slug.some((part) => {
       const lower = part.toLowerCase();
-
-      // Allowed patterns (filters, suburb-postcode, etc.)
       const allowedPatterns = [
         /-state$/,
         /-category$/,
@@ -72,25 +69,19 @@ export default async function Listings({
         /^width-\d+$/,
         /^weight-\d+$/,
         /^price-\d+$/,
-        /^([a-z0-9-]+)-\d{4}$/, // suburb-postcode like "jacana-3047"
+        /^([a-z0-9-]+)-\d{4}$/,
       ];
-
       const isAllowed = allowedPatterns.some((r) => r.test(lower));
-
-      // ❌ Reject only if it’s pure numeric or nonsense symbols
       const looksGibberish =
         /^[0-9]+$/.test(lower) || /^[^a-z0-9-]+$/.test(lower);
-
       return looksGibberish && !isAllowed;
     });
 
     if (invalidSegment) notFound();
 
-    // Reject final numeric-only segment like /listings/123/
     const lastPart = slug[slug.length - 1];
     if (/^\d+$/.test(lastPart)) notFound();
 
-    // Suburb + postcode rule safety
     const suburbPinMatch = slug.find((part) =>
       /^([a-z0-9-]+)-(\d{4})$/.test(part)
     );
@@ -102,7 +93,6 @@ export default async function Listings({
       notFound();
     }
 
-    // Block just "suburb" or "suburbs"
     const hasInvalidSuburbWord = slug.some((part) => {
       if (/^[a-z0-9-]+-\d{4}-suburb$/i.test(part)) return false;
       if (/^[a-z0-9-]+-suburb$/i.test(part)) return false;
@@ -111,39 +101,29 @@ export default async function Listings({
     if (hasInvalidSuburbWord) notFound();
   }
 
-  // 6️⃣ Parse slug into filters
-  const filters = parseSlugToFilters(slug, resolvedSearchParams);
+  // 🚫 NEW RULE: If slug or search params contain "page" or "feed" → 404
+  const urlHasBlockedWord =
+    slug.some((s) => /(page|feed)/i.test(s)) ||
+    Object.keys(resolvedSearchParams).some((k) => /(page|feed)/i.test(k)) ||
+    Object.values(resolvedSearchParams).some((v) =>
+      Array.isArray(v)
+        ? v.some((vv) => /(page|feed)/i.test(String(vv)))
+        : /(page|feed)/i.test(String(v))
+    );
 
-  // 7️⃣ Validate pagination
-  const fullQuery = Object.entries(resolvedSearchParams)
-    .map(([k, v]) => `${k}=${Array.isArray(v) ? v.join(",") : v}`)
-    .join("&");
-  const page = ensureValidPage(resolvedSearchParams.page, fullQuery);
-
-  // 8️⃣ Clean up ?page=1
-  const pageParam = Array.isArray(resolvedSearchParams.page)
-    ? resolvedSearchParams.page[0]
-    : resolvedSearchParams.page;
-
-  if (pageParam === "1") {
-    const params = new URLSearchParams();
-    Object.entries(resolvedSearchParams).forEach(([key, value]) => {
-      if (key !== "page" && value !== undefined) {
-        if (Array.isArray(value)) value.forEach((v) => params.append(key, v));
-        else params.append(key, value);
-      }
-    });
-    const cleanQuery = params.toString();
-    const cleanPath = `/listings/${slug.join("/")}${
-      cleanQuery ? `?${cleanQuery}` : ""
-    }`;
-    redirect(cleanPath);
+  if (urlHasBlockedWord) {
+    notFound();
   }
+const filters = parseSlugToFilters(slug, resolvedSearchParams);
 
-  // 9️⃣ Fetch listings data
-  const response = await fetchListings({ ...filters, page });
+const pageParam = resolvedSearchParams.page;
+const page =
+  typeof pageParam === "string" ? parseInt(pageParam, 10) :
+  Array.isArray(pageParam) ? parseInt(pageParam[0] || "1", 10) :
+  undefined;
 
-  // 🚫 If API returns "success": false or "Validation failed" → show 404
+// Then include it in the call
+const response = await fetchListings({ ...filters, page });
   if (
     !response ||
     response.success === false ||
@@ -157,6 +137,5 @@ export default async function Listings({
     notFound();
   }
 
-  // ✅ Render listings page
-  return <ListingsPage {...filters} page={page} initialData={response} />;
+  return <ListingsPage {...filters} initialData={response} />;
 }
