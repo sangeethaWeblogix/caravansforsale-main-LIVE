@@ -548,6 +548,8 @@ if (msid) query.set("msid", msid);
  
  const handleNextPage = useCallback(async () => {
   if (pagination.current_page < pagination.total_pages) {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+
     setIsMainLoading(true);
     setIsFeaturedLoading(true);
     setIsPremiumLoading(true);
@@ -570,6 +572,8 @@ if (msid) query.set("msid", msid);
    // ✅ FIXED: Proper handlePrevPage function
 const handlePrevPage = useCallback(async () => {
   if (pagination.current_page > 1) {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+
     setIsMainLoading(true);
     setIsFeaturedLoading(true);
     setIsPremiumLoading(true);
