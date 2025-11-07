@@ -1,4 +1,4 @@
-   "use client";
+     "use client";
   import Image from "next/image";
   import Link from "next/link";
   import { Swiper, SwiperSlide } from "swiper/react";
@@ -7,7 +7,8 @@
   import "swiper/css/pagination";
   import { Navigation, Autoplay, Pagination } from "swiper/modules";
   import Skelton from '../skelton'
-   import Head from "next/head";
+  import "./newList.css";
+  import Head from "next/head";
   import { useEffect, useMemo, useRef, useState } from "react";
 import { toSlug } from "@/utils/seo/slug";
   
@@ -176,14 +177,23 @@ import { toSlug } from "@/utils/seo/slug";
     console.log("data", uniqueProducts);
 
     // ✅ Helper: generate up to 5 image URLs from SKU
-const getProductImages = (sku?: string): string[] => {
-  if (!sku) return ["/images/sample3.jpg"]; // fallback
-  const base = `https://www.admin.caravansforsale.com.au/wp-content/uploads/thumbnail/${sku}`;
-  return Array.from({ length: 5 }, (_, i) => `${base}/${i + 1}.jpg`);
+const getProductImages = (sku?: string, slug?: string): string[] => {
+  if (!sku || !slug) return ["/images/sample3.jpg"]; // fallback
+
+  const base = `https://www.admin.caravansforsale.com.au/wp-content/uploads/thumbnails/${sku}`;
+
+  // First image = main
+  const mainImage = `${base}/${slug}-main.jpg`;
+
+  // Remaining = sub1, sub2, sub3, sub4
+  const subImages = Array.from({ length: 4 }, (_, i) => `${base}/${slug}-sub${i + 1}.jpg`);
+
+  return [mainImage, ...subImages];
 };
 
+
  
-// ✅ Randomly shuffle premium products on each page load
+// ✅ Randomly shuffle premium products on each pag`e load
  // ✅ Premium products shuffle after mount
 const [shuffledPremiumProducts, setShuffledPremiumProducts] = useState<Product[]>([]);
 
@@ -356,66 +366,42 @@ useEffect(() => {
                           </div>
   
                           {/* --- PRICE SECTION --- */}
-                        {(item.regular_price || item.sale_price || item.price_difference) && (
-  <div className="price">
-    <div className="metc2">
-      {(item.regular_price || item.sale_price) && (
-        <h5 className="slog">
-          {/* ✅ Stable price rendering: precompute safely */}
-          {(() => {
-            const rawRegular = item.regular_price || "";
-            const rawSale = item.sale_price || "";
-            const cleanRegular = rawRegular.replace(/[^0-9.]/g, "");
-            const regNum = Number(cleanRegular) || 0;
-            const cleanSale = rawSale.replace(/[^0-9.]/g, "");
-            const saleNum = Number(cleanSale) || 0;
-
-            // If regular price is 0 → show POA
-            if (regNum === 0) {
-              return <>POA</>;
-            }
-
-            // If sale price exists → show sale and strike-through
-            if (saleNum > 0) {
-              return (
-                <>
-                  <del>{rawRegular}</del> {rawSale}
-                </>
-              );
-            }
-
-            // Otherwise → show regular price
-            return <>{rawRegular}</>;
-          })()}
-        </h5>
-      )}
-
-      {/* ✅ Show SAVE only if > $0 */}
-      {(() => {
-        const cleanDiff = (item.price_difference || "").replace(/[^0-9.]/g, "");
-        const diffNum = Number(cleanDiff) || 0;
-        return diffNum > 0 ? (
-          <p className="card-price">
-            <span>SAVE</span> {item.price_difference}
-          </p>
-        ) : null;
-      })()}
-
-      <div className="more_info">
-        <button
-          onClick={(e) => {
-            e.preventDefault();
-            setSelectedProduct(item);
-            setShowInfo(true);
-          }}
-        >
-          <i className="fa fa-info-circle"></i> Info
-        </button>
-      </div>
-    </div>
-  </div>
-)}
-
+                          {(item.regular_price ||
+                            item.sale_price ||
+                            item.price_difference) && (
+                            <div className="price">
+                              <div className="metc2">
+                                {(item.regular_price || item.sale_price) && (
+                                  <h5 className="slog">
+                                    {item.regular_price && (
+                                      <>{item.regular_price}</>
+                                    )}
+                                    {item.sale_price && <s>{item.sale_price}</s>}
+                                  </h5>
+                                )}
+  
+                                {item.price_difference &&
+                                  item.price_difference !== "0" &&
+                                  item.price_difference !== "$0" && (
+                                    <p className="card-price">
+                                      <span>SAVE</span> {item.price_difference}
+                                    </p>
+                                  )}
+  
+                                <div className="more_info">
+                                  <button
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      setSelectedProduct(item);
+                                      setShowInfo(true);
+                                    }}
+                                  >
+                                    <i className="fa fa-info-circle"></i> Info
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          )}
   
                           {/* --- DETAILS LIST --- */}
                           <ul className="vehicleDetailsWithIcons simple">
@@ -509,19 +495,18 @@ useEffect(() => {
                 <div className="row g-3">
                   {shuffledPremiumProducts.map((item, index) => {  
                     const href = getHref(item);
-                    const images = getProductImages(item.sku);
+                   const images = getProductImages(item.sku, item.slug);
 
             return (
 
                     <div className="col-lg-6 mb-0" key={index}>
                       <Link
-             href={href}
+href={href}
                     onClick={() => {
                       if (typeof window !== "undefined") {
                         sessionStorage.setItem("cameFromListings", "true");
                       }
-                    }}                      
-                      prefetch={false}
+                    }}                        prefetch={false}
                         className="lli_head"
                       >
                         <div className="product-card">
@@ -602,65 +587,44 @@ useEffect(() => {
                             </div>
   
                             {/* --- PRICE SECTION --- */}
-                                {(item.regular_price || item.sale_price || item.price_difference) && (
-  <div className="price">
-    <div className="metc2">
-      {(item.regular_price || item.sale_price) && (
-        <h5 className="slog">
-          {/* ✅ Stable price rendering: precompute safely */}
-          {(() => {
-            const rawRegular = item.regular_price || "";
-            const rawSale = item.sale_price || "";
-            const cleanRegular = rawRegular.replace(/[^0-9.]/g, "");
-            const regNum = Number(cleanRegular) || 0;
-            const cleanSale = rawSale.replace(/[^0-9.]/g, "");
-            const saleNum = Number(cleanSale) || 0;
-
-            // If regular price is 0 → show POA
-            if (regNum === 0) {
-              return <>POA</>;
-            }
-
-            // If sale price exists → show sale and strike-through
-            if (saleNum > 0) {
-              return (
-                <>
-                  <del>{rawRegular}</del> {rawSale}
-                </>
-              );
-            }
-
-            // Otherwise → show regular price
-            return <>{rawRegular}</>;
-          })()}
-        </h5>
-      )}
-
-      {/* ✅ Show SAVE only if > $0 */}
-      {(() => {
-        const cleanDiff = (item.price_difference || "").replace(/[^0-9.]/g, "");
-        const diffNum = Number(cleanDiff) || 0;
-        return diffNum > 0 ? (
-          <p className="card-price">
-            <span>SAVE</span> {item.price_difference}
-          </p>
-        ) : null;
-      })()}
-
-      <div className="more_info">
-        <button
-          onClick={(e) => {
-            e.preventDefault();
-            setSelectedProduct(item);
-            setShowInfo(true);
-          }}
-        >
-          <i className="fa fa-info-circle"></i> Info
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+                            {(item.regular_price ||
+                              item.sale_price ||
+                              item.price_difference) && (
+                              <div className="price">
+                                <div className="metc2">
+                                  {(item.regular_price || item.sale_price) && (
+                                    <h5 className="slog">
+                                      {item.regular_price && (
+                                        <>{item.regular_price}</>
+                                      )}
+                                      {item.sale_price && (
+                                        <s>{item.sale_price}</s>
+                                      )}
+                                    </h5>
+                                  )}
+  
+                                  {item.price_difference &&
+                                    item.price_difference !== "0" &&
+                                    item.price_difference !== "$0" && (
+                                      <p className="card-price">
+                                        <span>SAVE</span> {item.price_difference}
+                                      </p>
+                                    )}
+  
+                                  <div className="more_info">
+                                    <button
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                         setSelectedProduct(item);
+                                        setShowInfo(true);
+                                      }}
+                                    >
+                                      <i className="fa fa-info-circle"></i> Info
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
   
                             {/* --- DETAILS LIST --- */}
                             <ul className="vehicleDetailsWithIcons simple">
@@ -753,11 +717,10 @@ useEffect(() => {
                 <div className="row g-3">
                   {mergedProducts.map((item, index) => {
                       const href = getHref(item);
-                                          const images = getProductImages(item.sku);
+                                         const images = getProductImages(item.sku, item.slug);
 
             return (
                     <div className="col-lg-6 mb-0" key={index}>
-                      
                       <Link
                        href={href}
                     onClick={() => {
@@ -831,7 +794,6 @@ useEffect(() => {
                                 <Link
                                   href="/related-links"
                                   className="view-more-btn"
-
                                 >
                                   View More
                                 </Link>
@@ -846,65 +808,44 @@ useEffect(() => {
                             </div>
   
                             {/* --- PRICE SECTION --- */}
-                                {(item.regular_price || item.sale_price || item.price_difference) && (
-  <div className="price">
-    <div className="metc2">
-      {(item.regular_price || item.sale_price) && (
-        <h5 className="slog">
-          {/* ✅ Stable price rendering: precompute safely */}
-          {(() => {
-            const rawRegular = item.regular_price || "";
-            const rawSale = item.sale_price || "";
-            const cleanRegular = rawRegular.replace(/[^0-9.]/g, "");
-            const regNum = Number(cleanRegular) || 0;
-            const cleanSale = rawSale.replace(/[^0-9.]/g, "");
-            const saleNum = Number(cleanSale) || 0;
-
-            // If regular price is 0 → show POA
-            if (regNum === 0) {
-              return <>POA</>;
-            }
-
-            // If sale price exists → show sale and strike-through
-            if (saleNum > 0) {
-              return (
-                <>
-                  <del>{rawRegular}</del> {rawSale}
-                </>
-              );
-            }
-
-            // Otherwise → show regular price
-            return <>{rawRegular}</>;
-          })()}
-        </h5>
-      )}
-
-      {/* ✅ Show SAVE only if > $0 */}
-      {(() => {
-        const cleanDiff = (item.price_difference || "").replace(/[^0-9.]/g, "");
-        const diffNum = Number(cleanDiff) || 0;
-        return diffNum > 0 ? (
-          <p className="card-price">
-            <span>SAVE</span> {item.price_difference}
-          </p>
-        ) : null;
-      })()}
-
-      <div className="more_info">
-        <button
-          onClick={(e) => {
-            e.preventDefault();
-            setSelectedProduct(item);
-            setShowInfo(true);
-          }}
-        >
-          <i className="fa fa-info-circle"></i> Info
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+                            {(item.regular_price ||
+                              item.sale_price ||
+                              item.price_difference) && (
+                              <div className="price">
+                                <div className="metc2">
+                                  {(item.regular_price || item.sale_price) && (
+                                    <h5 className="slog">
+                                      {item.regular_price && (
+                                        <>{item.regular_price}</>
+                                      )}
+                                      {item.sale_price && (
+                                        <s>{item.sale_price}</s>
+                                      )}
+                                    </h5>
+                                  )}
+  
+                                  {item.price_difference &&
+                                    item.price_difference !== "0" &&
+                                    item.price_difference !== "$0" && (
+                                      <p className="card-price">
+                                        <span>SAVE</span> {item.price_difference}
+                                      </p>
+                                    )}
+  
+                                  <div className="more_info">
+                                    <button
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                         setSelectedProduct(item);
+                                        setShowInfo(true);
+                                      }}
+                                    >
+                                      <i className="fa fa-info-circle"></i> Info
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
   
                             {/* --- DETAILS LIST --- */}
                             <ul className="vehicleDetailsWithIcons simple">
@@ -1166,6 +1107,7 @@ useEffect(() => {
               </div>
             </div>
           </div>
+
           
         )}
       </>
