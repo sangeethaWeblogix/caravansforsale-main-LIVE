@@ -51,8 +51,8 @@ export async function GET() {
         <url>
           <loc>${SITE_URL}/listings/${cat.slug}-category/</loc>
           <lastmod>${new Date().toISOString()}</lastmod>
-          <changefreq>daily</changefreq>
-          <priority>0.9</priority>
+           <changefreq>daily</changefreq>
+      <priority>0.7</priority>
         </url>`);
     }
 
@@ -64,8 +64,8 @@ export async function GET() {
           <url>
             <loc>${SITE_URL}/listings/${cat.slug}-category/${stateSlug}-state/</loc>
             <lastmod>${new Date().toISOString()}</lastmod>
-            <changefreq>daily</changefreq>
-            <priority>0.7</priority>
+           <changefreq>daily</changefreq>
+      <priority>0.7</priority>
           </url>`);
       }
     }
@@ -81,8 +81,8 @@ export async function GET() {
             <url>
               <loc>${SITE_URL}/listings/${cat.slug}-category/${stateSlug}-state/${regionSlug}-region/</loc>
               <lastmod>${new Date().toISOString()}</lastmod>
-              <changefreq>weekly</changefreq>
-              <priority>0.6</priority>
+              <changefreq>daily</changefreq>
+      <priority>0.7</priority>
             </url>`);
         }
       }
