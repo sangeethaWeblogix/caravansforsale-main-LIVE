@@ -56,7 +56,7 @@ type ProductData = {
   description?: string;
   image?: string[];
   title?: string;
-};
+ };
 
 interface BlogPost extends HomeBlogPost {
   // ensure fields you use are present
@@ -258,72 +258,78 @@ export default function ClientLogger({
   ];
 
   // prefer API url; fallback to old rules if missing
-  const linksForSpec = (
-    label: string,
-    value: string,
-    apiUrl?: string
-  ): LinkOut[] | null => {
-    const v = (value || "").trim();
-    if (!v) return null;
+ const linksForSpec = (
+  label: string,
+  value: string,
+  apiUrl?: string
+): LinkOut[] | null => {
+  const v = (value || "").trim();
+  if (!v) return null;
 
-    if (apiUrl && apiUrl.trim()) {
-      return [linkFromApiUrl(apiUrl, v)];
-    }
+  const L = label.toLowerCase();
 
-    // ---- fallback logic (only if url not supplied) ----
-    const L = label.toLowerCase();
+  // ✅ Always force clean path for Year (ignore API URL)
+  if (L === "year" || L === "years") {
+    const s = toInt(v);
+    return s
+      ? [{ href: `/listings/${s}-caravans-range/`, text: v }]
+      : null;
+  }
 
-    if (L === "category" || L === "type") {
-      return v.split(",").map((c) => ({
-        href: `/listings/${slugify(c)}-category/`,
-        text: c.trim(),
-      }));
-    }
-    if (L === "make") return [{ href: `/listings/${slugify(v)}/`, text: v }];
-    if (L === "model")
-      return [{ href: `/listings/${makeValue}/${slugify(v)}/`, text: v }];
+  // ✅ Only use API URL for fields that are NOT year-related
+  if (
+    apiUrl &&
+    apiUrl.trim() &&
+    !["year", "years"].includes(L)
+  ) {
+    return [linkFromApiUrl(apiUrl, v)];
+  }
 
-    if (L === "location" || L === "state")
-      return [{ href: `/listings/${slugify(v)}-state/`, text: v }];
+  // ---- fallback logic ----
+  if (L === "category" || L === "type") {
+    return v.split(",").map((c) => ({
+      href: `/listings/${slugify(c)}-category/`,
+      text: c.trim(),
+    }));
+  }
 
-   if (L === "year" || L === "years") {
-  const y = toInt(v);
-  return y
-    ? [
-        {
-          href: `/listings/${y}-caravans-range`, // ✅ fixed clean path URL
-          text: v,
-        },
-      ]
-    : null;
-}
+  if (L === "make")
+    return [{ href: `/listings/${slugify(v)}/`, text: v }];
 
+  if (L === "model")
+    return [{ href: `/listings/${makeValue}/${slugify(v)}/`, text: v }];
 
-    if (L === "sleep" || L === "sleeps") {
-      const s = toInt(v);
-      return s
-        ? [{ href: `/listings/under-${s}-people-sleeping-capacity/`, text: v }]
-        : null;
-    }
+  if (L === "location" || L === "state")
+    return [{ href: `/listings/${slugify(v)}-state/`, text: v }];
 
-    if (L === "length") {
-      const s = toInt(v);
-      return s
-        ? [{ href: `/listings/under-${s}-length-in-feet/`, text: v }]
-        : null;
-    }
+  if (L === "sleep" || L === "sleeps") {
+    const s = toInt(v);
+    return s
+      ? [{ href: `/listings/under-${s}-people-sleeping-capacity/`, text: v }]
+      : null;
+  }
 
-    if (L === "atm") {
-      const s = toInt(v);
-      return s ? [{ href: `/listings/under-${s}-kg-atm/`, text: v }] : null;
-    }
+  if (L === "length") {
+    const s = toInt(v);
+    return s
+      ? [{ href: `/listings/under-${s}-length-in-feet/`, text: v }]
+      : null;
+  }
 
-    if (L === "condition" || L === "conditions") {
-      return [{ href: `/listings/${slugify(v)}-condition/`, text: v }];
-    }
+  if (L === "atm") {
+    const s = toInt(v);
+    return s
+      ? [{ href: `/listings/under-${s}-kg-atm/`, text: v }]
+      : null;
+  }
 
-    return null;
-  };
+  if (L === "condition" || L === "conditions") {
+    return [{ href: `/listings/${slugify(v)}-condition/`, text: v }];
+  }
+
+  return null;
+};
+
 
   const stateFields = [{ label: "Location", value: getAttr("Location") }];
 
