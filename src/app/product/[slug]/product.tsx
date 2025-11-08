@@ -286,22 +286,23 @@ export default function ClientLogger({
     if (L === "location" || L === "state")
       return [{ href: `/listings/${slugify(v)}-state/`, text: v }];
 
-    if (L === "year" || L === "years") {
-      const y = toInt(v);
-      return y
-        ? [
-            {
-              href: `/listings/?${y}-caravans-range`,
-              text: v,
-            },
-          ]
-        : null;
-    }
+   if (L === "year" || L === "years") {
+  const y = toInt(v);
+  return y
+    ? [
+        {
+          href: `/listings/${y}-caravans-range`, // ✅ fixed clean path URL
+          text: v,
+        },
+      ]
+    : null;
+}
+
 
     if (L === "sleep" || L === "sleeps") {
       const s = toInt(v);
       return s
-        ? [{ href: `/listings/over-${s}-people-sleeping-capacity/`, text: v }]
+        ? [{ href: `/listings/under-${s}-people-sleeping-capacity/`, text: v }]
         : null;
     }
 
