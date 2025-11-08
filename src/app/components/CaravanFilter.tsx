@@ -2649,8 +2649,7 @@ triggerGlobalLoaders();
                 className="cfs-select-input"
                 value={sleepFrom?.toString() || ""}
                 onChange={(e) => {
-                  triggerGlobalLoaders();
-                  const val = e.target.value ? parseInt(e.target.value) : null;
+                   const val = e.target.value ? parseInt(e.target.value) : null;
                   setSleepFrom(val);
                   commit({
                     ...currentFilters,
@@ -2674,8 +2673,7 @@ triggerGlobalLoaders();
                 className="cfs-select-input"
                 value={sleepTo?.toString() || ""}
                 onChange={(e) => {
-                  triggerGlobalLoaders();
-                  const val = e.target.value ? parseInt(e.target.value) : null;
+                   const val = e.target.value ? parseInt(e.target.value) : null;
                   setSleepTo(val);
                   commit({
                     ...currentFilters,
