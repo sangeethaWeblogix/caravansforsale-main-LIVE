@@ -2519,8 +2519,7 @@ triggerGlobalLoaders();
                 className="cfs-select-input"
                 value={minPrice?.toString() || ""}
                 onChange={(e) => {
-                  triggerGlobalLoaders();
-                  const val = e.target.value ? parseInt(e.target.value) : null;
+                   const val = e.target.value ? parseInt(e.target.value) : null;
                   setMinPrice(val);
                   const updated: Filters = {
                     ...currentFilters,
@@ -2545,8 +2544,7 @@ triggerGlobalLoaders();
                 className="cfs-select-input"
                 value={maxPrice?.toString() || ""}
                 onChange={(e) => {
-                  triggerGlobalLoaders();
-                  const val = e.target.value ? parseInt(e.target.value) : null;
+                   const val = e.target.value ? parseInt(e.target.value) : null;
                   setMaxPrice(val);
                   const updated: Filters = {
                     ...currentFilters,
@@ -2792,8 +2790,7 @@ triggerGlobalLoaders();
                 className="cfs-select-input"
                 value={lengthFrom || ""}
                 onChange={(e) => {
-                  triggerGlobalLoaders();
-                  const val = e.target.value ? parseInt(e.target.value) : null;
+                   const val = e.target.value ? parseInt(e.target.value) : null;
                   setLengthFrom(val);
                   commit({
                     ...currentFilters,
@@ -2817,8 +2814,7 @@ triggerGlobalLoaders();
                 className="cfs-select-input"
                 value={lengthTo?.toString() || ""}
                 onChange={(e) => {
-                  triggerGlobalLoaders();
-                  const val = e.target.value ? parseInt(e.target.value) : null;
+                   const val = e.target.value ? parseInt(e.target.value) : null;
                   setLengthTo(val);
                   commit({
                     ...currentFilters,
