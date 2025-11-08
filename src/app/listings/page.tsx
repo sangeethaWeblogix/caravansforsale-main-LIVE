@@ -1,66 +1,109 @@
- import React, { Suspense } from "react";
-import Listing from "../components/ListContent/Listings";
-import { fetchListings } from "@/api/listings/api";
-import type { Metadata } from "next";
-import { generateListingsMetadata } from "@/utils/seo/listingsMetadata";
-import { ensureValidPage } from "@/utils/seo/validatePage";
-import { notFound } from "next/navigation";
-import "../components/ListContent/newList.css"
+ export const dynamic = "force-dynamic";
 
-export const revalidate = 60;
+import ListingsPage from "@/app/components/ListContent/Listings";
+import { parseSlugToFilters } from "../components/urlBuilder";
+import { metaFromSlug } from "../../utils/seo/metaFromSlug";
+import type { Metadata } from "next";
+import { fetchProductListings } from "@/api/new-list/api";
+import { notFound } from "next/navigation";
+import "../components/ListContent/newList.css";
+
+type Params = Promise<{ slug?: string[] }>;
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
 export async function generateMetadata({
+  params,
   searchParams,
 }: {
+  params: Params;
   searchParams: SearchParams;
 }): Promise<Metadata> {
-  return generateListingsMetadata(searchParams ? await searchParams : {});
+  const [resolvedParams, resolvedSearchParams] = await Promise.all([
+    params,
+    searchParams,
+  ]);
+  return metaFromSlug(resolvedParams.slug || [], resolvedSearchParams);
 }
 
-export default async function ListingsPage({
+export default async function Listings({
+  params,
   searchParams,
 }: {
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
+  params: Params;
+  searchParams: SearchParams;
 }) {
-  const resolvedSearchParams = await searchParams;
-  const fullQuery = Object.entries(resolvedSearchParams)
-    .map(([k, v]) => `${k}=${Array.isArray(v) ? v.join(",") : v ?? ""}`)
-    .join("&");
+  const [resolvedParams, resolvedSearchParams] = await Promise.all([
+    params,
+    searchParams,
+  ]);
 
-  const page = ensureValidPage(resolvedSearchParams.page, fullQuery);
+  const { slug = [] } = resolvedParams;
+  const slugJoined = slug.join("/");
 
-  const response = await fetchListings({ page });
+  // ✅ Allow empty slug — this means root /listings
+  if (
+    slug.length > 0 &&
+    (
+      !Array.isArray(slug) ||
+      slugJoined.match(/[^\w/-]/) ||
+      slugJoined.includes("..") ||
+      slugJoined.includes("//") ||
+      slugJoined.includes("&") ||
+      slugJoined.includes("?") ||
+      slugJoined.includes("=")
+    )
+  ) {
+    notFound();
+  }
 
-  // ✅ only show 404 on API error, not on empty list
+  // ✅ Parse filters (state, region, category etc.)
+  const filters = parseSlugToFilters(slug, resolvedSearchParams);
+
+  // ✅ Handle page safely
+  const pageParam = resolvedSearchParams.page;
+  const page =
+    typeof pageParam === "string"
+      ? parseInt(pageParam, 10)
+      : Array.isArray(pageParam)
+      ? parseInt(pageParam[0] || "1", 10)
+      : 1;
+
+  // ✅ Fetch merged listing data
+  let response;
+  try {
+    response = await fetchProductListings(filters);
+  } catch (error) {
+    console.error("❌ Error fetching listings:", error);
+    notFound();
+  }
+
   if (!response || response.success === false) {
     notFound();
   }
 
-  const hasProducts =
-    response?.data?.products && response.data.products.length > 0;
+  // ✅ Dynamic meta title & description
+  const metaTitle =
+    response?.data?.products?.length > 0
+      ? `${filters.category ? filters.category + " " : ""}Caravans for Sale${
+          filters.state ? " in " + filters.state : ""
+        }`
+      : "Caravans for Sale | Find Your Perfect Caravan";
 
+  const metaDescription =
+    response?.data?.products?.length > 0
+      ? `Explore ${response.data.products.length} caravans for sale${
+          filters.state ? " in " + filters.state : ""
+        }. Find new, used and premium caravans at great prices.`
+      : "No caravans found for your selected filters. Try exploring other states or categories.";
+
+  // ✅ Send data + meta to main ListingPage
   return (
-    <Suspense>
-      {hasProducts ? (
-        <Listing initialData={response} page={page} />
-      ) : (
-        <div className="flex flex-col items-center justify-center py-16 text-center text-gray-600">
-          <img
-            src="/no-results.svg"
-            alt="No caravans found"
-            width={180}
-            height={180}                              
-            className="mb-6 opacity-80"
-          />
-          <h2 className="text-2xl font-semibold mb-2">No caravans found</h2>
-          <p className="max-w-md text-sm">
-            Try adjusting your filters or explore a different region to see more
-            listings.
-          </p>
-        </div>
-        
-      )}
-    </Suspense>
+    <ListingsPage
+      {...filters}
+      initialData={response}
+      page={page}
+      metaTitle={metaTitle}
+      metaDescription={metaDescription}
+    />
   );
 }

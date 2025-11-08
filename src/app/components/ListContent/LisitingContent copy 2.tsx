@@ -67,7 +67,8 @@ import { toSlug } from "@/utils/seo/slug";
     pagination: Pagination;
     onNext: () => void;
     onPrev: () => void;
-    
+    metaTitle: string; // Add metaTitle prop
+    metaDescription: string; // Add metaDescription prop
     onFilterChange: (filters: Filters) => void;
     currentFilters: Filters;
     preminumProducts: Product[];
@@ -83,7 +84,8 @@ import { toSlug } from "@/utils/seo/slug";
     pagination,
     onNext,
     onPrev,
-    
+    metaTitle,
+    metaDescription,
     onFilterChange,
     currentFilters,
     preminumProducts,
@@ -99,11 +101,11 @@ import { toSlug } from "@/utils/seo/slug";
 
     const prevRef = useRef(null);
     const nextRef = useRef(null);
-    console.log("data-prod", products);
+    // console.log("data-prod", products);
   
-    console.log("data-product", exculisiveProducts);
-    console.log("data-premium", preminumProducts);
-    console.log("data-featu", fetauredProducts);
+    // console.log("data-product", exculisiveProducts);
+    // console.log("data-premium", preminumProducts);
+    // console.log("data-featu", fetauredProducts);
     // const handleChange = (e) => {
     //   setOrderBy(e.target.value);
     // };
@@ -201,8 +203,8 @@ useEffect(() => {
 
     return (
       <>
-        {/* <Head>
-          <title>{metaTitle}</title> 
+        <Head>
+          <title>{metaTitle}</title> {/* Dynamically set title */}
           <meta name="description" content={metaDescription} />
           <meta property="og:type" content="website" />
           <meta property="robot" content="index, follow" />
@@ -210,7 +212,7 @@ useEffect(() => {
           <meta property="og:description" content={metaDescription} />
           <meta name="twitter:title" content={metaTitle} />
           <meta name="twitter:description" content={metaDescription} />
-        </Head> */}
+        </Head>
   
         <div className="col-lg-6 ">
           <div className="top-filter mb-10">

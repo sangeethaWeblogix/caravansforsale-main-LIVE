@@ -68,8 +68,7 @@
  pagination: Pagination;
     onNext: () => void;
     onPrev: () => void;
-    metaTitle: string; // Add metaTitle prop
-    metaDescription: string; // Add metaDescription prop
+    
      isPremiumLoading: boolean; // Add isMainLoading prop
  }
  
@@ -78,8 +77,7 @@
      pagination,
     onNext,
     onPrev,
-    metaTitle,
-    metaDescription,
+    
      isPremiumLoading,
  }: Props) {
    // const imageUrl = "public/favicon.ico";
@@ -122,17 +120,7 @@
 };
    return (
      <>
-       <Head>
-         <title>{metaTitle}</title> {/* Dynamically set title */}
-         <meta name="description" content={metaDescription} />
-         <meta property="og:type" content="website" />
-         <meta property="robot" content="index, follow" />
-         <meta property="og:title" content={metaTitle} />
-         <meta property="og:description" content={metaDescription} />
-         <meta name="twitter:title" content={metaTitle} />
-         <meta name="twitter:description" content={metaDescription} />
-       </Head>
- 
+      
        <div className="col-lg-6 col-md-8">
          <div className="row align-items-center">
            <div className="flex flex-col items-center justify-center text-center py-10 search-icon">
@@ -550,6 +538,7 @@
                      </div>
                    </div>
                  </div>
+                 
                  
                )}
      </>

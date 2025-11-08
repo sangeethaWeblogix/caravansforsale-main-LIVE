@@ -4,9 +4,10 @@ import ListingsPage from "@/app/components/ListContent/Listings";
 import { parseSlugToFilters } from "../../components/urlBuilder";
 import { metaFromSlug } from "../../../utils/seo/metaFromSlug";
 import type { Metadata } from "next";
-import { fetchListings } from "@/api/listings/api";
 import { notFound } from "next/navigation";
-import '../../components/ListContent/newList.css'
+import { fetchProductList } from "@/api/productFullList/api"; // ✅ new
+import { fetchProductListings } from "@/api/new-list/api"; // ✅ new-list (IDs only)
+import "../../components/ListContent/newList.css";
 
 type Params = Promise<{ slug?: string[] }>;
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
@@ -36,126 +37,81 @@ export default async function Listings({
     params,
     searchParams,
   ]);
+
   const { slug = [] } = resolvedParams;
-  const slugJoined = slug.join("/");
 
-  // ✅ Allow empty slug for root listings page
-  if (
-    slug.length > 0 &&
-    (
-      !Array.isArray(slug) ||
-      slugJoined.match(/[^\w/-]/) ||
-      slugJoined.includes("..") ||
-      slugJoined.includes("//") ||
-      slugJoined.includes("&") ||
-      slugJoined.includes("?") ||
-      slugJoined.includes("=")
-    )
-  ) {
-    notFound();
-  }
-
-  // ❌ Reject gibberish slugs
-  if (slug.length > 0) {
-    const invalidSegment = slug.some((part) => {
-      const lower = part.toLowerCase();
-      const allowedPatterns = [
-        /-state$/,
-        /-category$/,
-        /^under-\d+$/,
-        /^over-\d+$/,
-        /^atm-\d+$/,
-        /^sleeps-\d+$/,
-        /^length-\d+$/,
-        /^width-\d+$/,
-        /^weight-\d+$/,
-        /^price-\d+$/,
-        /^([a-z0-9-]+)-\d{4}$/,
-      ];
-      const isAllowed = allowedPatterns.some((r) => r.test(lower));
-      const looksGibberish =
-        /^[0-9]+$/.test(lower) || /^[^a-z0-9-]+$/.test(lower);
-      return looksGibberish && !isAllowed;
-    });
-
-    if (invalidSegment) notFound();
-
-    const lastPart = slug[slug.length - 1];
-    if (/^\d+$/.test(lastPart)) notFound();
-
-    const suburbPinMatch = slug.find((part) =>
-      /^([a-z0-9-]+)-(\d{4})$/.test(part)
-    );
-    const suburbPinIndex = suburbPinMatch ? slug.indexOf(suburbPinMatch) : -1;
-    if (
-      suburbPinIndex !== -1 &&
-      slug[suburbPinIndex + 1]?.match(/^\d{1,6}$/)
-    ) {
-      notFound();
-    }
-
-    const hasInvalidSuburbWord = slug.some((part) => {
-      if (/^[a-z0-9-]+-\d{4}-suburb$/i.test(part)) return false;
-      if (/^[a-z0-9-]+-suburb$/i.test(part)) return false;
-      return /(^|\b)(suburb|suburbs)\b$/i.test(part);
-    });
-    if (hasInvalidSuburbWord) notFound();
-  }
-
-  // 🚫 Block "page" or "feed" anywhere in slug or query
-  const urlHasBlockedWord =
-    slug.some((s) => /(page|feed)/i.test(s)) ||
-    Object.keys(resolvedSearchParams).some((k) => /(page|feed)/i.test(k)) ||
-    Object.values(resolvedSearchParams).some((v) =>
-      Array.isArray(v)
-        ? v.some((vv) => /(page|feed)/i.test(String(vv)))
-        : /(page|feed)/i.test(String(v))
-    );
-
-  if (urlHasBlockedWord) notFound();
-
-  // ✅ Parse filters
+  // ✅ Parse filters from slug (state, make, category, etc.)
   const filters = parseSlugToFilters(slug, resolvedSearchParams);
 
-  // 🧩 New Location Hierarchy Rule
-  const hasState = !!filters.state;
-  const hasRegion = !!filters.region;
-  const hasSuburb = !!filters.suburb;
-
-  const validLocationCombo =
-    hasState ||
-    (hasState && hasRegion) ||
-    (hasState && hasRegion && hasSuburb);
-
-  // ❌ Invalid if region/suburb exist without state
-  if (!validLocationCombo && (hasRegion || hasSuburb)) {
-    notFound();
+  // ✅ Load all products once & cache globally
+  let allProducts = globalThis.__caravanCache;
+  if (!allProducts) {
+    const allRes = await fetchProductList();
+    allProducts = allRes?.data?.products ?? [];
+    globalThis.__caravanCache = allProducts;
+    console.log("🗂️ Cached full product list:", allProducts.length);
   }
 
-  // ✅ Convert page param safely
+  // ✅ Fetch new-list format (IDs only)
+  const newListRes = await fetchProductListings(filters);
+  if (!newListRes || newListRes.success === false) notFound();
+
+  // Combine IDs from featured, non-featured, exclusive, etc.
+  const featuredIds = newListRes.data?.featured_products?.map((p) => p.id) ?? [];
+  const exclusiveIds = newListRes.data?.exclusive_products?.map((p) => p.id) ?? [];
+  const nonFeaturedIds = newListRes.data?.products?.map((p) => p.id) ?? [];
+
+  const mergedIds = [
+    ...new Set([...featuredIds, ...exclusiveIds, ...nonFeaturedIds]),
+  ];
+
+  // ✅ Merge IDs with cached full product data
+  const mergedProducts = mergedIds
+    .map((id) => allProducts.find((p) => String(p.id) === String(id)))
+    .filter(Boolean);
+
+  // ✅ Paginate locally (50 per page)
   const pageParam = resolvedSearchParams.page;
   const page =
     typeof pageParam === "string"
       ? parseInt(pageParam, 10)
       : Array.isArray(pageParam)
       ? parseInt(pageParam[0] || "1", 10)
-      : undefined;
+      : 1;
 
-  // ✅ Fetch listings
-  const response = await fetchListings({ ...filters, page });
+  const ITEMS_PER_PAGE = 50;
+  const totalPages = Math.ceil(mergedProducts.length / ITEMS_PER_PAGE);
 
-  if (
-    !response ||
-    response.success === false ||
-    (response.message &&
-      response.message.toLowerCase().includes("validation failed")) ||
-    (Array.isArray(response.errors) &&
-      response.errors.some((e) =>
-        e.toLowerCase().includes("invalid make")
-      ))
-  ) {
-    notFound();
-  }
+  const paginatedProducts = mergedProducts.slice(
+    (page - 1) * ITEMS_PER_PAGE,
+    page * ITEMS_PER_PAGE
+  );
 
-  return <ListingsPage {...filters} initialData={response} />;
+  // ✅ SEO Meta
+  const metaTitle = `Caravans for Sale${
+    filters.state ? ` in ${filters.state}` : ""
+  }`;
+  const metaDescription = `Browse ${mergedProducts.length} caravans${
+    filters.state ? ` in ${filters.state}` : ""
+  }. Find new and used caravans across Australia.`;
+
+  // ✅ Send merged data directly to ListingsPage (no UI changes needed)
+  return (
+    <ListingsPage
+      {...filters}
+      initialData={{
+        success: true,
+        data: {
+          products: paginatedProducts,
+          featured_products: [], // can pass if needed
+          exclusive_products: [],
+          premium_products: [],
+        },
+      }}
+      page={page}
+      // totalPages={totalPages}
+      metaTitle={metaTitle}
+      metaDescription={metaDescription}
+    />
+  );
 }

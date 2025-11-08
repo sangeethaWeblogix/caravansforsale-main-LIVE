@@ -124,48 +124,7 @@ export default function ListingsPage({
   }, [filters]);
 
   // 🧠 Use SSR initial data immediately (no loading flicker)
- useEffect(() => {
-  if (initialData?.data?.products?.length > 0) {
-    // 🕐 Small delay to allow smooth skeleton fade
-    setIsMainLoading(true);
-    setIsFeaturedLoading(true);
-    setIsPremiumLoading(true);
-
-    const timer = setTimeout(() => {
-      const productData = initialData.data;
-
-      setFeaturedProducts(productData.featured_products ?? []);
-      setExclusiveProducts(productData.exclusive_products ?? []);
-      setPremiumProducts(productData.premium_products ?? []);
-      setNonFeaturedProducts(productData.products ?? []);
-
-      const totalPages = Math.ceil(
-        (productData.products?.length ?? 0) / ITEMS_PER_PAGE
-      );
-      const firstPage = productData.products?.slice(0, ITEMS_PER_PAGE) ?? [];
-      setPaginatedProducts(firstPage);
-
-      setPagination({
-        current_page: page || 1,
-        total_pages: totalPages,
-        total_products: productData.products?.length ?? 0,
-        per_page: ITEMS_PER_PAGE,
-      });
-
-      setEmptyProduct(productData.products?.length === 0);
-
-      // ✅ Hide skeletons after short delay
-      setIsMainLoading(false);
-      setIsFeaturedLoading(false);
-      setIsPremiumLoading(false);
-    }, 500); // 500ms delay just for skeleton animation
-
-    return () => clearTimeout(timer);
-  } else {
-    loadAllData();
-  }
-}, [initialData, loadAllData, page]);
- useEffect(() => {
+  useEffect(() => {
     if (initialData?.data?.products?.length > 0) {
       const productData = initialData.data;
 
