@@ -1,17 +1,19 @@
- export const dynamic = "force-dynamic";
+ export const dynamic = "force-dynamic"; // ✅ Always render fresh (disable static cache)
 
 import ListingsPage from "@/app/components/ListContent/Listings";
-import { parseSlugToFilters } from "../../components/urlBuilder";
-import { metaFromSlug } from "../../../utils/seo/metaFromSlug";
+import { parseSlugToFilters } from "@/app/components/urlBuilder";
+import { metaFromSlug } from "@/utils/seo/metaFromSlug";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { fetchProductList } from "@/api/productFullList/api"; // ✅ new
-import { fetchProductListings } from "@/api/new-list/api"; // ✅ new-list (IDs only)
-import "../../components/ListContent/newList.css";
+import { fetchProductList } from "@/api/productFullList/api";
+import { fetchProductListings } from "@/api/new-list/api";
+import "@/app/components/ListContent/newList.css";
 
+/** Route parameter & query definitions */
 type Params = Promise<{ slug?: string[] }>;
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
+/** 🔹 Dynamic SEO Metadata */
 export async function generateMetadata({
   params,
   searchParams,
@@ -26,6 +28,7 @@ export async function generateMetadata({
   return metaFromSlug(resolvedParams.slug || [], resolvedSearchParams);
 }
 
+/** 🔹 Main Page Component (Server Component) */
 export default async function Listings({
   params,
   searchParams,
@@ -40,37 +43,27 @@ export default async function Listings({
 
   const { slug = [] } = resolvedParams;
 
-  // ✅ Parse filters from slug (state, make, category, etc.)
-  const filters = parseSlugToFilters(slug, resolvedSearchParams);
-
-  // ✅ Load all products once & cache globally
-  let allProducts = globalThis.__caravanCache;
-  if (!allProducts) {
-    const allRes = await fetchProductList();
-    allProducts = allRes?.data?.products ?? [];
-    globalThis.__caravanCache = allProducts;
-    console.log("🗂️ Cached full product list:", allProducts.length);
+  // ✅ Validate slug to avoid malformed routes
+  const slugJoined = slug.join("/");
+  if (
+    slug.length > 0 &&
+    (
+      !Array.isArray(slug) ||
+      slugJoined.match(/[^\w/-]/) ||
+      slugJoined.includes("..") ||
+      slugJoined.includes("//") ||
+      slugJoined.includes("&") ||
+      slugJoined.includes("?") ||
+      slugJoined.includes("=")
+    )
+  ) {
+    notFound();
   }
 
-  // ✅ Fetch new-list format (IDs only)
-  const newListRes = await fetchProductListings(filters);
-  if (!newListRes || newListRes.success === false) notFound();
+  // ✅ Convert slug → filters (category, state, make, etc.)
+  const filters = parseSlugToFilters(slug, resolvedSearchParams);
 
-  // Combine IDs from featured, non-featured, exclusive, etc.
-  const featuredIds = newListRes.data?.featured_products?.map((p) => p.id) ?? [];
-  const exclusiveIds = newListRes.data?.exclusive_products?.map((p) => p.id) ?? [];
-  const nonFeaturedIds = newListRes.data?.products?.map((p) => p.id) ?? [];
-
-  const mergedIds = [
-    ...new Set([...featuredIds, ...exclusiveIds, ...nonFeaturedIds]),
-  ];
-
-  // ✅ Merge IDs with cached full product data
-  const mergedProducts = mergedIds
-    .map((id) => allProducts.find((p) => String(p.id) === String(id)))
-    .filter(Boolean);
-
-  // ✅ Paginate locally (50 per page)
+  // ✅ Get page number from query (default: 1)
   const pageParam = resolvedSearchParams.page;
   const page =
     typeof pageParam === "string"
@@ -79,23 +72,70 @@ export default async function Listings({
       ? parseInt(pageParam[0] || "1", 10)
       : 1;
 
-  const ITEMS_PER_PAGE = 50;
-  const totalPages = Math.ceil(mergedProducts.length / ITEMS_PER_PAGE);
+  // ✅ Load full product list once (cache globally across requests)
+  let allProducts = globalThis.__caravanCache;
+  if (!allProducts) {
+    try {
+      const allRes = await fetchProductList();
+      allProducts = allRes?.data?.products ?? [];
+      globalThis.__caravanCache = allProducts;
+      console.log(`🗂️ Cached ${allProducts.length} total products in memory`);
+    } catch (error) {
+      console.error("❌ Failed to load full product list:", error);
+      allProducts = [];
+    }
+  }
 
+  // ✅ Fetch filtered product ID groups
+  let newListRes;
+  try {
+    newListRes = await fetchProductListings(filters);
+  } catch (error) {
+    console.error("❌ new-list API failed:", error);
+    notFound();
+  }
+
+  if (!newListRes || newListRes.success === false) {
+    notFound();
+  }
+
+  // ✅ Extract IDs by category (featured / exclusive / normal)
+  const featuredIds = newListRes.data?.featured_products?.map((p) => p.id) ?? [];
+  const exclusiveIds =
+    newListRes.data?.exclusive_products?.map((p) => p.id) ?? [];
+  const nonFeaturedIds = newListRes.data?.products?.map((p) => p.id) ?? [];
+
+  const mergedIds = [...new Set([...featuredIds, ...exclusiveIds, ...nonFeaturedIds])];
+
+  // ✅ Merge IDs with cached full product list
+  const mergedProducts = mergedIds
+    .map((id) => allProducts.find((p) => String(p.id) === String(id)))
+    .filter(Boolean);
+
+  // ✅ Pagination
+  const ITEMS_PER_PAGE = 50;
+  const totalPages = Math.max(1, Math.ceil(mergedProducts.length / ITEMS_PER_PAGE));
   const paginatedProducts = mergedProducts.slice(
     (page - 1) * ITEMS_PER_PAGE,
     page * ITEMS_PER_PAGE
   );
 
-  // ✅ SEO Meta
-  const metaTitle = `Caravans for Sale${
-    filters.state ? ` in ${filters.state}` : ""
-  }`;
-  const metaDescription = `Browse ${mergedProducts.length} caravans${
-    filters.state ? ` in ${filters.state}` : ""
-  }. Find new and used caravans across Australia.`;
+  // ✅ SEO Meta generation
+  const metaTitle =
+    mergedProducts.length > 0
+      ? `${filters.category ? filters.category + " " : ""}Caravans for Sale${
+          filters.state ? " in " + filters.state : ""
+        }`
+      : "Caravans for Sale | Find Your Perfect Caravan";
 
-  // ✅ Send merged data directly to ListingsPage (no UI changes needed)
+  const metaDescription =
+    mergedProducts.length > 0
+      ? `Explore ${mergedProducts.length} caravans for sale${
+          filters.state ? " in " + filters.state : ""
+        }. Find new, used and premium caravans at great prices.`
+      : "No caravans found for your selected filters. Try browsing other states or makes.";
+
+  // ✅ Return hydrated client page (ListingsPage is 'use client')
   return (
     <ListingsPage
       {...filters}
@@ -103,13 +143,16 @@ export default async function Listings({
         success: true,
         data: {
           products: paginatedProducts,
-          featured_products: [], // can pass if needed
-          exclusive_products: [],
+          featured_products: mergedProducts.filter((p) =>
+            featuredIds.includes(String(p.id))
+          ),
+          exclusive_products: mergedProducts.filter((p) =>
+            exclusiveIds.includes(String(p.id))
+          ),
           premium_products: [],
         },
       }}
       page={page}
-      // totalPages={totalPages}
       metaTitle={metaTitle}
       metaDescription={metaDescription}
     />

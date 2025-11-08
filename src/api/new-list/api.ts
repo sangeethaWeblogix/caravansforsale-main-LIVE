@@ -26,28 +26,27 @@ export type Filters = {
   from_sleep?: string | number;
   to_sleep?: string | number;
   msid?: string | null;
-}
- export type Item = {
-    id: number;
-    name: string;
-    length: string;
-    kg: string;
-    regular_price: string;
-    sale_price?: string;
-    price_difference?: string;
-    image: string;
-    link: string;
-    condition: string;
-    location?: string;
-    categories?: string[];
-    people?: string;
-    make?: string;
-    slug?: string;
-      description?: string;
-          sku?: string;
+};
 
-
-  };
+export type Item = {
+  id: number;
+  name: string;
+  length: string;
+  kg: string;
+  regular_price: string;
+  sale_price?: string;
+  price_difference?: string;
+  image: string;
+  link: string;
+  condition: string;
+  location?: string;
+  categories?: string[];
+  people?: string;
+  make?: string;
+  slug?: string;
+  description?: string;
+  sku?: string;
+};
 
 export interface ApiData {
   products?: Item[];
@@ -102,15 +101,21 @@ export const fetchProductListings = async (
   const s = normalizeQuery(filters.search);
   if (s) params.append("search", s);
 
+  // 🟡 Log Filters
+  console.log("🔍 [fetchProductListings] Filters used:", Object.fromEntries(params));
+
   // Step 1️⃣: Fetch product ID groups
   const listRes = await fetch(`${API_BASE}/list_new_format?${params}`);
-  console.log("[list_new_format API] GET", listRes.url);
+  console.log("🌐 [list_new_format API] Request URL:", listRes.url);
 
   if (!listRes.ok) {
+    console.error(`❌ List format API failed: ${listRes.status}`);
     throw new Error(`List format API failed: ${listRes.status}`);
   }
 
   const listJson = await listRes.json();
+  console.log("✅ [list_new_format API] Response:", listJson);
+
   const output = listJson.output || {};
 
   const featuredIds: string[] = Array.isArray(output["featured"])
@@ -125,26 +130,66 @@ export const fetchProductListings = async (
     ? output["excl-product"]
     : [];
 
+  console.log(
+    "🧩 ID Summary → Featured:",
+    featuredIds.length,
+    "| Non-Featured:",
+    nonFeaturedIds.length,
+    "| Exclusive:",
+    exclusiveIds.length
+  );
+
   // Step 2️⃣: Fetch all product details
   const allRes = await fetch(`${API_BASE}/all_product_list?batch=1&batch_size=6000`);
-  if (!allRes.ok) throw new Error(`Product list API failed: ${allRes.status}`);
+  console.log("🌐 [all_product_list API] Request URL:", allRes.url);
+
+  if (!allRes.ok) {
+    console.error(`❌ Product list API failed: ${allRes.status}`);
+    throw new Error(`Product list API failed: ${allRes.status}`);
+  }
 
   const allJson = await allRes.json();
+  console.log("✅ [all_product_list API] Total Products:", allJson?.data?.length || 0);
+
   const allProducts: Item[] = Array.isArray(allJson.data)
     ? allJson.data.map((p: any) => ({
         id: Number(p.id),
-        name: p.name,
-        regular_price: p.regular_price,
-        sale_price: p.sale_price,
-        price_difference: p.price_difference,
-        image: p.image,
-        condition: p.condition,
-        link: p.link,
-        make: p.make,
-        slug: p.slug,
-        description: p.description,
+        name: p.name ?? "Unknown Caravan",
+        regular_price: p.regular_price ?? "0",
+        sale_price: p.sale_price ?? "0",
+        price_difference: p.price_difference ?? "",
+        image:
+          p.image && p.image.trim() !== ""
+            ? p.image
+            : "/images/placeholder.jpg",
+        condition: p.condition ?? "N/A",
+        length: p.length ?? "",
+        kg: p.kg ?? "",
+        location: p.location ?? "",
+        categories: p.categories ?? [],
+        people: p.people ?? "",
+        link: p.link ?? "",
+        make: p.make ?? "N/A",
+        slug: p.slug && p.slug.trim() !== "" ? p.slug : String(p.id),
+        description: p.description ?? "",
+        sku: p.sku ?? "",
       }))
     : [];
+
+  // 🧾 Log sample data for quick inspection
+  console.log("🔎 Sample of first 5 products:");
+  console.table(
+    allProducts.slice(0, 5).map((p) => ({
+      id: p.id,
+      name: p.name,
+      make: p.make,
+      condition: p.condition,
+      price: p.regular_price,
+      sale_price: p.sale_price,
+      slug: p.slug,
+      image: p.image,
+    }))
+  );
 
   // Step 3️⃣: Match and merge IDs with full product data
   const findById = (id: string | number) =>
@@ -162,8 +207,17 @@ export const fetchProductListings = async (
     .map((id) => findById(id))
     .filter(Boolean) as Item[];
 
+  console.log(
+    "🧾 [Merged Data] Counts → Featured:",
+    featuredProducts.length,
+    "| Products:",
+    products.length,
+    "| Exclusive:",
+    exclusiveProducts.length
+  );
+
   // Step 4️⃣: Return merged structured data
-  return {
+  const response = {
     success: true,
     data: {
       featured_products: featuredProducts,
@@ -172,4 +226,12 @@ export const fetchProductListings = async (
       premium_products: [],
     },
   };
+
+  console.log("🚀 [fetchProductListings] Final API Response Summary:", {
+    featured: featuredProducts.length,
+    products: products.length,
+    exclusive: exclusiveProducts.length,
+  });
+
+  return response;
 };

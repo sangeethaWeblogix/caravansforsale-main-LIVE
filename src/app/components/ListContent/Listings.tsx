@@ -1,8 +1,8 @@
  "use client";
 
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
-import { fetchListings } from "@/api/listings/api"; // For filter metadata
-import { fetchProductListings } from "@/api/new-list/api"; // For product data
+import { fetchListings } from "@/api/listings/api";
+import { fetchProductListings } from "@/api/new-list/api";
 import Listing from "./LisitingContent";
 import CaravanFilter from "../../components/CaravanFilter";
 import SkeletonListing from "../../components/skelton";
@@ -36,9 +36,9 @@ export default function ListingsPage({
   const [filters, setFilters] = useState<Filters>({});
   const [msid, setMsid] = useState<string | null>(null);
 
-  const [isMainLoading, setIsMainLoading] = useState(false);
-  const [isFeaturedLoading, setIsFeaturedLoading] = useState(false);
-  const [isPremiumLoading, setIsPremiumLoading] = useState(false);
+  const [isMainLoading, setIsMainLoading] = useState(true);
+  const [isFeaturedLoading, setIsFeaturedLoading] = useState(true);
+  const [isPremiumLoading, setIsPremiumLoading] = useState(true);
 
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [exclusiveProducts, setExclusiveProducts] = useState<Product[]>([]);
@@ -46,13 +46,10 @@ export default function ListingsPage({
   const [nonFeaturedProducts, setNonFeaturedProducts] = useState<Product[]>([]);
   const [paginatedProducts, setPaginatedProducts] = useState<Product[]>([]);
 
-  const [categories, setCategories] = useState<{ name: string; slug: string }[]>(
-    []
-  );
+  const [categories, setCategories] = useState<{ name: string; slug: string }[]>([]);
   const [makes, setMakes] = useState<{ name: string; slug: string }[]>([]);
   const [models, setModels] = useState<{ name: string; slug: string }[]>([]);
   const [states, setStates] = useState<{ name: string; value: string }[]>([]);
-
   const [emptyProduct, setEmptyProduct] = useState(false);
   const mobileFiltersRef = useRef<HTMLDivElement>(null);
 
@@ -75,8 +72,9 @@ export default function ListingsPage({
     }
   }, [pagination.current_page]);
 
-  // 🧩 Fetch logic
+  // 🧠 Fetch all listings and filter metadata
   const loadAllData = useCallback(async () => {
+    console.log("🚀 Loading listings data...");
     setIsMainLoading(true);
     setIsFeaturedLoading(true);
     setIsPremiumLoading(true);
@@ -95,6 +93,7 @@ export default function ListingsPage({
       setPremiumProducts(premium);
       setNonFeaturedProducts(nonFeatured);
 
+      // Filters metadata
       const filterRes = await fetchListings(filters);
       const filterData = filterRes?.data ?? {};
       setCategories(filterData.all_categories ?? []);
@@ -102,9 +101,9 @@ export default function ListingsPage({
       setModels(filterData.model_options ?? []);
       setStates(filterData.states ?? []);
 
+      // Pagination setup
       const totalPages = Math.ceil(nonFeatured.length / ITEMS_PER_PAGE);
-      const firstPage = nonFeatured.slice(0, ITEMS_PER_PAGE);
-      setPaginatedProducts(firstPage);
+      setPaginatedProducts(nonFeatured.slice(0, ITEMS_PER_PAGE));
       setPagination({
         current_page: 1,
         total_pages: totalPages,
@@ -114,7 +113,7 @@ export default function ListingsPage({
 
       setEmptyProduct(nonFeatured.length === 0);
     } catch (err) {
-      console.error("❌ API Fetch Error:", err);
+      console.error("❌ Error fetching listings:", err);
       setEmptyProduct(true);
     } finally {
       setIsMainLoading(false);
@@ -123,78 +122,44 @@ export default function ListingsPage({
     }
   }, [filters]);
 
-  // 🧠 Use SSR initial data immediately (no loading flicker)
- useEffect(() => {
-  if (initialData?.data?.products?.length > 0) {
-    // 🕐 Small delay to allow smooth skeleton fade
-    setIsMainLoading(true);
-    setIsFeaturedLoading(true);
-    setIsPremiumLoading(true);
+  // ✅ Unified Load Effect (SSR + Client Fallback)
+  useEffect(() => {
+    const runLoad = async () => {
+      setIsMainLoading(true);
+      setIsFeaturedLoading(true);
+      setIsPremiumLoading(true);
 
-    const timer = setTimeout(() => {
-      const productData = initialData.data;
+      if (initialData?.data?.products?.length > 0) {
+        // Use SSR/Initial data immediately
+        const productData = initialData.data;
+        setFeaturedProducts(productData.featured_products ?? []);
+        setExclusiveProducts(productData.exclusive_products ?? []);
+        setPremiumProducts(productData.premium_products ?? []);
+        setNonFeaturedProducts(productData.products ?? []);
 
-      setFeaturedProducts(productData.featured_products ?? []);
-      setExclusiveProducts(productData.exclusive_products ?? []);
-      setPremiumProducts(productData.premium_products ?? []);
-      setNonFeaturedProducts(productData.products ?? []);
+        const totalPages = Math.ceil(
+          (productData.products?.length ?? 0) / ITEMS_PER_PAGE
+        );
+        setPaginatedProducts(productData.products?.slice(0, ITEMS_PER_PAGE) ?? []);
+        setPagination({
+          current_page: page || 1,
+          total_pages: totalPages,
+          total_products: productData.products?.length ?? 0,
+          per_page: ITEMS_PER_PAGE,
+        });
+        setEmptyProduct(productData.products?.length === 0);
+      } else {
+        // Fallback to client fetch
+        await loadAllData();
+      }
 
-      const totalPages = Math.ceil(
-        (productData.products?.length ?? 0) / ITEMS_PER_PAGE
-      );
-      const firstPage = productData.products?.slice(0, ITEMS_PER_PAGE) ?? [];
-      setPaginatedProducts(firstPage);
+      // After render, trigger a soft refresh for latest data
+      setTimeout(() => {
+        loadAllData();
+      }, 1000);
+    };
 
-      setPagination({
-        current_page: page || 1,
-        total_pages: totalPages,
-        total_products: productData.products?.length ?? 0,
-        per_page: ITEMS_PER_PAGE,
-      });
-
-      setEmptyProduct(productData.products?.length === 0);
-
-      // ✅ Hide skeletons after short delay
-      setIsMainLoading(false);
-      setIsFeaturedLoading(false);
-      setIsPremiumLoading(false);
-    }, 500); // 500ms delay just for skeleton animation
-
-    return () => clearTimeout(timer);
-  } else {
-    loadAllData();
-  }
-}, [initialData, loadAllData, page]);
- useEffect(() => {
-    if (initialData?.data?.products?.length > 0) {
-      const productData = initialData.data;
-
-      setFeaturedProducts(productData.featured_products ?? []);
-      setExclusiveProducts(productData.exclusive_products ?? []);
-      setPremiumProducts(productData.premium_products ?? []);
-      setNonFeaturedProducts(productData.products ?? []);
-
-      const totalPages = Math.ceil(
-        (productData.products?.length ?? 0) / ITEMS_PER_PAGE
-      );
-      const firstPage = productData.products?.slice(0, ITEMS_PER_PAGE) ?? [];
-      setPaginatedProducts(firstPage);
-
-      setPagination({
-        current_page: page || 1,
-        total_pages: totalPages,
-        total_products: productData.products?.length ?? 0,
-        per_page: ITEMS_PER_PAGE,
-      });
-
-      setEmptyProduct(productData.products?.length === 0);
-      setIsMainLoading(false);
-      setIsFeaturedLoading(false);
-      setIsPremiumLoading(false);
-    } else {
-      // 🚀 If no initial data (client-side filter change)
-      loadAllData();
-    }
+    runLoad();
   }, [initialData, loadAllData, page]);
 
   // ✅ Pagination logic
@@ -228,18 +193,13 @@ export default function ListingsPage({
         normalizedFilters[key] = String(value);
       }
     }
-
-    setFilters((prev) => ({
-      ...prev,
-      ...normalizedFilters,
-    }));
-
+    setFilters((prev) => ({ ...prev, ...normalizedFilters }));
     setPagination((prev) => ({ ...prev, current_page: 1 }));
-    loadAllData(); // Fetch only when filters change
+    loadAllData();
   };
 
   return (
-    <>
+       <>
       <Head>
         <title>{metaTitle || "Default Title"}</title>
         <meta
