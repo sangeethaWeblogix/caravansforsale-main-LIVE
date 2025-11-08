@@ -176,12 +176,19 @@ import { toSlug } from "@/utils/seo/slug";
     console.log("data", uniqueProducts);
 
     // ✅ Helper: generate up to 5 image URLs from SKU
-const getProductImages = (sku?: string): string[] => {
-  if (!sku) return ["/images/sample3.jpg"]; // fallback
-  const base = `https://www.admin.caravansforsale.com.au/wp-content/uploads/thumbnail/${sku}`;
-  return Array.from({ length: 5 }, (_, i) => `${base}/${i + 1}.jpg`);
-};
+ const getProductImages = (sku?: string, slug?: string): string[] => {
+  if (!sku || !slug) return ["/images/sample3.jpg"]; // fallback
 
+  const base = `https://www.admin.caravansforsale.com.au/wp-content/uploads/thumbnails/${sku}`;
+
+  // First image = main
+  const mainImage = `${base}/${slug}-main.jpg`;
+
+  // Remaining = sub1, sub2, sub3, sub4
+  const subImages = Array.from({ length: 4 }, (_, i) => `${base}/${slug}-sub${i + 1}.jpg`);
+
+  return [mainImage, ...subImages];
+};
  
 // ✅ Randomly shuffle premium products on each page load
  // ✅ Premium products shuffle after mount
