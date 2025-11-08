@@ -291,7 +291,7 @@ export default function ClientLogger({
       return y
         ? [
             {
-              href: `/listings/?acustom_fromyears=${y}&acustom_toyears=${y}`,
+              href: `/listings/?${y}-caravans-range`,
               text: v,
             },
           ]
