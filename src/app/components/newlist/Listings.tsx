@@ -376,7 +376,25 @@ if (msid) query.set("msid", msid);
   }
 }, [pagination.current_page, msid]);
 
- 
+
+ useEffect(() => {
+  if (pagination.current_page > 1) {
+    const newMsid = uuidv4();
+    setMsid(newMsid);
+    sessionStorage.setItem("msid", newMsid);
+
+    const url = new URL(window.location.href);
+    url.searchParams.set("msid", newMsid);
+    window.history.replaceState({}, "", url.toString());
+  } else {
+    setMsid(null);
+    sessionStorage.removeItem("msid");
+    const url = new URL(window.location.href);
+    url.searchParams.delete("msid");
+    window.history.replaceState({}, "", url.toString());
+  }
+}, [pagination.current_page]);
+
    useEffect(() => {
      if (initialData?.data?.products) {
        const transformed = transformApiItemsToProducts(
@@ -547,50 +565,53 @@ if (msid) query.set("msid", msid);
  
  const handleNextPage = useCallback(async () => {
   if (pagination.current_page < pagination.total_pages) {
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    const nextPage = pagination.current_page + 1;
 
+    // Start skeletons
     setIsMainLoading(true);
     setIsFeaturedLoading(true);
     setIsPremiumLoading(true);
 
-    const nextPage = pagination.current_page + 1;
-    sessionStorage.setItem(`page_${msid}`, nextPage.toString()); // ✅ store in session
-
     try {
+      // Just fetch new data — same page, no reload
       await loadListings(nextPage, filtersRef.current, true);
-    } catch (error) {
-      console.error("Error loading next page:", error);
+
+      // Update pagination in memory only
+      setPagination((prev) => ({ ...prev, current_page: nextPage }));
+
+      // Smooth scroll
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch (err) {
+      console.error("❌ Next page load failed:", err);
     } finally {
       setIsMainLoading(false);
       setIsFeaturedLoading(false);
       setIsPremiumLoading(false);
     }
   }
-}, [pagination, loadListings, msid]);
+}, [pagination, loadListings]);
 
-   // ✅ FIXED: Proper handlePrevPage function
 const handlePrevPage = useCallback(async () => {
   if (pagination.current_page > 1) {
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    const prevPage = pagination.current_page - 1;
 
     setIsMainLoading(true);
     setIsFeaturedLoading(true);
     setIsPremiumLoading(true);
-
-    const prevPage = pagination.current_page - 1;
-    sessionStorage.setItem(`page_${msid}`, prevPage.toString()); // ✅ store in session
 
     try {
       await loadListings(prevPage, filtersRef.current, true);
-    } catch (error) {
-      console.error("Error loading previous page:", error);
+      setPagination((prev) => ({ ...prev, current_page: prevPage }));
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch (err) {
+      console.error("❌ Prev page load failed:", err);
     } finally {
       setIsMainLoading(false);
       setIsFeaturedLoading(false);
       setIsPremiumLoading(false);
     }
   }
-}, [pagination, loadListings, msid]);
+}, [pagination, loadListings]);
 
 useEffect(() => {
   if (!msid) return;
