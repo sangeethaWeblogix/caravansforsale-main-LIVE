@@ -178,15 +178,15 @@ import { toSlug } from "@/utils/seo/slug";
 
     // ✅ Helper: generate up to 5 image URLs from SKU
 const getProductImages = (sku?: string, slug?: string): string[] => {
-  if (!sku || !slug) return ["/images/sample3.jpg"]; // fallback
+  if (!sku || !slug) return ["/images/sample3.webp"]; // fallback
 
   const base = `https://www.admin.caravansforsale.com.au/wp-content/uploads/thumbnails/${sku}`;
 
   // First image = main
-  const mainImage = `${base}/${slug}-main.jpg`;
+  const mainImage = `${base}/${slug}-main.webp`;
 
   // Remaining = sub1, sub2, sub3, sub4
-  const subImages = Array.from({ length: 4 }, (_, i) => `${base}/${slug}-sub${i + 1}.jpg`);
+  const subImages = Array.from({ length: 4 }, (_, i) => `${base}/${slug}-sub${i + 1}.webp`);
 
   return [mainImage, ...subImages];
 };
