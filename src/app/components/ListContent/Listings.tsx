@@ -810,6 +810,7 @@ useEffect(() => {
      const slugParts = pathKey.split("/listings/")[1]?.split("/") || [];
      const parsedFromURL = parseSlugToFilters(slugParts);
  
+
      const pageFromURL = validatePage(searchParams.get("page"));
  
      const merged: Filters = {

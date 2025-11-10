@@ -62,15 +62,23 @@ export default async function Listings({
       const allowedPatterns = [
         /-state$/,
         /-category$/,
-        /^under-\d+$/,
+        /-condition$/,
+        /-region$/,
+        /-suburb$/,
+        /-search$/,
+        /-kg-atm$/,
+        /-length-in-feet$/,
+        /-people-sleeping-capacity$/,
         /^over-\d+$/,
-        /^atm-\d+$/,
-        /^sleeps-\d+$/,
-        /^length-\d+$/,
-        /^width-\d+$/,
-        /^weight-\d+$/,
-        /^price-\d+$/,
-        /^([a-z0-9-]+)-\d{4}$/,
+        /^under-\d+$/,
+        /^between-\d+-\d+$/,
+        /^between-\d+-kg-\d+-kg-atm$/,
+        /^between-\d+-\d+-length-in-feet$/,
+        /^between-\d+-\d+-people-sleeping-capacity$/,
+        /^\d{4}$/,
+        /^\d{4}-caravans-range$/,
+        /^([a-z0-9-]+)-\d{4}-suburb$/,
+        /^([a-z0-9-]+)-suburb$/,
       ];
       const isAllowed = allowedPatterns.some((r) => r.test(lower));
       const looksGibberish =
@@ -117,7 +125,165 @@ export default async function Listings({
   // ✅ Parse filters
   const filters = parseSlugToFilters(slug, resolvedSearchParams);
 
-  // 🧩 New Location Hierarchy Rule
+  // ✅ STRICT ORDER VALIDATION: Enforce exact segment order
+  const segmentOrder = [
+    'make',           // 1. Make (simple segment)
+    'model',          // 2. Model (simple segment)  
+    'condition',      // 3. Condition
+    'category',       // 4. Category
+    'state',          // 5. State
+    'region',         // 6. Region
+    'suburb',         // 7. Suburb
+    'price',          // 8. Price
+    'weight',         // 9. Weight (kg-atm)
+    'length',         // 10. Length
+    'sleeps',         // 11. Sleeps
+    'year',           // 12. Year
+    'search'          // 13. Search
+  ];
+
+  // Map each segment to its type and expected position
+  const segmentAnalysis: Array<{ type: string, value: string, actualPosition: number, expectedPosition: number }> = [];
+
+  slug.forEach((part, index) => {
+    const lowerPart = part.toLowerCase();
+    
+    if (!part.includes('-') && 
+        !part.endsWith('-state') && 
+        !part.endsWith('-region') && 
+        !part.endsWith('-suburb') && 
+        !part.endsWith('-condition') &&
+        !part.endsWith('-category') &&
+        !part.endsWith('-search') &&
+        !/^\d+$/.test(part) &&
+        !part.includes('=')) {
+      // This is a make or model segment (simple segment without dashes)
+      const existingMake = segmentAnalysis.find(seg => seg.type === 'make');
+      const existingModel = segmentAnalysis.find(seg => seg.type === 'model');
+      
+      if (!existingMake) {
+        segmentAnalysis.push({ 
+          type: 'make', 
+          value: part, 
+          actualPosition: index, 
+          expectedPosition: segmentOrder.indexOf('make') 
+        });
+      } else if (!existingModel) {
+        segmentAnalysis.push({ 
+          type: 'model', 
+          value: part, 
+          actualPosition: index, 
+          expectedPosition: segmentOrder.indexOf('model') 
+        });
+      }
+    } else if (part.endsWith('-condition')) {
+      segmentAnalysis.push({ 
+        type: 'condition', 
+        value: part, 
+        actualPosition: index, 
+        expectedPosition: segmentOrder.indexOf('condition') 
+      });
+    } else if (part.endsWith('-category')) {
+      segmentAnalysis.push({ 
+        type: 'category', 
+        value: part, 
+        actualPosition: index, 
+        expectedPosition: segmentOrder.indexOf('category') 
+      });
+    } else if (part.endsWith('-state')) {
+      segmentAnalysis.push({ 
+        type: 'state', 
+        value: part, 
+        actualPosition: index, 
+        expectedPosition: segmentOrder.indexOf('state') 
+      });
+    } else if (part.endsWith('-region')) {
+      segmentAnalysis.push({ 
+        type: 'region', 
+        value: part, 
+        actualPosition: index, 
+        expectedPosition: segmentOrder.indexOf('region') 
+      });
+    } else if (part.endsWith('-suburb') || part.includes('-suburb')) {
+      segmentAnalysis.push({ 
+        type: 'suburb', 
+        value: part, 
+        actualPosition: index, 
+        expectedPosition: segmentOrder.indexOf('suburb') 
+      });
+    } else if (part.includes('-kg-atm')) {
+      segmentAnalysis.push({ 
+        type: 'weight', 
+        value: part, 
+        actualPosition: index, 
+        expectedPosition: segmentOrder.indexOf('weight') 
+      });
+    } else if (part.includes('-length-in-feet')) {
+      segmentAnalysis.push({ 
+        type: 'length', 
+        value: part, 
+        actualPosition: index, 
+        expectedPosition: segmentOrder.indexOf('length') 
+      });
+    } else if (part.includes('-people-sleeping-capacity')) {
+      segmentAnalysis.push({ 
+        type: 'sleeps', 
+        value: part, 
+        actualPosition: index, 
+        expectedPosition: segmentOrder.indexOf('sleeps') 
+      });
+    } else if (part.includes('-caravans-range')) {
+      segmentAnalysis.push({ 
+        type: 'year', 
+        value: part, 
+        actualPosition: index, 
+        expectedPosition: segmentOrder.indexOf('year') 
+      });
+    } else if (part.endsWith('-search')) {
+      segmentAnalysis.push({ 
+        type: 'search', 
+        value: part, 
+        actualPosition: index, 
+        expectedPosition: segmentOrder.indexOf('search') 
+      });
+    } else if (/^over-\d+$/.test(lowerPart) || /^under-\d+$/.test(lowerPart) || /^between-\d+-\d+$/.test(lowerPart)) {
+      segmentAnalysis.push({ 
+        type: 'price', 
+        value: part, 
+        actualPosition: index, 
+        expectedPosition: segmentOrder.indexOf('price') 
+      });
+    }
+  });
+
+  // ✅ Validate strict order: segments must appear in correct sequence
+  let hasInvalidOrder = false;
+  
+  // Sort segments by their actual position
+  const sortedSegments = [...segmentAnalysis].sort((a, b) => a.actualPosition - b.actualPosition);
+  
+  // Check if segments appear in the correct expected order
+  for (let i = 0; i < sortedSegments.length; i++) {
+    const currentSegment = sortedSegments[i];
+    
+    // Check if this segment's expected position is less than previous segments' expected positions
+    for (let j = 0; j < i; j++) {
+      const previousSegment = sortedSegments[j];
+      if (currentSegment.expectedPosition < previousSegment.expectedPosition) {
+        hasInvalidOrder = true;
+        break;
+      }
+    }
+    if (hasInvalidOrder) break;
+  }
+
+  // ❌ Trigger 404 for any wrong order
+  if (hasInvalidOrder) {
+    console.log('Invalid segment order detected:', sortedSegments);
+    notFound();
+  }
+
+  // 🧩 Location Hierarchy Rule
   const hasState = !!filters.state;
   const hasRegion = !!filters.region;
   const hasSuburb = !!filters.suburb;
