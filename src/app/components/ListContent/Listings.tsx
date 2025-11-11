@@ -1029,7 +1029,7 @@ useEffect(() => {
                      <div className="col-lg-6">
       <SkeletonListing count={8} />
     </div>
-                 ) : products.length < 0 ? (
+                 ) : products.length > 0 ? (
                   <Listing
                     products={products}
                     data={items}
