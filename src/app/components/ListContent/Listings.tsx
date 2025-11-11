@@ -165,7 +165,7 @@
 
  const [clickid, setclickid] = useState<string | null>(null);
  const [isRestored, setIsRestored] = useState(false);
-
+console.log(isRestored)
  // 1️⃣  persistence helpers  (top of file near imports)
 const PAGE_KEY = (id: string) => `page_${id}`;
 const savePage = (id: string, page: number) => {
