@@ -162,7 +162,7 @@
    const [isPremiumLoading, setIsPremiumLoading] = useState(false);
    const [isUsingInitialData, setIsUsingInitialData] = useState(!!initialData);
 
- const [msid, setMsid] = useState<string | null>(null);
+ const [clickid, setclickid] = useState<string | null>(null);
  
    const rawPage = searchParams.get("page");
  
@@ -277,20 +277,20 @@
  useEffect(() => {
   // This runs every time the current page changes
   if (pagination.current_page > 1) {
-    // Generate new msid every time user navigates beyond first page
-    const newMsid = uuidv4();
-    setMsid(newMsid);
-    sessionStorage.setItem("msid", newMsid);
+    // Generate new clickid every time user navigates beyond first page
+    const newclickid = uuidv4();
+    setclickid(newclickid);
+    sessionStorage.setItem("clickid", newclickid);
 
     const url = new URL(window.location.href);
-    url.searchParams.set("msid", newMsid);
+    url.searchParams.set("clickid", newclickid);
     window.history.replaceState({}, "", url.toString());
   } else {
-    // On page 1, remove msid from URL
-    setMsid(null);
-    sessionStorage.removeItem("msid");
+    // On page 1, remove clickid from URL
+    setclickid(null);
+    sessionStorage.removeItem("clickid");
     const url = new URL(window.location.href);
-    url.searchParams.delete("msid");
+    url.searchParams.delete("clickid");
     window.history.replaceState({}, "", url.toString());
   }
 }, [pagination.current_page]);
@@ -356,7 +356,7 @@
        if (!Number.isNaN(r) && r !== DEFAULT_RADIUS) {
          query.set("radius_kms", String(r));
        }
-if (msid) query.set("msid", msid);
+if (clickid) query.set("clickid", clickid);
  
        const safeSlug = slug.endsWith("/") ? slug : `${slug}/`; // 👈 important
        const finalURL = query.toString() ? `${safeSlug}?${query}` : safeSlug;
@@ -368,29 +368,29 @@ if (msid) query.set("msid", msid);
      [router, DEFAULT_RADIUS]
    );
  useEffect(() => {
-  if (msid) {
+  if (clickid) {
     const url = new URL(window.location.href);
-    url.searchParams.set("msid", msid);
+    url.searchParams.set("clickid", clickid);
     url.searchParams.delete("page");
     window.history.replaceState({}, "", url.toString());
   }
-}, [pagination.current_page, msid]);
+}, [pagination.current_page, clickid]);
 
 
  useEffect(() => {
   if (pagination.current_page > 1) {
-    const newMsid = uuidv4();
-    setMsid(newMsid);
-    sessionStorage.setItem("msid", newMsid);
+    const newclickid = uuidv4();
+    setclickid(newclickid);
+    sessionStorage.setItem("clickid", newclickid);
 
     const url = new URL(window.location.href);
-    url.searchParams.set("msid", newMsid);
+    url.searchParams.set("clickid", newclickid);
     window.history.replaceState({}, "", url.toString());
   } else {
-    setMsid(null);
-    sessionStorage.removeItem("msid");
+    setclickid(null);
+    sessionStorage.removeItem("clickid");
     const url = new URL(window.location.href);
-    url.searchParams.delete("msid");
+    url.searchParams.delete("clickid");
     window.history.replaceState({}, "", url.toString());
   }
 }, [pagination.current_page]);
@@ -614,9 +614,9 @@ const handlePrevPage = useCallback(async () => {
 }, [pagination, loadListings]);
 
 useEffect(() => {
-  if (!msid) return;
+  if (!clickid) return;
 
-  const savedPage = sessionStorage.getItem(`page_${msid}`);
+  const savedPage = sessionStorage.getItem(`page_${clickid}`);
   if (savedPage) {
     const pageNum = parseInt(savedPage, 10);
     if (pageNum > 0) {
@@ -624,7 +624,7 @@ useEffect(() => {
       loadListings(pageNum, filtersRef.current, true);
     }
   }
-}, [msid]);
+}, [clickid]);
 
 
    console.log("paginationapi", pagination);

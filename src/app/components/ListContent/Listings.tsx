@@ -163,8 +163,21 @@
    const [isPremiumLoading, setIsPremiumLoading] = useState(false);
    const [isUsingInitialData, setIsUsingInitialData] = useState(!!initialData);
 
- const [msid, setMsid] = useState<string | null>(null);
- 
+ const [clickid, setclickid] = useState<string | null>(null);
+ const [isRestored, setIsRestored] = useState(false);
+
+ // 1️⃣  persistence helpers  (top of file near imports)
+const PAGE_KEY = (id: string) => `page_${id}`;
+const savePage = (id: string, page: number) => {
+  try { localStorage.setItem(PAGE_KEY(id), String(page)); } catch {}
+};
+const readPage = (id: string): number | null => {
+  try {
+    const v = localStorage.getItem(PAGE_KEY(id));
+    return v ? parseInt(v, 10) : null;
+  } catch { return null; }
+};
+
    const rawPage = searchParams.get("page");
  
    // ✅ If page is missing → default to 1
@@ -275,26 +288,7 @@
  
    // Parse slug ONCE on mount; do not fetch here
    const initializedRef = useRef(false);
- useEffect(() => {
-  // This runs every time the current page changes
-  if (pagination.current_page > 1) {
-    // Generate new msid every time user navigates beyond first page
-    const newMsid = uuidv4();
-    setMsid(newMsid);
-    sessionStorage.setItem("msid", newMsid);
-
-    const url = new URL(window.location.href);
-    url.searchParams.set("msid", newMsid);
-    window.history.replaceState({}, "", url.toString());
-  } else {
-    // On page 1, remove msid from URL
-    setMsid(null);
-    sessionStorage.removeItem("msid");
-    const url = new URL(window.location.href);
-    url.searchParams.delete("msid");
-    window.history.replaceState({}, "", url.toString());
-  }
-}, [pagination.current_page]);
+ 
 
    useEffect(() => {
      if (initializedRef.current) return;
@@ -302,7 +296,7 @@
  
      const path = pathname;
      const slugParts = path.split("/listings/")[1]?.split("/") || [];
-     const parsed = parseSlugToFilters(slugParts);
+    const parsed = parseSlugToFilters(slugParts);
  
      const merged = { ...parsed, ...incomingFilters };
      filtersRef.current = merged;
@@ -357,7 +351,7 @@
        if (!Number.isNaN(r) && r !== DEFAULT_RADIUS) {
          query.set("radius_kms", String(r));
        }
-if (msid) query.set("msid", msid);
+    if (clickid) query.set("clickid", clickid); // only clickid
  
        const safeSlug = slug.endsWith("/") ? slug : `${slug}/`; // 👈 important
        const finalURL = query.toString() ? `${safeSlug}?${query}` : safeSlug;
@@ -368,14 +362,39 @@ if (msid) query.set("msid", msid);
      },
      [router, DEFAULT_RADIUS]
    );
- useEffect(() => {
-  if (msid) {
-    const url = new URL(window.location.href);
-    url.searchParams.set("msid", msid);
-    url.searchParams.delete("page");
-    window.history.replaceState({}, "", url.toString());
+
+
+   // put near your other helpers
+const getUrlParams = () => new URLSearchParams(window.location.search);
+const setUrlParams = (params: Record<string, string | undefined>) => {
+  const url = new URL(window.location.href);
+  Object.entries(params).forEach(([k, v]) => {
+    if (v === undefined || v === null || v === "") url.searchParams.delete(k);
+    else url.searchParams.set(k, v);
+  });
+  window.history.replaceState({}, "", url.toString());
+};
+
+
+useEffect(() => {
+  const qp = typeof window !== "undefined" ? getUrlParams() : null;
+  const incoming = qp?.get("clickid") || null;
+  if (incoming) setclickid(incoming);
+}, []);
+
+
+// tiny util
+ const ensureclickid = useCallback(() => {
+  if (!clickid) {
+    const id = uuidv4();
+    setclickid(id);
+    // reflect only clickid (no page)
+    setUrlParams({ clickid: id });
+    return id;
   }
-}, [pagination.current_page, msid]);
+  return clickid;
+}, [clickid]);
+  
 
  
    useEffect(() => {
@@ -492,6 +511,7 @@ if (msid) query.set("msid", msid);
            setMetaDescription(response?.seo?.metadescription ?? "");
            setMetaTitle(response?.seo?.metatitle ?? "");
           } else {
+            
                    setEmptyProduct(true);
                    // 🚨 Step 3 — No valid products → Fetch Exclusive Listings fallback
                    console.warn(
@@ -500,8 +520,7 @@ if (msid) query.set("msid", msid);
          
                    try {
          
-                     alert("no data found");
-                     const fallback = await fetchExclusiveListings(pageNum);
+                      const fallback = await fetchExclusiveListings(pageNum);
                      console.log("🔁 Exclusive API Response:", fallback);
          
                      const fallbackItems = fallback?.items ?? [];
@@ -555,7 +574,9 @@ if (msid) query.set("msid", msid);
     setIsPremiumLoading(true);
 
     const nextPage = pagination.current_page + 1;
-    sessionStorage.setItem(`page_${msid}`, nextPage.toString()); // ✅ store in session
+const id = ensureclickid(); 
+savePage(id, nextPage);// NEW: create clickid if first time
+    // sessionStorage.setItem(`page_${id}`, String(nextPage)); // save page for this session
 
     try {
       await loadListings(nextPage, filtersRef.current, true);
@@ -567,7 +588,7 @@ if (msid) query.set("msid", msid);
       setIsPremiumLoading(false);
     }
   }
-}, [pagination, loadListings, msid]);
+}, [pagination, loadListings, clickid, ensureclickid]);
 
    // ✅ FIXED: Proper handlePrevPage function
 const handlePrevPage = useCallback(async () => {
@@ -579,8 +600,8 @@ const handlePrevPage = useCallback(async () => {
     setIsPremiumLoading(true);
 
     const prevPage = pagination.current_page - 1;
-    sessionStorage.setItem(`page_${msid}`, prevPage.toString()); // ✅ store in session
-
+     const id = ensureclickid(); // NEW
+    sessionStorage.setItem(`page_${id}`, String(prevPage));
     try {
       await loadListings(prevPage, filtersRef.current, true);
     } catch (error) {
@@ -591,20 +612,30 @@ const handlePrevPage = useCallback(async () => {
       setIsPremiumLoading(false);
     }
   }
-}, [pagination, loadListings, msid]);
+}, [pagination, loadListings, clickid, ensureclickid]);
 
+ // add near other refs
+const restoredOnceRef = useRef(false);
+ // 3️⃣  restore effect
+ 
+// restore effect
 useEffect(() => {
-  if (!msid) return;
-
-  const savedPage = sessionStorage.getItem(`page_${msid}`);
-  if (savedPage) {
-    const pageNum = parseInt(savedPage, 10);
-    if (pageNum > 0) {
-      setPagination((prev) => ({ ...prev, current_page: pageNum }));
-      loadListings(pageNum, filtersRef.current, true);
-    }
+  if (!clickid) return;
+  const savedPage = readPage(clickid);
+  if (savedPage && savedPage > 0) {
+    restoredOnceRef.current = true;
+    setPagination(p => ({ ...p, current_page: savedPage }));
+    setUrlParams({ clickid });
+    loadListings(savedPage, filtersRef.current, true).finally(() => {
+      setIsRestored(true);  // ✅ mark restore complete
+    });
+  } else {
+    setUrlParams({ clickid });
+    setIsRestored(true); // ✅ no saved page, ready anyway
   }
-}, [msid]);
+}, [clickid]);
+
+
 
 
    console.log("paginationapi", pagination);
@@ -806,6 +837,10 @@ useEffect(() => {
  
    useEffect(() => {
      if (!initializedRef.current) return;
+     if (restoredOnceRef.current) {
+    restoredOnceRef.current = false; // reset for future real changes
+    return;
+  }
  
      const slugParts = pathKey.split("/listings/")[1]?.split("/") || [];
      const parsedFromURL = parseSlugToFilters(slugParts);
@@ -990,11 +1025,11 @@ useEffect(() => {
                 {/* Listings */}
                 {/* Listings */}
  
-{isLoading || isMainLoading || isFeaturedLoading || isPremiumLoading ? (
+{   isLoading || isMainLoading || isFeaturedLoading || isPremiumLoading  ? (
                      <div className="col-lg-6">
       <SkeletonListing count={8} />
     </div>
-                 ) : products.length > 0 ? (
+                 ) : products.length < 0 ? (
                   <Listing
                     products={products}
                     data={items}
@@ -1012,7 +1047,7 @@ useEffect(() => {
                     isFeaturedLoading={isFeaturedLoading}
                     isPremiumLoading={isPremiumLoading}
                   />
-                ) :  emptyProduct ? (
+                ) :  (
                   <ExculsiveContent
                     data={items}
                      pagination={pagination}
@@ -1023,7 +1058,8 @@ useEffect(() => {
                                         isPremiumLoading={isPremiumLoading}
 
                   />
-                 ) :  " "}
+                 ) 
+                }
 
                </div>
             </div>

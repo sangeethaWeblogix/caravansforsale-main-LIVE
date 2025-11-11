@@ -312,7 +312,7 @@ export default async function Listings({
 
   if (
     !response ||
-    response.success === false ||
+    // response.success === false ||
     (response.message &&
       response.message.toLowerCase().includes("validation failed")) ||
     (Array.isArray(response.errors) &&

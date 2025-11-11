@@ -113,7 +113,8 @@
        return true;
      });
    }, [data]);
-   console.log("pagoination", pagination);
+ 
+
 
    const getProductImages = (sku?: string): string[] => {
   if (!sku) return ["/images/sample3.jpg"]; // fallback
@@ -231,7 +232,7 @@
                                        )}
            
                                        {/* Hidden "View More" button that appears after last slide */}
-                                       <div
+                                       {/* <div
                                          id={`view-more-btn-${item}`}
                                          className="view-more-btn-wrapper"
                                        >
@@ -241,7 +242,7 @@
                                          >
                                            View More
                                          </Link>
-                                       </div>
+                                       </div> */}
                                      </div>
                                    </div>
                                    <div className="product_de">
