@@ -1,4 +1,4 @@
- export const dynamic = "force-dynamic";
+export const dynamic = "force-dynamic";
 
 import ListingsPage from "@/app/components/ListContent/Listings";
 import { parseSlugToFilters } from "../../components/urlBuilder";
@@ -147,125 +147,131 @@ export default async function Listings({
 
   slug.forEach((part, index) => {
     const lowerPart = part.toLowerCase();
-    
-    if (!part.includes('-') && 
-        !part.endsWith('-state') && 
-        !part.endsWith('-region') && 
-        !part.endsWith('-suburb') && 
-        !part.endsWith('-condition') &&
-        !part.endsWith('-category') &&
-        !part.endsWith('-search') &&
-        !/^\d+$/.test(part) &&
-        !part.includes('=')) {
+
+    if (!part.includes('-') &&
+      !part.endsWith('-state') &&
+      !part.endsWith('-region') &&
+      !part.endsWith('-suburb') &&
+      !part.endsWith('-condition') &&
+      !part.endsWith('-category') &&
+      !part.endsWith('-search') &&
+      !/^\d+$/.test(part) &&
+      !part.includes('=')) {
       // This is a make or model segment (simple segment without dashes)
       const existingMake = segmentAnalysis.find(seg => seg.type === 'make');
       const existingModel = segmentAnalysis.find(seg => seg.type === 'model');
-      
+
       if (!existingMake) {
-        segmentAnalysis.push({ 
-          type: 'make', 
-          value: part, 
-          actualPosition: index, 
-          expectedPosition: segmentOrder.indexOf('make') 
+        segmentAnalysis.push({
+          type: 'make',
+          value: part,
+          actualPosition: index,
+          expectedPosition: segmentOrder.indexOf('make')
         });
       } else if (!existingModel) {
-        segmentAnalysis.push({ 
-          type: 'model', 
-          value: part, 
-          actualPosition: index, 
-          expectedPosition: segmentOrder.indexOf('model') 
+        segmentAnalysis.push({
+          type: 'model',
+          value: part,
+          actualPosition: index,
+          expectedPosition: segmentOrder.indexOf('model')
         });
       }
     } else if (part.endsWith('-condition')) {
-      segmentAnalysis.push({ 
-        type: 'condition', 
-        value: part, 
-        actualPosition: index, 
-        expectedPosition: segmentOrder.indexOf('condition') 
+      segmentAnalysis.push({
+        type: 'condition',
+        value: part,
+        actualPosition: index,
+        expectedPosition: segmentOrder.indexOf('condition')
       });
     } else if (part.endsWith('-category')) {
-      segmentAnalysis.push({ 
-        type: 'category', 
-        value: part, 
-        actualPosition: index, 
-        expectedPosition: segmentOrder.indexOf('category') 
+      segmentAnalysis.push({
+        type: 'category',
+        value: part,
+        actualPosition: index,
+        expectedPosition: segmentOrder.indexOf('category')
       });
     } else if (part.endsWith('-state')) {
-      segmentAnalysis.push({ 
-        type: 'state', 
-        value: part, 
-        actualPosition: index, 
-        expectedPosition: segmentOrder.indexOf('state') 
+      segmentAnalysis.push({
+        type: 'state',
+        value: part,
+        actualPosition: index,
+        expectedPosition: segmentOrder.indexOf('state')
       });
     } else if (part.endsWith('-region')) {
-      segmentAnalysis.push({ 
-        type: 'region', 
-        value: part, 
-        actualPosition: index, 
-        expectedPosition: segmentOrder.indexOf('region') 
+      segmentAnalysis.push({
+        type: 'region',
+        value: part,
+        actualPosition: index,
+        expectedPosition: segmentOrder.indexOf('region')
       });
     } else if (part.endsWith('-suburb') || part.includes('-suburb')) {
-      segmentAnalysis.push({ 
-        type: 'suburb', 
-        value: part, 
-        actualPosition: index, 
-        expectedPosition: segmentOrder.indexOf('suburb') 
+      segmentAnalysis.push({
+        type: 'suburb',
+        value: part,
+        actualPosition: index,
+        expectedPosition: segmentOrder.indexOf('suburb')
       });
     } else if (part.includes('-kg-atm')) {
-      segmentAnalysis.push({ 
-        type: 'weight', 
-        value: part, 
-        actualPosition: index, 
-        expectedPosition: segmentOrder.indexOf('weight') 
+      segmentAnalysis.push({
+        type: 'weight',
+        value: part,
+        actualPosition: index,
+        expectedPosition: segmentOrder.indexOf('weight')
       });
     } else if (part.includes('-length-in-feet')) {
-      segmentAnalysis.push({ 
-        type: 'length', 
-        value: part, 
-        actualPosition: index, 
-        expectedPosition: segmentOrder.indexOf('length') 
+      segmentAnalysis.push({
+        type: 'length',
+        value: part,
+        actualPosition: index,
+        expectedPosition: segmentOrder.indexOf('length')
       });
     } else if (part.includes('-people-sleeping-capacity')) {
-      segmentAnalysis.push({ 
-        type: 'sleeps', 
-        value: part, 
-        actualPosition: index, 
-        expectedPosition: segmentOrder.indexOf('sleeps') 
+      segmentAnalysis.push({
+        type: 'sleeps',
+        value: part,
+        actualPosition: index,
+        expectedPosition: segmentOrder.indexOf('sleeps')
       });
     } else if (part.includes('-caravans-range')) {
-      segmentAnalysis.push({ 
-        type: 'year', 
-        value: part, 
-        actualPosition: index, 
-        expectedPosition: segmentOrder.indexOf('year') 
+      segmentAnalysis.push({
+        type: 'year',
+        value: part,
+        actualPosition: index,
+        expectedPosition: segmentOrder.indexOf('year')
       });
     } else if (part.endsWith('-search')) {
-      segmentAnalysis.push({ 
-        type: 'search', 
-        value: part, 
-        actualPosition: index, 
-        expectedPosition: segmentOrder.indexOf('search') 
+      segmentAnalysis.push({
+        type: 'search',
+        value: part,
+        actualPosition: index,
+        expectedPosition: segmentOrder.indexOf('search')
       });
     } else if (/^over-\d+$/.test(lowerPart) || /^under-\d+$/.test(lowerPart) || /^between-\d+-\d+$/.test(lowerPart)) {
-      segmentAnalysis.push({ 
-        type: 'price', 
-        value: part, 
-        actualPosition: index, 
-        expectedPosition: segmentOrder.indexOf('price') 
+      segmentAnalysis.push({
+        type: 'price',
+        value: part,
+        actualPosition: index,
+        expectedPosition: segmentOrder.indexOf('price')
       });
     }
   });
 
   // ✅ Validate strict order: segments must appear in correct sequence
   let hasInvalidOrder = false;
-  
+
   // Sort segments by their actual position
   const sortedSegments = [...segmentAnalysis].sort((a, b) => a.actualPosition - b.actualPosition);
-  
+
+  // Duplicate validation  
+  let duplicates = sortedSegments.filter((item, index, arr) => arr.findIndex(obj => obj.type === item.type) !== index);
+  if (duplicates.length > 0) {
+    notFound();
+  }
+
   // Check if segments appear in the correct expected order
   for (let i = 0; i < sortedSegments.length; i++) {
     const currentSegment = sortedSegments[i];
-    
+
     // Check if this segment's expected position is less than previous segments' expected positions
     for (let j = 0; j < i; j++) {
       const previousSegment = sortedSegments[j];
@@ -304,8 +310,8 @@ export default async function Listings({
     typeof pageParam === "string"
       ? parseInt(pageParam, 10)
       : Array.isArray(pageParam)
-      ? parseInt(pageParam[0] || "1", 10)
-      : undefined;
+        ? parseInt(pageParam[0] || "1", 10)
+        : undefined;
 
   // ✅ Fetch listings
   const response = await fetchListings({ ...filters, page });
