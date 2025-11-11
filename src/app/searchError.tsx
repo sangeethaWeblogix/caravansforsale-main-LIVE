@@ -224,7 +224,9 @@ export default function SearchSection() {
                     onFocus={showSuggestions}
                     onClick={showSuggestions}
                     onKeyDown={handleKeyDown}
+                    role="combobox"
                     aria-haspopup="listbox"
+                    aria-controls="suggestionList"
                     aria-expanded={isSuggestionBoxOpen}
                   />
                   <div
@@ -232,8 +234,7 @@ export default function SearchSection() {
                     style={{ display: isSuggestionBoxOpen ? "block" : "none" }}
                     onClick={closeSuggestions}
                     role="button"
-                       
-
+                    id="suggestionList"
                     aria-label="Close suggestions"
                   >
                     <i className="bi bi-x-lg" />
