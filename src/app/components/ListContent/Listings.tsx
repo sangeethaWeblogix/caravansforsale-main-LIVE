@@ -1047,7 +1047,7 @@ useEffect(() => {
                     isFeaturedLoading={isFeaturedLoading}
                     isPremiumLoading={isPremiumLoading}
                   />
-                ) :  emptyProduct ? (
+                ) :  
                   <ExculsiveContent
                     data={items}
                      pagination={pagination}
@@ -1058,7 +1058,7 @@ useEffect(() => {
                                         isPremiumLoading={isPremiumLoading}
 
                   />
-                 ) :  " "}
+                 }
 
                </div>
             </div>
