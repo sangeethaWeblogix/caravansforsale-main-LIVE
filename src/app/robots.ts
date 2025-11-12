@@ -16,8 +16,11 @@ export default function robots(): MetadataRoute.Robots {
           "/api", // block backend APIs
           "/*feed*",
           "*/feed/",
+          "*/page/",
+          "*/pages/",
           "/*feedfeed*",
           "/*feedfeedfeed*",
+
          
           
         ],
