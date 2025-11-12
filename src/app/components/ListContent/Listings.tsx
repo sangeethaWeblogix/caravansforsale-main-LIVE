@@ -419,11 +419,12 @@ useEffect(() => {
  
    useEffect(() => {
      console.log("🚀 Running Exclusive Listings fetch...");
- 
+   if (products.length < 0 && !emptyProduct) return;
+
      const loadExclusiveListings = async () => {
        try {
          const res = await fetchExclusiveListings(1);
-         console.log("✅ Exclusive Listings Response:", res);
+         console.log("Exclusive Listings Response:", res);
  
          if (res.items && res.items.length > 0) {
            setItems(res.items); // ✅ store in state
