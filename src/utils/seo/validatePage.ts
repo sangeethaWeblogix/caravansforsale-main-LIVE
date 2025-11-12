@@ -1,5 +1,5 @@
 // src/utils/seo/validatePage.ts
-import { notFound } from "next/navigation";
+import { redirect } from "next/navigation";
 
 /**
  * ✅ Strict URL query validation for listings
@@ -54,6 +54,6 @@ export function getValidPage(param: unknown, fullQuery: string): number | null {
 
 export function ensureValidPage(param: unknown, fullQuery: string): number {
   const valid = getValidPage(param, fullQuery);
-  if (!valid) notFound();
+  if (!valid) redirect("/404");
   return valid;
 }

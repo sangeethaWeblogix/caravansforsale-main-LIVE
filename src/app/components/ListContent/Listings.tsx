@@ -13,7 +13,7 @@
 
 
  import {
-   notFound,
+   redirect,
    usePathname,
    useRouter,
    useSearchParams,
@@ -187,12 +187,12 @@ const readPage = (id: string): number | null => {
    if (rawPage !== null) {
      // page must be all digits
      if (!/^\d+$/.test(rawPage)) {
-       notFound();
+      redirect("/404");
      }
  
      // must be >= 1
      if (!Number.isInteger(page) || page < 1) {
-       notFound();
+      redirect("/404");
      }
    }
 
@@ -324,17 +324,17 @@ const readPage = (id: string): number | null => {
      }
  
      if (raw.trim() === "") {
-       notFound(); // 🚫 block empty ?page=
+      redirect("/404"); // 🚫 block empty ?page=
      }
  
      if (!/^\d+$/.test(raw)) {
-       notFound(); // 🚫 block non-numeric
+      redirect("/404"); // 🚫 block non-numeric
      }
  
      const page = parseInt(raw, 10);
  
      if (!Number.isInteger(page) || page < 1) {
-       notFound(); // 🚫 block invalid numbers
+      redirect("/404"); // 🚫 block invalid numbers
      }
  
      return page;

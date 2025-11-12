@@ -6,7 +6,7 @@ import { Card, CardContent, Typography, Button } from "@mui/material";
 import Link from "next/link";
 import TickIcon from "../../../public/images/tick.jpg";
 import Image from "next/image";
-import { notFound } from "next/navigation"; // ✅ Import notFound
+import { redirect } from "next/navigation"; // ✅ Import notFound
 
 type RouteParams = { slug: string };
 type PageProps = { params: Promise<RouteParams> };
@@ -168,7 +168,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
   }
   const data = await fetchBlogDetail(slug);
   if (!data) {
-    notFound(); // ✅ Show Next.js 404 page
+    redirect("/404"); // ✅ Show Next.js 404 page
   }
 
   return (

@@ -4,7 +4,7 @@ import { fetchListings } from "@/api/listings/api";
 import type { Metadata } from "next";
 import { generateListingsMetadata } from "@/utils/seo/listingsMetadata";
 import { ensureValidPage } from "@/utils/seo/validatePage";
-import { notFound } from "next/navigation";
+import { redirect } from "next/navigation";
 import "../components/ListContent/newList.css"
 
 export const revalidate = 60;
@@ -34,7 +34,7 @@ export default async function ListingsPage({
 
   // ✅ only show 404 on API error, not on empty list
   if (!response || response.success === false) {
-    notFound();
+    redirect("/404");
   }
 
   const hasProducts =

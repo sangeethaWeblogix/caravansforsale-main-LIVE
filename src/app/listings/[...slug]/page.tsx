@@ -5,7 +5,7 @@ import { parseSlugToFilters } from "../../components/urlBuilder";
 import { metaFromSlug } from "../../../utils/seo/metaFromSlug";
 import type { Metadata } from "next";
 import { fetchListings } from "@/api/listings/api";
-import { notFound } from "next/navigation";
+import { redirect } from "next/navigation";
 import "../../components/ListContent/newList.css";
 
 type Params = Promise<{ slug?: string[] }>;
@@ -50,7 +50,7 @@ export default async function Listings({
       slugJoined.includes("?") ||
       slugJoined.includes("="))
   ) {
-    notFound();
+    redirect("/404");
   }
 
   // ❌ Reject gibberish slugs
@@ -84,17 +84,17 @@ export default async function Listings({
       return looksGibberish && !isAllowed;
     });
 
-    if (invalidSegment) notFound();
+    if (invalidSegment) redirect("/404");;
 
     const lastPart = slug[slug.length - 1];
-    if (/^\d+$/.test(lastPart)) notFound();
+    if (/^\d+$/.test(lastPart)) redirect("/404");;
 
     const suburbPinMatch = slug.find((part) =>
       /^([a-z0-9-]+)-(\d{4})$/.test(part)
     );
     const suburbPinIndex = suburbPinMatch ? slug.indexOf(suburbPinMatch) : -1;
     if (suburbPinIndex !== -1 && slug[suburbPinIndex + 1]?.match(/^\d{1,6}$/)) {
-      notFound();
+      redirect("/404");;
     }
 
     const hasInvalidSuburbWord = slug.some((part) => {
@@ -102,7 +102,7 @@ export default async function Listings({
       if (/^[a-z0-9-]+-suburb$/i.test(part)) return false;
       return /(^|\b)(suburb|suburbs)\b$/i.test(part);
     });
-    if (hasInvalidSuburbWord) notFound();
+    if (hasInvalidSuburbWord) redirect("/404");;
   }
 
   // 🚫 Block "page" or "feed" anywhere in slug or query
@@ -115,7 +115,7 @@ export default async function Listings({
         : /(page|feed)/i.test(String(v))
     );
 
-  if (urlHasBlockedWord) notFound();
+  if (urlHasBlockedWord) redirect("/404");;
 
   // ✅ Parse filters
   const filters = parseSlugToFilters(slug, resolvedSearchParams);
@@ -276,7 +276,7 @@ export default async function Listings({
       arr.findIndex((obj) => obj.type === item.type) !== index
   );
   if (duplicates.length > 0) {
-    notFound();
+    redirect("/404");
   }
 
   // Check if segments appear in the correct expected order
@@ -297,7 +297,7 @@ export default async function Listings({
   // ❌ Trigger 404 for any wrong order
   if (hasInvalidOrder) {
     console.log("Invalid segment order detected:", sortedSegments);
-    notFound();
+    redirect("/404");
   }
 
   // 🧩 Location Hierarchy Rule
@@ -310,7 +310,7 @@ export default async function Listings({
 
   // ❌ Invalid if region/suburb exist without state
   if (!validLocationCombo && (hasRegion || hasSuburb)) {
-    notFound();
+    redirect("/404");
   }
 
   // ✅ Convert page param safely
@@ -333,7 +333,7 @@ export default async function Listings({
     (Array.isArray(response.errors) &&
       response.errors.some((e) => e.toLowerCase().includes("invalid make")))
   ) {
-    notFound();
+    redirect("/404");
   }
 
   return <ListingsPage {...filters} initialData={response} />;

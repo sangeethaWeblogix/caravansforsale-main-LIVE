@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import { notFound } from "next/navigation";
+import { redirect } from "next/navigation";
 import FaqSection from "./FaqSection";
 import RelatedNews from "./RelatedNews";
 import "./details.css";
@@ -84,7 +84,7 @@ export default function BlogDetailsPage({
   const plainTitle = cleanTitle(data?.data?.blog_detail?.title);
 
   if (!post) {
-    notFound();
+    redirect("/404");
   }
   const [showFullToc, setShowFullToc] = useState(false);
 
