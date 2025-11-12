@@ -6,7 +6,7 @@ import { metaFromSlug } from "../../../utils/seo/metaFromSlug";
 import type { Metadata } from "next";
 import { fetchListings } from "@/api/listings/api";
 import { ensureValidPage } from "@/utils/seo/validatePage";
-import { notFound, redirect } from "next/navigation";
+import { redirect } from "next/navigation";
 
 type Params = Promise<{ slug?: string[] }>;
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
@@ -52,7 +52,7 @@ export default async function Listings({
     slugJoined.includes("?") ||
     slugJoined.includes("=")
   ) {
-    notFound();
+    redirect("/404");
   }
  if (
     slug.length > 0 && ( // Only run these checks if slug is not empty
@@ -65,7 +65,7 @@ export default async function Listings({
       slugJoined.includes("=")
     )
   ) {
-    notFound();
+    redirect("/404");
   }
 
   // 🚫 Reject unknown or gibberish slug segments (e.g., "mgnngj", "kjgkdf", "gk25")
@@ -96,13 +96,13 @@ const invalidSegment = slug.some((part) => {
 });
 
 if (invalidSegment) {
-  notFound();
+  redirect("/404");
 }
 
   // 2️⃣ Detect invalid final numeric segment
   const lastPart = slug[slug.length - 1];
   if (/^\d{1,6}$/.test(lastPart)) {
-    notFound();
+    redirect("/404");
   }
 
   // 3️⃣ Suburb + postcode rule (e.g., "jacana-3047")
@@ -115,12 +115,12 @@ if (invalidSegment) {
     suburbPinIndex !== -1 &&
     slug[suburbPinIndex + 1]?.match(/^\d{1,6}$/) // suburb-postcode followed by pure number
   ) {
-    notFound();
+    redirect("/404");
   }
 
   // 4️⃣ Maximum path depth (state, suburb, price, length, atm, sleeps, etc.)
   if (slug.length > 8) {
-    notFound();
+    redirect("/404");
   }
 // 🚫 Reject suburb/suburbs word in URL
 const hasInvalidSuburbWord = slug.some((part) => {
@@ -132,7 +132,7 @@ const hasInvalidSuburbWord = slug.some((part) => {
   return /(^|\b)(suburb|suburbs)\b$/i.test(part);
 });
 if (hasInvalidSuburbWord) {
-  notFound();
+  redirect("/404");
 }
 
   // 6️⃣ Parse slug to filter structure
@@ -168,7 +168,7 @@ if (hasInvalidSuburbWord) {
   });
 
   if (!filters || Object.keys(filters).length === 0 || looksInvalid) {
-    notFound();
+    redirect("/404");
   }
 
   // 7️⃣ Validate pagination

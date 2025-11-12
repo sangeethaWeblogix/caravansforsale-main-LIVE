@@ -7,7 +7,7 @@ import type { Metadata } from "next";
 import { fetchListings } from "@/api/listings/api";
 import { ensureValidPage } from "@/utils/seo/validatePage";
 import { validateFilters } from "@/utils/validateFilters"; // 👈 added
-import { notFound } from "next/navigation";
+import { redirect } from "next/navigation";
 
 type Params = Promise<{ slug?: string[] }>;
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
@@ -50,7 +50,7 @@ export default async function Listings({
     slugJoined.includes("..") ||
     slugJoined.includes("//")
   ) {
-    notFound();
+     redirect("/404");
   }
 
   // --- 2️⃣ Parse filters ---
@@ -67,7 +67,7 @@ export default async function Listings({
   const isValid = validateFilters(filters);
   if (!isValid) {
     // 👇 If URL pattern or filter combination is invalid
-    return notFound();
+    return redirect("/404");
   }
 
   // --- 5️⃣ Fetch listings ---
@@ -80,7 +80,7 @@ export default async function Listings({
     !Array.isArray(response.data.products) ||
     response.data.products.length === 0
   ) {
-    notFound();
+    redirect("/404");
   }
 
   return <ListingsPage {...filters} page={page} initialData={response} />;

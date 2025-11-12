@@ -1,7 +1,7 @@
 // app/product-details/[slug]/page.tsx
 import { Metadata } from "next";
 import ClientLogger from "./product";
-import { notFound } from "next/navigation";
+import { redirect } from "next/navigation";
 
 type RouteParams = { slug: string };
 type PageProps = { params: Promise<RouteParams> }; // ✅ params is a Promise
@@ -77,7 +77,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
 
   // ❌ If no product → 404 page
   if (!data || Object.keys(data).length === 0) {
-    notFound();
+    redirect("/404");
   }
 
   return (
