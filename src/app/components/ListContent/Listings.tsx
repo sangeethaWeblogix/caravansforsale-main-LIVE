@@ -195,6 +195,7 @@ const readPage = (id: string): number | null => {
        notFound();
      }
    }
+
  
    // ✅ Validate malformed URLs (client-side guard)
    useEffect(() => {
@@ -231,6 +232,7 @@ const readPage = (id: string): number | null => {
            : []
        );
        const [emptyProduct, setEmptyProduct] = useState(false);
+       console.log("emp", emptyProduct, isRestored)
 
    const [categories, setCategories] = useState<Category[]>(
      initialData?.data?.all_categories || []
