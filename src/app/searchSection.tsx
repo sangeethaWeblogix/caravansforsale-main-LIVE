@@ -1,50 +1,43 @@
  // src/app/components/SearchSection.tsx
  "use client";
- import "bootstrap/dist/css/bootstrap.min.css";
- import "bootstrap/dist/js/bootstrap.bundle.min.js";
+ 
  import React, { useEffect, useRef, useState } from "react";
  import Link from "next/link";
- import Image from "next/image";
  import { useRouter } from "next/navigation";
  import { flushSync } from "react-dom";
  import {
    fetchHomeSearchList, // GET /home_search (base list)
    fetchKeywordSuggestions, // GET /home_search/?keyword=<q> (typed list)
  } from "@/api/homeSearch/api";
+ import Image from "next/image";
  
  type Item = {
    title?: string;
    name?: string;
    heading?: string;
    make?: string;
+   url?: string;
    model?: string;
    variant?: string;
    slug?: string | number;
    id?: string | number;
+   label?: string;
  } & Record<string, unknown>;
  
  // Safe label extractor (avoid mixing ?? and || without parens)
- const labelOf = (x: Item): string => {
-   const basic =
-     x?.title ??
-     x?.name ??
-     x?.heading ??
-     [x?.make, x?.model, x?.variant].filter(Boolean).join(" ");
-   return (basic && String(basic).trim()) || String(x?.slug ?? x?.id ?? "");
- };
  
  export default function SearchSection() {
    const router = useRouter();
    const searchInputRef = useRef<HTMLInputElement | null>(null);
+   const [navigating, setNavigating] = useState(false);
  
    const [isSuggestionBoxOpen, setIsSuggestionBoxOpen] = useState(false);
    const [query, setQuery] = useState("");
-   const [suggestions, setSuggestions] = useState<string[]>([]);
-   const [baseSuggestions, setBaseSuggestions] = useState<string[]>([]); // list for first-click
+   const [suggestions, setSuggestions] = useState<Item[]>([]);
+   const [baseSuggestions, setBaseSuggestions] = useState<Item[]>([]); // list for first-click
    const [loading, setLoading] = useState(false);
    const [error, setError] = useState("");
- 
-   // ------------- base list (first click) -------------
+   // ------------- base list (first click) ---  const [loading, setLoading] = useState<string | null>(null);----------
    const loadBaseOnce = async () => {
      if (baseSuggestions.length) {
        setSuggestions(baseSuggestions);
@@ -54,17 +47,15 @@
        setLoading(true);
        setError("");
        const data = await fetchHomeSearchList();
-       const labels = Array.from(
-         new Set(
-           data
-             .map(labelOf)
-             .filter(Boolean)
-             .map((s) => s.trim())
-         )
-         
-       ).slice(0, 15);
+ 
+       const labels: Item[] = data.map((x) => ({
+         id: x.id,
+         label: (x.name ?? "").toString().trim(),
+         url: (x.url ?? "").toString(),
+       }));
+ 
        setBaseSuggestions(labels);
-       setSuggestions(labels); // show immediately
+       setSuggestions(labels);
      } catch (e: unknown) {
        setError(e instanceof Error ? e.message : "Failed to load");
      } finally {
@@ -74,7 +65,11 @@
  
    const showSuggestions = async () => {
      setIsSuggestionBoxOpen(true);
-     loadBaseOnce(); // first open shows base list
+ 
+     // ✅ Only load base list when input is empty
+     if (!query.trim()) {
+       await loadBaseOnce();
+     }
    };
  
    const closeSuggestions = () => setIsSuggestionBoxOpen(false);
@@ -89,10 +84,20 @@
        const t = setTimeout(async () => {
          try {
            const list = await fetchKeywordSuggestions(query, controller.signal);
-           const uniq = Array.from(new Set(list.map((s) => s.trim()))).slice(
-             0,
-             15
+           // Normalize into Item[]
+           const uniq: Item[] = Array.from(
+             new Map(
+               list.map((x, idx: number) => [
+                 (x.keyword || "").toString().trim(),
+                 {
+                   id: x.id ?? idx, // fallback id
+                   label: (x.keyword || "").toString().trim(), // ✅ always set label
+                   url: (x.url || "").toString(),
+                 },
+               ])
+             ).values()
            );
+ 
            setSuggestions(uniq);
          } catch (e: unknown) {
            if (e instanceof DOMException && e.name === "AbortError") return;
@@ -107,7 +112,6 @@
          clearTimeout(t);
        };
      } else {
-       // Under threshold: keep/show base list
        setSuggestions(baseSuggestions);
        setLoading(false);
        return () => controller.abort();
@@ -130,21 +134,59 @@
    //     setIsSuggestionBoxOpen(false);
    //   };
    // ------------- navigate helper (two routes) -------------
-   const navigateWithKeyword = (kwRaw: string) => {
-     const human = kwRaw.trim();
+   // final working
+   // const navigateWithKeyword = (s: Item) => {
+   //   const human = s.label?.trim();
+   //   if (!human) return;
+ 
+   //   flushSync(() => setQuery(human));
+   //   setIsSuggestionBoxOpen(false);
+ 
+   //   if (s.url && s.url.trim().length > 0) {
+   //     router.push(s.url, { scroll: true });
+   //   } else {
+   //     // Convert spaces or special chars to hyphen and add -search
+   //     const slug = human
+   //       .toLowerCase()
+   //       .trim()
+   //       .replace(/[^a-z0-9]+/g, "-") // replace spaces/symbols with "-"
+   //       .replace(/^-+|-+$/g, ""); // trim leading/trailing hyphens
+ 
+   //     router.push(`/listings/${slug}-search`, { scroll: true });
+   //   }
+   // };
+   const navigateWithKeyword = (s: Item) => {
+     const human = s.label?.trim();
      if (!human) return;
  
-     flushSync(() => setQuery(human));
+     flushSync(() => {
+       setQuery(human);
+       setNavigating(true); // ✅ show loader immediately
+     });
      setIsSuggestionBoxOpen(false);
  
-     // Encode but show + for spaces
-     const encoded = encodeURIComponent(human).replace(/%20/g, "+");
-     router.push(`/listings/search=${encoded}`, { scroll: true });
+     // Small delay ensures loader renders before navigation
+     setTimeout(() => {
+       if (s.url && s.url.trim().length > 0) {
+         router.push(s.url, { scroll: true });
+       } else {
+         const slug = human
+           .toLowerCase()
+           .trim()
+           .replace(/[^a-z0-9]+/g, "-")
+           .replace(/^-+|-+$/g, "");
+         router.push(`/listings/${slug}-search`, { scroll: true });
+       }
+     }, 50);
    };
  
    const handleKeyDown: React.KeyboardEventHandler<HTMLInputElement> = (e) => {
      if (e.key === "Enter") {
-       navigateWithKeyword((e.currentTarget as HTMLInputElement).value);
+       const kw = (e.currentTarget as HTMLInputElement).value.trim();
+       if (kw) {
+         setNavigating(true);
+         navigateWithKeyword({ label: kw });
+       }
      }
      if (e.key === "Escape") closeSuggestions();
    };
@@ -156,7 +198,7 @@
        <div className="container">
          <div className="row align-items-center justify-content-center">
            <div className="col-lg-12">
-             <div className="section-head search_home text-center">
+             <div className="section-head text-center">
                <h1 className="divide-orange">
                  Browse New & Used Caravans For Sale
                </h1>
@@ -165,299 +207,148 @@
                  experience.
                </p>
  
-               {/* Bootstrap Pills Navigation */}
-               <ul className="nav nav-pills" id="pills-tab" role="tablist">
-                 <li className="nav-item" role="presentation">
-                   <button
-                     className="nav-link active"
-                     id="pills-find-tab"
-                     data-bs-toggle="pill"
-                     data-bs-target="#pills-find"
-                     type="button"
-                     role="tab"
-                     aria-controls="pills-find"
-                     aria-selected="true"
-                   >
-                     <span>Find Your Perfect Caravan</span>
-                   </button>
-                 </li>
-                 <li className="nav-item" role="presentation">
-                   <button
-                     className="nav-link"
-                     id="pills-smart-tab"
-                     data-bs-toggle="pill"
-                     data-bs-target="#pills-smart"
-                     type="button"
-                     role="tab"
-                     aria-controls="pills-smart"
-                     aria-selected="false"
-                   >
-                     <span>Smart Search</span>
-                   </button>
-                 </li>
-               </ul>
+               {/* overlay to close */}
+               <div
+                 className="overlay_search"
+                 style={{ display: isSuggestionBoxOpen ? "block" : "none" }}
+                 onClick={closeSuggestions}
+               />
  
-               {/* Bootstrap Tab Content */}
-               <div className="tab-content" id="pills-tabContent">
-                 {/* --- Tab 1 --- */}
-                 <div
-                   className="tab-pane fade show active"
-                   id="pills-find"
-                   role="tabpanel"
-                   aria-labelledby="pills-find-tab"
-                 >
-                   <div className="content-info text-center pb-0">
-                     <div className="quick_serch_form">
-                       <form>
-                         <ul>
-                           <li>
-                             <select>
-                               <option>Select Category</option>
-                               <option>Off Road</option>
-                               <option>Hybrid</option>
-                               <option>Pop Top</option>
-                               <option>Luxury</option>
-                               <option>Family</option>
-                               <option>Touring</option>
-                             </select>
-                           </li>
-                           <li>
-                             <select>
-                               <option>Select Location</option>
-                               <option>New South Wales</option>
-                               <option>Queensland</option>
-                               <option>Western Australia</option>
-                               <option>Victoria</option>
-                               <option>South Australia</option>
-                               <option>Australian Capital Territory</option>
-                               <option>Tasmania</option>
-                             </select>
-                           </li>
-                           <li>
-                             <select>
-                               <option>Select Condition</option>
-                               <option>New</option>
-                               <option>Used</option>
-                               <option>All</option>
-                             </select>
-                           </li>
-                           <li>
-                             <button className="search_button">Search</button>
-                           </li>
-                         </ul>
-                       </form>
-                     </div>
+               {/* search box */}
+               <div className="search-container">
+                 <div className="search-wrapper">
+                   <i className="bi bi-search search-icon" />
+                   <input
+                     ref={searchInputRef}
+                     type="text"
+                     className="search-box"
+                     placeholder="Search by caravans..."
+                     id="searchInput"
+                     autoComplete="off"
+                     value={query}
+                     onChange={handleInputChange}
+                     onFocus={showSuggestions}
+                     onClick={showSuggestions}
+                     onKeyDown={handleKeyDown}
+                     aria-haspopup="listbox"
+                     aria-expanded={isSuggestionBoxOpen}
+                   />
+                   <div
+                     className="close-btn"
+                     style={{ display: isSuggestionBoxOpen ? "block" : "none" }}
+                     onClick={closeSuggestions}
+                     role="button"
+                        
+ 
+                     aria-label="Close suggestions"
+                   >
+                     <i className="bi bi-x-lg" />
                    </div>
                  </div>
  
-                 {/* --- Tab 2 --- */}
+                 {/* dropdown */}
                  <div
-                   className="tab-pane fade"
-                   id="pills-smart"
-                   role="tabpanel"
-                   aria-labelledby="pills-smart-tab"
+                   className="suggestions"
+                   style={{
+                     display: isSuggestionBoxOpen ? "block" : "none",
+                     maxHeight: "300px", // 👈 limit dropdown height
+                     overflowY: "auto", // 👈 enable scrolling
+                     scrollbarWidth: "thin", // Firefox
+                     overscrollBehavior: "contain", // prevent page scroll when reaching end
+                   }}
+                   role="listbox"
                  >
-                   <div className="content-info text-center pb-0">
-                     {/* overlay to close */}
-                     <div
-                       className="overlay_search"
-                       style={{ display: isSuggestionBoxOpen ? "block" : "none" }}
-                       onClick={closeSuggestions}
-                     />
+                   <h4>
+                     {showingFromKeywordApi
+                       ? "Suggested searches"
+                       : "Popular searches"}
+                   </h4>
  
-                     {/* search box */}
-                     <div className="search-container">
-                       <div className="search-wrapper">
-                         <i className="bi bi-search search-icon" />
-                         <input
-                           ref={searchInputRef}
-                           type="text"
-                           className="search-box"
-                           placeholder="Search by caravans..."
-                           id="searchInput"
-                           autoComplete="off"
-                           value={query}
-                           onChange={handleInputChange}
-                           onFocus={showSuggestions}
-                           onClick={showSuggestions}
-                           onKeyDown={handleKeyDown}
-                           aria-haspopup="listbox"
-                           aria-expanded={isSuggestionBoxOpen}
-                         />
-                         <div
-                           className="close-btn"
-                           style={{ display: isSuggestionBoxOpen ? "block" : "none" }}
-                           onClick={closeSuggestions}
-                           role="button"
-                           aria-label="Close suggestions"
-                         >
-                           <i className="bi bi-x-lg" />
-                         </div>
-                       </div>
+                   {error && <p className="text-red-600">{error}</p>}
+                   {!error && loading && <p>Loading…</p>}
  
-                       {/* dropdown */}
-                       <div
-                         className="suggestions"
-                         style={{ display: isSuggestionBoxOpen ? "block" : "none" }}
-                         role="listbox"
-                       >
-                         <h4>
-                           {showingFromKeywordApi
-                             ? "Suggested searches"
-                             : "Popular searches"}
-                         </h4>
- 
-                         {error && <p className="text-red-600">{error}</p>}
-                         {!error && loading && <p>Loading…</p>}
- 
-                         {!error && !loading && (
-                           <ul className="text-left" id="suggestionList">
-                             {suggestions?.length ? (
-                               suggestions.map((keyword, idx) => (
-                                 <li
-                                   key={`${keyword}-${idx}`}
-                                   // Use onMouseDown so it fires before blur
-                                   onPointerDown={(e) => {
-                                     e.preventDefault();
-                                     navigateWithKeyword(keyword);
-                                   }}
-                                   style={{ cursor: "pointer" }}
-                                   role="option"
-                                   aria-selected="false"
-                                 >
-                                   {keyword}
-                                 </li>
-                               ))
-                             ) : (
-                               <li className="text-muted">No matches</li>
-                             )}
-                           </ul>
-                         )}
-                       </div>
-                     </div>
- 
- 
-                   </div>
+                   {!error && !loading && (
+                     <ul className="text-left" id="suggestionList">
+                       {suggestions?.length ? (
+                         suggestions.map((s, idx) => (
+                           <li
+                             key={`${s.label}-${idx}`}
+                             onPointerDown={(e) => {
+                               e.preventDefault();
+                               navigateWithKeyword(s);
+                             }}
+                             style={{ cursor: "pointer" }}
+                             role="option"
+                             aria-selected="false"
+                           >
+                             {s.label}
+                           </li>
+                         ))
+                       ) : (
+                         <li className="text-muted">No matches</li>
+                       )}
+                     </ul>
+                   )}
                  </div>
                </div>
-               <ul className="category_icon list-unstyled d-flex flex-wrap justify-content-center gap-4">
-                 <li>
-                   <Link href="https://www.caravansforsale.com.au/listings/off-road-category/">
-                     <div className="item-image">
-                       <Image
-                         src="/images/off-road.webp"
-                         alt="off-road"
-                         width={80}
-                         height={80}
-                         unoptimized
-                       />
-                     </div>
-                     <span>Off Road</span>
-                   </Link>
-                 </li>
  
-                 <li>
-                   <Link href="https://www.caravansforsale.com.au/listings/hybrid-category/">
-                     <div className="item-image">
-                       <Image
-                         src="/images/hybrid.webp"
-                         alt="hybrid"
-                         width={80}
-                         height={80}
-                         unoptimized
-                       />
-                     </div>
-                     <span>Hybrid</span>
+               {/* quick links */}
+               <div className="row justify-content-center mt-3">
+                 <div className="col-lg-3 col-4">
+                   <Link
+                     href="/listings/new-condition/"
+                     className="btn btn-primary"
+                     onClick={() => setNavigating(true)}
+                   >
+                     NEW{" "}
                    </Link>
-                 </li>
- 
-                 <li>
-                   <Link href="https://www.caravansforsale.com.au/listings/pop-top-category/">
-                     <div className="item-image">
-                       <Image
-                         src="/images/pop-top.webp"
-                         alt="pop-top"
-                         width={80}
-                         height={80}
-                         unoptimized
-                       />
-                     </div>
-                     <span>Pop Top</span>
+                 </div>
+                 <div className="col-lg-3 col-4">
+                   <Link
+                     href="/listings/used-condition/"
+                     className="btn btn-primary"
+                     onClick={() => setNavigating(true)}
+                   >
+                     Used
                    </Link>
-                 </li>
- 
-                 <li>
-                   <Link href="https://www.caravansforsale.com.au/listings/luxury-category/">
-                     <div className="item-image">
-                       <Image
-                         src="/images/luxury.webp"
-                         alt="luxury"
-                         width={80}
-                         height={80}
-                         unoptimized
-                       />
-                     </div>
-                     <span>Luxury</span>
+                 </div>
+                 <div className="col-lg-3 col-4">
+                   <Link
+                     href="/listings/"
+                     className="btn btn-primary"
+                     onClick={() => setNavigating(true)}
+                   >
+                     All
                    </Link>
-                 </li>
- 
-                 <li>
-                   <Link href="https://www.caravansforsale.com.au/listings/family-category/">
-                     <div className="item-image">
-                       <Image
-                         src="/images/family.webp"
-                         alt="family"
-                         width={80}
-                         height={80}
-                         unoptimized
-                       />
-                     </div>
-                     <span>Family</span>
-                   </Link>
-                 </li>
- 
-                 <li>
-                   <Link href="https://www.caravansforsale.com.au/listings/touring-category/">
-                     <div className="item-image">
-                       <Image
-                         src="/images/touring.webp"
-                         alt="touring"
-                         width={80}
-                         height={80}
-                         unoptimized
-                       />
-                     </div>
-                     <span>Touring</span>
-                   </Link>
-                 </li>
- 
-               </ul>
-             </div>
-           </div>
-         </div>
-         <div className="row align-items-center justify-content-center">
-           <div className="col-lg-8">
-             <div className="advertisement">
-               <Image
-                 className="hidden-xs"
-                 src="/images/static_index_dk_banner_2.jpg"
-                 alt="Everest Caravans - best caravan manufacturer in any off road category"
-                 width={1200}
-                 height={400}
-                 unoptimized
-               />
-               <Image
-                 className="hidden-lg hidden-md hidden-sm br-m-8"
-                 src="/images/static_index_mb_banner_3.jpg"
-                 alt="Everest Caravans - best caravan manufacturer in any off road category"
-                 width={600}
-                 height={400}
-                 unoptimized
-               />
+                 </div>
+               </div>
              </div>
            </div>
          </div>
        </div>
+       {navigating && (
+         <div
+           className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
+           style={{
+             background: "rgba(255,255,255,0.6)",
+             backdropFilter: "blur(2px)",
+             zIndex: 9999,
+           }}
+           aria-live="polite"
+         >
+           <div className="text-center">
+             <Image
+               className="loader_image"
+               src="/images/loader.gif" // place inside public/images
+               alt="Loading..."
+               width={80}
+               height={80}
+               unoptimized
+             />{" "}
+             <div className="mt-2 fw-semibold">Loading…</div>
+           </div>
+         </div>
+       )}
      </div>
    );
  }
