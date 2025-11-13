@@ -465,7 +465,7 @@ export default function ClientLogger({
                   <div className="attributes">
                    
                         <h6 className="category" >
-                          {product.location_shortcode}
+                         Location- {product.location_shortcode}
                         </h6>
                        
                   </div>
