@@ -56,6 +56,7 @@ type ProductData = {
   description?: string;
   image?: string[];
   title?: string;
+  location_shortcode?: string;
  };
 
 interface BlogPost extends HomeBlogPost {
@@ -331,8 +332,7 @@ export default function ClientLogger({
 };
 
 
-  const stateFields = [{ label: "Location", value: getAttr("Location") }];
-
+ 
   const parseAmount = (v: string | number | undefined) => {
     const n = Number(String(v ?? "").replace(/[^0-9.]/g, ""));
     return Number.isFinite(n) ? n : 0;
@@ -463,13 +463,11 @@ export default function ClientLogger({
                   </div>
 
                   <div className="attributes">
-                    {stateFields
-                      .filter((f) => f.value)
-                      .map((f, index) => (
-                        <h6 className="category" key={index}>
-                          {f.label}- {f.value}
+                   
+                        <h6 className="category" >
+                          {product.location_shortcode}
                         </h6>
-                      ))}
+                       
                   </div>
                 </div>
                 {/* Image Gallery */}
