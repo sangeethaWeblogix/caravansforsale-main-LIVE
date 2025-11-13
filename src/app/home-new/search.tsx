@@ -122,6 +122,14 @@
      if (!isSuggestionBoxOpen) setIsSuggestionBoxOpen(true);
    };
  
+
+   useEffect(() => {
+  // dynamically import bootstrap JS only in the browser
+  if (typeof window === "undefined") return;
+  import("bootstrap/dist/js/bootstrap.bundle.min.js").catch((err) =>
+    console.error("Failed to load bootstrap JS", err)
+  );
+}, []);
    //   const navigateWithKeyword = (kwRaw: string) => {
    //     const kw = kwRaw.trim();
    //     if (!kw) return;
