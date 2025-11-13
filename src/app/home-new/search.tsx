@@ -88,10 +88,14 @@
        const t = setTimeout(async () => {
          try {
            const list = await fetchKeywordSuggestions(query, controller.signal);
-           const uniq = Array.from(new Set(list.map((s) => s.trim()))).slice(
-             0,
-             15
-           );
+             const uniq = Array.from(
+            new Set(
+              list
+                .map((x) => labelOf(x as unknown as Item))
+                .filter(Boolean)
+                .map((s) => String(s).trim())
+            )
+          ).slice(0, 15);
            setSuggestions(uniq);
          } catch (e: unknown) {
            if (e instanceof DOMException && e.name === "AbortError") return;
