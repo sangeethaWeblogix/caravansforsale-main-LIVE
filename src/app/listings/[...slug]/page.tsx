@@ -62,7 +62,7 @@ export default async function Listings({
         /-category$/,
         /-condition$/,
         /-region$/,
-        /-suburb$/,
+        
         /-search$/,
         /-kg-atm$/,
         /-length-in-feet$/,
@@ -76,7 +76,7 @@ export default async function Listings({
         /^\d{4}$/,
         /^\d{4}-caravans-range$/,
         /^([a-z0-9-]+)-\d{4}-suburb$/,
-        /^([a-z0-9-]+)-suburb$/,
+        
       ];
       const isAllowed = allowedPatterns.some((r) => r.test(lower));
       const looksGibberish =
@@ -99,7 +99,7 @@ export default async function Listings({
 
     const hasInvalidSuburbWord = slug.some((part) => {
       if (/^[a-z0-9-]+-\d{4}-suburb$/i.test(part)) return false;
-      if (/^[a-z0-9-]+-suburb$/i.test(part)) return false;
+      // if (/^[a-z0-9-]+-suburb$/i.test(part)) return false;
       return /(^|\b)(suburb|suburbs)\b$/i.test(part);
     });
     if (hasInvalidSuburbWord) redirect("/404");;
