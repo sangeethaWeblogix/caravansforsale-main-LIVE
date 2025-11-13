@@ -105,6 +105,8 @@ export default async function Listings({
     if (hasInvalidSuburbWord) redirect("/404");;
   }
 
+  
+
   // 🚫 Block "page" or "feed" anywhere in slug or query
   const urlHasBlockedWord =
     slug.some((s) => /(page|feed)/i.test(s)) ||
@@ -312,7 +314,14 @@ export default async function Listings({
   if (!validLocationCombo && (hasRegion || hasSuburb)) {
     redirect("/404");
   }
+  if (!hasState && (hasRegion || hasSuburb)) {
+  redirect("/404");
+}
 
+
+if (hasSuburb && !hasRegion) {
+  redirect("/404");
+}
   // ✅ Convert page param safely
   const pageParam = resolvedSearchParams.page;
   const page =
