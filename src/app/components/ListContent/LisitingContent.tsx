@@ -126,7 +126,7 @@ import { toSlug } from "@/utils/seo/slug";
         if ((i + 1) % 10 === 0 && exclusiveIndex < exclusive.length) {
           merged.push({
             ...exclusive[exclusiveIndex],
-            name: `[Exclusive] ${exclusive[exclusiveIndex].name || "Caravan"}`,
+            name: `${exclusive[exclusiveIndex].name || "Caravan"}`,
           });
           exclusiveIndex++;
         }
@@ -136,7 +136,7 @@ import { toSlug } from "@/utils/seo/slug";
       while (exclusiveIndex < exclusive.length) {
         merged.push({
           ...exclusive[exclusiveIndex],
-          name: `[Exclusive] ${exclusive[exclusiveIndex].name || "Caravan"}`,
+          name: `${exclusive[exclusiveIndex].name || "Caravan"}`,
         });
         exclusiveIndex++;
       }
@@ -178,6 +178,7 @@ import { toSlug } from "@/utils/seo/slug";
     // ✅ Helper: generate up to 5 image URLs from SKU
 const getProductImages = (sku?: string): string[] => {
   if (!sku) return ["/images/sample3.jpg"]; // fallback
+  
   const base = `https://www.admin.caravansforsale.com.au/wp-content/uploads/thumbnail/${sku}`;
   return Array.from({ length: 5 }, (_, i) => `${base}/${i + 1}.jpg`);
 };
