@@ -55,14 +55,13 @@
        setError("");
        const data = await fetchHomeSearchList();
        const labels = Array.from(
-         new Set(
-           data
-             .map(labelOf)
-             .filter(Boolean)
-             .map((s) => s.trim())
-         )
-         
-       ).slice(0, 15);
+  new Set(
+    data
+      .map((x) => labelOf(x as Item))
+      .filter(Boolean)
+      .map((s) => s.trim())
+  )
+).slice(0, 15);
        setBaseSuggestions(labels);
        setSuggestions(labels); // show immediately
      } catch (e: unknown) {
