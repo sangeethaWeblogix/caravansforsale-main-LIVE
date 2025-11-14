@@ -2520,6 +2520,7 @@ triggerGlobalLoaders();
                 value={minPrice?.toString() || ""}
                 onChange={(e) => {
                    const val = e.target.value ? parseInt(e.target.value) : null;
+                     triggerGlobalLoaders();
                   setMinPrice(val);
                   const updated: Filters = {
                     ...currentFilters,
@@ -2545,6 +2546,7 @@ triggerGlobalLoaders();
                 value={maxPrice?.toString() || ""}
                 onChange={(e) => {
                    const val = e.target.value ? parseInt(e.target.value) : null;
+                   triggerGlobalLoaders();
                   setMaxPrice(val);
                   const updated: Filters = {
                     ...currentFilters,
@@ -2590,8 +2592,7 @@ triggerGlobalLoaders();
             </div>
           )}
         </div>
-        {/* 8883944599
-                       9524163042 */}
+       
         {/* Condition Accordion */}
         <div className="cs-full_width_section">
           <div
@@ -2648,6 +2649,7 @@ triggerGlobalLoaders();
                 value={sleepFrom?.toString() || ""}
                 onChange={(e) => {
                    const val = e.target.value ? parseInt(e.target.value) : null;
+                   triggerGlobalLoaders();
                   setSleepFrom(val);
                   commit({
                     ...currentFilters,
@@ -2672,6 +2674,7 @@ triggerGlobalLoaders();
                 value={sleepTo?.toString() || ""}
                 onChange={(e) => {
                    const val = e.target.value ? parseInt(e.target.value) : null;
+                   triggerGlobalLoaders();
                   setSleepTo(val);
                   commit({
                     ...currentFilters,

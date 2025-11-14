@@ -190,6 +190,8 @@ export default function ListingContent({
     // Remaining = sub1, sub2, sub3, sub4
     const subImages = Array.from({ length: 4 }, (_, i) => `${base}/${slug}-sub${i + 1}.webp`);
 
+    console.log("subimage", subImages);
+    console.log("mainimage", mainImage);
     return [mainImage, ...subImages];
   };
 
@@ -568,7 +570,7 @@ export default function ListingContent({
                                       swiper.activeIndex ===
                                       swiper.slides.length - 1;
                                     const viewMoreBtn = document.querySelector(
-                                      `#view-more-btn-${item}`
+                                      `#view-more-btn-${item.slug}`
                                     );
                                     if (viewMoreBtn instanceof HTMLElement) {
                                       viewMoreBtn.style.display = isLast
@@ -812,7 +814,7 @@ export default function ListingContent({
                                       swiper.activeIndex ===
                                       swiper.slides.length - 1;
                                     const viewMoreBtn = document.querySelector(
-                                      `#view-more-btn-${item}`
+                                      `#view-more-btn-${item.slug}`
                                     );
                                     if (viewMoreBtn instanceof HTMLElement) {
                                       viewMoreBtn.style.display = isLast
