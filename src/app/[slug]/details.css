@@ -16,8 +16,13 @@
 }
 
 .single_blog a {
-  color: #0d6efd;
+
+    color: #0d6efd;
+
+    display: inline;
+
 }
+ 
 
 .single_blog a:hover {
   color: #0d6efd;
@@ -549,10 +554,11 @@ button.more_less {
 }
 
 .all-news p {
-  font-size: 18px;
-  color: #000;
-  text-align: left;
-  margin-bottom: 12px;
+ font-size: 18px;
+    color: #000;
+    text-align: left;
+    margin-bottom: 15px;
+    line-height: 29px;
 }
 
 .single_blog ul,
