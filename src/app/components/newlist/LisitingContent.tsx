@@ -180,7 +180,7 @@ import { toSlug } from "@/utils/seo/slug";
 const getProductImages = (sku?: string, slug?: string): string[] => {
   if (!sku || !slug) return ["/images/sample3.webp"]; // fallback
 
-  const base = `https://caravansforsale.b-cdn.net/thumbnails/${sku}`;
+  const base = `https://caravansforsale.b-cdn.net/Thumbnails/${sku}`;
 
   // First image = main
   const mainImage = `${base}/${slug}-main.webp`;
