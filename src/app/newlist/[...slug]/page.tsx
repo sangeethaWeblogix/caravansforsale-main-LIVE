@@ -2,29 +2,38 @@
 
 import ListingsPage from "@/app/components/newlist/Listings";
 import { parseSlugToFilters } from "../../components/urlBuilder";
-import { metaFromSlug } from "../../../utils/seo/metaFromSlug";
-import type { Metadata } from "next";
-import { fetchListings } from "@/api/listings/api";
+  import { fetchListings } from "@/api/listings/api";
 import { redirect } from "next/navigation";
 import '../../components/ListContent/newList.css'
+import { Metadata } from "next";
 
 type Params = Promise<{ slug?: string[] }>;
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
-export async function generateMetadata({
-  params,
-  searchParams,
-}: {
-  params: Params;
-  searchParams: SearchParams;
-}): Promise<Metadata> {
-  const [resolvedParams, resolvedSearchParams] = await Promise.all([
-    params,
-    searchParams,
-  ]);
-  return metaFromSlug(resolvedParams.slug || [], resolvedSearchParams);
+ 
+export const metadata: Metadata = {
+  title: "Contact Caravans For Sale | Australia’s Caravan Marketplace",
+  description:
+    "Have a question about caravans in Australia? Contact Caravans For Sale for support, inquiries, or help finding your next caravan today.",
+  robots: "noindex, nofollow",
+  openGraph: {
+    title: "Contact Caravans For Sale | Australia’s Caravan Marketplace",
+    description:
+      "Have a question about caravans in Australia? Contact Caravans For Sale for support, inquiries, or help finding your next caravan today.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Contact Caravans For Sale | Australia’s Caravan Marketplace",
+    description:
+      "Have a question about caravans in Australia? Contact Caravans For Sale for support, inquiries, or help finding your next caravan today.",
+  },
+  alternates: {
+    canonical: "https://www.caravansforsale.com.au/contact/",
+  },
+  verification: {
+    google: "6tT6MT6AJgGromLaqvdnyyDQouJXq0VHS-7HC194xEo", // ✅ add here
+  },
 }
-
 export default async function Listings({
   params,
   searchParams,
