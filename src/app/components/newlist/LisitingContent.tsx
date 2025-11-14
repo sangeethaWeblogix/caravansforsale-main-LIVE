@@ -180,7 +180,7 @@ import { toSlug } from "@/utils/seo/slug";
 const getProductImages = (sku?: string, slug?: string): string[] => {
   if (!sku || !slug) return ["/images/sample3.webp"]; // fallback
 
-  const base = `https://www.caravansforsale.b-cdn.net/thumbnails/${sku}`;
+  const base = `https://caravansforsale.b-cdn.net/thumbnails/${sku}`;
 
   // First image = main
   const mainImage = `${base}/${slug}-main.webp`;
@@ -539,7 +539,7 @@ href={href}
                                     swiper.activeIndex ===
                                     swiper.slides.length - 1;
                                   const viewMoreBtn = document.querySelector(
-                                    `#view-more-btn-${item}`
+                                    `#view-more-btn-${item.slug}`
                                   );
                                   if (viewMoreBtn instanceof HTMLElement) {
                                     viewMoreBtn.style.display = isLast
@@ -761,7 +761,7 @@ href={href}
                                     swiper.activeIndex ===
                                     swiper.slides.length - 1;
                                   const viewMoreBtn = document.querySelector(
-                                    `#view-more-btn-${item}`
+                                    `#view-more-btn-${item.slug}`
                                   );
                                   if (viewMoreBtn instanceof HTMLElement) {
                                     viewMoreBtn.style.display = isLast
