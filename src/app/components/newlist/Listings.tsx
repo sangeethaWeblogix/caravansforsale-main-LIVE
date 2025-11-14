@@ -671,6 +671,11 @@ if (clickid) query.set("clickid", clickid);
 //   }
 // }, [pagination, loadListings]);
 
+const scrollToTop = () => {
+  document.documentElement.scrollTo({ top: 0, behavior: "smooth" });
+  document.body.scrollTo({ top: 0, behavior: "smooth" });
+};
+
 const handleNextPage = useCallback(async () => {
   if (pagination.current_page < pagination.total_pages) {
     console.log("scroolll3", nextPageData, scrollStarted,isNextLoading)
@@ -694,7 +699,8 @@ const handleNextPage = useCallback(async () => {
           : [];
 
         if (validProducts.length > 0) {
-          window.scrollTo({ top: 0, behavior: "smooth" });
+          // window.scrollTo({ top: 0, behavior: "smooth" });
+          scrollToTop();
           const transformedProducts = transformApiItemsToProducts(validProducts);
           setProducts(transformedProducts);
           setPremiumProducts(nextPageData?.data?.premium_products ?? []);
