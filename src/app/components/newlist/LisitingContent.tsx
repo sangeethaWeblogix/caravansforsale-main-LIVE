@@ -178,7 +178,7 @@ import { toSlug } from "@/utils/seo/slug";
 
     // ✅ Helper: generate up to 5 image URLs from SKU
 const getProductImages = (sku?: string, slug?: string): string[] => {
-  if (!sku || !slug) return ["/images/sample3.webp"]; // fallback
+  if (!sku || !slug) return ["/images/sample3.webp"]; // fallback 
 
   const base = `https://caravansforsale.b-cdn.net/Thumbnails/${sku}`;
 
