@@ -333,17 +333,21 @@ if (hasSuburb && !hasRegion) {
 
   // ✅ Fetch listings
   const response = await fetchListings({ ...filters, page });
-
-  if (
-    !response ||
-    response.success === false ||
-    (response.message &&
-      response.message.toLowerCase().includes("validation failed")) ||
-    (Array.isArray(response.errors) &&
-      response.errors.some((e) => e.toLowerCase().includes("invalid make")))
-  ) {
-    redirect("/404");
+const makeListResponse = await fetchListings({});
+const validMakes = makeListResponse?.data?.make_options?.map(m => 
+  m.slug?.toLowerCase() || m.name?.toLowerCase()
+) || [];
+ const invalidPlainWord = slug.some((part) => {
+  if (/^[a-zA-Z]+$/.test(part)) {
+    const lower = part.toLowerCase();
+    // allow known makes
+    if (validMakes.includes(lower)) return false;
+    return true; // reject unknown word
   }
+  return false;
+});
+
+if (invalidPlainWord) redirect("/404");
 
   return <ListingsPage {...filters} initialData={response} />;
 }
