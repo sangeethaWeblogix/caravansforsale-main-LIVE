@@ -1,7 +1,6 @@
 
    "use client";
-  import Image from "next/image";
-  import Link from "next/link";
+   import Link from "next/link";
   import { Swiper, SwiperSlide } from "swiper/react";
   import "swiper/css";
   import "swiper/css/navigation";
@@ -278,6 +277,7 @@ useEffect(() => {
               </div>
             </div>
           </div>
+            {fetauredProducts.length > 0 && (
           <div className="other_items featured_items">
             <div className="related-products">
               <div className="d-flex align-items-center justify-content-between mb-3">
@@ -513,6 +513,7 @@ useEffect(() => {
 
             </div>
           </div>
+          )}
           {/* {premium section } */}
           <div className="dealers-section product-type">
             <div className="other_items">
@@ -520,7 +521,7 @@ useEffect(() => {
                 <div className="row g-3">
                   {shuffledPremiumProducts.map((item, index) => {  
                     const href = getHref(item);
-                    const images = getProductImages(item.sku);
+                     const images = getProductImages(item.sku, item.slug);
 
             return (
 
@@ -764,7 +765,7 @@ useEffect(() => {
                 <div className="row g-3">
                   {mergedProducts.map((item, index) => {
                       const href = getHref(item);
-                                          const images = getProductImages(item.sku);
+                                           const images = getProductImages(item.sku, item.slug);
 
             return (
                     <div className="col-lg-6 mb-0" key={index}>
