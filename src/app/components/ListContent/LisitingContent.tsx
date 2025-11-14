@@ -1,3 +1,4 @@
+
    "use client";
   import Image from "next/image";
   import Link from "next/link";
@@ -10,6 +11,7 @@
    import Head from "next/head";
   import { useEffect, useMemo, useRef, useState } from "react";
 import { toSlug } from "@/utils/seo/slug";
+import ImageWithSkeleton from "../ImageWithSkeleton";
   
   interface Product {
     id: number;
@@ -176,11 +178,18 @@ import { toSlug } from "@/utils/seo/slug";
     console.log("data", uniqueProducts);
 
     // ✅ Helper: generate up to 5 image URLs from SKU
-const getProductImages = (sku?: string): string[] => {
-  if (!sku) return ["/images/sample3.jpg"]; // fallback
-  
-  const base = `https://www.admin.caravansforsale.com.au/wp-content/uploads/thumbnail/${sku}`;
-  return Array.from({ length: 5 }, (_, i) => `${base}/${i + 1}.jpg`);
+const getProductImages = (sku?: string, slug?: string): string[] => {
+  if (!sku || !slug) return ["/images/sample3.webp"]; // fallback 
+
+  const base = `https://caravansforsale.b-cdn.net/Thumbnails/${sku}`;
+
+  // First image = main
+  const mainImage = `${base}/${slug}-main.webp`;
+
+  // Remaining = sub1, sub2, sub3, sub4
+  const subImages = Array.from({ length: 4 }, (_, i) => `${base}/${slug}-sub${i + 1}.webp`);
+
+  return [mainImage, ...subImages];
 };
 
  
@@ -333,27 +342,28 @@ useEffect(() => {
                       <div className="product-card">
                         <div className="img">
                           <div className="background_thumb">
-                            <Image
+
+                            <ImageWithSkeleton
                               src={item.image}
                               alt="Caravan"
                               width={300}
                               height={200}
-                              unoptimized
-                            />
+                             />
                           </div>
                           <div className="main_thumb">
-                            <Image
+                            <ImageWithSkeleton
                               src={item.image}
                               alt="Caravan"
                               width={300}
                               height={200}
-                              unoptimized
-                            />
+                             />
                           </div>
                         </div>
                         <div className="product_de">
                           <div className="info">
-                            {item.name && <h3 className="title">{item.name}</h3>}
+                            {item.name &&
+                             <h3 className="title">{item.name}</h3>
+                             }
                           </div>
   
                           {/* --- PRICE SECTION --- */}
@@ -528,12 +538,12 @@ useEffect(() => {
                         <div className="product-card">
                           <div className="img">
                             <div className="background_thumb">
-                              <Image
+                              <ImageWithSkeleton
       src={images[1]}
                                 alt="Caravan"
                                 width={300}
                                 height={200}
-                                unoptimized
+                                
                               />
                             </div>
                             <div className="main_thumb position-relative">
@@ -568,12 +578,12 @@ useEffect(() => {
                                 {images.map((img, i) => (
                                   <SwiperSlide key={i}>
                                     <div className="thumb_img">
-                                      <Image
+                                      <ImageWithSkeleton
                                         src={img}
                                         alt={`Caravan ${i + 1}`}
                                         width={300}
                                         height={200}
-                                        unoptimized
+                                        
                                       />
                                     </div>
                                   </SwiperSlide>
@@ -774,13 +784,13 @@ useEffect(() => {
                        className="product-card">
                           <div className="img">
                             <div className="background_thumb">
-                              <Image
+                              <ImageWithSkeleton
                                        src={images[1]}
 
                                 alt="Caravan"
                                 width={300}
                                 height={200}
-                                unoptimized
+                                
                               />
                             </div>
                             <div className="main_thumb position-relative">
@@ -812,12 +822,12 @@ useEffect(() => {
                                 {images.map((img, i) => (
                                   <SwiperSlide key={i}>
                                     <div className="thumb_img">
-                                      <Image
+                                      <ImageWithSkeleton
                                         src={img}
                                         alt={`Caravan ${i + 1}`}
                                         width={300}
                                         height={200}
-                                        unoptimized
+                                        
                                       />
                                     </div>
                                   </SwiperSlide>
@@ -1132,6 +1142,7 @@ useEffect(() => {
                         <label htmlFor="enquiry4-message">
                           Message (optional)
                         </label>
+
                         <textarea
                           id="enquiry4-message"
                           name="enquiry4-message"
