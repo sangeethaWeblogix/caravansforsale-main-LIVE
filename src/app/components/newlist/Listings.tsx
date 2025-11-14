@@ -161,7 +161,9 @@
    const [isFeaturedLoading, setIsFeaturedLoading] = useState(false);
    const [isPremiumLoading, setIsPremiumLoading] = useState(false);
    const [isUsingInitialData, setIsUsingInitialData] = useState(!!initialData);
-
+   const [scrollStarted, setScrollStarted] = useState(false);
+   const [isNextLoading, setIsNextLoading] = useState(false);
+   const [nextPageData, setNextPageData] = useState<any>(null);
  const [clickid, setclickid] = useState<string | null>(null);
  
    const rawPage = searchParams.get("page");
@@ -435,6 +437,84 @@ if (clickid) query.set("clickid", clickid);
  
      loadExclusiveListings();
    }, []);
+
+   const sentinelRef = useRef<HTMLDivElement | null>(null);
+   useEffect(() => {
+     if (!sentinelRef.current) return;
+ 
+     const observer = new IntersectionObserver(
+       async (entries) => {
+         const entry = entries[0];
+         if (entry.isIntersecting && !scrollStarted && !isNextLoading) {
+           setScrollStarted(true);
+           try {
+             const response = await preFetchListings(
+               pagination.current_page + 1,
+               filtersRef.current
+             );
+ 
+             if (response?.success) {
+               console.log("Prefetch success for page:", pagination.current_page + 1);
+               console.log("responsepre",response)
+               setNextPageData(response);
+               setIsNextLoading(true);
+             } else {
+               setNextPageData(null);
+             }
+           } catch (err) {
+             console.error("Prefetch failed:", err);
+           }
+         }
+       },
+       { threshold: 0.1 } 
+     );
+ 
+     observer.observe(sentinelRef.current);
+     return () => observer.disconnect();
+   }, [pagination.current_page, scrollStarted, isNextLoading]);
+ 
+   const preFetchListings = async (pageNum:number , appliedFilters: Filters = filtersRef.current): Promise<ApiResponse | undefined> => {
+     try {
+       console.log("pageNumpageNum",pageNum)
+       const safeFilters = normalizeSearchFromMake(appliedFilters);
+       const radiusNum = asNumber(safeFilters.radius_kms);
+       const radiusParam = typeof radiusNum === "number" && radiusNum !== DEFAULT_RADIUS ? String(radiusNum) : undefined;
+ 
+       const response: ApiResponse = await fetchListings({
+         ...safeFilters,
+         page: pageNum,
+         condition: safeFilters.condition,
+         minKg: safeFilters.minKg?.toString(),
+         maxKg: safeFilters.maxKg?.toString(),
+         sleeps: safeFilters.sleeps,
+         from_price: safeFilters.from_price?.toString(),
+         to_price: safeFilters.to_price?.toString(),
+         acustom_fromyears: safeFilters.acustom_fromyears?.toString(),
+         acustom_toyears: safeFilters.acustom_toyears?.toString(),
+         from_length: safeFilters.from_length?.toString(),
+         to_length: safeFilters.to_length?.toString(),
+         make: safeFilters.make,
+         model: safeFilters.model,
+         state: safeFilters.state,
+         region: safeFilters.region,
+         suburb: safeFilters.suburb,
+         pincode: safeFilters.pincode,
+         orderby: safeFilters.orderby,
+         search: safeFilters.search,
+         keyword: safeFilters.keyword,
+         from_sleep: safeFilters.from_sleep?.toString(),
+         to_sleep: safeFilters.to_sleep?.toString(),
+         radius_kms: radiusParam,
+       });
+ 
+       return response;
+ 
+     } catch (err) {
+       console.error("Failed to prefetch Next data", err);
+     }
+   }
+ 
+ 
  
    console.log("🔥 Exclusive Listings State:", items);
    const loadListings = useCallback(
@@ -563,33 +643,82 @@ if (clickid) query.set("clickid", clickid);
            );
          
  
- const handleNextPage = useCallback(async () => {
-  if (pagination.current_page < pagination.total_pages) {
-    const nextPage = pagination.current_page + 1;
+//  const handleNextPage = useCallback(async () => {
+//   if (pagination.current_page < pagination.total_pages) {
+//     const nextPage = pagination.current_page + 1;
 
-    // Start skeletons
+//     // Start skeletons
+//     setIsMainLoading(true);
+//     setIsFeaturedLoading(true);
+//     setIsPremiumLoading(true);
+
+//     try {
+//       // Just fetch new data — same page, no reload
+//       await loadListings(nextPage, filtersRef.current, true);
+
+//       // Update pagination in memory only
+//       setPagination((prev) => ({ ...prev, current_page: nextPage }));
+
+//       // Smooth scroll
+//       window.scrollTo({ top: 0, behavior: "smooth" });
+//     } catch (err) {
+//       console.error("❌ Next page load failed:", err);
+//     } finally {
+//       setIsMainLoading(false);
+//       setIsFeaturedLoading(false);
+//       setIsPremiumLoading(false);
+//     }
+//   }
+// }, [pagination, loadListings]);
+
+const handleNextPage = useCallback(async () => {
+  if (pagination.current_page < pagination.total_pages) {
+    console.log("scroolll3", nextPageData, scrollStarted,isNextLoading)
+    // handleScrollToTop();
+    // setScrollStarted(false)
     setIsMainLoading(true);
     setIsFeaturedLoading(true);
     setIsPremiumLoading(true);
 
+    const nextPage = pagination.current_page + 1;
+    // const id = ensureclickid();
+    // savePage(id, nextPage);// NEW: create clickid if first time
+    // sessionStorage.setItem(`page_${id}`, String(nextPage)); // save page for this session
+    // window.scrollTo({ top: 0, behavior: "smooth" });
     try {
-      // Just fetch new data — same page, no reload
-      await loadListings(nextPage, filtersRef.current, true);
+      if (nextPageData !=null) {
+        console.log("nextdata",nextPageData?.data?.products)
+        const products = nextPageData?.data?.products ?? [];
+        const validProducts = Array.isArray(products)
+          ? products.filter((item) => item != null)
+          : [];
 
-      // Update pagination in memory only
-      setPagination((prev) => ({ ...prev, current_page: nextPage }));
-
-      // Smooth scroll
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    } catch (err) {
-      console.error("❌ Next page load failed:", err);
+        if (validProducts.length > 0) {
+          window.scrollTo({ top: 0, behavior: "smooth" });
+          const transformedProducts = transformApiItemsToProducts(validProducts);
+          setProducts(transformedProducts);
+          setPremiumProducts(nextPageData?.data?.premium_products ?? []);
+          setFeaturedProducts(nextPageData?.data?.featured_products ?? []);
+          setExculisiveProducts(nextPageData?.data?.exclusive_products ?? []);
+          console.log("validdata",validProducts,transformedProducts)
+          if (nextPageData.pagination) setPagination(nextPageData.pagination);
+        }
+      } else {
+        await loadListings(nextPage, filtersRef.current, true);
+      }
+    } catch (error) {
+      console.error("Error loading next page:", error);
     } finally {
       setIsMainLoading(false);
       setIsFeaturedLoading(false);
       setIsPremiumLoading(false);
+      setScrollStarted(false)
+      setNextPageData(null);
+      setIsNextLoading(false)
+      console.log("scroolll4", nextPageData, scrollStarted)
     }
   }
-}, [pagination, loadListings]);
+}, [pagination, loadListings, clickid,nextPageData]);
 
 const handlePrevPage = useCallback(async () => {
   if (pagination.current_page > 1) {
@@ -983,7 +1112,7 @@ useEffect(() => {
               </div>
   
               <h1 className="page-title">{pageTitle}</h1>
-  
+              <div ref={sentinelRef} style={{ height: "1px" }} />
               <div className="row">
                 {/* Desktop sidebar */}
                 <div className="col-lg-3">
@@ -1030,6 +1159,7 @@ useEffect(() => {
                     isMainLoading={isMainLoading}
                     isFeaturedLoading={isFeaturedLoading}
                     isPremiumLoading={isPremiumLoading}
+                    isNextLoading={isNextLoading}
                   />
                 ) :  emptyProduct ? (
                   <ExculsiveContent
