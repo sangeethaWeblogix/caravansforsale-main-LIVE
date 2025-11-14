@@ -37,8 +37,7 @@ export default async function ListingsPage({
     redirect("/404");
   }
 
-  const hasProducts =
-    response?.data?.products && response.data.products.length > 0;
+  
 
   return (
     <div>
