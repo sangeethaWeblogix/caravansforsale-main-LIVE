@@ -163,7 +163,7 @@
    const [isUsingInitialData, setIsUsingInitialData] = useState(!!initialData);
    const [scrollStarted, setScrollStarted] = useState(false);
    const [isNextLoading, setIsNextLoading] = useState(false);
-   const [nextPageData, setNextPageData] = useState<any>(null);
+   const [nextPageData, setNextPageData] = useState<ApiResponse|null>(null);
  const [clickid, setclickid] = useState<string | null>(null);
  
    const rawPage = searchParams.get("page");
