@@ -78,6 +78,7 @@ import { toSlug } from "@/utils/seo/slug";
     isMainLoading: boolean;
     isFeaturedLoading: boolean;
     isPremiumLoading: boolean;
+    isNextLoading: boolean;
   }
                   
   export default function ListingContent({
@@ -95,6 +96,7 @@ import { toSlug } from "@/utils/seo/slug";
     isFeaturedLoading,
     isPremiumLoading,
     isMainLoading,
+    isNextLoading
   }: Props) {
     const [showInfo, setShowInfo] = useState(false);
     const [showContact, setShowContact] = useState(false);
@@ -952,7 +954,7 @@ href={href}
                   <button
                     className="next-icon"
                     onClick={onNext}
-                    disabled={pagination.current_page === pagination.total_pages}
+                    disabled={pagination.current_page === pagination.total_pages || !isNextLoading}
                   >
                     Next
                   </button>
