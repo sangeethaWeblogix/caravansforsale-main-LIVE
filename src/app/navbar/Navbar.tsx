@@ -213,12 +213,16 @@ export default function Navbar() {
               </Link>
             </li> */}
               <li>
-                <Link href="/listings/" onClick={closeNav}>
+                <Link href="/listings/" onClick={() => {
+  closeNav();
+  setTimeout(() => {}, 0); // Let React update DOM instantly
+}}
+>
                   All Listings
                 </Link>
               </li>
               <li>
-                <Link href="/blog/" onClick={closeNav}>
+                <Link href="/blog/" onClick={closeNav} >
                   Blog
                 </Link>
               </li>
