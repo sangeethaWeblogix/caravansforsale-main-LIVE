@@ -566,7 +566,7 @@ useEffect(() => {
                                     swiper.activeIndex ===
                                     swiper.slides.length - 1;
                                   const viewMoreBtn = document.querySelector(
-                                    `#view-more-btn-${item}`
+                                    `#view-more-btn-${item.slug}`
                                   );
                                   if (viewMoreBtn instanceof HTMLElement) {
                                     viewMoreBtn.style.display = isLast
@@ -810,7 +810,7 @@ useEffect(() => {
                                     swiper.activeIndex ===
                                     swiper.slides.length - 1;
                                   const viewMoreBtn = document.querySelector(
-                                    `#view-more-btn-${item}`
+                                    `#view-more-btn-${item.slug}`
                                   );
                                   if (viewMoreBtn instanceof HTMLElement) {
                                     viewMoreBtn.style.display = isLast
