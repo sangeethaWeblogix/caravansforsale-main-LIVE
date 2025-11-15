@@ -1,8 +1,10 @@
 // src/app/components/SearchSection.tsx
 "use client";
-
+import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { flushSync } from "react-dom";
 import {
@@ -153,7 +155,7 @@ export default function SearchSection() {
       <div className="container">
         <div className="row align-items-center justify-content-center">
           <div className="col-lg-12">
-            <div className="section-head text-center">
+            <div className="section-head search_home text-center">
               <h1 className="divide-orange">
                 Browse New & Used Caravans For Sale
               </h1>
@@ -162,108 +164,295 @@ export default function SearchSection() {
                 experience.
               </p>
 
-              {/* overlay to close */}
-              <div
-                className="overlay_search"
-                style={{ display: isSuggestionBoxOpen ? "block" : "none" }}
-                onClick={closeSuggestions}
-              />
-
-              {/* search box */}
-              <div className="search-container">
-                <div className="search-wrapper">
-                  <i className="bi bi-search search-icon" />
-                  <input
-                    ref={searchInputRef}
-                    type="text"
-                    className="search-box"
-                    placeholder="Search by caravans..."
-                    id="searchInput"
-                    autoComplete="off"
-                    value={query}
-                    onChange={handleInputChange}
-                    onFocus={showSuggestions}
-                    onClick={showSuggestions}
-                    onKeyDown={handleKeyDown}
-                    aria-haspopup="listbox"
-                    aria-expanded={isSuggestionBoxOpen}
-                  />
-                  <div
-                    className="close-btn"
-                    style={{ display: isSuggestionBoxOpen ? "block" : "none" }}
-                    onClick={closeSuggestions}
-                    role="button"
-                    aria-label="Close suggestions"
+              {/* Bootstrap Pills Navigation */}
+              <ul className="nav nav-pills" id="pills-tab" role="tablist">
+                <li className="nav-item" role="presentation">
+                  <button
+                    className="nav-link active"
+                    id="pills-find-tab"
+                    data-bs-toggle="pill"
+                    data-bs-target="#pills-find"
+                    type="button"
+                    role="tab"
+                    aria-controls="pills-find"
+                    aria-selected="true"
                   >
-                    <i className="bi bi-x-lg" />
+                    <span>Find Your Perfect Caravan</span>
+                  </button>
+                </li>
+                <li className="nav-item" role="presentation">
+                  <button
+                    className="nav-link"
+                    id="pills-smart-tab"
+                    data-bs-toggle="pill"
+                    data-bs-target="#pills-smart"
+                    type="button"
+                    role="tab"
+                    aria-controls="pills-smart"
+                    aria-selected="false"
+                  >
+                    <span>Smart Search</span>
+                  </button>
+                </li>
+              </ul>
+
+              {/* Bootstrap Tab Content */}
+              <div className="tab-content" id="pills-tabContent">
+                {/* --- Tab 1 --- */}
+                <div
+                  className="tab-pane fade show active"
+                  id="pills-find"
+                  role="tabpanel"
+                  aria-labelledby="pills-find-tab"
+                >
+                  <div className="content-info text-center pb-0">
+                    <div className="quick_serch_form">
+                      <form>
+                        <ul>
+                          <li>
+                            <select>
+                              <option>Select Category</option>
+                              <option>Off Road</option>
+                              <option>Hybrid</option>
+                              <option>Pop Top</option>
+                              <option>Luxury</option>
+                              <option>Family</option>
+                              <option>Touring</option>
+                            </select>
+                          </li>
+                          <li>
+                            <select>
+                              <option>Select Location</option>
+                              <option>New South Wales</option>
+                              <option>Queensland</option>
+                              <option>Western Australia</option>
+                              <option>Victoria</option>
+                              <option>South Australia</option>
+                              <option>Australian Capital Territory</option>
+                              <option>Tasmania</option>
+                            </select>
+                          </li>
+                          <li>
+                            <select>
+                              <option>Select Condition</option>
+                              <option>New</option>
+                              <option>Used</option>
+                              <option>All</option>
+                            </select>
+                          </li>
+                          <li>
+                            <button className="search_button">Search</button>
+                          </li>
+                        </ul>
+                      </form>
+                    </div>
                   </div>
                 </div>
 
-                {/* dropdown */}
+                {/* --- Tab 2 --- */}
                 <div
-                  className="suggestions"
-                  style={{ display: isSuggestionBoxOpen ? "block" : "none" }}
-                  role="listbox"
+                  className="tab-pane fade"
+                  id="pills-smart"
+                  role="tabpanel"
+                  aria-labelledby="pills-smart-tab"
                 >
-                  <h4>
-                    {showingFromKeywordApi
-                      ? "Suggested searches"
-                      : "Popular searches"}
-                  </h4>
+                  <div className="content-info text-center pb-0">
+                    {/* overlay to close */}
+                    <div
+                      className="overlay_search"
+                      style={{ display: isSuggestionBoxOpen ? "block" : "none" }}
+                      onClick={closeSuggestions}
+                    />
 
-                  {error && <p className="text-red-600">{error}</p>}
-                  {!error && loading && <p>Loading…</p>}
+                    {/* search box */}
+                    <div className="search-container">
+                      <div className="search-wrapper">
+                        <i className="bi bi-search search-icon" />
+                        <input
+                          ref={searchInputRef}
+                          type="text"
+                          className="search-box"
+                          placeholder="Search by caravans..."
+                          id="searchInput"
+                          autoComplete="off"
+                          value={query}
+                          onChange={handleInputChange}
+                          onFocus={showSuggestions}
+                          onClick={showSuggestions}
+                          onKeyDown={handleKeyDown}
+                          aria-haspopup="listbox"
+                          aria-expanded={isSuggestionBoxOpen}
+                        />
+                        <div
+                          className="close-btn"
+                          style={{ display: isSuggestionBoxOpen ? "block" : "none" }}
+                          onClick={closeSuggestions}
+                          role="button"
+                          aria-label="Close suggestions"
+                        >
+                          <i className="bi bi-x-lg" />
+                        </div>
+                      </div>
 
-                  {!error && !loading && (
-                    <ul className="text-left" id="suggestionList">
-                      {suggestions?.length ? (
-                        suggestions.map((keyword, idx) => (
-                          <li
-                            key={`${keyword}-${idx}`}
-                            // Use onMouseDown so it fires before blur
-                            onPointerDown={(e) => {
-                              e.preventDefault();
-                              navigateWithKeyword(keyword);
-                            }}
-                            style={{ cursor: "pointer" }}
-                            role="option"
-                            aria-selected="false"
-                          >
-                            {keyword}
-                          </li>
-                        ))
-                      ) : (
-                        <li className="text-muted">No matches</li>
-                      )}
-                    </ul>
-                  )}
+                      {/* dropdown */}
+                      <div
+                        className="suggestions"
+                        style={{ display: isSuggestionBoxOpen ? "block" : "none" }}
+                        role="listbox"
+                      >
+                        <h4>
+                          {showingFromKeywordApi
+                            ? "Suggested searches"
+                            : "Popular searches"}
+                        </h4>
+
+                        {error && <p className="text-red-600">{error}</p>}
+                        {!error && loading && <p>Loading…</p>}
+
+                        {!error && !loading && (
+                          <ul className="text-left" id="suggestionList">
+                            {suggestions?.length ? (
+                              suggestions.map((keyword, idx) => (
+                                <li
+                                  key={`${keyword}-${idx}`}
+                                  // Use onMouseDown so it fires before blur
+                                  onPointerDown={(e) => {
+                                    e.preventDefault();
+                                    navigateWithKeyword(keyword);
+                                  }}
+                                  style={{ cursor: "pointer" }}
+                                  role="option"
+                                  aria-selected="false"
+                                >
+                                  {keyword}
+                                </li>
+                              ))
+                            ) : (
+                              <li className="text-muted">No matches</li>
+                            )}
+                          </ul>
+                        )}
+                      </div>
+                    </div>
+
+
+                  </div>
                 </div>
               </div>
+              <ul className="category_icon list-unstyled d-flex flex-wrap justify-content-center gap-4">
+                <li>
+                  <Link href="https://www.caravansforsale.com.au/listings/off-road-category/">
+                    <div className="item-image">
+                      <Image
+                        src="/images/off-road.webp"
+                        alt="off-road"
+                        width={80}
+                        height={80}
+                        unoptimized
+                      />
+                    </div>
+                    <span>Off Road</span>
+                  </Link>
+                </li>
 
-              {/* quick links */}
-              <div className="row justify-content-center mt-3">
-                <div className="col-lg-3 col-4">
-                  <Link
-                    href="/listings/new-condition/"
-                    className="btn btn-primary"
-                  >
-                    New
+                <li>
+                  <Link href="https://www.caravansforsale.com.au/listings/hybrid-category/">
+                    <div className="item-image">
+                      <Image
+                        src="/images/hybrid.webp"
+                        alt="hybrid"
+                        width={80}
+                        height={80}
+                        unoptimized
+                      />
+                    </div>
+                    <span>Hybrid</span>
                   </Link>
-                </div>
-                <div className="col-lg-3 col-4">
-                  <Link
-                    href="/listings/used-condition/"
-                    className="btn btn-primary"
-                  >
-                    Used
+                </li>
+
+                <li>
+                  <Link href="https://www.caravansforsale.com.au/listings/pop-top-category/">
+                    <div className="item-image">
+                      <Image
+                        src="/images/pop-top.webp"
+                        alt="pop-top"
+                        width={80}
+                        height={80}
+                        unoptimized
+                      />
+                    </div>
+                    <span>Pop Top</span>
                   </Link>
-                </div>
-                <div className="col-lg-3 col-4">
-                  <Link href="/listings/" className="btn btn-primary">
-                    All
+                </li>
+
+                <li>
+                  <Link href="https://www.caravansforsale.com.au/listings/luxury-category/">
+                    <div className="item-image">
+                      <Image
+                        src="/images/luxury.webp"
+                        alt="luxury"
+                        width={80}
+                        height={80}
+                        unoptimized
+                      />
+                    </div>
+                    <span>Luxury</span>
                   </Link>
-                </div>
-              </div>
+                </li>
+
+                <li>
+                  <Link href="https://www.caravansforsale.com.au/listings/family-category/">
+                    <div className="item-image">
+                      <Image
+                        src="/images/family.webp"
+                        alt="family"
+                        width={80}
+                        height={80}
+                        unoptimized
+                      />
+                    </div>
+                    <span>Family</span>
+                  </Link>
+                </li>
+
+                <li>
+                  <Link href="https://www.caravansforsale.com.au/listings/touring-category/">
+                    <div className="item-image">
+                      <Image
+                        src="/images/touring.webp"
+                        alt="touring"
+                        width={80}
+                        height={80}
+                        unoptimized
+                      />
+                    </div>
+                    <span>Touring</span>
+                  </Link>
+                </li>
+
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div className="row align-items-center justify-content-center">
+          <div className="col-lg-8">
+            <div className="advertisement">
+              <Image
+                className="hidden-xs"
+                src="/images/static_index_dk_banner_2.jpg"
+                alt="Everest Caravans - best caravan manufacturer in any off road category"
+                width={1200}
+                height={400}
+                unoptimized
+              />
+              <Image
+                className="hidden-lg hidden-md hidden-sm br-m-8"
+                src="/images/static_index_mb_banner_3.jpg"
+                alt="Everest Caravans - best caravan manufacturer in any off road category"
+                width={600}
+                height={400}
+                unoptimized
+              />
             </div>
           </div>
         </div>
