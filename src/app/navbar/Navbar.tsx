@@ -4,8 +4,7 @@ import "./navbar.css";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { usePathname, useSearchParams } from "next/navigation";
+ import { usePathname, useSearchParams } from "next/navigation";
 
 const STATES = [
   "New South Wales",
@@ -33,8 +32,7 @@ const PRICES = [
 type DropdownType = "state" | "category" | "price" | null;
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-    const router = useRouter();
-
+ 
   const [openDropdown, setOpenDropdown] = useState<DropdownType>(null);
   const toggleNav = () => setIsOpen(!isOpen);
      const [navigating, setNavigating] = useState(false);
