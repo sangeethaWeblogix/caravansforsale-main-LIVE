@@ -4,6 +4,8 @@ import "./navbar.css";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 
 const STATES = [
   "New South Wales",
@@ -31,12 +33,27 @@ const PRICES = [
 type DropdownType = "state" | "category" | "price" | null;
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+    const router = useRouter();
+
   const [openDropdown, setOpenDropdown] = useState<DropdownType>(null);
   const toggleNav = () => setIsOpen(!isOpen);
+     const [navigating, setNavigating] = useState(false);
+  const pathname = usePathname();
+const searchParams = useSearchParams();
+
+useEffect(() => {
+  if (navigating) {
+    // When URL changes → navigation is completed
+    setNavigating(false);
+  }
+}, [pathname, searchParams]);
+
   const closeNav = () => {
     setIsOpen(false);
     setOpenDropdown(null);
   };
+
+  
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
     setMounted(true);
@@ -138,7 +155,10 @@ export default function Navbar() {
                         href={`/listings/${state
                           .toLowerCase()
                           .replace(/ /g, "-")}-state/`}
-                        onClick={closeNav}
+                        onClick={() => {
+    setNavigating(true); // start loader immediately
+    closeNav();
+  }}
                       >
                         {state}
                       </Link>
@@ -167,7 +187,10 @@ export default function Navbar() {
                       <Link
                         className="dropdown-item"
                         href={`/listings/${cat}-category/`}
-                        onClick={closeNav}
+                        onClick={() => {
+    setNavigating(true); // start loader immediately
+    closeNav();
+  }}
                       >
                         {cat
                           .replace(/-/g, " ")
@@ -198,7 +221,10 @@ export default function Navbar() {
                       <Link
                         className="dropdown-item"
                         href={`/listings/under-${price}/`}
-                        onClick={closeNav}
+                        onClick={() => {
+    setNavigating(true); // start loader immediately
+    closeNav();
+  }}
                       >
                         Under ${price.toLocaleString()}
                       </Link>
@@ -208,26 +234,36 @@ export default function Navbar() {
               </li>
 
               {/* <li>
-              <Link href="/caravan-dealers/" onClick={closeNav}>
+              <Link href="/caravan-dealers/" onClick={() => {
+    setNavigating(true); // start loader immediately
+    closeNav();
+  }}>
                 Caravan Dealers
               </Link>
             </li> */}
               <li>
-                <Link href="/listings/" onClick={() => {
-  closeNav();
-  setTimeout(() => {}, 0); // Let React update DOM instantly
-}}
+                <Link href="/listings/"  
+  onClick={() => {
+    setNavigating(true); // start loader immediately
+    closeNav();
+  }}
 >
                   All Listings
                 </Link>
               </li>
               <li>
-                <Link href="/blog/" onClick={closeNav} >
+                <Link href="/blog/" onClick={() => {
+    setNavigating(true); // start loader immediately
+    closeNav();
+  }} >
                   Blog
                 </Link>
               </li>
               <li>
-                <Link href="/contact/" onClick={closeNav}>
+                <Link href="/contact/" onClick={() => {
+    setNavigating(true); // start loader immediately
+    closeNav();
+  }}>
                   Contact
                 </Link>
               </li>
@@ -245,13 +281,43 @@ export default function Navbar() {
       {/* Overlay */}
       <div
         className={`overlay-close ${isOpen ? "active" : ""}`}
-        onClick={closeNav}
+        onClick={() => {
+    setNavigating(true); // start loader immediately
+    closeNav();
+  }}
       ></div>
       <div
         id="overlay"
         className={`overlay ${isOpen ? "active" : ""}`}
-        onClick={closeNav}
+        onClick={() => {
+    setNavigating(true); // start loader immediately
+    closeNav();
+  }}
       ></div>
+
+         {navigating && (
+         <div
+           className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
+           style={{
+             background: "rgba(255,255,255,0.6)",
+             backdropFilter: "blur(2px)",
+             zIndex: 9999,
+           }}
+           aria-live="polite"
+         >
+           <div className="text-center">
+             <Image
+               className="loader_image"
+               src="/images/loader.gif" // place inside public/images
+               alt="Loading..."
+               width={80}
+               height={80}
+              />{" "}
+             <div className="mt-2 fw-semibold">Loading…</div>
+           </div>
+         </div>
+
+       )}
     </>
   );
 }
