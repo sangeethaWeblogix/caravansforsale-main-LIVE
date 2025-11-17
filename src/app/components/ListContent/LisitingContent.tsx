@@ -231,15 +231,9 @@ export default function ListingContent({
         <div className="top-filter mb-10">
           <div className="row align-items-center">
             <div className="col-lg-8">
-              <p className="show_count">
-                Showing{" "}
-                {(pagination.current_page - 1) * pagination.per_page + 1}–
-                {Math.min(
-                  pagination.current_page * pagination.per_page,
-                  pagination.total_products
-                )}{" "}
-                of {pagination.total_products} results
-              </p>
+              <h1 className="show_count">
+                <strong>5863</strong> Caravans for sale in Australia
+              </h1>
             </div>
             <div className="col-4 d-lg-none d-md-none">
               <button

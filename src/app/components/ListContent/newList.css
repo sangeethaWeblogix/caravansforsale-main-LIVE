@@ -572,17 +572,40 @@ h1.page-title {
   box-shadow: var(--boxshadow-100);
 }
 
+.mobile-filter-xs.offcanvas.offcanvas-end {
+  border-left: none;
+}
+
 
 @media (max-width: 767px) {
   .new_listing .other_items.featured_items {
     padding: 20px;
   }
+  .featured_head {
+    font-size: 20px;
+    font-weight: 700;
+}
+.new_listing .other_items .swiper-button-prev-custom, .new_listing .other_items .swiper-button-next-custom {
+    color: #5e5e5e;
+    background: #fff;
+    border: 1px solid #5e5e5e;
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    padding: 0;
+    font-size: 18px;
+    line-height: 35px;
+}
   .popup-content {
-    height: 400px;
+    height: 450px;
     overflow-y: scroll;
   }
   .form-item textarea {
     height: 80px;
     padding-top: 30px;
+  }
+  .popup-box {
+    width: 95%;
+    padding: 20px 20px;
   }
 }

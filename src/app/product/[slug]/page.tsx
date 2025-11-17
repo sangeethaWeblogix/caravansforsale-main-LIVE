@@ -81,7 +81,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
   }
 
   return (
-    <main className="container mx-auto">
+    <main className="mx-auto">
       <ClientLogger data={data} />
     </main>
   );

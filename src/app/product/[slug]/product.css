@@ -2,7 +2,10 @@
   padding: 40px 0px;
 }
 .back_to_search {
-  padding-bottom: 10px;
+    padding-bottom: 25px;
+    font-size: 14px;
+    color: #0d6efd;
+    font-weight: 500;
 }
 .product-page .product-info .title {
   text-transform: capitalize;
@@ -515,6 +518,11 @@
   padding: 30px 0px;
 }
 
+.product-page .related-products.latest_blog .product-card .img {
+  min-height: auto;
+  max-height: inherit;
+}
+
 @media (min-width: 768px) and (max-width: 991px) {
   /*  */
   .price-container {
@@ -591,7 +599,7 @@
   }
 
   .product-page .product-info .title {
-    font-size: 22px;
+    font-size: 19px;
     margin-bottom: 10px;
     margin-top: 0;
   }
@@ -693,6 +701,21 @@
     font-weight: 300;
   }
 
+  .slider_thumb_vertical .img {
+    min-height: 60px;
+    max-height: 60px;
+  }
+
+  .slider_thumb_vertical img {
+    width: auto;
+    min-height: 50px;
+    max-height: 50px;
+}
+
+.product-page .product-details .nav-pills .nav-link {
+  font-size: 18px;
+}
+
   /*  */
   .price-container {
     display: flex;
@@ -707,7 +730,7 @@
   }
 
   .current-price {
-    color: #f60;
+    color: #ec7200;
     font-size: 25px;
     font-weight: bold;
   }
@@ -726,8 +749,8 @@
   }
 
   .save-label {
-    color: #888;
-  }
+    color: #0070f3;
+}
 
   .save-value {
     color: #0070f3;
