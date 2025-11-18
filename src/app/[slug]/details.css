@@ -303,7 +303,9 @@ small {
 }
 
 .blog-page.style-5 h1 {
-  font-weight: 700;
+    font-weight: 700;
+    font-size: 28px;
+    margin-bottom: 20px;
 }
 .faq {
   background-color: #f1f1f1;
@@ -648,6 +650,15 @@ tr {
   padding: 0.5em;
 }
 
+.product-page .related-products.latest_blog .product-card .img {
+  min-height: auto;
+  max-height: inherit;
+}
+
+.product-page .product-card .img img {
+  position: relative !important;
+}
+
 @media (max-width: 767px) {
   .section-padding {
     padding: 30px 0;
@@ -666,5 +677,11 @@ tr {
     left: -10px !important;
     width: 40px;
     height: 40px;
+  }
+  .blog-page.style-5 h1 {
+    font-size: 20px;
+  }
+  .all-news p {
+    font-size: 17px;
   }
 }
