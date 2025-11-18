@@ -1,4 +1,4 @@
-// app/product-details/[slug]/page.tsx
+ // app/product-details/[slug]/page.tsx
 import { Metadata } from "next";
 import ClientLogger from "./product";
 import { redirect } from "next/navigation";

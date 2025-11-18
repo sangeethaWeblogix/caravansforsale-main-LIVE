@@ -1,4 +1,4 @@
-"use client";
+ "use client";
 
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { fetchListings, ApiResponse, Item } from "../../../api/listings/api";
