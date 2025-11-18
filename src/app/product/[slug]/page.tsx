@@ -1,4 +1,4 @@
-// app/product-details/[slug]/page.tsx
+ // app/product-details/[slug]/page.tsx
 import { Metadata } from "next";
 import ClientLogger from "./product";
 import { redirect } from "next/navigation";
@@ -81,7 +81,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
   }
 
   return (
-    <main className="container mx-auto">
+    <main className="mx-auto">
       <ClientLogger data={data} />
     </main>
   );

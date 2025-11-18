@@ -1,4 +1,4 @@
-"use client";
+ "use client";
 
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { fetchListings, ApiResponse, Item } from "../../../api/listings/api";
@@ -1101,19 +1101,19 @@ export default function ListingsPage({
       <section className="services product_listing new_listing bg-gray-100 section-padding pb-30 style-1">
         <div className="container container-xxl">
           <div className="content mb-4">
-            <div className="text-sm text-gray-600 header">
+            {/*<div className="text-sm text-gray-600 header">
               <Link href="/" className="hover:underline">
                 Home
               </Link>{" "}
               &gt; <span className="font-medium text-black"> Listings</span>
             </div>
 
-            <h1 className="page-title">{pageTitle}</h1>
+            <h1 className="page-title">{pageTitle}</h1>*/}
             <div ref={sentinelRef} style={{ height: "1px" }} />
             <div className="row">
               {/* Desktop sidebar */}
               <div className="col-lg-3">
-                <div className="filter">
+                <div className="filter hidden-xs">
                   <Suspense fallback={<div>Loading filters...</div>}>
                     <CaravanFilter
                       categories={categories}
@@ -1180,7 +1180,7 @@ export default function ListingsPage({
       <div
         ref={mobileFiltersRef}
         id="mobileFilters"
-        className="offcanvas offcanvas-end d-lg-none"
+        className="offcanvas mobile-filter-xs offcanvas-end d-lg-none"
         tabIndex={-1}
         aria-labelledby="mobileFiltersLabel"
         data-bs-scroll="true"

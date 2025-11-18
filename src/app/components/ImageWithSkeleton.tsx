@@ -1,4 +1,4 @@
-"use client";
+ "use client";
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
@@ -33,15 +33,7 @@ export default function ImageWithSkeleton({
 
   return (
     <div
-      style={{
-        width,
-        height,
-        position: "relative",
-        overflow: "hidden",
-        borderRadius: 8,
-        background: "#f2f2f2",
-        ...style,
-      }}
+      
       className={className}
     >
       {/* Skeleton */}

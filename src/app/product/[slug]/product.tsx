@@ -1,4 +1,4 @@
-"use client";
+ "use client";
 
 import { useEffect, useMemo, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -413,7 +413,7 @@ export default function ClientLogger({
                     }}
                     className="back_to_search back_to_search_btn"
                   >
-                    <i className="bi bi-chevron-left fs-6"></i> Back to Search
+                    <i className="bi bi-chevron-left"></i> Back to Search
                   </Link>
                 ) : (
                   <Link
@@ -421,7 +421,7 @@ export default function ClientLogger({
                     className="back_to_search back_to_search_btn"
                     prefetch={false}
                   >
-                    <i className="bi bi-chevron-left fs-6"></i> Back to Similar
+                    <i className="bi bi-chevron-left"></i> Back to Similar
                     Caravans
                   </Link>
                 )}
@@ -606,7 +606,7 @@ export default function ClientLogger({
                   </div>
                 </section>
                 {/* Community Section */}
-                <section className="community product_dt_lower style-5 pt-4">
+                <section className="community product_dt_lower hidden-xs style-5 pt-4">
                   <div className="content">
                     <div className="heading">
                       <h3>Caravan Marketplace Advantage</h3>
@@ -778,10 +778,10 @@ export default function ClientLogger({
       {/* ✅ Related Products Section */}
       <div
         className="related-products section-padding"
-        style={{ position: "relative", zIndex: 0, background: "#f1f1f1" }}
+        style={{ position: "relative", zIndex: 0, background: "#ffffffff" }}
       >
         <div className="container">
-          <div className="title">
+          <div className="re-title">
             <div className="tpof_tab">
               <h3>Browse Similar Caravans</h3>
             </div>
@@ -866,10 +866,10 @@ export default function ClientLogger({
       {/* ✅ Latest News */}
       <div
         className="related-products latest_blog section-padding"
-        style={{ position: "relative", zIndex: 0, background: "#ffffff" }}
+        style={{ position: "relative", zIndex: 0, background: "#f1f1f1" }}
       >
         <div className="container">
-          <div className="title">
+          <div className="news-title">
             <div className="tpof_tab">
               <h3>Latest News, Reviews & Advice</h3>
             </div>
