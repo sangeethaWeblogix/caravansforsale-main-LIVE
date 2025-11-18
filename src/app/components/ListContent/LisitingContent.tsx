@@ -330,6 +330,7 @@ export default function ListingContent({
                   {fetauredProducts.map((item, index) => {
                     const href = getHref(item);
                   const images = getProductImages(item.sku, item.slug);
+                    const isPriority = index < 5;
 
                     return (
 
@@ -349,7 +350,7 @@ export default function ListingContent({
                                   alt="Caravan"
                                   width={300}
                                   height={200}
-                                  priority={index === 0}
+                                 priority={isPriority}  
                                 />
                               </div>
                               <div className="main_thumb">
@@ -358,7 +359,7 @@ export default function ListingContent({
                                   alt="Caravan"
                                   width={300}
                                   height={200}
-                                  priority={index === 0}
+                                 priority={isPriority}  
                                 />
                               </div>
                             </div>
@@ -522,9 +523,11 @@ export default function ListingContent({
           <div className="other_items">
             <div className="related-products">
               <div className="row g-3">
+                
                 {shuffledPremiumProducts.map((item, index) => {
                   const href = getHref(item);
                   const images = getProductImages(item.sku, item.slug);
+                    const isPriority = index < 5;
 
                   return (
 
@@ -547,7 +550,7 @@ export default function ListingContent({
                                 alt="Caravan"
                                 width={300}
                                 height={200}
-                                priority={index === 0}
+                               priority={isPriority}  
 
                               />
                             </div>
@@ -588,7 +591,7 @@ export default function ListingContent({
                                           alt={`Caravan ${i + 1}`}
                                           width={300}
                                           height={200}
-                                          priority={index === 0}
+                                         priority={isPriority}  
 
                                         />
                                       </div>
@@ -771,6 +774,7 @@ export default function ListingContent({
                   {mergedProducts.map((item, index) => {
                     const href = getHref(item);
                     const images = getProductImages(item.sku, item.slug);
+                    const isPriority = index < 5;
 
                     return (
                       <div className="col-lg-6 mb-0" key={index}>
