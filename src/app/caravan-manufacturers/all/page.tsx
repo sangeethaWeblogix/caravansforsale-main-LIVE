@@ -1,3 +1,6 @@
+export const dynamic = "force-dynamic";
+
+
 import Header from "./Header";
 import CaravanList from "./CaravanList";
 import "./comman.css";
