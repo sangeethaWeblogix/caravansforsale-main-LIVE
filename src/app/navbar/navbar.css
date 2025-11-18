@@ -285,7 +285,8 @@ input[type="checkbox"]:checked ~ .menuIconToggle > .dia.p-2 {
 }
 
 .sidebar-navigation ul li ul.open {
-  display: block;
+    background: #fff;
+    display: block;
 }
 
 .sidebar-navigation ul li ul li a,
