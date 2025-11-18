@@ -348,6 +348,7 @@ export default function ListingContent({
                                   alt="Caravan"
                                   width={300}
                                   height={200}
+                                  priority={index === 0}
                                 />
                               </div>
                               <div className="main_thumb">
@@ -356,6 +357,7 @@ export default function ListingContent({
                                   alt="Caravan"
                                   width={300}
                                   height={200}
+                                  priority={index === 0}
                                 />
                               </div>
                             </div>
@@ -544,6 +546,7 @@ export default function ListingContent({
                                 alt="Caravan"
                                 width={300}
                                 height={200}
+                                priority={index === 0}
 
                               />
                             </div>
@@ -584,6 +587,7 @@ export default function ListingContent({
                                           alt={`Caravan ${i + 1}`}
                                           width={300}
                                           height={200}
+                                          priority={index === 0}
 
                                         />
                                       </div>
@@ -787,7 +791,7 @@ export default function ListingContent({
                               <div className="background_thumb">
                                 <ImageWithSkeleton
                                   src={images[1]}
-
+priority
                                   alt="Caravan"
                                   width={300}
                                   height={200}
@@ -828,7 +832,7 @@ export default function ListingContent({
                                           alt={`Caravan ${i + 1}`}
                                           width={300}
                                           height={200}
-
+priority
                                         />
                                       </div>
                                     </SwiperSlide>

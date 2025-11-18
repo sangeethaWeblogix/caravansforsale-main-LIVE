@@ -2,16 +2,19 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   trailingSlash: true,
-
-  images: {
-    unoptimized: true,
+ images: {
+    unoptimized: false,
     domains: [
-      // allow both your blob domain and custom domain
-      "wb79vudhmjvv4ng6.public.blob.vercel-storage.com",
       "media.caravansforsale.com.au",
       "www.caravansforsale.com.au",
+      "caravansforsale.b-cdn.net",
+      "wb79vudhmjvv4ng6.public.blob.vercel-storage.com",
     ],
+    formats: ["image/avif", "image/webp"],
+    minimumCacheTTL: 31536000,
   },
+  compress: true,
+ 
   async rewrites() {
     return [
       {

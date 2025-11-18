@@ -10,6 +10,8 @@ interface Props {
   height?: number;
   className?: string;
   style?: React.CSSProperties;
+  priority?: boolean; 
+  
 }
 
 export default function ImageWithSkeleton({
@@ -18,6 +20,7 @@ export default function ImageWithSkeleton({
   width = 300,
   height = 200,
   className,
+   priority=false,
   
 }: Props) {
   const [loaded, setLoaded] = useState(false);
@@ -55,6 +58,7 @@ export default function ImageWithSkeleton({
         width={width}
         height={height}
         unoptimized
+         priority={priority}  
         onLoad={() => setLoaded(true)}
         onError={() => setFailed(true)}
         style={{
