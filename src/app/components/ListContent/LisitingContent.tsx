@@ -329,6 +329,7 @@ export default function ListingContent({
                 >
                   {fetauredProducts.map((item, index) => {
                     const href = getHref(item);
+                  const images = getProductImages(item.sku, item.slug);
 
                     return (
 
@@ -344,7 +345,7 @@ export default function ListingContent({
                               <div className="background_thumb">
 
                                 <ImageWithSkeleton
-                                  src={item.image}
+                                  src={images[1]}
                                   alt="Caravan"
                                   width={300}
                                   height={200}
@@ -353,7 +354,7 @@ export default function ListingContent({
                               </div>
                               <div className="main_thumb">
                                 <ImageWithSkeleton
-                                  src={item.image}
+                                 src={images[1]}
                                   alt="Caravan"
                                   width={300}
                                   height={200}
