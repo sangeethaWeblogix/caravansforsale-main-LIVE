@@ -12,8 +12,7 @@ import { BiChevronDown } from "react-icons/bi";
 import { usePathname, useRouter } from "next/navigation";
 // import { useSearchParams } from "next/navigation";
 import { fetchProductList } from "@/api/productList/api";
-import { fetchModelsByMake } from "@/api/model/api";
-import "./filter.css";
+ import "./filter.css";
 import { buildSlugFromFilters } from "./slugBuilter";
 import { buildUpdatedFilters } from "./buildUpdatedFilters";
 import {
@@ -21,6 +20,7 @@ import {
   fetchHomeSearchList,
 } from "@/api/homeSearch/api";
 import { flushSync } from "react-dom";
+import { fetchMakeDetails } from "@/api/make-new/api";
 
 type LocationSuggestion = {
   key: string;
@@ -47,14 +47,18 @@ interface StateOption {
   }[];
 }
 
+ interface MakeModel {
+  name: string;
+  slug: string;
+}
+
 interface Make {
+  id?: number;
   name: string;
   slug: string;
+  models?: MakeModel[];
 }
-interface Model {
-  name: string;
-  slug: string;
-}
+
 export interface Filters {
   page?: number | string; // <- allow both
   category?: string;
@@ -137,7 +141,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
   const [categoryOpen, setCategoryOpen] = useState(false);
   const [categories, setCategories] = useState<Option[]>([]);
 
-  const [makes, setMakes] = useState<Option[]>([]);
+  const [makes, setMakes] = useState<Make[]>([]);
   const [model, setModel] = useState<Model[]>([]);
   const [states, setStates] = useState<StateOption[]>([]);
   const [makeOpen, setMakeOpen] = useState(false);
@@ -563,12 +567,22 @@ const triggerGlobalLoaders = () => {
       const res = await fetchProductList();
       if (res?.data) {
         setCategories(res.data.all_categories || []);
-        setMakes(res.data.make_options || []);
-        setStates(res.data.states || []);
+         setStates(res.data.states || []);
       }
     };
     loadFilters();
   }, []);
+
+
+  useEffect(() => {
+  const load = async () => {
+    const list = await fetchMakeDetails();
+    setMakes(list);   // includes models[]
+    setModelOpen(true);
+    
+  };
+  load();
+}, []);
 
   type UnknownRec = Record<string, unknown>;
 
@@ -730,29 +744,19 @@ const triggerGlobalLoaders = () => {
     currentFilters.condition,
   ]);
 
-  const isModelFetchCompleteRef = useRef(false); // ADD THIS
-
+ 
   // correct 3
-  useEffect(() => {
-    if (!selectedMake) {
-      setModel([]);
-      setSelectedModel(null);
-      setSelectedModelName(null);
-      setModelOpen(false);
-      return;
-    }
+ useEffect(() => {
+  if (!selectedMake || makes.length === 0) {
+    setModel([]);
+    return;
+  }
 
-    // Just fetch models — no URL updates
-    fetchModelsByMake(selectedMake)
-      .then((models) => {
-        setModel(models || []);
-        isModelFetchCompleteRef.current = true;
-        setSelectedModel(null);
-        setSelectedModelName(null);
-        setModelOpen(true);
-      })
-      .catch(console.error);
-  }, [selectedMake]);
+  const make = makes.find((m) => m.slug === selectedMake);
+  setModel(make?.models || []);
+  setModelOpen(true);
+ }, [selectedMake, makes]);
+
 
   const [locationSuggestions, setLocationSuggestions] = useState<
     LocationSuggestion[]
@@ -1580,8 +1584,17 @@ if (next.state) {
     }
   };
 
+  const keepModelOpenRef = useRef(false);
+
+useEffect(() => {
+  if (keepModelOpenRef.current) {
+    setModelOpen(true);
+  }
+}, [model, filters]);
+
   // ✅ Update handleModelSelect with valid check
   const handleModelSelect = (mod: Model) => {
+     keepModelOpenRef.current = false;
     const safeMake = isValidMakeSlug(selectedMake) ? selectedMake : undefined;
     const safeModel = isValidModelSlug(mod.slug) ? mod.slug : undefined;
 
@@ -2289,6 +2302,7 @@ triggerGlobalLoaders();
                 ×
               </span>
             </div>
+
           )}
           {makeOpen && (
             <div className="filter-accordion-items">
@@ -2313,8 +2327,10 @@ triggerGlobalLoaders();
                       // ✅ Force update make
                       setSelectedMake(make.slug);
                       setSelectedMakeName(make.name);
+setModel(make.models || []);
+  keepModelOpenRef.current = true;
 
-                      // ✅ Immediately open model dropdown
+                      // ✅ Immediately oxxxxxxxx`pen model dropdown
                       setModelOpen(true);
 
                       // ✅ Update filters
@@ -2358,7 +2374,7 @@ triggerGlobalLoaders();
             </div>
           )}
         </div>
-        {selectedMake && (
+        {selectedMake &&  selectedMakeName && (
           <div className="cs-full_width_section">
             <div
               className="filter-accordion"

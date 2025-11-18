@@ -7,6 +7,7 @@ import type { Metadata } from "next";
 import { fetchListings } from "@/api/listings/api";
 import { redirect } from "next/navigation";
 import "../../components/ListContent/newList.css";
+import { fetchMakeDetails } from "@/api/make-new/api";
 
 type Params = Promise<{ slug?: string[] }>;
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
@@ -333,21 +334,21 @@ if (hasSuburb && !hasRegion) {
 
   // ✅ Fetch listings
   const response = await fetchListings({ ...filters, page });
-const makeListResponse = await fetchListings({});
-const validMakes = makeListResponse?.data?.make_options?.map(m => 
-  m.slug?.toLowerCase() || m.name?.toLowerCase()
-) || [];
- const invalidPlainWord = slug.some((part) => {
+// Fetch valid makes from real make API
+const makeDetails = await fetchMakeDetails();
+const validMakes = makeDetails.map(m => m.slug.toLowerCase());
+
+// Validate make from slug
+const invalidMake = slug.some((part) => {
   if (/^[a-zA-Z]+$/.test(part)) {
-    const lower = part.toLowerCase();
-    // allow known makes
-    if (validMakes.includes(lower)) return false;
-    return true; // reject unknown word
+    return !validMakes.includes(part.toLowerCase());
   }
   return false;
 });
 
-if (invalidPlainWord) redirect("/404");
+if (invalidMake) redirect("/404");
 
+
+ 
   return <ListingsPage {...filters} initialData={response} />;
 }

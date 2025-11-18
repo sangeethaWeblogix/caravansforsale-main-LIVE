@@ -6,8 +6,7 @@ import Listing from "./LisitingContent";
 import ExculsiveContent from "./exculsiveContent";
 import CaravanFilter from "../CaravanFilter";
 import SkeletonListing from "../skelton";
-import Link from "next/link";
-import { flushSync } from "react-dom";
+ import { flushSync } from "react-dom";
 import { v4 as uuidv4 } from "uuid";
 import "./newList.css"
 
@@ -254,6 +253,7 @@ export default function ListingsPage({
   const [metaDescription, setMetaDescription] = useState(
     initialData?.seo?.metadescription || ""
   );
+  
   const [pagination, setPagination] = useState<Pagination>(() => {
     // Use initial data if available, otherwise fall back to default
     if (initialData?.pagination) {
@@ -1109,6 +1109,7 @@ export default function ListingsPage({
             </div>
 
             <h1 className="page-title">{pageTitle}</h1>*/}
+             <h1 className="page-title">{pageTitle}</h1>
             <div ref={sentinelRef} style={{ height: "1px" }} />
             <div className="row">
               {/* Desktop sidebar */}

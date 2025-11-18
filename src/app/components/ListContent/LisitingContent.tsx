@@ -232,7 +232,9 @@ export default function ListingContent({
           <div className="row align-items-center">
             <div className="col-lg-8">
               <h1 className="show_count">
-                <strong>5863</strong> Caravans for sale in Australia
+                <strong>{ pagination.total_products}</strong> Caravans for sale in Australia
+
+                
               </h1>
             </div>
             <div className="col-4 d-lg-none d-md-none">

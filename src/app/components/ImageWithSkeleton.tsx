@@ -18,7 +18,7 @@ export default function ImageWithSkeleton({
   width = 300,
   height = 200,
   className,
-  style,
+  
 }: Props) {
   const [loaded, setLoaded] = useState(false);
   const [failed, setFailed] = useState(false);
