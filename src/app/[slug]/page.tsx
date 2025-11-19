@@ -1,5 +1,4 @@
-import type { Metadata } from "next";
-import DeatilsPage from "./details";
+ import DeatilsPage from "./details";
 
 import "./details.css";
 import { Card, CardContent, Typography, Button } from "@mui/material";

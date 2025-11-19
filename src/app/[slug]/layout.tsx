@@ -3,8 +3,7 @@
 import "./details.css";
 import { ReactNode } from "react";
 
-type RouteParams = { slug: string };
-
+ 
 async function fetchBlogDetail(slug: string) {
   try {
     const res = await fetch(
@@ -24,7 +23,7 @@ export default async function Layout({
   params,
 }: {
   children: ReactNode;
-  params: RouteParams;
+  params: { slug: string };
 }) {
   const { slug } = params;
 
