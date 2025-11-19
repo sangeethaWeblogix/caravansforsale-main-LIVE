@@ -1,14 +1,15 @@
-"use client";
-import React from "react";
+ "use client";
+
 import { Card, CardContent, Typography, Button } from "@mui/material";
+import Image from "next/image";
 import Link from "next/link";
 import TickIcon from "../../../public/images/tick.jpg";
-import Image from "next/image";
-export default function SubmissionSuccess() {
+
+export default function ThankYouClient() {
   return (
     <div
       style={{
-        minHeight: "80vh", // keeps space between header and footer
+        minHeight: "80vh",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
@@ -44,6 +45,7 @@ export default function SubmissionSuccess() {
               style={{ objectFit: "contain" }}
             />
           </div>
+
           <Typography variant="h5" fontWeight="bold" gutterBottom>
             Thank you for submitting your information with{" "}
             <span style={{ color: "#000" }}>caravansforsale.com.au</span>.
@@ -54,8 +56,16 @@ export default function SubmissionSuccess() {
           </Typography>
 
           <Link href="/" style={{ textDecoration: "none" }}>
-            <Button variant="contained" color="primary" sx={{ mt: 3 }}>
-              Go back
+            <Button
+              variant="contained"
+              sx={{
+                mt: 3,
+                backgroundColor: "orange",
+                color: "white",
+                "&:hover": { backgroundColor: "#ec7200" },
+              }}
+            >
+              Go Back
             </Button>
           </Link>
         </CardContent>

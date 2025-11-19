@@ -177,6 +177,7 @@ export default function BlogDetailsPage({
                           </button>
                         )}
                       </div>
+                      
                     ) : (
                       <p>No TOC available</p>
                     )}

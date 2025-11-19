@@ -7,9 +7,10 @@ import Link from "next/link";
 import TickIcon from "../../../public/images/tick.jpg";
 import Image from "next/image";
 import { redirect } from "next/navigation"; // ✅ Import notFound
+import Thankyou from './ThankYouClient '
 
-type RouteParams = { slug: string };
-type PageProps = { params: Promise<RouteParams> };
+ type RouteParams = { slug: string };
+type PageProps = { params: RouteParams };
 
 async function fetchBlogDetail(slug: string) {
   try {
@@ -32,12 +33,8 @@ async function fetchBlogDetail(slug: string) {
 }
 
 // ✅ SEO from product.seo (NO images)
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<RouteParams>;
-}): Promise<Metadata> {
-  const { slug } = await params;
+export async function generateMetadata({ params }: { params: RouteParams }) {
+  const { slug } = params;
   if (slug.startsWith("thank-you-")) {
     return {
       title: "Thank You",
@@ -95,7 +92,7 @@ export async function generateMetadata({
 }
 
 export default async function ProductDetailPage({ params }: PageProps) {
-  const { slug } = await params;
+  const { slug } = params;
 
   if (slug.startsWith("thank-you-")) {
     return (
@@ -167,6 +164,10 @@ export default async function ProductDetailPage({ params }: PageProps) {
     );
   }
   const data = await fetchBlogDetail(slug);
+
+    if (slug.startsWith("thank-you-")) {
+    return <Thankyou /> ;
+  }
   if (!data) {
     redirect("/404"); // ✅ Show Next.js 404 page
   }
