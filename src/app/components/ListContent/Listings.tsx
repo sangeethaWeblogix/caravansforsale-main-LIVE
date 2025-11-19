@@ -248,7 +248,7 @@
     const [models, setModels] = useState<MakeOption[]>(
       initialData?.data?.model_options || []
     );
-    const [pageTitle, setPageTitle] = useState(initialData?.title || " ");
+    // const [pageTitle, setPageTitle] = useState(initialData?.title || " ");
     const [metaTitle, setMetaTitle] = useState(initialData?.seo?.metatitle || "");
     const [metaDescription, setMetaDescription] = useState(
       initialData?.seo?.metadescription || ""
@@ -411,7 +411,7 @@
         setMakes(initialData.data.make_options || []);
         setStateOptions(initialData.data.states || []);
         setModels(initialData.data.model_options || []);
-        setPageTitle(initialData.title || "");
+        // setPageTitle(initialData.title || "");
         setMetaTitle(initialData.seo?.metatitle || "");
         setMetaDescription(initialData.seo?.metadescription || "");
         if (initialData.pagination) setPagination(initialData.pagination);
@@ -586,7 +586,7 @@
             setMakes(response?.data?.make_options ?? []);
             setStateOptions(response?.data?.states ?? []);
             setModels(response?.data?.model_options ?? []);
-            setPageTitle(response?.title ?? " ");
+            // setPageTitle(response?.title ?? " ");
   
             if (response.pagination) setPagination(response.pagination);
             setMetaDescription(response?.seo?.metadescription ?? "");
@@ -611,7 +611,7 @@
                 console.log(`✅ Loaded ${fallbackItems.length} exclusive items`);
                 setItems(fallbackItems);
                 setProducts(fallbackItems as unknown as Product[]);
-                setPageTitle("Exclusive Listings");
+                // setPageTitle("Exclusive Listings");
                 setMetaTitle("Exclusive Caravans for Sale");
                 setMetaDescription(
                   "Explore our exclusive collection of caravans."
