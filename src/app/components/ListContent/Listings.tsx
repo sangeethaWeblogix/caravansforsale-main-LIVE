@@ -422,8 +422,8 @@ export default function ListingsPage({
 
   useEffect(() => {
     console.log("🚀 Running Exclusive Listings fetch...");
-    if (products.length < 0 && !emptyProduct) return;
-
+if (!emptyProduct) return;
+  if (products.length > 0) return;
     const loadExclusiveListings = async () => {
       try {
         const res = await fetchExclusiveListings(1);
