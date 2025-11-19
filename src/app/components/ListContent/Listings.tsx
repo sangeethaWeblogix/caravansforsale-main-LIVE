@@ -6,8 +6,7 @@
   import ExculsiveContent from "./exculsiveContent";
   import CaravanFilter from "../CaravanFilter";
   import SkeletonListing from "../skelton";
-  import Link from "next/link";
-  import { flushSync } from "react-dom";
+   import { flushSync } from "react-dom";
   import { v4 as uuidv4 } from "uuid";
   import "./newList.css"
   
@@ -1196,7 +1195,7 @@
               aria-label="Close"
             />
           </div>
-          
+
           <div className="offcanvas-body pt-2">
             <Suspense fallback={<div>Loading filters...</div>}>
               <CaravanFilter
