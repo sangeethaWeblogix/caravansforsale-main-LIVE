@@ -248,7 +248,7 @@ export default function ListingsPage({
   const [models, setModels] = useState<MakeOption[]>(
     initialData?.data?.model_options || []
   );
-  const [pageTitle, setPageTitle] = useState(initialData?.title || " ");
+  // const [pageTitle, setPageTitle] = useState(initialData?.title || " ");
   const [metaTitle, setMetaTitle] = useState(initialData?.seo?.metatitle || "");
   const [metaDescription, setMetaDescription] = useState(
     initialData?.seo?.metadescription || ""
@@ -412,7 +412,7 @@ export default function ListingsPage({
       setMakes(initialData.data.make_options || []);
       setStateOptions(initialData.data.states || []);
       setModels(initialData.data.model_options || []);
-      setPageTitle(initialData.title || "");
+      // setPageTitle(initialData.title || "");
       setMetaTitle(initialData.seo?.metatitle || "");
       setMetaDescription(initialData.seo?.metadescription || "");
       if (initialData.pagination) setPagination(initialData.pagination);
@@ -587,7 +587,7 @@ export default function ListingsPage({
           setMakes(response?.data?.make_options ?? []);
           setStateOptions(response?.data?.states ?? []);
           setModels(response?.data?.model_options ?? []);
-          setPageTitle(response?.title ?? " ");
+          // setPageTitle(response?.title ?? " ");
 
           if (response.pagination) setPagination(response.pagination);
           setMetaDescription(response?.seo?.metadescription ?? "");
@@ -611,7 +611,7 @@ export default function ListingsPage({
             if (fallbackItems.length > 0) {
               console.log(`✅ Loaded ${fallbackItems.length} exclusive items`);
               setProducts(fallbackItems as unknown as Product[]);
-              setPageTitle("Exclusive Listings");
+              // setPageTitle("Exclusive Listings");
               setMetaTitle("Exclusive Caravans for Sale");
               setMetaDescription(
                 "Explore our exclusive collection of caravans."
@@ -1109,7 +1109,8 @@ export default function ListingsPage({
             </div>
 
             <h1 className="page-title">{pageTitle}</h1>*/}
-             <h1 className="page-title">{pageTitle}</h1>
+             {/* <h1 className="page-title">{pageTitle}</h1> */}
+
             <div ref={sentinelRef} style={{ height: "1px" }} />
             <div className="row">
               {/* Desktop sidebar */}
