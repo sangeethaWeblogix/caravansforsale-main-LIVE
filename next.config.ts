@@ -7,8 +7,31 @@ const nextConfig: NextConfig = {
     domains: [
       "media.caravansforsale.com.au",
       "www.caravansforsale.com.au",
+       "www.admin.caravansforsale.com.au",
       "caravansforsale.b-cdn.net",
       "wb79vudhmjvv4ng6.public.blob.vercel-storage.com",
+    ],
+      remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "www.admin.caravansforsale.com.au",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "admin.caravansforsale.com.au",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "caravansforsale.b-cdn.net",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "media.caravansforsale.com.au",
+        pathname: "/**",
+      },
     ],
     formats: ["image/avif", "image/webp"],
     minimumCacheTTL: 31536000,
@@ -29,9 +52,9 @@ const nextConfig: NextConfig = {
     optimizeCss: true,
   },
 
-  compiler: {
-    removeConsole: true,
-  },
+  // compiler: {
+  //   removeConsole: true,
+  // },
 
   // ✅ Redirect malformed URLs like /feedfeedfeedfeed → clean version
   async redirects() {
