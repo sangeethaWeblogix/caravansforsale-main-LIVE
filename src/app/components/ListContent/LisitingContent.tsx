@@ -796,7 +796,7 @@ export default function ListingContent({
                               <div className="background_thumb">
                                 <ImageWithSkeleton
                                   src={images[1]}
-priority
+ priority={isPriority}  
                                   alt="Caravan"
                                   width={300}
                                   height={200}
@@ -837,7 +837,7 @@ priority
                                           alt={`Caravan ${i + 1}`}
                                           width={300}
                                           height={200}
-priority
+ priority={isPriority}  
                                         />
                                       </div>
                                     </SwiperSlide>
