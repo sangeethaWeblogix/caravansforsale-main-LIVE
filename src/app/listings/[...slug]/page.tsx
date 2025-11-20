@@ -335,18 +335,55 @@ if (hasSuburb && !hasRegion) {
   // ✅ Fetch listings
   const response = await fetchListings({ ...filters, page });
 // Fetch valid makes from real make API
+ // 🚀 VALIDATE MAKE & MODEL FROM REAL API
 const makeDetails = await fetchMakeDetails();
+
+// Build: map of make -> models
 const validMakes = makeDetails.map(m => m.slug.toLowerCase());
 
-// Validate make from slug
-const invalidMake = slug.some((part) => {
-  if (/^[a-zA-Z]+$/.test(part)) {
-    return !validMakes.includes(part.toLowerCase());
-  }
-  return false;
+const validModelsByMake = new Map();
+makeDetails.forEach(m => {
+  validModelsByMake.set(
+    m.slug.toLowerCase(),
+    m.models.map(md => md.slug.toLowerCase())
+  );
 });
 
-if (invalidMake) redirect("/404");
+// Extract pure alphanumeric slug segments (Make + Model candidates)
+const pureSegments = slug.filter(p =>
+  /^[a-z0-9-]+$/.test(p) &&
+  !p.endsWith("-state") &&
+  !p.endsWith("-region") &&
+  !p.endsWith("-suburb") &&
+  !p.endsWith("-condition") &&
+  !p.endsWith("-category") &&
+  !p.endsWith("-search") &&
+  !p.includes("-kg-atm") &&
+  !p.includes("-length") &&
+  !p.includes("-people") &&
+  !p.includes("caravans-range")
+);
+
+// Assign make & model from slug structure
+const makeSlug = pureSegments[0]?.toLowerCase();
+const modelSlug = pureSegments[1]?.toLowerCase();
+
+// 🟥 Validate Make
+if (makeSlug && !validMakes.includes(makeSlug)) {
+  console.log("❌ Invalid MAKE:", makeSlug);
+  redirect("/404");
+}
+
+// 🟦 Validate Model only if make exists and model exists
+if (makeSlug && modelSlug) {
+  const validModels = validModelsByMake.get(makeSlug) || [];
+
+  if (!validModels.includes(modelSlug)) {
+    console.log("❌ Invalid MODEL:", modelSlug, "for make:", makeSlug);
+    redirect("/404");
+  }
+}
+
 
 
  
