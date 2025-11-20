@@ -12,13 +12,50 @@
  import PostRequirement from "../postRequirement";
  import Manufactures from "../manufacture";
  import SearchSection from "./search";
- 
+import { fetchSleepBands } from "@/api/homeApi/sleep/api";
+ interface SleepBand {
+  label: string;
+  capacity: number;
+  slug: string;
+  permalink: string;
+  caravan_count: number;
+  starting_price: number;
+  display_text: string;
+}
+
  /* --------------------------------- Page ---------------------------------- */
- export default function ProductPage() {
+ export default    function ProductPage() {
+  const [bands, setBands] = useState<SleepBand[]>([]);
+ 
    const [adIndex, setAdIndex] = useState<number>(0);
  
    const bannerSectionRef = useRef<HTMLDivElement | null>(null);
- 
+//    useEffect(() => {
+//   async function loadAll() {
+//     const [sleep, region, weight, length] = await Promise.all([
+//       fetchSleepBands(),
+//       fetchRegionBands(),
+//       fetchWeightBands(),
+//       fetchLengthBands(),
+//     ]);
+
+//     setSleepBands(sleep);
+//     setRegionBands(region);
+//     setWeightBands(weight);
+//     setLengthBands(length);
+//   }
+  
+//   loadAll();
+// }, []);
+
+ useEffect(() => {
+  async function loadBands() {
+    const data = await fetchSleepBands();
+    setBands(data);
+  }
+  loadBands();
+}, []);
+
    useEffect(() => {
      if (typeof window === "undefined" || typeof document === "undefined")
        return;
@@ -435,18 +472,21 @@
                      data-bs-parent="#accordionFaq"
                    >
                      <div className="accordion-body">
-                       <ul>
-                         <li><a href="https://www.caravansforsale.com.au/listings/1-people-sleeping-capacity">Caravans Under 1 People Sleeping Capacity</a><span>5,733 caravan listings starting at $825</span></li>
-                         <li><a href="https://www.caravansforsale.com.au/listings/2-people-sleeping-capacity">Caravans Under 2 People Sleeping Capacity</a><span>5,733 caravan listings starting at $825</span></li>
-                         <li><a href="https://www.caravansforsale.com.au/listings/3-people-sleeping-capacity">Caravans Under 3 People Sleeping Capacity</a><span>5,733 caravan listings starting at $825</span></li>
-                         <li><a href="https://www.caravansforsale.com.au/listings/4-people-sleeping-capacity">Caravans Under 4 People Sleeping Capacity</a><span>5,733 caravan listings starting at $825</span></li>
-                         <li><a href="https://www.caravansforsale.com.au/listings/5-people-sleeping-capacity">Caravans Under 5 People Sleeping Capacity</a><span>5,733 caravan listings starting at $825</span></li>
-                         <li><a href="https://www.caravansforsale.com.au/listings/6-people-sleeping-capacity">Caravans Under 6 People Sleeping Capacity</a><span>5,733 caravan listings starting at $825</span></li>
-                         <li><a href="https://www.caravansforsale.com.au/listings/7-people-sleeping-capacity">Caravans Under 7 People Sleeping Capacity</a><span>5,733 caravan listings starting at $825</span></li>
+                          
+ <ul>
+  {bands.map((item) => (
+    <li key={item.slug}>
+      <a href={`https://www.caravansforsale.com.au/listings${item.permalink}`}>
+        {item.label}
+      </a>
+      <span>{item.display_text}</span>
+    </li>
+  ))}
+</ul>
+
+  
  
- 
-                       </ul>
-                     </div>
+                      </div>
                    </div>
                  </div>
  

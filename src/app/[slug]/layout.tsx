@@ -3,7 +3,7 @@
 import { Metadata } from "next";
 import "./details.css";
 import { ReactNode } from "react";
-// import Thankyou from './ThankYouClient '
+import Thankyou from './ThankYouClient '
 type RouteParams = { slug: string };
 
 async function fetchBlogDetail(slug: string) {
@@ -27,12 +27,12 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
 
-  //   if (slug.startsWith("thank-you-")) {
-  //   return {
-  //     title: "Thank You",
-  //     description: "Thank you for submitting your form.",
-  //   };
-  // }
+    if (slug.startsWith("thank-you-")) {
+    return {
+      title: "Thank You",
+      description: "Thank you for submitting your form.",
+    };
+  }
   const data = await fetchBlogDetail(slug);
   const seo = data?.seo ?? {};
   const post = data?.data?.blog_detail || {};
@@ -79,11 +79,11 @@ export default async function Layout({
 
 
   /** 🛑 STOP BLOG FETCH FOR THANK-YOU PAGES **/
-  // if (slug.startsWith("thank-you-")) {
-  //   return <div>
-  //     <Thankyou  />
-  //   </div>;
-  // }
+  if (slug.startsWith("thank-you-")) {
+    return <div>
+      <Thankyou  />
+    </div>;
+  }
 
   /** ✅ SAFE BLOG FETCH FOR NORMAL PAGES **/
   const data = await fetchBlogDetail(slug);
