@@ -2,6 +2,8 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   trailingSlash: true,
+  reactStrictMode: false,
+
  images: {
     unoptimized: false,
     domains: [
@@ -52,9 +54,9 @@ const nextConfig: NextConfig = {
     optimizeCss: true,
   },
 
-  compiler: {
-    removeConsole: true,
-  },
+  // compiler: {
+  //   removeConsole: true,
+  // },
 
   // ✅ Redirect malformed URLs like /feedfeedfeedfeed → clean version
   async redirects() {

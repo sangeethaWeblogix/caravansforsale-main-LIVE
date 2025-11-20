@@ -1,38 +1,34 @@
  export const dynamic = "force-dynamic";
 
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import "./details.css";
 import { ReactNode } from "react";
-// import Thankyou from './ThankYouClient '
+
 type RouteParams = { slug: string };
 
 async function fetchBlogDetail(slug: string) {
   try {
     const res = await fetch(
-      `https://www.admin.caravansforsale.com.au/wp-json/cfs/v1/blog-detail-new/?slug=${encodeURIComponent(slug)}`,
+      `https://www.admin.caravansforsale.com.au/wp-json/cfs/v1/blog-detail-new/?slug=${encodeURIComponent(
+        slug
+      )}`,
       { cache: "no-store", headers: { Accept: "application/json" } }
     );
-
     if (!res.ok) return null;
     return res.json();
-  } catch {
+  } catch (error) {
+    console.error("Blog fetch error:", error);
     return null;
   }
 }
 
+// ✅ SEO Metadata (title, description, canonical, OG tags)
 export async function generateMetadata({
   params,
 }: {
   params: Promise<RouteParams>;
 }): Promise<Metadata> {
   const { slug } = await params;
-
-  //   if (slug.startsWith("thank-you-")) {
-  //   return {
-  //     title: "Thank You",
-  //     description: "Thank you for submitting your form.",
-  //   };
-  // }
   const data = await fetchBlogDetail(slug);
   const seo = data?.seo ?? {};
   const post = data?.data?.blog_detail || {};
@@ -62,12 +58,12 @@ export async function generateMetadata({
   };
 }
 
- 
+// ✅ Safe JSON encode for <script> tag
 function safeJsonLdString(json: object) {
   return JSON.stringify(json, null, 2).replace(/</g, "\\u003c");
 }
 
-
+// ✅ Layout (includes structured data in head SSR)
 export default async function Layout({
   children,
   params,
@@ -75,21 +71,10 @@ export default async function Layout({
   children: ReactNode;
   params: Promise<RouteParams>;
 }) {
-     const { slug } = await params;
-
-
-  /** 🛑 STOP BLOG FETCH FOR THANK-YOU PAGES **/
-  // if (slug.startsWith("thank-you-")) {
-  //   return <div>
-  //     <Thankyou  />
-  //   </div>;
-  // }
-
-  /** ✅ SAFE BLOG FETCH FOR NORMAL PAGES **/
+  const { slug } = await params;
   const data = await fetchBlogDetail(slug);
-
-  const post = data?.data?.blog_detail ?? {};
-  const seo = data?.seo ?? {};
+  const post = data?.data?.blog_detail || {};
+  const seo = data?.seo || {};
 
   const canonical = `https://www.caravansforsale.com.au/${slug}/`;
   const title = seo.metatitle || post.title || "Caravans for Sale Blog";
@@ -103,6 +88,7 @@ export default async function Layout({
     post.image ||
     "https://www.caravansforsale.com.au/load.svg";
 
+  // ✅ JSON-LD schema (Google Rich Result compatible)
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
@@ -112,16 +98,28 @@ export default async function Layout({
     },
     headline: title,
     description: description,
-    image: bannerImage,
+    image: {
+      "@type": "ImageObject",
+      url: bannerImage,
+      width: 1600,
+      height: 900,
+    },
     author: {
       "@type": "Person",
       name: "Tom",
+      url: "https://www.caravansforsale.com.au/author/tom/",
     },
     publisher: {
       "@type": "Organization",
       name: "Caravans for Sale",
+      logo: {
+        "@type": "ImageObject",
+        url: "https://www.caravansforsale.com.au/images/cfs-logo-black.svg",
+        width: 300,
+        height: 60,
+      },
     },
-   datePublished: post.date
+    datePublished: post.date
       ? new Date(post.date).toISOString()
       : new Date().toISOString(),
     dateModified: post.date
@@ -131,13 +129,17 @@ export default async function Layout({
 
   return (
     <>
-      {/* JSON-LD FOR BLOG ONLY */}
-     <script
+      {/* ✅ Correct MIME type (no more detection issue) */}
+      <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: safeJsonLdString(jsonLd),
         }}
       />
- <div>{children}</div>    </>
+      <div>{children}</div>
+    </>
   );
 }
+
+
+

@@ -1,4 +1,5 @@
- import DeatilsPage from "./details";
+ import type { Metadata } from "next";
+import DeatilsPage from "./details";
 
 import "./details.css";
 import { Card, CardContent, Typography, Button } from "@mui/material";
@@ -6,10 +7,8 @@ import Link from "next/link";
 import TickIcon from "../../../public/images/tick.jpg";
 import Image from "next/image";
 import { redirect } from "next/navigation"; // ✅ Import notFound
-// import Thankyou from './ThankYouClient '
-import { Metadata } from "next";
 
- type RouteParams = { slug: string };
+type RouteParams = { slug: string };
 type PageProps = { params: Promise<RouteParams> };
 
 async function fetchBlogDetail(slug: string) {
@@ -168,10 +167,6 @@ export default async function ProductDetailPage({ params }: PageProps) {
     );
   }
   const data = await fetchBlogDetail(slug);
-
-  //   if (slug.startsWith("thank-you-")) {
-  //   return <Thankyou /> ;
-  // }
   if (!data) {
     redirect("/404"); // ✅ Show Next.js 404 page
   }

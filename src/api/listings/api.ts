@@ -148,7 +148,8 @@
     const s = normalizeQuery(search);
     if (s) params.append("search", s);
   
-    const res = await fetch(`${API_BASE}/product-list-latest?${params}`);
+  const url = `${API_BASE}/product-list-latest?${params.toString()}`;
+const res = await fetch(url, { cache: "no-store" });
       console.log("[list API] GET", res.url)
 
     if (!res.ok) {

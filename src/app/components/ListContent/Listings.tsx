@@ -164,7 +164,8 @@
     const [scrollStarted, setScrollStarted] = useState(false);
     const [isNextLoading, setIsNextLoading] = useState(false);
     const [nextPageData, setNextPageData] = useState<ApiResponse | null>(null);
-  
+  const isApiRunning = useRef(false);
+
     const [clickid, setclickid] = useState<string | null>(null);
     const [isRestored, setIsRestored] = useState(false);
     console.log(isRestored)
@@ -341,7 +342,29 @@
   
       return page;
     };
+      useEffect(() => {
+      console.log("🚀 Running Exclusive Listings fetch...");
+      if (products.length < 0 && !emptyProduct) return;
   
+      const loadExclusiveListings = async () => {
+        try {
+          const res = await fetchExclusiveListings(1);
+          console.log("Exclusive Listings Response:", res);
+  
+          if (res.items && res.items.length > 0) {
+            setItems(res.items); // ✅ store in state
+            console.log(`🧾 Stored ${res.items.length} items in state`);
+          } else {
+            console.warn("⚠️ No exclusive items found.");
+            setItems([]);
+          }
+        } catch {
+          console.error("❌ Exclusive Listings Error:");
+        }
+      };
+      
+      loadExclusiveListings();
+    }, []);
     const updateURLWithFilters = useCallback(
       (nextFilters: Filters, pageNum: number) => {
         console.log(pageNum)
@@ -419,29 +442,7 @@
     }, [initialData]);
     const [items, setItems] = useState<ExclusiveProduct[]>([]);
   
-    useEffect(() => {
-      console.log("🚀 Running Exclusive Listings fetch...");
-      if (products.length < 0 && !emptyProduct) return;
-  
-      const loadExclusiveListings = async () => {
-        try {
-          const res = await fetchExclusiveListings(1);
-          console.log("Exclusive Listings Response:", res);
-  
-          if (res.items && res.items.length > 0) {
-            setItems(res.items); // ✅ store in state
-            console.log(`🧾 Stored ${res.items.length} items in state`);
-          } else {
-            console.warn("⚠️ No exclusive items found.");
-            setItems([]);
-          }
-        } catch {
-          console.error("❌ Exclusive Listings Error:");
-        }
-      };
-  
-      loadExclusiveListings();
-    }, []);
+ const hasFetchedExclusiveFallback = useRef(false);
   
     const sentinelRef = useRef<HTMLDivElement | null>(null);
     useEffect(() => {
@@ -521,131 +522,160 @@
   
     console.log("🔥 Exclusive Listings State:", items);
     const loadListings = useCallback(
-      async (
-        pageNum = 1,
-        appliedFilters: Filters = filtersRef.current,
-        skipInitialCheck = false
-      ): Promise<ApiResponse | undefined> => {
-        // Return cached initial data (first render)
-        if (initialData && !skipInitialCheck && isUsingInitialData) {
-          setIsUsingInitialData(false);
-          return initialData;
+  async (
+    pageNum = 1,
+    appliedFilters: Filters = filtersRef.current,
+    skipInitialCheck = false
+  ): Promise<ApiResponse | undefined> => {
+    // Prevent duplicate concurrent API calls
+    if (isApiRunning.current) {
+      console.log("SKIPPED DUPLICATE API CALL");
+      return;
+    }
+    isApiRunning.current = true;
+    console.log("REAL API CALL STARTED - Page:", pageNum);
+
+    // Use SSR initialData on first render only
+    if (initialData && !skipInitialCheck && isUsingInitialData) {
+      setIsUsingInitialData(false);
+      isApiRunning.current = false;
+      return initialData;
+    }
+
+    try {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+
+      const safeFilters = normalizeSearchFromMake(appliedFilters);
+      const radiusNum = asNumber(safeFilters.radius_kms);
+      const radiusParam =
+        typeof radiusNum === "number" && radiusNum !== DEFAULT_RADIUS
+          ? String(radiusNum)
+          : undefined;
+
+      const response: ApiResponse = await fetchListings({
+        ...safeFilters,
+        page: pageNum,
+        condition: safeFilters.condition,
+        minKg: safeFilters.minKg?.toString(),
+        maxKg: safeFilters.maxKg?.toString(),
+        sleeps: safeFilters.sleeps,
+        from_price: safeFilters.from_price?.toString(),
+        to_price: safeFilters.to_price?.toString(),
+        acustom_fromyears: safeFilters.acustom_fromyears?.toString(),
+        acustom_toyears: safeFilters.acustom_toyears?.toString(),
+        from_length: safeFilters.from_length?.toString(),
+        to_length: safeFilters.to_length?.toString(),
+        make: safeFilters.make,
+        model: safeFilters.model,
+        state: safeFilters.state,
+        region: safeFilters.region,
+        suburb: safeFilters.suburb,
+        pincode: safeFilters.pincode,
+        orderby: safeFilters.orderby,
+        search: safeFilters.search,
+        keyword: safeFilters.keyword,
+        from_sleep: safeFilters.from_sleep?.toString(),
+        to_sleep: safeFilters.to_sleep?.toString(),
+        radius_kms: radiusParam,
+      });
+
+      const rawProducts = response?.data?.products ?? [];
+      const validProducts = Array.isArray(rawProducts)
+        ? rawProducts.filter((item): item is Item => item != null)
+        : [];
+
+      // ——————————————————————————
+      // CASE 1: We have real listings
+      // ——————————————————————————
+      if (validProducts.length > 0) {
+        // Reset exclusive fallback (allow it again if filters later return 0)
+        hasFetchedExclusiveFallback.current = false;
+        setItems([]); // Clear any previous exclusive content
+
+        const transformedProducts = transformApiItemsToProducts(validProducts);
+        setProducts(transformedProducts);
+
+        // Update other sections
+        setPremiumProducts(response?.data?.premium_products ?? []);
+        setFeaturedProducts(response?.data?.featured_products ?? []);
+        setExculisiveProducts(response?.data?.exclusive_products ?? []);
+
+        setCategories(response?.data?.all_categories ?? []);
+        setMakes(response?.data?.make_options ?? []);
+        setStateOptions(response?.data?.states ?? []);
+        setModels(response?.data?.model_options ?? []);
+
+        setMetaTitle(response?.seo?.metatitle ?? "Caravans for Sale");
+        setMetaDescription(response?.seo?.metadescription ?? "");
+
+        if (response.pagination) {
+          setPagination(response.pagination);
         }
-  
+
+        setEmptyProduct(false);
+        return response;
+      }
+
+      // ——————————————————————————
+      // CASE 2: No regular products → try exclusive fallback (ONLY ONCE)
+      // ——————————————————————————
+      if (!hasFetchedExclusiveFallback.current) {
+        console.warn("No regular listings found → fetching Exclusive Listings (one-time only)");
+        setEmptyProduct(true);
+
         try {
-          window.scrollTo({ top: 0, behavior: "smooth" });
-  
-          const safeFilters = normalizeSearchFromMake(appliedFilters);
-          const radiusNum = asNumber(safeFilters.radius_kms);
-          const radiusParam =
-            typeof radiusNum === "number" && radiusNum !== DEFAULT_RADIUS
-              ? String(radiusNum)
-              : undefined;
-  
-          const response: ApiResponse = await fetchListings({
-            ...safeFilters,
-            page: pageNum,
-            condition: safeFilters.condition,
-            minKg: safeFilters.minKg?.toString(),
-            maxKg: safeFilters.maxKg?.toString(),
-            sleeps: safeFilters.sleeps,
-            from_price: safeFilters.from_price?.toString(),
-            to_price: safeFilters.to_price?.toString(),
-            acustom_fromyears: safeFilters.acustom_fromyears?.toString(),
-            acustom_toyears: safeFilters.acustom_toyears?.toString(),
-            from_length: safeFilters.from_length?.toString(),
-            to_length: safeFilters.to_length?.toString(),
-            make: safeFilters.make,
-            model: safeFilters.model,
-            state: safeFilters.state,
-            region: safeFilters.region,
-            suburb: safeFilters.suburb,
-            pincode: safeFilters.pincode,
-            orderby: safeFilters.orderby,
-            search: safeFilters.search,
-            keyword: safeFilters.keyword,
-            from_sleep: safeFilters.from_sleep?.toString(),
-            to_sleep: safeFilters.to_sleep?.toString(),
-            radius_kms: radiusParam,
-          });
-  
-          // ✅ Update all product states
-          const products = response?.data?.products ?? [];
-          const validProducts = Array.isArray(products)
-            ? products.filter((item) => item != null)
-            : [];
-  
-          if (validProducts.length > 0) {
-            const transformedProducts = transformApiItemsToProducts(validProducts);
-            setProducts(transformedProducts);
-            setPremiumProducts(response?.data?.premium_products ?? []);
-            setFeaturedProducts(response?.data?.featured_products ?? []);
-            setExculisiveProducts(response?.data?.exclusive_products ?? []);
-  
-            setCategories(response?.data?.all_categories ?? []);
-            setMakes(response?.data?.make_options ?? []);
-            setStateOptions(response?.data?.states ?? []);
-            setModels(response?.data?.model_options ?? []);
-            // setPageTitle(response?.title ?? " ");
-  
-            if (response.pagination) setPagination(response.pagination);
-            setMetaDescription(response?.seo?.metadescription ?? "");
-            setMetaTitle(response?.seo?.metatitle ?? "");
+          hasFetchedExclusiveFallback.current = true; // Never call again this session
+
+          const fallback = await fetchExclusiveListings(pageNum);
+          const fallbackItems = fallback?.items ?? [];
+
+          if (fallbackItems.length > 0) {
+            console.log(`Success: Loaded ${fallbackItems.length} exclusive listings as fallback`);
+
+            setItems(fallbackItems);
+            console.log("exxx",fallbackItems )
+            console.log("exx", items )
+ 
+            setMetaTitle("Exclusive Caravans for Sale | Premium & Rare Finds");
+            setMetaDescription("Explore our exclusive collection of premium, rare, and high-end caravans.");
+
+            setPagination({
+              current_page: fallback.currentPage || 1,
+              total_pages: fallback.totalPages || 1,
+              per_page: fallback.perPage || 12,
+              total_products: fallback.totalProducts || fallbackItems.length,
+              total_items: fallback.totalProducts || fallbackItems.length,
+            });
           } else {
-  
-            setEmptyProduct(true);
-            // 🚨 Step 3 — No valid products → Fetch Exclusive Listings fallback
-            console.warn(
-              "⚠️ No valid caravans found — fetching Exclusive Listings..."
-            );
-  
-            try {
-  
-              const fallback = await fetchExclusiveListings(pageNum);
-              console.log("🔁 Exclusive API Response:", fallback);
-  
-              const fallbackItems = fallback?.items ?? [];
-              console.log(`🔁 Exclusive items count: ${fallbackItems.length}`);
-  
-              if (fallbackItems.length > 0) {
-                console.log(`✅ Loaded ${fallbackItems.length} exclusive items`);
-                setItems(fallbackItems);
-                setProducts(fallbackItems as unknown as Product[]);
-                // setPageTitle("Exclusive Listings");
-                setMetaTitle("Exclusive Caravans for Sale");
-                setMetaDescription(
-                  "Explore our exclusive collection of caravans."
-                );
-                setPagination({
-                  current_page: fallback.currentPage || 1,
-                  per_page: fallback.perPage || 12,
-                  total_products: fallback.totalProducts || fallbackItems.length,
-                  total_pages: fallback.totalPages || 1,
-                  total_items: fallback.totalProducts || fallbackItems.length,
-                });
-              } else {
-                console.warn("⚠️ No exclusive items found either.");
-                setProducts([]);
-              }
-            } catch (err) {
-              console.error("❌ Failed to fetch exclusive fallback:", err);
-              setProducts([]);
-            }
+            setProducts([]);
+            setItems([]);
           }
-  
-          return response;
-        } catch (error) {
-          console.error("❌ Failed to fetch listings:", error);
+        } catch (err) {
+          console.error("Failed to fetch exclusive listings fallback:", err);
           setProducts([]);
-          return undefined;
-        } finally {
-          setIsLoading(false);
-          console.log("✅ loadListings complete.");
+          setItems([]);
         }
-      },
-      [DEFAULT_RADIUS, router, initialData, isUsingInitialData]
-    );
-  
+      } else {
+        // Already tried exclusive fallback → final empty state
+        console.log("No results & exclusive already tried → showing empty");
+        setProducts([]);
+        setItems([]);
+      }
+
+      return response;
+    } catch (error) {
+      console.error("Failed to fetch listings:", error);
+      setProducts([]);
+      setItems([]);
+      return undefined;
+    } finally {
+      isApiRunning.current = false;
+      setIsLoading(false);
+      console.log("loadListings completed.");
+    }
+  },
+  [DEFAULT_RADIUS, initialData, isUsingInitialData]
+);
   
     const scrollToTop = () => {
       setTimeout(() => {
@@ -1144,6 +1174,7 @@
                     products={products}
                     data={items}
                     pagination={pagination}
+
                     onNext={handleNextPage}
                     onPrev={handlePrevPage}
                     metaDescription={metaDescription}
@@ -1158,7 +1189,7 @@
                     isPremiumLoading={isPremiumLoading}
                     isNextLoading={isNextLoading}
                   />
-                ) :
+             ) : items.length > 0 ? (
                   <ExculsiveContent
                     data={items}
                     pagination={pagination}
@@ -1169,7 +1200,15 @@
                     isPremiumLoading={isPremiumLoading}
   
                   />
-                }
+             )  : (
+                  <div className="col-lg-9 text-center py-10">
+    <h3>No caravans found</h3>
+   </div>
+   
+  
+                  )}
+              
+                
   
               </div>
             </div>
