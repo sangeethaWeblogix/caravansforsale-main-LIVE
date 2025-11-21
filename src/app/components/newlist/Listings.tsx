@@ -1142,8 +1142,7 @@ export default function ListingsPage({
         <ExculsiveContent
           data={emptyProduct}
           pagination={pagination}
-          onNext={handleNextPage}
-          onPrev={handlePrevPage}
+           
           metaDescription={metaDescription}
           metaTitle={metaTitle}
           isPremiumLoading={isPremiumLoading}

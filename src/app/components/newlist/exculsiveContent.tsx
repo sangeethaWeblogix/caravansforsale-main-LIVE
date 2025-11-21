@@ -66,8 +66,7 @@
  interface Props {
    data: Product[];
  pagination: Pagination;
-    onNext: () => void;
-    onPrev: () => void;
+  
     metaTitle: string; // Add metaTitle prop
     metaDescription: string; // Add metaDescription prop
      isPremiumLoading: boolean; // Add isMainLoading prop
@@ -76,8 +75,7 @@
  export default function ExculisiveContent({
   data,
      pagination,
-    onNext,
-    onPrev,
+    
     metaTitle,
     metaDescription,
      isPremiumLoading,
@@ -373,7 +371,7 @@
                        </div>
                      </div>
                    </div>
-                  <div className="pagination-wrapper mt-4">
+                  {/* <div className="pagination-wrapper mt-4">
             <nav className="woocommerce-pagination custom-pagination mt-4">
               <ul className="pagination-icons">
                 <li className="">
@@ -402,7 +400,7 @@
                 </li>
               </ul>
             </nav>
-          </div>
+          </div> */}
        </div>
         {showInfo && selectedProduct && (
                  <div className="popup-overlay">
