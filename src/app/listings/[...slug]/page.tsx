@@ -148,7 +148,7 @@ export default async function ListingsPage({
  const seenTypes = new Set<SegmentType>();
  let lastStrictIndex = -1;
 
- for (const [index, part] of slug.entries()) {
+ for (const [_index, part] of slug.entries()) {
    const lower = part.toLowerCase();
    let detectedType: SegmentType | null = null;
 
