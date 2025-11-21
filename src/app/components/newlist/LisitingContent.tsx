@@ -98,10 +98,8 @@ export default function ListingContent({
   isNextLoading
 }: Props) {
   const [showInfo, setShowInfo] = useState(false);
-  const [showContact, setShowContact] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
-  const prevRef = useRef(null);
+    const prevRef = useRef(null);
   const nextRef = useRef(null);
   // console.log("data-prod", products);
 
@@ -146,18 +144,7 @@ export default function ListingContent({
     return merged;
   }, [products, exculisiveProducts]);
 
-  // ✅ Disable background scroll when popup is open
-  useEffect(() => {
-    if (showInfo || showContact) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [showInfo, showContact]);
+ 
 
   // Example placeholder function for product links
 
@@ -576,6 +563,7 @@ export default function ListingContent({
                             <div className="info">
                               {item.name && (
                                 <h3 className="title">{item.name}</h3>
+                                
                               )}
                             </div>
 
@@ -944,28 +932,8 @@ export default function ListingContent({
           </nav>
         </div>
       </div>
-      {showInfo && selectedProduct && (
-        <div className="popup-overlay">
-          <div className="popup-box">
-            <button className="close-popup" onClick={() => setShowInfo(false)}>
-              ×
-            </button>
-            <h4>Description</h4>
-            <div className="popup-content">
-              {selectedProduct.description ? (
-                <div
-                  className="description-text"
-                  dangerouslySetInnerHTML={{
-                    __html: selectedProduct.description.replace(/\\r\\n/g, "<br/>"),
-                  }}
-                />
-              ) : (
-                <p>No description available.</p>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+     
+
 
 
     </>
