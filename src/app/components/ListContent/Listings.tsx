@@ -388,16 +388,17 @@
   
   
     // tiny util
-    const ensureclickid = useCallback(() => {
-      if (!clickid) {
-        const id = uuidv4();
-        setclickid(id);
-        // reflect only clickid (no page)
-        setUrlParams({ clickid: id });
-        return id;
-      }
-      return clickid;
-    }, [clickid]);
+ const ensureclickid = (): string => {
+  const newId = uuidv4();
+  setclickid(newId);
+  
+  // URL-லும் உடனே update பண்ணு
+  const url = new URL(window.location.href);
+  url.searchParams.set("clickid", newId);
+  window.history.replaceState({}, "", url.toString());
+  
+  return newId;
+};
   
   
   
@@ -659,6 +660,7 @@
   
         const prevPage = pagination.current_page - 1;
         const id = ensureclickid(); // NEW
+        savePage(id, prevPage);
         sessionStorage.setItem(`page_${id}`, String(prevPage));
         try {
           await loadListings(prevPage, filtersRef.current, true);
@@ -957,7 +959,7 @@
         if ("orderby" in newFilters && !newFilters.orderby) {
           mergedFilters.orderby = undefined;
         }
-  
+  ensureclickid();
         filtersRef.current = mergedFilters;
         setFilters(mergedFilters);
   
