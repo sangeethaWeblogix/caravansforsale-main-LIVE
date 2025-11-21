@@ -223,7 +223,14 @@ export default async function Listings({
         actualPosition: index,
         expectedPosition: segmentOrder.indexOf("weight"),
       });
-    } else if (part.includes("-length-in-feet")) {
+    } else if (part.includes("over ")) {
+      segmentAnalysis.push({
+        type: "price",
+        value: part,
+        actualPosition: index,
+        expectedPosition: segmentOrder.indexOf("price"),
+      });
+    }else if (part.includes("-length-in-feet")) {
       segmentAnalysis.push({
         type: "length",
         value: part,

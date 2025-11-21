@@ -66,8 +66,7 @@
  interface Props {
    data: Product[];
  pagination: Pagination;
-    onNext: () => void;
-    onPrev: () => void;
+    
     metaTitle: string; // Add metaTitle prop
     metaDescription: string; // Add metaDescription prop
      isPremiumLoading: boolean; // Add isMainLoading prop
@@ -76,8 +75,7 @@
  export default function ExculisiveContent({
   data,
      pagination,
-    onNext,
-    onPrev,
+   
     metaTitle,
     metaDescription,
      isPremiumLoading,
@@ -374,43 +372,16 @@
                        </div>
                      </div>
                    </div>
-                  <div className="pagination-wrapper mt-4">
-            <nav className="woocommerce-pagination custom-pagination mt-4">
-              <ul className="pagination-icons">
-                <li className="">
-                  <span>
-                    <button
- onClick={onPrev}
-                                       disabled={pagination.current_page === 1}
-                      className="prev-icon"
-                    >
-                      Back
-                    </button>
-                  </span>
-                </li>
-                <li className="page-count">
-                  {" "}
-                  page {pagination.current_page} of {pagination.total_pages}
-                </li>
-                <li className="">
-                  <button
-                    className="next-icon"
-                    onClick={onNext}
-                    disabled={pagination.current_page === pagination.total_pages}
-                  >
-                    Next
-                  </button>
-                </li>
-              </ul>
-            </nav>
-          </div>
+                 
        </div>
+
         {showInfo && selectedProduct && (
                  <div className="popup-overlay">
                    <div className="popup-box">
                      <button className="close-popup" onClick={() => setShowInfo(false)}>
                        ×
                      </button>
+                     
                      <h4>Description</h4>
                      <div className="popup-content">
                         {selectedProduct.description ? (
