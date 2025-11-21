@@ -1,17 +1,15 @@
+
 "use client";
 import Link from "next/link";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/navigation";
-import "swiper/css/pagination";
-import { Navigation, Autoplay, Pagination } from "swiper/modules";
-import Skelton from "../skelton";
+import { Navigation, Autoplay } from "swiper/modules";
+import Skelton from '../skelton'
 import Head from "next/head";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toSlug } from "@/utils/seo/slug";
 import ImageWithSkeleton from "../ImageWithSkeleton";
-import { useEnquiryForm } from "./enquiryform";
-
 
 interface Product {
   id: number;
@@ -31,6 +29,7 @@ interface Product {
   slug?: string;
   description?: string;
   sku?: string;
+
 }
 
 interface Pagination {
@@ -96,39 +95,11 @@ export default function ListingContent({
   isFeaturedLoading,
   isPremiumLoading,
   isMainLoading,
-  isNextLoading,
+  isNextLoading
 }: Props) {
   const [showInfo, setShowInfo] = useState(false);
   const [showContact, setShowContact] = useState(false);
-   const [lazyImages, setLazyImages] = useState<{ [key: string]: string[] }>({});
-  const [loadedAll, setLoadedAll] = useState<{ [key: string]: boolean }>({});
-
- // When popup opens, this will hold the product clicked
-const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-
-// Safe product fallback (no TypeScript error)
-const enquiryProduct = selectedProduct
-  ? {
-      id: selectedProduct.id,
-      slug: selectedProduct.slug,
-      name: selectedProduct.name,
-    }
-  : {
-      id: 0,
-      slug: "",
-      name: "",
-    };
-
-// Use the form hook with the correct product
-const {
-  form,
-  errors,
-  touched,
-  submitting,
-  setField,
-  onBlur,
-  onSubmit,
-} = useEnquiryForm(enquiryProduct);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   const prevRef = useRef(null);
   const nextRef = useRef(null);
@@ -141,33 +112,7 @@ const {
   //   setOrderBy(e.target.value);
   // };
 
-  const getFirstImage = (item: Product) => {
-    if (!item.sku || !item.slug) return "/images/sample3.webp";
 
-    return `https://caravansforsale.b-cdn.net/Thumbnails/${item.sku}/${item.slug}-main.webp`;
-  };
-
-  const loadRemaining = (item: Product) => {
-    if (!item.sku || !item.slug) return;
-
-    const base = `https://caravansforsale.b-cdn.net/Thumbnails/${item.sku}`;
-
-    const extra = [
-      `${base}/${item.slug}-sub1.webp`,
-      `${base}/${item.slug}-sub2.webp`,
-      `${base}/${item.slug}-sub3.webp`,
-      `${base}/${item.slug}-sub4.webp`,
-    ];
-
-    setLazyImages((prev) => ({
-      ...prev,
-      [item.id]: [getFirstImage(item), ...extra],
-    }));
-
-    setLoadedAll((prev) => ({ ...prev, [item.id]: true }));
-  };
-
-  // Remove all the lazy loading state and just load all images immediately
 
   const mergedProducts = useMemo(() => {
     const merged: Product[] = [];
@@ -234,7 +179,7 @@ const {
 
   // ✅ Helper: generate up to 5 image URLs from SKU
   const getProductImages = (sku?: string, slug?: string): string[] => {
-    if (!sku || !slug) return ["/images/sample3.webp"]; // fallback
+    if (!sku || !slug) return ["/images/sample3.webp"]; // fallback 
 
     const base = `https://caravansforsale.b-cdn.net/Thumbnails/${sku}`;
 
@@ -242,21 +187,17 @@ const {
     const mainImage = `${base}/${slug}-main.webp`;
 
     // Remaining = sub1, sub2, sub3, sub4
-    const subImages = Array.from(
-      { length: 4 },
-      (_, i) => `${base}/${slug}-sub${i + 1}.webp`
-    );
+    const subImages = Array.from({ length: 4 }, (_, i) => `${base}/${slug}-sub${i + 1}.webp`);
 
     console.log("subimage", subImages);
     console.log("mainimage", mainImage);
     return [mainImage, ...subImages];
   };
 
+
   // ✅ Randomly shuffle premium products on each page load
   // ✅ Premium products shuffle after mount
-  const [shuffledPremiumProducts, setShuffledPremiumProducts] = useState<
-    Product[]
-  >([]);
+  const [shuffledPremiumProducts, setShuffledPremiumProducts] = useState<Product[]>([]);
 
   useEffect(() => {
     if (!preminumProducts || preminumProducts.length === 0) return;
@@ -270,6 +211,7 @@ const {
 
     setShuffledPremiumProducts(shuffled);
   }, [preminumProducts]);
+
 
   return (
     <>
@@ -287,13 +229,12 @@ const {
       <div className="col-lg-6 ">
         <div className="top-filter mb-10">
           <div className="row align-items-center">
-            <div className="col-lg-8">
+            <div className="col-lg-8 col-sm-6">
               <h1 className="show_count">
-                <strong>{pagination.total_products}</strong> Caravans for sale
-                in Australia
+                <strong>5863</strong> Caravans for sale in Australia
               </h1>
             </div>
-            <div className="col-4 d-lg-none d-md-none">
+            <div className="col-4 col-sm-2 d-lg-none ">
               <button
                 type="button"
                 className="mobile_fltn navbar-toggler mytogglebutton"
@@ -304,7 +245,7 @@ const {
                 <i className="bi bi-search" /> &nbsp;Filter
               </button>
             </div>
-            <div className="col-lg-4 col-8">
+            <div className="col-lg-4 col-sm-4 col-8">
               <div className="r-side">
                 <form className="woocommerce-ordering" method="get">
                   <div className="form-group shot-buy">
@@ -385,75 +326,57 @@ const {
                 >
                   {fetauredProducts.map((item, index) => {
                     const href = getHref(item);
-                    const images = getProductImages(item.sku, item.slug);
-                    const isPriority = index < 5;
 
                     return (
+
                       <SwiperSlide key={index}>
-                        <Link
-                          href={href}
-                          prefetch={false}
+                        <Link href={href} prefetch={false}
                           onClick={() => {
                             if (typeof window !== "undefined") {
-                              sessionStorage.setItem(
-                                "cameFromListings",
-                                "true"
-                              );
+                              sessionStorage.setItem("cameFromListings", "true");
                             }
-                          }}
-                        >
+                          }}>
                           <div className="product-card">
                             <div className="img">
                               <div className="background_thumb">
+
                                 <ImageWithSkeleton
-                                  src={images[0]}
+                                  src={item.image}
                                   alt="Caravan"
                                   width={300}
                                   height={200}
-                                  priority={isPriority}
                                 />
                               </div>
                               <div className="main_thumb">
                                 <ImageWithSkeleton
-                                  src={images[0]}
+                                  src={item.image}
                                   alt="Caravan"
                                   width={300}
                                   height={200}
-                                  priority={isPriority}
                                 />
                               </div>
                             </div>
                             <div className="product_de">
                               <div className="info">
-                                {item.name && (
+                                {item.name &&
                                   <h3 className="title">{item.name}</h3>
-                                )}
+                                }
                               </div>
 
                               {/* --- PRICE SECTION --- */}
-                              {(item.regular_price ||
-                                item.sale_price ||
-                                item.price_difference) && (
+                              {(item.regular_price || item.sale_price || item.price_difference) && (
                                 <div className="price">
                                   <div className="metc2">
-                                    {(item.regular_price ||
-                                      item.sale_price) && (
+                                    {(item.regular_price || item.sale_price) && (
                                       <h5 className="slog">
                                         {/* ✅ Stable price rendering: precompute safely */}
                                         {(() => {
-                                          const rawRegular =
-                                            item.regular_price || "";
+                                          const rawRegular = item.regular_price || "";
                                           const rawSale = item.sale_price || "";
-                                          const cleanRegular =
-                                            rawRegular.replace(/[^0-9.]/g, "");
-                                          const regNum =
-                                            Number(cleanRegular) || 0;
-                                          const cleanSale = rawSale.replace(
-                                            /[^0-9.]/g,
-                                            ""
-                                          );
-                                          const saleNum =
-                                            Number(cleanSale) || 0;
+                                          const cleanRegular = rawRegular.replace(/[^0-9.]/g, "");
+                                          const regNum = Number(cleanRegular) || 0;
+                                          const cleanSale = rawSale.replace(/[^0-9.]/g, "");
+                                          const saleNum = Number(cleanSale) || 0;
 
                                           // If regular price is 0 → show POA
                                           if (regNum === 0) {
@@ -464,8 +387,7 @@ const {
                                           if (saleNum > 0) {
                                             return (
                                               <>
-                                                <del>{rawRegular}</del>{" "}
-                                                {rawSale}
+                                                <del>{rawRegular}</del> {rawSale}
                                               </>
                                             );
                                           }
@@ -478,33 +400,32 @@ const {
 
                                     {/* ✅ Show SAVE only if > $0 */}
                                     {(() => {
-                                      const cleanDiff = (
-                                        item.price_difference || ""
-                                      ).replace(/[^0-9.]/g, "");
+                                      const cleanDiff = (item.price_difference || "").replace(/[^0-9.]/g, "");
                                       const diffNum = Number(cleanDiff) || 0;
                                       return diffNum > 0 ? (
                                         <p className="card-price">
-                                          <span>SAVE</span>{" "}
-                                          {item.price_difference}
+                                          <span>SAVE</span> {item.price_difference}
                                         </p>
                                       ) : null;
                                     })()}
+<div className="more_info">
+                                    {(item.location) && (
+                                      <div className="informat">
 
-                                    <div className="more_info">
-                                      <button
-                                        onClick={(e) => {
-                                          e.preventDefault();
-                                          setSelectedProduct(item);
-                                          setShowInfo(true);
-                                        }}
-                                      >
-                                        <i className="fa fa-info-circle"></i>{" "}
-                                        Info
-                                      </button>
-                                    </div>
+                                        {item.location && (
+                                          <span>
+                                            <i className="fa fa-map-marker-alt"></i>{" "}
+                                            {item.location}
+                                          </span>
+                                        )}
+                                      </div>
+                                    )}
+                                  </div>
+
                                   </div>
                                 </div>
                               )}
+
 
                               {/* --- DETAILS LIST --- */}
                               <ul className="vehicleDetailsWithIcons simple">
@@ -516,83 +437,49 @@ const {
                                   </li>
                                 )}
 
-                                {item.categories &&
-                                  item.categories.length > 0 && (
-                                    <li className="attribute3_list">
-                                      <span className="attribute3">
-                                        {item.categories.join(", ")}
-                                      </span>
-                                    </li>
-                                  )}
+                                {item.categories && item.categories.length > 0 && (
+                                  <li className="attribute3_list">
+                                    <span className="attribute3">
+                                      {item.categories.join(", ")}
+                                    </span>
+                                  </li>
+                                )}
 
                                 {item.length && (
                                   <li>
-                                    <span className="attribute3">
-                                      {item.length}
-                                    </span>
+                                    <span className="attribute3">{item.length}</span>
                                   </li>
                                 )}
 
                                 {item.kg && (
                                   <li>
-                                    <span className="attribute3">
-                                      {item.kg}
-                                    </span>
+                                    <span className="attribute3">{item.kg}</span>
                                   </li>
                                 )}
 
                                 {item.make && (
                                   <li>
-                                    <span className="attribute3">
-                                      {item.make}
-                                    </span>
+                                    <span className="attribute3">{item.make}</span>
                                   </li>
                                 )}
                               </ul>
 
-                              {/* --- CONDITION + LOCATION --- */}
-                              {(item.condition || item.location) && (
-                                <div className="bottom_mid">
-                                  {item.condition && (
-                                    <span>
-                                      <i className="bi bi-check-circle-fill"></i>{" "}
-                                      Condition {item.condition}
-                                    </span>
-                                  )}
-                                  {item.location && (
-                                    <span>
-                                      <i className="fa fa-map-marker-alt"></i>{" "}
-                                      {item.location}
-                                    </span>
-                                  )}
-                                </div>
-                              )}
+                              
 
-                              {/* --- BUTTONS --- */}
-                              <div className="bottom_button">
-                                <button
-                                  className="btn"
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                      setSelectedProduct(item);
 
-                                    setShowContact(true);
-                                  }}
-                                >
-                                  Contact Dealer
-                                </button>
-                                <button className="btn btn-primary">
-                                  View Details
-                                </button>
-                              </div>
                             </div>
                           </div>
                         </Link>
                       </SwiperSlide>
+
+
                     );
                   })}
+
+
                 </Swiper>
               )}
+
             </div>
           </div>
         )}
@@ -603,10 +490,11 @@ const {
               <div className="row g-3">
                 {shuffledPremiumProducts.map((item, index) => {
                   const href = getHref(item);
-                  const isPriority = index < 5;
-                  const imgs = lazyImages[item.id] || [getFirstImage(item)];
+                  const images = getProductImages(item.sku, item.slug);
+
                   return (
-                    <div className="col-lg-6 mb-0" key={index}>
+
+                    <div className="col-lg-12 mb-0" key={index}>
                       <Link
                         href={href}
                         onClick={() => {
@@ -621,43 +509,40 @@ const {
                           <div className="img">
                             <div className="background_thumb">
                               <ImageWithSkeleton
-                                src={imgs[0]}
+                                src={images[1]}
                                 alt="Caravan"
                                 width={300}
                                 height={200}
-                                priority={isPriority}
+
                               />
                             </div>
-
                             <div className="main_thumb position-relative">
                               <span className="lab">Spotlight Van</span>
                               {isPremiumLoading ? (
                                 <Skelton count={2} /> // ✅ show skeletons
                               ) : (
-                                // For Main Products Swiper - FIXED VERSION
                                 <Swiper
-                                  modules={[Navigation, Pagination]}
+                                  modules={[Navigation]}
                                   spaceBetween={10}
                                   slidesPerView={1}
                                   navigation
-                                  pagination={{
-                                    clickable: true,
-                                  }}
-                                  onSlideChange={() => {
-                                    if (!loadedAll[item.id])
-                                      loadRemaining(item); // Fixed: loadedAll instead of isLoaded
-                                  }}
-                                  onReachBeginning={() => {
-                                    if (!loadedAll[item.id])
-                                      loadRemaining(item); // Fixed: loadedAll instead of isLoaded
-                                  }}
-                                  onReachEnd={() => {
-                                    if (!loadedAll[item.id])
-                                      loadRemaining(item); // Fixed: loadedAll instead of isLoaded
+                                  
+                                  onSlideChange={(swiper) => {
+                                    const isLast =
+                                      swiper.activeIndex ===
+                                      swiper.slides.length - 1;
+                                    const viewMoreBtn = document.querySelector(
+                                      `#view-more-btn-${item.slug}`
+                                    );
+                                    if (viewMoreBtn instanceof HTMLElement) {
+                                      viewMoreBtn.style.display = isLast
+                                        ? "block"
+                                        : "none";
+                                    }
                                   }}
                                   className="main_thumb_swiper"
                                 >
-                                  {imgs.map((img, i) => (
+                                  {images.map((img, i) => (
                                     <SwiperSlide key={i}>
                                       <div className="thumb_img">
                                         <ImageWithSkeleton
@@ -665,7 +550,7 @@ const {
                                           alt={`Caravan ${i + 1}`}
                                           width={300}
                                           height={200}
-                                          priority={isPriority && i === 0}
+
                                         />
                                       </div>
                                     </SwiperSlide>
@@ -694,29 +579,21 @@ const {
                               )}
                             </div>
 
+
+
                             {/* --- PRICE SECTION --- */}
-                            {(item.regular_price ||
-                              item.sale_price ||
-                              item.price_difference) && (
+                            {(item.regular_price || item.sale_price || item.price_difference) && (
                               <div className="price">
                                 <div className="metc2">
                                   {(item.regular_price || item.sale_price) && (
                                     <h5 className="slog">
                                       {/* ✅ Stable price rendering: precompute safely */}
                                       {(() => {
-                                        const rawRegular =
-                                          item.regular_price || "";
+                                        const rawRegular = item.regular_price || "";
                                         const rawSale = item.sale_price || "";
-                                        const cleanRegular = rawRegular.replace(
-                                          /[^0-9.]/g,
-                                          ""
-                                        );
-                                        const regNum =
-                                          Number(cleanRegular) || 0;
-                                        const cleanSale = rawSale.replace(
-                                          /[^0-9.]/g,
-                                          ""
-                                        );
+                                        const cleanRegular = rawRegular.replace(/[^0-9.]/g, "");
+                                        const regNum = Number(cleanRegular) || 0;
+                                        const cleanSale = rawSale.replace(/[^0-9.]/g, "");
                                         const saleNum = Number(cleanSale) || 0;
 
                                         // If regular price is 0 → show POA
@@ -741,32 +618,33 @@ const {
 
                                   {/* ✅ Show SAVE only if > $0 */}
                                   {(() => {
-                                    const cleanDiff = (
-                                      item.price_difference || ""
-                                    ).replace(/[^0-9.]/g, "");
+                                    const cleanDiff = (item.price_difference || "").replace(/[^0-9.]/g, "");
                                     const diffNum = Number(cleanDiff) || 0;
                                     return diffNum > 0 ? (
                                       <p className="card-price">
-                                        <span>SAVE</span>{" "}
-                                        {item.price_difference}
+                                        <span>SAVE</span> {item.price_difference}
                                       </p>
                                     ) : null;
                                   })()}
 
                                   <div className="more_info">
-                                    <button
-                                      onClick={(e) => {
-                                        e.preventDefault();
-                                        setSelectedProduct(item);
-                                        setShowInfo(true);
-                                      }}
-                                    >
-                                      <i className="fa fa-info-circle"></i> Info
-                                    </button>
+                                    {(item.location) && (
+                                      <div className="informat">
+
+                                        {item.location && (
+                                          <span>
+                                            <i className="fa fa-map-marker-alt"></i>{" "}
+                                            {item.location}
+                                          </span>
+                                        )}
+                                      </div>
+                                    )}
                                   </div>
                                 </div>
                               </div>
                             )}
+
+
 
                             {/* --- DETAILS LIST --- */}
                             <ul className="vehicleDetailsWithIcons simple">
@@ -778,14 +656,13 @@ const {
                                 </li>
                               )}
 
-                              {item.categories &&
-                                item.categories.length > 0 && (
-                                  <li className="attribute3_list">
-                                    <span className="attribute3">
-                                      {item.categories.join(", ")}
-                                    </span>
-                                  </li>
-                                )}
+                              {item.categories && item.categories.length > 0 && (
+                                <li className="attribute3_list">
+                                  <span className="attribute3">
+                                    {item.categories.join(", ")}
+                                  </span>
+                                </li>
+                              )}
 
                               {item.length && (
                                 <li>
@@ -803,48 +680,15 @@ const {
 
                               {item.make && (
                                 <li>
-                                  <span className="attribute3">
-                                    {item.make}
-                                  </span>
+                                  <span className="attribute3">{item.make}</span>
                                 </li>
                               )}
                             </ul>
 
-                            {/* --- CONDITION + LOCATION --- */}
-                            {(item.condition || item.location) && (
-                              <div className="bottom_mid">
-                                {item.condition && (
-                                  <span>
-                                    <i className="bi bi-check-circle-fill"></i>{" "}
-                                    Condition {item.condition}
-                                  </span>
-                                )}
-                                {item.location && (
-                                  <span>
-                                    <i className="fa fa-map-marker-alt"></i>{" "}
-                                    {item.location}
-                                  </span>
-                                )}
-                              </div>
-                            )}
 
-                            {/* --- BUTTONS --- */}
-                            <div className="bottom_button">
-                              <button
-                                className="btn"
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                    setSelectedProduct(item);
 
-                                  setShowContact(true);
-                                }}
-                              >
-                                Contact Dealer
-                              </button>
-                              <button className="btn btn-primary">
-                                View Details
-                              </button>
-                            </div>
+
+
                           </div>
                         </div>
                       </Link>
@@ -865,59 +709,58 @@ const {
                   {mergedProducts.map((item, index) => {
                     const href = getHref(item);
                     const images = getProductImages(item.sku, item.slug);
-                    const isPriority = index < 5;
-                    const imgs = lazyImages[item.id] || [getFirstImage(item)];
+
                     return (
-                      <div className="col-lg-6 mb-0" key={index}>
+                      <div className="col-lg-12 mb-0" key={index}>
+
                         <Link
                           href={href}
                           onClick={() => {
                             if (typeof window !== "undefined") {
-                              sessionStorage.setItem(
-                                "cameFromListings",
-                                "true"
-                              );
+                              sessionStorage.setItem("cameFromListings", "true");
                             }
                           }}
                           prefetch={false}
                           className="lli_head"
                         >
-                          <div className="product-card">
+                          <div
+
+                            className="product-card">
                             <div className="img">
                               <div className="background_thumb">
                                 <ImageWithSkeleton
-                                  src={images[0]}
-                                  priority={isPriority}
+                                  src={images[1]}
+
                                   alt="Caravan"
                                   width={300}
                                   height={200}
+
                                 />
                               </div>
                               <div className="main_thumb position-relative">
                                 <span className="lab">Spotlight Van</span>
                                 <Swiper
-                                  modules={[Navigation, Pagination]}
+                                  modules={[Navigation]}
                                   spaceBetween={10}
                                   slidesPerView={1}
                                   navigation
-                                  pagination={{
-                                    clickable: true,
-                                  }}
-                                  onSlideChange={() => {
-                                    if (!loadedAll[item.id])
-                                      loadRemaining(item); // Fixed: loadedAll instead of isLoaded
-                                  }}
-                                  onReachBeginning={() => {
-                                    if (!loadedAll[item.id])
-                                      loadRemaining(item); // Fixed: loadedAll instead of isLoaded
-                                  }}
-                                  onReachEnd={() => {
-                                    if (!loadedAll[item.id])
-                                      loadRemaining(item); // Fixed: loadedAll instead of isLoaded
+                                  
+                                  onSlideChange={(swiper) => {
+                                    const isLast =
+                                      swiper.activeIndex ===
+                                      swiper.slides.length - 1;
+                                    const viewMoreBtn = document.querySelector(
+                                      `#view-more-btn-${item.slug}`
+                                    );
+                                    if (viewMoreBtn instanceof HTMLElement) {
+                                      viewMoreBtn.style.display = isLast
+                                        ? "block"
+                                        : "none";
+                                    }
                                   }}
                                   className="main_thumb_swiper"
                                 >
-                                  {imgs.map((img, i) => (
+                                  {images.map((img, i) => (
                                     <SwiperSlide key={i}>
                                       <div className="thumb_img">
                                         <ImageWithSkeleton
@@ -925,12 +768,13 @@ const {
                                           alt={`Caravan ${i + 1}`}
                                           width={300}
                                           height={200}
-                                          priority={isPriority && i === 0}
+
                                         />
                                       </div>
                                     </SwiperSlide>
                                   ))}
                                 </Swiper>
+
                                 {/* Hidden "View More" button that appears after last slide */}
                                 {/* <div
                                 id={`view-more-btn-${item}`}
@@ -954,29 +798,19 @@ const {
                               </div>
 
                               {/* --- PRICE SECTION --- */}
-                              {(item.regular_price ||
-                                item.sale_price ||
-                                item.price_difference) && (
+                              {(item.regular_price || item.sale_price || item.price_difference) && (
                                 <div className="price">
                                   <div className="metc2">
-                                    {(item.regular_price ||
-                                      item.sale_price) && (
+                                    {(item.regular_price || item.sale_price) && (
                                       <h5 className="slog">
                                         {/* ✅ Stable price rendering: precompute safely */}
                                         {(() => {
-                                          const rawRegular =
-                                            item.regular_price || "";
+                                          const rawRegular = item.regular_price || "";
                                           const rawSale = item.sale_price || "";
-                                          const cleanRegular =
-                                            rawRegular.replace(/[^0-9.]/g, "");
-                                          const regNum =
-                                            Number(cleanRegular) || 0;
-                                          const cleanSale = rawSale.replace(
-                                            /[^0-9.]/g,
-                                            ""
-                                          );
-                                          const saleNum =
-                                            Number(cleanSale) || 0;
+                                          const cleanRegular = rawRegular.replace(/[^0-9.]/g, "");
+                                          const regNum = Number(cleanRegular) || 0;
+                                          const cleanSale = rawSale.replace(/[^0-9.]/g, "");
+                                          const saleNum = Number(cleanSale) || 0;
 
                                           // If regular price is 0 → show POA
                                           if (regNum === 0) {
@@ -987,8 +821,7 @@ const {
                                           if (saleNum > 0) {
                                             return (
                                               <>
-                                                <del>{rawRegular}</del>{" "}
-                                                {rawSale}
+                                                <del>{rawRegular}</del> {rawSale}
                                               </>
                                             );
                                           }
@@ -1001,30 +834,28 @@ const {
 
                                     {/* ✅ Show SAVE only if > $0 */}
                                     {(() => {
-                                      const cleanDiff = (
-                                        item.price_difference || ""
-                                      ).replace(/[^0-9.]/g, "");
+                                      const cleanDiff = (item.price_difference || "").replace(/[^0-9.]/g, "");
                                       const diffNum = Number(cleanDiff) || 0;
                                       return diffNum > 0 ? (
                                         <p className="card-price">
-                                          <span>SAVE</span>{" "}
-                                          {item.price_difference}
+                                          <span>SAVE</span> {item.price_difference}
                                         </p>
                                       ) : null;
                                     })()}
 
                                     <div className="more_info">
-                                      <button
-                                        onClick={(e) => {
-                                          e.preventDefault();
-                                          setSelectedProduct(item);
-                                          setShowInfo(true);
-                                        }}
-                                      >
-                                        <i className="fa fa-info-circle"></i>{" "}
-                                        Info
-                                      </button>
-                                    </div>
+                                    {(item.location) && (
+                                      <div className="informat">
+
+                                        {item.location && (
+                                          <span>
+                                            <i className="fa fa-map-marker-alt"></i>{" "}
+                                            {item.location}
+                                          </span>
+                                        )}
+                                      </div>
+                                    )}
+                                  </div>
                                   </div>
                                 </div>
                               )}
@@ -1039,14 +870,13 @@ const {
                                   </li>
                                 )}
 
-                                {item.categories &&
-                                  item.categories.length > 0 && (
-                                    <li className="attribute3_list">
-                                      <span className="attribute3">
-                                        {item.categories.join(", ")}
-                                      </span>
-                                    </li>
-                                  )}
+                                {item.categories && item.categories.length > 0 && (
+                                  <li className="attribute3_list">
+                                    <span className="attribute3">
+                                      {item.categories.join(", ")}
+                                    </span>
+                                  </li>
+                                )}
 
                                 {item.length && (
                                   <li>
@@ -1058,56 +888,19 @@ const {
 
                                 {item.kg && (
                                   <li>
-                                    <span className="attribute3">
-                                      {item.kg}
-                                    </span>
+                                    <span className="attribute3">{item.kg}</span>
                                   </li>
                                 )}
 
                                 {item.make && (
                                   <li>
-                                    <span className="attribute3">
-                                      {item.make}
-                                    </span>
+                                    <span className="attribute3">{item.make}</span>
                                   </li>
                                 )}
                               </ul>
 
-                              {/* --- CONDITION + LOCATION --- */}
-                              {(item.condition || item.location) && (
-                                <div className="bottom_mid">
-                                  {item.condition && (
-                                    <span>
-                                      <i className="bi bi-check-circle-fill"></i>{" "}
-                                      Condition {item.condition}
-                                    </span>
-                                  )}
-                                  {item.location && (
-                                    <span>
-                                      <i className="fa fa-map-marker-alt"></i>{" "}
-                                      {item.location}
-                                    </span>
-                                  )}
-                                </div>
-                              )}
+                              
 
-                              {/* --- BUTTONS --- */}
-                              <div className="bottom_button">
-                                <button
-                                  className="btn"
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                      setSelectedProduct(item);
-
-                                    setShowContact(true);
-                                  }}
-                                >
-                                  Contact Dealer
-                                </button>
-                                <button className="btn btn-primary">
-                                  View Details
-                                </button>
-                              </div>
                             </div>
                           </div>
                         </Link>
@@ -1141,9 +934,7 @@ const {
                 <button
                   className="next-icon"
                   onClick={onNext}
-                  disabled={
-                    pagination.current_page === pagination.total_pages ||
-                    !isNextLoading
+                  disabled={pagination.current_page === pagination.total_pages || !isNextLoading
                   }
                 >
                   Next
@@ -1165,10 +956,7 @@ const {
                 <div
                   className="description-text"
                   dangerouslySetInnerHTML={{
-                    __html: selectedProduct.description.replace(
-                      /\\r\\n/g,
-                      "<br/>"
-                    ),
+                    __html: selectedProduct.description.replace(/\\r\\n/g, "<br/>"),
                   }}
                 />
               ) : (
@@ -1178,155 +966,6 @@ const {
           </div>
         </div>
       )}
-
-      {/* === Contact Dealer Popup === */}
-     {/* === Contact Dealer Popup === */}
-{showContact && (
-  <div className="popup-overlay">
-    <div className="popup-box">
-      <button
-        type="button"
-        className="close-popup"
-        onClick={() => {
-          setShowContact(false);
-          setSelectedProduct(null);   // reset selected product
-        }}
-      >
-        ×
-      </button>
-
-      <h4>Contact Dealer</h4>
-
-      <div className="sidebar-enquiry">
-        <form className="wpcf7-form" noValidate onSubmit={onSubmit}>
-          <div className="form">
-
-            {/* Name */}
-            <div className="form-item">
-              <p>
-                <input
-                  id="enquiry2-name"
-                  className="wpcf7-form-control"
-                  value={form.name}
-                  onChange={(e) => setField("name", e.target.value)}
-                  onBlur={() => onBlur("name")}
-                  required
-                  autoComplete="off"
-                />
-                <label htmlFor="enquiry2-name">Name</label>
-              </p>
-              {touched.name && errors.name && (
-                <div className="cfs-error">{errors.name}</div>
-              )}
-            </div>
-
-            {/* Email */}
-            <div className="form-item">
-              <p>
-                <input
-                  id="enquiry2-email"
-                  className="wpcf7-form-control"
-                  value={form.email}
-                  onChange={(e) => setField("email", e.target.value)}
-                  onBlur={() => onBlur("email")}
-                  required
-                  autoComplete="off"
-                />
-                <label htmlFor="enquiry2-email">Email</label>
-              </p>
-              {touched.email && errors.email && (
-                <div className="cfs-error">{errors.email}</div>
-              )}
-            </div>
-
-            {/* Phone */}
-            <div className="form-item">
-              <p className="phone_country">
-                <span className="phone-label">+61</span>
-                <input
-                  id="enquiry2-phone"
-                  className="wpcf7-form-control"
-                  inputMode="numeric"
-                  value={form.phone}
-                  onChange={(e) => setField("phone", e.target.value)}
-                  onBlur={() => onBlur("phone")}
-                  required
-                  autoComplete="off"
-                />
-                <label htmlFor="enquiry2-phone">Phone</label>
-              </p>
-              {touched.phone && errors.phone && (
-                <div className="cfs-error">{errors.phone}</div>
-              )}
-            </div>
-
-            {/* Postcode */}
-            <div className="form-item">
-              <p>
-                <input
-                  id="enquiry2-postcode"
-                  className="wpcf7-form-control"
-                  inputMode="numeric"
-                  maxLength={4}
-                  value={form.postcode}
-                  onChange={(e) => setField("postcode", e.target.value)}
-                  onBlur={() => onBlur("postcode")}
-                  required
-                  autoComplete="off"
-                />
-                <label htmlFor="enquiry2-postcode">Postcode</label>
-              </p>
-              {touched.postcode && errors.postcode && (
-                <div className="cfs-error">{errors.postcode}</div>
-              )}
-            </div>
-
-            {/* Message */}
-            <div className="form-item">
-              <p>
-                <label htmlFor="enquiry4-message">Message (optional)</label>
-                <textarea
-                  id="enquiry4-message"
-                  className="wpcf7-form-control wpcf7-textarea"
-                  value={form.message}
-                  onChange={(e) => setField("message", e.target.value)}
-                ></textarea>
-              </p>
-            </div>
-
-            <p className="terms_text">
-              By clicking &lsquo;Send Enquiry&lsquo;, you agree to Caravan
-              Marketplace{" "}
-              <Link href="/privacy-collection-statement" target="_blank">
-                Collection Statement
-              </Link>
-              ,{" "}
-              <Link href="/privacy-policy" target="_blank">
-                Privacy Policy
-              </Link>{" "}
-              and{" "}
-              <Link href="/terms-conditions" target="_blank">
-                Terms and Conditions
-              </Link>
-              .
-            </p>
-
-            <div className="submit-btn">
-              <button
-                type="submit"
-                className="btn btn-primary"
-                disabled={submitting}
-              >
-                {submitting ? "Sending..." : "Send Enquiry"}
-              </button>
-            </div>
-
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-)}
 
 
     </>

@@ -1113,7 +1113,7 @@
               <div className="row">
                 {/* Desktop sidebar */}
                 <div className="col-lg-3">
-                  <div className="filter hidden-xs">
+                  <div className="filter hidden-xs hidden-sm">
                     <Suspense fallback={<div>Loading filters...</div>}>
                       <CaravanFilter
                         categories={categories}
