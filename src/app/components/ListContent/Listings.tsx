@@ -1124,8 +1124,7 @@
                       emptyProduct.length > 0 && (
                         <ExculsiveContent
                           data={emptyProduct}
-                          pagination={pagination}
-
+ 
                           metaDescription={metaDescription}
                           metaTitle={metaTitle}
                           isPremiumLoading={isPremiumLoading}

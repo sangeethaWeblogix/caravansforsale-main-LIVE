@@ -65,8 +65,7 @@
  }
  interface Props {
    data: Product[];
- pagination: Pagination;
-    
+     
     metaTitle: string; // Add metaTitle prop
     metaDescription: string; // Add metaDescription prop
      isPremiumLoading: boolean; // Add isMainLoading prop
@@ -74,8 +73,7 @@
  
  export default function ExculisiveContent({
   data,
-     pagination,
-   
+    
     metaTitle,
     metaDescription,
      isPremiumLoading,
@@ -381,7 +379,7 @@
                      <button className="close-popup" onClick={() => setShowInfo(false)}>
                        ×
                      </button>
-                     
+
                      <h4>Description</h4>
                      <div className="popup-content">
                         {selectedProduct.description ? (

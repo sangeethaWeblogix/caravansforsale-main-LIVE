@@ -293,6 +293,7 @@ const {
               <h1 className="show_count">
                 <strong>{pageTitle}</strong>  
               </h1>
+              
             </div>
             <div className="col-4 d-lg-none d-md-none">
               <button
