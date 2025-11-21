@@ -1,4 +1,4 @@
- "use client";
+"use client";
 import Link from "next/link";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
@@ -79,9 +79,11 @@ interface Props {
   isFeaturedLoading: boolean;
   isPremiumLoading: boolean;
   isNextLoading: boolean;
+  pageTitle: string;
 }
 
 export default function ListingContent({
+  pageTitle,
   products,
   pagination,
   onNext,
@@ -289,9 +291,9 @@ const {
           <div className="row align-items-center">
             <div className="col-lg-8">
               <h1 className="show_count">
-                <strong>{pagination.total_products}</strong> Caravans for sale
-                in Australia
+                <strong>{pageTitle}</strong>  
               </h1>
+              
             </div>
             <div className="col-4 d-lg-none d-md-none">
               <button

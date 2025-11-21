@@ -1,4 +1,4 @@
-     "use client";
+    "use client";
   
   import { Suspense, useCallback, useEffect, useRef, useState } from "react";
   import { fetchListings, ApiResponse, Item } from "../../../api/listings/api";
@@ -20,10 +20,8 @@
   import { buildSlugFromFilters } from "../slugBuilter";
   import { parseSlugToFilters } from "../../components/urlBuilder";
   import Head from "next/head";
-   import {
-    fetchExclusiveListings,
-    ExclusiveProduct,
-  } from "@/api/exculsiveproduct/api";
+  import "./loader.css";
+ 
   /* --------- GLOBAL de-dupe across StrictMode remounts --------- */
   // let LAST_GLOBAL_REQUEST_KEY = "";
   
@@ -232,9 +230,12 @@
         ? transformApiItemsToProducts(initialData.data.premium_products)
         : []
     );
-    const [emptyProduct, setEmptyProduct] = useState(false);
-    console.log("emp", emptyProduct, isRestored)
-  
+  const [emptyProduct, setEmptyProduct] = useState<Product[]>(
+    initialData?.data?.emp_exclusive_products
+      ? transformApiItemsToProducts(initialData.data.emp_exclusive_products)
+      : []
+  );
+   
     const [categories, setCategories] = useState<Category[]>(
       initialData?.data?.all_categories || []
     );
@@ -247,7 +248,7 @@
     const [models, setModels] = useState<MakeOption[]>(
       initialData?.data?.model_options || []
     );
-    // const [pageTitle, setPageTitle] = useState(initialData?.title || " ");
+    const [pageTitle, setPageTitle] = useState(initialData?.title || " ");
     const [metaTitle, setMetaTitle] = useState(initialData?.seo?.metatitle || "");
     const [metaDescription, setMetaDescription] = useState(
       initialData?.seo?.metadescription || ""
@@ -387,16 +388,17 @@
   
   
     // tiny util
-    const ensureclickid = useCallback(() => {
-      if (!clickid) {
-        const id = uuidv4();
-        setclickid(id);
-        // reflect only clickid (no page)
-        setUrlParams({ clickid: id });
-        return id;
-      }
-      return clickid;
-    }, [clickid]);
+ const ensureclickid = (): string => {
+  const newId = uuidv4();
+  setclickid(newId);
+  
+  // URL-லும் உடனே update பண்ணு
+  const url = new URL(window.location.href);
+  url.searchParams.set("clickid", newId);
+  window.history.replaceState({}, "", url.toString());
+  
+  return newId;
+};
   
   
   
@@ -410,37 +412,13 @@
         setMakes(initialData.data.make_options || []);
         setStateOptions(initialData.data.states || []);
         setModels(initialData.data.model_options || []);
-        // setPageTitle(initialData.title || "");
+        setPageTitle(initialData.title || "");
         setMetaTitle(initialData.seo?.metatitle || "");
         setMetaDescription(initialData.seo?.metadescription || "");
         if (initialData.pagination) setPagination(initialData.pagination);
       }
     }, [initialData]);
-    const [items, setItems] = useState<ExclusiveProduct[]>([]);
   
-    useEffect(() => {
-      console.log("🚀 Running Exclusive Listings fetch...");
-      if (products.length < 0 && !emptyProduct) return;
-  
-      const loadExclusiveListings = async () => {
-        try {
-          const res = await fetchExclusiveListings(1);
-          console.log("Exclusive Listings Response:", res);
-  
-          if (res.items && res.items.length > 0) {
-            setItems(res.items); // ✅ store in state
-            console.log(`🧾 Stored ${res.items.length} items in state`);
-          } else {
-            console.warn("⚠️ No exclusive items found.");
-            setItems([]);
-          }
-        } catch {
-          console.error("❌ Exclusive Listings Error:");
-        }
-      };
-  
-      loadExclusiveListings();
-    }, []);
   
     const sentinelRef = useRef<HTMLDivElement | null>(null);
     useEffect(() => {
@@ -518,134 +496,110 @@
       }
     }
   
-    console.log("🔥 Exclusive Listings State:", items);
-    const loadListings = useCallback(
-      async (
-        pageNum = 1,
-        appliedFilters: Filters = filtersRef.current,
-        skipInitialCheck = false
-      ): Promise<ApiResponse | undefined> => {
-        // Return cached initial data (first render)
-        if (initialData && !skipInitialCheck && isUsingInitialData) {
-          setIsUsingInitialData(false);
-          return initialData;
-        }
-  
-        try {
-          window.scrollTo({ top: 0, behavior: "smooth" });
-  
-          const safeFilters = normalizeSearchFromMake(appliedFilters);
-          const radiusNum = asNumber(safeFilters.radius_kms);
-          const radiusParam =
-            typeof radiusNum === "number" && radiusNum !== DEFAULT_RADIUS
-              ? String(radiusNum)
-              : undefined;
-  
-          const response: ApiResponse = await fetchListings({
-            ...safeFilters,
-            page: pageNum,
-            condition: safeFilters.condition,
-            minKg: safeFilters.minKg?.toString(),
-            maxKg: safeFilters.maxKg?.toString(),
-            sleeps: safeFilters.sleeps,
-            from_price: safeFilters.from_price?.toString(),
-            to_price: safeFilters.to_price?.toString(),
-            acustom_fromyears: safeFilters.acustom_fromyears?.toString(),
-            acustom_toyears: safeFilters.acustom_toyears?.toString(),
-            from_length: safeFilters.from_length?.toString(),
-            to_length: safeFilters.to_length?.toString(),
-            make: safeFilters.make,
-            model: safeFilters.model,
-            state: safeFilters.state,
-            region: safeFilters.region,
-            suburb: safeFilters.suburb,
-            pincode: safeFilters.pincode,
-            orderby: safeFilters.orderby,
-            search: safeFilters.search,
-            keyword: safeFilters.keyword,
-            from_sleep: safeFilters.from_sleep?.toString(),
-            to_sleep: safeFilters.to_sleep?.toString(),
-            radius_kms: radiusParam,
-          });
-  
-          // ✅ Update all product states
-          const products = response?.data?.products ?? [];
-          const validProducts = Array.isArray(products)
-            ? products.filter((item) => item != null)
-            : [];
-  
-          if (validProducts.length > 0) {
-            const transformedProducts = transformApiItemsToProducts(validProducts);
-            setProducts(transformedProducts);
-            setPremiumProducts(response?.data?.premium_products ?? []);
-            setFeaturedProducts(response?.data?.featured_products ?? []);
-            setExculisiveProducts(response?.data?.exclusive_products ?? []);
-  
-            setCategories(response?.data?.all_categories ?? []);
-            setMakes(response?.data?.make_options ?? []);
-            setStateOptions(response?.data?.states ?? []);
-            setModels(response?.data?.model_options ?? []);
-            // setPageTitle(response?.title ?? " ");
-  
-            if (response.pagination) setPagination(response.pagination);
-            setMetaDescription(response?.seo?.metadescription ?? "");
-            setMetaTitle(response?.seo?.metatitle ?? "");
-          } else {
-  
-            setEmptyProduct(true);
-            // 🚨 Step 3 — No valid products → Fetch Exclusive Listings fallback
-            console.warn(
-              "⚠️ No valid caravans found — fetching Exclusive Listings..."
-            );
-  
-            try {
-  
-              const fallback = await fetchExclusiveListings(pageNum);
-              console.log("🔁 Exclusive API Response:", fallback);
-  
-              const fallbackItems = fallback?.items ?? [];
-              console.log(`🔁 Exclusive items count: ${fallbackItems.length}`);
-  
-              if (fallbackItems.length > 0) {
-                console.log(`✅ Loaded ${fallbackItems.length} exclusive items`);
-                setItems(fallbackItems);
-                setProducts(fallbackItems as unknown as Product[]);
-                // setPageTitle("Exclusive Listings");
-                setMetaTitle("Exclusive Caravans for Sale");
-                setMetaDescription(
-                  "Explore our exclusive collection of caravans."
-                );
-                setPagination({
-                  current_page: fallback.currentPage || 1,
-                  per_page: fallback.perPage || 12,
-                  total_products: fallback.totalProducts || fallbackItems.length,
-                  total_pages: fallback.totalPages || 1,
-                  total_items: fallback.totalProducts || fallbackItems.length,
-                });
-              } else {
-                console.warn("⚠️ No exclusive items found either.");
-                setProducts([]);
-              }
-            } catch (err) {
-              console.error("❌ Failed to fetch exclusive fallback:", err);
-              setProducts([]);
-            }
-          }
-  
-          return response;
-        } catch (error) {
-          console.error("❌ Failed to fetch listings:", error);
-          setProducts([]);
-          return undefined;
-        } finally {
-          setIsLoading(false);
-          console.log("✅ loadListings complete.");
-        }
-      },
-      [DEFAULT_RADIUS, router, initialData, isUsingInitialData]
-    );
-  
-  
+    
+       const loadListings = useCallback(
+     async (
+       pageNum = 1,
+       appliedFilters: Filters = filtersRef.current,
+       skipInitialCheck = false
+     ): Promise<ApiResponse | undefined> => {
+       
+       if (initialData && !skipInitialCheck && isUsingInitialData) {
+         setIsUsingInitialData(false);
+         return initialData;
+       }
+   
+       try {
+         window.scrollTo({ top: 0, behavior: "smooth" });
+   
+         const safeFilters = normalizeSearchFromMake(appliedFilters);
+         const radiusNum = asNumber(safeFilters.radius_kms);
+         const radiusParam =
+           typeof radiusNum === "number" && radiusNum !== DEFAULT_RADIUS
+             ? String(radiusNum)
+             : undefined;
+   
+         const response: ApiResponse = await fetchListings({
+           ...safeFilters,
+           page: pageNum,
+           condition: safeFilters.condition,
+           minKg: safeFilters.minKg?.toString(),
+           maxKg: safeFilters.maxKg?.toString(),
+           sleeps: safeFilters.sleeps,
+           from_price: safeFilters.from_price?.toString(),
+           to_price: safeFilters.to_price?.toString(),
+           acustom_fromyears: safeFilters.acustom_fromyears?.toString(),
+           acustom_toyears: safeFilters.acustom_toyears?.toString(),
+           from_length: safeFilters.from_length?.toString(),
+           to_length: safeFilters.to_length?.toString(),
+           make: safeFilters.make,
+           model: safeFilters.model,
+           state: safeFilters.state,
+           region: safeFilters.region,
+           suburb: safeFilters.suburb,
+           pincode: safeFilters.pincode,
+           orderby: safeFilters.orderby,
+           search: safeFilters.search,
+           keyword: safeFilters.keyword,
+           from_sleep: safeFilters.from_sleep?.toString(),
+           to_sleep: safeFilters.to_sleep?.toString(),
+           radius_kms: radiusParam,
+         });
+   
+         // ---- Extract all product groups ----
+         const productsList = response?.data?.products ?? [];
+         const featuredList = response?.data?.featured_products ?? [];
+         const premiumList = response?.data?.premium_products ?? [];
+         const exclusiveList = response?.data?.exclusive_products ?? [];
+         const emptyExclusiveList = response?.data?.emp_exclusive_products ?? [];
+   
+         // ---- Store NORMAL PRODUCTS ----
+         const validProducts = Array.isArray(productsList)
+           ? productsList.filter((p) => p != null)
+           : [];
+   
+         setProducts(
+           validProducts.length > 0
+             ? transformApiItemsToProducts(validProducts)
+             : []
+         );
+   
+         // ---- Store FEATURED, PREMIUM, EXCLUSIVE ----
+         setFeaturedProducts(
+           transformApiItemsToProducts(featuredList ?? [])
+         );
+         setPremiumProducts(
+           transformApiItemsToProducts(premiumList ?? [])
+         );
+         setExculisiveProducts(
+           transformApiItemsToProducts(exclusiveList ?? [])
+         );
+   
+         // ---- Store EMPTY EXCLUSIVE ----
+         setEmptyProduct(
+           transformApiItemsToProducts(emptyExclusiveList ?? [])
+         );
+   
+         // ---- Other metadata ----
+         setCategories(response?.data?.all_categories ?? []);
+         setMakes(response?.data?.make_options ?? []);
+         setStateOptions(response?.data?.states ?? []);
+         setModels(response?.data?.model_options ?? []);
+          setMetaDescription(response?.seo?.metadescription ?? "");
+         setMetaTitle(response?.seo?.metatitle ?? "");
+         if (response.pagination) setPagination(response.pagination);
+   
+         return response;
+   
+       } catch (err) {
+         console.error("❌ Listing Fetch Error:", err);
+         return undefined;
+       }
+     },
+     [DEFAULT_RADIUS, router, initialData, isUsingInitialData]
+   );
+   
+
     const scrollToTop = () => {
       setTimeout(() => {
         document.documentElement.scrollTo({ top: 0, behavior: "smooth" });
@@ -706,6 +660,7 @@
   
         const prevPage = pagination.current_page - 1;
         const id = ensureclickid(); // NEW
+        savePage(id, prevPage);
         sessionStorage.setItem(`page_${id}`, String(prevPage));
         try {
           await loadListings(prevPage, filtersRef.current, true);
@@ -984,8 +939,7 @@
       // ✅ If client-side navigation happens and no data → 404
       loadListings(pageFromURL, merged, true).then((res) => {
         if (!res?.data?.products?.length) {
-          setEmptyProduct(true);
-        }
+         }
       });
     }, [searchKey, pathKey, loadListings, DEFAULT_RADIUS, searchParams]);
   
@@ -1005,7 +959,7 @@
         if ("orderby" in newFilters && !newFilters.orderby) {
           mergedFilters.orderby = undefined;
         }
-  
+  ensureclickid();
         filtersRef.current = mergedFilters;
         setFilters(mergedFilters);
   
@@ -1112,7 +1066,7 @@
               <div className="row">
                 {/* Desktop sidebar */}
                 <div className="col-lg-3">
-                  <div className="filter hidden-xs hidden-sm">
+                  <div className="filter hidden-xs">
                     <Suspense fallback={<div>Loading filters...</div>}>
                       <CaravanFilter
                         categories={categories}
@@ -1131,44 +1085,55 @@
                   </div>
                 </div>
   
-  
                 {/* Listings */}
                 {/* Listings */}
   
-                {isLoading || isMainLoading || isFeaturedLoading || isPremiumLoading ? (
+                   {isLoading || isMainLoading || isFeaturedLoading || isPremiumLoading ? (
                   <div className="col-lg-6">
                     <SkeletonListing count={8} />
                   </div>
-                ) : products.length > 0 ? (
-                  <Listing
-                    products={products}
-                    data={items}
-                    pagination={pagination}
-                    onNext={handleNextPage}
-                    onPrev={handlePrevPage}
-                    metaDescription={metaDescription}
-                    metaTitle={metaTitle}
-                    onFilterChange={handleFilterChange}
-                    currentFilters={filters}
-                    preminumProducts={preminumProducts}
-                    fetauredProducts={fetauredProducts}
-                    exculisiveProducts={exculisiveProducts}
-                    isMainLoading={isMainLoading}
-                    isFeaturedLoading={isFeaturedLoading}
-                    isPremiumLoading={isPremiumLoading}
-                    isNextLoading={isNextLoading}
-                  />
-                ) :
-                  <ExculsiveContent
-                    data={items}
-                    pagination={pagination}
-                    
-                    metaDescription={metaDescription}
-                    metaTitle={metaTitle}
-                    isPremiumLoading={isPremiumLoading}
-  
-                  />
-                }
+                ) : (
+                  <>
+                    {/** CASE 1: SHOW LISTING PAGE */}
+                    {(products.length > 0 ||
+                      fetauredProducts.length > 0 ||
+                      preminumProducts.length > 0) && (
+                      <Listing
+                      pageTitle={pageTitle}
+                        products={products}
+                        data={products}
+                        pagination={pagination}
+                        onNext={handleNextPage}
+                        onPrev={handlePrevPage}
+                        metaDescription={metaDescription}
+                        metaTitle={metaTitle}
+                        onFilterChange={handleFilterChange}
+                        currentFilters={filters}
+                        preminumProducts={preminumProducts}
+                        fetauredProducts={fetauredProducts}
+                        exculisiveProducts={exculisiveProducts}
+                        isMainLoading={isMainLoading}
+                        isFeaturedLoading={isFeaturedLoading}
+                        isPremiumLoading={isPremiumLoading}
+                        isNextLoading={isNextLoading}
+                      />
+                    )}
+                
+                    {/** CASE 2: SHOW EXCLUSIVE PAGE */}
+                    {products.length === 0 &&
+                      fetauredProducts.length === 0 &&
+                      preminumProducts.length === 0 &&
+                      emptyProduct.length > 0 && (
+                        <ExculsiveContent
+                          data={emptyProduct}
+ 
+                          metaDescription={metaDescription}
+                          metaTitle={metaTitle}
+                          isPremiumLoading={isPremiumLoading}
+                        />
+                      )}
+                  </>
+                )}
   
               </div>
             </div>
@@ -1210,7 +1175,6 @@
             </Suspense>
           </div>
         </div>
-
   
       </>
     );

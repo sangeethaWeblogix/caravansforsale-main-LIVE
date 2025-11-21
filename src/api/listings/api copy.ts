@@ -1,4 +1,4 @@
-     const API_BASE = process.env.NEXT_PUBLIC_CFS_API_BASE;
+    const API_BASE = process.env.NEXT_PUBLIC_CFS_API_BASE;
   
   interface Filters {
     page?: number;
@@ -69,6 +69,7 @@
     products?: Item[];
     exclusive_products?: Item[];
     featured_products?: Item[];
+    emp_exclusive_products?: Item[];
     premium_products?: Item[];
     all_categories?: { name: string; slug: string }[];
     make_options?: { name: string; slug: string }[];
@@ -148,7 +149,7 @@
     const s = normalizeQuery(search);
     if (s) params.append("search", s);
   
-  const url = `${API_BASE}/product-list-latest?${params.toString()}`;
+  const url = `${API_BASE}/product-list-latest-new?${params.toString()}`;
 const res = await fetch(url, { cache: "no-store" });
       console.log("[list API] GET", res.url)
 
@@ -176,6 +177,8 @@ const res = await fetch(url, { cache: "no-store" });
       data: {
         products: json.data?.products ?? [],
         exclusive_products: json.data?.exclusive_products ?? [],
+               emp_exclusive_products: json.data?.emp_exclusive_products ?? [],
+
         featured_products: json.data?.featured_products ?? [],
         premium_products: json.data?.premium_products ?? [],
         make_options: json.data?.make_options ?? [],
