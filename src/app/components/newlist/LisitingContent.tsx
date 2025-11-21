@@ -97,8 +97,7 @@ export default function ListingContent({
   isMainLoading,
   isNextLoading
 }: Props) {
-  const [showInfo, setShowInfo] = useState(false);
-
+ 
     const prevRef = useRef(null);
   const nextRef = useRef(null);
   // console.log("data-prod", products);
