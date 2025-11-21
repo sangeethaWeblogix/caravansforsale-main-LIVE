@@ -281,7 +281,7 @@ export default function ProductPage() {
                           {manufactureBands.map((item, index) => (
                             <li key={index}>
                             <Link
-                                href={`https://www.caravansforsale.com.au/listings${item.permalink}`}
+                                href={`https://www.caravansforsale.com.au/listings/${item.permalink}`}
                               >
                                 {item.label}
                             </Link>
@@ -318,7 +318,7 @@ export default function ProductPage() {
                           {regionBands.map((item, index) => (
                             <li key={index}>
                             <Link
-                                href={`https://www.caravansforsale.com.au/listings${item.permalink}`}
+                                href={`https://www.caravansforsale.com.au/listings/${item.permalink}`}
                               >
                                 {item.label}
                             </Link>
@@ -355,7 +355,7 @@ export default function ProductPage() {
                           {priceBands.map((item, index) => (
                             <li key={index}>
                             <Link
-                                href={`https://www.caravansforsale.com.au/listings${item.permalink}`}
+                                href={`https://www.caravansforsale.com.au/listings/${item.permalink}`}
                               >
                                 {item.label}
                             </Link>
@@ -392,7 +392,7 @@ export default function ProductPage() {
                           {atmBands.map((item, index) => (
                             <li key={index}>
                             <Link
-                                href={`https://www.caravansforsale.com.au/listings${item.permalink}`}
+                                href={`https://www.caravansforsale.com.au/listings/${item.permalink}`}
                               >
                                 {item.label}
                             </Link>
@@ -429,7 +429,7 @@ export default function ProductPage() {
                           {sleepBands.map((item, index) => (
                             <li key={index}>
                             <Link
-                                href={`https://www.caravansforsale.com.au/listings${item.permalink}`}
+                                href={`https://www.caravansforsale.com.au/listings/${item.permalink}`}
                               >
                                 {item.label}
                             </Link>
@@ -466,7 +466,7 @@ export default function ProductPage() {
                           {lengthBands.map((item, index) => (
                             <li key={index}>
                             <Link
-                                href={`https://www.caravansforsale.com.au/listings${item.permalink}`}
+                                href={`https://www.caravansforsale.com.au/listings/${item.permalink}`}
                               >
                                 {item.label}
                             </Link>
@@ -503,7 +503,7 @@ export default function ProductPage() {
                           {usedCategoryList.map((item, index) => (
                             <li key={index}>
                             <Link
-                                href={`https://www.caravansforsale.com.au/listings${item.permalink}`}
+                                href={`https://www.caravansforsale.com.au/listings/${item.permalink}`}
                               >
                                 {item.label}
                             </Link>
@@ -518,7 +518,7 @@ export default function ProductPage() {
                           {usedState.map((item, index) => (
                             <li key={index}>
                             <Link
-                                href={`https://www.caravansforsale.com.au/listings${item.permalink}`}
+                                href={`https://www.caravansforsale.com.au/listings/${item.permalink}`}
                               >
                                 {item.label}
                             </Link>
@@ -531,7 +531,7 @@ export default function ProductPage() {
                           {usedRegion.map((item, index) => (
                             <li key={index}>
                             <Link
-                                href={`https://www.caravansforsale.com.au/listings${item.permalink}`}
+                                href={`https://www.caravansforsale.com.au/listings/${item.permalink}`}
                               >
                                 {item.label}
                             </Link>
