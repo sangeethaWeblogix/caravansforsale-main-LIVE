@@ -51,9 +51,9 @@ export default function ProductPage() {
           fetchSleepBands(),
           fetchRegion(),
           fetchManufactures(),
-          fetchPriceBasedCaravans(),
           fetchAtmBasedCaravans(),
           fetchLengthBasedCaravans(),
+          fetchPriceBasedCaravans(),
           fetchUsedCaravansList(),
           ,
         ]);
