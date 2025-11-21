@@ -79,6 +79,7 @@ interface Props {
   isFeaturedLoading: boolean;
   isPremiumLoading: boolean;
   isNextLoading: boolean;
+  pageTitle: string; // Add pageTitle prop
 }
 
 export default function ListingContent({
@@ -97,6 +98,7 @@ export default function ListingContent({
   isPremiumLoading,
   isMainLoading,
   isNextLoading,
+  pageTitle,
 }: Props) {
   const [showInfo, setShowInfo] = useState(false);
   const [showContact, setShowContact] = useState(false);
@@ -289,8 +291,7 @@ const {
           <div className="row align-items-center">
             <div className="col-lg-8">
               <h1 className="show_count">
-                <strong>{pagination.total_products}</strong> Caravans for sale
-                in Australia
+                <strong>{pageTitle}</strong> 
               </h1>
             </div>
             <div className="col-4 d-lg-none d-md-none">

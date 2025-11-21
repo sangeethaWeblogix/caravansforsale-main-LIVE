@@ -164,7 +164,8 @@
     const [scrollStarted, setScrollStarted] = useState(false);
     const [isNextLoading, setIsNextLoading] = useState(false);
     const [nextPageData, setNextPageData] = useState<ApiResponse | null>(null);
-  
+      const [pageTitle, setPageTitle] = useState(initialData?.title || " ");
+
     const [clickid, setclickid] = useState<string | null>(null);
     const [isRestored, setIsRestored] = useState(false);
     console.log(isRestored)
@@ -411,7 +412,7 @@
         setMakes(initialData.data.make_options || []);
         setStateOptions(initialData.data.states || []);
         setModels(initialData.data.model_options || []);
-        // setPageTitle(initialData.title || "");
+        setPageTitle(initialData.title || "");
         setMetaTitle(initialData.seo?.metatitle || "");
         setMetaDescription(initialData.seo?.metadescription || "");
         if (initialData.pagination) setPagination(initialData.pagination);
@@ -1141,6 +1142,7 @@
                   </div>
                 ) : products.length > 0 ? (
                   <Listing
+                  pageTitle={pageTitle}
                     products={products}
                     data={items}
                     pagination={pagination}
