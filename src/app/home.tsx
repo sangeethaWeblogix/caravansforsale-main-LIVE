@@ -20,8 +20,7 @@
  import { fetchLengthBasedCaravans } from "@/api/homeApi/length/api";
  import { fetchUsedCaravansList } from "@/api/homeApi/usedCaravanList/api";
 import { fetchStateBasedCaravans } from "@/api/homeApi/state/api";
-import { stat } from "fs";
- interface Item {
+  interface Item {
    label: string;
    capacity: number;
    slug: string;
