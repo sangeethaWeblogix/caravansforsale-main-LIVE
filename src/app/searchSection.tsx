@@ -532,7 +532,7 @@
               <div className="advertisement">
                 <Image
                   className="hidden-xs"
-                  src="/images/static_index_dk_banner_2.jpg"
+                  src="/images/static_index_dk_banner.jpg"
                   alt="Everest Caravans - best caravan manufacturer in any off road category"
                   width={1200}
                   height={400}
@@ -548,7 +548,7 @@
                 />
               </div>
             </div>
-            
+
             </Link>
           </div>
         </div>
