@@ -4,23 +4,81 @@
  import "bootstrap/dist/css/bootstrap.min.css";
  //  import "bootstrap/dist/js/bootstrap.bundle.min.js";
  import "./home.css";
- import { Swiper, SwiperSlide } from "swiper/react";
- import { Navigation, Autoplay } from "swiper/modules";
  import "swiper/css";
  import "swiper/css/navigation";
  import Link from "next/link";
  import Image from "next/image";
- import FeaturedSection from "./featured";
  import BlogSection from "./blogSection";
  import PostRequirement from "./postRequirement";
  import Manufactures from "./manufacture";
  import SearchSection from "./searchSection";
+ import { fetchSleepBands } from "@/api/homeApi/sleep/api";
+ import { fetchRegion } from "@/api/homeApi/region/api";
+ import { fetchManufactures } from "@/api/homeApi/manufacture/api";
+ import { fetchPriceBasedCaravans } from "@/api/homeApi/price/api";
+ import { fetchAtmBasedCaravans } from "@/api/homeApi/weight/api";
+ import { fetchLengthBasedCaravans } from "@/api/homeApi/length/api";
+ import { fetchUsedCaravansList } from "@/api/homeApi/usedCaravanList/api";
+ interface Item {
+   label: string;
+   capacity: number;
+   slug: string;
+   permalink: string;
+   caravan_count: number;
+   starting_price: number;
+   display_text: string;
+ }
  
  /* --------------------------------- Page ---------------------------------- */
  export default function ProductPage() {
+   const [sleepBands, setSleepBands] = useState<Item[]>([]);
+   const [regionBands, setRegionBands] = useState<Item[]>([]);
+   const [manufactureBands, setManufactureBands] = useState<Item[]>([]);
+   const [lengthBands, setLengthBands] = useState<Item[]>([]);
+   const [atmBands, setAtmBands] = useState<Item[]>([]);
+   const [usedCategoryList, setUsedCategoryList] = useState<Item[]>([]);
+   const [priceBands, setPriceBands] = useState<Item[]>([]);
+   const [usedState, setUsedState] = useState<Item[]>([]);
+   const [usedRegion, setUsedRegion] = useState<Item[]>([]);
    const [adIndex, setAdIndex] = useState<number>(0);
  
    const bannerSectionRef = useRef<HTMLDivElement | null>(null);
+   useEffect(() => {
+     async function loadAll() {
+       // const [sleep, region, weight, length] = await Promise.all([
+       const [sleep, region, manufactures, weight, length, price, usedData] =
+         await Promise.all([
+           fetchSleepBands(),
+           fetchRegion(),
+           fetchManufactures(),
+           fetchAtmBasedCaravans(),
+           fetchLengthBasedCaravans(),
+           fetchPriceBasedCaravans(),
+           fetchUsedCaravansList(),
+           ,
+         ]);
+ 
+       setSleepBands(sleep);
+       setRegionBands(region);
+       setManufactureBands(manufactures);
+       setAtmBands(weight);
+       setLengthBands(length);
+       setPriceBands(price);
+       setUsedCategoryList(usedData.by_category);
+       setUsedState(usedData.by_state);
+       setUsedRegion(usedData.by_region);
+     }
+ 
+     loadAll();
+   }, []);
+ 
+   //  useEffect(() => {
+   //   async function loadBands() {
+   //     const data = await fetchSleepBands();
+   //     setBands(data);
+   //   }
+   //   loadBands();
+   // }, []);
  
    useEffect(() => {
      if (typeof window === "undefined" || typeof document === "undefined")
@@ -92,9 +150,9 @@
        </section>
  
        {/* Deal of the Month Section */}
-       <section className="deal-of-month product-details section-padding">
-         <FeaturedSection />
-       </section>
+       {/*}<section className="deal-of-month product-details section-padding">
+          <FeaturedSection />
+        </section> */}
        <section className="post-requirements product-details section-padding">
          <PostRequirement />
        </section>
@@ -111,22 +169,7 @@
  
            <div className="content">
              <div className="explore-state position-relative">
-               <Swiper
-                 modules={[Navigation, Autoplay]}
-                 navigation={{
-                   nextEl: ".swiper-button-next-state",
-                   prevEl: ".swiper-button-prev-state",
-                 }}
-                 autoplay={{ delay: 3000, disableOnInteraction: false }}
-                 spaceBetween={20}
-                 slidesPerView={1}
-                 breakpoints={{
-                   640: { slidesPerView: 1, spaceBetween: 20 },
-                   768: { slidesPerView: 2, spaceBetween: 20 },
-                   1024: { slidesPerView: 3, spaceBetween: 25 },
-                 }}
-                 className="swiper-container"
-               >
+               <div className="row">
                  {[
                    {
                      state: "Victoria",
@@ -168,42 +211,22 @@
                      cities: ["Hobart", "Launceston", "Devonport", "Burnie"],
                      image: "/images/tas_map.svg",
                    },
-                   {
-                     state: "Australian Capital Territory",
-                     cities: ["Canberra Airport", "Hume", "Barton"],
-                     image: "/images/act_map.svg",
-                   },
-                   {
-                     state: "Northern Territory",
-                     cities: ["Darwin"],
-                     image: "/images/nt_map.svg",
-                   },
                  ].map((state, index) => (
-                   <SwiperSlide key={index}>
+                   <div className="col-lg-4" key={index}>
                      <div className="service-box">
                        <div className="sec_left">
                          <h5>{state.state}</h5>
                          <div className="info">
                            <div className="quick_linkss">
-                             {state.cities.map((city, i) => (
-                               <Link
-                                 key={i}
-                                 href={`/listings/${state.state
-                                   .toLowerCase()
-                                   .replace(/\s+/g, "-")}-state/${city
-                                   .toLowerCase()
-                                   .replace(/\s+/g, "-")}-region`}
-                               >
-                                 {city}
-                               </Link>
-                             ))}
+                             <p>5,733 caravan listings starting at $70,000</p>
                              <Link
                                className="view_all"
                                href={`/listings/${state.state
                                  .toLowerCase()
                                  .replace(/\s+/g, "-")}-state/`}
                              >
-                               View All <i className="bi bi-chevron-right" />
+                               View All Caravans For Sale in {state.state}{" "}
+                               <i className="bi bi-chevron-right" />
                              </Link>
                            </div>
                          </div>
@@ -219,12 +242,308 @@
                          </span>
                        </div>
                      </div>
-                   </SwiperSlide>
+                   </div>
                  ))}
-               </Swiper>
+               </div>
+             </div>
+           </div>
  
-               <div className="swiper-button-next swiper-button-next-state" />
-               <div className="swiper-button-prev swiper-button-prev-state" />
+           {/* Quick Links Section */}
+           <div className="faq style-4 pt-4">
+             <div className="row">
+               <div className="col-lg-12">
+                 <div
+                   className="accordion faq style-3 style-4"
+                   id="accordionFaq"
+                 >
+                   {/* Item 1 */}
+                   <div className="accordion-item border-bottom rounded-0">
+                     <h3 className="accordion-header" id="headingOne">
+                       <button
+                         className="accordion-button rounded-0 collapsed py-4"
+                         type="button"
+                         data-bs-toggle="collapse"
+                         data-bs-target="#collapseOne"
+                         aria-expanded="true"
+                         aria-controls="collapseOne"
+                       >
+                         Caravans By Popular Manufacturers
+                       </button>
+                     </h3>
+                     <div
+                       id="collapseOne"
+                       className="accordion-collapse collapse"
+                       aria-labelledby="headingOne"
+                       data-bs-parent="#accordionFaq"
+                     >
+                       <div className="accordion-body">
+                         <ul>
+                           {manufactureBands.map((item, index) => (
+                             <li key={index}>
+                             <Link
+                                 href={`https://www.caravansforsale.com.au/listings/${item.permalink}`}
+                               >
+                                 {item.label}
+                             </Link>
+                               <span>{item.display_text}</span>
+                             </li>
+                           ))}
+                         </ul>
+                       </div>
+                     </div>
+                   </div>
+ 
+                   {/* Item 2 */}
+                   <div className="accordion-item border-bottom rounded-0">
+                     <h3 className="accordion-header" id="headingTwo">
+                       <button
+                         className="accordion-button rounded-0 py-4 collapsed"
+                         type="button"
+                         data-bs-toggle="collapse"
+                         data-bs-target="#collapseTwo"
+                         aria-expanded="false"
+                         aria-controls="collapseTwo"
+                       >
+                         Caravans By Popular Regions
+                       </button>
+                     </h3>
+                     <div
+                       id="collapseTwo"
+                       className="accordion-collapse collapse"
+                       aria-labelledby="headingTwo"
+                       data-bs-parent="#accordionFaq"
+                     >
+                       <div className="accordion-body">
+                         <ul>
+                           {regionBands.map((item, index) => (
+                             <li key={index}>
+                             <Link
+                                 href={`https://www.caravansforsale.com.au/listings/${item.permalink}`}
+                               >
+                                 {item.label}
+                             </Link>
+                               <span>{item.display_text}</span>
+                             </li>
+                           ))}
+                         </ul>
+                       </div>
+                     </div>
+                   </div>
+ 
+                   {/* Item 3 */}
+                   <div className="accordion-item border-bottom rounded-0">
+                     <h3 className="accordion-header" id="headingThree">
+                       <button
+                         className="accordion-button rounded-0 py-4 collapsed"
+                         type="button"
+                         data-bs-toggle="collapse"
+                         data-bs-target="#collapseThree"
+                         aria-expanded="false"
+                         aria-controls="collapseThree"
+                       >
+                         Caravans By Price
+                       </button>
+                     </h3>
+                     <div
+                       id="collapseThree"
+                       className="accordion-collapse collapse"
+                       aria-labelledby="headingThree"
+                       data-bs-parent="#accordionFaq"
+                     >
+                       <div className="accordion-body">
+                         <ul>
+                           {priceBands.map((item, index) => (
+                             <li key={index}>
+                             <Link
+                                 href={`https://www.caravansforsale.com.au/listings/${item.permalink}`}
+                               >
+                                 {item.label}
+                             </Link>
+                               <span>{item.display_text}</span>
+                             </li>
+                           ))}
+                         </ul>
+                       </div>
+                     </div>
+                   </div>
+ 
+                   {/* Item 4 */}
+                   <div className="accordion-item border-bottom rounded-0">
+                     <h3 className="accordion-header" id="headingFour">
+                       <button
+                         className="accordion-button rounded-0 py-4 collapsed"
+                         type="button"
+                         data-bs-toggle="collapse"
+                         data-bs-target="#collapseFour"
+                         aria-expanded="false"
+                         aria-controls="collapseFour"
+                       >
+                         Caravans By Weight
+                       </button>
+                     </h3>
+                     <div
+                       id="collapseFour"
+                       className="accordion-collapse collapse"
+                       aria-labelledby="headingFour"
+                       data-bs-parent="#accordionFaq"
+                     >
+                       <div className="accordion-body">
+                         <ul>
+                           {atmBands.map((item, index) => (
+                             <li key={index}>
+                             <Link
+                                 href={`https://www.caravansforsale.com.au/listings/${item.permalink}`}
+                               >
+                                 {item.label}
+                             </Link>
+                               <span>{item.display_text}</span>
+                             </li>
+                           ))}
+                         </ul>
+                       </div>
+                     </div>
+                   </div>
+ 
+                   {/* Item 5 */}
+                   <div className="accordion-item border-bottom rounded-0">
+                     <h3 className="accordion-header" id="headingFive">
+                       <button
+                         className="accordion-button rounded-0 py-4 collapsed"
+                         type="button"
+                         data-bs-toggle="collapse"
+                         data-bs-target="#collapseFive"
+                         aria-expanded="false"
+                         aria-controls="collapseFive"
+                       >
+                         Caravans By Sleep
+                       </button>
+                     </h3>
+                     <div
+                       id="collapseFive"
+                       className="accordion-collapse collapse"
+                       aria-labelledby="headingFive"
+                       data-bs-parent="#accordionFaq"
+                     >
+                       <div className="accordion-body">
+                         <ul>
+                           {sleepBands.map((item, index) => (
+                             <li key={index}>
+                             <Link
+                                 href={`https://www.caravansforsale.com.au/listings/${item.permalink}`}
+                               >
+                                 {item.label}
+                             </Link>
+                               <span>{item.display_text}</span>
+                             </li>
+                           ))}
+                         </ul>
+                       </div>
+                     </div>
+                   </div>
+ 
+                   {/* Item 6 */}
+                   <div className="accordion-item border-bottom rounded-0">
+                     <h3 className="accordion-header" id="headingSix">
+                       <button
+                         className="accordion-button rounded-0 py-4 collapsed"
+                         type="button"
+                         data-bs-toggle="collapse"
+                         data-bs-target="#collapseSix"
+                         aria-expanded="false"
+                         aria-controls="collapseSix"
+                       >
+                         Caravans By Length
+                       </button>
+                     </h3>
+                     <div
+                       id="collapseSix"
+                       className="accordion-collapse collapse"
+                       aria-labelledby="headingSix"
+                       data-bs-parent="#accordionFaq"
+                     >
+                       <div className="accordion-body">
+                         <ul>
+                           {lengthBands.map((item, index) => (
+                             <li key={index}>
+                             <Link
+                                 href={`https://www.caravansforsale.com.au/listings/${item.permalink}`}
+                               >
+                                 {item.label}
+                             </Link>
+                               <span>{item.display_text}</span>
+                             </li>
+                           ))}
+                         </ul>
+                       </div>
+                     </div>
+                   </div>
+ 
+                   {/* Item 7 */}
+                   <div className="accordion-item border-bottom rounded-0">
+                     <h3 className="accordion-header" id="headingSeven">
+                       <button
+                         className="accordion-button rounded-0 py-4 collapsed"
+                         type="button"
+                         data-bs-toggle="collapse"
+                         data-bs-target="#collapseSeven"
+                         aria-expanded="false"
+                         aria-controls="collapseSeven"
+                       >
+                         Caravans By Used Condition
+                       </button>
+                     </h3>
+                     <div
+                       id="collapseSeven"
+                       className="accordion-collapse collapse"
+                       aria-labelledby="headingSeven"
+                       data-bs-parent="#accordionFaq"
+                     >
+                       <div className="accordion-body">
+                         <ul>
+                           {usedCategoryList.map((item, index) => (
+                             <li key={index}>
+                             <Link
+                                 href={`https://www.caravansforsale.com.au/listings/${item.permalink}`}
+                               >
+                                 {item.label}
+                             </Link>
+                               <span>{item.display_text}</span>
+                             </li>
+                           ))}
+                         </ul>
+ 
+                         <hr></hr>
+ 
+                         <ul>
+                           {usedState.map((item, index) => (
+                             <li key={index}>
+                             <Link
+                                 href={`https://www.caravansforsale.com.au/listings/${item.permalink}`}
+                               >
+                                 {item.label}
+                             </Link>
+                               <span>{item.display_text}</span>
+                             </li>
+                           ))}
+                         </ul>
+                         <hr></hr>
+                         <ul>
+                           {usedRegion.map((item, index) => (
+                             <li key={index}>
+                             <Link
+                                 href={`https://www.caravansforsale.com.au/listings/${item.permalink}`}
+                               >
+                                 {item.label}
+                             </Link>
+                               <span>{item.display_text}</span>
+                             </li>
+                           ))}
+                         </ul>
+                       </div>
+                     </div>
+                   </div>
+                 </div>
+               </div>
              </div>
            </div>
  
@@ -272,70 +591,8 @@
  
        {/* Latest Blog Section */}
        <BlogSection />
-       {/* Quick Links Section */}
-       <section className="quick-link-home section-padding">
-         <div className="container">
-           <div className="row">
-             <div className="col-lg-12">
-               <div className="ordered_list">
-                 <h2>Browse Caravan Listings</h2>
-               </div>
- 
-               <div className="modern_links">
-                 <h3>Size</h3>
-                 <div className="al-ty-bd">
-                   {[
-                     12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26,
-                     27, 28,
-                   ].map((size, index) => (
-                     <span key={index}>
-                       <Link
-                         href={`/listings/between-${size}-${size}-length-in-feet/`}
-                       >
-                         {size} ft
-                       </Link>
-                       {index !== 2 && " | "}
-                     </span>
-                   ))}
-                 </div>
-               </div>
- 
-               <div className="modern_links">
-                 <h3>Weight</h3>
-                 <div className="al-ty-bd">
-                   {[
-                     1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000, 3500, 4000,
-                   ].map((weight, index) => (
-                     <span key={index}>
-                       <Link href={`/listings/under-${weight}-kg-atm/`}>
-                         Under {weight.toLocaleString()} Kg
-                       </Link>
-                       {index !== 2 && " | "}
-                     </span>
-                   ))}
-                 </div>
-               </div>
- 
-               <div className="modern_links">
-                 <h3>Sleeping Capacity</h3>
-                 <div className="al-ty-bd">
-                   {[2, 3, 4, 5, 6, 7].map((count, index) => (
-                     <span key={index}>
-                       <Link
-                         href={`/listings/over-${count}-people-sleeping-capacity/`}
-                       >
-                         Sleeps {count}
-                       </Link>
-                       {index !== 1 && " | "}
-                     </span>
-                   ))}
-                 </div>
-               </div>
-             </div>
-           </div>
-         </div>
-       </section>
      </div>
+
    );
  }
  

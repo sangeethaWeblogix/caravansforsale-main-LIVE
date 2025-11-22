@@ -13,68 +13,97 @@
  } from "@/api/homeSearch/api";
  
  type Item = {
-   title?: string;
+  title?: string;
    name?: string;
    heading?: string;
    make?: string;
+   url?: string;
    model?: string;
    variant?: string;
    slug?: string | number;
    id?: string | number;
+   label?: string;
  } & Record<string, unknown>;
  
  // Safe label extractor (avoid mixing ?? and || without parens)
- const labelOf = (x: Item): string => {
-   const basic =
-     x?.title ??
-     x?.name ??
-     x?.heading ??
-     [x?.make, x?.model, x?.variant].filter(Boolean).join(" ");
-   return (basic && String(basic).trim()) || String(x?.slug ?? x?.id ?? "");
- };
+//  const labelOf = (x: Item): string => {
+//    const basic =
+//      x?.title ??
+//      x?.name ??
+//      x?.heading ??
+//      [x?.make, x?.model, x?.variant].filter(Boolean).join(" ");
+//    return (basic && String(basic).trim()) || String(x?.slug ?? x?.id ?? "");
+//  };
  
  export default function SearchSection() {
    const router = useRouter();
-   const searchInputRef = useRef<HTMLInputElement | null>(null);
- 
-   const [isSuggestionBoxOpen, setIsSuggestionBoxOpen] = useState(false);
-   const [query, setQuery] = useState("");
-   const [suggestions, setSuggestions] = useState<string[]>([]);
-   const [baseSuggestions, setBaseSuggestions] = useState<string[]>([]); // list for first-click
-   const [loading, setLoading] = useState(false);
-   const [error, setError] = useState("");
- 
+     const searchInputRef = useRef<HTMLInputElement | null>(null);
+     const [navigating, setNavigating] = useState(false);
+   
+     const [isSuggestionBoxOpen, setIsSuggestionBoxOpen] = useState(false);
+     const [query, setQuery] = useState("");
+     const [suggestions, setSuggestions] = useState<Item[]>([]);
+     const [baseSuggestions, setBaseSuggestions] = useState<Item[]>([]); // list for first-click
+     const [loading, setLoading] = useState(false);
+     const [error, setError] = useState("");
+     const [category, setCategory] = useState("");
+const [location, setLocation] = useState("");
+const [conditionValue, setConditionValue] = useState("");
+
+ const handleSearch = () => {
+  if (!category) return alert("Select category first");
+
+  const catSlug =
+    category.toLowerCase().replace(/\s+/g, "-") + "-category";
+
+  const stateSlug = location
+    ? location.toLowerCase().replace(/\s+/g, "-") + "-state"
+    : "";
+
+  const conditionSlug = conditionValue
+    ? conditionValue.toLowerCase().replace(/\s+/g, "-") + "-condition"
+    : "";
+
+  let finalUrl = `/listings/${catSlug}`;
+
+  if (stateSlug) finalUrl += `/${stateSlug}`;
+  if (conditionSlug) finalUrl += `/${conditionSlug}`;
+
+  router.push(finalUrl);
+};
+
+
    // ------------- base list (first click) -------------
-   const loadBaseOnce = async () => {
-     if (baseSuggestions.length) {
-       setSuggestions(baseSuggestions);
-       return;
-     }
-     try {
-       setLoading(true);
-       setError("");
-       const data = await fetchHomeSearchList();
-       const labels = Array.from(
-  new Set(
-    data
-      .map((x) => labelOf(x as Item))
-      .filter(Boolean)
-      .map((s) => s.trim())
-  )
-).slice(0, 15);
-       setBaseSuggestions(labels);
-       setSuggestions(labels); // show immediately
-     } catch (e: unknown) {
-       setError(e instanceof Error ? e.message : "Failed to load");
-     } finally {
-       setLoading(false);
-     }
-   };
+  const loadBaseOnce = async () => {
+       if (baseSuggestions.length) {
+         setSuggestions(baseSuggestions);
+         return;
+       }
+       try {
+         setLoading(true);
+         setError("");
+         const data = await fetchHomeSearchList();
+   
+         const labels: Item[] = data.map((x) => ({
+           id: x.id,
+           label: (x.name ?? "").toString().trim(),
+           url: (x.url ?? "").toString(),
+         }));
+   
+         setBaseSuggestions(labels);
+         setSuggestions(labels);
+       } catch (e: unknown) {
+         setError(e instanceof Error ? e.message : "Failed to load");
+       } finally {
+         setLoading(false);
+       }
+     };
  
    const showSuggestions = async () => {
      setIsSuggestionBoxOpen(true);
-     loadBaseOnce(); // first open shows base list
-   };
+ if (!query.trim()) {
+       await loadBaseOnce();
+     }   };
  
    const closeSuggestions = () => setIsSuggestionBoxOpen(false);
  
@@ -88,14 +117,20 @@
        const t = setTimeout(async () => {
          try {
            const list = await fetchKeywordSuggestions(query, controller.signal);
-             const uniq = Array.from(
-            new Set(
-              list
-                .map((x) => labelOf(x as unknown as Item))
-                .filter(Boolean)
-                .map((s) => String(s).trim())
-            )
-          ).slice(0, 15);
+           // Normalize into Item[]
+           const uniq: Item[] = Array.from(
+             new Map(
+               list.map((x, idx: number) => [
+                 (x.keyword || "").toString().trim(),
+                 {
+                   id: x.id ?? idx, // fallback id
+                   label: (x.keyword || "").toString().trim(), // ✅ always set label
+                   url: (x.url || "").toString(),
+                 },
+               ])
+             ).values()
+           );
+ 
            setSuggestions(uniq);
          } catch (e: unknown) {
            if (e instanceof DOMException && e.name === "AbortError") return;
@@ -110,7 +145,6 @@
          clearTimeout(t);
        };
      } else {
-       // Under threshold: keep/show base list
        setSuggestions(baseSuggestions);
        setLoading(false);
        return () => controller.abort();
@@ -141,24 +175,42 @@
    //     setIsSuggestionBoxOpen(false);
    //   };
    // ------------- navigate helper (two routes) -------------
-   const navigateWithKeyword = (kwRaw: string) => {
-     const human = kwRaw.trim();
-     if (!human) return;
- 
-     flushSync(() => setQuery(human));
-     setIsSuggestionBoxOpen(false);
- 
-     // Encode but show + for spaces
-     const encoded = encodeURIComponent(human).replace(/%20/g, "+");
-     router.push(`/listings/search=${encoded}`, { scroll: true });
-   };
+    const navigateWithKeyword = (s: Item) => {
+      const human = s.label?.trim();
+      if (!human) return;
+  
+      flushSync(() => {
+        setQuery(human);
+        setNavigating(true); // ✅ show loader immediately
+      });
+      setIsSuggestionBoxOpen(false);
+  
+      // Small delay ensures loader renders before navigation
+      setTimeout(() => {
+        if (s.url && s.url.trim().length > 0) {
+          router.push(s.url, { scroll: true });
+        } else {
+          const slug = human
+            .toLowerCase()
+            .trim()
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/^-+|-+$/g, "");
+          router.push(`/listings/${slug}-search`, { scroll: true });
+        }
+      }, 50);
+    };
+
  
    const handleKeyDown: React.KeyboardEventHandler<HTMLInputElement> = (e) => {
-     if (e.key === "Enter") {
-       navigateWithKeyword((e.currentTarget as HTMLInputElement).value);
-     }
-     if (e.key === "Escape") closeSuggestions();
-   };
+        if (e.key === "Enter") {
+          const kw = (e.currentTarget as HTMLInputElement).value.trim();
+          if (kw) {
+            setNavigating(true);
+            navigateWithKeyword({ label: kw });
+          }
+        }
+        if (e.key === "Escape") closeSuggestions();
+      };
  
    const showingFromKeywordApi = query.length >= 3;
  
@@ -219,41 +271,55 @@
                  >
                    <div className="content-info text-center pb-0">
                      <div className="quick_serch_form">
-                       <form>
+                       <form onSubmit={(e) => e.preventDefault()}>
+
                          <ul>
                            <li>
-                             <select>
-                               <option>Select Category</option>
-                               <option>Off Road</option>
-                               <option>Hybrid</option>
-                               <option>Pop Top</option>
-                               <option>Luxury</option>
-                               <option>Family</option>
-                               <option>Touring</option>
-                             </select>
+                               <select onChange={(e) => setCategory(e.target.value)}>
+    <option value="">Select Category</option>
+    <option value="Off Road">Off Road</option>
+    <option value="Hybrid">Hybrid</option>
+    <option value="Pop Top">Pop Top</option>
+    <option value="Luxury">Luxury</option>
+    <option value="Family">Family</option>
+    <option value="Touring">Touring</option>
+  </select>
                            </li>
                            <li>
-                             <select>
-                               <option>Select Location</option>
-                               <option>New South Wales</option>
-                               <option>Queensland</option>
-                               <option>Western Australia</option>
-                               <option>Victoria</option>
-                               <option>South Australia</option>
-                               <option>Australian Capital Territory</option>
-                               <option>Tasmania</option>
-                             </select>
+                              <select onChange={(e) => setLocation(e.target.value)}>
+    <option value="">Select Location</option>
+    <option value="New South Wales">New South Wales</option>
+    <option value="Queensland">Queensland</option>
+    <option value="Western Australia">Western Australia</option>
+    <option value="Victoria">Victoria</option>
+    <option value="South Australia">South Australia</option>
+    <option value="Australian Capital Territory">Australian Capital Territory</option>
+    <option value="Tasmania">Tasmania</option>
+  </select>
+
                            </li>
                            <li>
-                             <select>
-                               <option>Select Condition</option>
-                               <option>New</option>
-                               <option>Used</option>
-                               <option>All</option>
-                             </select>
+                              <select onChange={(e) => setConditionValue(e.target.value)}>
+    <option value="">Select Condition</option>
+    <option value="New">New</option>
+    <option value="Used">Used</option>
+    <option value="All">All</option>
+  </select>
+
                            </li>
                            <li>
-                             <button className="search_button">Search</button>
+ <button
+  type="button"
+  className="search_button"
+  onClick={(e) => {
+    e.preventDefault();   
+    handleSearch();
+  }}
+>
+  Search
+</button>
+
+
                            </li>
                          </ul>
                        </form>
@@ -319,30 +385,30 @@
                          </h4>
  
                          {error && <p className="text-red-600">{error}</p>}
+
                          {!error && loading && <p>Loading…</p>}
  
                          {!error && !loading && (
-                           <ul className="text-left" id="suggestionList">
-                             {suggestions?.length ? (
-                               suggestions.map((keyword, idx) => (
-                                 <li
-                                   key={`${keyword}-${idx}`}
-                                   // Use onMouseDown so it fires before blur
-                                   onPointerDown={(e) => {
-                                     e.preventDefault();
-                                     navigateWithKeyword(keyword);
-                                   }}
-                                   style={{ cursor: "pointer" }}
-                                   role="option"
-                                   aria-selected="false"
-                                 >
-                                   {keyword}
-                                 </li>
-                               ))
-                             ) : (
-                               <li className="text-muted">No matches</li>
-                             )}
-                           </ul>
+                            <ul className="text-left" id="suggestionList">
+                       {suggestions?.length ? (
+                         suggestions.map((s, idx) => (
+                           <li
+                             key={`${s.label}-${idx}`}
+                             onPointerDown={(e) => {
+                               e.preventDefault();
+                               navigateWithKeyword(s);
+                             }}
+                             style={{ cursor: "pointer" }}
+                             role="option"
+                             aria-selected="false"
+                           >
+                             {s.label}
+                           </li>
+                         ))
+                       ) : (
+                         <li className="text-muted">No matches</li>
+                       )}
+                     </ul>
                          )}
                        </div>
                      </div>
@@ -469,6 +535,29 @@
            </div>
          </div>
        </div>
+          {navigating && (
+                <div
+                  className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
+                  style={{
+                    background: "rgba(255,255,255,0.6)",
+                    backdropFilter: "blur(2px)",
+                    zIndex: 9999,
+                  }}
+                  aria-live="polite"
+                >
+                  <div className="text-center">
+                    <Image
+                      className="loader_image"
+                      src="/images/loader.gif" // place inside public/images
+                      alt="Loading..."
+                      width={80}
+                      height={80}
+                      unoptimized
+                    />{" "}
+                    <div className="mt-2 fw-semibold">Loading…</div>
+                  </div>
+                </div>
+              )}
      </div>
    );
  }

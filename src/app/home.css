@@ -1,22 +1,22 @@
- /* Home page*/
+  /* Home page*/
 
 .home_top {
   background-color: #f2f2f2;
   border-bottom: solid 1px #e1e1e1;
   border-top: solid 1px #e1e1e1;
-  padding-top: 55px;
+  padding-top: 45px;
   padding-bottom: 55px;
 }
 
 .home_top h1 {
   font-weight: 500;
   color: #ec7200;
-  font-size: 50px;
+  font-size: 40px;
   margin-bottom: 5px;
 }
 
 .home_top p {
-  margin-bottom: 30px;
+  margin-bottom: 15px;
 }
 
 .home_top .btn {
@@ -158,12 +158,12 @@
   background: transparent;
 }
 .product_data .img_b {
-  border-radius: 15px;
-  overflow: hidden;
-  max-height: 400px;
-  min-height: 400px;
-  display: flex;
-  align-items: center;
+    border-radius: 15px;
+    overflow: hidden;
+    max-height: 400px;
+    min-height: 400px;
+    display: flex;
+    align-items: center;
 }
 .product_data .img_b img {
   height: auto;
@@ -187,12 +187,12 @@
   height: 100%;
 }
 .floating_links {
-  text-transform: uppercase;
-  color: #0066f0;
-  font-size: 15px;
-  font-weight: 500;
-  position: relative;
-  bottom: 0;
+    text-transform: uppercase;
+    color: #0066f0;
+    font-size: 15px;
+    font-weight: 500;
+    position: relative;
+    bottom: 0;
 }
 .caravan_type {
   margin-bottom: 10px;
@@ -291,8 +291,7 @@
   font-size: 30px;
   line-height: 25px;
   padding: 3px 20px 0 20px;
-  font-family: Poppins !important;
-}
+ }
 
 .product_data .card-price:before {
   content: "";
@@ -320,26 +319,25 @@
 }
 
 .product_data .card-price span {
-  font-family: Poppins;
-  display: block;
+   display: block;
   font-size: 15px;
   font-weight: 600;
   margin-bottom: 2px;
 }
 
 .post-requirements {
-  z-index: 1;
-  background: #000;
-  padding-top: 30px;
-  position: relative;
-  padding-bottom: 30px;
+    z-index: 1;
+    background: #000;
+    padding-top: 30px;
+    position: relative;
+    padding-bottom: 30px;
 }
 
 .home-post_head {
-  text-align: left;
-  color: #333;
-  margin-bottom: 20px;
-  padding-bottom: 0;
+    text-align: left;
+    color: #333;
+    margin-bottom: 20px;
+    padding-bottom: 0;
 }
 
 .home-post_head h2 {
@@ -358,15 +356,13 @@
   color: #e9e9e9;
 }
 
-.top_cta.bg-white
-  .swiper-pagination-clickable
-  .swiper-pagination-bullet.swiper-pagination-bullet-active {
+.top_cta.bg-white .swiper-pagination-clickable .swiper-pagination-bullet.swiper-pagination-bullet-active {
   background-color: #f2bd8c;
 }
 
-.top_cta.bg-white .swiper-pagination-clickable .swiper-pagination-bullet {
-  width: 10px;
-  height: 10px;
+.top_cta.bg-white .swiper-pagination-clickable .swiper-pagination-bullet{
+width: 10px;
+height: 10px;
 }
 
 .top_cta_container {
@@ -419,97 +415,104 @@
 }
 
 .type {
+ 
 }
 
 .condition {
+  
 }
 
 .requirements {
+  
 }
 
 .status {
+  
 }
 
 .location {
+  
 }
 
 .budget {
+  
 }
 
 .status i {
   color: #ec7200;
+  
 }
 
 .home-post__item .status {
 }
 
 .final_post_btn {
-  text-align: left;
+    text-align: left;
 }
 
 .home-post__item .budget {
-  text-align: left;
-  color: #000000;
-  background: #ffffff;
-  border-radius: 10px;
-  padding: 20px 15px;
-  font-size: 45px;
-  font-weight: 700;
+    text-align: left;
+    color: #000000;
+    background: #ffffff;
+    border-radius: 10px;
+    padding: 20px 15px;
+    font-size: 45px;
+    font-weight: 700;
 }
 
 .home-post__item .budget span.slugn {
-  display: block;
-  font-size: 19px;
-  line-height: 20px;
-  text-transform: uppercase;
+    display: block;
+    font-size: 19px;
+    line-height: 20px;
+    text-transform: uppercase;
 }
 
 .home-post__item {
-  color: #171717;
-  border-radius: 0;
-  align-items: center;
-  margin-bottom: 10px;
-  padding: 35px 45px;
-  font-size: 15px;
-  font-weight: 400;
-  position: relative;
-  overflow: hidden;
+    color: #171717;
+    border-radius: 0;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 35px 45px;
+    font-size: 15px;
+    font-weight: 400;
+    position: relative;
+    overflow: hidden;
 }
 
 .fet_feild {
-  justify-content: space-between;
-  gap: 15px;
-  width: 100%;
-  display: flex;
-  margin-bottom: 15px;
+    justify-content: space-between;
+    gap: 15px;
+    width: 100%;
+    display: flex;
+    margin-bottom: 15px;
 }
 
 .fet_feild .pst_table {
-  background-color: #ededed;
-  padding: 10px;
-  border-radius: 5px;
-  width: 33.33%;
-  color: #000;
-  font-weight: 600;
+    background-color: #ededed;
+    padding: 10px;
+    border-radius: 5px;
+    width: 33.33%;
+    color: #000;
+    font-weight: 600;
 }
 
 .fet_feild .pst_table.status {
-  background-color: rgb(76 175 80 / 31%);
+    background-color: rgb(76 175 80 / 31%);
 }
 
 .fet_feild .pst_table span {
-  font-size: 12px;
-  display: block;
-  font-weight: 300;
+    font-size: 12px;
+    display: block;
+    font-weight: 300;
 }
 
 .requirements {
-  padding-bottom: 15px;
-  font-size: 17px;
-  border-top: 1px solid #ddd;
-  height: 130px;
-  padding-top: 15px;
-  border-bottom: 1px solid #ddd;
+    padding-bottom: 15px;
+    font-size: 17px;
+    border-top: 1px solid #ddd;
+    height: 130px;
+    padding-top: 15px;
+    border-bottom: 1px solid #ddd;
 }
 
 .post_flip {
@@ -521,23 +524,24 @@
 }
 
 .home-post__item:hover {
+  
   color: #171717;
 }
 
 .final_post_btn .btn {
-  color: #ffffff;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  background: none;
-  border: 2px solid #ec7200;
-  background-color: #ec7200;
-  max-width: 350px;
-  margin: 0;
-  display: block;
-  height: 55px;
-  line-height: 55px;
-  padding: 0;
-  font-weight: 600;
+    color: #ffffff;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    background: none;
+    border: 2px solid #ec7200;
+    background-color: #ec7200;
+    max-width: 350px;
+    margin: 0;
+    display: block;
+    height: 55px;
+    line-height: 55px;
+    padding: 0;
+    font-weight: 600;
 }
 
 .final_post_btn .btn:hover {
@@ -562,8 +566,9 @@
   -webkit-transition: all 0.3s ease;
   -o-transition: all 0.3s ease;
   transition: all 0.3s ease;
-  margin-bottom: 0;
+  margin-bottom: 25px;
   box-shadow: 5px 5px 3px rgb(98 98 98 / 10%);
+  gap: 15px;
 }
 
 .caravans_by_state .service-box:hover {
@@ -598,16 +603,16 @@
 .caravans_by_state .service-box h5 {
   font-weight: 600;
   margin-bottom: 10px;
-  font-size: 23px;
-  letter-spacing: 0.5px;
+  font-size: 21px;
+  letter-spacing: 0;
 }
 
 .caravans_by_state .service-box .sec_left {
-  width: 70%;
+  width: 75%;
 }
 
 .quick_linkss {
-  height: 145px;
+  height: auto;
 }
 
 .caravans_by_state .sec_left a {
@@ -632,7 +637,7 @@
 }
 
 .caravans_by_state .service-box .sec_right {
-  width: 30%;
+  width: 25%;
   display: flex;
   justify-content: end;
 }
@@ -709,7 +714,7 @@ a.ignoretext {
 }
 
 .caravans_by_manufacturer .post_image img {
-  max-width: 150px;
+    max-width: 150px;
 }
 
 .caravans_by_manufacturer .post_info {
@@ -723,12 +728,12 @@ a.ignoretext {
 }
 
 .caravans_by_manufacturer .post_info p {
-  height: 70px;
-  margin-bottom: 10px;
-  font-size: 15px;
-  font-weight: 400;
-  line-height: 22px;
-  overflow: hidden;
+    height: 70px;
+    margin-bottom: 10px;
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 22px;
+    overflow: hidden;
 }
 
 .caravans_by_manufacturer .post_info ul {
@@ -736,13 +741,13 @@ a.ignoretext {
 }
 
 .caravans_by_manufacturer .post_info ul li {
-  color: #333;
-  padding-bottom: 5px;
-  padding-left: 23px;
-  font-weight: 400;
-  list-style: none;
-  position: relative;
-  font-size: 15px;
+    color: #333;
+    padding-bottom: 5px;
+    padding-left: 23px;
+    font-weight: 400;
+    list-style: none;
+    position: relative;
+    font-size: 15px;
 }
 
 .caravans_by_manufacturer .post_info ul li i {
@@ -828,11 +833,11 @@ a.ignoretext {
 }
 
 .other_items h3 {
-  margin-top: 25px;
-  margin-bottom: 12px;
-  font-size: 21px;
-  font-weight: 600;
-  text-transform: uppercase;
+    margin-top: 25px;
+    margin-bottom: 12px;
+    font-size: 21px;
+    font-weight: 600;
+    text-transform: uppercase;
 }
 
 .other_items {
@@ -869,15 +874,15 @@ a.ignoretext {
 }
 
 .vehicleDetailsWithIcons.simple {
-  white-space: nowrap;
-  align-items: center;
-  width: 100%;
-  max-width: 100%;
-  margin: 0;
-  padding: 8px 0 16px;
-  font-size: 9px;
-  display: inline-block;
-  height: 50px;
+    white-space: nowrap;
+    align-items: center;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 8px 0 16px;
+    font-size: 9px;
+    display: inline-block;
+    height: 50px;
 }
 
 .vehicleDetailsWithIcons.simple li {
@@ -955,8 +960,7 @@ a.ignoretext {
   font-size: 30px;
   line-height: 25px;
   padding: 3px 20px 0 20px;
-  font-family: Poppins !important;
-}
+ }
 
 .product-page .other_items .product-card .price .metc2 .card-price:before {
   content: "";
@@ -1003,8 +1007,7 @@ a.ignoretext {
 }
 
 .product-page .other_items .product-card .price .metc2 .card-price span {
-  font-family: Poppins;
-  display: block;
+   display: block;
   font-size: 13px;
   font-weight: 600;
   margin-bottom: 2px;
@@ -1217,13 +1220,129 @@ a.ignoretext {
 }
 
 .product-page .other_items .product-card .btn {
-  display: block;
-  border: 2px solid #333;
-  color: #333;
-  padding: 7px 15px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  background: transparent;
+    display: block;
+    border: 2px solid #333;
+    color: #333;
+        padding: 7px 15px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background: transparent;
+}
+
+/* --------------- faq styles --------------- */
+
+.faq.style-3 .accordion-item {
+    border: 0;
+    border-bottom: 1px solid #9995;
+    background: transparent;
+}
+
+.faq.style-3 .accordion-item .accordion-button {
+    font-weight: bold;
+    font-size: 14px;
+    background-color: #fff;
+    -webkit-box-shadow: none;
+    box-shadow: none;
+    text-transform: capitalize;
+    padding: 25px 15px;
+    margin-bottom: 8px;
+}
+
+.faq.style-3 .accordion-item .accordion-button:not(.collapsed) {
+    background-color: #fff;
+    color: var(--color-blue2);
+    padding-top: 30px;
+}
+
+.faq.style-3 .accordion-item .accordion-collapse {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-top: none;
+}
+
+.faq.style-3 .accordion-item .accordion-collapse .accordion-body {
+    color: #000000;
+    padding-bottom: 30px;
+    font-size: 17px;
+    width: 100%;
+}
+
+.faq.style-3 .accordion-item .accordion-collapse .accordion-body h4 {
+    font-size: 19px;
+    color: #000;
+    margin-bottom: 5px;
+}
+
+
+.faq.style-3.style-4 .accordion-item {
+    border: 0 !important;
+    border-radius: 7px;
+    overflow: hidden;
+}
+
+.faq.style-3.style-4 .accordion-item .accordion-button {
+    padding: 15px 20px !important;
+    font-weight: 600;
+     font-size: 18px;
+    border: 1px solid #ddd;
+}
+
+.faq.style-3.style-4 .accordion-item .accordion-button:not(.collapsed) {
+    background-color: #fff;
+    color: #000000;
+    padding-bottom: 10px;
+    margin-bottom: 0;
+}
+
+.faq.style-3.style-4 .accordion-item .accordion-collapse {
+    background-color: #ffffff;
+    margin-bottom: 8px;
+}
+
+.faq.style-3.style-4 .accordion-item .accordion-collapse .accordion-body p {
+    font-size: 17px;
+    color: #000;
+    line-height: 28px;
+    margin-bottom: 15px;
+}
+
+.faq.style-3.style-4 .accordion-item .accordion-collapse .accordion-body p a {
+    color: #0d6efd;
+}
+
+.faq.style-3.style-4 .accordion-item .accordion-collapse .accordion-body p a:hover {
+    color: #0d6efd !important;
+    text-decoration: underline !important
+}
+
+.faq {
+  background-color: #f1f1f1;
+}
+
+.accordion-body {
+  display: inline-block;
+}
+.accordion-body ul {
+  display: inline-block;
+  padding-left: 5px;
+   width: 100%;
+}
+.accordion-body ul li {
+    float: left;
+    width: 33.33%;
+    margin-bottom: 15px;
+    list-style: none;
+   
+}
+.accordion-body ul li a {
+    color: #1153a6;
+    text-decoration: underline !important;
+    font-weight: 500;
+    font-size: 16px;
+}
+.accordion-body ul li span {
+    display: block;
+    font-size: 14px;
 }
 
 @media (max-width: 767px) {
@@ -1235,7 +1354,7 @@ a.ignoretext {
     margin-bottom: 5px;
   }
   .caravans_by_manufacturer .post_info p {
-    height: auto;
+    height:auto;
   }
   .home_top {
     padding-top: 30px;
@@ -1298,7 +1417,7 @@ a.ignoretext {
     font-size: 16px;
   }
   .post_bgs {
-    padding: 20px 20px;
+    padding: 5px;
   }
   .home-post_head {
     margin-bottom: 0;
@@ -1308,40 +1427,40 @@ a.ignoretext {
     padding: 10px 10px;
   }
   .product_data .img_b {
-    min-height: auto;
+        min-height: auto;
   }
   .product_data .right_design {
     padding: 0 10px;
-  }
-  .other_items h3 {
-    font-size: 20px;
-  }
-  .product-page .other_items .related-products .swiper-button-next {
+}
+.other_items h3 {
+      font-size: 20px;
+}
+.product-page .other_items .related-products .swiper-button-next {
     right: -10px;
-  }
-  .product-page .other_items .related-products .swiper-button-prev {
+}
+.product-page .other_items .related-products .swiper-button-prev {
     left: -10px;
-  }
-  .product-page .related-products .swiper-button-next,
-  .product-page .related-products .swiper-button-prev {
+}
+.product-page .related-products .swiper-button-next, .product-page .related-products .swiper-button-prev {
     width: 40px;
     height: 40px;
-  }
-  .product-page .related-products .swiper-button-next:after,
-  .product-page .related-products .swiper-button-prev:after {
+}
+.product-page .related-products .swiper-button-next:after, .product-page .related-products .swiper-button-prev:after {
     font-size: 18px;
     color: #000;
-  }
-  .latest_blog .title {
+}
+.latest_blog .title {
     margin-top: 0;
     margin-bottom: 30px;
-  }
-  .blog.style-8 .side-posts .item .img {
-    margin-inline-end: 15px;
-  }
-  .blog.style-8 .side-posts .item .info h4.title {
-    font-size: 15px;
-  }
+}
+.blog.style-8 .side-posts .item .img {
+      margin-inline-end: 15px;
+}
+.blog.style-8 .side-posts .item .info h4.title {
+      font-size: 15px;
+}
+
+
 
   .requirements {
     height: auto;
@@ -1362,23 +1481,24 @@ a.ignoretext {
     font-weight: 400;
     margin-bottom: 0px;
   }
-
+ 
   .caravans_by_state .service-box h5 a {
     font-size: 20px;
   }
   .sidenav {
     background-color: #f1f1f1;
   }
-  .product_data h3.title {
+.product_data h3.title {
     margin-top: 10px;
     font-size: 22px;
     line-height: 26px;
     margin-bottom: 10px;
-  }
+}
 }
 
 .product-card {
   width: 100%;
+
 }
 
 .image-container {
@@ -1391,4 +1511,149 @@ a.ignoretext {
 
 .image-container img {
   object-fit: cover; /* crops image to fit box */
+}
+
+.search_home .nav-pills {
+    border-bottom: none;
+    justify-content: center;
+    gap: 40px;
+    padding-bottom: 35px;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+}
+.search_home .nav-pills .nav-link.active {
+    color: #000000;
+    font-weight: 500;
+}
+.search_home .nav-pills .nav-link {
+    color: #8d8c8c;
+    text-transform: capitalize;
+    background: none;
+    border: 0;
+    font-size: 16px;
+    font-weight: 500;
+    transition: all .2s;
+    position: relative;
+    padding: 5px 0px;
+}
+.search_home .nav-pills .nav-link span {
+    position: relative;
+    z-index: 1;
+}
+.search_home .nav-pills .nav-link:after {
+    content: "";
+    opacity: 0;
+    pointer-events: none;
+    background: #8d8c8c;
+    height: 1px;
+    transition: all .2s;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+}
+.search_home .nav-pills .nav-link.active:after {
+    opacity: 1;
+    background: #000000;
+}
+
+.tab-content {
+  height: 70px;
+}
+
+.quick_serch_form ul {
+  list-style: none;
+  display: flex;
+  gap: 5px;
+}
+.quick_serch_form ul li {
+  width: 100%;
+}
+.category_icon {
+    justify-content: center;
+    width: 100%;
+    margin: 30px 0 auto;
+    display: flex;
+}
+
+.category_icon li {
+    width: 14.2%;
+    text-align: center;
+    float: left;
+    margin-bottom: 25px;
+}
+
+main .section-head .category_icon li img {
+    max-width: 120px;
+}
+
+.quick_serch_form ul li select {
+   border: 1px solid #a5a5a5;
+    border-radius: 4px;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url(/images/select.png);
+    background-size: 10px;
+    background-position: calc(100% - 12px) 50%;
+    background-repeat: no-repeat;
+    height: 55px;
+    padding-left: 10px;
+    word-wrap: normal;
+    width: 100%;
+}
+
+.quick_serch_form ul li .search_button {
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    background: #ec7200;
+    border: 2px solid #ec7200;
+    max-width: 100%;
+    height: 55px;
+    margin: 0;
+    padding: 0;
+    font-weight: 600;
+    line-height: 55px;
+    display: block;
+    width: 100%;
+    border-radius: 4px;
+}
+
+@media (max-width: 767px) {
+.search_home .nav-pills .nav-link {
+    font-size: 14px;
+}
+.quick_serch_form ul {
+    gap: 5px;
+    list-style: none;
+    display: block;
+    padding-left: 0;
+}
+.tab-content {
+    height: auto;
+}
+.quick_serch_form ul li {
+    width: 100%;
+    margin-bottom: 10px;
+}
+.category_icon {
+    justify-content: center;
+    width: 100%;
+    margin: 30px 0 auto;
+    display: inline-block !important;
+}
+.category_icon li {
+    text-align: center;
+    float: left;
+    width: 50%;
+    margin-bottom: 25px;
+}
+.accordion-body ul li {
+    float: inherit;
+    width: 100%;
+    margin-bottom: 15px;
+    list-style: none;
+}
 }
