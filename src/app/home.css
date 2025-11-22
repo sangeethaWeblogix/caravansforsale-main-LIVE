@@ -1657,3 +1657,10 @@ main .section-head .category_icon li img {
     list-style: none;
 }
 }
+
+.disabled_btn {
+  opacity: 0.5;
+  cursor: not-allowed !important;
+}
+
+

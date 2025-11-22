@@ -49,7 +49,8 @@
       const [category, setCategory] = useState("");
  const [location, setLocation] = useState("");
  const [conditionValue, setConditionValue] = useState("");
- 
+ const isSearchEnabled = category || location || conditionValue;
+
  const handleSearch = () => {
   if (!category && !location && !conditionValue) {
     alert("Select at least one filter");
@@ -287,6 +288,7 @@
                         <form onSubmit={(e) => e.preventDefault()}>
  
                           <ul>
+  
                             <li>
                                 <select onChange={(e) => setCategory(e.target.value)}>
      <option value="">Select Category</option>
@@ -298,6 +300,7 @@
      <option value="Touring">Touring</option>
    </select>
                             </li>
+                         
                             <li>
                                <select onChange={(e) => setLocation(e.target.value)}>
      <option value="">Select Location</option>
@@ -321,16 +324,25 @@
  
                             </li>
                             <li>
-  <button
-   type="button"
-   className="search_button"
-   onClick={(e) => {
-     e.preventDefault();   
-     handleSearch();
-   }}
- >
-   Search
- </button>
+ <button
+  type="button"
+  className={`search_button ${!isSearchEnabled ? "disabled_btn" : ""}`}
+  disabled={!isSearchEnabled}
+  onClick={(e) => {
+    e.preventDefault();
+
+    if (!isSearchEnabled) {
+      alert("Please select at least one filter before searching");
+      return;
+    }
+
+    handleSearch();
+  }}
+>
+  Search
+</button>
+
+
  
  
                             </li>
