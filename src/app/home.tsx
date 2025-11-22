@@ -19,6 +19,8 @@
  import { fetchAtmBasedCaravans } from "@/api/homeApi/weight/api";
  import { fetchLengthBasedCaravans } from "@/api/homeApi/length/api";
  import { fetchUsedCaravansList } from "@/api/homeApi/usedCaravanList/api";
+import { fetchStateBasedCaravans } from "@/api/homeApi/state/api";
+import { stat } from "fs";
  interface Item {
    label: string;
    capacity: number;
@@ -27,7 +29,9 @@
    caravan_count: number;
    starting_price: number;
    display_text: string;
+   state: string;
  }
+ 
  
  /* --------------------------------- Page ---------------------------------- */
  export default function ProductPage() {
@@ -41,12 +45,14 @@
    const [usedState, setUsedState] = useState<Item[]>([]);
    const [usedRegion, setUsedRegion] = useState<Item[]>([]);
    const [adIndex, setAdIndex] = useState<number>(0);
+      const [stateBands, setStateBands] = useState<Item[]>([]);
+
  
    const bannerSectionRef = useRef<HTMLDivElement | null>(null);
    useEffect(() => {
      async function loadAll() {
        // const [sleep, region, weight, length] = await Promise.all([
-       const [sleep, region, manufactures, weight, length, price, usedData] =
+       const [sleep, region, manufactures, weight, length, price, usedData, state] =
          await Promise.all([
            fetchSleepBands(),
            fetchRegion(),
@@ -55,6 +61,7 @@
            fetchLengthBasedCaravans(),
            fetchPriceBasedCaravans(),
            fetchUsedCaravansList(),
+           fetchStateBasedCaravans(),
            ,
          ]);
  
@@ -67,6 +74,8 @@
        setUsedCategoryList(usedData.by_category);
        setUsedState(usedData.by_state);
        setUsedRegion(usedData.by_region);
+       setStateBands(state);
+
      }
  
      loadAll();
@@ -142,6 +151,16 @@
      };
    }, []);
  
+ const stateMeta = {
+  "victoria":    { code: "VIC", image: "/images/vic_map.svg" },
+  "new-south-wales": { code: "NSW", image: "/images/nsw_map.svg" },
+  "queensland":  { code: "QLD", image: "/images/qld_map.svg" },
+  "western-australia": { code: "WA", image: "/images/wa_map.svg" },
+  "south-australia": { code: "SA", image: "/images/sa_map.svg" },
+  "tasmania": { code: "TAS", image: "/images/tas_map.svg" }
+};
+
+
    return (
      <div>
        {/* Hero Section */}
@@ -167,64 +186,17 @@
              </div>
            </div>
  
-           <div className="content">
+           {/* <div className="content">
              <div className="explore-state position-relative">
                <div className="row">
-                 {[
-                   {
-                     state: "Victoria",
-                     cities: ["Melbourne", "Geelong", "Ballarat", "Bendigo"],
-                     image: "/images/vic_map.svg",
-                     statecode: "VIC",
-                   },
-                   {
-                     state: "New South Wales",
-                     cities: [
-                       "Sydney",
-                       "Newcastle",
-                       "Central Coast",
-                       "Illawarra",
-                     ],
-                     image: "/images/nsw_map.svg",
-                     statecode: 'NSW',
-                   },
-                   {
-                     state: "Queensland",
-                     cities: [
-                       "Brisbane",
-                       "Gold Coast",
-                       "Sunshine Coast",
-                       "Cairns",
-                     ],
-                     image: "/images/qld_map.svg",
-                     statecode: 'QLD',
-                   },
-                   {
-                     state: "Western Australia",
-                     cities: ["Perth", "Bunbury", "Geraldton", "Albany"],
-                     image: "/images/wa_map.svg",
-                     statecode: 'WA',
-                   },
-                   {
-                     state: "South Australia",
-                     cities: ["Adelaide", "Mount Gambier", "Whyalla"],
-                     image: "/images/sa_map.svg",
-                     statecode: 'SA',
-                   },
-                   {
-                     state: "Tasmania",
-                     cities: ["Hobart", "Launceston", "Devonport", "Burnie"],
-                     image: "/images/tas_map.svg",
-                     statecode: 'TAS',
-                   },
-                 ].map((state, index) => (
+                 {stateBands.map((state, index) => (
                    <div className="col-lg-4" key={index}>
                      <div className="service-box">
                        <div className="sec_left">
                          <h5>{state.state}</h5>
                          <div className="info">
                            <div className="quick_linkss">
-                             <p>5,733 caravan listings starting at $70,000</p>
+                             <p>{state.display_text}</p>
                              <Link
                                className="view_all"
                                href={`/listings/${state.state
@@ -250,10 +222,64 @@
                      </div>
                    </div>
                  ))}
+                   
                </div>
              </div>
-           </div>
- 
+           </div> */}
+   <div className="content">
+  <div className="explore-state position-relative">
+    <div className="row">
+
+      {stateBands.map((item, index) => {
+        const key = item.state.toLowerCase();   // e.g. "victoria"
+
+        const meta = stateMeta[key] || {};
+        const stateCode = meta.code || "";
+        const mapImage = meta.image || "";
+
+        return (
+          <div className="col-lg-4" key={index}>
+            <div className="service-box">
+
+              <div className="sec_left">
+                <h5>
+                  {item.label.replace("Caravans For Sale in ", "")}
+                  {" "}
+                </h5>
+
+                <div className="info">
+                  <div className="quick_linkss">
+                    {/* ✔ API BASED DISPLAY TEXT */}
+                    <p>{item.display_text}</p>
+
+                    <Link className="view_all" href={`/listings${item.permalink}`}>
+                      View All Caravans For Sale in {stateCode}
+                     
+                    </Link>
+                  </div>
+                </div>
+              </div>
+
+              <div className="sec_right">
+                <span>
+                  <Image
+                    src={mapImage}
+                    alt={`${item.state} map`}
+                    width={100}
+                    height={100}
+                  />
+                </span>
+              </div>
+            </div>
+          </div>
+        );
+      })}
+
+    </div>
+  </div>
+</div>
+
+
            {/* Quick Links Section */}
            <div className="faq style-4 pt-4">
              <div className="row">
