@@ -238,8 +238,7 @@
                   Browse New & Used Caravans For Sale
                 </h1>
                 <p>
-                  CFS is dedicated to revolutionising your caravan buying
-                  experience.
+                CFS is dedicated to revolutionising your caravan buying experience with new & used off-road, luxury and touring caravans from major brands and smaller Australian manufacturers and dealers, helping you secure the best price and value.
                 </p>
   
                 {/* Bootstrap Pills Navigation */}
@@ -538,9 +537,9 @@
             </div>
           </div>
           <div className="row align-items-center justify-content-center">
-            <Link href="/caravan-enquiry-form/">
 
             <div className="col-lg-10">
+            <Link href="/caravan-enquiry-form/">
               <div className="advertisement">
                 <Image
                   className="hidden-xs"
@@ -559,9 +558,9 @@
                   unoptimized
                 />
               </div>
+            </Link>
             </div>
 
-            </Link>
           </div>
         </div>
            {navigating && (

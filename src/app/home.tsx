@@ -175,6 +175,7 @@
                      state: "Victoria",
                      cities: ["Melbourne", "Geelong", "Ballarat", "Bendigo"],
                      image: "/images/vic_map.svg",
+                     statecode: "VIC",
                    },
                    {
                      state: "New South Wales",
@@ -185,6 +186,7 @@
                        "Illawarra",
                      ],
                      image: "/images/nsw_map.svg",
+                     statecode: 'NSW',
                    },
                    {
                      state: "Queensland",
@@ -195,21 +197,25 @@
                        "Cairns",
                      ],
                      image: "/images/qld_map.svg",
+                     statecode: 'QLD',
                    },
                    {
                      state: "Western Australia",
                      cities: ["Perth", "Bunbury", "Geraldton", "Albany"],
                      image: "/images/wa_map.svg",
+                     statecode: 'WA',
                    },
                    {
                      state: "South Australia",
                      cities: ["Adelaide", "Mount Gambier", "Whyalla"],
                      image: "/images/sa_map.svg",
+                     statecode: 'SA',
                    },
                    {
                      state: "Tasmania",
                      cities: ["Hobart", "Launceston", "Devonport", "Burnie"],
                      image: "/images/tas_map.svg",
+                     statecode: 'TAS',
                    },
                  ].map((state, index) => (
                    <div className="col-lg-4" key={index}>
@@ -225,7 +231,7 @@
                                  .toLowerCase()
                                  .replace(/\s+/g, "-")}-state/`}
                              >
-                               View All Caravans For Sale in {state.state}{" "}
+                               View All Caravans For Sale in {state.statecode}{" "}
                                <i className="bi bi-chevron-right" />
                              </Link>
                            </div>

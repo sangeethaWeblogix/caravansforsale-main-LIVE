@@ -16,7 +16,9 @@
 }
 
 .home_top p {
-  margin-bottom: 15px;
+    max-width: 900px;
+    margin: 0 auto;
+    margin-bottom: 15px;
 }
 
 .home_top .btn {
@@ -1594,7 +1596,7 @@ main .section-head .category_icon li img {
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
-    background-image: url(/images/select.png);
+    /* background-image: url(/images/select.png); */
     background-size: 10px;
     background-position: calc(100% - 12px) 50%;
     background-repeat: no-repeat;
@@ -1664,3 +1666,22 @@ main .section-head .category_icon li img {
 }
 
 
+/* Use your uploaded arrow icon */
+.quick_serch_form ul li select {
+  background-image: url("/mnt/data/b2927c39-3e18-4a31-aceb-8a4a6ef342bf.png");
+  background-size: 14px;
+  background-repeat: no-repeat;
+  background-position: calc(100% - 12px) 50%;
+  transition: transform 0.2s ease;
+}
+
+/* When dropdown is open → UP arrow */
+.select_arrow_up {
+  transform: rotate(180deg);
+  background-position: calc(100% - 12px) 50%;
+}
+
+/* When dropdown is closed → DOWN arrow */
+.select_arrow_down {
+  transform: rotate(0deg);
+}
