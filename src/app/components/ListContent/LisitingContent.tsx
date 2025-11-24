@@ -61,6 +61,7 @@
    pincode?: string;
    orderby?: string;
    slug?: string | undefined;
+   page?: number;
  }
  interface Props {
    products: Product[];
@@ -311,23 +312,27 @@
                  <form className="woocommerce-ordering" method="get">
                    <div className="form-group shot-buy">
                      <select
-                       name="orderby"
-                       className="orderby form-select"
-                       aria-label="Shop order"
-                       onChange={(e) =>
-                         onFilterChange({
-                           orderby: e.target.value || "featured",
-                         })
-                       }
-                       value={currentFilters.orderby ?? "featured"} // <— default to "featured"
-                     >
-                       <option value="featured">Featured</option>
-                       <option value="price_asc">Price (Low to High)</option>
-                       <option value="price_desc">Price (High to Low)</option>
-                       <option value="year-desc">Year Made (High to Low)</option>
-                       <option value="year-asc">Year Made (Low to High)</option>
-                     </select>
- 
+  name="orderby"
+  className="orderby form-select"
+  aria-label="Shop order"
+  value={currentFilters.orderby ?? "featured"}
+  onChange={(e) => {
+    const nextOrderby = e.target.value || "featured";
+
+    onFilterChange({
+      ...currentFilters,
+      orderby: nextOrderby,
+      page: 1,
+    });
+  }}
+>
+  <option value="featured">Featured</option>
+  <option value="price_asc">Price (Low to High)</option>
+  <option value="price_desc">Price (High to Low)</option>
+  <option value="year-desc">Year Made (High to Low)</option>
+  <option value="year-asc">Year Made (Low to High)</option>
+</select>
+
                      {/* <input type="hidden" name="paged" value={filters.orderby} /> */}
                    </div>
                  </form>
