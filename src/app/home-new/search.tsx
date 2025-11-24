@@ -447,7 +447,7 @@
            </div>
          </div>
          <div className="row align-items-center justify-content-center">
-           <div className="col-lg-8">
+           <div className="col-lg-10">
              <div className="advertisement">
                <Image
                  className="hidden-xs"
