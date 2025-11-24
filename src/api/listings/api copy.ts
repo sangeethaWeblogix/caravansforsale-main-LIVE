@@ -1,4 +1,4 @@
-     const API_BASE = process.env.NEXT_PUBLIC_CFS_API_BASE;
+    const API_BASE = process.env.NEXT_PUBLIC_CFS_API_BASE;
   
   interface Filters {
     page?: number;
