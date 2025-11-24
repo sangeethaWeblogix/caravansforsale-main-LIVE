@@ -349,7 +349,7 @@
          const query = new URLSearchParams();
    
          if (nextFilters.orderby)
-           query.set("orderby", String(nextFilters.orderby));
+           query.set("orderby", (nextFilters.orderby));
    
          const r = Number(nextFilters.radius_kms);
          if (!Number.isNaN(r) && r !== DEFAULT_RADIUS) {
@@ -359,6 +359,7 @@
    
          const safeSlug = slug.endsWith("/") ? slug : `${slug}/`; // 👈 important
          const finalURL = query.toString() ? `${safeSlug}?${query}` : safeSlug;
+         console.log("final", finalURL)
          router.push(finalURL, { scroll: false }); // ✅ Prevent auto-scroll
          setTimeout(() => {
            window.scrollTo({ top: 0, behavior: "smooth" });

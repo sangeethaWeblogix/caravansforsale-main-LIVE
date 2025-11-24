@@ -316,15 +316,11 @@
   className="orderby form-select"
   aria-label="Shop order"
   value={currentFilters.orderby ?? "featured"}
-  onChange={(e) => {
-    const nextOrderby = e.target.value || "featured";
-
-    onFilterChange({
-      ...currentFilters,
-      orderby: nextOrderby,
-      page: 1,
-    });
-  }}
+   onChange={(e) =>
+                        onFilterChange({
+                          orderby: e.target.value || "featured",
+                        })
+                      }
 >
   <option value="featured">Featured</option>
   <option value="price_asc">Price (Low to High)</option>

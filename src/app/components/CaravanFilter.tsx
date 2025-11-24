@@ -1493,31 +1493,7 @@ useEffect(() => {
     !!slug && makes.some((m) => m.slug === slug);
   const isValidModelSlug = (slug: string | null | undefined): slug is string =>
     !!slug && isNaN(Number(slug)) && model.some((m) => m.slug === slug);
-
-  // useEffect(() => {
-  //   if (!filtersInitialized.current) return;
-
-  //   const slugPath = buildSlugFromFilters(filters);
-  //   const query = new URLSearchParams();
-
-  //   if (!searchParams.has("page")) {
-  //     const page = searchParams.get("page");
-  //     if (page && page !== "1") {
-  //       query.set("page", page);
-  //     }
-  //   }
-
-  //   // ✅ Clean URL before pushing
-  //   const deduped = new URLSearchParams(query.toString());
-  //   const finalURL = deduped.toString() ? `${slugPath}?${deduped}` : slugPath;
-
-  //   if (lastPushedURLRef.current !== finalURL) {
-  //     lastPushedURLRef.current = finalURL;
-  //     startTransition(() => {
-  //       router.push(finalURL);
-  //     });
-  //   }
-  // }, [filters]);
+ 
   useEffect(() => {
     mountedRef.current = true;
   }, []);
@@ -1529,10 +1505,7 @@ useEffect(() => {
   // 🔁 replace this whole function
   const updateAllFiltersAndURL = (override?: Filters) => {
     const DEFAULT_RADIUS = 50;
-    // const nextRaw: Filters = override ?? filters;
-    // const next: Filters = hydrateLocation(normalizeFilters(nextRaw));
-    // 1) set local filters only if changed
-
+ 
     const nextRaw: Filters = override ?? filters;
     const next: Filters = {
       ...clean(hydrateLocation(normalizeFilters(nextRaw))),
@@ -1559,7 +1532,7 @@ if (next.state) {
     setFilters((prev) => (filtersEqual(prev, next) ? (prev as Filters) : next));
     filtersInitialized.current = true;
     if (typeof next.radius_kms !== "number") next.radius_kms = DEFAULT_RADIUS;
-
+ 
     // 2) notify parent only if changed
     // if (!filtersEqual(lastSentFiltersRef.current, next)) {
     //   lastSentFiltersRef.current = next;
@@ -3321,28 +3294,7 @@ setModel(make.models || []);
           </div>
         )}
       </div>
-      {/* {navigating && (
-          <div
-            className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
-            style={{
-              background: "rgba(255,255,255,0.6)",
-              backdropFilter: "blur(2px)",
-              zIndex: 9999,
-            }}
-            aria-live="polite"
-          >
-            <div className="text-center">
-              <Image
-                src="/images/loader.gif" // place inside public/images
-                alt="Loading..."
-                width={80}
-                height={80}
-                unoptimized
-              />{" "}
-              <div className="mt-2 fw-semibold">Loading…</div>
-            </div>
-          </div>
-        )} */}
+       
     </>
   );
 };
