@@ -581,7 +581,7 @@ import { fetchStateBasedCaravans } from "@/api/homeApi/state/api";
            <div className="banner_ads_ls" ref={bannerSectionRef}>
              {[
                { name: "masterpiece", mobile: "masterpiece-m" },
-               { name: "orbit", mobile: "orbitillie-m" },
+               { name: "orbit", mobile: "orbit-m" },
                { name: "redcenter", mobile: "redcenter-m" },
              ].map((banner, index) => (
                <div

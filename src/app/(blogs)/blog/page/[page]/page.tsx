@@ -101,7 +101,7 @@ export default function BlogPage() {
                 Valuable News, Reviews &amp; Advice From Caravan Marketplace
               </h2>
             </div>
-            ;
+            
           </div>
         </div>
         <div className="container">
