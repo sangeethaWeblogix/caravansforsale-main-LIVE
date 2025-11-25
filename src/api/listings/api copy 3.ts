@@ -47,7 +47,6 @@
     slug?: string;
       description?: string;
           sku?: string;
-          gallery?: string[];
 
 
   };

@@ -45,7 +45,8 @@
      slug?: string;
      description?: string;
      sku?: string;
-     gallery?: string[];
+   
+   
      // Include additional properties that might come from API
      title?: string;
      weight?: string;
@@ -135,7 +136,6 @@
        slug: item.slug,
        description: item.description,
        sku: item.sku,
-       gallery: item.gallery || [],
        // keep extra props
      }));
    }

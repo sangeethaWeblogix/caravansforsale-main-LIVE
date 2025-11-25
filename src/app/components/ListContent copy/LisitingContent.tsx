@@ -31,7 +31,6 @@
    slug?: string;
    description?: string;
    sku?: string;
-      gallery?: string[];
  }
  
  interface Pagination {
@@ -103,7 +102,8 @@
  }: Props) {
    const [showInfo, setShowInfo] = useState(false);
    const [showContact, setShowContact] = useState(false);
-   
+    const [lazyImages, setLazyImages] = useState<{ [key: string]: string[] }>({});
+   const [loadedAll, setLoadedAll] = useState<{ [key: string]: boolean }>({});
  
   // When popup opens, this will hold the product clicked
  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -143,6 +143,31 @@
    //   setOrderBy(e.target.value);
    // };
  
+   const getFirstImage = (item: Product) => {
+     if (!item.sku || !item.slug) return "/images/sample3.webp";
+ 
+     return `https://caravansforsale.b-cdn.net/Thumbnails/${item.sku}/${item.slug}-main.webp`;
+   };
+ 
+   const loadRemaining = (item: Product) => {
+     if (!item.sku || !item.slug) return;
+ 
+     const base = `https://caravansforsale.b-cdn.net/Thumbnails/${item.sku}`;
+ 
+     const extra = [
+       `${base}/${item.slug}-sub1.webp`,
+       `${base}/${item.slug}-sub2.webp`,
+       `${base}/${item.slug}-sub3.webp`,
+       `${base}/${item.slug}-sub4.webp`,
+     ];
+ 
+     setLazyImages((prev) => ({
+       ...prev,
+       [item.id]: [getFirstImage(item), ...extra],
+     }));
+ 
+     setLoadedAll((prev) => ({ ...prev, [item.id]: true }));
+   };
  
    // Remove all the lazy loading state and just load all images immediately
  
@@ -210,14 +235,24 @@
    console.log("data", uniqueProducts);
  
    // ✅ Helper: generate up to 5 image URLs from SKU
-   const getProductImages = (item: Product): string[] => {
-  const main = item.image ? item.image : "/images/sample3.webp";
-  const gallery = Array.isArray(item.gallery) ? item.gallery : [];
-console.log("gallery", item)
-  // max 5 images: 1 , main + 4 gallery images
-  return [main, ...gallery].slice(0, 5);
-};
-
+   const getProductImages = (sku?: string, slug?: string): string[] => {
+     if (!sku || !slug) return ["/images/sample3.webp"]; // fallback
+ 
+     const base = `https://caravansforsale.b-cdn.net/Thumbnails/${sku}`;
+ 
+     // First image = main
+     const mainImage = `${base}/${slug}-main.webp`;
+ 
+     // Remaining = sub1, sub2, sub3, sub4
+     const subImages = Array.from(
+       { length: 4 },
+       (_, i) => `${base}/${slug}-sub${i + 1}.webp`
+     );
+ 
+     console.log("subimage", subImages);
+     console.log("mainimage", mainImage);
+     return [mainImage, ...subImages];
+   };
  
    // ✅ Randomly shuffle premium products on each page load
    // ✅ Premium products shuffle after mount
@@ -316,7 +351,6 @@ console.log("gallery", item)
                      ref={nextRef}
                      className="swiper-button-next-custom btn btn-light btn-sm"
                    >
-
                      <i className="bi bi-chevron-right"></i>
                    </button>
                  </div>
@@ -353,7 +387,7 @@ console.log("gallery", item)
                  >
                    {fetauredProducts.map((item, index) => {
                      const href = getHref(item);
-                     const images = getProductImages(item);
+                     const images = getProductImages(item.sku, item.slug);
                      const isPriority = index < 5;
  
                      return (
@@ -564,7 +598,6 @@ console.log("gallery", item)
              </div>
            </div>
          )}
-
          {/* {premium section } */}
          <div className="dealers-section product-type">
            <div className="other_items">
@@ -573,8 +606,7 @@ console.log("gallery", item)
                  {shuffledPremiumProducts.map((item, index) => {
                    const href = getHref(item);
                    const isPriority = index < 5;
-                               const images = getProductImages(item);
-
+                   const imgs = lazyImages[item.id] || [getFirstImage(item)];
                    return (
                      <div className="col-lg-6 mb-0" key={index}>
                        <Link
@@ -591,7 +623,7 @@ console.log("gallery", item)
                            <div className="img">
                              <div className="background_thumb">
                                <ImageWithSkeleton
-                                 src={images[0]}
+                                 src={imgs[0]}
                                  alt="Caravan"
                                  width={300}
                                  height={200}
@@ -605,29 +637,42 @@ console.log("gallery", item)
                                  <Skelton count={2} /> // ✅ show skeletons
                                ) : (
                                  // For Main Products Swiper - FIXED VERSION
-
-<Swiper
-  modules={[Navigation, Pagination]}
-  spaceBetween={10}
-  slidesPerView={1}
-  navigation
-  pagination={{ clickable: true }}
-  className="main_thumb_swiper"
->
-  {images.map((img, i) => (
-    <SwiperSlide key={i}>
-      <div className="thumb_img">
-        <ImageWithSkeleton
-          src={img}
-          width={300}
-          height={200}
-          alt={`Caravan ${i}`}
-        />
-      </div>
-    </SwiperSlide>
-  ))}
-</Swiper>
-
+                                 <Swiper
+                                   modules={[Navigation, Pagination]}
+                                   spaceBetween={10}
+                                   slidesPerView={1}
+                                   navigation
+                                   pagination={{
+                                     clickable: true,
+                                   }}
+                                   onSlideChange={() => {
+                                     if (!loadedAll[item.id])
+                                       loadRemaining(item); // Fixed: loadedAll instead of isLoaded
+                                   }}
+                                   onReachBeginning={() => {
+                                     if (!loadedAll[item.id])
+                                       loadRemaining(item); // Fixed: loadedAll instead of isLoaded
+                                   }}
+                                   onReachEnd={() => {
+                                     if (!loadedAll[item.id])
+                                       loadRemaining(item); // Fixed: loadedAll instead of isLoaded
+                                   }}
+                                   className="main_thumb_swiper"
+                                 >
+                                   {imgs.map((img, i) => (
+                                     <SwiperSlide key={i}>
+                                       <div className="thumb_img">
+                                         <ImageWithSkeleton
+                                           src={img}
+                                           alt={`Caravan ${i + 1}`}
+                                           width={300}
+                                           height={200}
+                                           priority={isPriority && i === 0}
+                                         />
+                                       </div>
+                                     </SwiperSlide>
+                                   ))}
+                                 </Swiper>
                                )}
  
                                {/* Hidden "View More" button that appears after last slide */}
@@ -823,8 +868,9 @@ console.log("gallery", item)
                  <div className="row g-3">
                    {mergedProducts.map((item, index) => {
                      const href = getHref(item);
-                      const isPriority = index < 5;
-   const images = getProductImages(item);
+                     const images = getProductImages(item.sku, item.slug);
+                     const isPriority = index < 5;
+                     const imgs = lazyImages[item.id] || [getFirstImage(item)];
                      return (
                        <div className="col-lg-6 mb-0" key={index}>
                          <Link
@@ -854,27 +900,41 @@ console.log("gallery", item)
                                <div className="main_thumb position-relative">
                                  <span className="lab">Spotlight Van</span>
                                  <Swiper
-  modules={[Navigation, Pagination]}
-  spaceBetween={10}
-  slidesPerView={1}
-  navigation
-  pagination={{ clickable: true }}
-  className="main_thumb_swiper"
->
-  {images.map((img, i) => (
-    <SwiperSlide key={i}>
-      <div className="thumb_img">
-        <ImageWithSkeleton
-          src={img}
-          width={300}
-          height={200}
-          alt="Caravan image"
-        />
-      </div>
-    </SwiperSlide>
-  ))}
-</Swiper>
-
+                                   modules={[Navigation, Pagination]}
+                                   spaceBetween={10}
+                                   slidesPerView={1}
+                                   navigation
+                                   pagination={{
+                                     clickable: true,
+                                   }}
+                                   onSlideChange={() => {
+                                     if (!loadedAll[item.id])
+                                       loadRemaining(item); // Fixed: loadedAll instead of isLoaded
+                                   }}
+                                   onReachBeginning={() => {
+                                     if (!loadedAll[item.id])
+                                       loadRemaining(item); // Fixed: loadedAll instead of isLoaded
+                                   }}
+                                   onReachEnd={() => {
+                                     if (!loadedAll[item.id])
+                                       loadRemaining(item); // Fixed: loadedAll instead of isLoaded
+                                   }}
+                                   className="main_thumb_swiper"
+                                 >
+                                   {imgs.map((img, i) => (
+                                     <SwiperSlide key={i}>
+                                       <div className="thumb_img">
+                                         <ImageWithSkeleton
+                                           src={img}
+                                           alt={`Caravan ${i + 1}`}
+                                           width={300}
+                                           height={200}
+                                           priority={isPriority && i === 0}
+                                         />
+                                       </div>
+                                     </SwiperSlide>
+                                   ))}
+                                 </Swiper>
                                  {/* Hidden "View More" button that appears after last slide */}
                                  {/* <div
                                  id={`view-more-btn-${item}`}
