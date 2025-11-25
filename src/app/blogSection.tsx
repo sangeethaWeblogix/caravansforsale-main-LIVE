@@ -53,7 +53,7 @@ export default function HomeLatestBlogs() {
       <div className="container">
         <div className="title">
           <div className="tpof_tab">
-            <h3>Latest News, Reviews &amp; Advice</h3>
+            <h3>Latest Blogs</h3>
             <div className="viewall_bttn">
               <Link href="/blog/">
                 <i className="bi bi-chevron-right" />

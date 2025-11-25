@@ -13,136 +13,171 @@ const data = [
     img: "/images/australian-offroad.png",
     alt: "Australian Off Road Logo",
     title: "Australian Off Road",
-    desc: "Discover Australian Off Road (AOR) caravans with our guide. Explore top models like Sierra ZR and Aurora, their features, and pricing for your next rugged adventure.",
+    desc: "Explore AOR caravans in Australia with our detailed review, covering top models, features and pricing to help you plan your next rugged adventure.",
     type: "Off Road, Hybrid, Campers",
+    brand: "AOA",
     link: "/aor-caravans-australia-reviews-prices-models/",
   },
   {
     img: "/images/vibe_caravans.png",
     alt: "Vibe Caravans Logo",
     title: "Vibe Caravans",
-    desc: "Check out VIBE Caravans Australia’s top models: VIBE’N, MARLO, TOUGH, and OG. Features, off-grid capabilities and prices from $92,990. For adventure seekers and off-road enthusiasts.",
+    desc: "Read our VIBE Caravans Australia review covering top models, off-grid features and pricing from $92,990 for adventure seekers and travellers.",
     type: "Off Road, Hybrid, Semi Off Road",
+    brand: "Vibe",
     link: "/vibe-caravans-australia-review-prices-models/",
   },
   {
     img: "/images/Ezytrail.png",
     alt: "Ezytrail Logo",
     title: "Ezytrail Caravans",
-    desc: "Read genuine Ezytrail Caravans reviews from Australian owners. Discover towing performance, comfort, and durability before you buy your next van.",
+    desc: "Read our Ezytrail Caravans review from Aussie owners. Discover towing performance, comfort and durability to decide if an Ezytrail suits you.",
     type: "Off Road, Hybrid, On Road",
+    brand: "Ezytrail",
     link: "/ezytrail-caravans-reviews-2025/",
   },
   {
     img: "/images/Avan.png",
     alt: "Avan Logo",
     title: "Avan Caravans",
-    desc: "Discover Avan Caravans: detailed 2025 review of models, features, and prices ($38K-$109K). Your guide to caravans for sale in Australia starts here!",
+    desc: "Explore our Avan Caravans review with 2025 models, key features and prices to help you choose the right caravan for your travels in Australia.",
     type: "Campers, Pop Tops, Hard Tops",
+    brand: "Avan",
     link: "/avan-caravans-review-features-prices/",
   },
   {
     img: "/images/blue_sky.png",
     alt: "Blue Sky Logo",
     title: "Blue Sky Caravans",
-    desc: "Find your perfect Blue Sky Caravan! Compare off-road models, explore standout features, and discover why Blue Sky Caravans is a top choice for Australian travelers.",
+    desc: "Discover our Blue Sky Caravans review, comparing models, standout features and off-road ability to help Aussie travellers pick the right fit.",
     type: "Off-Road, Touring, Family, Luxury",
+    brand: "Blue Sky",
     link: "/blue-sky-caravans-review-australia/",
   },
   {
     img: "/images/Crusader-Caravans.png",
     alt: "Crusader Caravans Logo",
     title: "Crusader Caravans",
-    desc: "Looking for a Crusader Caravan? Explore our in-depth reviews, key features, and price comparisons to find the perfect model for your adventures.",
+    desc: "Read our Crusader Caravans review covering key features, model options and pricing to help you choose the perfect caravan for your adventures.",
     type: "Off-Road, Touring, Family, Luxury",
+    brand: "Crusader",
     link: "/crusader-caravans-review-features-compare-prices/",
   },
   {
     img: "/images/JB-caravans.png",
     alt: "JB Caravans Logo",
     title: "JB Caravans",
-    desc: "Explore JB Caravans&#x27; latest models, prices, and reviews for 2025. From off-road adventures to luxury touring, find the perfect caravan for your journey. Learn more!",
+    desc: "Explore our JB Caravans review with 2025 models, prices and features. From off-road touring to luxury travel, find the perfect caravan for you.",
     type: "Off-Road, Hybrid, On-Road",
+    brand: "JB",
     link: "/jb-caravans-australia-models-reviews-prices/",
   },
   {
     img: "/images/MDC.png",
     alt: "MDC Caravans Logo",
     title: "MDC Caravans",
-    desc: "Discover MDC Caravans Australia – read reviews, explore key features, and compare off-road caravan models. Find the perfect adventure-ready caravan today!",
+    desc: "Discover our MDC Caravans review, exploring features and comparing off-road models to help you choose the ideal adventure-ready caravan today.",
     type: "Off-Road, Hybrid, On-Road",
+    brand: "MDC",
     link: "/mdc-caravans-australia-reviews-features/",
+  },
+  {
+    img: "/images/Ausflex-caravans.png",
+    alt: "Ausflex Caravans Logo",
+    title: "Ausflex Caravans",
+    desc: "Read our Ausflex Caravans review of Australian-made models since 1972. Explore pricing, build quality and off-road capability for travellers.",
+    type: "Off-Road, Family, On-Site",
+    brand: "Ausflex",
+    link: "/ausflex-caravans-australia-review-price/",
   },
   {
     img: "/images/Latitude.png?=1647112222",
     alt: "Latitude RV Caravans Logo",
     title: "Latitude RV Caravans",
-    desc: "From rugged design to luxury finishes—uncover the best Latitude RV caravans. Detailed reviews, pricing, and comparisons for every adventurer.",
+    desc: "Explore our Latitude RV caravans review, featuring rugged builds, luxury touches, pricing and comparisons to help every Australian adventurer.",
     type: "Off-Road, Hybrid, On-Road",
+    brand: "Latitude",
     link: "/latitude-rv-caravans-models-reviews-prices-features/",
   },
   {
     img: "/images/Adria.png",
     alt: "Adria Caravans Logo",
     title: "Adria Caravans",
-    desc: "Find your perfect Adria Caravan! Compare off-road models, explore standout features, and discover why Adria Caravans is a top choice for Australian travelers.",
+    desc: "Read our Adria Caravans review comparing models, features and pricing to show why Adria remains a trusted choice for Australian travellers.",
     type: "Compact, Touring, Family, Luxury",
+    brand: "Adria",
     link: "/adria-caravans-review-australia/",
   },
   {
     img: "/images/Fantasy-Caravans.png",
     alt: "Fantasy Caravans Logo",
     title: "Fantasy Caravans",
-    desc: "Fantasy Caravans offers Australian-made models for families, from compact to off-road hybrids. Enjoy comfort, durability, and style on your next holiday.",
-    type: "Semi Off-Road, Hybrid, Off-Road, Small Caravans",
+    desc: "Explore our Fantasy Caravans review covering Australian-made family models, build quality, off-road features and holiday-ready durability.",
+    type: "Semi Off-Road, Hybrid, Off-Road",
+    brand: "Fantasy",
     link: "/fantasy-caravans-review-models-prices/",
   },
   {
     img: "/images/Red-Centre-Caravans.png",
     alt: "Red Centre Caravans Logo",
     title: "Red Centre Caravans",
-    desc: "Explore our detailed review of Red Centre Caravans, designed for Australian adventures. Discover models for sale, features, and why they&#x27;re perfect for your next journey.",
+    desc: "Read our Red Centre Caravans review, exploring models, features and Australian-built quality to help you choose your next adventure van.",
     type: "Off-Road, Semi Off-Road, Touring, Hybrid",
+    brand: "Red Centre",
     link: "/red-centre-caravans-review-australia/",
+  },
+  {
+    img: "/images/Jayco.png",
+    alt: "Jayco Caravans Logo",
+    title: "Jayco Caravans",
+    desc: "Read our Red Centre Caravans review, exploring models, features and Australian-built quality to help you choose your next adventure van.",
+    type: "Pop Top, Camper Trailers, Off-Grid",
+    brand: "Jayco",
+    link: "/jayco-journey-outback-review/",
   },
   {
     img: "/images/urban-caravans.png?=1647112222",
     alt: "Urban Caravans Logo",
     title: "Urban Caravans",
-    desc: "Experience the Urban Caravans Tungsten Tourer from $94,990. A premium semi off-road caravan with durability, luxury features, and advanced amenities.",
+    desc: "Discover our Urban Caravans review with model comparisons, features and pricing to help you choose a durable off-road-ready caravan.",
     type: "Off-Road, Off-Grid, Hybrid, On-Road",
-    link: "/urban-caravans-australia-review-prices-models/",
+    brand: "AOA",
+    link: "/Urban-caravans-australia-review-prices-models/",
   },
   {
     img: "/images/Vision_Logo.png",
     alt: "Vision RV Caravans Logo",
     title: "Vision RV Caravans",
-    desc: "Looking for a tough off-road caravan? Read our Vision RV Caravans review, explore key features, and compare models available in Australia.",
+    desc: "Explore our Vision RV Caravans review, comparing models, key features and off-road performance to help you choose the ideal tough caravan.",
     type: "Off-Road, Family, Luxury",
+    brand: "Vision RV",
     link: "/vision-rv-caravans-review-australia/",
   },
   {
     img: "/images/Trakmaster.png",
     alt: "Trakmaster Logo",
     title: "Trakmaster",
-    desc: "Explore the off-road capabilities of the Trakmaster Pilbara Extreme caravan. Find out why it&#x27;s built for adventure in our in-depth review.",
+    desc: "Read our Trakmaster Pilbara Extreme review, exploring off-road strength, features and why this caravan is built for serious adventure.",
     type: "Off-Road, Camper",
+    brand: "Trakmaster",
     link: "/trakmaster-pilbara-extreme-review/",
   },
   {
     img: "/images/Austrack-Campers.png",
     alt: "Austrack Campers Logo",
     title: "Austrack Campers",
-    desc: "Thinking about investing in the Gibb 14 by Austrack Campers? Discover its key features and performance details in this thorough review.",
+    desc: "Explore our Austrack Gibb 14 review, covering key features, performance and build quality to help you decide if it suits your travel needs.",
     type: "Off-Road, Hybrid",
+    brand: "Austrack",
     link: "/austrack-campers-gibb-14-in-depth-review/",
   },
   {
     img: "/images/newgen-logo.png?=1647112222",
     alt: "Newgen Caravans Logo",
     title: "Newgen Caravans",
-    desc: "Explore the Newgen Caravans NG15, offering a spacious layout and premium features. Read our review of this exceptional off-road hybrid caravan!",
+    desc: "Read our Newgen NG15 review exploring layout, premium features and off-road capability, helping you pick this standout hybrid caravan.",
     type: "Off-Road, Hybrid",
+    brand: "Newgen",
     link: "/newgen-caravans-ng15-comprehensive-review/",
   },
 ];
@@ -151,11 +186,8 @@ const Manufacture = () => {
   return (
     <div className="container">
       <div className="section-head mb-40">
-        <h2>High-Quality Caravans for Sale – Without the Big Brand Price Tag</h2>
-        <p>
-          Discover the best caravan manufacturers offering premium craftsmanship,
-          clever layouts, and unbeatable value.
-        </p>
+        <h2>Top Caravan Brands Reviewed – Real Insights, Real Value</h2>
+        <p>Discover in-depth reviews of Australia’s most trusted caravan manufacturers — with honest insights into build quality, off-road performance, layouts, comfort, and long-term reliability. Explore each brand to see how they truly stack up before you buy.</p>
       </div>
 
       <div className="range-home position-relative">
@@ -199,7 +231,7 @@ const Manufacture = () => {
                   </ul>
 
                   <Link href={item.link} target="_blank">
-                    View Review <i className="bi bi-chevron-right" />
+                    Read {item.brand} Review <i className="bi bi-chevron-right" />
                   </Link>
                 </div>
               </div>
