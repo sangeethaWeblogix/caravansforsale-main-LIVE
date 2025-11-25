@@ -105,7 +105,10 @@
    const [showContact, setShowContact] = useState(false);
     const [lazyImages, setLazyImages] = useState<{ [key: string]: string[] }>({});
    const [loadedAll, setLoadedAll] = useState<{ [key: string]: boolean }>({});
- 
+ const [validFeatured, setValidFeatured] = useState<Product[]>([]);
+const [validPremium, setValidPremium] = useState<Product[]>([]);
+const [validMerged, setValidMerged] = useState<Product[]>([]);
+
   // When popup opens, this will hold the product clicked
  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
  
@@ -143,7 +146,29 @@
    // const handleChange = (e) => {
    //   setOrderBy(e.target.value);
    // };
- 
+   const checkImageExists = async (url: string): Promise<boolean> => {
+  try {
+    const res = await fetch(url, { method: "HEAD" });
+    return res.ok;
+  } catch {
+    return false;
+  }
+};
+ const filterProductsWithImages = async (items: Product[]): Promise<Product[]> => {
+  const valid: Product[] = [];
+
+  for (const item of items) {
+    if (!item.sku || !item.slug) continue;
+
+    const url = `https://caravansforsale.b-cdn.net/Thumbnails/${item.sku}/${item.slug}-main.webp`;
+    const exists = await checkImageExists(url);
+
+    if (exists) valid.push(item);
+  }
+
+  return valid;
+};
+
    const getFirstImage = (item: Product) => {
      if (!item.sku || !item.slug) return "/images/sample3.webp";
  
@@ -203,7 +228,16 @@
  
      return merged;
    }, [products, exculisiveProducts]);
- 
+ useEffect(() => {
+  const run = async () => {
+    setValidFeatured(await filterProductsWithImages(fetauredProducts));
+    setValidPremium(await filterProductsWithImages(preminumProducts));
+    setValidMerged(await filterProductsWithImages(mergedProducts));
+  };
+
+  run();
+}, [fetauredProducts, preminumProducts, mergedProducts]);
+
    // ✅ Disable background scroll when popup is open
    useEffect(() => {
      if (showInfo || showContact) {
@@ -386,7 +420,7 @@
                    }}
                    className="featured-swiper"
                  >
-                   {fetauredProducts.map((item, index) => {
+                   {validFeatured.map((item, index) => {
                      const href = getHref(item);
                      const images = getProductImages(item.sku, item.slug);
                      const isPriority = index < 5;
@@ -604,7 +638,7 @@
            <div className="other_items">
              <div className="related-products">
                <div className="row g-3">
-                 {shuffledPremiumProducts.map((item, index) => {
+                 {validPremium.map((item, index) => {
                    const href = getHref(item);
                    const isPriority = index < 5;
                    const imgs = lazyImages[item.id] || [getFirstImage(item)];
@@ -865,7 +899,7 @@
                  <Skelton count={6} />
                ) : (
                  <div className="row g-3">
-                   {mergedProducts.map((item, index) => {
+                   {validMerged.map((item, index) => {
                      const href = getHref(item);
                      const images = getProductImages(item.sku, item.slug);
                      const isPriority = index < 5;
