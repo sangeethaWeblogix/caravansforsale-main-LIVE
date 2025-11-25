@@ -370,7 +370,7 @@ const [validMerged, setValidMerged] = useState<Product[]>([]);
              </div>
            </div>
          </div>
-         {fetauredProducts.length > 0 && (
+         {validFeatured.length > 0 && (
            <div className="other_items featured_items">
              <div className="related-products">
                <div className="d-flex align-items-center justify-content-between mb-3">
