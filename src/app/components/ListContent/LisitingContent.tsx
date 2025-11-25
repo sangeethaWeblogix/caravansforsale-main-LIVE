@@ -291,22 +291,22 @@ const [validMerged, setValidMerged] = useState<Product[]>([]);
  
    // ✅ Randomly shuffle premium products on each page load
    // ✅ Premium products shuffle after mount
-   const [shuffledPremiumProducts, setShuffledPremiumProducts] = useState<
-     Product[]
-   >([]);
+  //  const [shuffledPremiumProducts, setShuffledPremiumProducts] = useState<
+  //    Product[]
+  //  >([]);
  
-   useEffect(() => {
-     if (!preminumProducts || preminumProducts.length === 0) return;
+  //  useEffect(() => {
+  //    if (!preminumProducts || preminumProducts.length === 0) return;
  
-     // Fisher–Yates shuffle
-     const shuffled = [...preminumProducts];
-     for (let i = shuffled.length - 1; i > 0; i--) {
-       const j = Math.floor(Math.random() * (i + 1));
-       [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-     }
+  //    // Fisher–Yates shuffle
+  //    const shuffled = [...preminumProducts];
+  //    for (let i = shuffled.length - 1; i > 0; i--) {
+  //      const j = Math.floor(Math.random() * (i + 1));
+  //      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  //    }
  
-     setShuffledPremiumProducts(shuffled);
-   }, [preminumProducts]);
+  //    setShuffledPremiumProducts(shuffled);
+  //  }, [preminumProducts]);
  
    return (
      <>
