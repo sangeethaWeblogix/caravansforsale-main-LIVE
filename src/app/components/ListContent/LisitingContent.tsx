@@ -61,7 +61,6 @@
    pincode?: string;
    orderby?: string;
    slug?: string | undefined;
-   page?: number;
  }
  interface Props {
    products: Product[];
@@ -105,10 +104,7 @@
    const [showContact, setShowContact] = useState(false);
     const [lazyImages, setLazyImages] = useState<{ [key: string]: string[] }>({});
    const [loadedAll, setLoadedAll] = useState<{ [key: string]: boolean }>({});
- const [validFeatured, setValidFeatured] = useState<Product[]>([]);
-const [validPremium, setValidPremium] = useState<Product[]>([]);
-const [validMerged, setValidMerged] = useState<Product[]>([]);
-
+ 
   // When popup opens, this will hold the product clicked
  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
  
@@ -146,29 +142,7 @@ const [validMerged, setValidMerged] = useState<Product[]>([]);
    // const handleChange = (e) => {
    //   setOrderBy(e.target.value);
    // };
-   const checkImageExists = async (url: string): Promise<boolean> => {
-  try {
-    const res = await fetch(url, { method: "HEAD" });
-    return res.ok;
-  } catch {
-    return false;
-  }
-};
- const filterProductsWithImages = async (items: Product[]): Promise<Product[]> => {
-  const valid: Product[] = [];
-
-  for (const item of items) {
-    if (!item.sku || !item.slug) continue;
-
-    const url = `https://caravansforsale.b-cdn.net/Thumbnails/${item.sku}/${item.slug}-main.webp`;
-    const exists = await checkImageExists(url);
-
-    if (exists) valid.push(item);
-  }
-
-  return valid;
-};
-
+ 
    const getFirstImage = (item: Product) => {
      if (!item.sku || !item.slug) return "/images/sample3.webp";
  
@@ -228,16 +202,7 @@ const [validMerged, setValidMerged] = useState<Product[]>([]);
  
      return merged;
    }, [products, exculisiveProducts]);
- useEffect(() => {
-  const run = async () => {
-    setValidFeatured(await filterProductsWithImages(fetauredProducts));
-    setValidPremium(await filterProductsWithImages(preminumProducts));
-    setValidMerged(await filterProductsWithImages(mergedProducts));
-  };
-
-  run();
-}, [fetauredProducts, preminumProducts, mergedProducts]);
-
+ 
    // ✅ Disable background scroll when popup is open
    useEffect(() => {
      if (showInfo || showContact) {
@@ -291,22 +256,22 @@ const [validMerged, setValidMerged] = useState<Product[]>([]);
  
    // ✅ Randomly shuffle premium products on each page load
    // ✅ Premium products shuffle after mount
-  //  const [shuffledPremiumProducts, setShuffledPremiumProducts] = useState<
-  //    Product[]
-  //  >([]);
+   const [shuffledPremiumProducts, setShuffledPremiumProducts] = useState<
+     Product[]
+   >([]);
  
-  //  useEffect(() => {
-  //    if (!preminumProducts || preminumProducts.length === 0) return;
+   useEffect(() => {
+     if (!preminumProducts || preminumProducts.length === 0) return;
  
-  //    // Fisher–Yates shuffle
-  //    const shuffled = [...preminumProducts];
-  //    for (let i = shuffled.length - 1; i > 0; i--) {
-  //      const j = Math.floor(Math.random() * (i + 1));
-  //      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-  //    }
+     // Fisher–Yates shuffle
+     const shuffled = [...preminumProducts];
+     for (let i = shuffled.length - 1; i > 0; i--) {
+       const j = Math.floor(Math.random() * (i + 1));
+       [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+     }
  
-  //    setShuffledPremiumProducts(shuffled);
-  //  }, [preminumProducts]);
+     setShuffledPremiumProducts(shuffled);
+   }, [preminumProducts]);
  
    return (
      <>
@@ -346,23 +311,23 @@ const [validMerged, setValidMerged] = useState<Product[]>([]);
                  <form className="woocommerce-ordering" method="get">
                    <div className="form-group shot-buy">
                      <select
-  name="orderby"
-  className="orderby form-select"
-  aria-label="Shop order"
-  value={currentFilters.orderby ?? "featured"}
-   onChange={(e) =>
-                        onFilterChange({
-                          orderby: e.target.value || "featured",
-                        })
-                      }
->
-  <option value="featured">Featured</option>
-  <option value="price_asc">Price (Low to High)</option>
-  <option value="price_desc">Price (High to Low)</option>
-  <option value="year-desc">Year Made (High to Low)</option>
-  <option value="year-asc">Year Made (Low to High)</option>
-</select>
-
+                       name="orderby"
+                       className="orderby form-select"
+                       aria-label="Shop order"
+                       onChange={(e) =>
+                         onFilterChange({
+                           orderby: e.target.value || "featured",
+                         })
+                       }
+                       value={currentFilters.orderby ?? "featured"} // <— default to "featured"
+                     >
+                       <option value="featured">Featured</option>
+                       <option value="price_asc">Price (Low to High)</option>
+                       <option value="price_desc">Price (High to Low)</option>
+                       <option value="year-desc">Year Made (High to Low)</option>
+                       <option value="year-asc">Year Made (Low to High)</option>
+                     </select>
+ 
                      {/* <input type="hidden" name="paged" value={filters.orderby} /> */}
                    </div>
                  </form>
@@ -370,7 +335,7 @@ const [validMerged, setValidMerged] = useState<Product[]>([]);
              </div>
            </div>
          </div>
-         {validFeatured.length > 0 && (
+         {fetauredProducts.length > 0 && (
            <div className="other_items featured_items">
              <div className="related-products">
                <div className="d-flex align-items-center justify-content-between mb-3">
@@ -420,7 +385,7 @@ const [validMerged, setValidMerged] = useState<Product[]>([]);
                    }}
                    className="featured-swiper"
                  >
-                   {validFeatured.map((item, index) => {
+                   {fetauredProducts.map((item, index) => {
                      const href = getHref(item);
                      const images = getProductImages(item.sku, item.slug);
                      const isPriority = index < 5;
@@ -638,7 +603,7 @@ const [validMerged, setValidMerged] = useState<Product[]>([]);
            <div className="other_items">
              <div className="related-products">
                <div className="row g-3">
-                 {validPremium.map((item, index) => {
+                 {shuffledPremiumProducts.map((item, index) => {
                    const href = getHref(item);
                    const isPriority = index < 5;
                    const imgs = lazyImages[item.id] || [getFirstImage(item)];
@@ -723,6 +688,7 @@ const [validMerged, setValidMerged] = useState<Product[]>([]);
                                  </Link>
                                </div> */}
                              </div>
+                             
                            </div>
                            <div className="product_de">
                              <div className="info">
@@ -814,6 +780,7 @@ const [validMerged, setValidMerged] = useState<Product[]>([]);
                                    </span>
                                  </li>
                                )}
+
  
                                {item.categories &&
                                  item.categories.length > 0 && (
@@ -899,7 +866,7 @@ const [validMerged, setValidMerged] = useState<Product[]>([]);
                  <Skelton count={6} />
                ) : (
                  <div className="row g-3">
-                   {validMerged.map((item, index) => {
+                   {mergedProducts.map((item, index) => {
                      const href = getHref(item);
                      const images = getProductImages(item.sku, item.slug);
                      const isPriority = index < 5;
@@ -1369,5 +1336,5 @@ const [validMerged, setValidMerged] = useState<Product[]>([]);
      </>
    );
  }
- 
+
  
