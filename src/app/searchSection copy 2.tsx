@@ -52,9 +52,9 @@ import { Box, FormControl, InputLabel, MenuItem, Select } from "@mui/material";
  const [location, setLocation] = useState("");
  const [conditionValue, setConditionValue] = useState("");
  const isSearchEnabled = category || location || conditionValue;
-const [openCategory, setOpenCategory] = useState(false);
-const [openLocation, setOpenLocation] = useState(false);
-const [openCondition, setOpenCondition] = useState(false);
+// const [openCategory, setOpenCategory] = useState(false);
+// const [openLocation, setOpenLocation] = useState(false);
+// const [openCondition, setOpenCondition] = useState(false);
 
  const handleSearch = () => {
   if (!category && !location && !conditionValue) {
