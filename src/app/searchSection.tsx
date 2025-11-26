@@ -50,7 +50,7 @@
  const [location, setLocation] = useState("");
  const [conditionValue, setConditionValue] = useState("");
  const isSearchEnabled = category || location || conditionValue;
-
+console.log("cat", setCategory)
  const handleSearch = () => {
   if (!category && !location && !conditionValue) {
     alert("Select at least one filter");
