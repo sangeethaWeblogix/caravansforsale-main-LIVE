@@ -2,6 +2,7 @@
 import { Metadata } from "next";
 import ClientLogger from "./product";
 import { redirect } from "next/navigation";
+import './product.css'
 
 type RouteParams = { slug: string };
 type PageProps = { params: Promise<RouteParams> }; // ✅ params is a Promise

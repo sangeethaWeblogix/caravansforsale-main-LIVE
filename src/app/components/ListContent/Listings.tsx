@@ -21,6 +21,7 @@
    import { parseSlugToFilters } from "../../components/urlBuilder";
    import Head from "next/head";
    import "./loader.css";
+import Link from "next/link";
   
    /* --------- GLOBAL de-dupe across StrictMode remounts --------- */
    // let LAST_GLOBAL_REQUEST_KEY = "";
@@ -1056,14 +1057,14 @@
          <section className="services product_listing new_listing bg-gray-100 section-padding pb-30 style-1">
            <div className="container container-xxl">
              <div className="content mb-4">
-               {/*<div className="text-sm text-gray-600 header">
+               {/* <div className="text-sm text-gray-600 header">
                  <Link href="/" className="hover:underline">
                    Home
                  </Link>{" "}
                  &gt; <span className="font-medium text-black"> Listings</span>
-               </div>
+               </div> */}
    
-               <h1 className="page-title">{pageTitle}</h1>*/}
+               {/* <h1 className="page-title">{pageTitle}</h1> */}
                <div ref={sentinelRef} style={{ height: "1px" }} />
                <div className="row">
                  {/* Desktop sidebar */}

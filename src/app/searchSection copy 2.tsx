@@ -11,6 +11,8 @@
     fetchHomeSearchList, // GET /home_search (base list)
     fetchKeywordSuggestions, // GET /home_search/?keyword=<q> (typed list)
   } from "@/api/homeSearch/api";
+import { BiChevronDown } from "react-icons/bi";
+import { Box, FormControl, InputLabel, MenuItem, Select } from "@mui/material";
   
   type Item = {
    title?: string;
@@ -50,6 +52,9 @@
  const [location, setLocation] = useState("");
  const [conditionValue, setConditionValue] = useState("");
  const isSearchEnabled = category || location || conditionValue;
+const [openCategory, setOpenCategory] = useState(false);
+const [openLocation, setOpenLocation] = useState(false);
+const [openCondition, setOpenCondition] = useState(false);
 
  const handleSearch = () => {
   if (!category && !location && !conditionValue) {
@@ -284,61 +289,93 @@
                   >
                     <div className="content-info text-center pb-0">
                       <div className="quick_serch_form">
-                        <form onSubmit={(e) => e.preventDefault()}>
- 
-                          <ul>
-  
-                            <li>
-                               
-                            </li>
-                         
-                            <li>
-                               <select onChange={(e) => setLocation(e.target.value)}>
-     <option value="">Select Location</option>
-     <option value="New South Wales">New South Wales</option>
-     <option value="Queensland">Queensland</option>
-     <option value="Western Australia">Western Australia</option>
-     <option value="Victoria">Victoria</option>
-     <option value="South Australia">South Australia</option>
-     <option value="Australian Capital Territory">Australian Capital Territory</option>
-     <option value="Tasmania">Tasmania</option>
-   </select>
- 
-                            </li>
-                            <li>
-                               <select onChange={(e) => setConditionValue(e.target.value)}>
-     <option value="">Select Condition</option>
-     <option value="New">New</option>
-     <option value="Used">Used</option>
-     <option value="All">All</option>
-   </select>
- 
-                            </li>
-                            <li>
- <button
-  type="button"
-  className={`search_button ${!isSearchEnabled ? "disabled_btn" : ""}`}
-  disabled={!isSearchEnabled}
-  onClick={(e) => {
-    e.preventDefault();
+                           <form onSubmit={(e) => e.preventDefault()}>
+      <ul>
 
-    if (!isSearchEnabled) {
-      alert("Please select at least one filter before searching");
-      return;
-    }
+        {/* Category */}
+        <li>
+          <Box sx={{ minWidth: 120 }}>
+            <FormControl fullWidth>
+              <InputLabel>Select Category</InputLabel>
+              <Select
+                value={category}
+                label="Select Category"
+                onChange={(e) => setCategory(e.target.value)}
+                IconComponent={BiChevronDown} // Use your custom arrow
+              >
+                <MenuItem value="Off Road">Off Road</MenuItem>
+                <MenuItem value="Hybrid">Hybrid</MenuItem>
+                <MenuItem value="Pop Top">Pop Top</MenuItem>
+                <MenuItem value="Luxury">Luxury</MenuItem>
+                <MenuItem value="Family">Family</MenuItem>
+                <MenuItem value="Touring">Touring</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
+        </li>
 
-    handleSearch();
-  }}
->
-  Search
-</button>
+        {/* Location */}
+        <li>
+          <Box sx={{ minWidth: 120 }}>
+            <FormControl fullWidth>
+              <InputLabel>Select Location</InputLabel>
+              <Select
+                value={location}
+                label="Select Location"
+                onChange={(e) => setLocation(e.target.value)}
+              >
+                <MenuItem value="New South Wales">New South Wales</MenuItem>
+                <MenuItem value="Queensland">Queensland</MenuItem>
+                <MenuItem value="Western Australia">Western Australia</MenuItem>
+                <MenuItem value="Victoria">Victoria</MenuItem>
+                <MenuItem value="South Australia">South Australia</MenuItem>
+                <MenuItem value="Australian Capital Territory">
+                  Australian Capital Territory
+                </MenuItem>
+                <MenuItem value="Tasmania">Tasmania</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
+        </li>
 
+        {/* Condition */}
+        <li>
+          <Box sx={{ minWidth: 120 }}>
+            <FormControl fullWidth>
+              <InputLabel>Select Condition</InputLabel>
+              <Select
+                value={conditionValue}
+                label="Select Condition"
+                onChange={(e) => setConditionValue(e.target.value)}
+              >
+                <MenuItem value="New">New</MenuItem>
+                <MenuItem value="Used">Used</MenuItem>
+                <MenuItem value="All">All</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
+        </li>
 
- 
- 
-                            </li>
-                          </ul>
-                        </form>
+        {/* Search Button */}
+        <li>
+          <button
+            type="button"
+            className={`search_button ${!isSearchEnabled ? "disabled_btn" : ""}`}
+            disabled={!isSearchEnabled}
+            onClick={() => {
+              if (!isSearchEnabled) {
+                alert("Please select at least one filter before searching");
+                return;
+              }
+              handleSearch();
+            }}
+          >
+            Search
+          </button>
+        </li>
+
+      </ul>
+    </form>
                       </div>
                     </div>
                   </div>
