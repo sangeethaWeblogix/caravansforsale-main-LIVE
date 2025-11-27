@@ -122,12 +122,12 @@ const [loadedAll, setLoadedAll] = useState<{ [key: string]: boolean }>({});
 const getFirstImage = (item: Product) => {
   if (!item.sku || !item.slug) return "/images/sample3.webp";
 
-  return `https://caravansforsale.imagestack.net/374x250/${item.sku}/${item.slug}main1.avif`;
+  return `https://caravansforsale.imagestack.net/450x338/${item.sku}/${item.slug}main1.avif`;
 };
  const loadRemaining = (item: Product) => {
   if (!item.sku || !item.slug) return;
 
-  const base = `https://caravansforsale.imagestack.net/374x250/${item.sku}/${item.slug}`;
+  const base = `https://caravansforsale.imagestack.net/450x338/${item.sku}/${item.slug}`;
 
   const images = [
     `${base}main1.avif`,
