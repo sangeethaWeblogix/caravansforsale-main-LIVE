@@ -80,6 +80,7 @@ interface Props {
   isFeaturedLoading: boolean;
   isPremiumLoading: boolean;
   isNextLoading: boolean;
+  pageTilte: string;
 }
 
 export default function ListingContent({
@@ -97,7 +98,8 @@ export default function ListingContent({
   isFeaturedLoading,
   isPremiumLoading,
   isMainLoading,
-  isNextLoading
+  isNextLoading,
+  pageTitle,
 }: Props) {
   const [showInfo, setShowInfo] = useState(false);
   const [showContact, setShowContact] = useState(false);
@@ -258,7 +260,7 @@ const getFirstImage = (item: Product) => {
           <div className="row align-items-center">
             <div className="col-lg-8">
               <h1 className="show_count">
-                <strong>{ pagination.total_products}</strong> Caravans for sale in Australia
+                 <strong>{pageTitle}</strong>  
 
                 
               </h1>
