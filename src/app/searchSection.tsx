@@ -52,16 +52,7 @@
  const isSearchEnabled = category || location || conditionValue;
  
 
-const fetchFilteredList = async (cat: string, state: string, condition: string) => {
-  const url = new URL("https://admin.caravansforsale.com.au/wp-json/cfs/v1/product-list-latest-new");
-
-  if (cat) url.searchParams.append("category", cat.toLowerCase());
-  if (state) url.searchParams.append("state", state.toLowerCase());
-  if (condition) url.searchParams.append("condiition", condition.toLowerCase());
-
-  const response = await fetch(url.toString());
-  return response.json();
-};
+ 
 
  const handleSearch = () => {
   if (!category && !location && !conditionValue) {
@@ -100,6 +91,18 @@ if (conditionValue === "All") {
 
 
  
+ const navigateBySelect = (value: string, suffix: string) => {
+  if (!value) return;
+
+  setNavigating(true);
+
+  const slug = value.toLowerCase().replace(/\s+/g, "-") + suffix;
+
+  setTimeout(() => {
+    router.push(`/listings/${slug}`, { scroll: true });
+  }, 50);
+};
+
  
     // ------------- base list (first click) -------------
    const loadBaseOnce = async () => {
@@ -303,16 +306,11 @@ if (conditionValue === "All") {
                           <ul>
   
                              <li>
-<select
-  onChange={async (e) => {
-    const val = e.target.value;
-    setCategory(val);
-
-    const data = await fetchFilteredList(val, location, conditionValue);
-    sessionStorage.setItem("search-results", JSON.stringify(data));
-  }}
->
-  
+                                <select  onChange={(e) => {
+    const v = e.target.value;
+    setCategory(v);
+    navigateBySelect(v, "-category");
+  }}>
      <option value="">Select Category</option>
      <option value="Off Road">Off Road</option>
      <option value="Hybrid">Hybrid</option>
@@ -324,7 +322,14 @@ if (conditionValue === "All") {
                             </li>
                          
                             <li>
-                               <select onChange={(e) => setLocation(e.target.value)}>
+
+                              <select
+  onChange={(e) => {
+    const v = e.target.value;
+    setLocation(v);
+    navigateBySelect(v, "-state");
+  }}
+>
      <option value="">Select Location</option>
      <option value="New South Wales">New South Wales</option>
      <option value="Queensland">Queensland</option>
@@ -337,7 +342,14 @@ if (conditionValue === "All") {
  
                             </li>
                             <li>
-                               <select onChange={(e) => setConditionValue(e.target.value)}>
+                              
+                              <select
+  onChange={(e) => {
+    const v = e.target.value;
+    setConditionValue(v);
+    navigateBySelect(v, "-condition");
+  }}
+>
      <option value="">Select Condition</option>
      <option value="New">New</option>
      <option value="Used">Used</option>
