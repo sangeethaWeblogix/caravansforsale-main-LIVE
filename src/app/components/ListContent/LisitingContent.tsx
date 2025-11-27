@@ -205,14 +205,14 @@
   
    const getMainImage = (sku?: string, slug?: string): string => {
       if (!sku || !slug) return "/images/sample3.webp";
-      return `https://caravansforsale.imagestack.net/800x600/${sku}/${slug}main1.webp`;
+      return `https://caravansforsale.imagestack.net/600x450/${sku}/${slug}main1.avif`;
     };
     const getSubImages = (sku?: string, slug?: string): string[] => {
       if (!sku || !slug) return [];
   
-      const base = `https://caravansforsale.imagestack.net/800x600/${sku}/${slug}`;
+      const base = `https://caravansforsale.imagestack.net/600x450/${sku}/${slug}`;
       // sub1 → sub10
-      return Array.from({ length: 10 }, (_, i) => `${base}sub${i + 1}.webp`);
+      return Array.from({ length: 10 }, (_, i) => `${base}sub${i + 1}.avif`);
     };
   
  
