@@ -358,7 +358,7 @@ const getFirstImage = (item: Product) => {
                   {fetauredProducts.map((item, index) => {
                     const href = getHref(item);
                   const images = getProductImages(item.sku, item.slug);
-                    const isPriority = index < 5;
+                    // const isPriority = index < 5;
 
                     return (
 
@@ -378,7 +378,8 @@ const getFirstImage = (item: Product) => {
                                   alt="Caravan"
                                   width={300}
                                   height={200}
-                                 priority={isPriority}  
+                                 priority={index === 0}
+  
                                 />
                               </div>
                               <div className="main_thumb">
@@ -387,7 +388,8 @@ const getFirstImage = (item: Product) => {
                                   alt="Caravan"
                                   width={300}
                                   height={200}
-                                 priority={isPriority}  
+                                 priority={index === 0}
+  
                                 />
                               </div>
                             </div>
@@ -554,7 +556,7 @@ const getFirstImage = (item: Product) => {
                 
                 {shuffledPremiumProducts.map((item, index) => {
                   const href = getHref(item);
-                     const isPriority = index < 5;
+                     // const isPriority = index < 5;
 const imgs = lazyImages[item.id] || [getFirstImage(item)];
                    return (
 
@@ -577,7 +579,8 @@ const imgs = lazyImages[item.id] || [getFirstImage(item)];
                                 alt="Caravan"
                                 width={300}
                                 height={200}
-                               priority={isPriority}  
+                               priority={index === 0}
+  
 
                               />
                             </div>
@@ -617,7 +620,8 @@ const imgs = lazyImages[item.id] || [getFirstImage(item)];
           alt={`Caravan ${i + 1}`}
           width={300}
           height={200}
-          priority={isPriority && i === 0}
+          priority={index === 0}
+
         />
       </div>
     </SwiperSlide>
@@ -789,6 +793,7 @@ const imgs = lazyImages[item.id] || [getFirstImage(item)];
             </div>
           </div>
         </div>
+        
         <div className="dealers-section product-type">
           <div className="other_items">
             <div className="related-products">
@@ -799,7 +804,7 @@ const imgs = lazyImages[item.id] || [getFirstImage(item)];
                   {mergedProducts.map((item, index) => {
                     const href = getHref(item);
                     const images = getProductImages(item.sku, item.slug);
-                    const isPriority = index < 5;
+                    // const isPriority = index < 5;
 const imgs = lazyImages[item.id] || [getFirstImage(item)];
                      return (
                       <div className="col-lg-6 mb-0" key={index}>
@@ -821,7 +826,8 @@ const imgs = lazyImages[item.id] || [getFirstImage(item)];
                               <div className="background_thumb">
                                 <ImageWithSkeleton
                                   src={images [0]}
- priority={isPriority}  
+ priority={index === 0}
+  
                                   alt="Caravan"
                                   width={300}
                                   height={200}
@@ -857,7 +863,7 @@ const imgs = lazyImages[item.id] || [getFirstImage(item)];
           alt={`Caravan ${i + 1}`}
           width={300}
           height={200}
-          priority={isPriority && i === 0}
+priority={index === 0}
         />
       </div>
     </SwiperSlide>
