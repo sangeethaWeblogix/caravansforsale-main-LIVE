@@ -1,4 +1,4 @@
-   "use client";
+ "use client";
  import Link from "next/link";
  import { Swiper, SwiperSlide } from "swiper/react";
  import "swiper/css";
@@ -10,9 +10,7 @@
  import { useEffect, useMemo, useRef, useState } from "react";
  import { toSlug } from "@/utils/seo/slug";
  import ImageWithSkeleton from "../ImageWithSkeleton";
- import { useEnquiryForm } from "./enquiryform";
- 
- 
+  
  interface Product {
    id: number;
    name: string;
@@ -31,7 +29,7 @@
    slug?: string;
    description?: string;
    sku?: string;
-      gallery?: string[];
+   is_exclusive?: boolean
  }
  
  interface Pagination {
@@ -101,95 +99,72 @@
    isMainLoading,
    isNextLoading,
  }: Props) {
-   const [showInfo, setShowInfo] = useState(false);
-   const [showContact, setShowContact] = useState(false);
-   
+   // const [isClient, setIsClient] = useState(false);
  
-  // When popup opens, this will hold the product clicked
- const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
- 
- // Safe product fallback (no TypeScript error)
- const enquiryProduct = selectedProduct
-   ? {
-       id: selectedProduct.id,
-       slug: selectedProduct.slug,
-       name: selectedProduct.name,
-     }
-   : {
-       id: 0,
-       slug: "",
-       name: "",
-     };
- 
- // Use the form hook with the correct product
- const {
-   form,
-   errors,
-   touched,
-   submitting,
-   setField,
-   onBlur,
-   onSubmit,
- } = useEnquiryForm(enquiryProduct);
+   // useEffect(() => {
+   //   setIsClient(true);
+   // }, []);
  
    const prevRef = useRef(null);
    const nextRef = useRef(null);
-   // console.log("data-prod", products);
  
-   // console.log("data-product", exculisiveProducts);
-   // console.log("data-premium", preminumProducts);
-   // console.log("data-featu", fetauredProducts);
+   console.log("data-product", exculisiveProducts);
+   console.log("data-premium", preminumProducts);
+   console.log("data-featu", fetauredProducts);
    // const handleChange = (e) => {
    //   setOrderBy(e.target.value);
    // };
  
+   const getMainImage = (sku?: string, slug?: string): string => {
+     if (!sku || !slug) return "/images/sample3.webp";
+     return `https://caravansforsale.imagestack.net/800x600/${sku}/${slug}main1.webp`;
+   };
+ 
+   const getSubImages = (sku?: string, slug?: string): string[] => {
+     if (!sku || !slug) return [];
+ 
+     const base = `https://caravansforsale.imagestack.net/800x600/${sku}/${slug}`;
+     // sub1 → sub10
+     return Array.from({ length: 10 }, (_, i) => `${base}sub${i + 1}.webp`);
+   };
  
    // Remove all the lazy loading state and just load all images immediately
  
-   const mergedProducts = useMemo(() => {
-     const merged: Product[] = [];
-     const exclusive = exculisiveProducts || [];
-     const normal = products || [];
+  const mergedProducts = useMemo(() => {
+   const merged: Product[] = [];
+   const exclusive = exculisiveProducts || [];
+   const normal = products || [];
  
-     let exclusiveIndex = 0;
+   let exclusiveIndex = 0;
  
-     for (let i = 0; i < normal.length; i++) {
-       merged.push(normal[i]);
+   for (let i = 0; i < normal.length; i++) {
+     // normal product
+     merged.push({ ...normal[i],  is_exclusive: false });
  
-       // 🔁 After every 10 products, insert one exclusive product if available
-       if ((i + 1) % 10 === 0 && exclusiveIndex < exclusive.length) {
-         merged.push({
-           ...exclusive[exclusiveIndex],
-           name: `${exclusive[exclusiveIndex].name || "Caravan"}`,
-         });
-         exclusiveIndex++;
-       }
-     }
- 
-     // If there are remaining exclusive products, push them at the end
-     while (exclusiveIndex < exclusive.length) {
+     // insert exclusive after every 8 products
+     if ((i + 1) % 4 === 0 && exclusiveIndex < exclusive.length) {
        merged.push({
          ...exclusive[exclusiveIndex],
-         name: `${exclusive[exclusiveIndex].name || "Caravan"}`,
+         name: exclusive[exclusiveIndex].name || "Caravan",
+          is_exclusive: true,
        });
        exclusiveIndex++;
      }
+   }
  
-     return merged;
-   }, [products, exculisiveProducts]);
+   // if exclusive products remain, push them at end
+   while (exclusiveIndex < exclusive.length) {
+     merged.push({
+       ...exclusive[exclusiveIndex],
+       name: exclusive[exclusiveIndex].name || "Caravan",
+        is_exclusive: true,
+     });
+     exclusiveIndex++;
+   }
  
-   // ✅ Disable background scroll when popup is open
-   useEffect(() => {
-     if (showInfo || showContact) {
-       document.body.style.overflow = "hidden";
-     } else {
-       document.body.style.overflow = "";
-     }
+   return merged;
+ }, [products, exculisiveProducts]);
  
-     return () => {
-       document.body.style.overflow = "";
-     };
-   }, [showInfo, showContact]);
  
    // Example placeholder function for product links
  
@@ -198,26 +173,18 @@
      const slug = p.slug?.trim() || toSlug(p.name);
      return slug ? `/product/${slug}/` : ""; // trailing slash optional
    };
-   const uniqueProducts = useMemo(() => {
-     const seen = new Set<string>();
-     return (products || []).filter((p) => {
-       const k = String(p?.id ?? p?.slug ?? p?.link);
-       if (seen.has(k)) return false;
-       seen.add(k);
-       return true;
-     });
-   }, [products]);
-   console.log("data", uniqueProducts);
+   // const uniqueProducts = useMemo(() => {
+   //   const seen = new Set<string>();
+   //   return (products || []).filter((p) => {
+   //     const k = String(p?.id ?? p?.slug ?? p?.link);
+   //     if (seen.has(k)) return false;
+   //     seen.add(k);
+   //     return true;
+   //   });
+   // }, [products]);
+   console.log("data", mergedProducts);
  
    // ✅ Helper: generate up to 5 image URLs from SKU
-   const getProductImages = (item: Product): string[] => {
-  const main = item.image ? item.image : "/images/sample3.webp";
-  const gallery = Array.isArray(item.gallery) ? item.gallery : [];
-console.log("gallery", item)
-  // max 5 images: 1 , main + 4 gallery images
-  return [main, ...gallery].slice(0, 5);
-};
-
  
    // ✅ Randomly shuffle premium products on each page load
    // ✅ Premium products shuffle after mount
@@ -254,13 +221,12 @@ console.log("gallery", item)
        <div className="col-lg-6 ">
          <div className="top-filter mb-10">
            <div className="row align-items-center">
-             <div className="col-lg-8">
+            <div className="col-lg-8 col-sm-6">
                <h1 className="show_count">
-                 <strong>{pageTitle}</strong>  
+                 <strong>{pageTitle}</strong>
                </h1>
-               
              </div>
-             <div className="col-4 d-lg-none d-md-none">
+            <div className="col-4 col-sm-2 d-lg-none ">
                <button
                  type="button"
                  className="mobile_fltn navbar-toggler mytogglebutton"
@@ -271,7 +237,8 @@ console.log("gallery", item)
                  <i className="bi bi-search" /> &nbsp;Filter
                </button>
              </div>
-             <div className="col-lg-4 col-8">
+
+            <div className="col-lg-4 col-sm-4 col-8">
                <div className="r-side">
                  <form className="woocommerce-ordering" method="get">
                    <div className="form-group shot-buy">
@@ -316,7 +283,6 @@ console.log("gallery", item)
                      ref={nextRef}
                      className="swiper-button-next-custom btn btn-light btn-sm"
                    >
-
                      <i className="bi bi-chevron-right"></i>
                    </button>
                  </div>
@@ -353,8 +319,7 @@ console.log("gallery", item)
                  >
                    {fetauredProducts.map((item, index) => {
                      const href = getHref(item);
-                     const images = getProductImages(item);
-                     const isPriority = index < 5;
+                     const mainImage = getMainImage(item.sku, item.slug);
  
                      return (
                        <SwiperSlide key={index}>
@@ -374,20 +339,18 @@ console.log("gallery", item)
                              <div className="img">
                                <div className="background_thumb">
                                  <ImageWithSkeleton
-                                   src={images[0]}
+                                   src={mainImage}
                                    alt="Caravan"
                                    width={300}
                                    height={200}
-                                   priority={isPriority}
                                  />
                                </div>
                                <div className="main_thumb">
                                  <ImageWithSkeleton
-                                   src={images[0]}
+                                   src={mainImage}
                                    alt="Caravan"
                                    width={300}
                                    height={200}
-                                   priority={isPriority}
                                  />
                                </div>
                              </div>
@@ -457,18 +420,17 @@ console.log("gallery", item)
                                          </p>
                                        ) : null;
                                      })()}
- 
                                      <div className="more_info">
-                                       <button
-                                         onClick={(e) => {
-                                           e.preventDefault();
-                                           setSelectedProduct(item);
-                                           setShowInfo(true);
-                                         }}
-                                       >
-                                         <i className="fa fa-info-circle"></i>{" "}
-                                         Info
-                                       </button>
+                                       {item.location && (
+                                         <div className="informat">
+                                           {item.location && (
+                                             <span>
+                                               <i className="fa fa-map-marker-alt"></i>{" "}
+                                               {item.location}
+                                             </span>
+                                           )}
+                                         </div>
+                                       )}
                                      </div>
                                    </div>
                                  </div>
@@ -517,42 +479,6 @@ console.log("gallery", item)
                                    </li>
                                  )}
                                </ul>
- 
-                               {/* --- CONDITION + LOCATION --- */}
-                               {(item.condition || item.location) && (
-                                 <div className="bottom_mid">
-                                   {item.condition && (
-                                     <span>
-                                       <i className="bi bi-check-circle-fill"></i>{" "}
-                                       Condition {item.condition}
-                                     </span>
-                                   )}
-                                   {item.location && (
-                                     <span>
-                                       <i className="fa fa-map-marker-alt"></i>{" "}
-                                       {item.location}
-                                     </span>
-                                   )}
-                                 </div>
-                               )}
- 
-                               {/* --- BUTTONS --- */}
-                               <div className="bottom_button">
-                                 <button
-                                   className="btn"
-                                   onClick={(e) => {
-                                     e.preventDefault();
-                                       setSelectedProduct(item);
- 
-                                     setShowContact(true);
-                                   }}
-                                 >
-                                   Contact Dealer
-                                 </button>
-                                 <button className="btn btn-primary">
-                                   View Details
-                                 </button>
-                               </div>
                              </div>
                            </div>
                          </Link>
@@ -564,7 +490,6 @@ console.log("gallery", item)
              </div>
            </div>
          )}
-
          {/* {premium section } */}
          <div className="dealers-section product-type">
            <div className="other_items">
@@ -572,11 +497,10 @@ console.log("gallery", item)
                <div className="row g-3">
                  {shuffledPremiumProducts.map((item, index) => {
                    const href = getHref(item);
-                   const isPriority = index < 5;
-                               const images = getProductImages(item);
-
+                   const mainImage = getMainImage(item.sku, item.slug);
+                   const subImages = getSubImages(item.sku, item.slug);
                    return (
-                     <div className="col-lg-6 mb-0" key={index}>
+                     <div className="col-lg-12 mb-0" key={index}>
                        <Link
                          href={href}
                          onClick={() => {
@@ -591,60 +515,60 @@ console.log("gallery", item)
                            <div className="img">
                              <div className="background_thumb">
                                <ImageWithSkeleton
-                                 src={images[0]}
+                                 src={mainImage}
+                                 // priority={isPriority}
                                  alt="Caravan"
                                  width={300}
                                  height={200}
-                                 priority={isPriority}
                                />
                              </div>
- 
                              <div className="main_thumb position-relative">
                                <span className="lab">Spotlight Van</span>
                                {isPremiumLoading ? (
                                  <Skelton count={2} /> // ✅ show skeletons
                                ) : (
-                                 // For Main Products Swiper - FIXED VERSION
-
-<Swiper
-  modules={[Navigation, Pagination]}
-  spaceBetween={10}
-  slidesPerView={1}
-  navigation
-  pagination={{ clickable: true }}
-  className="main_thumb_swiper"
->
-  {images.map((img, i) => (
-    <SwiperSlide key={i}>
-      <div className="thumb_img">
-        <ImageWithSkeleton
-          src={img}
-          width={300}
-          height={200}
-          alt={`Caravan ${i}`}
-        />
-      </div>
-    </SwiperSlide>
-  ))}
-</Swiper>
-
+                                 <Swiper
+                                   modules={[Navigation, Pagination]}
+                                   spaceBetween={10}
+                                   slidesPerView={1}
+                                   navigation
+                                   pagination={{
+                                     clickable: true,
+                                   }}
+                                   className="main_thumb_swiper"
+                                 >
+                                   {subImages.map((img, i) => (
+                                     <SwiperSlide key={i}>
+                                       <div className="thumb_img">
+                                         <ImageWithSkeleton
+                                           src={img}
+                                           alt={`Caravan ${i + 1}`}
+                                           width={300}
+                                           height={200}
+                                           // priority={isPriority && i === 0}
+                                         />
+                                       </div>
+                                     </SwiperSlide>
+                                   ))}
+                                 </Swiper>
                                )}
  
                                {/* Hidden "View More" button that appears after last slide */}
                                {/* <div
-                                 id={`view-more-btn-${item}`}
-                                 className="view-more-btn-wrapper"
-                               >
-                                 <Link
-                                   href="/related-links"
-                                   className="view-more-btn"
-                                 >
-                                   View More
-                                 </Link>
-                               </div> */}
+                                                                       id={`view-more-btn-${item}`}
+                                                                       className="view-more-btn-wrapper"
+                                                                     >
+                                                                       <Link
+                                                                         href="/related-links"
+                                                                         className="view-more-btn"
+                                       
+                                                                       >
+                                                                         View More
+                                                                       </Link>
+                                                                     </div> */}
                              </div>
-                             
                            </div>
+ 
                            <div className="product_de">
                              <div className="info">
                                {item.name && (
@@ -712,15 +636,16 @@ console.log("gallery", item)
                                    })()}
  
                                    <div className="more_info">
-                                     <button
-                                       onClick={(e) => {
-                                         e.preventDefault();
-                                         setSelectedProduct(item);
-                                         setShowInfo(true);
-                                       }}
-                                     >
-                                       <i className="fa fa-info-circle"></i> Info
-                                     </button>
+                                     {item.location && (
+                                       <div className="informat">
+                                         {item.location && (
+                                           <span>
+                                             <i className="fa fa-map-marker-alt"></i>{" "}
+                                             {item.location}
+                                           </span>
+                                         )}
+                                       </div>
+                                     )}
                                    </div>
                                  </div>
                                </div>
@@ -735,7 +660,6 @@ console.log("gallery", item)
                                    </span>
                                  </li>
                                )}
-
  
                                {item.categories &&
                                  item.categories.length > 0 && (
@@ -768,42 +692,6 @@ console.log("gallery", item)
                                  </li>
                                )}
                              </ul>
- 
-                             {/* --- CONDITION + LOCATION --- */}
-                             {(item.condition || item.location) && (
-                               <div className="bottom_mid">
-                                 {item.condition && (
-                                   <span>
-                                     <i className="bi bi-check-circle-fill"></i>{" "}
-                                     Condition {item.condition}
-                                   </span>
-                                 )}
-                                 {item.location && (
-                                   <span>
-                                     <i className="fa fa-map-marker-alt"></i>{" "}
-                                     {item.location}
-                                   </span>
-                                 )}
-                               </div>
-                             )}
- 
-                             {/* --- BUTTONS --- */}
-                             <div className="bottom_button">
-                               <button
-                                 className="btn"
-                                 onClick={(e) => {
-                                   e.preventDefault();
-                                     setSelectedProduct(item);
- 
-                                   setShowContact(true);
-                                 }}
-                               >
-                                 Contact Dealer
-                               </button>
-                               <button className="btn btn-primary">
-                                 View Details
-                               </button>
-                             </div>
                            </div>
                          </div>
                        </Link>
@@ -823,10 +711,11 @@ console.log("gallery", item)
                  <div className="row g-3">
                    {mergedProducts.map((item, index) => {
                      const href = getHref(item);
-                      const isPriority = index < 5;
-   const images = getProductImages(item);
+                     const mainImage = getMainImage(item.sku, item.slug);
+                     const subImages = getSubImages(item.sku, item.slug);
+  
                      return (
-                       <div className="col-lg-6 mb-0" key={index}>
+                       <div className="col-lg-12 mb-0" key={index}>
                          <Link
                            href={href}
                            onClick={() => {
@@ -844,52 +733,61 @@ console.log("gallery", item)
                              <div className="img">
                                <div className="background_thumb">
                                  <ImageWithSkeleton
-                                   src={images[0]}
-                                   priority={isPriority}
+                                   src={mainImage}
+                                   // priority={isPriority}
                                    alt="Caravan"
                                    width={300}
                                    height={200}
                                  />
                                </div>
                                <div className="main_thumb position-relative">
-                                 <span className="lab">Spotlight Van</span>
-                                 <Swiper
-  modules={[Navigation, Pagination]}
-  spaceBetween={10}
-  slidesPerView={1}
-  navigation
-  pagination={{ clickable: true }}
-  className="main_thumb_swiper"
->
-  {images.map((img, i) => (
-    <SwiperSlide key={i}>
-      <div className="thumb_img">
-        <ImageWithSkeleton
-          src={img}
-          width={300}
-          height={200}
-          alt="Caravan image"
-        />
-      </div>
-    </SwiperSlide>
-  ))}
-</Swiper>
-
+ {item. is_exclusive && <span className="lab">Spotlight Van</span>}
+ 
+                                 {isMainLoading ? (
+                                   <Skelton count={2} /> // ✅ show skeletons
+                                 ) : (
+                                   <Swiper
+                                     modules={[Navigation, Pagination]}
+                                     spaceBetween={10}
+                                     slidesPerView={1}
+                                     navigation
+                                     pagination={{
+                                       clickable: true,
+                                     }}
+                                     className="main_thumb_swiper"
+                                   >
+                                     {subImages.map((img, i) => (
+                                       <SwiperSlide key={i}>
+                                         <div className="thumb_img">
+                                           <ImageWithSkeleton
+                                             src={img}
+                                             alt={`Caravan ${i + 1}`}
+                                             width={300}
+                                             height={200}
+                                             // priority={isPriority && i === 0}
+                                           />
+                                         </div>
+                                       </SwiperSlide>
+                                     ))}
+                                   </Swiper>
+                                 )}
+ 
                                  {/* Hidden "View More" button that appears after last slide */}
                                  {/* <div
-                                 id={`view-more-btn-${item}`}
-                                 className="view-more-btn-wrapper"
-                               >
-                                 <Link
-                                   href="/related-links"
-                                   className="view-more-btn"
- 
-                                 >
-                                   View More
-                                 </Link>
-                               </div> */}
+                                                                       id={`view-more-btn-${item}`}
+                                                                       className="view-more-btn-wrapper"
+                                                                     >
+                                                                       <Link
+                                                                         href="/related-links"
+                                                                         className="view-more-btn"
+                                       
+                                                                       >
+                                                                         View More
+                                                                       </Link>
+                                                                     </div> */}
                                </div>
                              </div>
+ 
                              <div className="product_de">
                                <div className="info">
                                  {item.name && (
@@ -958,16 +856,16 @@ console.log("gallery", item)
                                      })()}
  
                                      <div className="more_info">
-                                       <button
-                                         onClick={(e) => {
-                                           e.preventDefault();
-                                           setSelectedProduct(item);
-                                           setShowInfo(true);
-                                         }}
-                                       >
-                                         <i className="fa fa-info-circle"></i>{" "}
-                                         Info
-                                       </button>
+                                       {item.location && (
+                                         <div className="informat">
+                                           {item.location && (
+                                             <span>
+                                               <i className="fa fa-map-marker-alt"></i>{" "}
+                                               {item.location}
+                                             </span>
+                                           )}
+                                         </div>
+                                       )}
                                      </div>
                                    </div>
                                  </div>
@@ -1016,42 +914,6 @@ console.log("gallery", item)
                                    </li>
                                  )}
                                </ul>
- 
-                               {/* --- CONDITION + LOCATION --- */}
-                               {(item.condition || item.location) && (
-                                 <div className="bottom_mid">
-                                   {item.condition && (
-                                     <span>
-                                       <i className="bi bi-check-circle-fill"></i>{" "}
-                                       Condition {item.condition}
-                                     </span>
-                                   )}
-                                   {item.location && (
-                                     <span>
-                                       <i className="fa fa-map-marker-alt"></i>{" "}
-                                       {item.location}
-                                     </span>
-                                   )}
-                                 </div>
-                               )}
- 
-                               {/* --- BUTTONS --- */}
-                               <div className="bottom_button">
-                                 <button
-                                   className="btn"
-                                   onClick={(e) => {
-                                     e.preventDefault();
-                                       setSelectedProduct(item);
- 
-                                     setShowContact(true);
-                                   }}
-                                 >
-                                   Contact Dealer
-                                 </button>
-                                 <button className="btn btn-primary">
-                                   View Details
-                                 </button>
-                               </div>
                              </div>
                            </div>
                          </Link>
@@ -1097,184 +959,8 @@ console.log("gallery", item)
            </nav>
          </div>
        </div>
-       {showInfo && selectedProduct && (
-         <div className="popup-overlay">
-           <div className="popup-box">
-             <button className="close-popup" onClick={() => setShowInfo(false)}>
-               ×
-             </button>
-             <h4>Description</h4>
-             <div className="popup-content">
-               {selectedProduct.description ? (
-                 <div
-                   className="description-text"
-                   dangerouslySetInnerHTML={{
-                     __html: selectedProduct.description.replace(
-                       /\\r\\n/g,
-                       "<br/>"
-                     ),
-                   }}
-                 />
-               ) : (
-                 <p>No description available.</p>
-               )}
-             </div>
-           </div>
-         </div>
-       )}
- 
-       {/* === Contact Dealer Popup === */}
-      {/* === Contact Dealer Popup === */}
- {showContact && (
-   <div className="popup-overlay">
-     <div className="popup-box">
-       <button
-         type="button"
-         className="close-popup"
-         onClick={() => {
-           setShowContact(false);
-           setSelectedProduct(null);   // reset selected product
-         }}
-       >
-         ×
-       </button>
- 
-       <h4>Contact Dealer</h4>
- 
-       <div className="sidebar-enquiry">
-         <form className="wpcf7-form" noValidate onSubmit={onSubmit}>
-           <div className="form">
- 
-             {/* Name */}
-             <div className="form-item">
-               <p>
-                 <input
-                   id="enquiry2-name"
-                   className="wpcf7-form-control"
-                   value={form.name}
-                   onChange={(e) => setField("name", e.target.value)}
-                   onBlur={() => onBlur("name")}
-                   required
-                   autoComplete="off"
-                 />
-                 <label htmlFor="enquiry2-name">Name</label>
-               </p>
-               {touched.name && errors.name && (
-                 <div className="cfs-error">{errors.name}</div>
-               )}
-             </div>
- 
-             {/* Email */}
-             <div className="form-item">
-               <p>
-                 <input
-                   id="enquiry2-email"
-                   className="wpcf7-form-control"
-                   value={form.email}
-                   onChange={(e) => setField("email", e.target.value)}
-                   onBlur={() => onBlur("email")}
-                   required
-                   autoComplete="off"
-                 />
-                 <label htmlFor="enquiry2-email">Email</label>
-               </p>
-               {touched.email && errors.email && (
-                 <div className="cfs-error">{errors.email}</div>
-               )}
-             </div>
- 
-             {/* Phone */}
-             <div className="form-item">
-               <p className="phone_country">
-                 <span className="phone-label">+61</span>
-                 <input
-                   id="enquiry2-phone"
-                   className="wpcf7-form-control"
-                   inputMode="numeric"
-                   value={form.phone}
-                   onChange={(e) => setField("phone", e.target.value)}
-                   onBlur={() => onBlur("phone")}
-                   required
-                   autoComplete="off"
-                 />
-                 <label htmlFor="enquiry2-phone">Phone</label>
-               </p>
-               {touched.phone && errors.phone && (
-                 <div className="cfs-error">{errors.phone}</div>
-               )}
-             </div>
- 
-             {/* Postcode */}
-             <div className="form-item">
-               <p>
-                 <input
-                   id="enquiry2-postcode"
-                   className="wpcf7-form-control"
-                   inputMode="numeric"
-                   maxLength={4}
-                   value={form.postcode}
-                   onChange={(e) => setField("postcode", e.target.value)}
-                   onBlur={() => onBlur("postcode")}
-                   required
-                   autoComplete="off"
-                 />
-                 <label htmlFor="enquiry2-postcode">Postcode</label>
-               </p>
-               {touched.postcode && errors.postcode && (
-                 <div className="cfs-error">{errors.postcode}</div>
-               )}
-             </div>
- 
-             {/* Message */}
-             <div className="form-item">
-               <p>
-                 <label htmlFor="enquiry4-message">Message (optional)</label>
-                 <textarea
-                   id="enquiry4-message"
-                   className="wpcf7-form-control wpcf7-textarea"
-                   value={form.message}
-                   onChange={(e) => setField("message", e.target.value)}
-                 ></textarea>
-               </p>
-             </div>
- 
-             <p className="terms_text">
-               By clicking &lsquo;Send Enquiry&lsquo;, you agree to Caravan
-               Marketplace{" "}
-               <Link href="/privacy-collection-statement" target="_blank">
-                 Collection Statement
-               </Link>
-               ,{" "}
-               <Link href="/privacy-policy" target="_blank">
-                 Privacy Policy
-               </Link>{" "}
-               and{" "}
-               <Link href="/terms-conditions" target="_blank">
-                 Terms and Conditions
-               </Link>
-               .
-             </p>
- 
-             <div className="submit-btn">
-               <button
-                 type="submit"
-                 className="btn btn-primary"
-                 disabled={submitting}
-               >
-                 {submitting ? "Sending..." : "Send Enquiry"}
-               </button>
-             </div>
- 
-           </div>
-         </form>
-       </div>
-     </div>
-   </div>
- )}
- 
- 
+       
      </>
    );
  }
-
  

@@ -1060,22 +1060,28 @@
          </Head>
          
          <section className="services product_listing new_listing bg-gray-100 section-padding pb-30 style-1">
-           <div className="container container-xxl">
-             <div className="content mb-4">
-               {/* <div className="text-sm text-gray-600 header">
-                 <Link href="/" className="hover:underline">
-                   Home
-                 </Link>{" "}
-                 &gt; <span className="font-medium text-black"> Listings</span>
-               </div> */}
-   
-               {/* <h1 className="page-title">{pageTitle}</h1> */}
-               <div ref={sentinelRef} style={{ height: "1px" }} />
-               <div className="row">
-                 {/* Desktop sidebar */}
-                 <div className="col-lg-3">
-                   <div className="filter hidden-xs">
-                     <Suspense fallback={<div>Loading filters...</div>}>
+        <div className="container container-xxl">
+          <div className="content mb-4">
+            {/*<div className="text-sm text-gray-600 header">
+                <Link href="/" className="hover:underline">
+                  Home
+                </Link>{" "}
+                &gt; <span className="font-medium text-black"> Listings</span>
+              </div>
+  
+              <h1 className="page-title">{pageTitle}</h1>*/}
+            <div ref={sentinelRef} style={{ height: "1px" }} />
+            <div className="row">
+              {/* Desktop sidebar */}
+              <div className="col-lg-3">
+                <div className="filter filter_sticky hidden-xs hidden-sm">
+                  <div className="card-title align-items-center d-flex justify-content-between hidden-xs">
+                    <h3 className="filter_title">Filters</h3>
+                    <span className="text-uppercase clear_btn"> <i className="bi bi-arrow-repeat me-1"></i> Clear All </span>
+                  </div>
+                  <div className="smooth_scroll">
+                    <Suspense fallback={<div>Loading filters...</div>}>
+
                        <CaravanFilter
                          categories={categories}
                          makes={makes}
@@ -1092,7 +1098,9 @@
                      </Suspense>
                    </div>
                  </div>
-   
+    </div>
+    
+
                  {/* Listings */}
                  {/* Listings */}
    
@@ -1147,6 +1155,7 @@
              </div>
            </div>
          </section>
+
    
          {/* Mobile Offcanvas */}
          <div
