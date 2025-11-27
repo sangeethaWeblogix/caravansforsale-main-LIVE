@@ -80,7 +80,7 @@ interface Props {
   isFeaturedLoading: boolean;
   isPremiumLoading: boolean;
   isNextLoading: boolean;
-  pageTilte: string;
+  pageTitle: string;
 }
 
 export default function ListingContent({
