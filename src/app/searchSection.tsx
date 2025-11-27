@@ -50,7 +50,19 @@
  const [location, setLocation] = useState("");
  const [conditionValue, setConditionValue] = useState("");
  const isSearchEnabled = category || location || conditionValue;
-console.log("cat", setCategory)
+ 
+
+const fetchFilteredList = async (cat: string, state: string, condition: string) => {
+  const url = new URL("https://admin.caravansforsale.com.au/wp-json/cfs/v1/product-list-latest-new");
+
+  if (cat) url.searchParams.append("category", cat.toLowerCase());
+  if (state) url.searchParams.append("state", state.toLowerCase());
+  if (condition) url.searchParams.append("condiition", condition.toLowerCase());
+
+  const response = await fetch(url.toString());
+  return response.json();
+};
+
  const handleSearch = () => {
   if (!category && !location && !conditionValue) {
     alert("Select at least one filter");
@@ -291,7 +303,16 @@ if (conditionValue === "All") {
                           <ul>
   
                              <li>
-                                <select onChange={(e) => setCategory(e.target.value)}>
+<select
+  onChange={async (e) => {
+    const val = e.target.value;
+    setCategory(val);
+
+    const data = await fetchFilteredList(val, location, conditionValue);
+    sessionStorage.setItem("search-results", JSON.stringify(data));
+  }}
+>
+  
      <option value="">Select Category</option>
      <option value="Off Road">Off Road</option>
      <option value="Hybrid">Hybrid</option>

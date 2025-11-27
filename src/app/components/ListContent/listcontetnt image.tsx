@@ -1,16 +1,16 @@
- 
 "use client";
 import Link from "next/link";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/navigation";
-import { Navigation, Autoplay } from "swiper/modules";
-import Skelton from '../skelton'
+import "swiper/css/pagination";
+import { Navigation, Autoplay, Pagination } from "swiper/modules";
+import Skelton from "../skelton";
 import Head from "next/head";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toSlug } from "@/utils/seo/slug";
 import ImageWithSkeleton from "../ImageWithSkeleton";
-
+ 
 interface Product {
   id: number;
   name: string;
@@ -29,7 +29,7 @@ interface Product {
   slug?: string;
   description?: string;
   sku?: string;
-
+  is_exclusive?: boolean
 }
 
 interface Pagination {
@@ -78,9 +78,11 @@ interface Props {
   isFeaturedLoading: boolean;
   isPremiumLoading: boolean;
   isNextLoading: boolean;
+  pageTitle: string;
 }
 
 export default function ListingContent({
+  pageTitle,
   products,
   pagination,
   onNext,
@@ -95,55 +97,74 @@ export default function ListingContent({
   isFeaturedLoading,
   isPremiumLoading,
   isMainLoading,
-  isNextLoading
+  isNextLoading,
 }: Props) {
- 
-    const prevRef = useRef(null);
-  const nextRef = useRef(null);
-  // console.log("data-prod", products);
+  // const [isClient, setIsClient] = useState(false);
 
-  // console.log("data-product", exculisiveProducts);
-  // console.log("data-premium", preminumProducts);
-  // console.log("data-featu", fetauredProducts);
+  // useEffect(() => {
+  //   setIsClient(true);
+  // }, []);
+
+  const prevRef = useRef(null);
+  const nextRef = useRef(null);
+
+  console.log("data-product", exculisiveProducts);
+  console.log("data-premium", preminumProducts);
+  console.log("data-featu", fetauredProducts);
   // const handleChange = (e) => {
   //   setOrderBy(e.target.value);
   // };
 
+  const getMainImage = (sku?: string, slug?: string): string => {
+    if (!sku || !slug) return "/images/sample3.webp";
+    return `https://caravansforsale.imagestack.net/800x600/${sku}/${slug}main1.webp`;
+  };
 
+  const getSubImages = (sku?: string, slug?: string): string[] => {
+    if (!sku || !slug) return [];
 
-  const mergedProducts = useMemo(() => {
-    const merged: Product[] = [];
-    const exclusive = exculisiveProducts || [];
-    const normal = products || [];
+    const base = `https://caravansforsale.imagestack.net/800x600/${sku}/${slug}`;
+    // sub1 → sub10
+    return Array.from({ length: 10 }, (_, i) => `${base}sub${i + 1}.webp`);
+  };
 
-    let exclusiveIndex = 0;
+  // Remove all the lazy loading state and just load all images immediately
 
-    for (let i = 0; i < normal.length; i++) {
-      merged.push(normal[i]);
+ const mergedProducts = useMemo(() => {
+  const merged: Product[] = [];
+  const exclusive = exculisiveProducts || [];
+  const normal = products || [];
 
-      // 🔁 After every 10 products, insert one exclusive product if available
-      if ((i + 1) % 10 === 0 && exclusiveIndex < exclusive.length) {
-        merged.push({
-          ...exclusive[exclusiveIndex],
-          name: `${exclusive[exclusiveIndex].name || "Caravan"}`,
-        });
-        exclusiveIndex++;
-      }
-    }
+  let exclusiveIndex = 0;
 
-    // If there are remaining exclusive products, push them at the end
-    while (exclusiveIndex < exclusive.length) {
+  for (let i = 0; i < normal.length; i++) {
+    // normal product
+    merged.push({ ...normal[i],  is_exclusive: false });
+
+    // insert exclusive after every 8 products
+    if ((i + 1) % 4 === 0 && exclusiveIndex < exclusive.length) {
       merged.push({
         ...exclusive[exclusiveIndex],
-        name: `${exclusive[exclusiveIndex].name || "Caravan"}`,
+        name: exclusive[exclusiveIndex].name || "Caravan",
+         is_exclusive: true,
       });
       exclusiveIndex++;
     }
+  }
 
-    return merged;
-  }, [products, exculisiveProducts]);
+  // if exclusive products remain, push them at end
+  while (exclusiveIndex < exclusive.length) {
+    merged.push({
+      ...exclusive[exclusiveIndex],
+      name: exclusive[exclusiveIndex].name || "Caravan",
+       is_exclusive: true,
+    });
+    exclusiveIndex++;
+  }
 
- 
+  return merged;
+}, [products, exculisiveProducts]);
+
 
   // Example placeholder function for product links
 
@@ -152,37 +173,24 @@ export default function ListingContent({
     const slug = p.slug?.trim() || toSlug(p.name);
     return slug ? `/product/${slug}/` : ""; // trailing slash optional
   };
-  const uniqueProducts = useMemo(() => {
-    const seen = new Set<string>();
-    return (products || []).filter((p) => {
-      const k = String(p?.id ?? p?.slug ?? p?.link);
-      if (seen.has(k)) return false;
-      seen.add(k);
-      return true;
-    });
-  }, [products]);
-  console.log("data", uniqueProducts);
+  // const uniqueProducts = useMemo(() => {
+  //   const seen = new Set<string>();
+  //   return (products || []).filter((p) => {
+  //     const k = String(p?.id ?? p?.slug ?? p?.link);
+  //     if (seen.has(k)) return false;
+  //     seen.add(k);
+  //     return true;
+  //   });
+  // }, [products]);
+  console.log("data", mergedProducts);
 
   // ✅ Helper: generate up to 5 image URLs from SKU
-  const getProductImages = (sku?: string, slug?: string): string[] => {
-    if (!sku || !slug) return ["/images/sample3.webp"]; // fallback 
-
-    const base = `https://caravansforsale.imagestack.net/${sku}`;
-     // First image = main
-    const mainImage = `${base}/${slug}-main1.webp`;
-
-    // Remaining = sub1, sub2, sub3, sub4fv  
-    const subImages = Array.from({ length: 4 }, (_, i) => `${base}/${slug}-sub${i + 1}.webp`);
-
-    console.log("subimage", subImages);
-    console.log("mainimage", mainImage);
-    return [mainImage, ...subImages];
-  };
-
 
   // ✅ Randomly shuffle premium products on each page load
   // ✅ Premium products shuffle after mount
-  const [shuffledPremiumProducts, setShuffledPremiumProducts] = useState<Product[]>([]);
+  const [shuffledPremiumProducts, setShuffledPremiumProducts] = useState<
+    Product[]
+  >([]);
 
   useEffect(() => {
     if (!preminumProducts || preminumProducts.length === 0) return;
@@ -196,7 +204,6 @@ export default function ListingContent({
 
     setShuffledPremiumProducts(shuffled);
   }, [preminumProducts]);
-
 
   return (
     <>
@@ -214,12 +221,12 @@ export default function ListingContent({
       <div className="col-lg-6 ">
         <div className="top-filter mb-10">
           <div className="row align-items-center">
-            <div className="col-lg-8 col-sm-6">
+            <div className="col-lg-8">
               <h1 className="show_count">
-                <strong>5863</strong> Caravans for sale in Australia
+                <strong>{pageTitle}</strong>
               </h1>
             </div>
-            <div className="col-4 col-sm-2 d-lg-none ">
+            <div className="col-4 d-lg-none d-md-none">
               <button
                 type="button"
                 className="mobile_fltn navbar-toggler mytogglebutton"
@@ -230,7 +237,7 @@ export default function ListingContent({
                 <i className="bi bi-search" /> &nbsp;Filter
               </button>
             </div>
-            <div className="col-lg-4 col-sm-4 col-8">
+            <div className="col-lg-4 col-8">
               <div className="r-side">
                 <form className="woocommerce-ordering" method="get">
                   <div className="form-group shot-buy">
@@ -311,22 +318,27 @@ export default function ListingContent({
                 >
                   {fetauredProducts.map((item, index) => {
                     const href = getHref(item);
+                    const mainImage = getMainImage(item.sku, item.slug);
 
                     return (
-
                       <SwiperSlide key={index}>
-                        <Link href={href} prefetch={false}
+                        <Link
+                          href={href}
+                          prefetch={false}
                           onClick={() => {
                             if (typeof window !== "undefined") {
-                              sessionStorage.setItem("cameFromListings", "true");
+                              sessionStorage.setItem(
+                                "cameFromListings",
+                                "true"
+                              );
                             }
-                          }}>
+                          }}
+                        >
                           <div className="product-card">
                             <div className="img">
                               <div className="background_thumb">
-
                                 <ImageWithSkeleton
-                                  src={item.image}
+                                  src={mainImage}
                                   alt="Caravan"
                                   width={300}
                                   height={200}
@@ -334,7 +346,7 @@ export default function ListingContent({
                               </div>
                               <div className="main_thumb">
                                 <ImageWithSkeleton
-                                  src={item.image}
+                                  src={mainImage}
                                   alt="Caravan"
                                   width={300}
                                   height={200}
@@ -343,25 +355,35 @@ export default function ListingContent({
                             </div>
                             <div className="product_de">
                               <div className="info">
-                                {item.name &&
+                                {item.name && (
                                   <h3 className="title">{item.name}</h3>
-                                }
+                                )}
                               </div>
 
                               {/* --- PRICE SECTION --- */}
-                              {(item.regular_price || item.sale_price || item.price_difference) && (
+                              {(item.regular_price ||
+                                item.sale_price ||
+                                item.price_difference) && (
                                 <div className="price">
                                   <div className="metc2">
-                                    {(item.regular_price || item.sale_price) && (
+                                    {(item.regular_price ||
+                                      item.sale_price) && (
                                       <h5 className="slog">
                                         {/* ✅ Stable price rendering: precompute safely */}
                                         {(() => {
-                                          const rawRegular = item.regular_price || "";
+                                          const rawRegular =
+                                            item.regular_price || "";
                                           const rawSale = item.sale_price || "";
-                                          const cleanRegular = rawRegular.replace(/[^0-9.]/g, "");
-                                          const regNum = Number(cleanRegular) || 0;
-                                          const cleanSale = rawSale.replace(/[^0-9.]/g, "");
-                                          const saleNum = Number(cleanSale) || 0;
+                                          const cleanRegular =
+                                            rawRegular.replace(/[^0-9.]/g, "");
+                                          const regNum =
+                                            Number(cleanRegular) || 0;
+                                          const cleanSale = rawSale.replace(
+                                            /[^0-9.]/g,
+                                            ""
+                                          );
+                                          const saleNum =
+                                            Number(cleanSale) || 0;
 
                                           // If regular price is 0 → show POA
                                           if (regNum === 0) {
@@ -372,7 +394,8 @@ export default function ListingContent({
                                           if (saleNum > 0) {
                                             return (
                                               <>
-                                                <del>{rawRegular}</del> {rawSale}
+                                                <del>{rawRegular}</del>{" "}
+                                                {rawSale}
                                               </>
                                             );
                                           }
@@ -385,32 +408,32 @@ export default function ListingContent({
 
                                     {/* ✅ Show SAVE only if > $0 */}
                                     {(() => {
-                                      const cleanDiff = (item.price_difference || "").replace(/[^0-9.]/g, "");
+                                      const cleanDiff = (
+                                        item.price_difference || ""
+                                      ).replace(/[^0-9.]/g, "");
                                       const diffNum = Number(cleanDiff) || 0;
                                       return diffNum > 0 ? (
                                         <p className="card-price">
-                                          <span>SAVE</span> {item.price_difference}
+                                          <span>SAVE</span>{" "}
+                                          {item.price_difference}
                                         </p>
                                       ) : null;
                                     })()}
-<div className="more_info">
-                                    {(item.location) && (
-                                      <div className="informat">
-
-                                        {item.location && (
-                                          <span>
-                                            <i className="fa fa-map-marker-alt"></i>{" "}
-                                            {item.location}
-                                          </span>
-                                        )}
-                                      </div>
-                                    )}
-                                  </div>
-
+                                    <div className="more_info">
+                                      {item.location && (
+                                        <div className="informat">
+                                          {item.location && (
+                                            <span>
+                                              <i className="fa fa-map-marker-alt"></i>{" "}
+                                              {item.location}
+                                            </span>
+                                          )}
+                                        </div>
+                                      )}
+                                    </div>
                                   </div>
                                 </div>
                               )}
-
 
                               {/* --- DETAILS LIST --- */}
                               <ul className="vehicleDetailsWithIcons simple">
@@ -422,49 +445,47 @@ export default function ListingContent({
                                   </li>
                                 )}
 
-                                {item.categories && item.categories.length > 0 && (
-                                  <li className="attribute3_list">
-                                    <span className="attribute3">
-                                      {item.categories.join(", ")}
-                                    </span>
-                                  </li>
-                                )}
+                                {item.categories &&
+                                  item.categories.length > 0 && (
+                                    <li className="attribute3_list">
+                                      <span className="attribute3">
+                                        {item.categories.join(", ")}
+                                      </span>
+                                    </li>
+                                  )}
 
                                 {item.length && (
                                   <li>
-                                    <span className="attribute3">{item.length}</span>
+                                    <span className="attribute3">
+                                      {item.length}
+                                    </span>
                                   </li>
                                 )}
 
                                 {item.kg && (
                                   <li>
-                                    <span className="attribute3">{item.kg}</span>
+                                    <span className="attribute3">
+                                      {item.kg}
+                                    </span>
                                   </li>
                                 )}
 
                                 {item.make && (
                                   <li>
-                                    <span className="attribute3">{item.make}</span>
+                                    <span className="attribute3">
+                                      {item.make}
+                                    </span>
                                   </li>
                                 )}
                               </ul>
-
-                              
-
-
                             </div>
                           </div>
                         </Link>
                       </SwiperSlide>
-
-
                     );
                   })}
-
-
                 </Swiper>
               )}
-
             </div>
           </div>
         )}
@@ -475,10 +496,9 @@ export default function ListingContent({
               <div className="row g-3">
                 {shuffledPremiumProducts.map((item, index) => {
                   const href = getHref(item);
-                  const images = getProductImages(item.sku, item.slug);
-
+                  const mainImage = getMainImage(item.sku, item.slug);
+                  const subImages = getSubImages(item.sku, item.slug);
                   return (
-
                     <div className="col-lg-12 mb-0" key={index}>
                       <Link
                         href={href}
@@ -494,11 +514,11 @@ export default function ListingContent({
                           <div className="img">
                             <div className="background_thumb">
                               <ImageWithSkeleton
-                                src={images[1]}
+                                src={mainImage}
+                                // priority={isPriority}
                                 alt="Caravan"
                                 width={300}
                                 height={200}
-
                               />
                             </div>
                             <div className="main_thumb position-relative">
@@ -507,27 +527,16 @@ export default function ListingContent({
                                 <Skelton count={2} /> // ✅ show skeletons
                               ) : (
                                 <Swiper
-                                  modules={[Navigation]}
+                                  modules={[Navigation, Pagination]}
                                   spaceBetween={10}
                                   slidesPerView={1}
                                   navigation
-                                  
-                                  onSlideChange={(swiper) => {
-                                    const isLast =
-                                      swiper.activeIndex ===
-                                      swiper.slides.length - 1;
-                                    const viewMoreBtn = document.querySelector(
-                                      `#view-more-btn-${item.slug}`
-                                    );
-                                    if (viewMoreBtn instanceof HTMLElement) {
-                                      viewMoreBtn.style.display = isLast
-                                        ? "block"
-                                        : "none";
-                                    }
+                                  pagination={{
+                                    clickable: true,
                                   }}
                                   className="main_thumb_swiper"
                                 >
-                                  {images.map((img, i) => (
+                                  {subImages.map((img, i) => (
                                     <SwiperSlide key={i}>
                                       <div className="thumb_img">
                                         <ImageWithSkeleton
@@ -535,7 +544,7 @@ export default function ListingContent({
                                           alt={`Caravan ${i + 1}`}
                                           width={300}
                                           height={200}
-
+                                          // priority={isPriority && i === 0}
                                         />
                                       </div>
                                     </SwiperSlide>
@@ -545,41 +554,50 @@ export default function ListingContent({
 
                               {/* Hidden "View More" button that appears after last slide */}
                               {/* <div
-                                id={`view-more-btn-${item}`}
-                                className="view-more-btn-wrapper"
-                              >
-                                <Link
-                                  href="/related-links"
-                                  className="view-more-btn"
-                                >
-                                  View More
-                                </Link>
-                              </div> */}
+                                                                      id={`view-more-btn-${item}`}
+                                                                      className="view-more-btn-wrapper"
+                                                                    >
+                                                                      <Link
+                                                                        href="/related-links"
+                                                                        className="view-more-btn"
+                                      
+                                                                      >
+                                                                        View More
+                                                                      </Link>
+                                                                    </div> */}
                             </div>
                           </div>
+
                           <div className="product_de">
                             <div className="info">
                               {item.name && (
                                 <h3 className="title">{item.name}</h3>
-                                
                               )}
                             </div>
 
-
-
                             {/* --- PRICE SECTION --- */}
-                            {(item.regular_price || item.sale_price || item.price_difference) && (
+                            {(item.regular_price ||
+                              item.sale_price ||
+                              item.price_difference) && (
                               <div className="price">
                                 <div className="metc2">
                                   {(item.regular_price || item.sale_price) && (
                                     <h5 className="slog">
                                       {/* ✅ Stable price rendering: precompute safely */}
                                       {(() => {
-                                        const rawRegular = item.regular_price || "";
+                                        const rawRegular =
+                                          item.regular_price || "";
                                         const rawSale = item.sale_price || "";
-                                        const cleanRegular = rawRegular.replace(/[^0-9.]/g, "");
-                                        const regNum = Number(cleanRegular) || 0;
-                                        const cleanSale = rawSale.replace(/[^0-9.]/g, "");
+                                        const cleanRegular = rawRegular.replace(
+                                          /[^0-9.]/g,
+                                          ""
+                                        );
+                                        const regNum =
+                                          Number(cleanRegular) || 0;
+                                        const cleanSale = rawSale.replace(
+                                          /[^0-9.]/g,
+                                          ""
+                                        );
                                         const saleNum = Number(cleanSale) || 0;
 
                                         // If regular price is 0 → show POA
@@ -604,19 +622,21 @@ export default function ListingContent({
 
                                   {/* ✅ Show SAVE only if > $0 */}
                                   {(() => {
-                                    const cleanDiff = (item.price_difference || "").replace(/[^0-9.]/g, "");
+                                    const cleanDiff = (
+                                      item.price_difference || ""
+                                    ).replace(/[^0-9.]/g, "");
                                     const diffNum = Number(cleanDiff) || 0;
                                     return diffNum > 0 ? (
                                       <p className="card-price">
-                                        <span>SAVE</span> {item.price_difference}
+                                        <span>SAVE</span>{" "}
+                                        {item.price_difference}
                                       </p>
                                     ) : null;
                                   })()}
 
                                   <div className="more_info">
-                                    {(item.location) && (
+                                    {item.location && (
                                       <div className="informat">
-
                                         {item.location && (
                                           <span>
                                             <i className="fa fa-map-marker-alt"></i>{" "}
@@ -630,8 +650,6 @@ export default function ListingContent({
                               </div>
                             )}
 
-
-
                             {/* --- DETAILS LIST --- */}
                             <ul className="vehicleDetailsWithIcons simple">
                               {item.condition && (
@@ -642,13 +660,14 @@ export default function ListingContent({
                                 </li>
                               )}
 
-                              {item.categories && item.categories.length > 0 && (
-                                <li className="attribute3_list">
-                                  <span className="attribute3">
-                                    {item.categories.join(", ")}
-                                  </span>
-                                </li>
-                              )}
+                              {item.categories &&
+                                item.categories.length > 0 && (
+                                  <li className="attribute3_list">
+                                    <span className="attribute3">
+                                      {item.categories.join(", ")}
+                                    </span>
+                                  </li>
+                                )}
 
                               {item.length && (
                                 <li>
@@ -666,15 +685,12 @@ export default function ListingContent({
 
                               {item.make && (
                                 <li>
-                                  <span className="attribute3">{item.make}</span>
+                                  <span className="attribute3">
+                                    {item.make}
+                                  </span>
                                 </li>
                               )}
                             </ul>
-
-
-
-
-
                           </div>
                         </div>
                       </Link>
@@ -694,88 +710,83 @@ export default function ListingContent({
                 <div className="row g-3">
                   {mergedProducts.map((item, index) => {
                     const href = getHref(item);
-                    const images = getProductImages(item.sku, item.slug);
-
+                    const mainImage = getMainImage(item.sku, item.slug);
+                    const subImages = getSubImages(item.sku, item.slug);
+ 
                     return (
                       <div className="col-lg-12 mb-0" key={index}>
-
                         <Link
                           href={href}
                           onClick={() => {
                             if (typeof window !== "undefined") {
-                              sessionStorage.setItem("cameFromListings", "true");
+                              sessionStorage.setItem(
+                                "cameFromListings",
+                                "true"
+                              );
                             }
                           }}
                           prefetch={false}
                           className="lli_head"
                         >
-                          <div
-
-                            className="product-card">
+                          <div className="product-card">
                             <div className="img">
                               <div className="background_thumb">
                                 <ImageWithSkeleton
-                                  src={images[1]}
-
+                                  src={mainImage}
+                                  // priority={isPriority}
                                   alt="Caravan"
                                   width={300}
                                   height={200}
-
                                 />
                               </div>
                               <div className="main_thumb position-relative">
-                                <span className="lab">Spotlight Van</span>
-                                <Swiper
-                                  modules={[Navigation]}
-                                  spaceBetween={10}
-                                  slidesPerView={1}
-                                  navigation
-                                  
-                                  onSlideChange={(swiper) => {
-                                    const isLast =
-                                      swiper.activeIndex ===
-                                      swiper.slides.length - 1;
-                                    const viewMoreBtn = document.querySelector(
-                                      `#view-more-btn-${item.slug}`
-                                    );
-                                    if (viewMoreBtn instanceof HTMLElement) {
-                                      viewMoreBtn.style.display = isLast
-                                        ? "block"
-                                        : "none";
-                                    }
-                                  }}
-                                  className="main_thumb_swiper"
-                                >
-                                  {images.map((img, i) => (
-                                    <SwiperSlide key={i}>
-                                      <div className="thumb_img">
-                                        <ImageWithSkeleton
-                                          src={img}
-                                          alt={`Caravan ${i + 1}`}
-                                          width={300}
-                                          height={200}
+{item. is_exclusive && <span className="lab">Spotlight Van</span>}
 
-                                        />
-                                      </div>
-                                    </SwiperSlide>
-                                  ))}
-                                </Swiper>
+                                {isMainLoading ? (
+                                  <Skelton count={2} /> // ✅ show skeletons
+                                ) : (
+                                  <Swiper
+                                    modules={[Navigation, Pagination]}
+                                    spaceBetween={10}
+                                    slidesPerView={1}
+                                    navigation
+                                    pagination={{
+                                      clickable: true,
+                                    }}
+                                    className="main_thumb_swiper"
+                                  >
+                                    {subImages.map((img, i) => (
+                                      <SwiperSlide key={i}>
+                                        <div className="thumb_img">
+                                          <ImageWithSkeleton
+                                            src={img}
+                                            alt={`Caravan ${i + 1}`}
+                                            width={300}
+                                            height={200}
+                                            // priority={isPriority && i === 0}
+                                          />
+                                        </div>
+                                      </SwiperSlide>
+                                    ))}
+                                  </Swiper>
+                                )}
 
                                 {/* Hidden "View More" button that appears after last slide */}
                                 {/* <div
-                                id={`view-more-btn-${item}`}
-                                className="view-more-btn-wrapper"
-                              >
-                                <Link
-                                  href="/related-links"
-                                  className="view-more-btn"
-
-                                >
-                                  View More
-                                </Link>
-                              </div> */}
+                                                                      id={`view-more-btn-${item}`}
+                                                                      className="view-more-btn-wrapper"
+                                                                    >
+                                                                      <Link
+                                                                        href="/related-links"
+                                                                        className="view-more-btn"
+                                      
+                                                                      >
+                                                                        View More
+                                                                      </Link>
+                                                                    </div> */}
                               </div>
                             </div>
+
                             <div className="product_de">
                               <div className="info">
                                 {item.name && (
@@ -784,19 +795,29 @@ export default function ListingContent({
                               </div>
 
                               {/* --- PRICE SECTION --- */}
-                              {(item.regular_price || item.sale_price || item.price_difference) && (
+                              {(item.regular_price ||
+                                item.sale_price ||
+                                item.price_difference) && (
                                 <div className="price">
                                   <div className="metc2">
-                                    {(item.regular_price || item.sale_price) && (
+                                    {(item.regular_price ||
+                                      item.sale_price) && (
                                       <h5 className="slog">
                                         {/* ✅ Stable price rendering: precompute safely */}
                                         {(() => {
-                                          const rawRegular = item.regular_price || "";
+                                          const rawRegular =
+                                            item.regular_price || "";
                                           const rawSale = item.sale_price || "";
-                                          const cleanRegular = rawRegular.replace(/[^0-9.]/g, "");
-                                          const regNum = Number(cleanRegular) || 0;
-                                          const cleanSale = rawSale.replace(/[^0-9.]/g, "");
-                                          const saleNum = Number(cleanSale) || 0;
+                                          const cleanRegular =
+                                            rawRegular.replace(/[^0-9.]/g, "");
+                                          const regNum =
+                                            Number(cleanRegular) || 0;
+                                          const cleanSale = rawSale.replace(
+                                            /[^0-9.]/g,
+                                            ""
+                                          );
+                                          const saleNum =
+                                            Number(cleanSale) || 0;
 
                                           // If regular price is 0 → show POA
                                           if (regNum === 0) {
@@ -807,7 +828,8 @@ export default function ListingContent({
                                           if (saleNum > 0) {
                                             return (
                                               <>
-                                                <del>{rawRegular}</del> {rawSale}
+                                                <del>{rawRegular}</del>{" "}
+                                                {rawSale}
                                               </>
                                             );
                                           }
@@ -820,28 +842,30 @@ export default function ListingContent({
 
                                     {/* ✅ Show SAVE only if > $0 */}
                                     {(() => {
-                                      const cleanDiff = (item.price_difference || "").replace(/[^0-9.]/g, "");
+                                      const cleanDiff = (
+                                        item.price_difference || ""
+                                      ).replace(/[^0-9.]/g, "");
                                       const diffNum = Number(cleanDiff) || 0;
                                       return diffNum > 0 ? (
                                         <p className="card-price">
-                                          <span>SAVE</span> {item.price_difference}
+                                          <span>SAVE</span>{" "}
+                                          {item.price_difference}
                                         </p>
                                       ) : null;
                                     })()}
 
                                     <div className="more_info">
-                                    {(item.location) && (
-                                      <div className="informat">
-
-                                        {item.location && (
-                                          <span>
-                                            <i className="fa fa-map-marker-alt"></i>{" "}
-                                            {item.location}
-                                          </span>
-                                        )}
-                                      </div>
-                                    )}
-                                  </div>
+                                      {item.location && (
+                                        <div className="informat">
+                                          {item.location && (
+                                            <span>
+                                              <i className="fa fa-map-marker-alt"></i>{" "}
+                                              {item.location}
+                                            </span>
+                                          )}
+                                        </div>
+                                      )}
+                                    </div>
                                   </div>
                                 </div>
                               )}
@@ -856,13 +880,14 @@ export default function ListingContent({
                                   </li>
                                 )}
 
-                                {item.categories && item.categories.length > 0 && (
-                                  <li className="attribute3_list">
-                                    <span className="attribute3">
-                                      {item.categories.join(", ")}
-                                    </span>
-                                  </li>
-                                )}
+                                {item.categories &&
+                                  item.categories.length > 0 && (
+                                    <li className="attribute3_list">
+                                      <span className="attribute3">
+                                        {item.categories.join(", ")}
+                                      </span>
+                                    </li>
+                                  )}
 
                                 {item.length && (
                                   <li>
@@ -874,19 +899,20 @@ export default function ListingContent({
 
                                 {item.kg && (
                                   <li>
-                                    <span className="attribute3">{item.kg}</span>
+                                    <span className="attribute3">
+                                      {item.kg}
+                                    </span>
                                   </li>
                                 )}
 
                                 {item.make && (
                                   <li>
-                                    <span className="attribute3">{item.make}</span>
+                                    <span className="attribute3">
+                                      {item.make}
+                                    </span>
                                   </li>
                                 )}
                               </ul>
-
-                              
-
                             </div>
                           </div>
                         </Link>
@@ -920,7 +946,9 @@ export default function ListingContent({
                 <button
                   className="next-icon"
                   onClick={onNext}
-                  disabled={pagination.current_page === pagination.total_pages || !isNextLoading
+                  disabled={
+                    pagination.current_page === pagination.total_pages ||
+                    !isNextLoading
                   }
                 >
                   Next
@@ -930,10 +958,6 @@ export default function ListingContent({
           </nav>
         </div>
       </div>
-     
-
-
-
     </>
   );
 }
