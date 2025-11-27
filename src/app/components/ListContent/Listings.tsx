@@ -685,6 +685,8 @@
        }
      }, [pagination, loadListings, clickid, ensureclickid]);
    
+  
+
      // add near other refs
      const restoredOnceRef = useRef(false);
      // 3️⃣  restore effect
@@ -710,137 +712,7 @@
    
    
      console.log("paginationapi", pagination);
-     // const loadListings = useCallback(
-     //   async (
-     //     pageNum = 1,
-     //     appliedFilters: Filters = filtersRef.current,
-     //     skipInitialCheck = false
-     //   ) => {
-     //     // If we have initial data and this is the first load, skip the API call
-     //     if (initialData && !skipInitialCheck && isUsingInitialData) {
-     //       setIsUsingInitialData(false); // Next time, fetch from API
-     //       return;
-     //     }
-   
-     //     setIsLoading(true);
-     //     window.scrollTo({ top: 0, behavior: "smooth" });
-   
-     //     try {
-     //       const safeFilters = normalizeSearchFromMake(appliedFilters);
-   
-     //       const radiusNum = asNumber(safeFilters.radius_kms);
-     //       const radiusParam =
-     //         typeof radiusNum === "number" && radiusNum !== DEFAULT_RADIUS
-     //           ? String(radiusNum)
-     //           : undefined;
-   
-     //       const response = await fetchListings({
-     //         ...safeFilters,
-     //         page: pageNum,
-     //         condition: safeFilters.condition,
-     //         minKg: safeFilters.minKg?.toString(),
-     //         maxKg: safeFilters.maxKg?.toString(),
-     //         sleeps: safeFilters.sleeps,
-     //         from_price: safeFilters.from_price?.toString(),
-     //         to_price: safeFilters.to_price?.toString(),
-     //         acustom_fromyears: safeFilters.acustom_fromyears?.toString(),
-     //         acustom_toyears: safeFilters.acustom_toyears?.toString(),
-     //         from_length: safeFilters.from_length?.toString(),
-     //         to_length: safeFilters.to_length?.toString(),
-     //         make: safeFilters.make,
-     //         model: safeFilters.model,
-     //         state: safeFilters.state,
-     //         region: safeFilters.region,
-     //         suburb: safeFilters.suburb,
-     //         pincode: safeFilters.pincode,
-     //         orderby: safeFilters.orderby,
-     //         search: safeFilters.search,
-     //         keyword: safeFilters.keyword,
-     //         radius_kms: radiusParam,
-     //       });
-   
-     //       const hasFilters = Object.values(safeFilters).some(
-     //         (val) => val !== undefined && val !== null && val !== ""
-     //       );
-   
-     //       const productsFound = (response?.data?.products?.length ?? 0) > 0;
-   
-     //       if (productsFound) {
-     //         const transformedProducts = transformApiItemsToProducts(
-     //           response.data?.products || []
-     //         );
-     //         setProducts(transformedProducts);
-     //         setCategories(response.data?.all_categories ?? []);
-     //         setMakes(response.data?.make_options ?? []);
-     //         setStateOptions(response.data?.states ?? []);
-     //         setModels(response.data?.model_options ?? []);
-     //         setPageTitle(response.title ?? " ");
-     //         if (response.pagination) setPagination(response.pagination);
-     //         setMetaDescription(response.seo?.metadescription ?? "");
-     //         setMetaTitle(response.seo?.metatitle ?? "");
-     //       } else if (hasFilters) {
-     //         setProducts([]);
-   
-     //         setTimeout(() => {
-     //           const empty: Filters = {};
-     //           filtersRef.current = empty;
-     //           setFilters(empty);
-     //           router.push("/not-found");
-     //         }, 2500);
-     //       } else {
-     //         setProducts([]);
-     //         setPagination((prev) => ({
-     //           current_page: 1,
-     //           total_pages: 1,
-     //           per_page: prev.per_page,
-     //           total_products: 0,
-     //           total_items: 0,
-     //         }));
-     //       }
-     //     } catch (error) {
-     //       console.error("❌ Failed to fetch listings:", error);
-     //       setProducts([]);
-     //     } finally {
-     //       setIsLoading(false);
-     //     }
-     //   },
-     //   [DEFAULT_RADIUS, router, initialData, isUsingInitialData]
-     // );
-     //  const handleFilterChange = useCallback(
-     //     async (newFilters: Filters) => {
-     //       setIsLoading(true); // ✅ show skeleton immediately
-   
-     //       const mergedFilters = { ...filtersRef.current, ...newFilters };
-     //       console.log("filters", newFilters, mergedFilters);
-     //       // cleanup empty values
-     //       if ("orderby" in newFilters && !newFilters.orderby) {
-     //         mergedFilters.orderby = undefined;
-     //       }
-   
-   
-     //       filtersRef.current = mergedFilters;
-     //       setFilters(mergedFilters);
-   
-     //       // reset pagination when filters change
-     //       setPagination({
-     //         current_page: 1,
-     //         total_pages: 1,
-     //         total_items: 0,
-     //         per_page: 12,
-     //         total_products: 0,
-     //       });
-   
-     //       // ✅ update URL
-     //       updateURLWithFilters(mergedFilters, 1);
-   
-     //       // ✅ fetch data immediately (don’t wait for URL watcher)
-     //       await loadListings(1, mergedFilters, true);
-   
-     //       setIsLoading(false); // ✅ hide loader when done
-     //     },
-     //     [updateURLWithFilters, loadListings]
-     //   );
-     /* ---- SINGLE source of truth: URL -> fetch ---- */
+      /* ---- SINGLE source of truth: URL -> fetch ---- */
      const searchKey = searchParams.toString();
      const pathKey = pathname;
    
@@ -855,58 +727,7 @@
      const prevFiltersRef = useRef<Filters>({});
      const prevPageRef = useRef(1);
    
-     // useEffect(() => {
-     //   if (!initializedRef.current) return;
-   
-     //   const slugParts = pathKey.split("/listings/")[1]?.split("/") || [];
-     //   const parsedFromURL = parseSlugToFilters(slugParts);
-   
-     //   // const pageFromURL = parseInt(searchParams.get("page") || "1", 10);
-     //   const pageFromURL = validatePage(searchParams.get("page"));
-     //   const orderbyQP = searchParams.get("orderby") || undefined;
-     //   const fromyear = searchParams.get("acustom_fromyears") || undefined;
-     //   const toyear = searchParams.get("acustom_toyears") || undefined;
-   
-     //   const radiusQP = searchParams.get("radius_kms");
-     //   const radiusFromURL = radiusQP
-     //     ? Math.max(5, parseInt(radiusQP, 10))
-     //     : undefined;
-   
-     //   const merged: Filters = {
-     //     ...parsedFromURL,
-     //     ...incomingFiltersRef.current,
-     //     orderby: orderbyQP,
-     //     acustom_fromyears: fromyear,
-     //     acustom_toyears: toyear,
-     //     radius_kms: radiusFromURL !== DEFAULT_RADIUS ? radiusFromURL : undefined,
-     //   };
-   
-     //   // Check if anything actually changed
-     //   const filtersChanged =
-     //     JSON.stringify(merged) !== JSON.stringify(prevFiltersRef.current);
-     //   const pageChanged = pageFromURL !== prevPageRef.current;
-   
-     //   if (!filtersChanged && !pageChanged) {
-     //     // Nothing changed, no need to fetch
-     //     return;
-     //   }
-   
-     //   // Update refs with current values
-     //   prevFiltersRef.current = { ...merged };
-     //   prevPageRef.current = pageFromURL;
-   
-     //   filtersRef.current = merged;
-     //   setFilters(merged);
-     //   setPagination((prev) => ({ ...prev, current_page: pageFromURL }));
-   
-     //   const requestKey = JSON.stringify({ page: pageFromURL, filters: merged });
-     //   if (LAST_GLOBAL_REQUEST_KEY === requestKey) return;
-     //   LAST_GLOBAL_REQUEST_KEY = requestKey;
-   
-     //   loadListings(pageFromURL, merged, true);
-     // }, [searchKey, pathKey, loadListings, DEFAULT_RADIUS, searchParams]);
-   
-     useEffect(() => {
+      useEffect(() => {
        if (!initializedRef.current) return;
        if (restoredOnceRef.current) {
          restoredOnceRef.current = false; // reset for future real changes
@@ -1002,37 +823,51 @@
      }, [isLoading, isMainLoading, isFeaturedLoading, isPremiumLoading]);
    
    
-     // const handleFilterChange = useCallback(
-     //   (newFilters: Filters) => {
-     //     setIsLoading(true);
-     //     const mergedFilters = { ...filtersRef.current, ...newFilters };
-   
-     //     if ("orderby" in newFilters && !newFilters.orderby) {
-     //       mergedFilters.orderby = undefined;
-     //     }
-     //     if ("acustom_fromyears" in newFilters && !newFilters.acustom_fromyears) {
-     //       mergedFilters.acustom_fromyears = undefined;
-     //     }
-     //     if ("acustom_toyears" in newFilters && !newFilters.acustom_toyears) {
-     //       mergedFilters.acustom_toyears = undefined;
-     //     }
-     //     setFilters(mergedFilters);
-     //     filtersRef.current = mergedFilters;
-   
-     //     const pageFromURL = parseInt(searchParams.get("page") || "1", 10);
-     //     setPagination({
-     //       current_page: pageFromURL,
-     //       total_pages: 1,
-     //       total_items: 0,
-     //       per_page: 12,
-     //       total_products: 0,
-     //     });
-   
-     //     updateURLWithFilters(mergedFilters, 1);
-     //   },
-     //   [searchParams, updateURLWithFilters]
-     // );
-   
+
+     // Only check real user filters
+const FILTER_KEYS_TO_CHECK: (keyof Filters)[] = [
+  "category",
+  "make",
+  "model",
+  "condition",
+  "state",
+  "region",
+  "suburb",
+  "pincode",
+  "from_price",
+  "to_price",
+  "minKg",
+  "maxKg",
+  "acustom_fromyears",
+  "acustom_toyears",
+  "from_sleep",
+  "to_sleep",
+  "from_length",
+  "to_length",
+  "search",
+  "keyword"
+];
+
+const hasActiveFilters = FILTER_KEYS_TO_CHECK.some(key => {
+  const value = filters[key];
+  return value !== undefined && value !== "" && value !== null;
+});
+
+    const resetAllFilters = () => {
+  if (!hasActiveFilters) return;
+
+  // just clear UI filters — no fetching
+  const clearedFilters: Filters = {};
+
+  flushSync(() => {
+    setFilters(clearedFilters);
+    filtersRef.current = clearedFilters;
+  });
+
+  // update URL without triggering listing reload
+  router.replace("/listings", { scroll: false });
+};
+
      // Mobile offcanvas filter state
      const mobileFiltersRef = useRef<HTMLDivElement>(null);
      useEffect(() => {
@@ -1077,7 +912,15 @@
                 <div className="filter filter_sticky hidden-xs hidden-sm">
                   <div className="card-title align-items-center d-flex justify-content-between hidden-xs">
                     <h3 className="filter_title">Filters</h3>
-                    <span className="text-uppercase clear_btn"> <i className="bi bi-arrow-repeat me-1"></i> Clear All </span>
+                    <span className="text-uppercase clear_btn" >  
+                      <button
+  onClick={resetAllFilters}
+  disabled={!hasActiveFilters}
+  className={`clear_btn ${!hasActiveFilters ? "disabled" : ""}`}
+  style={{ border: "none", backgroundColor:"white" }} 
+>
+  <i className="bi bi-arrow-repeat me-1"></i> Clear All
+</button> </span>
                   </div>
                   <div className="smooth_scroll">
                     <Suspense fallback={<div>Loading filters...</div>}>
@@ -1099,7 +942,7 @@
                    </div>
                  </div>
     </div>
-    
+
 
                  {/* Listings */}
                  {/* Listings */}
