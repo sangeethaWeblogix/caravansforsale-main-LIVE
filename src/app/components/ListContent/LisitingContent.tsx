@@ -109,8 +109,8 @@ export default function ListingContent({
   const nextRef = useRef(null);
 
   console.log("data-product", exculisiveProducts);
-  // console.log("data-premium", preminumProducts);
-  // console.log("data-featu", fetauredProducts);
+  console.log("data-premium", preminumProducts);
+  console.log("data-featu", fetauredProducts);
   // const handleChange = (e) => {
   //   setOrderBy(e.target.value);
   // };

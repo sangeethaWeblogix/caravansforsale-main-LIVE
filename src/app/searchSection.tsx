@@ -56,16 +56,18 @@ console.log("cat", setCategory)
     alert("Select at least one filter");
     return;
   }
-
+if (conditionValue === "All") {
+    router.push("/listings");
+    return;
+  }
   const parts: string[] = [];
 
   // 1️⃣ Condition always first
-  if (conditionValue) {
+ if (conditionValue && conditionValue !== "All") {
     const conditionSlug =
       conditionValue.toLowerCase().replace(/\s+/g, "-") + "-condition";
     parts.push(conditionSlug);
   }
-
   // 2️⃣ Category always second
   if (category) {
     const catSlug =
@@ -288,8 +290,16 @@ console.log("cat", setCategory)
  
                           <ul>
   
-                            <li>
-                               
+                             <li>
+                                <select onChange={(e) => setCategory(e.target.value)}>
+     <option value="">Select Category</option>
+     <option value="Off Road">Off Road</option>
+     <option value="Hybrid">Hybrid</option>
+     <option value="Pop Top">Pop Top</option>
+     <option value="Luxury">Luxury</option>
+     <option value="Family">Family</option>
+     <option value="Touring">Touring</option>
+   </select>
                             </li>
                          
                             <li>
