@@ -6,6 +6,7 @@ import { generateListingsMetadata } from "@/utils/seo/listingsMetadata";
 import { ensureValidPage } from "@/utils/seo/validatePage";
 import { redirect } from "next/navigation";
 import "../components/ListContent/newList.css"
+import "./listings.css"
 
 export const revalidate = 60;
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;

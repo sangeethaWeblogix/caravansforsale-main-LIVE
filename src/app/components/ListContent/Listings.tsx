@@ -55,6 +55,8 @@
      url?: string;
      sleeps?: string;
      manufacturer?: string;
+       is_exclusive?: boolean
+
    }
    
    interface Pagination {
@@ -137,6 +139,9 @@
        description: item.description,
        sku: item.sku,
        gallery: item.gallery || [],
+         is_exclusive: item.  is_exclusive,
+
+
        // keep extra props
      }));
    }

@@ -1,7 +1,8 @@
 // src/app/listings/[...slug]/layout.tsx
 import type { Metadata } from "next";
 import { ReactNode } from "react";
-
+import "../../components/ListContent/newList.css";
+import"../listings.css"
 /* ---------------------------------- Types --------------------------------- */
 
 // type SlugParams = { slug?: string[] };
