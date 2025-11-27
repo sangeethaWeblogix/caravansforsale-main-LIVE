@@ -1,4 +1,4 @@
- 
+
 "use client";
 import Link from "next/link";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -97,8 +97,8 @@ export default function ListingContent({
   isMainLoading,
   isNextLoading
 }: Props) {
- 
-    const prevRef = useRef(null);
+
+  const prevRef = useRef(null);
   const nextRef = useRef(null);
   // console.log("data-prod", products);
 
@@ -143,7 +143,7 @@ export default function ListingContent({
     return merged;
   }, [products, exculisiveProducts]);
 
- 
+
 
   // Example placeholder function for product links
 
@@ -394,19 +394,21 @@ export default function ListingContent({
                                         </p>
                                       ) : null;
                                     })()}
-<div className="more_info">
-                                    {(item.location) && (
-                                      <div className="informat">
+                                    <div className="more_info">
+                                      {(item.location) && (
+                                        <div className="informat">
 
-                                        {item.location && (
-                                          <span>
-                                            <i className="fa fa-map-marker-alt"></i>{" "}
-                                            {item.location}
-                                          </span>
-                                        )}
-                                      </div>
-                                    )}
-                                  </div>
+                                          {item.location && (
+                                            <span>
+                                              <i className="fa fa-map-marker-alt"></i>{" "}
+                                              {item.location}
+                                            </span>
+                                          )}
+                                        </div>
+                                      )}
+                                    </div>
+
+                                    
 
                                   </div>
                                 </div>
@@ -450,7 +452,7 @@ export default function ListingContent({
                                 )}
                               </ul>
 
-                              
+
 
 
                             </div>
@@ -512,7 +514,7 @@ export default function ListingContent({
                                   spaceBetween={10}
                                   slidesPerView={1}
                                   navigation
-                                  
+
                                   onSlideChange={(swiper) => {
                                     const isLast =
                                       swiper.activeIndex ===
@@ -562,7 +564,7 @@ export default function ListingContent({
                             <div className="info">
                               {item.name && (
                                 <h3 className="title">{item.name}</h3>
-                                
+
                               )}
                             </div>
 
@@ -627,6 +629,18 @@ export default function ListingContent({
                                       </div>
                                     )}
                                   </div>
+                                  <div className="more_info">
+                                     
+                                        <div className="informat">
+
+                                          
+                                            <span className="premium_van">
+                                              <i className="fa fa-star"></i> Premium
+                                            </span>
+                                          
+                                        </div>
+                                      
+                                    </div>
                                 </div>
                               </div>
                             )}
@@ -731,7 +745,7 @@ export default function ListingContent({
                                   spaceBetween={10}
                                   slidesPerView={1}
                                   navigation
-                                  
+
                                   onSlideChange={(swiper) => {
                                     const isLast =
                                       swiper.activeIndex ===
@@ -831,18 +845,18 @@ export default function ListingContent({
                                     })()}
 
                                     <div className="more_info">
-                                    {(item.location) && (
-                                      <div className="informat">
+                                      {(item.location) && (
+                                        <div className="informat">
 
-                                        {item.location && (
-                                          <span>
-                                            <i className="fa fa-map-marker-alt"></i>{" "}
-                                            {item.location}
-                                          </span>
-                                        )}
-                                      </div>
-                                    )}
-                                  </div>
+                                          {item.location && (
+                                            <span>
+                                              <i className="fa fa-map-marker-alt"></i>{" "}
+                                              {item.location}
+                                            </span>
+                                          )}
+                                        </div>
+                                      )}
+                                    </div>
                                   </div>
                                 </div>
                               )}
@@ -886,7 +900,7 @@ export default function ListingContent({
                                 )}
                               </ul>
 
-                              
+
 
                             </div>
                           </div>
@@ -931,7 +945,7 @@ export default function ListingContent({
           </nav>
         </div>
       </div>
-     
+
 
 
 

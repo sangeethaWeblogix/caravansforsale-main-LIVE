@@ -1806,9 +1806,7 @@ triggerGlobalLoaders();
   return (
     <>
       <div className="filter-card mobile-search">
-        <div className="card-title align-items-center d-flex justify-content-between hidden-xs">
-          <h3 className="filter_title">Filter</h3>
-        </div>
+        
         {/* Category Accordion */}
         <div className="cs-full_width_section">
           <div
