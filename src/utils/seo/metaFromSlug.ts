@@ -25,7 +25,7 @@ export async function metaFromSlug(
  
 const rawIndex = String(res?.seo?.index ?? "").toLowerCase().trim();
   const robots =
-    rawIndex === "noindex"
+    rawIndex === "false"
       ? { index: false, follow: false }
       : { index: true, follow: true };
 
