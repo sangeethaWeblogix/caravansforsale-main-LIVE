@@ -10,6 +10,7 @@ import Head from "next/head";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toSlug } from "@/utils/seo/slug";
 import ImageWithSkeleton from "../ImageWithSkeleton";
+import { useEnquiryForm } from "./enquiryform";
 
 interface Product {
   id: number;
@@ -125,6 +126,28 @@ export default function ListingContent({
   //   setOrderBy(e.target.value);
   // };
 
+  const enquiryProduct = selectedProduct
+  ? {
+      id: selectedProduct.id,
+      slug: selectedProduct.slug,
+      name: selectedProduct.name,
+    }
+  : {
+      id: 0,
+      slug: "",
+      name: "",
+    };
+
+    const {
+      form,
+      errors,
+      touched,
+      submitting,
+      setField,
+      onBlur,
+      onSubmit,
+    } = useEnquiryForm(enquiryProduct);
+
   const getFirstImage = (item: Product) => {
     if (!item.sku || !item.slug) return "/images/sample3.webp";
 
@@ -205,15 +228,15 @@ export default function ListingContent({
     const slug = p.slug?.trim() || toSlug(p.name);
     return slug ? `/product/${slug}/` : ""; // trailing slash optional
   };
-  const uniqueProducts = useMemo(() => {
-    const seen = new Set<string>();
-    return (products || []).filter((p) => {
-      const k = String(p?.id ?? p?.slug ?? p?.link);
-      if (seen.has(k)) return false;
-      seen.add(k);
-      return true;
-    });
-  }, [products]);
+  // const uniqueProducts = useMemo(() => {
+  //   const seen = new Set<string>();
+  //   return (products || []).filter((p) => {
+  //     const k = String(p?.id ?? p?.slug ?? p?.link);
+  //     if (seen.has(k)) return false;
+  //     seen.add(k);
+  //     return true;
+  //   });
+  // }, [products]);
   console.log("data", exculisiveProducts);
 
   // ✅ Helper: generate up to 5 image URLs from SKU
@@ -534,8 +557,10 @@ export default function ListingContent({
                               <div className="bottom_button">
                                 <button
                                   className="btn"
-                                  onClick={(e) => {
+                                      onClick={(e) => {
                                     e.preventDefault();
+                                      setSelectedProduct(item);
+
                                     setShowContact(true);
                                   }}
                                 >
@@ -1100,6 +1125,7 @@ export default function ListingContent({
               ×
             </button>
             <h4>Description</h4>
+
             <div className="popup-content">
               {selectedProduct.description ? (
                 <div
@@ -1126,124 +1152,148 @@ export default function ListingContent({
             <button
               type="button"
               className="close-popup"
-              onClick={() => setShowContact(false)}
+              onClick={() => {
+                setShowContact(false);
+                setSelectedProduct(null);   // reset selected product
+              }}
             >
               ×
             </button>
+      
             <h4>Contact Dealer</h4>
+      
             <div className="sidebar-enquiry">
-              <form className="wpcf7-form" noValidate>
+              <form className="wpcf7-form" noValidate onSubmit={onSubmit}>
                 <div className="form">
+      
+                  {/* Name */}
                   <div className="form-item">
                     <p>
                       <input
                         id="enquiry2-name"
                         className="wpcf7-form-control"
+                        value={form.name}
+                        onChange={(e) => setField("name", e.target.value)}
+                        onBlur={() => onBlur("name")}
                         required
                         autoComplete="off"
-                        aria-invalid="false"
-                        aria-describedby="err-name"
-                        type="text"
-                        name="enquiry2-name"
                       />
                       <label htmlFor="enquiry2-name">Name</label>
                     </p>
+                    {touched.name && errors.name && (
+                      <div className="cfs-error">{errors.name}</div>
+                    )}
                   </div>
-
+      
+                  {/* Email */}
                   <div className="form-item">
                     <p>
                       <input
                         id="enquiry2-email"
                         className="wpcf7-form-control"
+                        value={form.email}
+                        onChange={(e) => setField("email", e.target.value)}
+                        onBlur={() => onBlur("email")}
                         required
                         autoComplete="off"
-                        aria-invalid="false"
-                        aria-describedby="err-email"
-                        type="email"
-                        name="enquiry2-email"
                       />
                       <label htmlFor="enquiry2-email">Email</label>
                     </p>
+                    {touched.email && errors.email && (
+                      <div className="cfs-error">{errors.email}</div>
+                    )}
                   </div>
-
+      
+                  {/* Phone */}
                   <div className="form-item">
                     <p className="phone_country">
                       <span className="phone-label">+61</span>
                       <input
                         id="enquiry2-phone"
-                        inputMode="numeric"
                         className="wpcf7-form-control"
+                        inputMode="numeric"
+                        value={form.phone}
+                        onChange={(e) => setField("phone", e.target.value)}
+                        onBlur={() => onBlur("phone")}
                         required
                         autoComplete="off"
-                        aria-invalid="false"
-                        aria-describedby="err-phone"
-                        type="tel"
-                        name="enquiry2-phone"
                       />
                       <label htmlFor="enquiry2-phone">Phone</label>
                     </p>
+                    {touched.phone && errors.phone && (
+                      <div className="cfs-error">{errors.phone}</div>
+                    )}
                   </div>
-
+      
+                  {/* Postcode */}
                   <div className="form-item">
                     <p>
                       <input
                         id="enquiry2-postcode"
+                        className="wpcf7-form-control"
                         inputMode="numeric"
                         maxLength={4}
-                        className="wpcf7-form-control"
+                        value={form.postcode}
+                        onChange={(e) => setField("postcode", e.target.value)}
+                        onBlur={() => onBlur("postcode")}
                         required
                         autoComplete="off"
-                        aria-invalid="false"
-                        aria-describedby="err-postcode"
-                        type="text"
-                        name="enquiry2-postcode"
                       />
                       <label htmlFor="enquiry2-postcode">Postcode</label>
                     </p>
+                    {touched.postcode && errors.postcode && (
+                      <div className="cfs-error">{errors.postcode}</div>
+                    )}
                   </div>
-
+      
+                  {/* Message */}
                   <div className="form-item">
                     <p>
-                      <label htmlFor="enquiry4-message">
-                        Message (optional)
-                      </label>
-
+                      <label htmlFor="enquiry4-message">Message (optional)</label>
                       <textarea
                         id="enquiry4-message"
-                        name="enquiry4-message"
                         className="wpcf7-form-control wpcf7-textarea"
+                        value={form.message}
+                        onChange={(e) => setField("message", e.target.value)}
                       ></textarea>
                     </p>
                   </div>
-
+      
                   <p className="terms_text">
                     By clicking &lsquo;Send Enquiry&lsquo;, you agree to Caravan
                     Marketplace{" "}
-                    <Link target="_blank" href="/privacy-collection-statement/">
+                    <Link href="/privacy-collection-statement" target="_blank">
                       Collection Statement
                     </Link>
                     ,{" "}
-                    <Link target="_blank" href="/privacy-policy/">
+                    <Link href="/privacy-policy" target="_blank">
                       Privacy Policy
                     </Link>{" "}
                     and{" "}
-                    <Link target="_blank" href="/terms-conditions/">
+                    <Link href="/terms-conditions" target="_blank">
                       Terms and Conditions
                     </Link>
                     .
                   </p>
-
+      
                   <div className="submit-btn">
-                    <button type="submit" className="btn btn-primary">
-                      Send Enquiry
+                    <button
+                      type="submit"
+                      className="btn btn-primary"
+                      disabled={submitting}
+                    >
+                      {submitting ? "Sending..." : "Send Enquiry"}
                     </button>
                   </div>
+      
                 </div>
               </form>
             </div>
           </div>
         </div>
       )}
+
+
     </>
   );
 }

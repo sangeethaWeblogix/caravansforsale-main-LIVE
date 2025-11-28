@@ -1,4 +1,4 @@
- import { FormEvent, useState } from "react";
+  import { FormEvent, useState } from "react";
 import { createProductEnquiry } from "@/api/enquiry/api";
 import { useRouter } from "next/navigation";
 
