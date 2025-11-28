@@ -161,8 +161,8 @@ h1.page-title {
   position: absolute;
   z-index: 99;
   top: -5px;
-  left: -5px;
-  width: 220px;
+  /* left: -5px; */
+  /* width: 220px; */
 }
 .vehicleSearch .swiper-zoom-container > canvas,
 .vehicleSearch .swiper-zoom-container > img,
