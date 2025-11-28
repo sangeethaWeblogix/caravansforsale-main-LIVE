@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import Home from "./homenew";
-import "../globals.css";
+import Home from "./home";
+import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Caravans For Sale | New & Used Caravan Sales in Australia",

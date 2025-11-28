@@ -8,10 +8,10 @@
  import "swiper/css/navigation";
  import Link from "next/link";
  import Image from "next/image";
- import BlogSection from "./blogSection";
- import PostRequirement from "./postRequirement";
- import Manufactures from "./manufacture";
- import SearchSection from "./searchSection";
+ import BlogSection from "../blogSection";
+ import PostRequirement from "../postRequirement";
+ import Manufactures from "../manufacture";
+ import SearchSection from "../searchSection";
  import { fetchSleepBands } from "@/api/homeApi/sleep/api";
  import { fetchRegion } from "@/api/homeApi/region/api";
  import { fetchManufactures } from "@/api/homeApi/manufacture/api";
@@ -242,8 +242,7 @@ import { fetchStateBasedCaravans } from "@/api/homeApi/state/api";
 
               <div className="sec_left">
                 <h5>
-                  {item.label.replace("Caravans For Sale in ", "")}
-                  {" "}
+                  {item.state}
                 </h5>
 
                 <div className="info">

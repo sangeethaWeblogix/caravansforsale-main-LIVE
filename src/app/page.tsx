@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Home from "./home";
+import Home from "./home/home";
 import "./globals.css";
 
 export const metadata: Metadata = {
