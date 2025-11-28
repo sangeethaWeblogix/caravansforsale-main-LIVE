@@ -57,6 +57,7 @@ type ProductData = {
   image?: string[];
   title?: string;
   location_shortcode?: string;
+  sku?: string;
  };
 
 interface BlogPost extends HomeBlogPost {
@@ -77,8 +78,9 @@ export default function ClientLogger({
   // const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   console.log("datap", data);
 
-  const [activeImage, setActiveImage] = useState<string>("");
+  // const [activeImage, setActiveImage] = useState<string>("");
   const pd: ApiData = data?.data ?? {};
+  console.log("pd", pd)
   const productDetails: ProductData = pd.product_details ?? {};
   const blogPosts: BlogPost[] = Array.isArray(data?.data?.latest_blog_posts)
     ? data.data.latest_blog_posts!
@@ -145,17 +147,7 @@ export default function ClientLogger({
 
   const productImage: string =
     productDetails.main_image || pd.main_image || "/images/img.png";
-
-  const productSubImage: string[] = useMemo(
-    () =>
-      Array.isArray(productDetails.images)
-        ? productDetails.images.filter(Boolean)
-        : Array.isArray(pd.images)
-        ? pd.images.filter(Boolean)
-        : [],
-    [productDetails.images, pd.images]
-  );
-
+ 
   const images: string[] = useMemo(
     () => (Array.isArray(pd.images) ? pd.images.filter(Boolean) : []),
     [pd.images]
@@ -392,9 +384,33 @@ export default function ClientLogger({
     makeValue && makeValue.trim()
       ? `/listings/${slugify(makeValue)}/`
       : "/listings/";
+
   const productId: string | number | undefined =
     product.id ?? pd.id ?? product.name;
+
   const productSlug: string | undefined = product.slug ?? pd.slug;
+console.log("product", data)
+
+const slug = productSlug || toSlug(product.name || "");
+const sku = productDetails.sku ;
+console.log("slug1", productDetails)
+ 
+
+
+  const base = `https://caravansforsale.imagestack.net/600x450/${sku}/${slug}`;
+
+  const main = `${base}main1.avif`;
+ 
+const subs = [
+      `${base}main1.avif`,
+      ...Array.from({ length: 100 }, (_, i) => `${base}sub${i + 2}.avif`),
+    ];  
+
+     
+const [activeImage, setActiveImage] = useState(main);
+
+  
+ console.log("iamge", subs)
 
   return (
     <>
@@ -478,7 +494,7 @@ export default function ClientLogger({
                   />
                   <div className="slider_thumb_vertical image_container">
                     <div className="image_mop">
-                      {productSubImage.slice(0, 4).map((image, i) => (
+                      { subs.slice(0, 4).map((image, i) => (
                         <div className="image_item" key={`${image}-${i}`}>
                           <div className="background_thumb">
                             <Image
@@ -486,8 +502,7 @@ export default function ClientLogger({
                               width={128}
                               height={96}
                               alt="Thumbnail"
-                              priority={i < 4}
-                              unoptimized
+                               unoptimized
                             />
                           </div>
                           <div className="img">
@@ -503,7 +518,7 @@ export default function ClientLogger({
                       ))}
 
                       <span className="caravan__image_count">
-                        <span>{productSubImage.length}+</span>
+                        <span>{subs.length}+</span>
                       </span>
                     </div>
                   </div>
@@ -512,7 +527,7 @@ export default function ClientLogger({
                   <div className="lager_img_view image_container">
                     <div className="background_thumb">
                       <Image
-                        src={activeImage || productImage}
+                        src={activeImage}
                         width={800}
                         height={600}
                         alt="Large"
@@ -521,7 +536,7 @@ export default function ClientLogger({
                     </div>
                     <Link href="#">
                       <Image
-                        src={activeImage || productImage}
+                        src={activeImage }
                         width={800}
                         height={600}
                         alt="Large"
@@ -757,7 +772,7 @@ export default function ClientLogger({
                 <CaravanDetailModal
                   isOpen={showModal}
                   onClose={() => setShowModal(false)}
-                  images={productSubImage}
+                  images={subs}
                   product={{
                     id: productId,
                     slug: productSlug,
