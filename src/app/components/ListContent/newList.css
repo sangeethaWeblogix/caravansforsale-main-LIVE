@@ -565,8 +565,8 @@ h1.page-title {
   padding: 5px 0px;
   font-weight: 500;
   text-transform: uppercase;
-  display: none;
-}
+  display: block;
+ }
 
 .product-page .product-card:hover {
   box-shadow: var(--boxshadow-100);
