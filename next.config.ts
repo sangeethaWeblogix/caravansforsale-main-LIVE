@@ -12,6 +12,7 @@ const nextConfig: NextConfig = {
        "www.admin.caravansforsale.com.au",
       "caravansforsale.b-cdn.net",
       "wb79vudhmjvv4ng6.public.blob.vercel-storage.com",
+      "caravansforsale.imagestack.net",
     ],
       remotePatterns: [
       {
@@ -36,7 +37,7 @@ const nextConfig: NextConfig = {
       },
     ],
     formats: ["image/avif", "image/webp"],
-    minimumCacheTTL: 31536000,
+    minimumCacheTTL: 86400,
   },
   compress: true,
  
