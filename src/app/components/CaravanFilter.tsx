@@ -1788,7 +1788,9 @@ triggerGlobalLoaders();
             onClick={() => toggle(setCategoryOpen)}
           >
             <h5 className="cfs-filter-label">Category</h5>
-            <BiChevronDown />
+            <BiChevronDown  style={{
+                cursor: "pointer",
+               }}  />
           </div>
 
           {/* ✅ Selected Category Chip */}
@@ -2353,7 +2355,10 @@ setModel(make.models || []);
               onClick={() => toggle(setModelOpen)}
             >
               <h5 className="cfs-filter-label">Model</h5>
-              <BiChevronDown />
+              <BiChevronDown  style={{
+                cursor: "pointer",
+                 
+              }} />
             </div>
             {selectedModelName && (
               <div className="filter-chip">
@@ -2588,7 +2593,9 @@ setModel(make.models || []);
             onClick={() => toggle(setConditionOpen)}
           >
             <h5 className="cfs-filter-label"> Condition</h5>
-            <BiChevronDown />
+            <BiChevronDown  style={{
+                cursor: "pointer",
+               }}   />
           </div>
           {selectedConditionName && (
             <div className="filter-chip">
@@ -2714,7 +2721,10 @@ setModel(make.models || []);
   {/* Accordion Header */}
   <div className="filter-accordion" onClick={() => toggle(setYearOpen)}>
     <h5 className="cfs-filter-label">Year</h5>
-    <BiChevronDown />
+    <BiChevronDown  style={{
+                cursor: "pointer",
+                 
+              }} />
   </div>
 
   {/* Selected Year Chip */}
