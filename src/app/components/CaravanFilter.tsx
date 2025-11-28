@@ -171,6 +171,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
   );
   // top (other states kula)
   const [modalKeyword, setModalKeyword] = useState("");
+const [showAllModels, setShowAllModels] = useState(false);
 
   const suburbClickedRef = useRef(false);
   const [selectedConditionName, setSelectedConditionName] = useState<
@@ -2403,21 +2404,38 @@ setModel(make.models || []);
               </div>
             )}
 
-            {modelOpen && (
-              <div className="filter-accordion-items">
-                {model.map((mod) => (
-                  <div
-                    key={mod.slug}
-                    className={`filter-accordion-item ${
-                      selectedModel === mod.slug ? "selected" : ""
-                    }`}
-                    onClick={() => handleModelSelect(mod)} // ✅ Call here
-                  >
-                    {mod.name}
-                  </div>
-                ))}
-              </div>
-            )}
+          {modelOpen && (
+  <div className="filter-accordion-items">
+
+    {(showAllModels ? model : model.slice(0, 5)).map((mod) => (
+      <div
+        key={mod.slug}
+        className={`filter-accordion-item ${
+          selectedModel === mod.slug ? "selected" : ""
+        }`}
+        onClick={() => handleModelSelect(mod)}
+      >
+        {mod.name}
+      </div>
+    ))}
+
+    {model.length > 5 && (
+      <div
+        className="show-more-less"
+        style={{
+          marginTop: "8px",
+          cursor: "pointer",
+          color: "#0070f3",
+          fontWeight: "500"
+        }}
+        onClick={() => setShowAllModels(!showAllModels)}
+      >
+        {showAllModels ? "Show Less" : "Show More"}
+      </div>
+    )}
+  </div>
+)}
+
           </div>
         )}
 
