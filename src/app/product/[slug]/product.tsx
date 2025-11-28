@@ -397,15 +397,54 @@ console.log("slug1", productDetails)
  
 
 
-  const base = `https://caravansforsale.imagestack.net/600x450/${sku}/${slug}`;
+  const base = `https://caravansforsale.imagestack.net/600x450/${sku}/${slug}/`;
 
   const main = `${base}main1.avif`;
  
-const subs = [
-      `${base}main1.avif`,
-      ...Array.from({ length: 100 }, (_, i) => `${base}sub${i + 2}.avif`),
-    ];  
+// const subs = [
+//       `${base}main1.avif`,
+//       ...Array.from({ length: 4 }, (_, i) => `${base}sub${i + 2}.avif`),
+//     ];  
+const [subs, setSubs] = useState<string[]>([]);
 
+useEffect(() => {
+  if (!sku || !slug) return;
+
+  const base = `https://caravansforsale.imagestack.net/600x450/${sku}/${slug}`;
+
+  const loadImages = async () => {
+    const validImages: string[] = [];
+    const main = `${base}main1.avif`;
+    validImages.push(main);
+
+    let i = 2;
+
+    while (true) {
+      const url = `${base}sub${i}.avif`;
+      const exists = await checkImage(url);
+
+      if (!exists) break;
+
+      validImages.push(url);
+      i++;
+    }
+
+    setSubs(validImages);
+  };
+
+  loadImages();
+}, [sku, slug]);
+
+
+// ---- Helper to check actual existence without CORS errors ----
+ function checkImage(url: string): Promise<boolean> {
+  return new Promise((resolve) => {
+    const img = new window.Image(); // <-- FIXED
+    img.onload = () => resolve(true);
+    img.onerror = () => resolve(false);
+    img.src = url;
+  });
+}
      
 const [activeImage, setActiveImage] = useState(main);
 
@@ -527,7 +566,7 @@ const [activeImage, setActiveImage] = useState(main);
                   <div className="lager_img_view image_container">
                     <div className="background_thumb">
                       <Image
-                        src={activeImage}
+                        src={activeImage || subs[0]}
                         width={800}
                         height={600}
                         alt="Large"
@@ -536,7 +575,7 @@ const [activeImage, setActiveImage] = useState(main);
                     </div>
                     <Link href="#">
                       <Image
-                        src={activeImage }
+                        src={activeImage || subs[0] }
                         width={800}
                         height={600}
                         alt="Large"
@@ -777,7 +816,7 @@ const [activeImage, setActiveImage] = useState(main);
                     id: productId,
                     slug: productSlug,
                     name: product.name ?? "",
-                    image: activeImage || productImage,
+                    image: activeImage || subs[0] ,
                     price: hasSale ? sale : reg,
                     regularPrice: reg,
                     salePrice: sale,
