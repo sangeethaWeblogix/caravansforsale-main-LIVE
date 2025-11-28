@@ -975,7 +975,7 @@ export default function ListingsPage({
                     emptyProduct.length > 0 && (
                       <ExculsiveContent
                         data={emptyProduct}
-                        pageTitle={pageTitle}
+                        // pageTitle={pageTitle}
                         metaDescription={metaDescription}
                         metaTitle={metaTitle}
                         isPremiumLoading={isPremiumLoading}

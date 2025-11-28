@@ -73,7 +73,7 @@
  }
  interface Props {
    data: Product[];
- pageTitle: string; // Add pageTitle prop
+//  pageTitle: string; // Add pageTitle prop
    metaTitle: string; // Add metaTitle prop
    metaDescription: string; // Add metaDescription prop
    isPremiumLoading: boolean; // Add isMainLoading prop
@@ -81,7 +81,7 @@
  
  export default function ExculisiveContent({
    data,
- pageTitle,
+//  pageTitle,
    metaTitle,
    metaDescription,
    isPremiumLoading,
