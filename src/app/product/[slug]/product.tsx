@@ -1,6 +1,6 @@
  "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
 import "swiper/css";
@@ -13,6 +13,8 @@ import DOMPurify from "dompurify";
 import { type HomeBlogPost } from "@/api/home/api";
 import { toSlug } from "@/utils/seo/slug";
 import ProductSkelton from "../../components/ProductCardSkeleton";
+import FallbackImage from "@/app/components/FallbackImage";
+import GallerySkeleton from "@/app/components/GallerySkeleton";
 type Attribute = {
   label?: string;
   value?: string;
@@ -89,6 +91,15 @@ export default function ClientLogger({
   const relatedProducts: ProductData[] = Array.isArray(data?.data?.related)
     ? data.data.related!
     : [];
+const [galleryLoaded, setGalleryLoaded] = useState(false);
+const loadedCount = useRef(0);
+
+const handleImageLoad = () => {
+  loadedCount.current += 1;
+  if (loadedCount.current >= subs.length + 1) {
+    setGalleryLoaded(true); // All images ready
+  }
+};
 
   console.log("datapb", relatedProducts);
 
@@ -397,7 +408,7 @@ console.log("slug1", productDetails)
  
 
 
-  const base = `https://caravansforsale.imagestack.net/600x450/${sku}/${slug}/`;
+  const base = `https://caravansforsale.imagestack.net/600x450/${sku}/${slug}`;
 
   const main = `${base}main1.avif`;
  
@@ -407,44 +418,30 @@ console.log("slug1", productDetails)
 //     ];  
 const [subs, setSubs] = useState<string[]>([]);
 
-useEffect(() => {
+ useEffect(() => {
   if (!sku || !slug) return;
 
   const base = `https://caravansforsale.imagestack.net/600x450/${sku}/${slug}`;
 
-  const loadImages = async () => {
-    const validImages: string[] = [];
-    const main = `${base}main1.avif`;
-    validImages.push(main);
+  const imgs = [
+    `${base}main1.avif`,
+    `${base}sub1.avif`,
+    `${base}sub2.avif`,
+    `${base}sub3.avif`,
+    `${base}sub4.avif`,
+    `${base}sub5.avif`,
+    `${base}sub6.avif`,
+    `${base}sub7.avif`,
+    `${base}sub8.avif`,
+    `${base}sub9.avif`,
+  ];
 
-    let i = 2;
-
-    while (true) {
-      const url = `${base}sub${i}.avif`;
-      const exists = await checkImage(url);
-
-      if (!exists) break;
-
-      validImages.push(url);
-      i++;
-    }
-
-    setSubs(validImages);
-  };
-
-  loadImages();
+  setSubs(imgs);
+  setActiveImage(imgs[0]);
 }, [sku, slug]);
 
 
-// ---- Helper to check actual existence without CORS errors ----
- function checkImage(url: string): Promise<boolean> {
-  return new Promise((resolve) => {
-    const img = new window.Image(); // <-- FIXED
-    img.onload = () => resolve(true);
-    img.onerror = () => resolve(false);
-    img.src = url;
-  });
-}
+ 
      
 const [activeImage, setActiveImage] = useState(main);
 
@@ -525,65 +522,82 @@ const [activeImage, setActiveImage] = useState(main);
                        
                   </div>
                 </div>
+
                 {/* Image Gallery */}
-                <div className="caravan_slider_visible">
-                  <button
-                    className="hover_link Click-here"
-                    onClick={() => setShowModal(true)}
-                  />
-                  <div className="slider_thumb_vertical image_container">
-                    <div className="image_mop">
-                      { subs.slice(0, 4).map((image, i) => (
-                        <div className="image_item" key={`${image}-${i}`}>
-                          <div className="background_thumb">
-                            <Image
-                              src={image}
-                              width={128}
-                              height={96}
-                              alt="Thumbnail"
-                               unoptimized
-                            />
-                          </div>
-                          <div className="img">
-                            <Image
-                              src={image}
-                              width={128}
-                              height={96}
-                              alt={`Thumb ${i + 1}`}
-                              priority={i < 4}
-                            />
-                          </div>
-                        </div>
-                      ))}
+               {galleryLoaded ? (
+  <GallerySkeleton />
+) : (
+  <div className="caravan_slider_visible">
+    <button
+      className="hover_link Click-here"
+      onClick={() => setShowModal(true)}
+    />
 
-                      <span className="caravan__image_count">
-                        <span>{subs.length}+</span>
-                      </span>
-                    </div>
-                  </div>
+    {/* Thumbnails */}
+    <div className="slider_thumb_vertical image_container">
+      <div className="image_mop">
+        {subs.slice(0, 4).map((image, i) => (
+          <div className="image_item" key={`${image}-${i}`}>
+            <div className="background_thumb">
+              <FallbackImage
+                src={image}
+                width={128}
+                height={96}
+                alt="Thumbnail"
+                unoptimized
+                onLoad={handleImageLoad}
+              />
+            </div>
 
-                  {/* Large Image */}
-                  <div className="lager_img_view image_container">
-                    <div className="background_thumb">
-                      <Image
-                        src={activeImage || subs[0]}
-                        width={800}
-                        height={600}
-                        alt="Large"
-                        className="img-fluid"
-                      />
-                    </div>
-                    <Link href="#">
-                      <Image
-                        src={activeImage || subs[0] }
-                        width={800}
-                        height={600}
-                        alt="Large"
-                        className="img-fluid"
-                      />
-                    </Link>
-                  </div>
-                </div>
+            <div className="img" onClick={() => setActiveImage(image)}>
+              <FallbackImage
+                src={image}
+                width={128}
+                height={96}
+                alt={`Thumb ${i + 1}`}
+                priority={i < 4}
+                unoptimized
+                onLoad={handleImageLoad}
+              />
+            </div>
+          </div>
+        ))}
+
+        <span className="caravan__image_count">
+          <span>{subs.length}+</span>
+        </span>
+      </div>
+    </div>
+
+    {/* Large Image */}
+    <div className="lager_img_view image_container">
+      <div className="background_thumb">
+        <FallbackImage
+          src={activeImage || subs[0]}
+          width={800}
+          height={600}
+          alt="Large"
+          className="img-fluid"
+          unoptimized
+          onLoad={handleImageLoad}
+        />
+      </div>
+
+      <Link href="#">
+        <FallbackImage
+          src={activeImage || subs[0]}
+          width={800}
+          height={600}
+          alt="Large"
+          className="img-fluid"
+          unoptimized
+          onLoad={handleImageLoad}
+        />
+      </Link>
+    </div>
+  </div>
+)}
+
                 {/* Tabs */}
                 <section className="product-details">
                   <ul className="nav nav-pills">
