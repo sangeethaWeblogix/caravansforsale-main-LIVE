@@ -585,6 +585,7 @@ h1.page-title {
    border-radius: 8px;
    padding-bottom: 10px;
   border: 1px solid #e0e0e0;
+  z-index: 1;
 }
 
 .filter_sticky .filter_title {

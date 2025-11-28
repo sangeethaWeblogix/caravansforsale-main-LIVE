@@ -20,7 +20,7 @@
    import { buildSlugFromFilters } from "../slugBuilter";
    import { parseSlugToFilters } from "../../components/urlBuilder";
    import Head from "next/head";
-   import "./loader.css";
+  //  import "./loader.css";
 // import Link from "next/link";
   
    /* --------- GLOBAL de-dupe across StrictMode remounts --------- */

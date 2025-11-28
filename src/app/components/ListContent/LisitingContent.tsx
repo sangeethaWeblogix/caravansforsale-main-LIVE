@@ -131,7 +131,7 @@
  
    const images = [
      `${base}main1.avif`,
-     ...Array.from({ length: 5 }, (_, i) => `${base}sub${i + 1}.avif`)
+     ...Array.from({ length: 6 }, (_, i) => `${base}sub${i + 2}.avif`)
    ];
  
    setLazyImages((prev) => ({
@@ -219,7 +219,7 @@
  
    return [
      `${base}main1.avif`,
-     ...Array.from({ length: 5 }, (_, i) => `${base}sub${i + 1}.avif`)
+     ...Array.from({ length: 6 }, (_, i) => `${base}sub${i + 2}.avif`)
    ];
  };
  
@@ -260,9 +260,7 @@
            <div className="row align-items-center">
              <div className="col-lg-8">
                <h1 className="show_count">
-                  <strong>{pageTitle}</strong>  
- 
-                 
+                  <strong>{pageTitle}</strong>          
                </h1>
              </div>
              <div className="col-4 d-lg-none d-md-none">
