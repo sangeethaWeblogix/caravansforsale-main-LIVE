@@ -1,4 +1,4 @@
-  "use client";
+ "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -94,10 +94,10 @@ export default function ClientLogger({
 const [galleryLoaded, setGalleryLoaded] = useState(false);
 const loadedCount = useRef(0);
 
-const handleImageLoad = () => {
+ const handleImageLoad = () => {
   loadedCount.current += 1;
   if (loadedCount.current >= subs.length + 1) {
-    setGalleryLoaded(true); // All images ready
+    setGalleryLoaded(true);
   }
 };
 
@@ -417,33 +417,57 @@ console.log("slug1", productDetails)
 //       ...Array.from({ length: 4 }, (_, i) => `${base}sub${i + 2}.avif`),
 //     ];  
 const [subs, setSubs] = useState<string[]>([]);
+ 
+ function checkImage(url: string): Promise<boolean> {
+  return new Promise((resolve) => {
+    if (typeof window === "undefined") return resolve(false);
+
+    const img = document.createElement("img");
+    img.onload = () => resolve(true);
+    img.onerror = () => resolve(false);
+    img.src = url;
+  });
+}
+
+
+
+
+const [activeImage, setActiveImage] = useState(main);
 
  useEffect(() => {
+  if (typeof window === "undefined") return; // SSR protection
   if (!sku || !slug) return;
 
   const base = `https://caravansforsale.imagestack.net/600x450/${sku}/${slug}`;
+  const main = `${base}main1.avif`;
 
-  const imgs = [
-    `${base}main1.avif`,
-    `${base}sub1.avif`,
-    `${base}sub2.avif`,
-    `${base}sub3.avif`,
-    `${base}sub4.avif`,
-    `${base}sub5.avif`,
-    `${base}sub6.avif`,
-    `${base}sub7.avif`,
-    `${base}sub8.avif`,
-    `${base}sub9.avif`,
-  ];
+  const loadImages = async () => {
+    const list: string[] = [];
+    let i = 1;
 
-  setSubs(imgs);
-  setActiveImage(imgs[0]);
+    while (true) {
+      const url = `${base}sub${i}.avif`;
+      const ok = await checkImage(url);
+      if (!ok) break;
+
+      list.push(url);
+      i++;
+    }
+
+    setSubs(list);
+    setActiveImage(main);
+    loadedCount.current = 0;
+    setGalleryLoaded(false);
+  };
+
+  loadImages();
 }, [sku, slug]);
+
+
 
 
  
      
-const [activeImage, setActiveImage] = useState(main);
 
   
  console.log("iamge", subs)
@@ -521,11 +545,14 @@ const [activeImage, setActiveImage] = useState(main);
     </h6>
   </div>
 )}
+
+
                 </div>
 
                 {/* Image Gallery */}
-               {galleryLoaded ? (
+               {!galleryLoaded ? (
   <GallerySkeleton />
+
 ) : (
   <div className="caravan_slider_visible">
     <button
