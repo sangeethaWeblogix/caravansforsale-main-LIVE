@@ -46,7 +46,7 @@ import { fetchStateBasedCaravans } from "@/api/homeApi/state/api";
    const [adIndex, setAdIndex] = useState<number>(0);
       const [stateBands, setStateBands] = useState<Item[]>([]);
 
- 
+ console.log("add", adIndex)
    const bannerSectionRef = useRef<HTMLDivElement | null>(null);
    useEffect(() => {
      async function loadAll() {
