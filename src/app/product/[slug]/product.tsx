@@ -550,7 +550,7 @@ const [activeImage, setActiveImage] = useState(main);
                 </div>
 
                 {/* Image Gallery */}
-               {galleryLoaded ? (
+               {!galleryLoaded ? (
   <GallerySkeleton />
 
 ) : (
