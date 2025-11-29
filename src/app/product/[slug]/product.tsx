@@ -538,13 +538,15 @@ const [activeImage, setActiveImage] = useState(main);
                     </div>
                   </div>
 
-                  <div className="attributes">
-                   
-                        <h6 className="category" >
-                         Location- {product.location_shortcode}
-                        </h6>
-                       
-                  </div>
+                  {product.location_shortcode && product.location_shortcode.trim() !== "" && (
+  <div className="attributes">
+    <h6 className="category">
+      Location- {product.location_shortcode}
+    </h6>
+  </div>
+)}
+
+
                 </div>
 
                 {/* Image Gallery */}
