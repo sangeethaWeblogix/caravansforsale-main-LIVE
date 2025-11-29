@@ -230,7 +230,7 @@ import { fetchStateBasedCaravans } from "@/api/homeApi/state/api";
     <div className="row">
 
       {stateBands.map((item, index) => {
-        const key = item.state.toLowerCase();   // e.g. "victoria"
+const key = item.state.toLowerCase().replace(/\s+/g, "-"); 
 
         const meta = stateMeta[key] || {};
         const stateCode = meta.code || "";
