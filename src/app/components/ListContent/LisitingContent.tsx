@@ -151,12 +151,12 @@ export default function ListingContent({
   const getFirstImage = (item: Product) => {
     if (!item.sku || !item.slug) return "/images/sample3.webp";
 
-    return `https://caravansforsale.imagestack.net/600x450/${item.sku}/${item.slug}main1.avif`;
+    return `https://caravansforsale.imagestack.net/400x300/${item.sku}/${item.slug}main1.avif`;
   };
   const loadRemaining = (item: Product) => {
     if (!item.sku || !item.slug) return;
 
-    const base = `https://caravansforsale.imagestack.net/600x450/${item.sku}/${item.slug}`;
+    const base = `https://caravansforsale.imagestack.net/400x300/${item.sku}/${item.slug}`;
 
     const images = [
       `${base}main1.avif`,
@@ -243,7 +243,7 @@ export default function ListingContent({
   const getProductImages = (sku?: string, slug?: string): string[] => {
     if (!sku || !slug) return ["/images/sample3.webp"];
 
-    const base = `https://caravansforsale.imagestack.net/600x450/${sku}/${slug}`;
+    const base = `https://caravansforsale.imagestack.net/400x300/${sku}/${slug}`;
 
     return [
       `${base}main1.avif`,
