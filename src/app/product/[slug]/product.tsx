@@ -432,6 +432,7 @@ const [subs, setSubs] = useState<string[]>([]);
 
 
 
+const [activeImage, setActiveImage] = useState(main);
 
  useEffect(() => {
   if (typeof window === "undefined") return; // SSR protection
@@ -467,7 +468,6 @@ const [subs, setSubs] = useState<string[]>([]);
 
  
      
-const [activeImage, setActiveImage] = useState(main);
 
   
  console.log("iamge", subs)
@@ -548,9 +548,9 @@ const [activeImage, setActiveImage] = useState(main);
                 </div>
 
                 {/* Image Gallery */}
-               {!galleryLoaded ? (
+               {galleryLoaded ? (
   <GallerySkeleton />
-  
+
 ) : (
   <div className="caravan_slider_visible">
     <button
