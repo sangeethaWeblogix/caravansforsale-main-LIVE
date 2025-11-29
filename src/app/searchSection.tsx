@@ -59,6 +59,7 @@
     alert("Select at least one filter");
     return;
   }
+  setNavigating(true);
 if (conditionValue === "All") {
     router.push("/listings");
     return;
@@ -306,11 +307,11 @@ if (conditionValue === "All") {
                           <ul>
   
                              <li>
-                                <select  onChange={(e) => {
-    const v = e.target.value;
-    setCategory(v);
-    navigateBySelect(v, "-category");
-  }}>
+                                <select 
+                                 onChange={(e) => {
+      setCategory(e.target.value);
+    }}
+  >
      <option value="">Select Category</option>
      <option value="Off Road">Off Road</option>
      <option value="Hybrid">Hybrid</option>
@@ -325,10 +326,8 @@ if (conditionValue === "All") {
 
                               <select
   onChange={(e) => {
-    const v = e.target.value;
-    setLocation(v);
-    navigateBySelect(v, "-state");
-  }}
+      setLocation(e.target.value);
+    }}
 >
      <option value="">Select Location</option>
      <option value="New South Wales">New South Wales</option>
@@ -344,11 +343,9 @@ if (conditionValue === "All") {
                             <li>
                               
                               <select
-  onChange={(e) => {
-    const v = e.target.value;
-    setConditionValue(v);
-    navigateBySelect(v, "-condition");
-  }}
+ onChange={(e) => {
+      setConditionValue(e.target.value);
+    }}
 >
      <option value="">Select Condition</option>
      <option value="New">New</option>

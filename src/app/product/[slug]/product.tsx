@@ -476,7 +476,7 @@ const [subs, setSubs] = useState<string[]>([]);
       }
 
       // 2) SUBS: sub1.avif, sub2.avif, ...
-      for (let i = 1; i <= 10; i++) {
+      for (let i = 1; i <= 100; i++) {
         const url = `${base}sub${i}.avif`;
         const ok = await checkImage(url);
         if (!ok) break; // stop when next sub doesn't exist
