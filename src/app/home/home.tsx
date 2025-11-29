@@ -577,7 +577,7 @@ import { fetchStateBasedCaravans } from "@/api/homeApi/state/api";
              </div>
            </div>
  
-           <div className="banner_ads_ls" ref={bannerSectionRef}>
+           {/* <div className="banner_ads_ls" ref={bannerSectionRef}>
              {[
                { name: "masterpiece", mobile: "masterpiece-m" },
                { name: "orbit", mobile: "orbit-m" },
@@ -610,7 +610,7 @@ import { fetchStateBasedCaravans } from "@/api/homeApi/state/api";
                  </Link>
                </div>
              ))}
-           </div>
+           </div> */}
          </div>
        </section>
  

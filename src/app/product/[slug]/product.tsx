@@ -418,9 +418,9 @@ console.log("slug1", productDetails)
   }, [productImage]);
 
 
-  const base = `https://caravansforsale.imagestack.net/600x450/${sku}/${slug}`;
+  // const base = `https://caravansforsale.imagestack.net/600x450/${sku}/${slug}`;
 
-  const main = `${base}main1.avif`;
+  // const main = `${base}main1.avif`;
  
 // const subs = [
 //       `${base}main1.avif`,

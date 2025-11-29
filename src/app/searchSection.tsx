@@ -571,7 +571,7 @@ if (conditionValue === "All") {
               </div>
             </div>
           </div>
-          <div className="row align-items-center justify-content-center">
+          {/* <div className="row align-items-center justify-content-center">
 
             <div className="col-lg-10">
             <Link href="/caravan-enquiry-form/">
@@ -596,7 +596,7 @@ if (conditionValue === "All") {
             </Link>
             </div>
 
-          </div>
+          </div> */}
         </div>
            {navigating && (
                  <div
