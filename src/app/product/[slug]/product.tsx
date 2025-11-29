@@ -420,11 +420,7 @@ const [subs, setSubs] = useState<string[]>([]);
  
  function checkImage(url: string): Promise<boolean> {
   return new Promise((resolve) => {
-    if (typeof window === "undefined") {
-      // running on server – cannot check images
-      resolve(false);
-      return;
-    }
+    if (typeof window === "undefined") return resolve(false);
 
     const img = document.createElement("img");
     img.onload = () => resolve(true);
@@ -436,7 +432,9 @@ const [subs, setSubs] = useState<string[]>([]);
 
 
 
-useEffect(() => {
+
+ useEffect(() => {
+  if (typeof window === "undefined") return; // SSR protection
   if (!sku || !slug) return;
 
   const base = `https://caravansforsale.imagestack.net/600x450/${sku}/${slug}`;
@@ -444,8 +442,8 @@ useEffect(() => {
 
   const loadImages = async () => {
     const list: string[] = [];
-
     let i = 1;
+
     while (true) {
       const url = `${base}sub${i}.avif`;
       const ok = await checkImage(url);
@@ -457,12 +455,13 @@ useEffect(() => {
 
     setSubs(list);
     setActiveImage(main);
-    loadedCount.current = 0; // reset counter for new product
-    setGalleryLoaded(false); // reset skeleton
+    loadedCount.current = 0;
+    setGalleryLoaded(false);
   };
 
   loadImages();
 }, [sku, slug]);
+
 
 
 
@@ -549,8 +548,9 @@ const [activeImage, setActiveImage] = useState(main);
                 </div>
 
                 {/* Image Gallery */}
-               {galleryLoaded ? (
+               {!galleryLoaded ? (
   <GallerySkeleton />
+  
 ) : (
   <div className="caravan_slider_visible">
     <button
