@@ -422,32 +422,20 @@ console.log("slug1", productDetails)
 
   // const main = `${base}main1.avif`;
  
-   const [mainsub, setMainsub] = useState<string[]>([]);
-
-useEffect(() => {
-  if (!sku || !slug) {
-    setMainsub([]);
-    return;
-  }
-
-  const base = `https://caravansforsale.imagestack.net/600x450/${sku}/${slug}`;
-
-  const imgs = [
-    `${base}main1.avif`,        // main image
-    `${base}sub2.avif`,         // sub1
-    `${base}sub3.avif`,         // sub2
-    `${base}sub4.avif`,         // sub3
-    `${base}sub5.avif`,         // sub4
-  ];
-
-  setMainsub(imgs);
-}, [sku, slug]);
-
-
-
-   
+// const subs = [
+//       `${base}main1.avif`,
+//       ...Array.from({ length: 4 }, (_, i) => `${base}sub${i + 2}.avif`),
+//     ];  
 const [subs, setSubs] = useState<string[]>([]);
- 
+ // ---- gallery state ----
+// const [activeImage, setActiveImage] = useState<string>(productImage);
+ const [subsLoading, setSubsLoading] = useState<boolean>(false);
+
+// keep activeImage in sync with main image from API
+useEffect(() => {
+  setActiveImage(productImage);
+}, [productImage]);
+
   function checkImage(url: string): Promise<boolean> {
     return new Promise((resolve) => {
       if (typeof window === "undefined") return resolve(false);
@@ -460,64 +448,59 @@ const [subs, setSubs] = useState<string[]>([]);
   }
 
 
-  useEffect(() => {
-    let cancelled = false;
+ useEffect(() => {
+  let cancelled = false;
 
-    const loadGallery = async () => {
-      // show skeleton while we probe
-      setGalleryLoaded(false);
+  const loadGallery = async () => {
+    // 🔹 start loading subs
+    setSubsLoading(true);
 
-      // Fallback: no sku/slug => just use API images or main image
-      if (!sku || !slug) {
-        const fallback = (images.length ? images : [productImage]).filter(
-          Boolean
-        );
-        if (!cancelled) {
-          setSubs(fallback);
-          setActiveImage(fallback[0] || productImage);
-          setGalleryLoaded(true);
-        }
-        return;
-      }
-
-      const base = `https://caravansforsale.imagestack.net/600x450/${sku}/${slug}`;
-
-      const urls: string[] = [];
-
-      // 1) MAIN
-      const mainUrl = `${base}main1.avif`;
-      const hasMain = await checkImage(mainUrl);
-      if (hasMain) {
-        urls.push(mainUrl);
-      }
-
-      // 2) SUBS: sub1.avif, sub2.avif, ...
-      for (let i = 1; i <= 70; i++) {
-        const url = `${base}sub${i}.avif`;
-        const ok = await checkImage(url);
-        if (!ok) break; // stop when next sub doesn't exist
-        urls.push(url);
-      }
-
-      // If CDN gave nothing, fall back to API images
-      const finalUrls =
-        urls.length > 0
-          ? urls
-          : (images.length ? images : [productImage]).filter(Boolean);
-
+    // 1) No sku/slug → just use API images or fallback
+    if (!sku || !slug) {
+      const fallback = (images.length ? images : [productImage]).filter(Boolean);
       if (!cancelled) {
-        setSubs(finalUrls);
-        setActiveImage(finalUrls[0] || productImage);
-        setGalleryLoaded(true);
+        setSubs(fallback);
+        setActiveImage(fallback[0] || productImage);
+        setSubsLoading(false);
       }
-    };
+      return;
+    }
 
-    loadGallery();
+    const base = `https://caravansforsale.imagestack.net/600x450/${sku}/${slug}`;
+    const mainUrl = `${base}main1.avif`;
 
-    return () => {
-      cancelled = true;
-    };
-  }, [sku, slug, images, productImage]);
+    // 2) Show main image immediately (no waiting for subs)
+    if (!cancelled) {
+      setActiveImage(mainUrl);
+      setSubs([mainUrl]); // at least one thumb
+    }
+
+    // 3) Probe a few sub images in the background
+    const extraSubs: string[] = [];
+    for (let i = 1; i <= 8; i++) { // 🔹 cap at 8, not 100
+      const url = `${base}sub${i}.avif`;
+      const ok = await checkImage(url);
+      if (!ok) break;
+      extraSubs.push(url);
+    }
+
+    if (!cancelled) {
+      const finalUrls =
+        [mainUrl, ...extraSubs].filter(Boolean) ||
+        (images.length ? images : [productImage]).filter(Boolean);
+
+      setSubs(finalUrls);
+      setSubsLoading(false); // thumbs ready (or fallback)
+    }
+  };
+
+  loadGallery();
+
+  return () => {
+    cancelled = true;
+  };
+}, [sku, slug, images, productImage]);
+
 
 
 
@@ -605,79 +588,87 @@ const [subs, setSubs] = useState<string[]>([]);
                 </div>
 
                 {/* Image Gallery */}
-               {!galleryLoaded ? (
-  <GallerySkeleton />
-) : (
-  <div className="caravan_slider_visible">
-    <button
-      className="hover_link Click-here"
-      onClick={() => setShowModal(true)}
-    />
+      
+ {/* Image Gallery */}
+<div className="caravan_slider_visible">
+  <button
+    className="hover_link Click-here"
+    onClick={() => setShowModal(true)}
+  />
 
-    {/* Thumbnails */}
-    <div className="slider_thumb_vertical image_container">
-      <div className="image_mop">
-        {mainsub.slice(0, 4).map((image, i) => (
-          <div className="image_item" key={`${image}-${i}`}>
-            <div className="background_thumb">
-              <FallbackImage
-                src={image}
-                width={128}
-                height={96}
-                alt="Thumbnail"
-                unoptimized
-                onLoad={handleImageLoad}
-              />
+  {/* Thumbnails */}
+  <div className="slider_thumb_vertical image_container">
+    <div className="image_mop">
+      {subsLoading && !subs.length ? (
+        // 🔹 Skeleton only for sub images
+        <>
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div className="image_item" key={`thumb-skel-${i}`}>
+              <div className="background_thumb skeleton-thumb" />
+              <div className="img skeleton-thumb" />
             </div>
+          ))}
+        </>
+      ) : (
+        <>
+          {subs.slice(0, 4).map((image, i) => (
+            <div className="image_item" key={`${image}-${i}`}>
+              <div className="background_thumb">
+                <FallbackImage
+                  src={image}
+                  width={128}
+                  height={96}
+                  alt="Thumbnail"
+                  unoptimized
+                />
+              </div>
 
-            <div className="img" onClick={() => setActiveImage(image)}>
-              <FallbackImage
-                src={image}
-                width={128}
-                height={96}
-                alt={`Thumb ${i + 1}`}
-                priority={i < 4}
-                unoptimized
-                onLoad={handleImageLoad}
-              />
+              <div className="img" onClick={() => setActiveImage(image)}>
+                <FallbackImage
+                  src={image}
+                  width={128}
+                  height={96}
+                  alt={`Thumb ${i + 1}`}
+                  priority={i < 4}
+                  unoptimized
+                />
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
 
-        <span className="caravan__image_count">
-          <span>{subs.length}+</span>
-        </span>
-      </div>
-    </div>
-
-    {/* Large Image */}
-    <div className="lager_img_view image_container">
-      <div className="background_thumb">
-        <FallbackImage
-          src={activeImage || subs[0]}
-          width={800}
-          height={600}
-          alt="Large"
-          className="img-fluid"
-          unoptimized
-          onLoad={handleImageLoad}
-        />
-      </div>
-
-      <Link href="#">
-        <FallbackImage
-          src={activeImage || subs[0]}
-          width={800}
-          height={600}
-          alt="Large"
-          className="img-fluid"
-          unoptimized
-          onLoad={handleImageLoad}
-        />
-      </Link>
+          <span className="caravan__image_count">
+            <span>{subs.length}+</span>
+          </span>
+        </>
+      )}
     </div>
   </div>
-)}
+
+  {/* Large Image */}
+  <div className="lager_img_view image_container">
+    <div className="background_thumb">
+      <FallbackImage
+        src={activeImage || subs[0] || productImage}
+        width={800}
+        height={600}
+        alt="Large"
+        className="img-fluid"
+        unoptimized
+      />
+    </div>
+
+    <Link href="#">
+      <FallbackImage
+        src={activeImage || subs[0] || productImage}
+        width={800}
+        height={600}
+        alt="Large"
+        className="img-fluid"
+        unoptimized
+      />
+    </Link>
+  </div>
+</div>
 
 
                 {/* Tabs */}
