@@ -26,24 +26,42 @@ const PostRequirement = () => {
   }, []);
 
   // ✅ safely start autoplay after swiper mounts
-  useEffect(() => {
-    if (swiperRef.current && swiperRef.current.autoplay) {
-      swiperRef.current.autoplay.start();
-    }
-  }, []);
+ useEffect(() => {
+  if (items.length > 0 && swiperRef.current) {
+    setTimeout(() => {
+      swiperRef.current?.autoplay?.start();
+    }, 100); // small delay prevents freeze
+  }
+}, [items]);
+
+
+// Start autoplay ONLY after items are loaded
+useEffect(() => {
+  if (items.length > 0 && swiperRef.current?.autoplay) {
+    swiperRef.current.autoplay.start();
+  }
+}, [items]);
 
   // ✅ hover handlers that work even with loop mode
-  const handleMouseEnter = () => {
-    if (swiperRef.current?.autoplay) {
-      swiperRef.current.autoplay.stop();
-    }
-  };
+  // const handleMouseEnter = () => {
+  //   if (swiperRef.current?.autoplay) {
+  //     swiperRef.current.autoplay.stop();
+  //   }
+  // };
 
-  const handleMouseLeave = () => {
-    if (swiperRef.current?.autoplay) {
-      swiperRef.current.autoplay.start();
-    }
-  };
+  // console.log("item", items )
+  // const handleMouseLeave = () => {
+  //   if (swiperRef.current?.autoplay) {
+  //     swiperRef.current.autoplay.start();
+  //   }
+  // };
+const handleMouseEnter = () => {
+  swiperRef.current?.autoplay?.stop();
+};
+
+const handleMouseLeave = () => {
+  swiperRef.current?.autoplay?.start();
+};
 
   return (
     <div>
