@@ -169,6 +169,8 @@ const handleImageLoad = () => {
     setActiveImage(initial);
   }, [productImage, images]);
 
+  
+
   const [activeTab, setActiveTab] = useState<"specifications" | "description">(
     "specifications"
   );
@@ -406,6 +408,14 @@ const slug = productSlug || toSlug(product.name || "");
 const sku = productDetails.sku ;
 console.log("slug1", productDetails)
  
+  
+  // ---- gallery state ----
+  const [activeImage, setActiveImage] = useState<string>(productImage);
+   
+  // keep activeImage in sync with main image from API
+  useEffect(() => {
+    setActiveImage(productImage);
+  }, [productImage]);
 
 
   const base = `https://caravansforsale.imagestack.net/600x450/${sku}/${slug}`;
@@ -417,36 +427,91 @@ console.log("slug1", productDetails)
 //       ...Array.from({ length: 4 }, (_, i) => `${base}sub${i + 2}.avif`),
 //     ];  
 const [subs, setSubs] = useState<string[]>([]);
+ 
+  function checkImage(url: string): Promise<boolean> {
+    return new Promise((resolve) => {
+      if (typeof window === "undefined") return resolve(false);
 
- useEffect(() => {
-  if (!sku || !slug) return;
+      const img = document.createElement("img");
+      img.onload = () => resolve(true);
+      img.onerror = () => resolve(false);
+      img.src = url;
+    });
+  }
 
-  const base = `https://caravansforsale.imagestack.net/600x450/${sku}/${slug}`;
 
-  const imgs = [
-    `${base}main1.avif`,
-    `${base}sub1.avif`,
-    `${base}sub2.avif`,
-    `${base}sub3.avif`,
-    `${base}sub4.avif`,
-    `${base}sub5.avif`,
-    `${base}sub6.avif`,
-    `${base}sub7.avif`,
-    `${base}sub8.avif`,
-    `${base}sub9.avif`,
-  ];
 
-  setSubs(imgs);
-  setActiveImage(imgs[0]);
-}, [sku, slug]);
+
+    
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadGallery = async () => {
+      // show skeleton while we probe
+      setGalleryLoaded(false);
+
+      // Fallback: no sku/slug => just use API images or main image
+      if (!sku || !slug) {
+        const fallback = (images.length ? images : [productImage]).filter(
+          Boolean
+        );
+        if (!cancelled) {
+          setSubs(fallback);
+          setActiveImage(fallback[0] || productImage);
+          setGalleryLoaded(true);
+        }
+        return;
+      }
+
+      const base = `https://caravansforsale.imagestack.net/600x450/${sku}/${slug}`;
+
+      const urls: string[] = [];
+
+      // 1) MAIN
+      const mainUrl = `${base}main1.avif`;
+      const hasMain = await checkImage(mainUrl);
+      if (hasMain) {
+        urls.push(mainUrl);
+      }
+
+      // 2) SUBS: sub1.avif, sub2.avif, ...
+      for (let i = 1; i <= 10; i++) {
+        const url = `${base}sub${i}.avif`;
+        const ok = await checkImage(url);
+        if (!ok) break; // stop when next sub doesn't exist
+        urls.push(url);
+      }
+
+      // If CDN gave nothing, fall back to API images
+      const finalUrls =
+        urls.length > 0
+          ? urls
+          : (images.length ? images : [productImage]).filter(Boolean);
+
+      if (!cancelled) {
+        setSubs(finalUrls);
+        setActiveImage(finalUrls[0] || productImage);
+        setGalleryLoaded(true);
+      }
+    };
+
+    loadGallery();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [sku, slug, images, productImage]);
+
+
 
 
  
      
-const [activeImage, setActiveImage] = useState(main);
+// const [activeImage, setActiveImage] = useState(main);
 
   
- console.log("iamge", subs)
+ console.log("image", subs)
 
   return (
     <>
@@ -524,7 +589,7 @@ const [activeImage, setActiveImage] = useState(main);
                 </div>
 
                 {/* Image Gallery */}
-               {galleryLoaded ? (
+               {!galleryLoaded ? (
   <GallerySkeleton />
 ) : (
   <div className="caravan_slider_visible">
