@@ -434,10 +434,10 @@ useEffect(() => {
 
   const imgs = [
     `${base}main1.avif`,        // main image
-    `${base}sub2.avif`,         // sub1
-    `${base}sub3.avif`,         // sub2
-    `${base}sub4.avif`,         // sub3
-    `${base}sub5.avif`,         // sub4
+    `${base}sub4.avif`,         // sub1
+    `${base}sub5.avif`,         // sub2
+    `${base}sub6.avif`,         // sub3
+    `${base}sub7.avif`,         // sub4
   ];
 
   setMainsub(imgs);
@@ -678,6 +678,7 @@ const [subs, setSubs] = useState<string[]>([]);
     </div>
   </div>
 )}
+
 
 
                 {/* Tabs */}
