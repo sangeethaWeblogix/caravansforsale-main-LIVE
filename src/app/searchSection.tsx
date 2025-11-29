@@ -104,6 +104,7 @@ if (conditionValue === "All") {
   }, 50);
 };
 
+console.log("navigating ", navigateBySelect)
  
     // ------------- base list (first click) -------------
    const loadBaseOnce = async () => {
