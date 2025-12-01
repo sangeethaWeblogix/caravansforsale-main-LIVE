@@ -63,6 +63,13 @@ const handleMouseLeave = () => {
   swiperRef.current?.autoplay?.start();
 };
 
+const Slug = (value: string) => {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/offroad/g, "off-road")   // special case
+    .replace(/\s+/g, "-");             // space → hyphen
+};
   return (
     <div>
       <div className="container">
@@ -123,21 +130,16 @@ const handleMouseLeave = () => {
                             <div className="fet_feild">
                               <div className="type pst_table">
                                 <span className="slugn">Type</span>
-                                <Link
-                                  href={`/listings/${item.type.toLowerCase()}-category/`}
-                                >
+                                
                                   {item.type}
-                                </Link>
+                                
                               </div>
 
                               <div className="condition pst_table">
                                 <span className="slugn">Condition</span>
-                                <Link
-                                  href={`/listings/${item.condition.toLowerCase()}-condition/`}
-                                >
+                                
                                   {item.condition}
-                                </Link>
-                              </div>
+                               </div>
 
                               <div className="status pst_table">
                                 <span className="slugn">Status</span>{" "}
@@ -146,8 +148,9 @@ const handleMouseLeave = () => {
 
                               <div className="location pst_table">
                                 <span className="slugn">Location</span>
+                                
                                 {item.location}
-                              </div>
+                               </div>
                             </div>
 
                             <div className="requirements">
