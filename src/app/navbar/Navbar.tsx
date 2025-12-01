@@ -268,7 +268,10 @@ useEffect(() => {
             </ul>
             <div className="mobile_cta hidden-lg hidden-md">
               <span>Find Your Ideal Caravan</span>
-              <Link className="btn btn-primary" href="/caravan-enquiry-form/">
+              <Link className="btn btn-primary" href="/caravan-enquiry-form/" onClick={() => {
+    setNavigating(true); // start loader immediately
+    closeNav();
+  }}>
                 Enquire Now
               </Link>
             </div>
