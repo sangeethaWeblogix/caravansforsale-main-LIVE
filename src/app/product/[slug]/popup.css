@@ -1,4 +1,4 @@
-.custom-model-main {
+ .custom-model-main {
   text-align: center;
   z-index: 0;
   -webkit-overflow-scrolling: touch;
@@ -307,4 +307,28 @@
   .swiper-button-prev {
     left: 0;
   }
+    .pop-top {
+    text-align: left;
+    justify-content: space-around;
+    align-items: center;
+    padding: 12px 0;
+    display: block;
+    padding-top: 35px;
+  }
+  .close-btn {
+    top: -25px;
+    right: 8px;
+  }
+  .sidebar-enquiry {
+    position: relative;
+    top: 30px;
+  }
+    .pop-top .vehicleThumbDetails__part__price.pop_up_price span bdi {
+    justify-content: start;
+    display: flex;
+  }
+  .carava_details .swiper-wrapper {
+    width: 100%;
+    height: auto;
+}
 }

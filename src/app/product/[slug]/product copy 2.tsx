@@ -1,6 +1,6 @@
   "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
 import "swiper/css";
@@ -14,8 +14,7 @@ import { type HomeBlogPost } from "@/api/home/api";
 import { toSlug } from "@/utils/seo/slug";
 import ProductSkelton from "../../components/ProductCardSkeleton";
 import FallbackImage from "@/app/components/FallbackImage";
-import GallerySkeleton from "@/app/components/GallerySkeleton";
-type Attribute = {
+ type Attribute = {
   label?: string;
   value?: string;
   url?: string;
@@ -91,15 +90,8 @@ export default function ClientLogger({
   const relatedProducts: ProductData[] = Array.isArray(data?.data?.related)
     ? data.data.related!
     : [];
-const [galleryLoaded, setGalleryLoaded] = useState(false);
-const loadedCount = useRef(0);
-
-const handleImageLoad = () => {
-  loadedCount.current += 1;
-  if (loadedCount.current >= subs.length + 1) {
-    setGalleryLoaded(true); // All images ready
-  }
-};
+ 
+ 
 
   console.log("datapb", relatedProducts);
 
@@ -794,6 +786,7 @@ useEffect(() => {
                         {/* bottom */}
                         Contact Dealer
                       </button>
+
                     </div>
                   </div>
                 </section>
