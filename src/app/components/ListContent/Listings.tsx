@@ -770,7 +770,7 @@ export default function ListingsPage({
       if ("orderby" in newFilters && !newFilters.orderby) {
         mergedFilters.orderby = undefined;
       }
-      ensureclickid();
+      // ensureclickid();
       filtersRef.current = mergedFilters;
       setFilters(mergedFilters);
 
