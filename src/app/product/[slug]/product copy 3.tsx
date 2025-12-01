@@ -14,7 +14,8 @@ import { type HomeBlogPost } from "@/api/home/api";
 import { toSlug } from "@/utils/seo/slug";
 import ProductSkelton from "../../components/ProductCardSkeleton";
 import FallbackImage from "@/app/components/FallbackImage";
- type Attribute = {
+import GallerySkeleton from "@/app/components/GallerySkeleton";
+type Attribute = {
   label?: string;
   value?: string;
   url?: string;
@@ -90,12 +91,13 @@ export default function ClientLogger({
   const relatedProducts: ProductData[] = Array.isArray(data?.data?.related)
     ? data.data.related!
     : [];
- const loadedCount = useRef(0);
+const [galleryLoaded, setGalleryLoaded] = useState(false);
+const loadedCount = useRef(0);
 
 const handleImageLoad = () => {
   loadedCount.current += 1;
   if (loadedCount.current >= subs.length + 1) {
-    
+    setGalleryLoaded(true); // All images ready
   }
 };
 
@@ -463,7 +465,8 @@ const [subs, setSubs] = useState<string[]>([]);
 
     const loadGallery = async () => {
       // show skeleton while we probe
- 
+      setGalleryLoaded(false);
+
       // Fallback: no sku/slug => just use API images or main image
       if (!sku || !slug) {
         const fallback = (images.length ? images : [productImage]).filter(
@@ -472,7 +475,8 @@ const [subs, setSubs] = useState<string[]>([]);
         if (!cancelled) {
           setSubs(fallback);
           setActiveImage(fallback[0] || productImage);
-         }
+          setGalleryLoaded(true);
+        }
         return;
       }
 
@@ -504,7 +508,8 @@ const [subs, setSubs] = useState<string[]>([]);
       if (!cancelled) {
         setSubs(finalUrls);
         setActiveImage(finalUrls[0] || productImage);
-       }
+        setGalleryLoaded(true);
+      }
     };
 
     loadGallery();
@@ -599,7 +604,10 @@ const [subs, setSubs] = useState<string[]>([]);
 )}
                 </div>
 
-               
+                {/* Image Gallery */}
+               {!galleryLoaded ? (
+  <GallerySkeleton />
+) : (
   <div className="caravan_slider_visible">
     <button
       className="hover_link Click-here"
@@ -637,9 +645,7 @@ const [subs, setSubs] = useState<string[]>([]);
         ))}
 
         <span className="caravan__image_count">
-          {/* <span>{subs.length}+</span> */}
-                    <span> +  </span>
-
+          <span>{subs.length}+</span>
         </span>
       </div>
     </div>
@@ -671,8 +677,8 @@ const [subs, setSubs] = useState<string[]>([]);
       </Link>
     </div>
   </div>
-  
- 
+)}
+
 
 
                 {/* Tabs */}
