@@ -154,8 +154,6 @@ const handleImageLoad = () => {
     setSafeHtml(buildSafeDescription(productDetails.description));
   }, [productDetails.description]);
 
-  const productImage: string =
-    productDetails.main_image || pd.main_image || "/images/img.png";
  
   const images: string[] = useMemo(
     () => (Array.isArray(pd.images) ? pd.images.filter(Boolean) : []),
@@ -406,9 +404,7 @@ console.log("slug1", productDetails)
   // ---- gallery state ----
   
   // keep activeImage in sync with main image from API
-  useEffect(() => {
-    setActiveImage(productImage);
-  }, [productImage]);
+ 
   
   
   const base = `https://caravansforsale.imagestack.net/800x600/${sku}/${slug}`;
@@ -495,11 +491,11 @@ const [subs, setSubs] = useState<string[]>([]);
       const finalUrls =
         urls.length > 0
           ? urls
-          : (images.length ? images : [productImage]).filter(Boolean);
+          : (images.length ? images : [main]).filter(Boolean);
 
       if (!cancelled) {
         setSubs(finalUrls);
-        setActiveImage(finalUrls[0] || productImage);
+        setActiveImage(finalUrls[0] || main);
        }
     };
 
@@ -508,7 +504,7 @@ const [subs, setSubs] = useState<string[]>([]);
     return () => {
       cancelled = true;
     };
-  }, [sku, slug, images, productImage]);
+  }, [sku, slug, images, main]);
 
 
 
