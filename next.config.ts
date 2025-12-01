@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
   reactStrictMode: false,
 
  images: {
-    unoptimized: false,
+    unoptimized: true,
     domains: [
       "media.caravansforsale.com.au",
       "www.caravansforsale.com.au",
