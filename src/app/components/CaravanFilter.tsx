@@ -2479,7 +2479,7 @@ setModel(make.models || []);
               >
                 <option value="">Max</option>
                 {atm
-                  .filter((val) => !atmFrom || val >= atmFrom) // ✅ Show only values >= From
+                  .filter((val) => !atmFrom || val > atmFrom) // ✅ Show only values >= From
                   .map((val) => (
                     <option key={val} value={val}>
                       {val.toLocaleString()} kg
@@ -2570,7 +2570,7 @@ setModel(make.models || []);
               >
                 <option value="">Max</option>
                 {price
-                  .filter((val) => !minPrice || val >= minPrice)
+                  .filter((val) => !minPrice || val > minPrice)
                   .map((val) => (
                     <option key={val} value={val}>
                       ${val.toLocaleString()}
@@ -2699,7 +2699,7 @@ setModel(make.models || []);
               >
                 <option value="">Max</option>
                 {sleep
-                  .filter((value) => !sleepFrom || value >= sleepFrom)
+                  .filter((value) => !sleepFrom || value > sleepFrom)
                   .map((value) => (
                     <option key={value} value={value}>
                       {value}
@@ -2845,7 +2845,7 @@ setModel(make.models || []);
               >
                 <option value="">Max</option>
                 {length
-                  .filter((value) => !lengthFrom || value >= lengthFrom)
+                  .filter((value) => !lengthFrom || value > lengthFrom)
                   .map((value, idx) => (
                     <option key={idx} value={value}>
                       {value} ft
