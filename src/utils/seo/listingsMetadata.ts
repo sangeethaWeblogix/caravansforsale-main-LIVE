@@ -1,6 +1,5 @@
 // src/lib/listings-metadata.ts
-import { fetchListings } from "@/api/listings/api";
-import type { Metadata } from "next";
+ import type { Metadata } from "next";
 
 export async function generateListingsMetadata(
   searchParams: Record<string, string | string[] | undefined>
@@ -12,19 +11,10 @@ export async function generateListingsMetadata(
       ? parseInt(searchParams.page[0], 10)
       : 1;
 
-  const response = await fetchListings({ page });
-  const totalPages = response?.pagination?.total_pages ?? 1;
-
+  
   const baseUrl = "https://www.caravansforsale.com.au/listings";
   const canonical = page > 1 ? `${baseUrl}/?page=${page}` : `${baseUrl}/`;
-  const prev =
-    page > 1
-      ? page === 2
-        ? `${baseUrl}/`
-        : `${baseUrl}/?page=${page - 1}`
-      : null;
-  const next = page < totalPages ? `${baseUrl}/?page=${page + 1}` : null;
-
+   
   const metaTitle = "Caravans For Sale in Australia - Find Exclusive Deals";
   const metaDescription =
     "Browse new & used caravans for sale across Australia. Compare off-road, hybrid, pop-top & luxury models by price, size, weight and sleeping capacity.";
@@ -35,10 +25,7 @@ export async function generateListingsMetadata(
     metadataBase: new URL("https://www.caravansforsale.com.au"),
     alternates: {
       canonical,
-      types: {
-        ...(prev ? { "application/prev": prev } : {}),
-        ...(next ? { "application/next": next } : {}),
-      },
+      
     },
     openGraph: {
       title: metaTitle,
