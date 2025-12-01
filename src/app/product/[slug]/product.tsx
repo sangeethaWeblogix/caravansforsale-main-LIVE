@@ -408,18 +408,18 @@ console.log("slug1", productDetails)
  
   
   // ---- gallery state ----
-  const [activeImage, setActiveImage] = useState<string>(productImage);
-   
+  
   // keep activeImage in sync with main image from API
   useEffect(() => {
     setActiveImage(productImage);
   }, [productImage]);
-
-
-  // const base = `https://caravansforsale.imagestack.net/800x600/${sku}/${slug}`;
-
-  // const main = `${base}main1.avif`;
- 
+  
+  
+  const base = `https://caravansforsale.imagestack.net/800x600/${sku}/${slug}`;
+  
+  const main = `${base}main1.avif`;
+  const [activeImage, setActiveImage] = useState<string>(main);
+  
    const [mainsub, setMainsub] = useState<string[]>([]);
 
 useEffect(() => {
