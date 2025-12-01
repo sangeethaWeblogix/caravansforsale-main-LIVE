@@ -2244,7 +2244,8 @@ triggerGlobalLoaders();
           {/* ✅ Show selected suburb below input, like a pill with X */}
           {selectedSuburbName && selectedStateName && selectedpincode && (
             <div className="filter-chip">
-              {locationInput}
+              {/* {locationInput} */}
+               {formatLocationInput(locationInput)}
               <span className="filter-chip-close"  onClick={() => {
                   triggerGlobalLoaders();
                   resetSuburbFilters()
