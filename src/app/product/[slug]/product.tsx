@@ -162,11 +162,7 @@ const handleImageLoad = () => {
     [pd.images]
   );
 
-  useEffect(() => {
-    const initial = productImage || images[0] || "/images/img.png";
-    setActiveImage(initial);
-  }, [productImage, images]);
-
+ 
   
 
   const [activeTab, setActiveTab] = useState<"specifications" | "description">(
@@ -466,12 +462,12 @@ const [subs, setSubs] = useState<string[]>([]);
  
       // Fallback: no sku/slug => just use API images or main image
       if (!sku || !slug) {
-        const fallback = (images.length ? images : [productImage]).filter(
+        const fallback = (images.length ? images : [main]).filter(
           Boolean
         );
         if (!cancelled) {
           setSubs(fallback);
-          setActiveImage(fallback[0] || productImage);
+          setActiveImage(fallback[0] || main);
          }
         return;
       }
