@@ -19,7 +19,7 @@ export default function robots(): MetadataRoute.Robots {
          "/*?*page=",
           // "/*feedfeed*",
           // "/*feedfeedfeed*",
-
+"/listings/404"
          
           
         ],
