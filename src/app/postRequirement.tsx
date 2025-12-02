@@ -63,13 +63,13 @@ const handleMouseLeave = () => {
   swiperRef.current?.autoplay?.start();
 };
 
-const Slug = (value: string) => {
-  return value
-    .trim()
-    .toLowerCase()
-    .replace(/offroad/g, "off-road")   // special case
-    .replace(/\s+/g, "-");             // space → hyphen
-};
+// const Slug = (value: string) => {
+//   return value
+//     .trim()
+//     .toLowerCase()
+//     .replace(/offroad/g, "off-road")   // special case
+//     .replace(/\s+/g, "-");             // space → hyphen
+// };
   return (
     <div>
       <div className="container">
