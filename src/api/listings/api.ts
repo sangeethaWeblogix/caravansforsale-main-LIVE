@@ -49,6 +49,7 @@
           sku?: string;
           gallery?: string[];
             is_exclusive?: boolean
+            model?: string;
 
 
 
@@ -102,6 +103,7 @@
       page = 1,
       category,
       make,
+      model,
       from_price,
       to_price,
       minKg,
@@ -128,6 +130,7 @@
     if (category) params.append("category", category);
     if (slug) params.append("category", slug);
     if (make) params.append("make", make);
+    if (model) params.append("model", model);
     if (pincode) params.append("pincode", pincode);
     if (state) params.append("state", state);
     if (region) params.append("region", region);
