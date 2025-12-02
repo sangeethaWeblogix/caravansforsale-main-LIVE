@@ -1,10 +1,10 @@
 "use client";
 import Link from "next/link";
-import { Swiper, SwiperSlide } from "swiper/react";
+// import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
-import { Navigation,  Pagination } from "swiper/modules";
+import {   Pagination } from "swiper/modules";
 import Skelton from "../skelton";
 import Head from "next/head";
 import { useEffect, useMemo, useState } from "react";
@@ -340,8 +340,8 @@ export default function ListingContent({
               <div className="row g-3">
                 {shuffledPremiumProducts.map((item, index) => {
                   const href = getHref(item);
-                  const isPriority = index < 5;
-                  const imgs = lazyImages[item.id] || [getFirstImage(item)];
+                  // const isPriority = index < 5;
+ //                   const imgs = lazyImages[item.id] || [getFirstImage(item)];
                   return (
                     <div className="col-lg-6 mb-0" key={index}>
                       <Link
@@ -355,74 +355,7 @@ export default function ListingContent({
                         className="lli_head"
                       >
                           <div className={`product-card sku-${item.sku}`}>
-                          <div className="img">
-                            <div className="background_thumb">
-                              {/* <ImageWithSkeleton
-                                src={imgs[0]}
-                                alt="Caravan"
-                                width={300}
-                                height={200}
-                                priority={isPriority}
-                              /> */}
-                            </div>
-
-                            <div className="main_thumb position-relative">
-                              {isPremiumLoading ? (
-                                <Skelton count={2} /> // ✅ show skeletons
-                              ) : (
-                                // For Main Products Swiper - FIXED VERSION
-                                <Swiper
-                                  modules={[Navigation, Pagination]}
-                                  spaceBetween={10}
-                                  slidesPerView={1}
-                                  navigation
-                                  pagination={{
-                                    clickable: true,
-                                  }}
-                                  onSlideChange={() => {
-                                    if (!loadedAll[item.id])
-                                      loadRemaining(item); // Fixed: loadedAll instead of isLoaded
-                                  }}
-                                  onReachBeginning={() => {
-                                    if (!loadedAll[item.id])
-                                      loadRemaining(item); // Fixed: loadedAll instead of isLoaded
-                                  }}
-                                  onReachEnd={() => {
-                                    if (!loadedAll[item.id])
-                                      loadRemaining(item); // Fixed: loadedAll instead of isLoaded
-                                  }}
-                                  className="main_thumb_swiper"
-                                >
-                                  {imgs.map((img, i) => (
-                                    <SwiperSlide key={i}>
-                                      <div className="thumb_img">
-                                        {/* <ImageWithSkeleton
-                                          src={img}
-                                          alt={`Caravan ${i + 1}`}
-                                          width={300}
-                                          height={200}
-                                          priority={isPriority && i === 0}
-                                        /> */}
-                                      </div>
-                                    </SwiperSlide>
-                                  ))}
-                                </Swiper>
-                              )}
-
-                              {/* Hidden "View More" button that appears after last slide */}
-                              {/* <div
-                                 id={`view-more-btn-${item}`}
-                                 className="view-more-btn-wrapper"
-                               >
-                                 <Link
-                                   href="/related-links"
-                                   className="view-more-btn"
-                                 >
-                                   View More
-                                 </Link>
-                               </div> */}
-                            </div>
-                          </div>
+                         
                           <div className="product_de">
                             <div className="info">
                               {item.name && (
@@ -594,9 +527,9 @@ export default function ListingContent({
                 <div className="row g-3">
                   {mergedProducts.map((item, index) => {
                     const href = getHref(item);
-                    const images = getProductImages(item.sku, item.slug);
-                    const isPriority = index < 5;
-                    const imgs = lazyImages[item.id] || [getFirstImage(item)];
+//                    const images = getProductImages(item.sku, item.slug);
+ //                      const isPriority = index < 5;
+   //                   const imgs = lazyImages[item.id] || [getFirstImage(item)];
                     return (
                       <div className="col-lg-6 mb-0" key={index}>
                         <Link
@@ -613,71 +546,7 @@ export default function ListingContent({
                           className="lli_head"
                         >
                           <div className={`product-card sku-${item.sku}`}>
-                            <div className="img">
-                              <div className="background_thumb">
-                                {/* <ImageWithSkeleton
-                                  src={images[0]}
-                                  priority={isPriority}
-                                  alt="Caravan"
-                                  width={300}
-                                  height={200}
-                                /> */}
-                              </div>
-                              <div className="main_thumb position-relative">
-                                {item.is_exclusive && (
-                                  <span className="lab">Spotlight Van</span>
-                                )}
-                                <Swiper
-                                  modules={[Navigation, Pagination]}
-                                  spaceBetween={10}
-                                  slidesPerView={1}
-                                  navigation
-                                  pagination={{
-                                    clickable: true,
-                                  }}
-                                  onSlideChange={() => {
-                                    if (!loadedAll[item.id])
-                                      loadRemaining(item); // Fixed: loadedAll instead of isLoaded
-                                  }}
-                                  onReachBeginning={() => {
-                                    if (!loadedAll[item.id])
-                                      loadRemaining(item); // Fixed: loadedAll instead of isLoaded
-                                  }}
-                                  onReachEnd={() => {
-                                    if (!loadedAll[item.id])
-                                      loadRemaining(item); // Fixed: loadedAll instead of isLoaded
-                                  }}
-                                  className="main_thumb_swiper"
-                                >
-                                  {imgs.map((img, i) => (
-                                    <SwiperSlide key={i}>
-                                      <div className="thumb_img">
-                                        {/* <ImageWithSkeleton
-                                          src={img}
-                                          alt={`Caravan ${i + 1}`}
-                                          width={300}
-                                          height={200}
-                                          priority={isPriority && i === 0}
-                                        /> */}
-                                      </div>
-                                    </SwiperSlide>
-                                  ))}
-                                </Swiper>
-                                {/* Hidden "View More" button that appears after last slide */}
-                                {/* <div
-                                 id={`view-more-btn-${item}`}
-                                 className="view-more-btn-wrapper"
-                               >
-                                 <Link
-                                   href="/related-links"
-                                   className="view-more-btn"
- 
-                                 >
-                                   View More
-                                 </Link>
-                               </div> */}
-                              </div>
-                            </div>
+                            
  
                             <div className="product_de">
                               <div className="info">
