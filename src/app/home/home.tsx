@@ -311,7 +311,7 @@ const key = item.state.toLowerCase().replace(/\s+/g, "-");
                            {manufactureBands.map((item, index) => (
                              <li key={index}>
                              <Link
-                                 href={`https://www.caravansforsale.com.au/listings/${item.permalink}`}
+                                 href={`https://www.caravansforsale.com.au/listings/${item.permalink}/`}
                                >
                                  {item.label}
                              </Link>
@@ -385,7 +385,7 @@ const key = item.state.toLowerCase().replace(/\s+/g, "-");
                            {priceBands.map((item, index) => (
                              <li key={index}>
                              <Link
-                                 href={`https://www.caravansforsale.com.au/listings/${item.permalink}`}
+                                 href={`https://www.caravansforsale.com.au/listings/${item.permalink}/`}
                                >
                                  {item.label}
                              </Link>
