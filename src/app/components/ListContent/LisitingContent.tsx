@@ -117,7 +117,7 @@ export default function ListingContent({
 
   // const prevRef = useRef(null);
   // const nextRef = useRef(null);
-  console.log("data-prod", fetauredProducts, isFeaturedLoading);
+  console.log("data-prod", fetauredProducts, isFeaturedLoading, isPremiumLoading);
 
   // console.log("data-product", exculisiveProducts);
   // console.log("data-premium", preminumProducts);
