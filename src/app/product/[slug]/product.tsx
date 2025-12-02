@@ -517,7 +517,7 @@ const [subs, setSubs] = useState<string[]>([]);
 
   return (
     <>
-      <section className="product caravan_dtt">
+<section className={`product caravan_dtt sku-${sku}`}>
         <div className="container">
           <div className="content">
             <div className="row justify-content-center">

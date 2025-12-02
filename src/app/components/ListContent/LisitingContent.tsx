@@ -332,10 +332,11 @@ export default function ListingContent({
           </div>
         </div>
         {fetauredProducts.length > 0 && (
+
           <div className="other_items featured_items">
             <div className="related-products">
               <div className="d-flex align-items-center justify-content-between mb-3">
-                <h3 className="featured_head">Featured listings</h3>
+                <h3 className="featured_head ">Featured listings</h3>
                 <div className="d-flex gap-2">
                   <button
                     ref={prevRef}
@@ -400,7 +401,8 @@ export default function ListingContent({
                             }
                           }}
                         >
-                          <div className="product-card">
+                          <div className={`product-card sku-${item.sku}`}>
+ 
                             <div className="img">
                               <div className="background_thumb">
                                 <ImageWithSkeleton
@@ -602,7 +604,7 @@ export default function ListingContent({
                         prefetch={false}
                         className="lli_head"
                       >
-                        <div className="product-card">
+                          <div className={`product-card sku-${item.sku}`}>
                           <div className="img">
                             <div className="background_thumb">
                               <ImageWithSkeleton
@@ -860,7 +862,7 @@ export default function ListingContent({
                           prefetch={false}
                           className="lli_head"
                         >
-                          <div className="product-card">
+                          <div className={`product-card sku-${item.sku}`}>
                             <div className="img">
                               <div className="background_thumb">
                                 <ImageWithSkeleton
@@ -926,6 +928,7 @@ export default function ListingContent({
                                </div> */}
                               </div>
                             </div>
+ 
                             <div className="product_de">
                               <div className="info">
                                 {item.name && (
