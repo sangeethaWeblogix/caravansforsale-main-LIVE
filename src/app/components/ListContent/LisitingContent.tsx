@@ -112,8 +112,8 @@ export default function ListingContent({
   const [showInfo, setShowInfo] = useState(false);
   const [showContact, setShowContact] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [lazyImages, setLazyImages] = useState<{ [key: string]: string[] }>({});
-  const [loadedAll, setLoadedAll] = useState<{ [key: string]: boolean }>({});
+  // const [lazyImages, setLazyImages] = useState<{ [key: string]: string[] }>({});
+  // const [loadedAll, setLoadedAll] = useState<{ [key: string]: boolean }>({});
 
   // const prevRef = useRef(null);
   // const nextRef = useRef(null);
@@ -148,31 +148,31 @@ export default function ListingContent({
       onSubmit,
     } = useEnquiryForm(enquiryProduct);
 
-  const getFirstImage = (item: Product) => {
-    if (!item.sku || !item.slug) return "/images/sample3.webp";
+  // const getFirstImage = (item: Product) => {
+  //   if (!item.sku || !item.slug) return "/images/sample3.webp";
 
-    return `https://caravansforsale.imagestack.net/400x300/${item.sku}/${item.slug}main1.avif`;
-  };
-  const loadRemaining = (item: Product) => {
-    if (!item.sku || !item.slug) return;
+  //   return `https://caravansforsale.imagestack.net/400x300/${item.sku}/${item.slug}main1.avif`;
+  // };
+  // const loadRemaining = (item: Product) => {
+  //   if (!item.sku || !item.slug) return;
 
-    const base = `https://caravansforsale.imagestack.net/400x300/${item.sku}/${item.slug}`;
+  //   const base = `https://caravansforsale.imagestack.net/400x300/${item.sku}/${item.slug}`;
 
-    const images = [
-      `${base}main1.avif`,
-      ...Array.from({ length: 4 }, (_, i) => `${base}sub${i + 2}.avif`),
-    ];
+  //   const images = [
+  //     `${base}main1.avif`,
+  //     ...Array.from({ length: 4 }, (_, i) => `${base}sub${i + 2}.avif`),
+  //   ];
 
-    setLazyImages((prev) => ({
-      ...prev,
-      [item.id]: images,
-    }));
+  //   setLazyImages((prev) => ({
+  //     ...prev,
+  //     [item.id]: images,
+  //   }));
 
-    setLoadedAll((prev) => ({
-      ...prev,
-      [item.id]: true,
-    }));
-  };
+  //   setLoadedAll((prev) => ({
+  //     ...prev,
+  //     [item.id]: true,
+  //   }));
+  // };
 
   // Remove all the lazy loading state and just load all images immediately
 
