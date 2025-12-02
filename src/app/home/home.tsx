@@ -3,7 +3,7 @@
  import { useEffect, useState, useRef } from "react";
  import "bootstrap/dist/css/bootstrap.min.css";
  //  import "bootstrap/dist/js/bootstrap.bundle.min.js";
- import "./home.css";
+ import "./home.scss";
  import "swiper/css";
  import "swiper/css/navigation";
  import Link from "next/link";
@@ -33,7 +33,7 @@ import { fetchStateBasedCaravans } from "@/api/homeApi/state/api";
  
  
  /* --------------------------------- Page ---------------------------------- */
- export default function ProductPage() {
+ export default function HomePage() {
    const [sleepBands, setSleepBands] = useState<Item[]>([]);
    const [regionBands, setRegionBands] = useState<Item[]>([]);
    const [manufactureBands, setManufactureBands] = useState<Item[]>([]);

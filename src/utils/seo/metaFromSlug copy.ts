@@ -1,4 +1,4 @@
-import { fetchListings } from "@/api/listings/api";
+import { fetchListings } from "@/api/listings/testapi";
 import { parseSlugToFilters } from "@/app/components/urlBuilder";
 import type { Metadata } from "next";
 import { buildCanonicalUrl } from "./buildCanonical";
