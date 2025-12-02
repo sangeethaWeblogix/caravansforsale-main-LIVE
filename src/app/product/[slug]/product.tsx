@@ -13,8 +13,7 @@ import DOMPurify from "dompurify";
 import { type HomeBlogPost } from "@/api/home/api";
 import { toSlug } from "@/utils/seo/slug";
 import ProductSkelton from "../../components/ProductCardSkeleton";
-import FallbackImage from "@/app/components/FallbackImage";
- type Attribute = {
+  type Attribute = {
   label?: string;
   value?: string;
   url?: string;
@@ -604,7 +603,7 @@ const [subs, setSubs] = useState<string[]>([]);
         {mainsub.slice(0, 4).map((image, i) => (
           <div className="image_item" key={`${image}-${i}`}>
             <div className="background_thumb">
-              <FallbackImage
+            <Image
                 src={image}
                 width={128}
                 height={96}
@@ -615,7 +614,7 @@ const [subs, setSubs] = useState<string[]>([]);
             </div>
 
             <div className="img" onClick={() => setActiveImage(image)}>
-              <FallbackImage
+            <Image
                 src={image}
                 width={128}
                 height={96}
@@ -639,7 +638,7 @@ const [subs, setSubs] = useState<string[]>([]);
     {/* Large Image */}
     <div className="lager_img_view image_container">
       <div className="background_thumb">
-        <FallbackImage
+      <Image
           src={activeImage || subs[0]}
           width={800}
           height={600}
@@ -651,7 +650,7 @@ const [subs, setSubs] = useState<string[]>([]);
       </div>
 
       <Link href="#">
-        <FallbackImage
+      <Image
           src={activeImage || subs[0]}
           width={800}
           height={600}
