@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
-import { fetchListings, ApiResponse, Item } from "../../../api/listings/api";
+import { fetchListings, ApiResponse, Item } from "../../../api/listings/testapi";
 import Listing from "./LisitingContent";
 import ExculsiveContent from "./exculsiveContent";
 import CaravanFilter from "../CaravanFilter";
@@ -17,7 +17,7 @@ import {
   useSearchParams,
 } from "next/navigation";
 import { buildSlugFromFilters } from "../slugBuilter";
-import { parseSlugToFilters } from "../../components/urlBuilder";
+import { parseSlugToFilters } from "../urlBuilder";
 import Head from "next/head";
 import "./loader.css";
 // import Link from "next/link";

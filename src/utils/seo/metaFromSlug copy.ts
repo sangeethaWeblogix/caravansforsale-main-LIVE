@@ -23,12 +23,8 @@ export async function metaFromSlug(
     res?.seo?.metadescription || "Browse all available caravans."
   ).trim();
  
-const rawIndex = String(res?.seo?.index ?? "").toLowerCase().trim();
-  const robots =
-    rawIndex === "false"
-      ? { index: false, follow: false }
-      : { index: true, follow: true };
-
+   const robots = "noindex, nofollow";
+    
   const canonical = buildCanonicalUrl(
     "https://www.caravansforsale.com.au/listings",
     filters,

@@ -30,6 +30,7 @@ export const metadata: Metadata = {
 const Page = () => (
   <div>
     <Home />
+    
   </div>
 );
 

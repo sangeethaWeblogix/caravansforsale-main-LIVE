@@ -4,7 +4,7 @@ export const dynamic = "force-dynamic";
 
 import ListingsPage from "@/app/components/ListContent/Listings";
 import { parseSlugToFilters } from "../../components/urlBuilder";
-import { metaFromSlug } from "../../../utils/seo/meta";
+import { metaFromSlug } from "../../../utils/seo/metaFromSlug copy";
 import type { Metadata } from "next";
 import { fetchListings } from "@/api/listings/api";
 import { redirect } from "next/navigation";

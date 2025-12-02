@@ -1,4 +1,4 @@
-import { metaFromSlug } from "./metaFromSlug";
+import { metaFromSlug } from "./meta";
 
 type Params = { slug?: string[] };
 
