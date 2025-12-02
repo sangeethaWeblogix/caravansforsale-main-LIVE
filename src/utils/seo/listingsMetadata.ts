@@ -1,4 +1,4 @@
-// src/lib/listings-metadata.ts
+ // src/lib/listings-metadata.ts
  import type { Metadata } from "next";
 
 export async function generateListingsMetadata(
