@@ -240,16 +240,16 @@ export default function ListingContent({
   console.log("data", exculisiveProducts);
 
   // ✅ Helper: generate up to 5 image URLs from SKU
-  const getProductImages = (sku?: string, slug?: string): string[] => {
-    if (!sku || !slug) return ["/images/sample3.webp"];
+  // const getProductImages = (sku?: string, slug?: string): string[] => {
+  //   if (!sku || !slug) return ["/images/sample3.webp"];
 
-    const base = `https://caravansforsale.imagestack.net/400x300/${sku}/${slug}`;
+  //   const base = `https://caravansforsale.imagestack.net/400x300/${sku}/${slug}`;
 
-    return [
-      `${base}main1.avif`,
-      ...Array.from({ length: 4 }, (_, i) => `${base}sub${i + 2}.avif`),
-    ];
-  };
+  //   return [
+  //     `${base}main1.avif`,
+  //     ...Array.from({ length: 4 }, (_, i) => `${base}sub${i + 2}.avif`),
+  //   ];
+  // };
 
   // ✅ Randomly shuffle premium products on each page load
   // ✅ Premium products shuffle after mount
