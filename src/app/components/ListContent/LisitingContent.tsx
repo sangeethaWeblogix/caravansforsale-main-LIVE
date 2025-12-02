@@ -1,15 +1,15 @@
-"use client";
+ "use client";
 import Link from "next/link";
-// import { Swiper, SwiperSlide } from "swiper/react";
+import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
-import {   Pagination } from "swiper/modules";
+import { Navigation, Autoplay, Pagination } from "swiper/modules";
 import Skelton from "../skelton";
 import Head from "next/head";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toSlug } from "@/utils/seo/slug";
-// import ImageWithSkeleton from "../ImageWithSkeleton";
+import ImageWithSkeleton from "../ImageWithSkeleton";
 import { useEnquiryForm } from "./enquiryform";
 
 interface Product {
@@ -112,12 +112,12 @@ export default function ListingContent({
   const [showInfo, setShowInfo] = useState(false);
   const [showContact, setShowContact] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  // const [lazyImages, setLazyImages] = useState<{ [key: string]: string[] }>({});
-  // const [loadedAll, setLoadedAll] = useState<{ [key: string]: boolean }>({});
+  const [lazyImages, setLazyImages] = useState<{ [key: string]: string[] }>({});
+  const [loadedAll, setLoadedAll] = useState<{ [key: string]: boolean }>({});
 
-  // const prevRef = useRef(null);
-  // const nextRef = useRef(null);
-  console.log("data-prod", fetauredProducts, isFeaturedLoading, isPremiumLoading);
+  const prevRef = useRef(null);
+  const nextRef = useRef(null);
+  // console.log("data-prod", products);
 
   // console.log("data-product", exculisiveProducts);
   // console.log("data-premium", preminumProducts);
@@ -148,31 +148,31 @@ export default function ListingContent({
       onSubmit,
     } = useEnquiryForm(enquiryProduct);
 
-  // const getFirstImage = (item: Product) => {
-  //   if (!item.sku || !item.slug) return "/images/sample3.webp";
+  const getFirstImage = (item: Product) => {
+    if (!item.sku || !item.slug) return "/images/sample3.webp";
 
-  //   return `https://caravansforsale.imagestack.net/400x300/${item.sku}/${item.slug}main1.avif`;
-  // };
-  // const loadRemaining = (item: Product) => {
-  //   if (!item.sku || !item.slug) return;
+    return `https://caravansforsale.imagestack.net/400x300/${item.sku}/${item.slug}main1.avif`;
+  };
+  const loadRemaining = (item: Product) => {
+    if (!item.sku || !item.slug) return;
 
-  //   const base = `https://caravansforsale.imagestack.net/400x300/${item.sku}/${item.slug}`;
+    const base = `https://caravansforsale.imagestack.net/400x300/${item.sku}/${item.slug}`;
 
-  //   const images = [
-  //     `${base}main1.avif`,
-  //     ...Array.from({ length: 4 }, (_, i) => `${base}sub${i + 2}.avif`),
-  //   ];
+    const images = [
+      `${base}main1.avif`,
+      ...Array.from({ length: 4 }, (_, i) => `${base}sub${i + 2}.avif`),
+    ];
 
-  //   setLazyImages((prev) => ({
-  //     ...prev,
-  //     [item.id]: images,
-  //   }));
+    setLazyImages((prev) => ({
+      ...prev,
+      [item.id]: images,
+    }));
 
-  //   setLoadedAll((prev) => ({
-  //     ...prev,
-  //     [item.id]: true,
-  //   }));
-  // };
+    setLoadedAll((prev) => ({
+      ...prev,
+      [item.id]: true,
+    }));
+  };
 
   // Remove all the lazy loading state and just load all images immediately
 
@@ -240,16 +240,16 @@ export default function ListingContent({
   console.log("data", exculisiveProducts);
 
   // ✅ Helper: generate up to 5 image URLs from SKU
-  // const getProductImages = (sku?: string, slug?: string): string[] => {
-  //   if (!sku || !slug) return ["/images/sample3.webp"];
+  const getProductImages = (sku?: string, slug?: string): string[] => {
+    if (!sku || !slug) return ["/images/sample3.webp"];
 
-  //   const base = `https://caravansforsale.imagestack.net/400x300/${sku}/${slug}`;
+    const base = `https://caravansforsale.imagestack.net/400x300/${sku}/${slug}`;
 
-  //   return [
-  //     `${base}main1.avif`,
-  //     ...Array.from({ length: 4 }, (_, i) => `${base}sub${i + 2}.avif`),
-  //   ];
-  // };
+    return [
+      `${base}main1.avif`,
+      ...Array.from({ length: 4 }, (_, i) => `${base}sub${i + 2}.avif`),
+    ];
+  };
 
   // ✅ Randomly shuffle premium products on each page load
   // ✅ Premium products shuffle after mount
@@ -315,7 +315,6 @@ export default function ListingContent({
                           orderby: e.target.value || "featured",
                         })
                       }
-                      
                       value={currentFilters.orderby ?? "featured"} // <— default to "featured"
                     >
                       <option value="featured">Featured</option>
@@ -332,7 +331,258 @@ export default function ListingContent({
             </div>
           </div>
         </div>
-        
+        {fetauredProducts.length > 0 && (
+
+          <div className="other_items featured_items">
+            <div className="related-products">
+              <div className="d-flex align-items-center justify-content-between mb-3">
+                <h3 className="featured_head ">Featured listings</h3>
+                <div className="d-flex gap-2">
+                  <button
+                    ref={prevRef}
+                    className="swiper-button-prev-custom btn btn-light btn-sm"
+                  >
+                    <i className="bi bi-chevron-left"></i>
+                  </button>
+                  <button
+                    ref={nextRef}
+                    className="swiper-button-next-custom btn btn-light btn-sm"
+                  >
+                    <i className="bi bi-chevron-right"></i>
+                  </button>
+                </div>
+              </div>
+              {isFeaturedLoading ? (
+                <Skelton count={3} /> // ✅ show skeletons
+              ) : (
+                <Swiper
+                  modules={[Navigation, Autoplay]}
+                  spaceBetween={10}
+                  slidesPerView={1}
+                  breakpoints={{
+                    640: { slidesPerView: 1 },
+                    768: { slidesPerView: 2 },
+                    1024: { slidesPerView: 2 },
+                  }}
+                  autoplay={{ delay: 5000, disableOnInteraction: false }}
+                  navigation={{
+                    prevEl: prevRef.current,
+                    nextEl: nextRef.current,
+                  }}
+                  onInit={(swiper) => {
+                    if (
+                      swiper.params.navigation &&
+                      typeof swiper.params.navigation !== "boolean"
+                    ) {
+                      swiper.params.navigation.prevEl = prevRef.current;
+                      swiper.params.navigation.nextEl = nextRef.current;
+                      swiper.navigation.init();
+                      swiper.navigation.update();
+                    }
+                  }}
+                  className="featured-swiper"
+                >
+                  {fetauredProducts.map((item, index) => {
+                    const href = getHref(item);
+                    const images = getProductImages(item.sku, item.slug);
+                    const isPriority = index < 5;
+
+                    return (
+                      <SwiperSlide key={index}>
+                        <Link
+                          href={href}
+                          prefetch={false}
+                          onClick={() => {
+                            if (typeof window !== "undefined") {
+                              sessionStorage.setItem(
+                                "cameFromListings",
+                                "true"
+                              );
+                            }
+                          }}
+                        >
+                          <div className={`product-card sku-${item.sku}`}>
+ 
+                            <div className="img">
+                              <div className="background_thumb">
+                                <ImageWithSkeleton
+                                  src={images[0]}
+                                  alt="Caravan"
+                                  width={300}
+                                  height={200}
+                                  priority={isPriority}
+                                />
+                              </div>
+                              <div className="main_thumb">
+                                <ImageWithSkeleton
+                                  src={images[0]}
+                                  alt="Caravan"
+                                  width={300}
+                                  height={200}
+                                  priority={isPriority}
+                                />
+                              </div>
+                            </div>
+                            <div className="product_de">
+                              <div className="info">
+                                {item.name && (
+                                  <h3 className="title">{item.name}</h3>
+                                )}
+                              </div>
+
+                              {/* --- PRICE SECTION --- */}
+                              {(item.regular_price ||
+                                item.sale_price ||
+                                item.price_difference) && (
+                                <div className="price">
+                                  <div className="metc2">
+                                    {(item.regular_price ||
+                                      item.sale_price) && (
+                                      <h5 className="slog">
+                                        {/* ✅ Stable price rendering: precompute safely */}
+                                        {(() => {
+                                          const rawRegular =
+                                            item.regular_price || "";
+                                          const rawSale = item.sale_price || "";
+                                          const cleanRegular =
+                                            rawRegular.replace(/[^0-9.]/g, "");
+                                          const regNum =
+                                            Number(cleanRegular) || 0;
+                                          const cleanSale = rawSale.replace(
+                                            /[^0-9.]/g,
+                                            ""
+                                          );
+                                          const saleNum =
+                                            Number(cleanSale) || 0;
+
+                                          // If regular price is 0 → show POA
+                                          if (regNum === 0) {
+                                            return <>POA</>;
+                                          }
+
+                                          // If sale price exists → show sale and strike-through
+                                          if (saleNum > 0) {
+                                            return (
+                                              <>
+                                                <del>{rawRegular}</del>{" "}
+                                                {rawSale}
+                                              </>
+                                            );
+                                          }
+
+                                          // Otherwise → show regular price
+                                          return <>{rawRegular}</>;
+                                        })()}
+                                      </h5>
+                                    )}
+
+                                    {/* ✅ Show SAVE only if > $0 */}
+                                    {(() => {
+                                      const cleanDiff = (
+                                        item.price_difference || ""
+                                      ).replace(/[^0-9.]/g, "");
+                                      const diffNum = Number(cleanDiff) || 0;
+                                      return diffNum > 0 ? (
+                                        <p className="card-price">
+                                          <span>SAVE</span>{" "}
+                                          {item.price_difference}
+                                        </p>
+                                      ) : null;
+                                    })()}
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* --- DETAILS LIST --- */}
+                              <ul className="vehicleDetailsWithIcons simple">
+                                {item.condition && (
+                                  <li>
+                                    <span className="attribute3">
+                                      {item.condition}
+                                    </span>
+                                  </li>
+                                )}
+
+                                {item.categories &&
+                                  item.categories.length > 0 && (
+                                    <li className="attribute3_list">
+                                      <span className="attribute3">
+                                        {item.categories.join(", ")}
+                                      </span>
+                                    </li>
+                                  )}
+
+                                {item.length && (
+                                  <li>
+                                    <span className="attribute3">
+                                      {item.length}
+                                    </span>
+                                  </li>
+                                )}
+
+                                {item.kg && (
+                                  <li>
+                                    <span className="attribute3">
+                                      {item.kg}
+                                    </span>
+                                  </li>
+                                )}
+
+                                {item.make && (
+                                  <li>
+                                    <span className="attribute3">
+                                      {item.make}
+                                    </span>
+                                  </li>
+                                )}
+                              </ul>
+
+                              {/* --- CONDITION + LOCATION --- */}
+                              {(item.condition || item.location) && (
+                                <div className="bottom_mid">
+                                  {item.condition && (
+                                    <span>
+                                      <i className="bi bi-check-circle-fill"></i>{" "}
+                                      Condition {item.condition}
+                                    </span>
+                                  )}
+                                  {item.location && (
+                                    <span>
+                                      <i className="fa fa-map-marker-alt"></i>{" "}
+                                      {item.location}
+                                    </span>
+                                  )}
+                                </div>
+                              )}
+
+                              {/* --- BUTTONS --- */}
+                              <div className="bottom_button">
+                                <button
+                                  className="btn"
+                                      onClick={(e) => {
+                                    e.preventDefault();
+                                      setSelectedProduct(item);
+
+                                    setShowContact(true);
+                                  }}
+                                >
+                                  Contact Dealer
+                                </button>
+                                <button className="btn btn-primary">
+                                  View Details
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </Link>
+                      </SwiperSlide>
+                    );
+                  })}
+                </Swiper>
+              )}
+            </div>
+          </div>
+        )}
         {/* {premium section } */}
         <div className="dealers-section product-type">
           <div className="other_items">
@@ -340,8 +590,8 @@ export default function ListingContent({
               <div className="row g-3">
                 {shuffledPremiumProducts.map((item, index) => {
                   const href = getHref(item);
-                  // const isPriority = index < 5;
- //                   const imgs = lazyImages[item.id] || [getFirstImage(item)];
+                  const isPriority = index < 5;
+                  const imgs = lazyImages[item.id] || [getFirstImage(item)];
                   return (
                     <div className="col-lg-6 mb-0" key={index}>
                       <Link
@@ -355,7 +605,74 @@ export default function ListingContent({
                         className="lli_head"
                       >
                           <div className={`product-card sku-${item.sku}`}>
-                         
+                          <div className="img">
+                            <div className="background_thumb">
+                              <ImageWithSkeleton
+                                src={imgs[0]}
+                                alt="Caravan"
+                                width={300}
+                                height={200}
+                                priority={isPriority}
+                              />
+                            </div>
+
+                            <div className="main_thumb position-relative">
+                              {isPremiumLoading ? (
+                                <Skelton count={2} /> // ✅ show skeletons
+                              ) : (
+                                // For Main Products Swiper - FIXED VERSION
+                                <Swiper
+                                  modules={[Navigation, Pagination]}
+                                  spaceBetween={10}
+                                  slidesPerView={1}
+                                  navigation
+                                  pagination={{
+                                    clickable: true,
+                                  }}
+                                  onSlideChange={() => {
+                                    if (!loadedAll[item.id])
+                                      loadRemaining(item); // Fixed: loadedAll instead of isLoaded
+                                  }}
+                                  onReachBeginning={() => {
+                                    if (!loadedAll[item.id])
+                                      loadRemaining(item); // Fixed: loadedAll instead of isLoaded
+                                  }}
+                                  onReachEnd={() => {
+                                    if (!loadedAll[item.id])
+                                      loadRemaining(item); // Fixed: loadedAll instead of isLoaded
+                                  }}
+                                  className="main_thumb_swiper"
+                                >
+                                  {imgs.map((img, i) => (
+                                    <SwiperSlide key={i}>
+                                      <div className="thumb_img">
+                                        <ImageWithSkeleton
+                                          src={img}
+                                          alt={`Caravan ${i + 1}`}
+                                          width={300}
+                                          height={200}
+                                          priority={isPriority && i === 0}
+                                        />
+                                      </div>
+                                    </SwiperSlide>
+                                  ))}
+                                </Swiper>
+                              )}
+
+                              {/* Hidden "View More" button that appears after last slide */}
+                              {/* <div
+                                 id={`view-more-btn-${item}`}
+                                 className="view-more-btn-wrapper"
+                               >
+                                 <Link
+                                   href="/related-links"
+                                   className="view-more-btn"
+                                 >
+                                   View More
+                                 </Link>
+                               </div> */}
+                            </div>
+                          </div>
                           <div className="product_de">
                             <div className="info">
                               {item.name && (
@@ -527,9 +844,9 @@ export default function ListingContent({
                 <div className="row g-3">
                   {mergedProducts.map((item, index) => {
                     const href = getHref(item);
-//                    const images = getProductImages(item.sku, item.slug);
- //                      const isPriority = index < 5;
-   //                   const imgs = lazyImages[item.id] || [getFirstImage(item)];
+                    const images = getProductImages(item.sku, item.slug);
+                    const isPriority = index < 5;
+                    const imgs = lazyImages[item.id] || [getFirstImage(item)];
                     return (
                       <div className="col-lg-6 mb-0" key={index}>
                         <Link
@@ -546,7 +863,71 @@ export default function ListingContent({
                           className="lli_head"
                         >
                           <div className={`product-card sku-${item.sku}`}>
-                            
+                            <div className="img">
+                              <div className="background_thumb">
+                                <ImageWithSkeleton
+                                  src={images[0]}
+                                  priority={isPriority}
+                                  alt="Caravan"
+                                  width={300}
+                                  height={200}
+                                />
+                              </div>
+                              <div className="main_thumb position-relative">
+                                {item.is_exclusive && (
+                                  <span className="lab">Spotlight Van</span>
+                                )}
+                                <Swiper
+                                  modules={[Navigation, Pagination]}
+                                  spaceBetween={10}
+                                  slidesPerView={1}
+                                  navigation
+                                  pagination={{
+                                    clickable: true,
+                                  }}
+                                  onSlideChange={() => {
+                                    if (!loadedAll[item.id])
+                                      loadRemaining(item); // Fixed: loadedAll instead of isLoaded
+                                  }}
+                                  onReachBeginning={() => {
+                                    if (!loadedAll[item.id])
+                                      loadRemaining(item); // Fixed: loadedAll instead of isLoaded
+                                  }}
+                                  onReachEnd={() => {
+                                    if (!loadedAll[item.id])
+                                      loadRemaining(item); // Fixed: loadedAll instead of isLoaded
+                                  }}
+                                  className="main_thumb_swiper"
+                                >
+                                  {imgs.map((img, i) => (
+                                    <SwiperSlide key={i}>
+                                      <div className="thumb_img">
+                                        <ImageWithSkeleton
+                                          src={img}
+                                          alt={`Caravan ${i + 1}`}
+                                          width={300}
+                                          height={200}
+                                          priority={isPriority && i === 0}
+                                        />
+                                      </div>
+                                    </SwiperSlide>
+                                  ))}
+                                </Swiper>
+                                {/* Hidden "View More" button that appears after last slide */}
+                                {/* <div
+                                 id={`view-more-btn-${item}`}
+                                 className="view-more-btn-wrapper"
+                               >
+                                 <Link
+                                   href="/related-links"
+                                   className="view-more-btn"
+ 
+                                 >
+                                   View More
+                                 </Link>
+                               </div> */}
+                              </div>
+                            </div>
  
                             <div className="product_de">
                               <div className="info">
