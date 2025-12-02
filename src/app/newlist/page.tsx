@@ -1,6 +1,6 @@
   import React, { Suspense } from "react";
  import Listing from "../components/ListContent/Listings";
- import { fetchListings } from "@/api/listings/api";
+ import { fetchListings } from "@/api/listings/testapi";
  import type { Metadata } from "next";
   import { ensureValidPage } from "@/utils/seo/validatePage";
  import { redirect } from "next/navigation";
