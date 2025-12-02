@@ -1568,6 +1568,7 @@ useEffect(() => {
 
   // ✅ Update handleModelSelect with valid check
   const handleModelSelect = (mod: Model) => {
+    
      keepModelOpenRef.current = false;
     const safeMake = isValidMakeSlug(selectedMake) ? selectedMake : undefined;
     const safeModel = isValidModelSlug(mod.slug) ? mod.slug : undefined;

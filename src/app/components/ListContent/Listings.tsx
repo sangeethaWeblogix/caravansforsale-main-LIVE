@@ -133,6 +133,7 @@ function transformApiItemsToProducts(items: Item[]): Product[] {
     categories: item.categories,
     people: item.people || "",
     make: item.make || "",
+    model: item.model || "",
     slug: item.slug,
     description: item.description,
     sku: item.sku,
@@ -464,6 +465,7 @@ export default function ListingsPage({
     try {
       console.log("pageNumpageNum", pageNum);
       const safeFilters = normalizeSearchFromMake(appliedFilters);
+
       const radiusNum = asNumber(safeFilters.radius_kms);
       const radiusParam =
         typeof radiusNum === "number" && radiusNum !== DEFAULT_RADIUS
@@ -518,6 +520,10 @@ export default function ListingsPage({
         window.scrollTo({ top: 0, behavior: "smooth" });
 
         const safeFilters = normalizeSearchFromMake(appliedFilters);
+                      console.log("model1",appliedFilters)
+                                    console.log("applu===",appliedFilters.model)
+
+
         const radiusNum = asNumber(safeFilters.radius_kms);
         const radiusParam =
           typeof radiusNum === "number" && radiusNum !== DEFAULT_RADIUS
@@ -824,8 +830,7 @@ export default function ListingsPage({
     "to_price",
     "minKg",
     "maxKg",
-    "acustom_fromyears",
-    "acustom_toyears",
+   
     "from_sleep",
     "to_sleep",
     "from_length",
