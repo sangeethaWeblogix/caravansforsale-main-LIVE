@@ -9,7 +9,7 @@ import Skelton from "../skelton";
 import Head from "next/head";
 import { useEffect, useMemo, useState } from "react";
 import { toSlug } from "@/utils/seo/slug";
-import ImageWithSkeleton from "../ImageWithSkeleton";
+// import ImageWithSkeleton from "../ImageWithSkeleton";
 import { useEnquiryForm } from "./enquiryform";
 
 interface Product {
@@ -357,13 +357,13 @@ export default function ListingContent({
                           <div className={`product-card sku-${item.sku}`}>
                           <div className="img">
                             <div className="background_thumb">
-                              <ImageWithSkeleton
+                              {/* <ImageWithSkeleton
                                 src={imgs[0]}
                                 alt="Caravan"
                                 width={300}
                                 height={200}
                                 priority={isPriority}
-                              />
+                              /> */}
                             </div>
 
                             <div className="main_thumb position-relative">
@@ -396,13 +396,13 @@ export default function ListingContent({
                                   {imgs.map((img, i) => (
                                     <SwiperSlide key={i}>
                                       <div className="thumb_img">
-                                        <ImageWithSkeleton
+                                        {/* <ImageWithSkeleton
                                           src={img}
                                           alt={`Caravan ${i + 1}`}
                                           width={300}
                                           height={200}
                                           priority={isPriority && i === 0}
-                                        />
+                                        /> */}
                                       </div>
                                     </SwiperSlide>
                                   ))}
@@ -615,13 +615,13 @@ export default function ListingContent({
                           <div className={`product-card sku-${item.sku}`}>
                             <div className="img">
                               <div className="background_thumb">
-                                <ImageWithSkeleton
+                                {/* <ImageWithSkeleton
                                   src={images[0]}
                                   priority={isPriority}
                                   alt="Caravan"
                                   width={300}
                                   height={200}
-                                />
+                                /> */}
                               </div>
                               <div className="main_thumb position-relative">
                                 {item.is_exclusive && (
@@ -652,13 +652,13 @@ export default function ListingContent({
                                   {imgs.map((img, i) => (
                                     <SwiperSlide key={i}>
                                       <div className="thumb_img">
-                                        <ImageWithSkeleton
+                                        {/* <ImageWithSkeleton
                                           src={img}
                                           alt={`Caravan ${i + 1}`}
                                           width={300}
                                           height={200}
                                           priority={isPriority && i === 0}
-                                        />
+                                        /> */}
                                       </div>
                                     </SwiperSlide>
                                   ))}
