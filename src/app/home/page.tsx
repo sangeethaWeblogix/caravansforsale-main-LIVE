@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Home from "./home";
 import "../globals.css";
-import Style from './home.module.css'
 
 export const metadata: Metadata = {
   title: "Caravans For Sale | New & Used Caravan Sales in Australia",
@@ -29,11 +28,9 @@ export const metadata: Metadata = {
 };
 
 const Page = () => (
-    <div className={Style.homeScope}>
+  <div>
     <Home />
   </div>
-  
 );
 
 export default Page;
- 
