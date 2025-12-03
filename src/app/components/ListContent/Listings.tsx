@@ -498,34 +498,8 @@ export default function ListingsPage({
         to_sleep: safeFilters.to_sleep?.toString(),
         radius_kms: radiusParam,
       });
-// NEW: Validation logic for success=false
-if (response?.success === false) {
-  const hasExclusiveFallback =
-    Array.isArray(response?.data?.emp_exclusive_products) &&
-    response.data.emp_exclusive_products.length > 0;
 
-  const hasNormalProducts =
-    Array.isArray(response?.data?.products) &&
-    response.data.products.length > 0;
-
-  // Case: API failed but exclusive exists → show exclusive page
-  if (!hasNormalProducts && hasExclusiveFallback) {
-    setProducts([]); // ensure no normal products
-    setExculisiveProducts(
-      emptyProduct
-    );
-    setFeaturedProducts([]);
-    setPremiumProducts([]);
-    setEmptyProduct([]); // clear
-    return response; // stop here (don't redirect)
-  }
-
-  // Case: API failed and NO fallback → redirect
-  if (!hasNormalProducts && !hasExclusiveFallback) {
-    redirect("/404");
-  }
-}
-
+      return response;
     } catch (err) {
       console.error("Failed to prefetch Next data", err);
     }
