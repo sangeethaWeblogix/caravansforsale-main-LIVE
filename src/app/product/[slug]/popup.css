@@ -274,6 +274,10 @@
   border: 1px solid #000000;
 }
 
+.new_listing .sidebar-enquiry {
+  top: 0;
+}
+
 @media (min-width: 768px) and (max-width: 991px) {
   .pop-top {
     display: block;
