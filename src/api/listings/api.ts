@@ -183,7 +183,7 @@ const res = await fetch(url, { cache: "no-store" });
       data: {
         products: json.data?.products ?? [],
         exclusive_products: json.data?.exclusive_products ?? [],
-               emp_exclusive_products: json.data?.emp_exclusive_products ?? [],
+        emp_exclusive_products: json.data?.emp_exclusive_products ?? [],
 
         featured_products: json.data?.featured_products ?? [],
         premium_products: json.data?.premium_products ?? [],

@@ -11,7 +11,8 @@
     fetchHomeSearchList, // GET /home_search (base list)
     fetchKeywordSuggestions, // GET /home_search/?keyword=<q> (typed list)
   } from "@/api/homeSearch/api";
-  
+   import '../app/home/main.css'
+   
   type Item = {
    title?: string;
     name?: string;
