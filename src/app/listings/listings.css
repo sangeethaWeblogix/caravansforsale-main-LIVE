@@ -453,10 +453,6 @@ h1.page-title {
   color: #f58333;
 }
 
-.filter {
-  top: 30px;
-  z-index: 9;
-}
 .filter .filter-card {
   padding: 20px 20px;
   border-radius: 8px;

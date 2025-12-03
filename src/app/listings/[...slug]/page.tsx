@@ -10,7 +10,7 @@ import { fetchListings } from "@/api/listings/api";
 import { redirect } from "next/navigation";
 import "../../components/ListContent/newList.css";
 import { fetchMakeDetails } from "@/api/make-new/api";
- import "../listings.css"
+import "../listings.css"
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
 // ─────────────────────────────────────────────────────────────────────────────

@@ -575,10 +575,7 @@
   .caravan_dtt {
     padding: 30px 0;
   }
-  .pop-top .vehicleThumbDetails__part__price.pop_up_price span bdi {
-    justify-content: start;
-    display: flex;
-  }
+
 
   .product-page .related-products .swiper-button-prev {
     left: -10px;
@@ -648,29 +645,14 @@
     padding: 15px 15px;
     font-size: 15px;
   }
-  .carava_details .swiper-slide img {
+  /*.carava_details .swiper-slide img {
     max-height: 240px;
     min-height: 240px;
-  }
+  }*/
   .carava_details .swiper-wrapper {
     height: auto;
   }
-  .pop-top {
-    text-align: left;
-    justify-content: space-around;
-    align-items: center;
-    padding: 12px 0;
-    display: block;
-    padding-top: 35px;
-  }
-  .close-btn {
-    top: -25px;
-    right: 8px;
-  }
-  .sidebar-enquiry {
-    position: relative;
-    top: 30px;
-  }
+
   .community.product_dt_lower.style-5 .content {
     padding-top: 20px;
   }
