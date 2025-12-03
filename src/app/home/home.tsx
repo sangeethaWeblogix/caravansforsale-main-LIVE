@@ -3,7 +3,7 @@
  import { useEffect, useState, useRef } from "react";
  import "bootstrap/dist/css/bootstrap.min.css";
  //  import "bootstrap/dist/js/bootstrap.bundle.min.js";
-//  import "./home.css";
+ import "./home.css";
   import "swiper/css";
  import "swiper/css/navigation";
  import Link from "next/link";
