@@ -39,64 +39,14 @@
   background-color: #fcfcfc;
 }
 
-.product-page .product-details .nav-pills {
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-pack: center;
-  -ms-flex-pack: center;
-  justify-content: center;
-  border-bottom: none;
-  padding-bottom: 10px;
-  gap: 40px;
-}
-
-.product-page .product-details .nav-pills .nav-link {
-  border: 0;
-  background: transparent;
-  font-size: 17px;
-  color: #333333;
-  text-transform: uppercase;
-  font-weight: 600;
-  position: relative;
-  transition: all 0.2s;
-}
-.product-page .product-details .nav-pills .nav-link span {
-  position: relative;
-  z-index: 1;
-}
-.product-page .product-details .nav-pills .nav-link.active:after {
-  background: #ec7200;
-  opacity: 1;
-}
-.product-page .product-details .nav-pills .nav-link:after {
-  background: #fff;
-  content: "";
-  height: 6px;
-  left: 0;
-  opacity: 0;
-  pointer-events: none;
-  position: absolute;
-  right: 0;
-  top: 100%;
-  transform: skewX(325deg);
-  transition: all 0.2s;
-}
-.product-page .product-details .nav-pills .nav-link.active {
-  color: #ec7200;
-  font-weight: bold;
-}
-.product-page .product-details .tab-content {
-  padding: 30px 50px;
-}
-.tab-content > .tab-pane {
+.home_top .tab-content > .tab-pane {
   display: none;
 }
 .fade:not(.show) {
   opacity: 0;
 }
 .dropdown-menu.show,
-.tab-content > .active {
+.home_top .tab-content > .active {
   display: block;
 }
 
@@ -242,12 +192,7 @@
   font-weight: 500;
   font-size: 12px;
 }
-.product-page .deal-of-month.product-details .content-info {
-  padding: 20px !important;
-  background: #fcfcfc;
-  border: 1px solid #d8d8d8;
-  border-radius: 15px;
-}
+
 .product_data h3.title {
   color: #010101;
   font-size: 25px;
@@ -833,31 +778,6 @@ a.ignoretext {
   color: #0181dd;
 }
 
-.other_items h3 {
-  margin-top: 25px;
-  margin-bottom: 12px;
-  font-size: 21px;
-  font-weight: 600;
-  text-transform: uppercase;
-}
-
-.other_items {
-  margin-top: 20px;
-}
-
-.product-page .other_items .product-card .info .title {
-  height: 50px;
-  color: #333;
-  margin-top: 10px;
-}
-
-.product-page .other_items .product-card .info .category {
-  font-size: 10px;
-  font-weight: 500;
-  text-transform: uppercase;
-  margin-bottom: 7px;
-  color: #8e8e8e;
-}
 
 .swiper-button-next.swiper-button-disabled,
 .swiper-button-prev.swiper-button-disabled {
@@ -866,48 +786,8 @@ a.ignoretext {
   pointer-events: none;
 }
 
-.product-page .other_items .related-products .swiper-button-next {
-  right: -75px;
-}
 
-.product-page .other_items .related-products .swiper-button-prev {
-  left: -75px;
-}
 
-.vehicleDetailsWithIcons.simple {
-  white-space: nowrap;
-  align-items: center;
-  width: 100%;
-  max-width: 100%;
-  margin: 0;
-  padding: 8px 0 16px;
-  font-size: 9px;
-  display: inline-block;
-  height: 50px;
-}
-
-.vehicleDetailsWithIcons.simple li {
-  color: #333;
-  display: inline-block;
-  text-align: left;
-  vertical-align: top;
-  font-size: 1.6em;
-  margin-right: 25px;
-  line-height: 27px;
-  width: 25%;
-  float: left;
-}
-
-.vehicleDetailsWithIcons.simple li::before {
-  content: "\f111";
-  font-family: "Font Awesome 6 Free";
-  font-weight: 900;
-  font-style: normal;
-  color: #797979;
-  font-size: 9px;
-  position: relative;
-  margin-right: 5px;
-}
 
 .caravans_by_state.services.style-1 {
   position: relative;
@@ -918,115 +798,6 @@ a.ignoretext {
 .m_label {
   margin-right: 6px;
   color: #ec7200;
-}
-
-.product-page .other_items .product-card .price .metc2 {
-  width: 100%;
-  display: flex;
-  justify-content: start;
-  gap: 13px;
-  align-items: center;
-}
-
-.product-page .other_items .product-card .price .metc2 h5.slog {
-  font-size: 25px;
-  color: #ec7200;
-  font-weight: 800;
-  margin-bottom: 10px;
-  letter-spacing: 0;
-  margin-top: 5px;
-  text-align: left;
-}
-.product-page .other_items .product-card .price .metc2 h5.slog s {
-  color: #ababab;
-  display: block;
-  font-size: 18px;
-  font-weight: 500;
-  margin-top: -5px;
-}
-
-.product-page .other_items .product-card .price .metc2 .card-price {
-  display: inline-block;
-  width: auto;
-  height: 60px;
-  background-color: transparent;
-  -webkit-border-radius: 3px 4px 4px 3px;
-  -moz-border-radius: 3px 4px 4px 3px;
-  border-radius: 0;
-  border-left: 1px solid #cccdce;
-  margin-left: 0;
-  position: relative;
-  color: #0066f0;
-  font-weight: 700;
-  font-size: 30px;
-  line-height: 25px;
-  padding: 3px 20px 0 20px;
-}
-
-.product-page .other_items .product-card .price .metc2 .card-price:before {
-  content: "";
-  position: absolute;
-  display: block;
-  left: -20px;
-  width: 0;
-  height: 0;
-  top: 0;
-  border-top: 30px solid transparent;
-  border-bottom: 30px solid transparent;
-  border-right: 20px solid transparent;
-}
-
-.product-page .other_items .product-card .price .metc2 .card-price {
-  display: inline-block;
-  width: auto;
-  height: 60px;
-  background-color: transparent;
-  -webkit-border-radius: 3px 4px 4px 3px;
-  -moz-border-radius: 3px 4px 4px 3px;
-  border-radius: 0;
-  border-left: 1px solid #cccdce;
-  margin-left: 0;
-  position: relative;
-  color: #0066f0;
-  font-weight: 700;
-  font-size: 25px;
-  line-height: 25px;
-  padding: 3px 13px 0 13px;
-  font-family: "Montserrat", sans-serif !important;
-}
-
-.product-page .other_items .product-card .price .metc2 .card-price:after {
-  content: "";
-  background-color: transparent;
-  border-radius: 50%;
-  width: 8px;
-  height: 8px;
-  display: block;
-  position: absolute;
-  left: -4px;
-  top: 26px;
-}
-
-.product-page .other_items .product-card .price .metc2 .card-price span {
-  display: block;
-  font-size: 13px;
-  font-weight: 600;
-  margin-bottom: 2px;
-}
-
-.product-page .other_items .product-card .btn {
-  display: block;
-  border: 2px solid #333;
-  color: #333;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  background: transparent;
-}
-
-.product-page .other_items .product-card:hover .btn {
-  background-color: #ec7200;
-  border-color: #ec7200;
-  color: #ffffff;
 }
 
 .blog.style-8 .side-posts .item {
@@ -1220,15 +991,6 @@ a.ignoretext {
   object-fit: cover;
 }
 
-.product-page .other_items .product-card .btn {
-  display: block;
-  border: 2px solid #333;
-  color: #333;
-  padding: 7px 15px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  background: transparent;
-}
 
 /* --------------- faq styles --------------- */
 
@@ -1379,30 +1141,11 @@ a.ignoretext {
   .deal-of-month .inside_col .header_posistion {
     margin-bottom: 15px;
   }
-  .product-page .product-details .nav-pills .nav-link {
-    font-size: 13px;
-  }
-  .product-page .product-details .nav-pills .nav-link:after {
-    height: 3px;
-  }
-  .product-page .product-details .nav-pills {
-    gap: 15px;
-  }
-  .product-page .product-details .tab-content {
-    padding: 12px 0px;
-  }
-  .product-page .deal-of-month.product-details .content-info {
-    padding: 6px !important;
-  }
+
   .product_data .deal_info {
     padding: 15px;
   }
-  .product-page .other_items .related-products .swiper-button-prev {
-    left: -10px;
-  }
-  .product-page .other_items .related-products .swiper-button-next {
-    right: -10px;
-  }
+
   .product-page .caravans_by_state.related-products .swiper-button-next,
   .product-page .caravans_by_manufacturer.related-products .swiper-button-next {
     right: -10px;
@@ -1436,15 +1179,7 @@ a.ignoretext {
   .product_data .right_design {
     padding: 0 10px;
   }
-  .other_items h3 {
-    font-size: 20px;
-  }
-  .product-page .other_items .related-products .swiper-button-next {
-    right: -10px;
-  }
-  .product-page .other_items .related-products .swiper-button-prev {
-    left: -10px;
-  }
+
   .product-page .related-products .swiper-button-next,
   .product-page .related-products .swiper-button-prev {
     width: 40px;
@@ -1562,7 +1297,7 @@ a.ignoretext {
   background: #000000;
 }
 
-.tab-content {
+.home_top .tab-content {
   height: 70px;
 }
 
@@ -1598,6 +1333,7 @@ main .section-head .category_icon li img {
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
+  background: #fff;
   /* background-image: url(/images/select.png); */
   background-size: 10px;
   background-position: calc(100% - 12px) 50%;
@@ -1635,7 +1371,7 @@ main .section-head .category_icon li img {
     display: block;
     padding-left: 0;
   }
-  .tab-content {
+  .home_top .tab-content {
     height: auto;
   }
   .quick_serch_form ul li {
