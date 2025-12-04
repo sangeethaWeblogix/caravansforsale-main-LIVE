@@ -14,12 +14,18 @@ const cleanSlug = (v?: string) =>
 const asNum = (v?: string | number) =>
   typeof v === "number" ? v : v && v.trim() ? Number(v) : undefined;
 
+function modelSlug(model: string): string {
+  return model
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "-"); // space → hyphen (keep +)
+}
 export function buildSlugFromFilters(f: Filters): string {
   const segments: string[] = [];
   // const DEFAULT_RADIUS = 50;
   // 1) Make / Model
   if (f.make) segments.push(toSlug(f.make));
-  if (f.model) segments.push(toSlug(f.model));
+  if (f.model) segments.push(modelSlug(f.model));
 
   // 2) Condition (display -> slug)
   if (f.condition) {

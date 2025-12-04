@@ -185,36 +185,12 @@ export default function ListingsPage({
     }
   };
 
-  const rawPage = searchParams.get("page");
-
+ 
   // ✅ If page is missing → default to 1
-  const page = rawPage ? parseInt(rawPage, 10) : 1;
+ 
+   
 
-  // ✅ Only validate `page`
-  if (rawPage !== null) {
-    // page must be all digits
-    if (!/^\d+$/.test(rawPage)) {
-      redirect("/404");
-    }
-
-    // must be >= 1
-    if (!Number.isInteger(page) || page < 1) {
-      redirect("/404");
-    }
-  }
-
-  // ✅ Validate malformed URLs (client-side guard)
-  useEffect(() => {
-    const rawQuery = window.location.search;
-    if (
-      /[&#*+]+$/.test(rawQuery) || // Ends with & or special chars
-      /page=$/.test(rawQuery) || // Empty ?page=
-      /page=[A-Za-z]+/.test(rawQuery) || // Letters in page value
-      /page=\d+[A-Za-z]+/.test(rawQuery) // Numbers followed by letters (2a, 5b)
-    ) {
-      window.location.href = "/not-found";
-    }
-  }, []);
+ 
 
   // Initialize state with initialData if provided
   const [products, setProducts] = useState<Product[]>(
@@ -521,7 +497,7 @@ export default function ListingsPage({
 
         const safeFilters = normalizeSearchFromMake(appliedFilters);
                       console.log("model1",appliedFilters)
-                                    console.log("applu===",appliedFilters.model)
+                                    console.log("app",safeFilters.model)
 
 
         const radiusNum = asNumber(safeFilters.radius_kms);

@@ -79,17 +79,18 @@ export default async function Listings({
   const slugString = slug.join("/");
 
   // ───── Basic security & sanity checks ─────
-  if (
-    slug.length > 0 &&
-    (/[^\w/-]/.test(slugString) ||
-      slugString.includes("..") ||
-      slugString.includes("//") ||
-      slugString.includes("&") ||
-      slugString.includes("?") ||
-      slugString.includes("="))
-  ) {
-    redirect("/404");
-  }
+  // if (
+  //   slug.length > 0 &&
+  //   (/[^\w/-]/.test(slugString) ||
+  //     slugString.includes("..") ||
+  //     slugString.includes("//") ||
+  //     slugString.includes("&") ||
+  //     slugString.includes("?") ||
+  //     slugString.includes("="))
+  // ) {
+  //   redirect("/404");
+  // }
+   
 
   
 
@@ -115,6 +116,7 @@ export default async function Listings({
     const isPureNumber = /^[0-9]{5,}$/.test(lower);
     const isWeirdSymbols = /^[^a-z0-9-]+$/.test(lower);
     const allowed = [
+
       /^over-\d+$/,
       /^under-\d+$/,
       /^between-\d+-\d+$/,
@@ -140,6 +142,7 @@ export default async function Listings({
   // ───── Location hierarchy validation ─────
   const hasState = !!filters.state;
   const hasRegion = !!filters.region;
+
   const hasSuburb = !!filters.suburb;
 
   if ((hasRegion || hasSuburb) && !hasState) redirect("/404");
@@ -191,50 +194,100 @@ export default async function Listings({
     }
   }
 
-  // ───── Validate Make & Model against API ─────
-  const makeDetails = await fetchMakeDetails();
+  
 
-  const validMakes = new Set(makeDetails.map((m) => m.slug.toLowerCase()));
-  const validModelsByMake = new Map<string, Set<string>>();
-  makeDetails.forEach((make) => {
-    validModelsByMake.set(
-      make.slug.toLowerCase(),
-      new Set(make.models.map((m) => m.slug.toLowerCase()))
-    );
-  });
+//   // ───── Validate Make & Model against API ─────
+//   const makeDetails = await fetchMakeDetails();
 
-  const simpleSegments = slug.filter((s) => /^[a-z0-9]+$/.test(s));
-  const makeSlug = simpleSegments[0]?.toLowerCase();
-  const modelSlug = simpleSegments[1]?.toLowerCase();
+//   const validMakes = new Set(makeDetails.map((m) => m.slug.toLowerCase()));
+//   const validModelsByMake = new Map<string, Set<string>>();
+//   makeDetails.forEach((make) => {
+//     validModelsByMake.set(
+//       make.slug.toLowerCase(),
+//       new Set(make.models.map((m) => m.slug.toLowerCase()))
+//     );
+//   });
 
-  if (makeSlug && !validMakes.has(makeSlug)) {
-    console.log("Invalid make:", makeSlug);
-    redirect("/404");
+//   const simpleSegments = slug.filter((s) => /^[a-z0-9]+$/.test(s));
+//   const makeSlug = simpleSegments[0]?.toLowerCase();
+//   const modelSlug = simpleSegments[1]?.toLowerCase();
+
+//   if (makeSlug && !validMakes.has(makeSlug)) {
+//     console.log("Invalid make:", makeSlug);
+//     redirect("/404");
+//   }
+
+//  if (makeSlug && modelSlug) {
+//   const models = validModelsByMake.get(makeSlug) || new Set();
+
+//   const normalize = (str: string) =>
+//     str.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+//   const normalizedUserModel = normalize(modelSlug);
+
+//   const isValid = [...models].some((model) => {
+//     const normalizedBackend = normalize(model);
+//     return normalizedBackend.startsWith(normalizedUserModel);
+//   });
+
+//   if (!isValid) {
+
+//     console.log(
+//       `❌ Model mismatch → user:${modelSlug}, cleaned:${normalizedUserModel}`
+//     );
+//     redirect("/404");
+//   }
+// }
+// ───── Validate Make & Model against API ─────
+const makeDetails = await fetchMakeDetails();
+
+const validMakes = new Set(makeDetails.map((m) => m.slug.toLowerCase()));
+const validModelsByMake = new Map<string, string[]>();
+
+makeDetails.forEach((make) => {
+  validModelsByMake.set(
+    make.slug.toLowerCase(),
+    make.models.map((m) => m.slug.toLowerCase())
+  );
+});
+
+const simpleSegments = slug.filter((s) => /^[a-z0-9-]+$/.test(s));
+const makeSlug = simpleSegments[0]?.toLowerCase();
+const modelSlug = simpleSegments[1]?.toLowerCase();
+
+// --- Validate Make ---
+if (makeSlug && !validMakes.has(makeSlug)) {
+  console.log("❌ Invalid Make:", makeSlug);
+  redirect("/404");
+}
+
+// --- Validate Model based on Make rules ---
+ // --- Validate Make & Model ---
+if (makeSlug && modelSlug) {
+  const backendModels = validModelsByMake.get(makeSlug) ?? [];
+
+  const clean = (v: string) => v.toLowerCase().replace(/[^a-z0-9+]/g, "");
+
+  const cleanedUser = clean(modelSlug);
+
+  let isValid = false;
+
+  for (const backend of backendModels) {
+    const cleanedBackend = clean(backend);
+
+    // RULE: User slug must CONTAIN backend model slug
+    if (cleanedUser.includes(cleanedBackend)) {
+      isValid = true;
+      break;
+    }
   }
 
- if (makeSlug && modelSlug) {
-  const models = validModelsByMake.get(makeSlug) || new Set();
-
-  // Normalize input: remove invalid characters but preserve meaning
-  const normalize = (str: string) =>
-    str.toLowerCase().replace(/[^a-z0-9]/g, "");
-
-  const normalizedUserModel = normalize(modelSlug);
-
-  // Match rule: Backend model must BEGIN with user model core (ignore symbols)
-  const isValid = [...models].some((model) => {
-    const normalizedBackend = normalize(model);
-    return normalizedBackend.startsWith(normalizedUserModel);
-  });
-
   if (!isValid) {
-
-    console.log(
-      `❌ Model mismatch → user:${modelSlug}, cleaned:${normalizedUserModel}`
-    );
+    console.log(`❌ Model mismatch → make:${makeSlug}, user:${modelSlug}`);
     redirect("/404");
   }
 }
+
 
 
   // ───── Page param ─────
