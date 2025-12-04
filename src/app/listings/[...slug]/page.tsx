@@ -76,7 +76,7 @@ export default async function Listings({
   ]);
 
   const slug = resolvedParams.slug || [];
-  const slugString = slug.join("/");
+  // const slugString = slug.join("/");
 
   // ───── Basic security & sanity checks ─────
   // if (
