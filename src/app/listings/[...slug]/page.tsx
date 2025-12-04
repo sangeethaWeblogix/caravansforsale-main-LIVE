@@ -1,5 +1,6 @@
  // app/(listings)/[[...slug]]/page.tsx
 
+ 
 export const dynamic = "force-dynamic";
 
 import ListingsPage from "@/app/components/ListContent/Listings";
@@ -9,8 +10,7 @@ import type { Metadata } from "next";
 import { fetchListings } from "@/api/listings/api";
 import { redirect } from "next/navigation";
 import "../../components/ListContent/newList.css";
-import { fetchMakeDetails } from "@/api/make-new/api";
- import "../listings.css"
+  import "../listings.css"
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
 // ─────────────────────────────────────────────────────────────────────────────
@@ -173,10 +173,15 @@ export default async function Listings({
     else if (lower.endsWith("-region")) detectedType = "region";
     else if (lower.includes("-suburb")) detectedType = "suburb";
     // Make / Model (simple alphanumeric segments)
-    else if (/^[a-z0-9]+$/.test(part)) {
-      if (!seenTypes.has("make")) detectedType = "make";
-      else if (!seenTypes.has("model")) detectedType = "model";
-    }
+  else if (
+  /^[a-z]+[0-9]+$/.test(lower) ||        // string + number
+  /^[a-z]+[0-9]+\+$/.test(lower)         // string + number + +
+) {
+  if (!seenTypes.has("make")) detectedType = "make";
+  else if (!seenTypes.has("model")) detectedType = "model";
+} else if (/^[0-9]+$/.test(lower) || /^[0-9]+\+$/.test(lower) || /^[a-z]+\+$/.test(lower)) {
+  redirect("/404"); // block bad patterns: only numbers, number+, or string+ without number
+}
 
     if (detectedType) {
       // Duplicate type → 404
@@ -193,50 +198,7 @@ export default async function Listings({
       }
     }
   }
-
-//   // ───── Validate Make & Model against API ─────
-//   const makeDetails = await fetchMakeDetails();
-
-//   const validMakes = new Set(makeDetails.map((m) => m.slug.toLowerCase()));
-//   const validModelsByMake = new Map<string, Set<string>>();
-//   makeDetails.forEach((make) => {
-//     validModelsByMake.set(
-//       make.slug.toLowerCase(),
-//       new Set(make.models.map((m) => m.slug.toLowerCase()))
-//     );
-//   });
-
-//   const simpleSegments = slug.filter((s) => /^[a-z0-9]+$/.test(s));
-//   const makeSlug = simpleSegments[0]?.toLowerCase();
-//   const modelSlug = simpleSegments[1]?.toLowerCase();
-
-//   if (makeSlug && !validMakes.has(makeSlug)) {
-//     console.log("Invalid make:", makeSlug);
-//     redirect("/404");
-//   }
-
-//  if (makeSlug && modelSlug) {
-//   const models = validModelsByMake.get(makeSlug) || new Set();
-
-//   const normalize = (str: string) =>
-//     str.toLowerCase().replace(/[^a-z0-9]/g, "");
-
-//   const normalizedUserModel = normalize(modelSlug);
-
-//   const isValid = [...models].some((model) => {
-//     const normalizedBackend = normalize(model);
-//     return normalizedBackend.startsWith(normalizedUserModel);
-//   });
-
-//   if (!isValid) {
-
-//     console.log(
-//       `❌ Model mismatch → user:${modelSlug}, cleaned:${normalizedUserModel}`
-//     );
-//     redirect("/404");
-//   }
-// }
-
+ 
 
   // ───── Page param ─────
   let page = 1;
