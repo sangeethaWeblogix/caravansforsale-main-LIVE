@@ -1,12 +1,5 @@
  // app/(listings)/[[...slug]]/page.tsx
-function normalizeSlug(v: string = "") {
-  return decodeURIComponent(v)
-    .replace(/\s+/g, "+")     // convert spaces back to +
-    .trim()
-    .toLowerCase();
-}
 
- 
 export const dynamic = "force-dynamic";
 
 import ListingsPage from "@/app/components/ListContent/Listings";
@@ -16,8 +9,8 @@ import type { Metadata } from "next";
 import { fetchListings } from "@/api/listings/api";
 import { redirect } from "next/navigation";
 import "../../components/ListContent/newList.css";
-  import "../listings.css"
 import { fetchMakeDetails } from "@/api/make-new/api";
+ import "../listings.css"
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
 // ─────────────────────────────────────────────────────────────────────────────
@@ -104,55 +97,7 @@ export default async function Listings({
 // ───── Block any "acustom" usage ─────
  
 
-  // Validate REAL make/model from API
- // ───── Validate MAKE & MODEL using API data ─────
- // helper: check if slug is a typed value (category, state, year, price, etc)
-function isTypedFilter(slug: string) {
-  return (
-    slug.endsWith("-category") ||
-    slug.endsWith("-condition") ||
-    slug.endsWith("-state") ||
-    slug.endsWith("-region") ||
-    slug.includes("-suburb") ||
-    slug.includes("-kg-atm") ||
-    slug.includes("-length-in-feet") ||
-    slug.includes("-people-sleeping-capacity") ||
-    slug.endsWith("-search") ||
-    /^over-\d+$/.test(slug) ||
-    /^under-\d+$/.test(slug) ||
-    /^between-\d+-\d+$/.test(slug) ||
-    /\d{4}(-caravans-range)?$/.test(slug)
-  );
-}
 
-// ───── Validate MAKE & MODEL only if NOT typed filter ─────
-const makesData = await fetchMakeDetails();
-
-if (slug.length >= 1 && !isTypedFilter(slug[0])) {
-  const makeSlug = normalizeSlug(slug[0]);
-
-  const matchedMake = makesData.find(
-    (m: any) => normalizeSlug(m.slug) === makeSlug
-  );
-
-  if (!matchedMake) redirect("/404");
-
-  if (slug.length >= 2 && !isTypedFilter(slug[1])) {
-    const modelSlug = normalizeSlug(slug[1]);
-
-    const matchedModel = matchedMake.models?.some(
-      (mod: any) => normalizeSlug(mod.slug) === modelSlug
-    );
-
-    if (!matchedModel) redirect("/404");
-  }
-}
-
-
-
-
-  // ────────────────────────────────────────────────
- 
   // Block page/feed keywords
   const hasBlockedWord =
     slug.some((s) => /(page|feed|years)/i.test(s)) ||
@@ -228,15 +173,10 @@ if (slug.length >= 1 && !isTypedFilter(slug[0])) {
     else if (lower.endsWith("-region")) detectedType = "region";
     else if (lower.includes("-suburb")) detectedType = "suburb";
     // Make / Model (simple alphanumeric segments)
-  else if (
-  /^[a-z]+[0-9]+$/.test(lower) ||        // string + number
-  /^[a-z]+[0-9]+\+$/.test(lower)         // string + number + +
-) {
-  if (!seenTypes.has("make")) detectedType = "make";
-  else if (!seenTypes.has("model")) detectedType = "model";
-} else if (/^[0-9]+$/.test(lower) || /^[0-9]+\+$/.test(lower) || /^[a-z]+\+$/.test(lower)) {
-  redirect("/404"); // block bad patterns: only numbers, number+, or string+ without number
-}
+    else if (/^[a-z0-9]+$/.test(part)) {
+      if (!seenTypes.has("make")) detectedType = "make";
+      else if (!seenTypes.has("model")) detectedType = "model";
+    }
 
     if (detectedType) {
       // Duplicate type → 404
@@ -253,7 +193,107 @@ if (slug.length >= 1 && !isTypedFilter(slug[0])) {
       }
     }
   }
- 
+
+  
+
+//   // ───── Validate Make & Model against API ─────
+//   const makeDetails = await fetchMakeDetails();
+
+//   const validMakes = new Set(makeDetails.map((m) => m.slug.toLowerCase()));
+//   const validModelsByMake = new Map<string, Set<string>>();
+//   makeDetails.forEach((make) => {
+//     validModelsByMake.set(
+//       make.slug.toLowerCase(),
+//       new Set(make.models.map((m) => m.slug.toLowerCase()))
+//     );
+//   });
+
+//   const simpleSegments = slug.filter((s) => /^[a-z0-9]+$/.test(s));
+//   const makeSlug = simpleSegments[0]?.toLowerCase();
+//   const modelSlug = simpleSegments[1]?.toLowerCase();
+
+//   if (makeSlug && !validMakes.has(makeSlug)) {
+//     console.log("Invalid make:", makeSlug);
+//     redirect("/404");
+//   }
+
+//  if (makeSlug && modelSlug) {
+//   const models = validModelsByMake.get(makeSlug) || new Set();
+
+//   const normalize = (str: string) =>
+//     str.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+//   const normalizedUserModel = normalize(modelSlug);
+
+//   const isValid = [...models].some((model) => {
+//     const normalizedBackend = normalize(model);
+//     return normalizedBackend.startsWith(normalizedUserModel);
+//   });
+
+//   if (!isValid) {
+
+//     console.log(
+//       `❌ Model mismatch → user:${modelSlug}, cleaned:${normalizedUserModel}`
+//     );
+//     redirect("/404");
+//   }
+// }
+// ───── Validate Make & Model against API ─────
+// ─────────────────────────────────────────────
+// VALIDATE MAKE & MODEL
+// ─────────────────────────────────────────────
+const makeDetails = await fetchMakeDetails();
+
+// Build useful lookup maps
+const validMakes = new Set(makeDetails.map((m) => m.slug.toLowerCase()));
+const validModelsByMake = new Map<string, string[]>();
+
+makeDetails.forEach((make) => {
+  validModelsByMake.set(
+    make.slug.toLowerCase(),
+    make.models.map((m) => m.slug.toLowerCase())
+  );
+});
+
+// Utility to normalize strings
+const normalize = (v: string) => v.toLowerCase().replace(/[^a-z0-9+]/g, "");
+
+// STEP 1️⃣ — Detect Make from slug only if in validMakes
+let detectedMake: string | undefined = slug.find((part) =>
+  validMakes.has(part.toLowerCase())
+)?.toLowerCase();
+
+if (detectedMake && !validMakes.has(detectedMake)) {
+  console.log("❌ Invalid Make:", detectedMake);
+  redirect("/404");
+}
+
+// STEP 2️⃣ — Detect Model only if make exists and pattern is valid
+let detectedModel: string | undefined;
+
+if (detectedMake) {
+  const backendModels = validModelsByMake.get(detectedMake) ?? [];
+
+  // Find a matching model slug inside the URL
+  detectedModel = slug.find((part) =>
+    backendModels.some(
+      (backendModel) =>
+        normalize(part) === normalize(backendModel) ||
+        normalize(part).includes(normalize(backendModel))
+    )
+  )?.toLowerCase();
+
+  // If a model slug exists in the URL but doesn't match backend → 404
+  const rawModelFromUrl = slug
+    .filter((s) => s !== detectedMake)
+    .find((s) => !s.endsWith("-state") && !s.endsWith("-region") && !s.endsWith("-suburb"));
+
+  if (rawModelFromUrl && !detectedModel) {
+    console.log(`❌ Model mismatch → make:${detectedMake}, user:${rawModelFromUrl}`);
+    redirect("/404");
+  }
+}
+
 
   // ───── Page param ─────
   let page = 1;
