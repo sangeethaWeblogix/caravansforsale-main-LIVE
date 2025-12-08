@@ -132,7 +132,7 @@ if (slug.length >= 1 && !isTypedFilter(slug[0])) {
   const makeSlug = normalizeSlug(slug[0]);
 
   const matchedMake = makesData.find(
-    (m: any) => normalizeSlug(m.slug) === makeSlug
+    (m) => normalizeSlug(m.slug) === makeSlug
   );
 
   if (!matchedMake) redirect("/404");
@@ -141,7 +141,7 @@ if (slug.length >= 1 && !isTypedFilter(slug[0])) {
     const modelSlug = normalizeSlug(slug[1]);
 
     const matchedModel = matchedMake.models?.some(
-      (mod: any) => normalizeSlug(mod.slug) === modelSlug
+      (mod) => normalizeSlug(mod.slug) === modelSlug
     );
 
     if (!matchedModel) redirect("/404");

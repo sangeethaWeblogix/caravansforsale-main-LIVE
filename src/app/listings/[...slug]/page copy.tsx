@@ -259,7 +259,7 @@ makeDetails.forEach((make) => {
 const normalize = (v: string) => v.toLowerCase().replace(/[^a-z0-9+]/g, "");
 
 // STEP 1️⃣ — Detect Make from slug only if in validMakes
-let detectedMake: string | undefined = slug.find((part) =>
+const detectedMake: string | undefined = slug.find((part) =>
   validMakes.has(part.toLowerCase())
 )?.toLowerCase();
 

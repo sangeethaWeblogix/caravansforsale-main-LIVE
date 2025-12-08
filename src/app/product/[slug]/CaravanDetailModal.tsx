@@ -35,8 +35,7 @@ export default function CaravanDetailModal({
   onClose,
   images,
   product,
-  subImages,
-}: CaravanDetailModalProps) {
+ }: CaravanDetailModalProps) {
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -59,8 +58,7 @@ const INITIAL_COUNT = 10;
 
 const [slides, setSlides] = useState<string[]>([]);
 const [index, setIndex] = useState(INITIAL_COUNT);
-const [subLoaded, setSubLoaded] = useState(false);
-
+ 
   // validation regex
   const NAME_RE = /^[A-Za-z][A-Za-z\s'.-]{1,49}$/;
   const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
@@ -74,7 +72,7 @@ const [subLoaded, setSubLoaded] = useState(false);
   }
 }, [isOpen, images]);
 
- const handleSlideChange = (swiper: any) => {
+ const handleSlideChange = (swiper) => {
   const isLastSlide = swiper.activeIndex === slides.length - 1;
 
   if (isLastSlide) {
