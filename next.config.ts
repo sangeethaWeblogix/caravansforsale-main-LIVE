@@ -63,17 +63,19 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       {
-        source: "/:path*feedfeed:rest*", // matches /anything/feedfeedfeedfeed etc.
-        destination: "/:path*", // redirect to clean URL
+              source: "/:path*/feed",
+
+         destination: "/:path*", // redirect to clean URL
         permanent: true, // 301 redirect for SEO
       },
       {
-        source: "/:path*(feed)+:rest*", // also catch single feed or partial ones
+               source: "/:path*/feed+",
+
         destination: "/:path*",
         permanent: true,
       },
       {
-        source: "/:path*(feed)+", // final catch-all safety net
+        source: "/:path*/feedfeed",
         destination: "/:path*",
         permanent: true,
       },
