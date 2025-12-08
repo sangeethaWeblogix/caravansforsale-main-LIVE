@@ -22,55 +22,77 @@ async function fetchProductDetail(slug: string) {
   }
 }
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<RouteParams>;
-}): Promise<Metadata> {
-  const { slug } = await params;
-  const data = await fetchProductDetail(slug);
-
-  if (!data || Object.keys(data).length === 0) {
-    return {
-      title: "Product Not Found - Caravans for Sale",
-      description: "The product you are looking for does not exist.",
-    };
-  }
-
-  const seo = data?.seo ?? data?.product?.seo ?? {};
-  const title =
-    seo.metatitle ||
-    seo.meta_title ||
-    data?.title ||
-    data?.name ||
-    "Product - Caravans for Sale";
-  const robots = "index, follow";
-  const description =
-    seo.metadescription ||
-    seo.meta_description ||
-    data?.short_description ||
-    "View caravan details.";
-  const canonicalUrl = `https://www.caravansforsale.com.au/product/${slug}/`;
-
-  return {
-    title: { absolute: title },
-    description,
-    robots,
-    openGraph: { title, description },
-    twitter: {
-      card: "summary",
-      title,
-      description,
-    },
-    alternates: {
-      canonical: canonicalUrl, // ✅ canonical link
-    },
-    verification: {
-      google: "6tT6MT6AJgGromLaqvdnyyDQouJXq0VHS-7HC194xEo", // ✅ this auto generates <meta name="google-site-verification" />
-    },
-    other: { "og:type": "product" },
-  };
-}
+ export async function generateMetadata({
+   params,
+ }: {
+   params: Promise<RouteParams>;
+ }): Promise<Metadata> {
+   const { slug } = await params;
+   const data = await fetchProductDetail(slug);
+   const sku =  data?.product?.sku || "";
+         const base = `https://caravansforsale.imagestack.net/800x600/${sku}/${slug}`;
+         const ogImage = `${base}main1.avif`;
+ 
+ console.log("image", ogImage)
+   if (!data || Object.keys(data).length === 0) {
+     return {
+       title: "Product Not Found - Caravans for Sale",
+       description: "The product you are looking for does not exist.",
+     };
+   }
+  
+   const seo = data?.seo ?? data?.product?.seo ?? {};
+   const title =
+     seo.metatitle ||
+     seo.meta_title ||
+     data?.title ||
+     data?.name ||
+     "Product - Caravans for Sale";
+ 
+   const description =
+     seo.metadescription ||
+     seo.meta_description ||
+     data?.short_description ||
+     "View caravan details.";
+   const canonicalUrl = `https://www.caravansforsale.com.au/product/${slug}/`;
+   const robots = "index, follow";
+  console.log("og", ogImage)
+ 
+   return {
+     title: { absolute: title },
+     robots,
+     verification: {
+       google: "6tT6MT6AJgGromLaqvdnyyDQouJXq0VHS-7HC194xEo", // ✅ Google site verification
+     },
+     description,
+       openGraph: {
+       title,
+       description,
+       type: "website",
+       url: canonicalUrl,
+        siteName: "https://www.caravansforsale.com.au/", 
+       images: [
+         {
+           url: ogImage,
+           width: 800,
+           height: 600,
+           alt: title,
+         },
+       ],
+       locale: "en-AU",
+     },
+     twitter: {
+       card: "summary",
+       title,
+       description,
+     },
+     alternates: {
+       canonical: canonicalUrl, // ✅ canonical link
+     },
+ 
+     other: { "og:type": "product" },
+   };
+ }
 
 export default async function ProductDetailPage({ params }: PageProps) {
   const { slug } = await params; // ✅ no await

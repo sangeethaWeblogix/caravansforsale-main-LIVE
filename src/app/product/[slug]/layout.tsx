@@ -58,7 +58,8 @@ console.log("image", ogImage)
     "View caravan details.";
   const canonicalUrl = `https://www.caravansforsale.com.au/product/${slug}/`;
   const robots = "index, follow";
- 
+ console.log("og", ogImage)
+
   return {
     title: { absolute: title },
     robots,
@@ -71,7 +72,7 @@ console.log("image", ogImage)
       description,
       type: "website",
       url: canonicalUrl,
-       siteName: "Caravans For Sale", 
+       siteName: "https://www.caravansforsale.com.au/", 
       images: [
         {
           url: ogImage,
@@ -94,7 +95,6 @@ console.log("image", ogImage)
     other: { "og:type": "product" },
   };
 }
-
 export default function Layout({ children }: { children: ReactNode }) {
   return <div>{children}</div>;
 }
