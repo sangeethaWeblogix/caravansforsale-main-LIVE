@@ -16,15 +16,15 @@ type CaravanDetailModalProps = {
   isOpen: boolean;
   onClose: () => void;
   images: string[];
-  subImages: string[];
   product: {
     id?: string | number;
     slug?: string;
     name: string;
     image: string;
     price: number;
-    regularPrice: string | number;
-    salePrice: string | number;
+    sku?: string;
+    regularPrice: number;
+    salePrice: number;
     isPOA: boolean;
     location?: string;
   };
@@ -35,7 +35,6 @@ export default function CaravanDetailModal({
   onClose,
   images,
   product,
-  subImages,
 }: CaravanDetailModalProps) {
   const [form, setForm] = useState({
     name: "",
@@ -55,38 +54,54 @@ export default function CaravanDetailModal({
   const [submitting, setSubmitting] = useState(false);
   const [okMsg, setOkMsg] = useState<string | null>(null);
   const router = useRouter();
-const INITIAL_COUNT = 10;
+const IMAGES_PER_PAGE = 10;
+const [visibleImages, setVisibleImages] = useState<string[]>([]);
+const [page, setPage] = useState(1);
 
-const [slides, setSlides] = useState<string[]>([]);
-const [index, setIndex] = useState(INITIAL_COUNT);
-const [subLoaded, setSubLoaded] = useState(false);
+
+const sku = product.sku ?? "";
+const slug = product.slug ?? "";
+const base = `https://caravansforsale.imagestack.net/800x600/${sku}/${slug}`;
+
+ function checkImage(url: string): Promise<boolean> {
+    return new Promise((resolve) => {
+      if (typeof window === "undefined") return resolve(false);
+
+      const img = document.createElement("img");
+      img.onload = () => resolve(true);
+      img.onerror = () => resolve(false);
+      img.src = url;
+    });
+  }
+useEffect(() => {
+  if (isOpen) {
+    setPage(1);
+    setVisibleImages(images.slice(0, IMAGES_PER_PAGE));
+  }
+}, [isOpen, images]);
+const loadNextImages = async () => {
+  const nextPage = page + 1;
+  const start = (nextPage - 1) * IMAGES_PER_PAGE;
+  const end = nextPage * IMAGES_PER_PAGE;
+
+  const newImages = images.slice(start, end);
+ for (let i = start; i <= end; i++) {
+    const url = `${base}sub${i}.avif`;
+    const ok = await checkImage(url);
+    if (!ok) break;
+    newImages.push(url);
+  }
+  if (newImages.length > 0) {
+    setVisibleImages((prev) => [...prev, ...newImages]);
+    setPage(nextPage);
+  }
+};
 
   // validation regex
   const NAME_RE = /^[A-Za-z][A-Za-z\s'.-]{1,49}$/;
   const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
   const PHONE_RE = /^\d{7,15}$/;
   const POST_RE = /^\d{4}$/;
- useEffect(() => {
-  if (isOpen) {
-    const firstBatch = images.slice(0, INITIAL_COUNT);
-    setSlides(firstBatch);
-    setIndex(INITIAL_COUNT);
-  }
-}, [isOpen, images]);
-
- const handleSlideChange = (swiper: any) => {
-  const isLastSlide = swiper.activeIndex === slides.length - 1;
-
-  if (isLastSlide) {
-    const nextBatch = images.slice(index, index + INITIAL_COUNT);
-
-    if (nextBatch.length > 0) {
-      setSlides(prev => [...prev, ...nextBatch]);
-      setIndex(prev => prev + INITIAL_COUNT);
-    }
-  }
-};
-
 
   const validate = (f = form) => {
     const e: Partial<typeof form> = {};
@@ -188,7 +203,10 @@ const [subLoaded, setSubLoaded] = useState(false);
                       <span>
                         <span className="woocommerce-Price-amount amount">
                           <bdi>
-                           {product.regularPrice}
+                            ${" "}
+                            {Number(product.regularPrice).toLocaleString(
+                              "en-IN"
+                            )}{" "}
                           </bdi>
                         </span>
                       </span>
@@ -200,11 +218,17 @@ const [subLoaded, setSubLoaded] = useState(false);
                       modules={[Navigation, Pagination]}
                       navigation
                       pagination={{ clickable: true }}
-                      loop={slides.length > 1}
-                        onSlideChange={handleSlideChange}
+                      loop={images.length > 1}
+                      onSlideChange={async (swiper) => {
+  const lastIndex = visibleImages.length - 1;
 
+  // When user reaches last loaded slide → load next 10
+  if (swiper.activeIndex === lastIndex) {
+    await loadNextImages();
+  }
+}}
                     >
-                      {slides.map((img, idx) => (
+                      {visibleImages.map((img, idx) => (
                         <SwiperSlide
                           key={idx}
                           className="flex justify-center items-center"
@@ -375,6 +399,7 @@ const [subLoaded, setSubLoaded] = useState(false);
                             ></textarea>
                           </p>
                         </div>
+
 
                         {okMsg && <div className="cfs-success">{okMsg}</div>}
 

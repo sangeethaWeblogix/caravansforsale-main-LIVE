@@ -31,14 +31,18 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const data = await fetchProductDetail(slug);
+  const sku =  data?.product?.sku || "";
+        const base = `https://caravansforsale.imagestack.net/800x600/${sku}/${slug}`;
+        const ogImage = `${base}main1.avif`;
 
+console.log("image", ogImage)
   if (!data || Object.keys(data).length === 0) {
     return {
       title: "Product Not Found - Caravans for Sale",
       description: "The product you are looking for does not exist.",
     };
   }
-
+ 
   const seo = data?.seo ?? data?.product?.seo ?? {};
   const title =
     seo.metatitle ||
@@ -54,7 +58,7 @@ export async function generateMetadata({
     "View caravan details.";
   const canonicalUrl = `https://www.caravansforsale.com.au/product/${slug}/`;
   const robots = "index, follow";
-
+ 
   return {
     title: { absolute: title },
     robots,
@@ -62,7 +66,22 @@ export async function generateMetadata({
       google: "6tT6MT6AJgGromLaqvdnyyDQouJXq0VHS-7HC194xEo", // ✅ Google site verification
     },
     description,
-    openGraph: { title, description },
+      openGraph: {
+      title,
+      description,
+      type: "website",
+      url: canonicalUrl,
+       siteName: "Caravans For Sale", 
+      images: [
+        {
+          url: ogImage,
+          width: 800,
+          height: 600,
+          alt: title,
+        },
+      ],
+      locale: "en-AU",
+    },
     twitter: {
       card: "summary",
       title,

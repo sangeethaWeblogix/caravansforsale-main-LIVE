@@ -423,10 +423,10 @@ useEffect(() => {
 
   const imgs = [
     `${base}main1.avif`,        // main image
-    `${base}sub4.avif`,         // sub1
-    `${base}sub5.avif`,         // sub2
-    `${base}sub6.avif`,         // sub3
-    `${base}sub7.avif`,         // sub4
+    `${base}sub3.avif`,         // sub1
+    `${base}sub4.avif`,         // sub2
+    `${base}sub5.avif`,         // sub3
+    `${base}sub6.avif`,         // sub4
   ];
 
   setMainsub(imgs);
@@ -479,12 +479,14 @@ const [subs, setSubs] = useState<string[]>([]);
       }
 
       // 2) SUBS: sub1.avif, sub2.avif, ...
-      for (let i = 1; i <= 70; i++) {
+      for (let i = 2; i <= 5; i++) {
         const url = `${base}sub${i}.avif`;
         const ok = await checkImage(url);
         if (!ok) break; // stop when next sub doesn't exist
         urls.push(url);
       }
+
+        
 
       // If CDN gave nothing, fall back to API images
       const finalUrls =
@@ -492,8 +494,24 @@ const [subs, setSubs] = useState<string[]>([]);
           ? urls
           : (images.length ? images : [main]).filter(Boolean);
 
+
+ for (let i = 6; i <= 70; i++) {
+        const url = `${base}sub${i}.avif`;
+        const ok = await checkImage(url);
+        if (!ok) break; // stop when next sub doesn't exist
+        urls.push(url);
+      }
+
+        
+
+      // If CDN gave nothing, fall back to API images
+      const finalSubUrls =
+        urls.length > 0
+          ? urls
+          : (images.length ? images : [main]).filter(Boolean);
       if (!cancelled) {
         setSubs(finalUrls);
+        setMainsub(finalSubUrls);
         setActiveImage(finalUrls[0] || main);
        }
     };
@@ -888,20 +906,22 @@ const [subs, setSubs] = useState<string[]>([]);
                 </div>
               </div>
 
+
               {/* Modal */}
               {showModal && (
                 <CaravanDetailModal
                   isOpen={showModal}
                   onClose={() => setShowModal(false)}
                   images={subs}
+                  subImages={mainsub}
                   product={{
                     id: productId,
                     slug: productSlug,
                     name: product.name ?? "",
                     image: activeImage || subs[0] ,
                     price: hasSale ? sale : reg,
-                    regularPrice: reg,
-                    salePrice: sale,
+                    regularPrice: product.regular_price ?? 0,
+                    salePrice: product.sale_price ?? 0,
                     isPOA,
                     location: product.location ?? undefined,
                   }}
