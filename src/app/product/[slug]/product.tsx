@@ -395,7 +395,7 @@ const handleImageLoad = () => {
   const productSlug: string | undefined = product.slug ?? pd.slug;
 console.log("product", data)
 
-const slug = productSlug || toSlug(product.name || "");
+const slug = productSlug || "";
 const sku = productDetails.sku ;
 console.log("slug1", productDetails)
  
