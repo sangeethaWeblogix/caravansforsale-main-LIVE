@@ -62,23 +62,21 @@ const nextConfig: NextConfig = {
   // ✅ Redirect malformed URLs like /feedfeedfeedfeed → clean version
   async redirects() {
     return [
-      {
-              source: "/:path*/feed",
-
-         destination: "/:path*", // redirect to clean URL
-        permanent: true, // 301 redirect for SEO
-      },
-      {
-               source: "/:path*/feed+",
-
-        destination: "/:path*",
-        permanent: true,
-      },
-      {
-        source: "/:path*/feedfeed",
-        destination: "/:path*",
-        permanent: true,
-      },
+       {
+      source: "/:path*/feed/:rest*",
+      destination: "/:path*",
+      permanent: true,
+    },
+    {
+      source: "/:path*/feedfeed/:rest*",
+      destination: "/:path*",
+      permanent: true,
+    },
+    {
+      source: "/:path*/feedfeedfeed/:rest*",
+      destination: "/:path*",
+      permanent: true,
+    },
     ];
   },
 };
