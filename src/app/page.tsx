@@ -3,7 +3,7 @@ import Home from "./home/home";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Caravans For Sale | New & Used Caravan Sales in Australia",
+  title: "Caravans For Sale – #1 Marketplace for New & Used Caravan Deals",
   description:
     "Browse new & used caravans for sale across Australia. Compare prices on off-road, hybrid, pop top, touring, luxury models with size, weight & sleeping capacity.",
   robots: "index, follow",
@@ -11,14 +11,14 @@ export const metadata: Metadata = {
     google: "6tT6MT6AJgGromLaqvdnyyDQouJXq0VHS-7HC194xEo", // ✅ this auto generates <meta name="google-site-verification" />
   },
   openGraph: {
-    title: "Caravans For Sale | New & Used Caravan Sales in Australia",
+    title: "Caravans For Sale – #1 Marketplace for New & Used Caravan Deals",
     description:
       "Browse new & used caravans for sale across Australia. Compare prices on off-road, hybrid, pop top, touring, luxury models with size, weight & sleeping capacity.",
   },
 
   twitter: {
     card: "summary_large_image",
-    title: "Caravans For Sale | New & Used Caravan Sales in Australia",
+    title: "Caravans For Sale – #1 Marketplace for New & Used Caravan Deals",
     description:
       "Browse new & used caravans for sale across Australia. Compare prices on off-road, hybrid, pop top, touring, luxury models with size, weight & sleeping capacity.",
   },
