@@ -35,6 +35,7 @@ export default function CaravanDetailModal({
   onClose,
   images,
   product,
+  subImages,
  }: CaravanDetailModalProps) {
   const [form, setForm] = useState({
     name: "",
@@ -64,9 +65,11 @@ const [index, setIndex] = useState(INITIAL_COUNT);
   const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
   const PHONE_RE = /^\d{7,15}$/;
   const POST_RE = /^\d{4}$/;
+
+
  useEffect(() => {
   if (isOpen) {
-    const firstBatch = images.slice(0, INITIAL_COUNT);
+    const firstBatch = subImages.slice(0, INITIAL_COUNT);
     setSlides(firstBatch);
     setIndex(INITIAL_COUNT);
   }
@@ -76,11 +79,21 @@ const [index, setIndex] = useState(INITIAL_COUNT);
   const isLastSlide = swiper.activeIndex === slides.length - 1;
 
   if (isLastSlide) {
-    const nextBatch = images.slice(index, index + INITIAL_COUNT);
+let nextBatch: string[] = [];
+
+    // Still inside subImages? load next subImages
+    if (index < subImages.length) {
+      nextBatch = subImages.slice(index, index + INITIAL_COUNT);
+    }
+    // SubImages completely loaded → start loading IMAGES
+    else {
+      const mainIndex = index - subImages.length;
+      nextBatch = images.slice(mainIndex, mainIndex + INITIAL_COUNT);
+    }
 
     if (nextBatch.length > 0) {
-      setSlides(prev => [...prev, ...nextBatch]);
-      setIndex(prev => prev + INITIAL_COUNT);
+      setSlides((prev) => [...prev, ...nextBatch]);
+      setIndex((prev) => prev + nextBatch.length);
     }
   }
 };
