@@ -71,32 +71,37 @@ const [index, setIndex] = useState(INITIAL_COUNT);
   if (isOpen) {
     const firstBatch = subImages.slice(0, INITIAL_COUNT);
     setSlides(firstBatch);
-    setIndex(INITIAL_COUNT);
+    setIndex(firstBatch.length); // REAL number loaded
   }
-}, [isOpen, images]);
+}, [isOpen, subImages]);
+
 
  const handleSlideChange = (swiper) => {
-  const isLastSlide = swiper.activeIndex === slides.length - 1;
+  const active = swiper.activeIndex;
 
-  if (isLastSlide) {
-let nextBatch: string[] = [];
+  // Stop when fully loaded
+  const total = subImages.length + images.length;
+  if (slides.length >= total) return;
 
-    // Still inside subImages? load next subImages
-    if (index < subImages.length) {
-      nextBatch = subImages.slice(index, index + INITIAL_COUNT);
-    }
-    // SubImages completely loaded → start loading IMAGES
-    else {
-      const mainIndex = index - subImages.length;
-      nextBatch = images.slice(mainIndex, mainIndex + INITIAL_COUNT);
-    }
+  // If user reached last loaded slide → load next
+  if (active === slides.length - 1) {
+    let nextBatch: string[] = [];
 
+    // Load remaining subImages first
+    
+      const imageIndex = index - subImages.length;
+      nextBatch = images.slice(imageIndex, imageIndex + INITIAL_COUNT);
+  
+
+    // Add only unique (no duplicates)
     if (nextBatch.length > 0) {
       setSlides((prev) => [...prev, ...nextBatch]);
-      setIndex((prev) => prev + nextBatch.length);
+      setIndex(index + nextBatch.length);
     }
   }
 };
+
+
 
 
   const validate = (f = form) => {
@@ -211,8 +216,7 @@ let nextBatch: string[] = [];
                       modules={[Navigation, Pagination]}
                       navigation
                       pagination={{ clickable: true }}
-                      loop={slides.length > 1}
-                        onSlideChange={handleSlideChange}
+                          onSlideChange={handleSlideChange}
 
                     >
                       {slides.map((img, idx) => (
