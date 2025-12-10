@@ -151,20 +151,23 @@ if (slug.length >= 1 && !isTypedFilter(slug[0])) {
 
 
 
-  // ────────────────────────────────────────────────
- 
+  
   // Block page/feed keywords
-  const hasBlockedWord =
-    slug.some((s) => /(page|feed|years)/i.test(s)) ||
-    Object.keys(resolvedSearchParams).some((k) => /(page|feed|years)/i.test(k)) ||
-    Object.values(resolvedSearchParams).some((v) =>
-      Array.isArray(v)
-        ? v.some((vv) => /(page|feed|years)/i.test(String(vv)))
-        : /(page|feed|years)/i.test(String(v))
-    );
+ // 🚫 Fully block "page" or "feed" in URL
+const forbiddenPattern = /(page|feed)/i;
 
-  if (hasBlockedWord) redirect("/404");
+if (
+  slug.some((s) => forbiddenPattern.test(s)) ||
+  Object.keys(resolvedSearchParams).some((k) => forbiddenPattern.test(k)) ||
+  Object.values(resolvedSearchParams).some((v) =>
+    forbiddenPattern.test(String(v))
+  )
+) {
+  redirect("/404");
+}
 
+
+ 
   // Reject gibberish / pin-code spam
   const hasGibberish = slug.some((part) => {
     const lower = part.toLowerCase();

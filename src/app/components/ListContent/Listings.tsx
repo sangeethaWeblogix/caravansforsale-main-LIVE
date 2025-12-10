@@ -158,6 +158,7 @@ export default function ListingsPage({
   const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+ 
   const [isMainLoading, setIsMainLoading] = useState(false);
   const [isFeaturedLoading, setIsFeaturedLoading] = useState(false);
   const [isPremiumLoading, setIsPremiumLoading] = useState(false);
@@ -185,7 +186,9 @@ export default function ListingsPage({
     }
   };
 
- 
+  if (searchParams.has("page")) {
+    redirect("/404");
+  }
   // ✅ If page is missing → default to 1
  
    
