@@ -71,35 +71,34 @@ const [index, setIndex] = useState(INITIAL_COUNT);
   if (isOpen) {
     const firstBatch = subImages.slice(0, INITIAL_COUNT);
     setSlides(firstBatch);
-    setIndex(firstBatch.length); // REAL number loaded
+    setIndex(firstBatch.length);
+
+    // 🔥 Immediately prepare images in background
+    setTimeout(() => {
+      const imgBatch = images.slice(0, INITIAL_COUNT);
+      setSlides((prev) => [...prev, ...imgBatch]);
+    }, 0);
   }
-}, [isOpen, subImages]);
+}, [isOpen, subImages, images]);
+
 
 
  const handleSlideChange = (swiper) => {
   const active = swiper.activeIndex;
 
-  // Stop when fully loaded
-  const total = subImages.length + images.length;
-  if (slides.length >= total) return;
+  // All loaded? Stop.
+  if (slides.length >= subImages.length + images.length) return;
 
-  // If user reached last loaded slide → load next
   if (active === slides.length - 1) {
-    let nextBatch: string[] = [];
+    const remainingImages = images.slice(index - subImages.length, index - subImages.length + INITIAL_COUNT);
 
-    // Load remaining subImages first
-    
-      const imageIndex = index - subImages.length;
-      nextBatch = images.slice(imageIndex, imageIndex + INITIAL_COUNT);
-  
-
-    // Add only unique (no duplicates)
-    if (nextBatch.length > 0) {
-      setSlides((prev) => [...prev, ...nextBatch]);
-      setIndex(index + nextBatch.length);
+    if (remainingImages.length > 0) {
+      setSlides((prev) => [...prev, ...remainingImages]);
+      setIndex((prev) => prev + remainingImages.length);
     }
   }
 };
+
 
 
 
