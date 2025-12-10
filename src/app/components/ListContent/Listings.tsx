@@ -191,7 +191,13 @@ export default function ListingsPage({
   }
   // ✅ If page is missing → default to 1
  
-   
+     const fromYears = searchParams.get("acustom_fromyears");
+  const toYears = searchParams.get("acustom_toyears");
+
+  if (fromYears !== null || toYears !== null) {
+    redirect("/404");
+  }
+
 
  
 
