@@ -185,17 +185,6 @@ const getIP = async () => {
   }
 };
 
-const handleViewDetails = async (e: any, id: number, href: string) => {
-  e.preventDefault();
-
-  await postTrackEvent(
-    "https://www.admin.caravansforsale.com.au/wp-json/cfs/v1/update-clicks",
-    id
-  );
-
-  window.location.href = href;
-};
-
 const postTrackEvent = async (url: string, product_id: number) => {
   const ip = await getIP();
   const user_agent = navigator.userAgent;
@@ -530,7 +519,6 @@ const postTrackEvent = async (url: string, product_id: number) => {
                                             return (
                                               <>
                                                 <del>{rawRegular}</del>{" "}
-                                                
                                                 {rawSale}
                                               </>
                                             );
@@ -634,8 +622,14 @@ const postTrackEvent = async (url: string, product_id: number) => {
                                 >
                                   Contact Dealer
                                 </button>
-                                <button className="btn btn-primary"     onClick={(e) => handleViewDetails(e, item.id, href)}
->
+                                <button className="btn btn-primary"  onClick={async (e) => {
+    e.preventDefault();
+    await postTrackEvent(
+      "https://www.admin.caravansforsale.com.au/wp-json/cfs/v1/update-clicks",
+      item.id
+    );
+    window.location.href = href; // go to product page
+  }}>
                                   View Details
                                 </button>
                               </div>
@@ -895,8 +889,14 @@ const postTrackEvent = async (url: string, product_id: number) => {
                               >
                                 Contact Dealer
                               </button>
-                              <button className="btn btn-primary"     onClick={(e) => handleViewDetails(e, item.id, href)}
->
+                              <button className="btn btn-primary"  onClick={async (e) => {
+    e.preventDefault();
+    await postTrackEvent(
+      "https://www.admin.caravansforsale.com.au/wp-json/cfs/v1/update-clicks",
+      item.id
+    );
+    window.location.href = href; // go to product page
+  }}>
                                 View Details
                               </button>
                             </div>
@@ -1150,8 +1150,14 @@ const postTrackEvent = async (url: string, product_id: number) => {
                                 >
                                   Contact Dealer
                                 </button>
-                                <button className="btn btn-primary"    onClick={(e) => handleViewDetails(e, item.id, href)}
->
+                                <button className="btn btn-primary"  onClick={async (e) => {
+    e.preventDefault();
+    await postTrackEvent(
+      "https://www.admin.caravansforsale.com.au/wp-json/cfs/v1/update-clicks",
+      item.id
+    );
+    window.location.href = href; // go to product page
+  }}>
                                   View Details
                                 </button>
                               </div>
