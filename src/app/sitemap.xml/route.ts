@@ -1,4 +1,4 @@
- // src/app/sitemap.xml/route.ts
+// src/app/sitemap.xml/route.ts
 import { NextResponse } from "next/server";
 
 export async function GET() {
@@ -7,21 +7,11 @@ export async function GET() {
 
   const sitemaps = [
     "general-sitemap.xml",
-    "search-sitemap.xml",
-    "blogs-sitemap.xml",
-    "makes-sitemap.xml",
-    "suburbs-sitemap.xml",
-    "states-sitemap.xml",
-    "regions-sitemap.xml",
-    "categories-sitemap.xml",
-    "prices-sitemap.xml",
-       "weights-sitemap.xml",   
-       "sleeps-sitemap.xml",   
-       "length-sitemap.xml",  
-        "conditions-sitemap.xml",
-        "years-sitemap.xml",
-    
 
+    "blogs-sitemap.xml",
+    "location-sitemap.xml",
+
+     
   ];
 
   const lastModified = new Date().toISOString().split("T")[0];
