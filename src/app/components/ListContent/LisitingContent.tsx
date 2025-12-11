@@ -11,6 +11,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { toSlug } from "@/utils/seo/slug";
 import ImageWithSkeleton from "../ImageWithSkeleton";
 import { useEnquiryForm } from "./enquiryform";
+import { useRouter } from "next/navigation";
 
 interface Product {
   id: number;
@@ -114,6 +115,7 @@ export default function ListingContent({
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [lazyImages, setLazyImages] = useState<{ [key: string]: string[] }>({});
   const [loadedAll, setLoadedAll] = useState<{ [key: string]: boolean }>({});
+const router = useRouter();
 
   const prevRef = useRef(null);
   const nextRef = useRef(null);
@@ -628,7 +630,7 @@ const postTrackEvent = async (url: string, product_id: number) => {
       "https://www.admin.caravansforsale.com.au/wp-json/cfs/v1/update-clicks",
       item.id
     );
-    window.location.href = href; // go to product page
+     router.push(href);// go to product page
   }}>
                                   View Details
                                 </button>
@@ -895,7 +897,7 @@ const postTrackEvent = async (url: string, product_id: number) => {
       "https://www.admin.caravansforsale.com.au/wp-json/cfs/v1/update-clicks",
       item.id
     );
-    window.location.href = href; // go to product page
+     router.push(href);// go to product page
   }}>
                                 View Details
                               </button>
@@ -1156,7 +1158,7 @@ const postTrackEvent = async (url: string, product_id: number) => {
       "https://www.admin.caravansforsale.com.au/wp-json/cfs/v1/update-clicks",
       item.id
     );
-    window.location.href = href; // go to product page
+     router.push(href);// go to product page
   }}>
                                   View Details
                                 </button>
