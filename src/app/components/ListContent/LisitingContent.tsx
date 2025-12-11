@@ -175,6 +175,31 @@ export default function ListingContent({
   };
 
   // Remove all the lazy loading state and just load all images immediately
+const getIP = async () => {
+  try {
+    const res = await fetch("https://api.ipify.org?format=json");
+    const data = await res.json();
+    return data.ip || "";
+  } catch {
+    return "";
+  }
+};
+
+const postTrackEvent = async (url: string, product_id: number) => {
+  const ip = await getIP();
+  const user_agent = navigator.userAgent;
+
+  await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      product_id,
+      ip,
+      user_agent,
+    }),
+  });
+};
+
 
   const mergedProducts = useMemo(() => {
     const merged: Product[] = [];
@@ -207,6 +232,31 @@ export default function ListingContent({
 
     return merged;
   }, [products, exculisiveProducts]);
+
+
+  useEffect(() => {
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const id = Number(entry.target.getAttribute("data-product-id"));
+          postTrackEvent(
+            "https://www.admin.caravansforsale.com.au/wp-json/cfs/v1/update-impressions",
+            id
+          );
+          observer.unobserve(entry.target);
+        }
+      });
+    },
+    { threshold: 0.5 }
+  );
+
+  document.querySelectorAll(".product-card[data-product-id]").forEach((el) => {
+    observer.observe(el);
+  });
+
+  return () => observer.disconnect();
+}, [mergedProducts]);
 
   // ✅ Disable background scroll when popup is open
   useEffect(() => {
@@ -312,10 +362,11 @@ export default function ListingContent({
                       aria-label="Shop order"
                       onChange={(e) =>
                         onFilterChange({
-                          orderby: e.target.value || "featured",
+                          ...currentFilters,
+                          orderby: e.target.value  ,
                         })
                       }
-                      value={currentFilters.orderby ?? "featured"} // <— default to "featured"
+                      value={currentFilters.orderby} // <— default to "featured"
                     >
                       <option value="featured">Featured</option>
                       <option value="price_asc">Price (Low to High)</option>
@@ -401,7 +452,10 @@ export default function ListingContent({
                             }
                           }}
                         >
-                          <div className={`product-card sku-${item.sku}`}>
+                          <div
+  className={`product-card sku-${item.sku}`}
+  data-product-id={item.id}
+>
  
                             <div className="img">
                               <div className="background_thumb">
@@ -568,12 +622,23 @@ export default function ListingContent({
                                 >
                                   Contact Dealer
                                 </button>
-                                <button className="btn btn-primary">
+                                <button className="btn btn-primary"  onClick={async (e) => {
+    e.preventDefault();
+    await postTrackEvent(
+      "https://www.admin.caravansforsale.com.au/wp-json/cfs/v1/update-clicks",
+      item.id
+    );
+    window.location.href = href; // go to product page
+  }}>
                                   View Details
                                 </button>
                               </div>
                             </div>
                           </div>
+
+
+
+
                         </Link>
                       </SwiperSlide>
                     );
@@ -604,7 +669,10 @@ export default function ListingContent({
                         prefetch={false}
                         className="lli_head"
                       >
-                          <div className={`product-card sku-${item.sku}`}>
+                          <div
+  className={`product-card sku-${item.sku}`}
+  data-product-id={item.id}
+>
                           <div className="img">
                             <div className="background_thumb">
                               <ImageWithSkeleton
@@ -821,7 +889,14 @@ export default function ListingContent({
                               >
                                 Contact Dealer
                               </button>
-                              <button className="btn btn-primary">
+                              <button className="btn btn-primary"  onClick={async (e) => {
+    e.preventDefault();
+    await postTrackEvent(
+      "https://www.admin.caravansforsale.com.au/wp-json/cfs/v1/update-clicks",
+      item.id
+    );
+    window.location.href = href; // go to product page
+  }}>
                                 View Details
                               </button>
                             </div>
@@ -862,7 +937,10 @@ export default function ListingContent({
                           prefetch={false}
                           className="lli_head"
                         >
-                          <div className={`product-card sku-${item.sku}`}>
+                          <div
+  className={`product-card sku-${item.sku}`}
+  data-product-id={item.id}
+>
                             <div className="img">
                               <div className="background_thumb">
                                 <ImageWithSkeleton
@@ -1072,7 +1150,14 @@ export default function ListingContent({
                                 >
                                   Contact Dealer
                                 </button>
-                                <button className="btn btn-primary">
+                                <button className="btn btn-primary"  onClick={async (e) => {
+    e.preventDefault();
+    await postTrackEvent(
+      "https://www.admin.caravansforsale.com.au/wp-json/cfs/v1/update-clicks",
+      item.id
+    );
+    window.location.href = href; // go to product page
+  }}>
                                   View Details
                                 </button>
                               </div>

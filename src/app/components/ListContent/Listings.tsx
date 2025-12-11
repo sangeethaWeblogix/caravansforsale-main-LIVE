@@ -199,7 +199,54 @@ export default function ListingsPage({
   }
 
 
- 
+ const getIP = async () => {
+  try {
+    const res = await fetch("https://api.ipify.org?format=json");
+    const data = await res.json();
+    return data.ip || "";
+  } catch {
+    return "";
+  }
+};
+
+const postTrackEvent = async (url: string, product_id: number) => {
+  const ip = await getIP();
+  const user_agent = navigator.userAgent;
+
+  await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      product_id,
+      ip,
+      user_agent,
+    }),
+  });
+};
+
+useEffect(() => {
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const id = Number(entry.target.getAttribute("data-product-id"));
+          postTrackEvent(
+            "https://www.admin.caravansforsale.com.au/wp-json/cfs/v1/update-impressions",
+            id
+          );
+          observer.unobserve(entry.target);
+        }
+      });
+    },
+    { threshold: 0.5 }
+  );
+
+  document.querySelectorAll(".product-card[data-product-id]").forEach((el) => {
+    observer.observe(el);
+  });
+
+  return () => observer.disconnect();
+}, [ ]);
 
   // Initialize state with initialData if provided
   const [products, setProducts] = useState<Product[]>(
@@ -333,31 +380,52 @@ export default function ListingsPage({
     return page;
   };
 
-  const updateURLWithFilters = useCallback(
-    (nextFilters: Filters, pageNum: number) => {
-      console.log(pageNum);
-      const slug = buildSlugFromFilters(nextFilters);
-      const query = new URLSearchParams();
+  // const updateURLWithFilters = useCallback(
+  //   (nextFilters: Filters, pageNum: number) => {
+  //     console.log(pageNum);
+  //     const slug = buildSlugFromFilters(nextFilters);
+  //     const query = new URLSearchParams();
 
-      if (nextFilters.orderby) query.set("orderby", nextFilters.orderby);
+  // if (nextFilters.orderby) query.set("orderby", String(nextFilters.orderby));
 
-      const r = Number(nextFilters.radius_kms);
-      if (!Number.isNaN(r) && r !== DEFAULT_RADIUS) {
-        query.set("radius_kms", String(r));
-      }
-      if (clickid) query.set("clickid", clickid); // only clickid
+  //     const r = Number(nextFilters.radius_kms);
+  //     if (!Number.isNaN(r) && r !== DEFAULT_RADIUS) {
+  //       query.set("radius_kms", String(r));
+  //     }
+  //     if (clickid) query.set("clickid", clickid); // only clickid
 
-      const safeSlug = slug.endsWith("/") ? slug : `${slug}/`; // 👈 important
-      const finalURL = query.toString() ? `${safeSlug}?${query}` : safeSlug;
-      console.log("final", finalURL);
-      router.push(finalURL, { scroll: false }); // ✅ Prevent auto-scroll
-      setTimeout(() => {
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      }, 150);
-    },
-    [router, DEFAULT_RADIUS]
-  );
+  //     const safeSlug = slug.endsWith("/") ? slug : `${slug}/`; // 👈 important
+  //     const finalURL = query.toString() ? `${safeSlug}?${query}` : safeSlug;
+  //     console.log("final", finalURL);
+  //     router.push(finalURL, { scroll: false }); // ✅ Prevent auto-scroll
+  //     setTimeout(() => {
+  //       window.scrollTo({ top: 0, behavior: "smooth" });
+  //     }, 150);
+  //   },
+  //   [router, DEFAULT_RADIUS]
+  // );
+ const updateURLWithFilters = useCallback((nextFilters: Filters, pageNum: number) => {
+  const slug = buildSlugFromFilters(nextFilters); // your slug builder
+  const query = new URLSearchParams();
 
+  if (nextFilters.orderby) query.set("orderby", String(nextFilters.orderby));
+  const r = Number(nextFilters.radius_kms);
+  if (!Number.isNaN(r) && r !== DEFAULT_RADIUS) {
+    query.set("radius_kms", String(r));
+  }
+  if (clickid) query.set("clickid", clickid);
+
+  // Use current pathname (do not force a route push)
+  const path = window.location.pathname;
+  const safeSlug = slug ? (slug.endsWith("/") ? slug : `${slug}/`) : path;
+  const finalURL = query.toString() ? `${safeSlug}?${query}` : safeSlug;
+
+  // Replace history only — avoids Next.js navigation / redirect
+  window.history.replaceState({}, "", finalURL);
+
+  // then fetch data client-side
+  setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 150);
+}, [DEFAULT_RADIUS, clickid]);
   // put near your other helpers
   const getUrlParams = () => new URLSearchParams(window.location.search);
   const setUrlParams = (params: Record<string, string | undefined>) => {
@@ -505,8 +573,8 @@ export default function ListingsPage({
         window.scrollTo({ top: 0, behavior: "smooth" });
 
         const safeFilters = normalizeSearchFromMake(appliedFilters);
-                      console.log("model1",appliedFilters)
-                                    console.log("app",safeFilters.model)
+                      console.log("appp1",appliedFilters)
+                                    console.log("app",safeFilters.orderby)
 
 
         const radiusNum = asNumber(safeFilters.radius_kms);
@@ -822,6 +890,7 @@ export default function ListingsPage({
     "to_length",
     "search",
     "keyword",
+    "orderby"
   ];
 
   const hasActiveFilters = FILTER_KEYS_TO_CHECK.some((key) => {
