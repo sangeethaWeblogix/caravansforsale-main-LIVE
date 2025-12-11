@@ -5,35 +5,33 @@ import { fetchSearchkeywords } from "@/api/sitemapSearchKeyword/api";
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "https://www.caravansforsale.com.au";
 
-export async function GET() {
+ export async function GET() {
   try {
-    const searchItems = await fetchSearchkeywords();
- 
+    const response = await fetch(
+      "https://admin.caravansforsale.com.au/wp-json/cfs/v1/search-keyword",
+      { cache: "no-store" }
+    );
+
+    const json = await response.json();
+    const searchItems = json?.data ?? [];
+
     const urls = searchItems
       .map((item) => {
         let finalUrl = "";
 
         if (item.url && item.url.trim() !== "") {
-          // ✅ use API-provided URL directly
           finalUrl = item.url.trim();
         } else {
-          // ✅ fallback to generated slug
           let slug = item.name?.toLowerCase().replace(/\s+/g, "-").trim() || "";
-
-          // remove leading/trailing slashes
           slug = slug.replace(/^\/+|\/+$/g, "");
-
-          // ensure "-search" suffix
           if (!slug.endsWith("-search")) slug = `${slug}-search`;
-
           finalUrl = `${SITE_URL}/listings/${slug}/`;
         }
 
         return `
         <url>
           <loc>${finalUrl}</loc>
-         <lastmod>${new Date().toISOString()}</lastmod>
-
+          <lastmod>${new Date().toISOString()}</lastmod>
           <changefreq>daily</changefreq>
           <priority>0.7</priority>
         </url>`;
@@ -56,3 +54,4 @@ export async function GET() {
     );
   }
 }
+
