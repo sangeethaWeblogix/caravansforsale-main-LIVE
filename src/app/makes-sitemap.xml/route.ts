@@ -17,7 +17,7 @@ export async function GET() {
       .map((make: any) => {
         const makeSlug = make.slug?.trim() || "";
 
-        const finalUrl = `${SITE_URL}/make/${makeSlug}/`;
+        const finalUrl = `${SITE_URL}/${makeSlug}/`;
 
         return `
         <url>
