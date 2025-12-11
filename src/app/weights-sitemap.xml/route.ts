@@ -19,7 +19,7 @@ export async function GET() {
       <loc>${SITE_URL}/listings/under-${w}-kg-atm/</loc>
       <lastmod>${new Date().toISOString().split("T")[0]}</lastmod>
       <changefreq>daily</changefreq>
-      <priority>0.7</priority>
+      <priority>0.5</priority>
     </url>`;
   });
 
@@ -30,7 +30,7 @@ export async function GET() {
       <loc>${SITE_URL}/listings/over-${w}-kg-atm/</loc>
       <lastmod>${new Date().toISOString().split("T")[0]}</lastmod>
       <changefreq>daily</changefreq>
-      <priority>0.7</priority>
+      <priority>0.5</priority>
     </url>`;
   });
 
@@ -42,7 +42,7 @@ export async function GET() {
         <loc>${SITE_URL}/listings/between-${atm[i]}-kg-${atm[j]}-kg-atm/</loc>
         <lastmod>${new Date().toISOString().split("T")[0]}</lastmod>
         <changefreq>daily</changefreq>
-        <priority>0.7</priority>
+        <priority>0.5</priority>
       </url>`;
     }
   }

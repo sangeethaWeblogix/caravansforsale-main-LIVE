@@ -21,7 +21,7 @@ export async function GET() {
       <loc>${SITE_URL}/listings/${year}-caravans-range/</loc>
       <lastmod>${new Date().toISOString()}</lastmod>
       <changefreq>daily</changefreq>
-      <priority>0.7</priority>
+      <priority>0.5</priority>
     </url>`;
   });
 

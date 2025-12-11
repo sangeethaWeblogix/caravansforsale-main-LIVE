@@ -25,7 +25,7 @@ export async function GET() {
           <lastmod>${new Date().toISOString()}</lastmod>
 
           <changefreq>daily</changefreq>
-          <priority>0.7</priority>
+          <priority>0.5</priority>
         </url>`;
       })
       .join("");

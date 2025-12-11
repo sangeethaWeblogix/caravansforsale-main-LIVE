@@ -56,7 +56,7 @@ export async function GET() {
         <loc>${SITE_URL}/listings/${s.value}-state/</loc>
         <lastmod>${new Date().toISOString()}</lastmod>
         <changefreq>daily</changefreq>
-        <priority>0.7</priority>
+        <priority>0.5</priority>
       </url>`
     );
 
@@ -70,7 +70,7 @@ export async function GET() {
           <loc>${SITE_URL}/listings/${s.value}-state/${r.value}-region/</loc>
           <lastmod>${new Date().toISOString()}</lastmod>
           <changefreq>daily</changefreq>
-          <priority>0.7</priority>
+          <priority>0.5</priority>
         </url>`
       )
     );
@@ -97,7 +97,7 @@ export async function GET() {
           <loc>${SITE_URL}/listings/${statePart}/${regionPart}/${suburbClean}-${postcode}-suburb/</loc>
           <lastmod>${new Date().toISOString()}</lastmod>
           <changefreq>daily</changefreq>
-          <priority>0.7</priority>
+          <priority>0.5</priority>
         </url>`;
       })
       .filter(Boolean);

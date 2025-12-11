@@ -16,7 +16,7 @@ export async function GET() {
       <loc>${SITE_URL}/listings/${s}-people-sleeping-capacity</loc>
       <lastmod>${new Date().toISOString()}</lastmod>
       <changefreq>monthly</changefreq>
-      <priority>0.7</priority>
+      <priority>0.5</priority>
     </url>`;
 
     // over

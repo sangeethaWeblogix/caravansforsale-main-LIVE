@@ -18,7 +18,7 @@ export async function GET() {
       <loc>${SITE_URL}/listings/under-${l}-length-in-feet/</loc>
       <lastmod>${new Date().toISOString().split("T")[0]}</lastmod>
       <changefreq>daily</changefreq>
-      <priority>0.7</priority>
+      <priority>0.5</priority>
     </url>`;
   });
 
@@ -29,7 +29,7 @@ export async function GET() {
       <loc>${SITE_URL}/listings/over-${l}-length-in-feet/</loc>
       <lastmod>${new Date().toISOString().split("T")[0]}</lastmod>
       <changefreq>daily</changefreq>
-      <priority>0.7</priority>
+      <priority>0.5</priority>
     </url>`;
   });
 
@@ -43,7 +43,7 @@ export async function GET() {
       }-length-in-feet/</loc>
         <lastmod>${new Date().toISOString().split("T")[0]}</lastmod>
         <changefreq>daily</changefreq>
-        <priority>0.7</priority>
+        <priority>0.5</priority>
       </url>`;
     }
   }

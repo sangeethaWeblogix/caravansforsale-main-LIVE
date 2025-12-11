@@ -52,7 +52,7 @@ export async function GET() {
           <loc>${SITE_URL}/listings/${cat.slug}-category/</loc>
           <lastmod>${new Date().toISOString()}</lastmod>
            <changefreq>daily</changefreq>
-      <priority>0.7</priority>
+      <priority>0.5</priority>
         </url>`);
     }
 
@@ -65,7 +65,7 @@ export async function GET() {
             <loc>${SITE_URL}/listings/${cat.slug}-category/${stateSlug}-state/</loc>
             <lastmod>${new Date().toISOString()}</lastmod>
            <changefreq>daily</changefreq>
-      <priority>0.7</priority>
+      <priority>0.5</priority>
           </url>`);
       }
     }
@@ -82,7 +82,7 @@ export async function GET() {
               <loc>${SITE_URL}/listings/${cat.slug}-category/${stateSlug}-state/${regionSlug}-region/</loc>
               <lastmod>${new Date().toISOString()}</lastmod>
               <changefreq>daily</changefreq>
-      <priority>0.7</priority>
+      <priority>0.5</priority>
             </url>`);
         }
       }

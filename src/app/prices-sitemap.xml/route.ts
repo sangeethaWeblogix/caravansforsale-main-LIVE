@@ -19,7 +19,7 @@ export async function GET() {
       <loc>${SITE_URL}/listings/under-${p}/</loc>
       <lastmod>${new Date().toISOString().split("T")[0]}</lastmod>
       <changefreq>daily</changefreq>
-      <priority>0.7</priority>
+      <priority>0.5</priority>
     </url>`;
   });
 
@@ -30,7 +30,7 @@ export async function GET() {
       <loc>${SITE_URL}/listings/over-${p}/</loc>
       <lastmod>${new Date().toISOString().split("T")[0]}</lastmod>
       <changefreq>daily</changefreq>
-      <priority>0.7</priority>
+      <priority>0.5</priority>
     </url>`;
   });
 
@@ -42,7 +42,7 @@ export async function GET() {
         <loc>${SITE_URL}/listings/between-${prices[i]}-${prices[j]}/</loc>
         <lastmod>${new Date().toISOString().split("T")[0]}</lastmod>
         <changefreq>daily</changefreq>
-        <priority>0.7</priority>
+        <priority>0.5</priority>
       </url>`;
     }
   }
