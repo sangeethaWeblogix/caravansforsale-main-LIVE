@@ -250,7 +250,7 @@ const postTrackEvent = async (url: string, product_id: number) => {
         }
       });
     },
-    { threshold: 0.5 }
+    { threshold: 0.3 }
   );
 
   document.querySelectorAll(".product-card[data-product-id]").forEach((el) => {
@@ -281,17 +281,22 @@ const postTrackEvent = async (url: string, product_id: number) => {
     return slug ? `/product/${slug}/` : ""; // trailing slash optional
   };
 
-  const handleViewDetails = async (e: any, id: number, href: string) => {
-  e.preventDefault();       // stop Link
-  e.stopPropagation();      // stop click bubble
+  const handleViewDetails = (e: any, productId: number, href: string) => {
+  e.preventDefault();     // prevent default <a> click behavior
+  e.stopPropagation();    // avoid triggering parent card click event
 
-  await postTrackEvent(
+  sendTrack(
     "https://www.admin.caravansforsale.com.au/wp-json/cfs/v1/update-clicks",
-    id
+    {
+      product_id: productId,
+      event: "view-details",
+      user_agent: typeof navigator !== "undefined" ? navigator.userAgent : "",
+    }
   );
 
-  router.push(href);        // ✅ works in all cases (mobile/desktop)
+  router.push(href);
 };
+
 
   // const uniqueProducts = useMemo(() => {
   //   const seen = new Set<string>();
@@ -334,6 +339,37 @@ const postTrackEvent = async (url: string, product_id: number) => {
 
     setShuffledPremiumProducts(shuffled);
   }, [preminumProducts]);
+
+  const sendTrack = (url: string, payload: Record<string, any>) => {
+  try {
+    const body = JSON.stringify(payload);
+
+    if (navigator.sendBeacon) {
+      const blob = new Blob([body], { type: "application/json" });
+      navigator.sendBeacon(url, blob);
+      return;
+    }
+
+    fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body,
+    }).catch(() => {});
+  } catch {}
+};
+
+
+const handleTrackFromCard = (e: any, productId: number) => {
+  sendTrack(
+    "https://www.admin.caravansforsale.com.au/wp-json/cfs/v1/update-clicks",
+    {
+      product_id: productId,
+      event: "card-click",
+      user_agent: typeof navigator !== "undefined" ? navigator.userAgent : "",
+    }
+  );
+};
+
 
   return (
     <>
@@ -397,6 +433,7 @@ const postTrackEvent = async (url: string, product_id: number) => {
             </div>
           </div>
         </div>
+
         {fetauredProducts.length > 0 && (
 
           <div className="other_items featured_items">
@@ -465,6 +502,7 @@ const postTrackEvent = async (url: string, product_id: number) => {
                                 "true"
                               );
                             }
+
                           }}
                         >
                           <div
@@ -637,7 +675,7 @@ const postTrackEvent = async (url: string, product_id: number) => {
                                 >
                                   Contact Dealer
                                 </button>
-                                <button className="btn btn-primary"  onClick={(e) => handleViewDetails(e, item.id, href)}>
+                                <button className="btn btn-primary" onClick={(e) => handleViewDetails(e, item.id, `/product/${item.slug}`)}>
                                   View Details
                                 </button>
                               </div>
@@ -897,7 +935,7 @@ const postTrackEvent = async (url: string, product_id: number) => {
                               >
                                 Contact Dealer
                               </button>
-                              <button className="btn btn-primary"  onClick={(e) => handleViewDetails(e, item.id, href)}>
+                              <button className="btn btn-primary" onClick={(e) => handleViewDetails(e, item.id, `/product/${item.slug}`)}>
                                 View Details
                               </button>
                             </div>
@@ -1151,7 +1189,8 @@ const postTrackEvent = async (url: string, product_id: number) => {
                                 >
                                   Contact Dealer
                                 </button>
-                                <button className="btn btn-primary"  onClick={(e) => handleViewDetails(e, item.id, href)}>
+                                
+                                <button className="btn btn-primary"  onClick={(e) => handleViewDetails(e, item.id, `/product/${item.slug}`)}>
                                   View Details
                                 </button>
                               </div>

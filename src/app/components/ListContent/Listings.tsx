@@ -238,7 +238,7 @@ useEffect(() => {
         }
       });
     },
-    { threshold: 0.5 }
+    { threshold: 0.3 }
   );
 
   document.querySelectorAll(".product-card[data-product-id]").forEach((el) => {
