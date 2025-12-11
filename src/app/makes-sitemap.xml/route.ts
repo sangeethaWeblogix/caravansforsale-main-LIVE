@@ -1,32 +1,52 @@
-// src/app/makes-sitemap.xml/route.ts
+ // src/app/makes-sitemap.xml/route.ts
 import { NextResponse } from "next/server";
-import { fetchListings } from "@/api/listings/api";
 
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "https://www.caravansforsale.com.au";
 
 export async function GET() {
-  const data = await fetchListings({ page: 1 });
-  const makes = data.data?.make_options ?? [];
+  try {
+    const response = await fetch(
+      "https://admin.caravansforsale.com.au/wp-json/cfs/v1/make_details"
+    );
 
-  const urls = makes
-    .map(
-      (make) => `
-    <url>
-      <loc>${SITE_URL}/listings/${make.slug}/</loc>
-      <lastmod>${new Date().toISOString()}</lastmod>
-      <changefreq>daily</changefreq>
-      <priority>0.7</priority>
-    </url>`
-    )
-    .join("");
+    const json = await response.json();
+    const makes = json?.data?.make_options ?? [];
 
-  const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
-  <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-    ${urls}
-  </urlset>`;
+    const urls = makes
+      .map((make: any) => {
+        const makeSlug = make.slug?.trim() || "";
 
-  return new NextResponse(sitemap, {
-    headers: { "Content-Type": "application/xml" },
-  });
+        const finalUrl = `${SITE_URL}/caravans/make/${makeSlug}/`;
+
+        return `
+        <url>
+          <loc>${finalUrl}</loc>
+          <lastmod>${new Date().toISOString()}</lastmod>
+
+          <changefreq>daily</changefreq>
+          <priority>0.7</priority>
+        </url>`;
+      })
+      .join("");
+
+    const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+    <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+      ${urls}
+    </urlset>`;
+
+    return new NextResponse(sitemap, {
+      headers: { "Content-Type": "application/xml" },
+    });
+  } catch (err) {
+    console.error("[MAKE-SITEMAP ERROR]", err);
+
+    return new NextResponse(
+      `<?xml version="1.0" encoding="UTF-8"?><error>Failed to generate make sitemap</error>`,
+      {
+        headers: { "Content-Type": "application/xml" },
+        status: 500,
+      }
+    );
+  }
 }
