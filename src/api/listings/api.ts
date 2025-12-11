@@ -137,8 +137,8 @@
     if (suburb) params.append("suburb", suburb);
     if (from_price) params.append("from_price", `${from_price}`);
     if (to_price) params.append("to_price", `${to_price}`);
-    if (minKg) params.append("from_atm", `${minKg}kg`);
-    if (maxKg) params.append("to_atm", `${maxKg}kg`);
+    if (minKg) params.append("from_atm", `${minKg}`);
+    if (maxKg) params.append("to_atm", `${maxKg}`);
     if (from_length) params.append("from_length", `${from_length}`);
     if (to_length) params.append("to_length", `${to_length}`);
     if (acustom_fromyears)
