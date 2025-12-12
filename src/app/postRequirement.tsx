@@ -1,27 +1,22 @@
- "use client";
+"use client";
 
 import React, { useEffect, useState, useRef } from "react";
 import Link from "next/link";
-import dynamic from "next/dynamic";
-
-// Swiper-ஐ dynamic import பண்ணி SSR avoid பண்ணணும் (important for production)
-const SwiperComponent = dynamic(() => import("swiper/react").then(mod => mod.Swiper), { ssr: false });
-const SwiperSlide = dynamic(() => import("swiper/react").then(mod => mod.SwiperSlide), { ssr: false });
-
+import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Pagination } from "swiper/modules";
 import type { Swiper as SwiperType } from "swiper";
 import "swiper/css";
+import "swiper/css/navigation";
 import "swiper/css/pagination";
 import { fetchRequirements, Requirement } from "@/api/postRquirements/api";
+   import '../app/home/main.css'
+
 
 const PostRequirement = () => {
   const [items, setItems] = useState<Requirement[]>([]);
   const swiperRef = useRef<SwiperType | null>(null);
-  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    setIsClient(true); // hydration fix
-
     (async () => {
       try {
         const data = await fetchRequirements();
@@ -32,100 +27,152 @@ const PostRequirement = () => {
     })();
   }, []);
 
-  // Autoplay safely start (ஒரே ஒரு முறை மட்டும்!)
-  useEffect(() => {
-    if (!swiperRef.current || items.length === 0) return;
-
-    const timer = setTimeout(() => {
+  // ✅ safely start autoplay after swiper mounts
+ useEffect(() => {
+  if (items.length > 0 && swiperRef.current) {
+    setTimeout(() => {
       swiperRef.current?.autoplay?.start();
-    }, 500);
+    }, 100); // small delay prevents freeze
+  }
+}, [items]);
 
-    return () => clearTimeout(timer);
-  }, [items]);
 
-  const handleMouseEnter = () => swiperRef.current?.autoplay?.stop();
-  const handleMouseLeave = () => swiperRef.current?.autoplay?.start();
+// Start autoplay ONLY after items are loaded
+useEffect(() => {
+  if (items.length > 0 && swiperRef.current?.autoplay) {
+    swiperRef.current.autoplay.start();
+  }
+}, [items]);
 
-  // If not client yet, show loading or empty
-  if (!isClient) return null;
+  // ✅ hover handlers that work even with loop mode
+  // const handleMouseEnter = () => {
+  //   if (swiperRef.current?.autoplay) {
+  //     swiperRef.current.autoplay.stop();
+  //   }
+  // };
 
+  // console.log("item", items )
+  // const handleMouseLeave = () => {
+  //   if (swiperRef.current?.autoplay) {
+  //     swiperRef.current.autoplay.start();
+  //   }
+  // };
+const handleMouseEnter = () => {
+  swiperRef.current?.autoplay?.stop();
+};
+
+const handleMouseLeave = () => {
+  swiperRef.current?.autoplay?.start();
+};
+
+
+useEffect(() => {
+  if (!swiperRef.current) return;
+  if (items.length === 0) return;
+
+  // Delay required for production builds
+  const timer = setTimeout(() => {
+    swiperRef.current?.autoplay?.start();
+  }, 300); 
+
+  return () => clearTimeout(timer);
+}, [items]);
+
+
+// const Slug = (value: string) => {
+//   return value
+//     .trim()
+//     .toLowerCase()
+//     .replace(/offroad/g, "off-road")   // special case
+//     .replace(/\s+/g, "-");             // space → hyphen
+// };
   return (
-    <div className="container">
-      <div className="post_bgs">
-        <div className="row align-items-center">
-          {/* LEFT SIDE */}
-          <div className="col-lg-6">
-            <div className="home-post_head">
-              <h2>
-                <span>Find Your Ideal Caravan</span>
-                <br />– Post Your Requirements
-              </h2>
-              <p>
-                Tell us what you&apos;re looking for and we&apos;ll match you with the right caravan...
-              </p>
-            </div>
-            <div className="final_post_btn">
-              <Link href="/caravan-enquiry-form/" className="btn">
-                Post Your Requirements
-              </Link>
-            </div>
-          </div>
+    <div>
+      <div className="container">
+        <div className="post_bgs">
+          <div className="row align-items-center">
+            {/* LEFT SIDE */}
+            <div className="col-lg-6">
+              <div className="home-post_head">
+                <h2>
+                  <span>Find Your Ideal Caravan</span>
+                  <br />– Post Your Requirements
+                </h2>
+                <p>
+                  Tell us what you&apos;re looking for and we&apos;ll match you
+                  with the right caravan for sale, from trusted dealers at a
+                  fair price. Make sure your budget and expectations are
+                  realistic to help us deliver the best possible outcome. See
+                  some examples of what other caravan buyers are looking for.
+                </p>
+              </div>
 
-          {/* RIGHT SIDE - SWIPER */}
-          <div className="col-lg-6">
-            <div
-              className="home-post__items info top_cta_container"
-              onMouseEnter={handleMouseEnter}
-              onMouseLeave={handleMouseLeave}
-            >
-              <div className="top_cta bg-white">
-                {items.length > 0 ? (
-                  <SwiperComponent
+              <div className="final_post_btn">
+                <Link href="/caravan-enquiry-form/" className="btn">
+                  Post Your Requirements
+                </Link>
+              </div>
+            </div>
+
+            {/* RIGHT SIDE - SWIPER */}
+            <div className="col-lg-6">
+              <div
+                className="home-post__items info top_cta_container"
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
+              >
+                <div className="top_cta bg-white">
+                  <Swiper
                     modules={[Autoplay, Pagination]}
                     spaceBetween={20}
                     slidesPerView={1}
+                     autoplay={true}
+                    pagination={{ clickable: true }}
+                    // autoplay={{
+                    //   delay: 3000,
+                    //   disableOnInteraction: false,
+                    // }}
                     loop={true}
-                    speed={800}
-                    autoplay={{
-                      delay: 4000,
-                      disableOnInteraction: false, // இது important - swipe பண்ணாலும் autoplay stop ஆகாது
-                      pauseOnMouseEnter: true,
-                    }}
-                    pagination={{ 
-                      clickable: true,
-                      dynamicBullets: true 
-                    }}
                     breakpoints={{
                       768: { slidesPerView: 1 },
                       1024: { slidesPerView: 1 },
                     }}
-                    onSwiper={(swiper) => {
-                      swiperRef.current = swiper;
-                    }}
+                    onSwiper={(swiper) => (swiperRef.current = swiper)}
                     className="homepost-swiper"
-                    allowTouchMove={true} // இதை explicit-ஆ கொடுக்கணும் production-ல
                   >
                     {items.map((item, index) => (
-                      <SwiperSlide key={item.id || index}>
+                      <SwiperSlide key={index}>
                         <div className="post_flip">
                           <div className="home-post__item">
                             <div className="fet_feild">
                               <div className="type pst_table">
-                                <span className="slugn">Type</span> {item.type}
+                                <span className="slugn">Type</span>
+                                
+                                  {item.type}
+                                
                               </div>
+
                               <div className="condition pst_table">
-                                <span className="slugn">Condition</span> {item.condition}
-                              </div>
+                                <span className="slugn">Condition</span>
+                                
+                                  {item.condition}
+                               </div>
+
                               <div className="status pst_table">
                                 <span className="slugn">Status</span>{" "}
                                 {item.active === "1" ? "Active" : "Inactive"}
                               </div>
+
                               <div className="location pst_table">
-                                <span className="slugn">Location</span> {item.location}
-                              </div>
+                                <span className="slugn">Location</span>
+                                
+                                {item.location}
+                               </div>
                             </div>
 
-                            <div className="requirements">{item.requirements}</div>
+                            <div className="requirements">
+                              {item.requirements}
+                            </div>
 
                             <div className="budget">
                               <span className="slugn">Budget</span>
@@ -139,17 +186,14 @@ const PostRequirement = () => {
                         </div>
                       </SwiperSlide>
                     ))}
-                  </SwiperComponent>
-                ) : (
-                  <div className="text-center py-5">Loading requirements...</div>
-                )}
+                  </Swiper>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-    
   );
 };
 
