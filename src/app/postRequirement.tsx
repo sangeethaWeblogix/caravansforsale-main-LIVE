@@ -65,6 +65,20 @@ const handleMouseLeave = () => {
   swiperRef.current?.autoplay?.start();
 };
 
+
+useEffect(() => {
+  if (!swiperRef.current) return;
+  if (items.length === 0) return;
+
+  // Delay required for production builds
+  const timer = setTimeout(() => {
+    swiperRef.current?.autoplay?.start();
+  }, 300); 
+
+  return () => clearTimeout(timer);
+}, [items]);
+
+
 // const Slug = (value: string) => {
 //   return value
 //     .trim()
@@ -112,11 +126,12 @@ const handleMouseLeave = () => {
                     modules={[Autoplay, Pagination]}
                     spaceBetween={20}
                     slidesPerView={1}
+                     autoplay={true}
                     pagination={{ clickable: true }}
-                    autoplay={{
-                      delay: 3000,
-                      disableOnInteraction: false,
-                    }}
+                    // autoplay={{
+                    //   delay: 3000,
+                    //   disableOnInteraction: false,
+                    // }}
                     loop={true}
                     breakpoints={{
                       768: { slidesPerView: 1 },
