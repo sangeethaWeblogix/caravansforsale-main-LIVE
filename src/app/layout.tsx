@@ -49,10 +49,7 @@ export default function RootLayout({
 
         {/* ✅ Google Tag Manager (Head) */}
        
-        <script
-          async
-          src="https://www.googletagmanager.com/gtag/js?id=G-86MYWLZRTY"
-        ></script>
+      
         <script
           dangerouslySetInnerHTML={{
             __html: `
