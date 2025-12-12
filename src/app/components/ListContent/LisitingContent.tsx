@@ -1,4 +1,4 @@
- "use client";
+  "use client";
 import Link from "next/link";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
@@ -11,7 +11,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { toSlug } from "@/utils/seo/slug";
 import ImageWithSkeleton from "../ImageWithSkeleton";
 import { useEnquiryForm } from "./enquiryform";
-import { useRouter } from "next/navigation";
 
 interface Product {
   id: number;
@@ -115,7 +114,6 @@ export default function ListingContent({
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [lazyImages, setLazyImages] = useState<{ [key: string]: string[] }>({});
   const [loadedAll, setLoadedAll] = useState<{ [key: string]: boolean }>({});
-const router = useRouter();
 
   const prevRef = useRef(null);
   const nextRef = useRef(null);
@@ -187,6 +185,18 @@ const getIP = async () => {
   }
 };
 
+ const handleProductClick = async (id) => {
+  await postTrackEvent(
+    "https://www.admin.caravansforsale.com.au/wp-json/cfs/v1/update-clicks",
+    id
+  );
+
+  // Allow product page to show "Back to Search"
+  sessionStorage.setItem("cameFromListings", "true");
+};
+
+
+
 const postTrackEvent = async (url: string, product_id: number) => {
   const ip = await getIP();
   const user_agent = navigator.userAgent;
@@ -250,7 +260,7 @@ const postTrackEvent = async (url: string, product_id: number) => {
         }
       });
     },
-    { threshold: 0.3 }
+    { threshold: 0.5 }
   );
 
   document.querySelectorAll(".product-card[data-product-id]").forEach((el) => {
@@ -280,24 +290,6 @@ const postTrackEvent = async (url: string, product_id: number) => {
     const slug = p.slug?.trim() || toSlug(p.name);
     return slug ? `/product/${slug}/` : ""; // trailing slash optional
   };
-
-  const handleViewDetails = (e: any, productId: number, href: string) => {
-  e.preventDefault();     // prevent default <a> click behavior
-  e.stopPropagation();    // avoid triggering parent card click event
-
-  sendTrack(
-    "https://www.admin.caravansforsale.com.au/wp-json/cfs/v1/update-clicks",
-    {
-      product_id: productId,
-      event: "view-details",
-      user_agent: typeof navigator !== "undefined" ? navigator.userAgent : "",
-    }
-  );
-
-  router.push(href);
-};
-
-
   // const uniqueProducts = useMemo(() => {
   //   const seen = new Set<string>();
   //   return (products || []).filter((p) => {
@@ -339,37 +331,6 @@ const postTrackEvent = async (url: string, product_id: number) => {
 
     setShuffledPremiumProducts(shuffled);
   }, [preminumProducts]);
-
-  const sendTrack = (url: string, payload: Record<string, any>) => {
-  try {
-    const body = JSON.stringify(payload);
-
-    if (navigator.sendBeacon) {
-      const blob = new Blob([body], { type: "application/json" });
-      navigator.sendBeacon(url, blob);
-      return;
-    }
-
-    fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body,
-    }).catch(() => {});
-  } catch {}
-};
-
-
-const handleTrackFromCard = (e: any, productId: number) => {
-  sendTrack(
-    "https://www.admin.caravansforsale.com.au/wp-json/cfs/v1/update-clicks",
-    {
-      product_id: productId,
-      event: "card-click",
-      user_agent: typeof navigator !== "undefined" ? navigator.userAgent : "",
-    }
-  );
-};
-
 
   return (
     <>
@@ -433,7 +394,6 @@ const handleTrackFromCard = (e: any, productId: number) => {
             </div>
           </div>
         </div>
-
         {fetauredProducts.length > 0 && (
 
           <div className="other_items featured_items">
@@ -502,7 +462,6 @@ const handleTrackFromCard = (e: any, productId: number) => {
                                 "true"
                               );
                             }
-
                           }}
                         >
                           <div
@@ -572,6 +531,7 @@ const handleTrackFromCard = (e: any, productId: number) => {
                                             return (
                                               <>
                                                 <del>{rawRegular}</del>{" "}
+                                                
                                                 {rawSale}
                                               </>
                                             );
@@ -675,7 +635,10 @@ const handleTrackFromCard = (e: any, productId: number) => {
                                 >
                                   Contact Dealer
                                 </button>
-                                <button className="btn btn-primary" onClick={(e) => handleViewDetails(e, item.id, `/product/${item.slug}`)}>
+                                <button className="btn btn-primary"    onClick={(e) => {
+    handleProductClick(item.id);
+  }}
+>
                                   View Details
                                 </button>
                               </div>
@@ -935,7 +898,10 @@ const handleTrackFromCard = (e: any, productId: number) => {
                               >
                                 Contact Dealer
                               </button>
-                              <button className="btn btn-primary" onClick={(e) => handleViewDetails(e, item.id, `/product/${item.slug}`)}>
+                              <button className="btn btn-primary"    onClick={(e) => {
+    handleProductClick(item.id);
+  }}
+>
                                 View Details
                               </button>
                             </div>
@@ -1189,8 +1155,11 @@ const handleTrackFromCard = (e: any, productId: number) => {
                                 >
                                   Contact Dealer
                                 </button>
-                                
-                                <button className="btn btn-primary"  onClick={(e) => handleViewDetails(e, item.id, `/product/${item.slug}`)}>
+
+                                <button className="btn btn-primary"   onClick={(e) => {
+    handleProductClick(item.id);
+  }}
+>
                                   View Details
                                 </button>
                               </div>

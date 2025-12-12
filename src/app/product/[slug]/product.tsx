@@ -89,6 +89,8 @@ export default function ClientLogger({
   const relatedProducts: ProductData[] = Array.isArray(data?.data?.related)
     ? data.data.related!
     : [];
+
+    console.log("releated", blogPosts)
  const loadedCount = useRef(0);
 
 const handleImageLoad = () => {
@@ -217,7 +219,7 @@ const handleImageLoad = () => {
     return `/${slug}/`;
   };
   const getProductHref = (p: ProductData) => {
-    const slug = p.slug?.trim() || toSlug(p.title || "post");
+    const slug = p.slug?.trim() || "post";
     return slug ? `/product/${slug}/` : "";
   };
   type LinkOut = { href: string; text: string };
@@ -522,8 +524,40 @@ const [subs, setSubs] = useState<string[]>([]);
       cancelled = true;
     };
   }, [sku, slug, images, main]);
+  const getIP = async () => {
+  try {
+    const res = await fetch("https://api.ipify.org?format=json");
+    const data = await res.json();
+    return data.ip || "";
+  } catch {
+    return "";
+  }
+};
+
+const postTrackEvent = async (url: string, product_id: number) => {
+  const ip = await getIP();
+  const user_agent = navigator.userAgent;
+
+  await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      product_id,
+      ip,
+      user_agent,
+    }),
+  });
+};
 
 
+useEffect(() => {
+  if (!productDetails?.id) return;
+
+  postTrackEvent(
+    "https://www.admin.caravansforsale.com.au/wp-json/cfs/v1/update-clicks",
+    Number(productDetails.id)
+  );
+}, [productDetails?.id]);
 
 
  
@@ -932,6 +966,8 @@ const [subs, setSubs] = useState<string[]>([]);
         </div>
       </section>
       {/* ✅ Related Products Section */}
+      {relatedProducts.length > 0 && (
+
       <div
         className="related-products section-padding"
         style={{ position: "relative", zIndex: 0, background: "#ffffffff" }}
@@ -951,6 +987,7 @@ const [subs, setSubs] = useState<string[]>([]);
               slidesPerView={4}
               loop={false}
               breakpoints={{
+                
                 320: { slidesPerView: 1 },
                 768: { slidesPerView: 2 },
                 1024: { slidesPerView: 4 },
@@ -964,6 +1001,7 @@ const [subs, setSubs] = useState<string[]>([]);
                   ))
                 : relatedProducts.map((post) => {
                     const href = getProductHref(post);
+                    
                     return (
                       <SwiperSlide key={post.id}>
                         <Link href={href}>
@@ -1019,6 +1057,8 @@ const [subs, setSubs] = useState<string[]>([]);
           </div>
         </div>
       </div>
+      )}
+
       {/* ✅ Latest News */}
       <div
         className="related-products latest_blog section-padding"
