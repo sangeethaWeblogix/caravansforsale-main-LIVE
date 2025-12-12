@@ -431,11 +431,16 @@ console.log("navigating ", navigateBySelect)
                         </div>
   
                         {/* dropdown */}
-                        <div
-                          className="suggestions"
-                          style={{ display: isSuggestionBoxOpen ? "block" : "none" }}
-                          role="listbox"
-                        >
+                      <div
+  className="suggestions"
+  style={{
+    display: isSuggestionBoxOpen ? "block" : "none",
+    maxHeight: "300px",        // ← scroll height limit
+    overflowY: "auto",         // ← enables scrolling
+  }}
+  role="listbox"
+>
+
                           <h4>
                             {showingFromKeywordApi
                               ? "Suggested searches"
