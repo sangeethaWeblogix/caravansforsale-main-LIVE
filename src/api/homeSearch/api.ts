@@ -65,7 +65,7 @@ export async function fetchKeywordSuggestions(
   signal?: AbortSignal
 ): Promise<KeywordSuggestion[]> {
   if (!API_BASE) throw new Error("Missing NEXT_PUBLIC_CFS_API_BASE");
-  const url = `${API_BASE}/home_search/?keyword=${encodeURIComponent(query)}`;
+  const url = `${API_BASE}/home_search_new?/?keyword=${encodeURIComponent(query)}`;
 
   const res = await fetch(url, { cache: "no-store", signal });
   if (!res.ok) throw new Error(`Keyword API failed: ${res.status}`);
