@@ -20,7 +20,7 @@ import { buildSlugFromFilters } from "../slugBuilter";
 import { parseSlugToFilters } from "../../components/urlBuilder";
 import Head from "next/head";
 import "./loader.css";
-// import Link from "next/link";
+ // import Link from "next/link";
 
 /* --------- GLOBAL de-dupe across StrictMode remounts --------- */
 // let LAST_GLOBAL_REQUEST_KEY = "";
@@ -55,6 +55,7 @@ interface Product {
   sleeps?: string;
   manufacturer?: string;
   is_exclusive?: boolean;
+  is_premium?: boolean;
 }
 
 interface Pagination {
@@ -139,6 +140,8 @@ function transformApiItemsToProducts(items: Item[]): Product[] {
     sku: item.sku,
     gallery: item.gallery || [],
     is_exclusive: item.is_exclusive,
+      is_premium:item.is_premium,
+
 
     // keep extra props
   }));
@@ -405,6 +408,7 @@ useEffect(() => {
   //   [router, DEFAULT_RADIUS]
   // );
  const updateURLWithFilters = useCallback((nextFilters: Filters, pageNum: number) => {
+  console.log(pageNum)
   const slug = buildSlugFromFilters(nextFilters); // your slug builder
   const query = new URLSearchParams();
 

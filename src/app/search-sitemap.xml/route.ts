@@ -1,7 +1,6 @@
 // src/app/listings-sitemap.xml/route.ts
 import { NextResponse } from "next/server";
-import { fetchSearchkeywords } from "@/api/sitemapSearchKeyword/api";
-
+ 
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "https://www.caravansforsale.com.au";
 

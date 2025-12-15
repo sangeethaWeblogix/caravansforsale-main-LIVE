@@ -14,7 +14,7 @@ export async function GET() {
     const makes = json?.data?.make_options ?? [];
 
     const urls = makes
-      .map((make: any) => {
+      .map((make) => {
         const makeSlug = make.slug?.trim() || "";
 
         const finalUrl = `${SITE_URL}/listings/${makeSlug}/`;

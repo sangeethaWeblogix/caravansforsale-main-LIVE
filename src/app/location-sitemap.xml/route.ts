@@ -79,7 +79,7 @@ export async function GET() {
     // 🟥 BUILD 3: STATE + REGION + SUBURB (+ POSTCODE)
     // ------------------------------------------------------------
     const suburbUrls = suburbItems
-      .map((item: any) => {
+      .map((item) => {
         const uri = item?.uri || "";
         if (!uri) return null;
 

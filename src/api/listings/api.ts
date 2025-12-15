@@ -49,6 +49,8 @@
           sku?: string;
           gallery?: string[];
             is_exclusive?: boolean
+              is_premium?: boolean;
+
             model?: string;
 
 
