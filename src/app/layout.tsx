@@ -13,7 +13,7 @@ import UTMTracker from "./UTMTracker";
 
 export const metadata: Metadata = {
   title: {
-    default: "Caravans For Sale – #1 Marketplace for New & Used Caravan Deals",
+    default: "Caravans For Sale – Australia’s Marketplace for New & Used Caravans",
     template: "%s ",
   },
   description:
