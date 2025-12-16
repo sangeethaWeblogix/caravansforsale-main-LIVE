@@ -709,33 +709,36 @@ useEffect(() => {
   }, [pagination, loadListings, clickid, ensureclickid, nextPageData]);
 
   // ✅ FIXED: Proper handlePrevPage function
-  const handlePrevPage = useCallback(async () => {
-    if (pagination.current_page > 1) {
-      window.scrollTo({ top: 0, behavior: "smooth" });
+const handlePrevPage = useCallback(async () => {
+  if (pagination.current_page <= 1) return;
 
-      setIsMainLoading(true);
-      setIsFeaturedLoading(true);
-      setIsPremiumLoading(true);
+  const prevPage = pagination.current_page - 1;
 
-      const prevPage = pagination.current_page - 1;
-      const id = ensureclickid(); // NEW
-      savePage(id, prevPage);
-      sessionStorage.setItem(`page_${id}`, String(prevPage));
-      try {
-        await loadListings(prevPage, filtersRef.current, true);
-      } catch (error) {
-        console.error("Error loading previous page:", error);
-      } finally {
-        setIsMainLoading(false);
-        setIsFeaturedLoading(false);
-        setIsPremiumLoading(false);
+  setIsMainLoading(true);
+  setIsFeaturedLoading(true);
+  setIsPremiumLoading(true);
 
-        setScrollStarted(false);
-        setNextPageData(null);
-        setIsNextLoading(false);
-      }
+  try {
+    if (prevPage > 1) {
+      // ✅ ALWAYS generate NEW clickid
+      const newId = ensureclickid();
+      savePage(newId, prevPage);
+    } else {
+      // ✅ first page → remove clickid
+      setclickid(null);
+      setUrlParams({ clickid: undefined });
     }
-  }, [pagination, loadListings, clickid, ensureclickid]);
+
+    await loadListings(prevPage, filtersRef.current, true);
+  } catch (err) {
+    console.error(err);
+  } finally {
+    setIsMainLoading(false);
+    setIsFeaturedLoading(false);
+    setIsPremiumLoading(false);
+  }
+}, [pagination, loadListings]);
+
 
   // add near other refs
   const restoredOnceRef = useRef(false);
