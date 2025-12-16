@@ -820,6 +820,21 @@ const handlePrevPage = useCallback(async () => {
     });
   }, [searchKey, pathKey, loadListings, DEFAULT_RADIUS, searchParams]);
 
+
+  const mergeFiltersSafely = (prev: Filters, next: Filters): Filters => {
+  const merged: Filters = { ...prev };
+
+  Object.entries(next).forEach(([key, value]) => {
+    if (value === undefined || value === null || value === "") {
+      // ❌ do nothing → keep previous value
+      return;
+    }
+    merged[key as keyof Filters] = value;
+  });
+
+  return merged;
+};
+
   const handleFilterChange = useCallback(
     async (newFilters: Filters) => {
       // ✅ Show skeleton for ALL sections immediately
@@ -830,7 +845,7 @@ const handlePrevPage = useCallback(async () => {
         setIsPremiumLoading(true);
       });
 
-      const mergedFilters = { ...filtersRef.current, ...newFilters };
+const mergedFilters = mergeFiltersSafely(filtersRef.current, newFilters);
 
       // cleanup empty values
       if ("orderby" in newFilters && !newFilters.orderby) {

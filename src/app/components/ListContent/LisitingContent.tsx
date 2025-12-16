@@ -382,13 +382,16 @@ const postTrackEvent = async (url: string, product_id: number) => {
                       name="orderby"
                       className="orderby form-select"
                       aria-label="Shop order"
-                      onChange={(e) =>
-                        onFilterChange({
-                          ...currentFilters,
-                          orderby: e.target.value  ,
-                        })
-                      }
-                      value={currentFilters.orderby} // <— default to "featured"
+                       onChange={(e) => {
+  const value = e.target.value;
+
+  onFilterChange({
+    ...currentFilters,
+    orderby: value === "featured" ? undefined : value,
+  });
+}}
+
+value={currentFilters.orderby ?? "featured"}
                     >
                       <option value="featured">Featured</option>
                       <option value="price_asc">Price (Low to High)</option>
