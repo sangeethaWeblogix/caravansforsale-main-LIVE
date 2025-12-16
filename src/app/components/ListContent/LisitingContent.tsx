@@ -400,6 +400,8 @@ const postTrackEvent = async (url: string, product_id: number) => {
                     {/* <input type="hidden" name="paged" value={filters.orderby} /> */}
                   </div>
                 </form>
+
+
               </div>
             </div>
           </div>
@@ -650,6 +652,7 @@ const postTrackEvent = async (url: string, product_id: number) => {
                                   className="btn"
                                   onClick={(e) => {
                                     e.preventDefault();
+                                    setSelectedProduct(item);
                                     setShowContact(true);
                                   }}
                                 >
