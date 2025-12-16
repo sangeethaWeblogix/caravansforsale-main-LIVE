@@ -69,6 +69,7 @@ export default function RootLayout({
           }}
         />
       </head>
+
       <body
         className="flex flex-col min-h-screen new_font"
         style={{
@@ -78,6 +79,7 @@ export default function RootLayout({
       >
         {/* ✅ Google Tag Manager (noscript) - right after body */}
            <noscript>
+
           <iframe
             src="https://www.googletagmanager.com/ns.html?id=GTM-N3362FGQ"
             height="0"
@@ -93,5 +95,6 @@ export default function RootLayout({
         <Footer />
       </body>
     </html>
+    
   );
 }
