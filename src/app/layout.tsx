@@ -10,7 +10,6 @@ import React from "react";
 import { Metadata } from "next";
 import ScrollToTop from "./ScrollToTop";
 import UTMTracker from "./UTMTracker";
-import { headers } from "next/headers";
 
  export const metadata: Metadata = {
    title: {
@@ -31,17 +30,11 @@ import { headers } from "next/headers";
  
  };
 
-export default async  function RootLayout({
+export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-const headersList = await headers(); // ✅ await here
-  const host = headersList.get("host");
-  const isMainDomain =
-    host === "www.caravansforsale.com.au" ||
-    host === "caravansforsale.com.au";
-  
   return (
     <html lang="en">
       <head>
@@ -63,7 +56,6 @@ const headersList = await headers(); // ✅ await here
           async
           src="https://www.googletagmanager.com/gtag/js?id=G-86MYWLZRTY"
         ></script>
-         {isMainDomain && (
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -79,8 +71,6 @@ const headersList = await headers(); // ✅ await here
             `,
           }}
         />
-         )}
-         
       </head>
 
       <body
