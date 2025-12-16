@@ -1,5 +1,4 @@
-import type { Metadata } from "next";
-import Home from "./home/home";
+ import Home from "./home/home";
 import "./globals.css";
  
 
