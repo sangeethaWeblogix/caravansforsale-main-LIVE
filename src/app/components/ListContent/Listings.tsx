@@ -1027,7 +1027,7 @@ useEffect(() => {
                       isMainLoading={isMainLoading}
                       isFeaturedLoading={isFeaturedLoading}
                       isPremiumLoading={isPremiumLoading}
-                      isNextLoading={isNextLoading}
+                      // isNextLoading={isNextLoading}
                     />
                   )}
 

@@ -89,7 +89,7 @@ interface Props {
   isMainLoading: boolean;
   isFeaturedLoading: boolean;
   isPremiumLoading: boolean;
-  isNextLoading: boolean;
+  // isNextLoading: boolean;
   pageTitle: string;
 }
 
@@ -108,7 +108,7 @@ export default function ListingContent({
   isFeaturedLoading,
   isPremiumLoading,
   isMainLoading,
-  isNextLoading,
+  // isNextLoading,
   pageTitle,
 }: Props) {
   const [showInfo, setShowInfo] = useState(false);
@@ -698,8 +698,8 @@ const postTrackEvent = async (url: string, product_id: number) => {
                   className="next-icon"
                   onClick={onNext}
                   disabled={
-                    pagination.current_page === pagination.total_pages ||
-                    !isNextLoading
+                    pagination.current_page === pagination.total_pages 
+                    
                   }
                 >
                   Next
