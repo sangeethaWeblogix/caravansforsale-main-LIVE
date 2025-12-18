@@ -175,6 +175,7 @@ export default function ListingContent({
     }));
   };
 
+  console.log("lazy", lazyImages)
   // Remove all the lazy loading state and just load all images immediately
 const getIP = async () => {
   try {
@@ -589,19 +590,20 @@ value={currentFilters.orderby ?? "featured"}
 
                               {/* --- DETAILS LIST --- */}
                               <ul className="vehicleDetailsWithIcons simple">
-                                {item.condition && (
+                                {/* {item.condition && (
                                   <li>
                                     <span className="attribute3">
                                       {item.condition}
                                     </span>
                                   </li>
-                                )}
+                                )} */}
+
 
                                 {item.categories &&
                                   item.categories.length > 0 && (
                                     <li className="attribute3_list">
                                       <span className="attribute3">
-                                        {item.categories.join(", ")}
+      {item.categories.slice(0, 2).join(", ")}
                                       </span>
                                     </li>
                                   )}

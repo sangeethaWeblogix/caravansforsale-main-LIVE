@@ -1,36 +1,56 @@
- import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+ import { NextRequest, NextResponse } from "next/server";
 
 export function middleware(request: NextRequest) {
   const url = request.nextUrl.clone();
-
   const fullPath = url.pathname + url.search;
 
-  // 🚫 1️⃣ Return 410 for any URL containing "feed" (case-insensitive)
+  /* ================================
+     1️⃣ Country Blocking (SG, CN)
+     ================================ */
+  const country = request.geo?.country;
+  const blockedCountries = ["SG", "CN"]; // Singapore, China
+
+  if (country && blockedCountries.includes(country)) {
+    return new NextResponse(
+      "This website is not available in your region.",
+      { status: 403 }
+    );
+  }
+
+  /* ================================
+     2️⃣ Block /feed URLs (SEO safe)
+     ================================ */
   if (/feed/i.test(fullPath)) {
     return new NextResponse(null, { status: 410 });
   }
 
-  // 🔁 2️⃣ Remove "add-to-cart" query parameter if present
+  /* ================================
+     3️⃣ Remove add-to-cart param
+     ================================ */
   if (url.searchParams.has("add-to-cart")) {
     url.searchParams.delete("add-to-cart");
 
     const cleanUrl =
       url.origin +
       url.pathname +
-      (url.searchParams.toString() ? `?${url.searchParams.toString()}` : "");
+      (url.searchParams.toString()
+        ? `?${url.searchParams.toString()}`
+        : "");
 
     return NextResponse.redirect(cleanUrl, { status: 301 });
   }
 
-  // ✅ Continue normal processing
+  /* ================================
+     4️⃣ Continue normal request
+     ================================ */
   return NextResponse.next();
 }
 
-// ✅ Apply globally (safe exclusions)
+/* ================================
+   5️⃣ Apply middleware globally
+   ================================ */
 export const config = {
   matcher: [
-    // Apply middleware to all routes except Next.js internals
     "/((?!_next/static|_next/image|favicon.ico).*)",
   ],
 };
