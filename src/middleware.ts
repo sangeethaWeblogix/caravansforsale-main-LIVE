@@ -7,8 +7,13 @@ export function middleware(request: NextRequest) {
   /* ================================
      1️⃣ Country Blocking (SG, CN)
      ================================ */
-  const country = request.geo?.country;
-  const blockedCountries = ["SG", "CN"]; // Singapore, China
+
+  // Vercel Edge country header
+  const country =
+    request.headers.get("x-vercel-ip-country") ??
+    request.headers.get("cf-ipcountry");
+
+  const blockedCountries = ["SG", "CN"];
 
   if (country && blockedCountries.includes(country)) {
     return new NextResponse(
@@ -18,7 +23,7 @@ export function middleware(request: NextRequest) {
   }
 
   /* ================================
-     2️⃣ Block /feed URLs (SEO safe)
+     2️⃣ Block /feed URLs
      ================================ */
   if (/feed/i.test(fullPath)) {
     return new NextResponse(null, { status: 410 });
@@ -29,28 +34,12 @@ export function middleware(request: NextRequest) {
      ================================ */
   if (url.searchParams.has("add-to-cart")) {
     url.searchParams.delete("add-to-cart");
-
-    const cleanUrl =
-      url.origin +
-      url.pathname +
-      (url.searchParams.toString()
-        ? `?${url.searchParams.toString()}`
-        : "");
-
-    return NextResponse.redirect(cleanUrl, { status: 301 });
+    return NextResponse.redirect(url, { status: 301 });
   }
 
-  /* ================================
-     4️⃣ Continue normal request
-     ================================ */
   return NextResponse.next();
 }
 
-/* ================================
-   5️⃣ Apply middleware globally
-   ================================ */
 export const config = {
-  matcher: [
-    "/((?!_next/static|_next/image|favicon.ico).*)",
-  ],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 };
