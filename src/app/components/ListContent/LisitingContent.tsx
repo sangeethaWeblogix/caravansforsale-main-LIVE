@@ -161,7 +161,7 @@ export default function ListingContent({
 
     const images = [
       `${base}main1.avif`,
-      ...Array.from({ length: 4 }, (_, i) => `${base}sub${i + 2}.avif`),
+      ...Array.from({ length: 5 }, (_, i) => `${base}sub${i + 2}.avif`),
     ];
 
     setLazyImages((prev) => ({
@@ -395,8 +395,8 @@ const postTrackEvent = async (url: string, product_id: number) => {
 value={currentFilters.orderby ?? "featured"}
                     >
                       <option value="featured">Featured</option>
-                      <option value="price_asc">Price (Low to High)</option>
-                      <option value="price_desc">Price (High to Low)</option>
+                      <option value="price-asc">Price (Low to High)</option>
+                      <option value="price-desc">Price (High to Low)</option>
                       <option value="year-desc">Year Made (High to Low)</option>
                       <option value="year-asc">Year Made (Low to High)</option>
                     </select>
