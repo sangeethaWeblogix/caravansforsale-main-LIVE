@@ -370,10 +370,7 @@
    // ✅ Randomly shuffle premium products on each page load
    // ✅ Premium products shuffle after mount
   
-  
- const isDataReady =
-   !isMainLoading &&
-   mergedProducts.length > 0;
+
  
    return (
      <>
