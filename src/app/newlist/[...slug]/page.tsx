@@ -2,7 +2,7 @@
 
 export const dynamic = "force-dynamic";
 
-import ListingsPage from "@/app/components/ListContent/Listings";
+import ListingsPage from "@/app/components/newlist/Listings";
 import { parseSlugToFilters } from "../../components/urlBuilder";
 import { metaFromSlug } from "../../../utils/seo/metaFromSlug copy";
 import type { Metadata } from "next";
