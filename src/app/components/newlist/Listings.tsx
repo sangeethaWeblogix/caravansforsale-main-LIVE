@@ -995,8 +995,7 @@ if (response?.success === false) {
                       isMainLoading={isMainLoading}
                       isFeaturedLoading={isFeaturedLoading}
                       isPremiumLoading={isPremiumLoading}
-                      isNextLoading={isNextLoading}
-                    />
+                     />
                   )}
 
                   {/** CASE 2: SHOW EXCLUSIVE PAGE */}

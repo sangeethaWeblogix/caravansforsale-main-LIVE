@@ -1,5 +1,5 @@
   import React, { Suspense } from "react";
- import Listing from "../components/ListContent/Listings";
+ import Listing from "../components/newlist/Listings";
  import { fetchListings } from "@/api/listings/testapi";
  import type { Metadata } from "next";
   import { ensureValidPage } from "@/utils/seo/validatePage";
