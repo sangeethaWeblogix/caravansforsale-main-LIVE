@@ -7,7 +7,7 @@ import "swiper/css/pagination";
 import { Navigation, Pagination } from "swiper/modules";
 import Skelton from "../skelton";
 import Head from "next/head";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toSlug } from "@/utils/seo/slug";
 import ImageWithSkeleton from "../ImageWithSkeleton";
 import { useEnquiryForm } from "./enquiryform";
@@ -214,24 +214,27 @@ const postTrackEvent = async (url: string, product_id: number) => {
   });
 };
 
+ const shuffleArray = <T,>(arr: T[]): T[] => {
+  const copy = [...arr];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+};
 
-    const mergedProducts = (() => {
+const [mergedProducts, setMergedProducts] = useState<Product[]>([]);
+
+const hasShuffledRef = useRef(false);
+
+ const buildMergedProducts = (normal: Product[]) => {
   const premium = preminumProducts || [];
   const exclusive = exculisiveProducts || [];
-
-  // ✅ normalize ids as STRING
-  const premiumIds = new Set(
-    premium.map(p => String(p.id))
-  );
-
-  const normal = (products || []).filter(
-    p => !premiumIds.has(String(p.id))
-  );
 
   const merged: Product[] = [];
   let exclusiveIndex = 0;
 
-  // 1️⃣ Normal + Exclusive
+  // 1️⃣ Normal + Exclusive placement
   normal.forEach((item, i) => {
     merged.push(item);
 
@@ -252,7 +255,7 @@ const postTrackEvent = async (url: string, product_id: number) => {
     exclusiveIndex++;
   }
 
-  // 2️⃣ Premium ONLY at 3rd / 4th
+  // 2️⃣ Premium fixed index (DO NOT MOVE)
   if (merged.length >= 3 && premium.length > 0) {
     merged.splice(2, 0, {
       ...premium[0],
@@ -268,7 +271,33 @@ const postTrackEvent = async (url: string, product_id: number) => {
   }
 
   return merged;
-})();
+};
+useEffect(() => {
+  if (!products || products.length === 0) {
+    setMergedProducts([]);
+    return;
+  }
+
+  const premiumIds = new Set(
+    (preminumProducts || []).map(p => String(p.id))
+  );
+
+  // normal products only
+  let normal = products.filter(
+    p => !premiumIds.has(String(p.id))
+  );
+
+  // ✅ shuffle ONLY on client
+  if (normal.length === 23 && !hasShuffledRef.current) {
+    normal = shuffleArray(normal);
+    hasShuffledRef.current = true; // 🔒 lock it
+  }
+
+  const finalMerged = buildMergedProducts(normal);
+  setMergedProducts(finalMerged);
+}, [products, preminumProducts, exculisiveProducts]);
+
+ 
 
 
   useEffect(() => {
@@ -342,6 +371,9 @@ const postTrackEvent = async (url: string, product_id: number) => {
   // ✅ Premium products shuffle after mount
  
  
+const isDataReady =
+  !isMainLoading &&
+  mergedProducts.length > 0;
 
   return (
     <>
