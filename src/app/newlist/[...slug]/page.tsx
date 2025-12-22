@@ -11,7 +11,8 @@ import { redirect } from "next/navigation";
 import "../../components/ListContent/newList.css";
 import { fetchMakeDetails } from "@/api/make-new/api";
  import "../listings.css"
-// ─────────────────────────────────────────────────────────────────────────────
+// ─
+//   ────────────────────────────────────────────────────────────────────────────
 // Types
 // ─────────────────────────────────────────────────────────────────────────────
 type Params = Promise<{ slug?: string[] }>;
