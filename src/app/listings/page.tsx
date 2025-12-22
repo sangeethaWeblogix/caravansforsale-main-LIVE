@@ -6,6 +6,8 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import "../components/ListContent/newList.css"
 import "./listings.css"
+ export const dynamic = "force-dynamic";
+ 
 
 export const revalidate = 60;
  

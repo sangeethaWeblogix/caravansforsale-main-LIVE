@@ -223,6 +223,10 @@ const postTrackEvent = async (url: string, product_id: number) => {
   return copy;
 };
 
+useEffect(() => {
+  hasShuffledRef.current = false;
+}, [products]);
+
 const [mergedProducts, setMergedProducts] = useState<Product[]>([]);
 
 const hasShuffledRef = useRef(false);
@@ -272,29 +276,26 @@ const hasShuffledRef = useRef(false);
 
   return merged;
 };
-useEffect(() => {
-  if (!products || products.length === 0) {
-    setMergedProducts([]);
-    return;
-  }
+ useEffect(() => {
+  if (!products || products.length === 0) return;
 
   const premiumIds = new Set(
     (preminumProducts || []).map(p => String(p.id))
   );
 
-  // normal products only
   let normal = products.filter(
     p => !premiumIds.has(String(p.id))
   );
 
-  // ✅ shuffle ONLY on client
+  // ✅ EXACT condition
   if (normal.length === 23 && !hasShuffledRef.current) {
     normal = shuffleArray(normal);
-    hasShuffledRef.current = true; // 🔒 lock it
+    hasShuffledRef.current = true;
   }
 
   const finalMerged = buildMergedProducts(normal);
   setMergedProducts(finalMerged);
+
 }, [products, preminumProducts, exculisiveProducts]);
 
  
