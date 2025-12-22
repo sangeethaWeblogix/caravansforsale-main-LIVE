@@ -443,6 +443,9 @@ const orderby = searchParams.get("orderby") ?? "featured";
                 <form className="woocommerce-ordering" method="get">
                   <div className="form-group shot-buy">
                     <select
+                    name="orderby"
+                     className="orderby form-select"
+                      aria-label="Shop order"
   value={orderby}
   onChange={(e) => {
     const value = e.target.value;
