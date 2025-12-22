@@ -838,12 +838,11 @@ const handlePrevPage = useCallback(async () => {
   const handleFilterChange = useCallback(
     async (newFilters: Filters) => {
       // ✅ Show skeleton for ALL sections immediately
-      flushSync(() => {
-        setIsLoading(true);
+         setIsLoading(true);
         setIsMainLoading(true);
         setIsFeaturedLoading(true);
         setIsPremiumLoading(true);
-      });
+      
 
 const mergedFilters = mergeFiltersSafely(filtersRef.current, newFilters);
 

@@ -11,6 +11,8 @@ import { useEffect, useRef, useState } from "react";
 import { toSlug } from "@/utils/seo/slug";
 import ImageWithSkeleton from "../ImageWithSkeleton";
 import { useEnquiryForm } from "./enquiryform";
+import { useRouter, useSearchParams } from "next/navigation";
+
  
 interface Product {
   id: number;
@@ -116,7 +118,8 @@ export default function ListingContent({
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [lazyImages, setLazyImages] = useState<{ [key: string]: string[] }>({});
   const [loadedAll, setLoadedAll] = useState<{ [key: string]: boolean }>({});
-
+const router = useRouter();
+const searchParams = useSearchParams();
   console.log("data-main", fetauredProducts, isPremiumLoading, isFeaturedLoading)
   // console.log("data-prod", products);
 
@@ -276,7 +279,7 @@ const hasShuffledRef = useRef(false);
 
   return merged;
 };
- useEffect(() => {
+  useEffect(() => {
   if (!products || products.length === 0) return;
 
   const premiumIds = new Set(
@@ -287,18 +290,35 @@ const hasShuffledRef = useRef(false);
     p => !premiumIds.has(String(p.id))
   );
 
-  // ✅ EXACT condition
-  if (normal.length === 23 && !hasShuffledRef.current) {
+  const isFeaturedOrder =
+    !currentFilters?.orderby ||
+    currentFilters.orderby === "featured";
+
+  // ✅ SHUFFLE ONLY FOR FEATURED
+  if (
+    isFeaturedOrder &&
+    normal.length === 23 &&
+    !hasShuffledRef.current
+  ) {
     normal = shuffleArray(normal);
     hasShuffledRef.current = true;
+  }
+
+  // ❌ RESET shuffle when orderby changes
+  if (!isFeaturedOrder) {
+    hasShuffledRef.current = true; // block shuffle
   }
 
   const finalMerged = buildMergedProducts(normal);
   setMergedProducts(finalMerged);
 
-}, [products, preminumProducts, exculisiveProducts]);
+}, [
+  products,
+  preminumProducts,
+  exculisiveProducts,
+  currentFilters.orderby, // ✅ important
+]);
 
- 
 
 
   useEffect(() => {
@@ -372,6 +392,19 @@ const hasShuffledRef = useRef(false);
   // ✅ Premium products shuffle after mount
  
  
+ 
+useEffect(() => {
+  const orderbyFromUrl = searchParams.get("orderby") ?? undefined;
+
+  // ⛔ prevent unnecessary state update
+  if (orderbyFromUrl !== currentFilters.orderby) {
+    onFilterChange({
+      ...currentFilters,
+      orderby: orderbyFromUrl,
+    });
+  }
+}, [searchParams]); // 👈 NOT empty dependency
+const orderby = searchParams.get("orderby") ?? "featured";
 
   return (
     <>
@@ -410,21 +443,20 @@ const hasShuffledRef = useRef(false);
                 <form className="woocommerce-ordering" method="get">
                   <div className="form-group shot-buy">
                     <select
-                      name="orderby"
-                      className="orderby form-select"
-                      aria-label="Shop order"
-                       onChange={(e) => {
-  const value = e.target.value;
+  value={orderby}
+  onChange={(e) => {
+    const value = e.target.value;
+    const params = new URLSearchParams(searchParams.toString());
 
-  onFilterChange({
-    ...currentFilters,
-    orderby: value === "featured" ? undefined : value,
-  });
-}}
+    value === "featured"
+      ? params.delete("orderby")
+      : params.set("orderby", value);
 
-value={currentFilters.orderby ?? "featured"}
-                    >
-                      <option value="featured">Featured</option>
+    router.push(`?${params.toString()}`, { scroll: false });
+  }}
+>
+
+                    <option value="featured">Featured</option>
                       <option value="price-asc">Price (Low to High)</option>
                       <option value="price-desc">Price (High to Low)</option>
                       <option value="year-desc">Year Made (High to Low)</option>
