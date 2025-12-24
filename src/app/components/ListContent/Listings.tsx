@@ -919,20 +919,40 @@ const mergedFilters = mergeFiltersSafely(filtersRef.current, newFilters);
     return value !== undefined && value !== "" && value !== null;
   });
 
-  const resetAllFilters = () => {
-    if (!hasActiveFilters) return;
+  const resetAllFilters = async () => {
+  if (!hasActiveFilters) return;
 
-    // just clear UI filters — no fetching
-    const clearedFilters: Filters = {};
+  // ✅ start loaders
+  setIsLoading(true);
+  setIsMainLoading(true);
+  setIsFeaturedLoading(true);
+  setIsPremiumLoading(true);
 
-    flushSync(() => {
-      setFilters(clearedFilters);
-      filtersRef.current = clearedFilters;
-    });
+  const clearedFilters: Filters = {};
 
-    // update URL without triggering listing reload
+  flushSync(() => {
+    setFilters(clearedFilters);
+    filtersRef.current = clearedFilters;
+  });
+
+  try {
+    // ✅ reset URL
     router.replace("/listings", { scroll: false });
-  };
+
+    // ✅ reload page-1 data
+    await loadListings(1, {}, true);
+  } catch (err) {
+    console.error("Clear all failed:", err);
+  } finally {
+    // ✅ stop loaders
+    setIsLoading(false);
+    setIsMainLoading(false);
+    setIsFeaturedLoading(false);
+    setIsPremiumLoading(false);
+  }
+};
+
+
 
   // Mobile offcanvas filter state
   const mobileFiltersRef = useRef<HTMLDivElement>(null);

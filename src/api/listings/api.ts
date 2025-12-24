@@ -62,6 +62,7 @@
     metatitle?: string;
     metaimage?: string;
     index?: string;
+    canonical?: string;
   }
   
   export interface ApiPagination {
@@ -92,6 +93,7 @@
     message?: string;
     errors?:string[];
       msid?: string | null; 
+      canonical?: string;
   };
   
   /** Normalize "+", spaces for search/keyword */

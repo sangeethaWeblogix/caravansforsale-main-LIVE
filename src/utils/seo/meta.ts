@@ -1,8 +1,7 @@
  import { fetchListings } from "@/api/listings/api";
  import { parseSlugToFilters } from "@/app/components/urlBuilder";
  import type { Metadata } from "next";
- import { buildCanonicalUrl } from "./buildCanonical";
- 
+  
  export async function metaFromSlug(
    filters: string[] = [],
    searchParams: Record<string, string | string[] | undefined> = {}
@@ -29,11 +28,7 @@
        ? { index: false, follow: false }
        : { index: true, follow: true };
  
-   const canonical = buildCanonicalUrl(
-     "https://www.caravansforsale.com.au/listings",
-     filters,
-     {}
-   );
+   const canonical = res?.seo?.canonical || "https://www.caravansforsale.com.au"
  
   
     
