@@ -542,14 +542,11 @@ const triggerGlobalLoaders = () => {
     out.region = selectedRegionName;
   }
 
-  if (!out.suburb && selectedSuburbName && !suburbManuallyClearedRef.current) {
-    out.suburb = selectedSuburbName;
+  if (suburbManuallyClearedRef.current) {
+    delete out.suburb;
+    delete out.pincode;
+    return out;
   }
-
-  if (!out.pincode && selectedpincode && !suburbManuallyClearedRef.current) {
-    out.pincode = selectedpincode;
-  }
-
   return out;
 };
 
