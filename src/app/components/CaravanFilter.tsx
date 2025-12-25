@@ -1875,8 +1875,8 @@ triggerGlobalLoaders();
 
                     className="filter-chip-close"
                   onClick={() => {
+                    triggerGlobalLoaders();
                     resetStateFilters()
-                      triggerGlobalLoaders();
                     
                }}>
                   
@@ -1960,9 +1960,8 @@ triggerGlobalLoaders();
  
                     className="filter-chip-close"
                        onClick={() => {
+                         triggerGlobalLoaders();
                    resetRegionFilters()
-                      triggerGlobalLoaders();
-
               }}
                   >
                     ×
@@ -1985,8 +1984,8 @@ triggerGlobalLoaders();
               <span style={{ flexGrow: 1 }}>{selectedSuburbName}</span>
               <span  className="filter-chip-close"   
                onClick={() => {
-                 resetSuburbFilters()
                  triggerGlobalLoaders();
+                 resetSuburbFilters()
               }}>
                 ×
               </span>
@@ -2245,8 +2244,8 @@ triggerGlobalLoaders();
               {/* {locationInput} */}
                {formatLocationInput(locationInput)}
               <span className="filter-chip-close"  onClick={() => {
-                resetSuburbFilters()
                 triggerGlobalLoaders();
+                resetSuburbFilters()
               }} >
                 ×
               </span>
