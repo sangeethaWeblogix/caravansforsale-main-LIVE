@@ -1876,6 +1876,8 @@ triggerGlobalLoaders();
                     className="filter-chip-close"
                   onClick={() => {
                     resetStateFilters()
+                      triggerGlobalLoaders();
+                    
                }}>
                   
                     ×
@@ -1959,6 +1961,8 @@ triggerGlobalLoaders();
                     className="filter-chip-close"
                        onClick={() => {
                    resetRegionFilters()
+                      triggerGlobalLoaders();
+
               }}
                   >
                     ×
@@ -1982,7 +1986,7 @@ triggerGlobalLoaders();
               <span  className="filter-chip-close"   
                onClick={() => {
                  resetSuburbFilters()
-                //  triggerGlobalLoaders();
+                 triggerGlobalLoaders();
               }}>
                 ×
               </span>
@@ -2241,8 +2245,8 @@ triggerGlobalLoaders();
               {/* {locationInput} */}
                {formatLocationInput(locationInput)}
               <span className="filter-chip-close"  onClick={() => {
-                  triggerGlobalLoaders();
-                  resetSuburbFilters()
+                resetSuburbFilters()
+                triggerGlobalLoaders();
               }} >
                 ×
               </span>
@@ -2322,7 +2326,7 @@ setModel(make.models || []);
                       });
                     }}
                   >
-                    {make.name}
+                    {make.name} Caravan
                   </div>
                 ))}
 
