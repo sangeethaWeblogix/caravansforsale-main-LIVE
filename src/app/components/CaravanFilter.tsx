@@ -1077,74 +1077,74 @@ setTimeout(() => {
     suburbClickedRef.current = false;
   };
 
-  const resetFilters = () => {
-    const reset: Filters = {
-      make: undefined,
-      model: undefined,
-      category: undefined,
-      condition: undefined,
-      state: undefined,
-      region: undefined,
-      suburb: undefined,
-      pincode: undefined,
-      from_price: undefined,
-      to_price: undefined,
-      from_sleep: undefined,
-      to_sleep: undefined,
-      minKg: undefined,
-      maxKg: undefined,
-      sleeps: undefined,
-      from_length: undefined,
-      to_length: undefined,
-      acustom_fromyears: undefined,
-      acustom_toyears: undefined,
-      location: null,
-      radius_kms: RADIUS_OPTIONS[0], // ✅ 50 in payload
-    };
+  // const resetFilters = () => {
+  //   const reset: Filters = {
+  //     make: undefined,
+  //     model: undefined,
+  //     category: undefined,
+  //     condition: undefined,
+  //     state: undefined,
+  //     region: undefined,
+  //     suburb: undefined,
+  //     pincode: undefined,
+  //     from_price: undefined,
+  //     to_price: undefined,
+  //     from_sleep: undefined,
+  //     to_sleep: undefined,
+  //     minKg: undefined,
+  //     maxKg: undefined,
+  //     sleeps: undefined,
+  //     from_length: undefined,
+  //     to_length: undefined,
+  //     acustom_fromyears: undefined,
+  //     acustom_toyears: undefined,
+  //     location: null,
+  //     radius_kms: RADIUS_OPTIONS[0], // ✅ 50 in payload
+  //   };
 
-    // Clear UI states
-    setSelectedCategory(null);
-    setSelectedCategoryName(null);
-    setSelectedMake(null);
-    setSelectedMakeName(null);
-    setSelectedModel(null);
-    setSelectedModelName(null);
-    setSelectedConditionName(null);
-    setModel([]);
-    // setFilteredRegions([]);
-    setFilteredSuburbs([]);
-    setLocationInput("");
-    setSelectedState(null);
-    setSelectedStateName(null);
-    setSelectedRegionName(null);
-    setSelectedSuburbName(null);
-    setSelectedpincode(null);
-    setMinPrice(null);
-    setMaxPrice(null);
-    setAtmFrom(null);
-    setAtmTo(null);
-    setYearFrom(null);
-    setYearTo(null);
-    setSleepFrom(null);
-    setSleepTo(null);
-    setLengthFrom(null);
-    setLengthTo(null);
-    setRadiusKms(RADIUS_OPTIONS[0]);
+  //   // Clear UI states
+  //   setSelectedCategory(null);
+  //   setSelectedCategoryName(null);
+  //   setSelectedMake(null);
+  //   setSelectedMakeName(null);
+  //   setSelectedModel(null);
+  //   setSelectedModelName(null);
+  //   setSelectedConditionName(null);
+  //   setModel([]);
+  //   // setFilteredRegions([]);
+  //   setFilteredSuburbs([]);
+  //   setLocationInput("");
+  //   setSelectedState(null);
+  //   setSelectedStateName(null);
+  //   setSelectedRegionName(null);
+  //   setSelectedSuburbName(null);
+  //   setSelectedpincode(null);
+  //   setMinPrice(null);
+  //   setMaxPrice(null);
+  //   setAtmFrom(null);
+  //   setAtmTo(null);
+  //   setYearFrom(null);
+  //   setYearTo(null);
+  //   setSleepFrom(null);
+  //   setSleepTo(null);
+  //   setLengthFrom(null);
+  //   setLengthTo(null);
+  //   setRadiusKms(RADIUS_OPTIONS[0]);
 
-    filtersInitialized.current = true;
-    makeInitializedRef.current = false;
-    regionSetAfterSuburbRef.current = false;
-    suburbClickedRef.current = false;
-    clearKeyword();
-    // ✅ Fix: Call parent state update
-    onFilterChange(reset);
+  //   filtersInitialized.current = true;
+  //   makeInitializedRef.current = false;
+  //   regionSetAfterSuburbRef.current = false;
+  //   suburbClickedRef.current = false;
+  //   clearKeyword();
+  //   // ✅ Fix: Call parent state update
+  //   onFilterChange(reset);
 
-    setFilters(reset);
+  //   setFilters(reset);
 
-    startTransition(() => {
-      updateAllFiltersAndURL({ ...reset });
-    });
-  };
+  //   startTransition(() => {
+  //     updateAllFiltersAndURL({ ...reset });
+  //   });
+  // };
   const radiusDebounceRef = useRef<number | null>(null);
   const isKnownMake = (slug?: string | null) =>
     !!slug && makes.some((m) => m.slug === slug);
@@ -2920,13 +2920,7 @@ setModel(make.models || []);
           )}
         </div>
         {/* Reset Button */}
-        <button   className="btn cfs-btn fullwidth_btn"
-          onClick={() => {
-                  triggerGlobalLoaders();
-                  resetFilters()
-              }}>
-          Reset Filters
-        </button>
+       
 
         {/* Modal */}
 

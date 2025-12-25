@@ -1,4 +1,4 @@
-  "use client";
+"use client";
 import Link from "next/link";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
@@ -13,7 +13,6 @@ import ImageWithSkeleton from "../ImageWithSkeleton";
 import { useEnquiryForm } from "./enquiryform";
 import { useRouter, useSearchParams } from "next/navigation";
 
- 
 interface Product {
   id: number;
   name: string;
@@ -42,8 +41,7 @@ interface Product {
   sleeps?: string;
   manufacturer?: string;
   is_exclusive?: boolean;
-    is_premium?: boolean;
-
+  is_premium?: boolean;
 }
 
 interface Pagination {
@@ -118,9 +116,14 @@ export default function ListingContent({
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [lazyImages, setLazyImages] = useState<{ [key: string]: string[] }>({});
   const [loadedAll, setLoadedAll] = useState<{ [key: string]: boolean }>({});
-const router = useRouter();
-const searchParams = useSearchParams();
-  console.log("data-main", fetauredProducts, isPremiumLoading, isFeaturedLoading)
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  console.log(
+    "data-main",
+    fetauredProducts,
+    isPremiumLoading,
+    isFeaturedLoading
+  );
   // console.log("data-prod", products);
 
   // console.log("data-product", exculisiveProducts);
@@ -131,26 +134,19 @@ const searchParams = useSearchParams();
   // };
 
   const enquiryProduct = selectedProduct
-  ? {
-      id: selectedProduct.id,
-      slug: selectedProduct.slug,
-      name: selectedProduct.name,
-    }
-  : {
-      id: 0,
-      slug: "",
-      name: "",
-    };
+    ? {
+        id: selectedProduct.id,
+        slug: selectedProduct.slug,
+        name: selectedProduct.name,
+      }
+    : {
+        id: 0,
+        slug: "",
+        name: "",
+      };
 
-    const {
-      form,
-      errors,
-      touched,
-      submitting,
-      setField,
-      onBlur,
-      onSubmit,
-    } = useEnquiryForm(enquiryProduct);
+  const { form, errors, touched, submitting, setField, onBlur, onSubmit } =
+    useEnquiryForm(enquiryProduct);
 
   const getFirstImage = (item: Product) => {
     if (!item.sku || !item.slug) return "/images/sample3.webp";
@@ -178,172 +174,163 @@ const searchParams = useSearchParams();
     }));
   };
 
-  console.log("lazy", lazyImages)
+  console.log("lazy", lazyImages);
   // Remove all the lazy loading state and just load all images immediately
-const getIP = async () => {
-  try {
-    const res = await fetch("https://api.ipify.org?format=json");
-    const data = await res.json();
-    return data.ip || "";
-  } catch {
-    return "";
-  }
-};
+  const getIP = async () => {
+    try {
+      const res = await fetch("https://api.ipify.org?format=json");
+      const data = await res.json();
+      return data.ip || "";
+    } catch {
+      return "";
+    }
+  };
 
- const handleProductClick = async (id) => {
-  await postTrackEvent(
-    "https://www.admin.caravansforsale.com.au/wp-json/cfs/v1/update-clicks",
-    id
-  );
+  const handleProductClick = async (id) => {
+    await postTrackEvent(
+      "https://www.admin.caravansforsale.com.au/wp-json/cfs/v1/update-clicks",
+      id
+    );
 
-  // Allow product page to show "Back to Search"
-  sessionStorage.setItem("cameFromListings", "true");
-};
+    // Allow product page to show "Back to Search"
+    sessionStorage.setItem("cameFromListings", "true");
+  };
 
+  const isRefreshRef = useRef(false);
 
+  useEffect(() => {
+    const nav = performance.getEntriesByType(
+      "navigation"
+    )[0] as PerformanceNavigationTiming;
 
-const postTrackEvent = async (url: string, product_id: number) => {
-  const ip = await getIP();
-  const user_agent = navigator.userAgent;
+    if (nav?.type === "reload") {
+      isRefreshRef.current = true;
+    }
+  }, []);
 
-  await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      product_id,
-      ip,
-      user_agent,
-    }),
-  });
-};
+  const postTrackEvent = async (url: string, product_id: number) => {
+    const ip = await getIP();
+    const user_agent = navigator.userAgent;
 
- const shuffleArray = <T,>(arr: T[]): T[] => {
-  const copy = [...arr];
-  for (let i = copy.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [copy[i], copy[j]] = [copy[j], copy[i]];
-  }
-  return copy;
-};
+    await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        product_id,
+        ip,
+        user_agent,
+      }),
+    });
+  };
 
-useEffect(() => {
-  hasShuffledRef.current = false;
-}, [products]);
+  const shuffleArray = <T,>(arr: T[]): T[] => {
+    const copy = [...arr];
+    for (let i = copy.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+    return copy;
+  };
 
-const [mergedProducts, setMergedProducts] = useState<Product[]>([]);
+  useEffect(() => {
+    hasShuffledRef.current = false;
+  }, [products]);
 
-const hasShuffledRef = useRef(false);
+  const [mergedProducts, setMergedProducts] = useState<Product[]>([]);
 
- const buildMergedProducts = (normal: Product[]) => {
-  const premium = preminumProducts || [];
-  const exclusive = exculisiveProducts || [];
+  const hasShuffledRef = useRef(false);
 
-  const merged: Product[] = [];
-  let exclusiveIndex = 0;
+  const buildMergedProducts = (normal: Product[]) => {
+    const premium = preminumProducts || [];
+    const exclusive = exculisiveProducts || [];
 
-  // 1️⃣ Normal + Exclusive placement
-  normal.forEach((item, i) => {
-    merged.push(item);
+    const merged: Product[] = [];
+    let exclusiveIndex = 0;
 
-    if ((i + 1) % 10 === 0 && exclusiveIndex < exclusive.length) {
+    // 1️⃣ Normal + Exclusive placement
+    normal.forEach((item, i) => {
+      merged.push(item);
+
+      if ((i + 1) % 10 === 0 && exclusiveIndex < exclusive.length) {
+        merged.push({
+          ...exclusive[exclusiveIndex],
+          is_exclusive: true,
+        });
+        exclusiveIndex++;
+      }
+    });
+
+    while (exclusiveIndex < exclusive.length) {
       merged.push({
         ...exclusive[exclusiveIndex],
         is_exclusive: true,
       });
       exclusiveIndex++;
     }
-  });
 
-  while (exclusiveIndex < exclusive.length) {
-    merged.push({
-      ...exclusive[exclusiveIndex],
-      is_exclusive: true,
-    });
-    exclusiveIndex++;
-  }
-
-  // 2️⃣ Premium fixed index (DO NOT MOVE)
-  if (merged.length >= 3 && premium.length > 0) {
-    merged.splice(2, 0, {
-      ...premium[0],
-      is_premium: true,
-    });
-
-    if (premium.length > 1) {
-      merged.splice(3, 0, {
-        ...premium[1],
+    // 2️⃣ Premium fixed index (DO NOT MOVE)
+    if (merged.length >= 3 && premium.length > 0) {
+      merged.splice(2, 0, {
+        ...premium[0],
         is_premium: true,
       });
+
+      if (premium.length > 1) {
+        merged.splice(3, 0, {
+          ...premium[1],
+          is_premium: true,
+        });
+      }
     }
-  }
 
-  return merged;
-};
+    return merged;
+  };
   useEffect(() => {
-  if (!products || products.length === 0) return;
+    if (!products || products.length === 0) return;
 
-  const premiumIds = new Set(
-    (preminumProducts || []).map(p => String(p.id))
-  );
+    const premiumIds = new Set(
+      (preminumProducts || []).map((p) => String(p.id))
+    );
 
-  let normal = products.filter(
-    p => !premiumIds.has(String(p.id))
-  );
+    let normal = products.filter((p) => !premiumIds.has(String(p.id)));
 
-  const isFeaturedOrder =
-    !currentFilters?.orderby ||
-    currentFilters.orderby === "featured";
+    const isFeaturedOrder =
+      !currentFilters?.orderby || currentFilters.orderby === "featured";
 
-  // ✅ SHUFFLE ONLY FOR FEATURED
-  if (
-    isFeaturedOrder &&
-    normal.length === 23 &&
-    !hasShuffledRef.current
-  ) {
-    normal = shuffleArray(normal);
-    hasShuffledRef.current = true;
-  }
+    // ✅ SHUFFLE ONLY ON REFRESH
+    if (isFeaturedOrder && normal.length === 23 && isRefreshRef.current) {
+      normal = shuffleArray(normal);
+    }
 
-  // ❌ RESET shuffle when orderby changes
-  if (!isFeaturedOrder) {
-    hasShuffledRef.current = true; // block shuffle
-  }
-
-  const finalMerged = buildMergedProducts(normal);
-  setMergedProducts(finalMerged);
-
-}, [
-  products,
-  preminumProducts,
-  exculisiveProducts,
-  currentFilters.orderby, // ✅ important
-]);
-
-
+    const finalMerged = buildMergedProducts(normal);
+    setMergedProducts(finalMerged);
+  }, [products, preminumProducts, exculisiveProducts, currentFilters.orderby]);
 
   useEffect(() => {
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          const id = Number(entry.target.getAttribute("data-product-id"));
-          postTrackEvent(
-            "https://www.admin.caravansforsale.com.au/wp-json/cfs/v1/update-impressions",
-            id
-          );
-          observer.unobserve(entry.target);
-        }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const id = Number(entry.target.getAttribute("data-product-id"));
+            postTrackEvent(
+              "https://www.admin.caravansforsale.com.au/wp-json/cfs/v1/update-impressions",
+              id
+            );
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.5 }
+    );
+
+    document
+      .querySelectorAll(".product-card[data-product-id]")
+      .forEach((el) => {
+        observer.observe(el);
       });
-    },
-    { threshold: 0.5 }
-  );
 
-  document.querySelectorAll(".product-card[data-product-id]").forEach((el) => {
-    observer.observe(el);
-  });
-
-  return () => observer.disconnect();
-}, [mergedProducts]);
+    return () => observer.disconnect();
+  }, [mergedProducts]);
 
   // ✅ Disable background scroll when popup is open
   useEffect(() => {
@@ -390,21 +377,19 @@ const hasShuffledRef = useRef(false);
 
   // ✅ Randomly shuffle premium products on each page load
   // ✅ Premium products shuffle after mount
- 
- 
- 
-useEffect(() => {
-  const orderbyFromUrl = searchParams.get("orderby") ?? undefined;
 
-  // ⛔ prevent unnecessary state update
-  if (orderbyFromUrl !== currentFilters.orderby) {
-    onFilterChange({
-      ...currentFilters,
-      orderby: orderbyFromUrl,
-    });
-  }
-}, [searchParams]); // 👈 NOT empty dependency
-const orderby = searchParams.get("orderby") ?? "featured";
+  useEffect(() => {
+    const orderbyFromUrl = searchParams.get("orderby") ?? undefined;
+
+    // ⛔ prevent unnecessary state update
+    if (orderbyFromUrl !== currentFilters.orderby) {
+      onFilterChange({
+        ...currentFilters,
+        orderby: orderbyFromUrl,
+      });
+    }
+  }, [searchParams]); // 👈 NOT empty dependency
+  const orderby = searchParams.get("orderby") ?? "featured";
 
   return (
     <>
@@ -443,23 +428,24 @@ const orderby = searchParams.get("orderby") ?? "featured";
                 <form className="woocommerce-ordering" method="get">
                   <div className="form-group shot-buy">
                     <select
-                    name="orderby"
-                     className="orderby form-select"
+                      name="orderby"
+                      className="orderby form-select"
                       aria-label="Shop order"
-  value={orderby}
-  onChange={(e) => {
-    const value = e.target.value;
-    const params = new URLSearchParams(searchParams.toString());
+                      value={orderby}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        const params = new URLSearchParams(
+                          searchParams.toString()
+                        );
 
-    value === "featured"
-      ? params.delete("orderby")
-      : params.set("orderby", value);
+                        value === "featured"
+                          ? params.delete("orderby")
+                          : params.set("orderby", value);
 
-    router.push(`?${params.toString()}`, { scroll: false });
-  }}
->
-
-                    <option value="featured">Featured</option>
+                        router.push(`?${params.toString()}`, { scroll: false });
+                      }}
+                    >
+                      <option value="featured">Featured</option>
                       <option value="price-asc">Price (Low to High)</option>
                       <option value="price-desc">Price (High to Low)</option>
                       <option value="year-desc">Year Made (High to Low)</option>
@@ -469,18 +455,15 @@ const orderby = searchParams.get("orderby") ?? "featured";
                     {/* <input type="hidden" name="paged" value={filters.orderby} /> */}
                   </div>
                 </form>
-
-
               </div>
             </div>
           </div>
         </div>
-        
-        
+
         <div className="dealers-section product-type">
           <div className="other_items">
             <div className="related-products">
-              {isMainLoading ? (
+              {mergedProducts.length === 0 ? (
                 <Skelton count={6} />
               ) : (
                 <div className="row g-3">
@@ -505,9 +488,9 @@ const orderby = searchParams.get("orderby") ?? "featured";
                           className="lli_head"
                         >
                           <div
-  className={`product-card sku-${item.sku}`}
-  data-product-id={item.id}
->
+                            className={`product-card sku-${item.sku}`}
+                            data-product-id={item.id}
+                          >
                             <div className="img">
                               <div className="background_thumb">
                                 <ImageWithSkeleton
@@ -573,7 +556,7 @@ const orderby = searchParams.get("orderby") ?? "featured";
                                </div> */}
                               </div>
                             </div>
- 
+
                             <div className="product_de">
                               <div className="info">
                                 {item.name && (
@@ -641,14 +624,15 @@ const orderby = searchParams.get("orderby") ?? "featured";
                                       ) : null;
                                     })()}
                                     {item.is_premium && (
-                                    <div className="more_info">
-                                    <div className="informat">
-                                      <span className="premium_van">
-                                        <i className="fa fa-star"></i> Premium
-                                      </span>
-                                    </div>
-                                  </div>
-                                )}
+                                      <div className="more_info">
+                                        <div className="informat">
+                                          <span className="premium_van">
+                                            <i className="fa fa-star"></i>{" "}
+                                            Premium
+                                          </span>
+                                        </div>
+                                      </div>
+                                    )}
                                   </div>
                                 </div>
                               )}
@@ -663,12 +647,11 @@ const orderby = searchParams.get("orderby") ?? "featured";
                                   </li>
                                 )} */}
 
-
                                 {item.categories &&
                                   item.categories.length > 0 && (
                                     <li className="attribute3_list">
                                       <span className="attribute3">
-      {item.categories.slice(0, 2).join(", ")}
+                                        {item.categories.slice(0, 2).join(", ")}
                                       </span>
                                     </li>
                                   )}
@@ -729,11 +712,12 @@ const orderby = searchParams.get("orderby") ?? "featured";
                                   Contact Dealer
                                 </button>
 
-
-                                <button className="btn btn-primary"   onClick={() => {
-    handleProductClick(item.id);
-  }}
->
+                                <button
+                                  className="btn btn-primary"
+                                  onClick={() => {
+                                    handleProductClick(item.id);
+                                  }}
+                                >
                                   View Details
                                 </button>
                               </div>
@@ -770,10 +754,7 @@ const orderby = searchParams.get("orderby") ?? "featured";
                 <button
                   className="next-icon"
                   onClick={onNext}
-                  disabled={
-                    pagination.current_page === pagination.total_pages 
-                    
-                  }
+                  disabled={pagination.current_page === pagination.total_pages}
                 >
                   Next
                 </button>
@@ -818,18 +799,17 @@ const orderby = searchParams.get("orderby") ?? "featured";
               className="close-popup"
               onClick={() => {
                 setShowContact(false);
-                setSelectedProduct(null);   // reset selected product
+                setSelectedProduct(null); // reset selected product
               }}
             >
               ×
             </button>
-      
+
             <h4>Contact Dealer</h4>
-      
+
             <div className="sidebar-enquiry">
               <form className="wpcf7-form" noValidate onSubmit={onSubmit}>
                 <div className="form">
-      
                   {/* Name */}
                   <div className="form-item">
                     <p>
@@ -848,7 +828,7 @@ const orderby = searchParams.get("orderby") ?? "featured";
                       <div className="cfs-error">{errors.name}</div>
                     )}
                   </div>
-      
+
                   {/* Email */}
                   <div className="form-item">
                     <p>
@@ -867,7 +847,7 @@ const orderby = searchParams.get("orderby") ?? "featured";
                       <div className="cfs-error">{errors.email}</div>
                     )}
                   </div>
-      
+
                   {/* Phone */}
                   <div className="form-item">
                     <p className="phone_country">
@@ -888,7 +868,7 @@ const orderby = searchParams.get("orderby") ?? "featured";
                       <div className="cfs-error">{errors.phone}</div>
                     )}
                   </div>
-      
+
                   {/* Postcode */}
                   <div className="form-item">
                     <p>
@@ -909,11 +889,13 @@ const orderby = searchParams.get("orderby") ?? "featured";
                       <div className="cfs-error">{errors.postcode}</div>
                     )}
                   </div>
-      
+
                   {/* Message */}
                   <div className="form-item">
                     <p>
-                      <label htmlFor="enquiry4-message">Message (optional)</label>
+                      <label htmlFor="enquiry4-message">
+                        Message (optional)
+                      </label>
                       <textarea
                         id="enquiry4-message"
                         className="wpcf7-form-control wpcf7-textarea"
@@ -922,7 +904,7 @@ const orderby = searchParams.get("orderby") ?? "featured";
                       ></textarea>
                     </p>
                   </div>
-      
+
                   <p className="terms_text">
                     By clicking &lsquo;Send Enquiry&lsquo;, you agree to Caravan
                     Marketplace{" "}
@@ -939,7 +921,7 @@ const orderby = searchParams.get("orderby") ?? "featured";
                     </Link>
                     .
                   </p>
-      
+
                   <div className="submit-btn">
                     <button
                       type="submit"
@@ -949,15 +931,12 @@ const orderby = searchParams.get("orderby") ?? "featured";
                       {submitting ? "Sending..." : "Send Enquiry"}
                     </button>
                   </div>
-      
                 </div>
               </form>
             </div>
           </div>
         </div>
       )}
-
-
     </>
   );
 }

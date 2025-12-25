@@ -779,6 +779,11 @@ const handlePrevPage = useCallback(async () => {
 
   useEffect(() => {
     if (!initializedRef.current) return;
+
+     if (isClearAllRef.current) {
+    isClearAllRef.current = false;
+    return;
+  }
     if (restoredOnceRef.current) {
       restoredOnceRef.current = false; // reset for future real changes
       return;
@@ -918,15 +923,25 @@ const mergedFilters = mergeFiltersSafely(filtersRef.current, newFilters);
     const value = filters[key];
     return value !== undefined && value !== "" && value !== null;
   });
+const isClearAllRef = useRef(false);
 
   const resetAllFilters = async () => {
   if (!hasActiveFilters) return;
 
-  // ✅ start loaders
+  isClearAllRef.current = true; // 🔒 mark clear-all
+
+  // ✅ show skeleton
   setIsLoading(true);
   setIsMainLoading(true);
   setIsFeaturedLoading(true);
   setIsPremiumLoading(true);
+
+  // ✅ HARD CLEAR DATA (IMPORTANT)
+  setProducts([]);
+  setFeaturedProducts([]);
+  setPremiumProducts([]);
+  setExculisiveProducts([]);
+  setEmptyProduct([]);
 
   const clearedFilters: Filters = {};
 
@@ -936,21 +951,15 @@ const mergedFilters = mergeFiltersSafely(filtersRef.current, newFilters);
   });
 
   try {
-    // ✅ reset URL
+    // ✅ update URL only (no duplicate fetch)
     router.replace("/listings", { scroll: false });
 
-    // ✅ reload page-1 data
-    await loadListings(1, {}, true);
+    // ❌ DO NOT call loadListings here
   } catch (err) {
     console.error("Clear all failed:", err);
-  } finally {
-    // ✅ stop loaders
-    setIsLoading(false);
-    setIsMainLoading(false);
-    setIsFeaturedLoading(false);
-    setIsPremiumLoading(false);
   }
 };
+
 
 
 

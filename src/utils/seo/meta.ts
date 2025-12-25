@@ -1,7 +1,8 @@
  import { fetchListings } from "@/api/listings/api";
  import { parseSlugToFilters } from "@/app/components/urlBuilder";
  import type { Metadata } from "next";
-  
+ import { buildCanonicalUrl } from "./buildCanonical";
+ 
  export async function metaFromSlug(
    filters: string[] = [],
    searchParams: Record<string, string | string[] | undefined> = {}
