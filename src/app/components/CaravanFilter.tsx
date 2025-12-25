@@ -530,21 +530,29 @@ const triggerGlobalLoaders = () => {
   }, [locationInput, showSuggestions]);
 
  // 🔧 FIXED hydrateLocation function
- const hydrateLocation = (next: Filters): Filters => {
+  const hydrateLocation = (next: Filters): Filters => {
   const out: Filters = { ...next };
 
-  // remove only truly empty strings, not missing fields
   for (const key of ["state", "region", "suburb", "pincode"] as const) {
     if (typeof out[key] === "string" && !out[key]?.trim()) delete out[key];
   }
 
-  // ✅ preserve region/suburb if already set
-  if (!out.region && selectedRegionName) out.region = selectedRegionName;
-  if (!out.suburb && selectedSuburbName) out.suburb = selectedSuburbName;
-  if (!out.pincode && selectedpincode) out.pincode = selectedpincode;
+  // ⛔ DO NOT rehydrate if user manually cleared
+  if (!out.region && selectedRegionName && !regionManuallyClearedRef.current) {
+    out.region = selectedRegionName;
+  }
+
+  if (!out.suburb && selectedSuburbName && !suburbManuallyClearedRef.current) {
+    out.suburb = selectedSuburbName;
+  }
+
+  if (!out.pincode && selectedpincode && !suburbManuallyClearedRef.current) {
+    out.pincode = selectedpincode;
+  }
 
   return out;
 };
+
 
   const clearKeyword = () => {
     const next: Filters = {
@@ -897,58 +905,64 @@ const triggerGlobalLoaders = () => {
     currentFilters.search,
   ]);
 
-  const resetStateFilters = () => {
-    // ✅ Clear all location-related UI state
-    setSelectedState(null);
-    setSelectedStateName(null);
-    setSelectedRegion("");
-    setSelectedRegionName(null);
-    setSelectedSuburbName(null);
-    setSelectedpincode(null);
-    // setFilteredRegions([]);
-    setFilteredSuburbs([]);
-    setLocationInput("");
-    setStateRegionOpen(false);
+ const resetStateFilters = () => {
+ 
+  // UI
+  setSelectedState(null);
+  setSelectedStateName(null);
+  setSelectedRegion("");
+  setSelectedRegionName(null);
+  setSelectedSuburbName(null);
+  setSelectedpincode(null);
+  setFilteredSuburbs([]);
+  setLocationInput("");
 
-    // ✅ Delay filter clearing until React state updates apply
-    setTimeout(() => {
-      const updatedFilters: Filters = {
-        ...currentFilters,
-        ...filters,
-        state: undefined,
-        region: undefined,
-        suburb: undefined,
-        pincode: undefined,
-        location: null,
-      };
-      setFilters(updatedFilters);
-      onFilterChange(updatedFilters);
-      // filtersInitialized.current = true;
-      // setFilters(updatedFilters);
-
-      // startTransition(() => {
-      //   updateAllFiltersAndURL(updatedFilters);
-      // });
-    }, 0); // Allow React to flush UI state
+  // Filters
+  const updatedFilters: Filters = {
+    ...currentFilters,
+    state: undefined,
+    region: undefined,
+    suburb: undefined,
+    pincode: undefined,
+    location: null,
   };
 
-  const resetRegionFilters = () => {
-    setSelectedRegion("");
-    setSelectedRegionName(null);
-    setSelectedSuburbName(null);
-    setSelectedpincode(null);
-    setFilteredSuburbs([]);
+  setFilters(updatedFilters);
+  filtersInitialized.current = true;
 
-    const updatedFilters: Filters = {
-      ...currentFilters,
-      region: undefined,
-      suburb: undefined,
-      pincode: undefined,
-    };
+  startTransition(() => {
+    updateAllFiltersAndURL(updatedFilters);
+  });
+};
+const regionManuallyClearedRef = useRef(false);
+ const resetRegionFilters = () => {
+  regionManuallyClearedRef.current = true; // 👈 IMPORTANT
 
-    setFilters(updatedFilters);
-    onFilterChange(updatedFilters);
+  // UI
+  setSelectedRegion("");
+  setSelectedRegionName(null);
+  setSelectedSuburbName(null);
+  setSelectedpincode(null);
+  setFilteredSuburbs([]);
+
+  const updatedFilters: Filters = {
+    ...currentFilters,
   };
+
+  delete updatedFilters.region;
+  delete updatedFilters.suburb;
+  delete updatedFilters.pincode;
+
+  setFilters(updatedFilters);
+  filtersInitialized.current = true;
+
+  startTransition(() => {
+    updateAllFiltersAndURL(updatedFilters);
+  });
+};
+
+
+
 
   const formatted = (s: string) =>
     s
@@ -962,48 +976,31 @@ const triggerGlobalLoaders = () => {
       .replace(/\s{3,}/g, "  ") // collapse 3+ spaces -> 2
       .trim()
       .replace(/\b\w/g, (char) => char.toUpperCase());
+const suburbManuallyClearedRef = useRef(false);
 
    const resetSuburbFilters = () => {
-     // ✅ keep state & region
-     // suppressLocationAutoClearRef.current = true; // 👈 tell the auto-clear effect to skip once
-     setSelectedSuburbName(null);
-     setSelectedpincode(null);
-     setLocationInput("");
-     setRadiusKms(RADIUS_OPTIONS[0]); // reset radius to default
-     setLocationSuggestions([]);
- 
-     // ✅ rehydrate suburb list for the currently selected region
-     if (selectedStateName && selectedRegionName) {
-       const st = states.find(
-         (s) =>
-           s.name.toLowerCase() === selectedStateName.toLowerCase() ||
-           s.value.toLowerCase() === selectedStateName.toLowerCase()
-       );
-       const reg = st?.regions?.find(
-         (r) =>
-           r.name.toLowerCase() === selectedRegionName.toLowerCase() ||
-           r.value.toLowerCase() === selectedRegionName.toLowerCase()
-       );
-       setFilteredSuburbs(reg?.suburbs ?? []);
-     }
- 
-     const updatedFilters: Filters = {
-       ...currentFilters,
-       // ✅ explicitly preserve state & region
-       state: selectedStateName || currentFilters.state,
-       region: selectedRegionName || currentFilters.region,
-       suburb: undefined,
-       pincode: undefined,
-       radius_kms: RADIUS_OPTIONS[0], // reset radius to default
-     };
- 
-     setFilters(updatedFilters);
-     filtersInitialized.current = true;
- 
-     startTransition(() => {
-       updateAllFiltersAndURL(updatedFilters);
-     });
-   };
+  suburbManuallyClearedRef.current = true; // 👈 VERY IMPORTANT
+
+  setSelectedSuburbName(null);
+  setSelectedpincode(null);
+  setLocationInput("");
+
+  const updatedFilters: Filters = {
+    ...currentFilters,
+  };
+
+  delete updatedFilters.suburb;
+  delete updatedFilters.pincode;
+
+  setFilters(updatedFilters);
+  filtersInitialized.current = true;
+
+  startTransition(() => {
+    updateAllFiltersAndURL(updatedFilters);
+  });
+};
+
+
 
 
   const handleSearchClick = () => {
@@ -1878,11 +1875,11 @@ triggerGlobalLoaders();
               {!selectedRegionName && !selectedSuburbName && (
                 <div style={iconRowStyle}>
                   <span
+
                     className="filter-chip-close"
                   onClick={() => {
-                  triggerGlobalLoaders();
-                  resetStateFilters()
-              }}>
+                    resetStateFilters()
+               }}>
                   
                     ×
                   </span>
@@ -1964,8 +1961,7 @@ triggerGlobalLoaders();
  
                     className="filter-chip-close"
                        onClick={() => {
-                  triggerGlobalLoaders();
-                  resetRegionFilters()
+                   resetRegionFilters()
               }}
                   >
                     ×
@@ -1988,8 +1984,8 @@ triggerGlobalLoaders();
               <span style={{ flexGrow: 1 }}>{selectedSuburbName}</span>
               <span  className="filter-chip-close"   
                onClick={() => {
-                  triggerGlobalLoaders();
-                  resetSuburbFilters()
+                 resetSuburbFilters()
+                //  triggerGlobalLoaders();
               }}>
                 ×
               </span>
