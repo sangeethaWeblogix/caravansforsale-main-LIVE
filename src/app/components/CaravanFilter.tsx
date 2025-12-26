@@ -2325,7 +2325,7 @@ setModel(make.models || []);
                       });
                     }}
                   >
-                    {make.name} Caravan
+                    {make.name} 
                   </div>
                 ))}
 
