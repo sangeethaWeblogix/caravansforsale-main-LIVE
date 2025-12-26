@@ -248,6 +248,8 @@ const handleImageLoad = () => {
     { label: "Sleep", value: getAttr("sleeps"), url: findAttr("sleeps")?.url },
     { label: "ATM", value: getAttr("ATM"), url: findAttr("ATM")?.url }, // ✅ API url (e.g. "under-2000-kg-atm")
     { label: "Tare Mass", value: getAttr("Tare Mass") },
+        { label: "Axle Configuration", value: getAttr("Axle Configuration") },
+
     { label: "Ball Weight", value: getAttr("Ball Weight") },
     {
       label: "Location",
@@ -400,7 +402,8 @@ console.log("product", data)
 const slug = productSlug || "";
 const sku = productDetails.sku ;
 console.log("slug1", productDetails)
- 
+   console.log("rele", relatedProducts);
+
   
   // ---- gallery state ----
   
@@ -1001,7 +1004,11 @@ useEffect(() => {
                   ))
                 : relatedProducts.map((post) => {
                     const href = getProductHref(post);
-                    
+                    const sku = post.sku 
+                    const slug =  post.slug 
+                      const base = `https://caravansforsale.imagestack.net/800x600/${sku}/${slug}`;
+  
+  const main = `${base}main1.avif`;
                     return (
                       <SwiperSlide key={post.id}>
                         <Link href={href}>
@@ -1009,9 +1016,7 @@ useEffect(() => {
                             <div className="img">
                               <Image
                                 src={
-                                  Array.isArray(post.image)
-                                    ? post.image[0]
-                                    : post.image || "/placeholder.jpg"
+                                  main
                                 }
                                 alt="product"
                                 width={400}
