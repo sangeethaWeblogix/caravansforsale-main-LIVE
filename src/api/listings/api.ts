@@ -63,6 +63,7 @@
     metaimage?: string;
     index?: string;
     canonical?: string;
+    follow?: string;
   }
   
   export interface ApiPagination {

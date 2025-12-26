@@ -1,8 +1,7 @@
  import { fetchListings } from "@/api/listings/api";
  import { parseSlugToFilters } from "@/app/components/urlBuilder";
  import type { Metadata } from "next";
- import { buildCanonicalUrl } from "./buildCanonical";
- 
+  
  export async function metaFromSlug(
    filters: string[] = [],
    searchParams: Record<string, string | string[] | undefined> = {}
@@ -23,11 +22,18 @@
      res?.seo?.metadescription || "Browse all available caravans."
    ).trim();
   
- const rawIndex = String(res?.seo?.index ?? "").toLowerCase().trim();
-   const robots =
-     rawIndex === "false"
-       ? { index: false, follow: false }
-       : { index: true, follow: true };
+const rawIndex = String(res?.seo?.index ?? "")
+  .toLowerCase()
+  .trim();
+
+const rawFollow = String(res?.seo?.follow ?? "")
+  .toLowerCase()
+  .trim();
+    const robots = {
+  index: rawIndex !== "noindex",
+  follow: rawFollow !== "nofollow",
+};
+
  
    const canonical = res?.seo?.canonical || "https://www.caravansforsale.com.au"
  
