@@ -147,32 +147,50 @@ export default function ListingContent({
 
   const { form, errors, touched, submitting, setField, onBlur, onSubmit } =
     useEnquiryForm(enquiryProduct);
+const checkImage = (url: string): Promise<boolean> => {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve(true);
+    img.onerror = () => resolve(false);
+    img.src = url;
+  });
+};
 
   const getFirstImage = (item: Product) => {
     if (!item.sku || !item.slug) return "/images/sample3.webp";
 
     return `https://caravansforsale.imagestack.net/400x300/${item.sku}/${item.slug}main1.avif`;
   };
-  const loadRemaining = (item: Product) => {
-    if (!item.sku || !item.slug) return;
+   const loadRemaining = async (item: Product) => {
+  if (!item.sku || !item.slug) return;
 
-    const base = `https://caravansforsale.imagestack.net/400x300/${item.sku}/${item.slug}`;
+  const base = `https://caravansforsale.imagestack.net/400x300/${item.sku}/${item.slug}`;
 
-    const images = [
-      `${base}main1.avif`,
-      ...Array.from({ length: 5 }, (_, i) => `${base}sub${i + 2}.avif`),
-    ];
+  const candidates = [
+    `${base}main1.avif`,
+    ...Array.from({ length: 4 }, (_, i) => `${base}sub${i + 2}.avif`),
+  ];
 
-    setLazyImages((prev) => ({
-      ...prev,
-      [item.id]: images,
-    }));
+  const validImages: string[] = [];
 
-    setLoadedAll((prev) => ({
-      ...prev,
-      [item.id]: true,
-    }));
-  };
+  for (const url of candidates) {
+    if (validImages.length === 5) break;
+
+    const exists = await checkImage(url);
+    if (exists) validImages.push(url);
+  }
+
+  setLazyImages((prev) => ({
+    ...prev,
+    [item.id]: validImages,
+  }));
+
+  setLoadedAll((prev) => ({
+    ...prev,
+    [item.id]: true,
+  }));
+};
+
 
   console.log("lazy", lazyImages);
   // Remove all the lazy loading state and just load all images immediately
