@@ -95,7 +95,7 @@ export default function ClientLogger({
 
 const handleImageLoad = () => {
   loadedCount.current += 1;
-  if (loadedCount.current >= subs.length + 1) {
+  if (loadedCount.current >= allSubs.length + 1) {
     
   }
 };
@@ -428,10 +428,10 @@ useEffect(() => {
 
   const imgs = [
     `${base}main1.avif`,        // main image
-    `${base}sub3.avif`,         // sub1
-    `${base}sub4.avif`,         // sub2
-    `${base}sub5.avif`,         // sub3
-    `${base}sub6.avif`,         // sub4
+    `${base}sub2.avif`,         // sub1
+    `${base}sub3.avif`,         // sub2
+    `${base}sub4.avif`,         // sub3
+    `${base}sub5.avif`,         // sub4
   ];
 
   setMainsub(imgs);
@@ -440,7 +440,7 @@ useEffect(() => {
 
 
    
-const [subs, setSubs] = useState<string[]>([]);
+const [allSubs, setAllSubs] = useState<string[]>([]);
  
   function checkImage(url: string): Promise<boolean> {
     return new Promise((resolve) => {
@@ -466,7 +466,7 @@ const [subs, setSubs] = useState<string[]>([]);
           Boolean
         );
         if (!cancelled) {
-          setSubs(fallback);
+          setAllSubs(fallback);
           setActiveImage(fallback[0] || main);
          }
         return;
@@ -483,7 +483,10 @@ const [subs, setSubs] = useState<string[]>([]);
         urls.push(mainUrl);
       }
 
-      // 2) SUBS: sub1.avif, sub2.avif, ...
+
+
+
+      // 2) allSubs: sub1.avif, sub2.avif, ...
       for (let i = 2; i <= 5; i++) {
         const url = `${base}sub${i}.avif`;
         const ok = await checkImage(url);
@@ -515,8 +518,8 @@ const [subs, setSubs] = useState<string[]>([]);
           ? urls
           : (images.length ? images : [main]).filter(Boolean);
       if (!cancelled) {
-        setSubs(finalUrls);
-        setMainsub(finalSubUrls);
+        setMainsub(finalUrls);
+        setAllSubs(finalSubUrls);
         setActiveImage(finalUrls[0] || main);
        }
     };
@@ -568,7 +571,7 @@ useEffect(() => {
 // const [activeImage, setActiveImage] = useState(main);
 
   
- console.log("image", subs)
+ console.log("image", allSubs)
 
   return (
     <>
@@ -683,7 +686,7 @@ useEffect(() => {
         ))}
 
         <span className="caravan__image_count">
-          {/* <span>{subs.length}+</span> */}
+          {/* <span>{allSubs.length}+</span> */}
                     <span> +  </span>
 
         </span>
@@ -694,7 +697,7 @@ useEffect(() => {
     <div className="lager_img_view image_container">
       <div className="background_thumb">
       <Image
-          src={activeImage || subs[0]}
+          src={activeImage || allSubs[0]}
           width={800}
           height={600}
           alt="Large"
@@ -706,7 +709,7 @@ useEffect(() => {
 
       <Link href="#">
       <Image
-          src={activeImage || subs[0]}
+          src={activeImage || allSubs[0]}
           width={800}
           height={600}
           alt="Large"
@@ -949,13 +952,13 @@ useEffect(() => {
                 <CaravanDetailModal
                   isOpen={showModal}
                   onClose={() => setShowModal(false)}
-                  images={subs}
+                  images={allSubs}
                   subImages={mainsub}
                   product={{
                     id: productId,
                     slug: productSlug,
                     name: product.name ?? "",
-                    image: activeImage || subs[0] ,
+                    image: activeImage || allSubs[0] ,
                     price: hasSale ? sale : reg,
                     regularPrice: product.regular_price ?? 0,
                     salePrice: product.sale_price ?? 0,
