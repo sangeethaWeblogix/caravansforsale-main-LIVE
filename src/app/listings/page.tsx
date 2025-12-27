@@ -15,7 +15,7 @@ export const revalidate = 60;
   title: "Caravans For Sale in Australia - Find Exclusive Deals",
     description:
       "Browse new & used caravans for sale across Australia. Compare off-road, hybrid, pop-top & luxury models by price, size, weight and sleeping capacity.",
-  robots: "index, follow",
+  // robots: "index, follow",
   openGraph: {
      title: "Caravans For Sale in Australia - Find Exclusive Deals",
     description:

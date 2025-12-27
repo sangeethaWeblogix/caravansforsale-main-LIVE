@@ -22,17 +22,17 @@
      res?.seo?.metadescription || "Browse all available caravans."
    ).trim();
   
-const rawIndex = String(res?.seo?.index ?? "")
-  .toLowerCase()
-  .trim();
+// const rawIndex = String(res?.seo?.index ?? "")
+//   .toLowerCase()
+//   .trim();
 
-const rawFollow = String(res?.seo?.follow ?? "")
-  .toLowerCase()
-  .trim();
-    const robots = {
-  index: rawIndex !== "noindex",
-  follow: rawFollow !== "nofollow",
-};
+// const rawFollow = String(res?.seo?.follow ?? "")
+//   .toLowerCase()
+//   .trim();
+//     const robots = {
+//   index: rawIndex !== "noindex",
+//   follow: rawFollow !== "nofollow",
+// };
 
  
    const canonical = res?.seo?.canonical || "https://www.caravansforsale.com.au"
@@ -44,7 +44,7 @@ const rawFollow = String(res?.seo?.follow ?? "")
    return {
      title: { absolute: title },
      description,
-     robots,
+    //  robots,
      verification: {
        google: "6tT6MT6AJgGromLaqvdnyyDQouJXq0VHS-7HC194xEo",
      },

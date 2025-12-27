@@ -211,7 +211,7 @@ export async function generateMetadata({
         canonical: url, // ✅ canonical based on built querystring
       },
       description,
-      robots,
+      // robots,
       openGraph: { title, description },
       twitter: { title, description },
     };
