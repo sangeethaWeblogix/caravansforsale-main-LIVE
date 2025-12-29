@@ -12,6 +12,7 @@ import { toSlug } from "@/utils/seo/slug";
 import ImageWithSkeleton from "../ImageWithSkeleton";
 import { useEnquiryForm } from "./enquiryform";
 import { useRouter, useSearchParams } from "next/navigation";
+import { buildSlugFromFilters } from "../slugBuilter";
 
 interface Product {
   id: number;
@@ -303,26 +304,47 @@ const checkImage = (url: string): Promise<boolean> => {
 
     return merged;
   };
-  useEffect(() => {
-    if (!products || products.length === 0) return;
+ useEffect(() => {
+  if (!products || products.length === 0) return;
 
-    const premiumIds = new Set(
-      (preminumProducts || []).map((p) => String(p.id))
-    );
+  // 1️⃣ Remove premium from normal list
+  const premiumIds = new Set(
+    (preminumProducts || []).map((p) => String(p.id))
+  );
 
-    let normal = products.filter((p) => !premiumIds.has(String(p.id)));
+  let normal = products.filter(
+    (p) => !premiumIds.has(String(p.id))
+  );
 
-    const isFeaturedOrder =
-      !currentFilters?.orderby || currentFilters.orderby === "featured";
+  // 2️⃣ Read orderby DIRECTLY from URL (🔥 important)
+  const orderbyFromUrl = searchParams.get("orderby");
 
-    // ✅ SHUFFLE ONLY ON REFRESH
-    if (isFeaturedOrder && normal.length === 23 && isRefreshRef.current) {
-      normal = shuffleArray(normal);
-    }
+  // 3️⃣ STRICT shuffle rule
+  // ❌ if orderby exists → NO shuffle
+  // ❌ if products < 23 → NO shuffle
+  // ❌ if not refresh → NO shuffle
+  const allowShuffle =
+    !orderbyFromUrl &&           // 👈 orderby must NOT exist in URL
+    isRefreshRef.current &&
+    normal.length >= 23;
 
-    const finalMerged = buildMergedProducts(normal);
-    setMergedProducts(finalMerged);
-  }, [products, preminumProducts, exculisiveProducts, currentFilters.orderby]);
+  // 4️⃣ Shuffle ONLY ONCE
+  if (allowShuffle && !hasShuffledRef.current) {
+    normal = shuffleArray(normal);
+    hasShuffledRef.current = true;
+  }
+
+  // 5️⃣ Merge products
+  const finalMerged = buildMergedProducts(normal);
+  setMergedProducts(finalMerged);
+
+}, [
+  products,
+  preminumProducts,
+  exculisiveProducts,
+  searchParams,   // 👈 IMPORTANT dependency
+]);
+
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -396,17 +418,17 @@ const checkImage = (url: string): Promise<boolean> => {
   // ✅ Randomly shuffle premium products on each page load
   // ✅ Premium products shuffle after mount
 
-  // useEffect(() => {
-  //   const orderbyFromUrl = searchParams.get("orderby") ?? undefined;
+  useEffect(() => {
+    const orderbyFromUrl = searchParams.get("orderby") ?? undefined;
 
-  //   // ⛔ prevent unnecessary state update
-  //   if (orderbyFromUrl !== currentFilters.orderby) {
-  //     onFilterChange({
-  //       ...currentFilters,
-  //       orderby: orderbyFromUrl,
-  //     });
-  //   }
-  // }, [searchParams]); // 👈 NOT empty dependency
+    // ⛔ prevent unnecessary state update
+    if (orderbyFromUrl !== currentFilters.orderby) {
+      onFilterChange({
+        ...currentFilters,
+        orderby: orderbyFromUrl,
+      });
+    }
+  }, [searchParams]); // 👈 NOT empty dependency
   const orderby = searchParams.get("orderby") ?? "featured";
 
   return (
@@ -450,18 +472,24 @@ const checkImage = (url: string): Promise<boolean> => {
                       className="orderby form-select"
                       aria-label="Shop order"
                       value={orderby}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        const params = new URLSearchParams(
-                          searchParams.toString()
-                        );
+                     onChange={(e) => {
+  const value = e.target.value;
+  const params = new URLSearchParams(searchParams.toString());
 
-                        value === "featured"
-                          ? params.delete("orderby")
-                          : params.set("orderby", value);
+  value === "featured"
+    ? params.delete("orderby")
+    : params.set("orderby", value);
 
-                        router.push(`?${params.toString()}`, { scroll: false });
-                      }}
+  // ✅ build slug with existing filters
+  const slug = buildSlugFromFilters(currentFilters);
+
+  const finalURL = params.toString()
+    ? `${slug}?${params.toString()}`
+    : slug;
+
+  router.push(finalURL, { scroll: false });
+}}
+
                     >
                       <option value="featured">Featured</option>
                       <option value="price-asc">Price (Low to High)</option>
