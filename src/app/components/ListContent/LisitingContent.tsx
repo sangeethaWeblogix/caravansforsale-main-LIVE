@@ -396,17 +396,17 @@ const checkImage = (url: string): Promise<boolean> => {
   // ✅ Randomly shuffle premium products on each page load
   // ✅ Premium products shuffle after mount
 
-  useEffect(() => {
-    const orderbyFromUrl = searchParams.get("orderby") ?? undefined;
+  // useEffect(() => {
+  //   const orderbyFromUrl = searchParams.get("orderby") ?? undefined;
 
-    // ⛔ prevent unnecessary state update
-    if (orderbyFromUrl !== currentFilters.orderby) {
-      onFilterChange({
-        ...currentFilters,
-        orderby: orderbyFromUrl,
-      });
-    }
-  }, [searchParams]); // 👈 NOT empty dependency
+  //   // ⛔ prevent unnecessary state update
+  //   if (orderbyFromUrl !== currentFilters.orderby) {
+  //     onFilterChange({
+  //       ...currentFilters,
+  //       orderby: orderbyFromUrl,
+  //     });
+  //   }
+  // }, [searchParams]); // 👈 NOT empty dependency
   const orderby = searchParams.get("orderby") ?? "featured";
 
   return (
