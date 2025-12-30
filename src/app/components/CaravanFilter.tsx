@@ -1502,10 +1502,28 @@ useEffect(() => {
     const DEFAULT_RADIUS = 50;
  
     const nextRaw: Filters = override ?? filters;
-    const next: Filters = {
-      ...clean(hydrateLocation(normalizeFilters(nextRaw))),
-      page: 1, // ← Add this line to reset page
-    };
+    // const next: Filters = {
+    //   ...clean(hydrateLocation(normalizeFilters(nextRaw))),
+    //   page: 1, // ← Add this line to reset page
+    // };
+const cleaned: Filters = clean(hydrateLocation(normalizeFilters(nextRaw)));
+
+// 🔥 HARD DELETE EMPTY / CLEARED FILTERS
+Object.keys(cleaned).forEach((key) => {
+  const k = key as keyof Filters;
+  if (
+    cleaned[k] === undefined ||
+    cleaned[k] === null ||
+    cleaned[k] === ""
+  ) {
+    delete cleaned[k];
+  }
+});
+
+const next: Filters = {
+  ...cleaned,
+  page: 1,
+};
 
 
     next.make = sanitizeMake(next.make); // belt & suspenders

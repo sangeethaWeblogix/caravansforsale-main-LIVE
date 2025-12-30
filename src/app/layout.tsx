@@ -96,6 +96,7 @@
           <Navbar />
           <ScrollToTop />
           <main className="product-page style-5">{children}</main>
+          
           <Footer />
         </body>
       </html>
