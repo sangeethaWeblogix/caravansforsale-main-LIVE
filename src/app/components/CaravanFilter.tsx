@@ -12,7 +12,7 @@ import { BiChevronDown } from "react-icons/bi";
 import { usePathname, useRouter } from "next/navigation";
 // import { useSearchParams } from "next/navigation";
 import { fetchProductList } from "@/api/productList/api";
- import "./filter.css";
+import "./filter.css";
 import { buildSlugFromFilters } from "./slugBuilter";
 import { buildUpdatedFilters } from "./buildUpdatedFilters";
 import {
@@ -47,7 +47,7 @@ interface StateOption {
   }[];
 }
 
- interface MakeModel {
+interface MakeModel {
   name: string;
   slug: string;
 }
@@ -91,7 +91,7 @@ interface CaravanFilterProps {
   categories: Category[];
   makes: Make[];
   models: Model[];
-   setIsLoading?: (val: boolean) => void;
+  setIsLoading?: (val: boolean) => void;
   setIsMainLoading?: (val: boolean) => void;
   setIsFeaturedLoading?: (val: boolean) => void;
   setIsPremiumLoading?: (val: boolean) => void;
@@ -132,7 +132,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
   setIsPremiumLoading,
   setIsMainLoading,
   setIsLoading,
- }) => {
+}) => {
   const router = useRouter();
   const pathname = usePathname();
   // const searchParams = useSearchParams();
@@ -150,7 +150,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
   const [filteredSuburbs, setFilteredSuburbs] = useState<Suburb[]>([]);
   const [filters, setFilters] = useState<Filters>({});
   const [conditionOpen, setConditionOpen] = useState(false);
-    const [yearOpen, setYearOpen] = useState(false);
+  const [yearOpen, setYearOpen] = useState(false);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isKeywordModalOpen, setIsKeywordModalOpen] = useState(false);
@@ -171,7 +171,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
   );
   // top (other states kula)
   const [modalKeyword, setModalKeyword] = useState("");
-const [showAllModels, setShowAllModels] = useState(false);
+  const [showAllModels, setShowAllModels] = useState(false);
 
   const suburbClickedRef = useRef(false);
   const [selectedConditionName, setSelectedConditionName] = useState<
@@ -234,8 +234,8 @@ const [showAllModels, setShowAllModels] = useState(false);
   ];
 
   const years = [
-    2026,2025, 2024, 2023, 2022, 2021, 2020, 2019, 2018, 2017, 2016, 2015, 2014,
-    2013, 2012, 2011, 2010, 2009, 2008, 2007, 2006, 2005, 2004,
+    2026, 2025, 2024, 2023, 2022, 2021, 2020, 2019, 2018, 2017, 2016, 2015,
+    2014, 2013, 2012, 2011, 2010, 2009, 2008, 2007, 2006, 2005, 2004,
   ];
 
   const length = [
@@ -258,31 +258,31 @@ const [showAllModels, setShowAllModels] = useState(false);
   // const isNonEmpty = (s: string | undefined | null): s is string =>
   //   typeof s === "string" && s.trim().length > 0;
   // 🔽 put this inside the component, under updateAllFiltersAndURL
- const commit = (next: Filters) => {
-  // Preserve existing filters that aren't being explicitly updated
-  const mergedFilters = {
-    ...currentFilters,
-    ...filters, // Include any pending local filter changes
-    ...next,    // Apply the new changes
-  };
-  
-  setFilters(mergedFilters);
-  filtersInitialized.current = true;
-  lastSentFiltersRef.current = mergedFilters;
-  
-  startTransition(() => {
-    updateAllFiltersAndURL(mergedFilters);
-  });
-};
+  const commit = (next: Filters) => {
+    // Preserve existing filters that aren't being explicitly updated
+    const mergedFilters = {
+      ...currentFilters,
+      ...filters, // Include any pending local filter changes
+      ...next, // Apply the new changes
+    };
 
-const triggerGlobalLoaders = () => {
-  flushSync(() => {
-    if (setIsLoading) setIsLoading(true);
-    if (setIsMainLoading) setIsMainLoading(true);
-    if (setIsFeaturedLoading) setIsFeaturedLoading(true);
-    if (setIsPremiumLoading) setIsPremiumLoading(true);
-  });
-};
+    setFilters(mergedFilters);
+    filtersInitialized.current = true;
+    lastSentFiltersRef.current = mergedFilters;
+
+    startTransition(() => {
+      updateAllFiltersAndURL(mergedFilters);
+    });
+  };
+
+  const triggerGlobalLoaders = () => {
+    flushSync(() => {
+      if (setIsLoading) setIsLoading(true);
+      if (setIsMainLoading) setIsMainLoading(true);
+      if (setIsFeaturedLoading) setIsFeaturedLoading(true);
+      if (setIsPremiumLoading) setIsPremiumLoading(true);
+    });
+  };
 
   // pick a human-readable text from item
 
@@ -471,7 +471,7 @@ const triggerGlobalLoaders = () => {
 
   // Modal primary button -> always search=<plus joined>
   const applyKeywordFromModal = () => {
-     const raw = modalKeyword.trim();
+    const raw = modalKeyword.trim();
     if (!raw) return;
 
     const allItems = [...baseKeywords, ...keywordSuggestions];
@@ -529,27 +529,30 @@ const triggerGlobalLoaders = () => {
     return () => clearTimeout(t);
   }, [locationInput, showSuggestions]);
 
- // 🔧 FIXED hydrateLocation function
+  // 🔧 FIXED hydrateLocation function
   const hydrateLocation = (next: Filters): Filters => {
-  const out: Filters = { ...next };
+    const out: Filters = { ...next };
 
-  for (const key of ["state", "region", "suburb", "pincode"] as const) {
-    if (typeof out[key] === "string" && !out[key]?.trim()) delete out[key];
-  }
+    for (const key of ["state", "region", "suburb", "pincode"] as const) {
+      if (typeof out[key] === "string" && !out[key]?.trim()) delete out[key];
+    }
 
-  // ⛔ DO NOT rehydrate if user manually cleared
-  if (!out.region && selectedRegionName && !regionManuallyClearedRef.current) {
-    out.region = selectedRegionName;
-  }
+    // ⛔ DO NOT rehydrate if user manually cleared
+    if (
+      !out.region &&
+      selectedRegionName &&
+      !regionManuallyClearedRef.current
+    ) {
+      out.region = selectedRegionName;
+    }
 
-  if (suburbManuallyClearedRef.current) {
-    delete out.suburb;
-    delete out.pincode;
+    if (suburbManuallyClearedRef.current) {
+      delete out.suburb;
+      delete out.pincode;
+      return out;
+    }
     return out;
-  }
-  return out;
-};
-
+  };
 
   const clearKeyword = () => {
     const next: Filters = {
@@ -573,22 +576,20 @@ const triggerGlobalLoaders = () => {
       const res = await fetchProductList();
       if (res?.data) {
         setCategories(res.data.all_categories || []);
-         setStates(res.data.states || []);
+        setStates(res.data.states || []);
       }
     };
     loadFilters();
   }, []);
 
-
   useEffect(() => {
-  const load = async () => {
-    const list = await fetchMakeDetails();
-    setMakes(list);   // includes models[]
-    setModelOpen(true);
-    
-  };
-  load();
-}, []);
+    const load = async () => {
+      const list = await fetchMakeDetails();
+      setMakes(list); // includes models[]
+      setModelOpen(true);
+    };
+    load();
+  }, []);
 
   type UnknownRec = Record<string, unknown>;
 
@@ -750,19 +751,17 @@ const triggerGlobalLoaders = () => {
     currentFilters.condition,
   ]);
 
- 
   // correct 3
- useEffect(() => {
-  if (!selectedMake || makes.length === 0) {
-    setModel([]);
-    return;
-  }
+  useEffect(() => {
+    if (!selectedMake || makes.length === 0) {
+      setModel([]);
+      return;
+    }
 
-  const make = makes.find((m) => m.slug === selectedMake);
-  setModel(make?.models || []);
-  setModelOpen(true);
- }, [selectedMake, makes]);
-
+    const make = makes.find((m) => m.slug === selectedMake);
+    setModel(make?.models || []);
+    setModelOpen(true);
+  }, [selectedMake, makes]);
 
   const [locationSuggestions, setLocationSuggestions] = useState<
     LocationSuggestion[]
@@ -902,64 +901,60 @@ const triggerGlobalLoaders = () => {
     currentFilters.search,
   ]);
 
- const resetStateFilters = () => {
- 
-  // UI
-  setSelectedState(null);
-  setSelectedStateName(null);
-  setSelectedRegion("");
-  setSelectedRegionName(null);
-  setSelectedSuburbName(null);
-  setSelectedpincode(null);
-  setFilteredSuburbs([]);
-  setLocationInput("");
+  const resetStateFilters = () => {
+    // UI
+    setSelectedState(null);
+    setSelectedStateName(null);
+    setSelectedRegion("");
+    setSelectedRegionName(null);
+    setSelectedSuburbName(null);
+    setSelectedpincode(null);
+    setFilteredSuburbs([]);
+    setLocationInput("");
 
-  // Filters
-  const updatedFilters: Filters = {
-    ...currentFilters,
-    state: undefined,
-    region: undefined,
-    suburb: undefined,
-    pincode: undefined,
-    location: null,
+    // Filters
+    const updatedFilters: Filters = {
+      ...currentFilters,
+      state: undefined,
+      region: undefined,
+      suburb: undefined,
+      pincode: undefined,
+      location: null,
+    };
+
+    setFilters(updatedFilters);
+    filtersInitialized.current = true;
+
+    startTransition(() => {
+      updateAllFiltersAndURL(updatedFilters);
+    });
   };
+  const regionManuallyClearedRef = useRef(false);
+  const resetRegionFilters = () => {
+    regionManuallyClearedRef.current = true; // 👈 IMPORTANT
 
-  setFilters(updatedFilters);
-  filtersInitialized.current = true;
+    // UI
+    setSelectedRegion("");
+    setSelectedRegionName(null);
+    setSelectedSuburbName(null);
+    setSelectedpincode(null);
+    setFilteredSuburbs([]);
 
-  startTransition(() => {
-    updateAllFiltersAndURL(updatedFilters);
-  });
-};
-const regionManuallyClearedRef = useRef(false);
- const resetRegionFilters = () => {
-  regionManuallyClearedRef.current = true; // 👈 IMPORTANT
+    const updatedFilters: Filters = {
+      ...currentFilters,
+    };
 
-  // UI
-  setSelectedRegion("");
-  setSelectedRegionName(null);
-  setSelectedSuburbName(null);
-  setSelectedpincode(null);
-  setFilteredSuburbs([]);
+    delete updatedFilters.region;
+    delete updatedFilters.suburb;
+    delete updatedFilters.pincode;
 
-  const updatedFilters: Filters = {
-    ...currentFilters,
+    setFilters(updatedFilters);
+    filtersInitialized.current = true;
+
+    startTransition(() => {
+      updateAllFiltersAndURL(updatedFilters);
+    });
   };
-
-  delete updatedFilters.region;
-  delete updatedFilters.suburb;
-  delete updatedFilters.pincode;
-
-  setFilters(updatedFilters);
-  filtersInitialized.current = true;
-
-  startTransition(() => {
-    updateAllFiltersAndURL(updatedFilters);
-  });
-};
-
-
-
 
   const formatted = (s: string) =>
     s
@@ -973,37 +968,34 @@ const regionManuallyClearedRef = useRef(false);
       .replace(/\s{3,}/g, "  ") // collapse 3+ spaces -> 2
       .trim()
       .replace(/\b\w/g, (char) => char.toUpperCase());
-const suburbManuallyClearedRef = useRef(false);
+  const suburbManuallyClearedRef = useRef(false);
 
-   const resetSuburbFilters = () => {
-  suburbManuallyClearedRef.current = true; // 👈 VERY IMPORTANT
+  const resetSuburbFilters = () => {
+    suburbManuallyClearedRef.current = true; // 👈 VERY IMPORTANT
 
-  setSelectedSuburbName(null);
-  setSelectedpincode(null);
-  setLocationInput("");
+    setSelectedSuburbName(null);
+    setSelectedpincode(null);
+    setLocationInput("");
 
-  const updatedFilters: Filters = {
-    ...currentFilters,
+    const updatedFilters: Filters = {
+      ...currentFilters,
+    };
+
+    delete updatedFilters.suburb;
+    delete updatedFilters.pincode;
+
+    setFilters(updatedFilters);
+    filtersInitialized.current = true;
+
+    startTransition(() => {
+      updateAllFiltersAndURL(updatedFilters);
+    });
   };
-
-  delete updatedFilters.suburb;
-  delete updatedFilters.pincode;
-
-  setFilters(updatedFilters);
-  filtersInitialized.current = true;
-
-  startTransition(() => {
-    updateAllFiltersAndURL(updatedFilters);
-  });
-};
-
-
-
 
   const handleSearchClick = () => {
     // Remove resetSuburbFilters call here as it clears the selections
     // resetSuburbFilters();
-triggerGlobalLoaders();
+    triggerGlobalLoaders();
     if (!suburbClickedRef.current || !selectedSuggestion) return;
 
     const parts = selectedSuggestion.uri.split("/");
@@ -1055,10 +1047,10 @@ triggerGlobalLoaders();
     setFilters(updatedFilters);
     filtersInitialized.current = true;
 
-   suburbClickedRef.current = true;
-setTimeout(() => {
-  updateAllFiltersAndURL(updatedFilters);
- }, 100);
+    suburbClickedRef.current = true;
+    setTimeout(() => {
+      updateAllFiltersAndURL(updatedFilters);
+    }, 100);
     const shortAddr =
       selectedSuggestion?.short_address ||
       buildShortAddress(suburb, state, pincode);
@@ -1169,10 +1161,9 @@ setTimeout(() => {
         ),
         suburb: selectedSuburbName ?? currentFilters.suburb ?? filters.suburb,
         pincode: selectedpincode ?? currentFilters.pincode ?? filters.pincode,
-        make: sanitizeMake(selectedMake || filters.make || currentFilters.make),
-        model: selectedModel || filters.model || currentFilters.model,
-        category:
-          selectedCategory || filters.category || currentFilters.category,
+        make: selectedMake ?? filters.make,
+        model: selectedModel ?? filters.model,
+        category: selectedCategory ?? filters.category,
       };
 
       const updated = buildUpdatedFilters(base, { radius_kms: radiusKms });
@@ -1300,18 +1291,17 @@ setTimeout(() => {
   }, [currentFilters.category, selectedCategory, categories]);
 
   // adaa
- 
-// 👇 Add this inside your component
-useEffect(() => {
-  if (currentFilters?.acustom_fromyears) {
-    setYearFrom(Number(currentFilters.acustom_fromyears));
-    setYearTo(Number(currentFilters.acustom_toyears));
-  } else {
-    setYearFrom(null);
-    setYearTo(null);
-  }
-}, [currentFilters?.acustom_fromyears, currentFilters?.acustom_toyears]);
 
+  // 👇 Add this inside your component
+  useEffect(() => {
+    if (currentFilters?.acustom_fromyears) {
+      setYearFrom(Number(currentFilters.acustom_fromyears));
+      setYearTo(Number(currentFilters.acustom_toyears));
+    } else {
+      setYearFrom(null);
+      setYearTo(null);
+    }
+  }, [currentFilters?.acustom_fromyears, currentFilters?.acustom_toyears]);
 
   useEffect(() => {
     if (
@@ -1488,7 +1478,7 @@ useEffect(() => {
     !!slug && makes.some((m) => m.slug === slug);
   const isValidModelSlug = (slug: string | null | undefined): slug is string =>
     !!slug && isNaN(Number(slug)) && model.some((m) => m.slug === slug);
- 
+
   useEffect(() => {
     mountedRef.current = true;
   }, []);
@@ -1500,52 +1490,33 @@ useEffect(() => {
   // 🔁 replace this whole function
   const updateAllFiltersAndURL = (override?: Filters) => {
     const DEFAULT_RADIUS = 50;
- 
+
     const nextRaw: Filters = override ?? filters;
-    // const next: Filters = {
-    //   ...clean(hydrateLocation(normalizeFilters(nextRaw))),
-    //   page: 1, // ← Add this line to reset page
-    // };
-const cleaned: Filters = clean(hydrateLocation(normalizeFilters(nextRaw)));
-
-// 🔥 HARD DELETE EMPTY / CLEARED FILTERS
-Object.keys(cleaned).forEach((key) => {
-  const k = key as keyof Filters;
-  if (
-    cleaned[k] === undefined ||
-    cleaned[k] === null ||
-    cleaned[k] === ""
-  ) {
-    delete cleaned[k];
-  }
-});
-
-const next: Filters = {
-  ...cleaned,
-  page: 1,
-};
-
+    const next: Filters = {
+      ...clean(hydrateLocation(normalizeFilters(nextRaw))),
+      page: 1, // ← Add this line to reset page
+    };
 
     next.make = sanitizeMake(next.make); // belt & suspenders
-   // ✅ safer location preservation logic
-if (next.state) {
-  // only delete region/suburb if they're explicitly empty strings
-  if (next.region === "" || next.region === undefined) delete next.region;
-  if (next.suburb === "" || next.suburb === undefined) delete next.suburb;
-  if (next.pincode === "" || next.pincode === undefined) delete next.pincode;
-} else {
-  // if no state, clear all location data
-  delete next.state;
-  delete next.region;
-  delete next.suburb;
-  delete next.pincode;
-}
-
+    // ✅ safer location preservation logic
+    if (next.state) {
+      // only delete region/suburb if they're explicitly empty strings
+      if (next.region === "" || next.region === undefined) delete next.region;
+      if (next.suburb === "" || next.suburb === undefined) delete next.suburb;
+      if (next.pincode === "" || next.pincode === undefined)
+        delete next.pincode;
+    } else {
+      // if no state, clear all location data
+      delete next.state;
+      delete next.region;
+      delete next.suburb;
+      delete next.pincode;
+    }
 
     setFilters((prev) => (filtersEqual(prev, next) ? (prev as Filters) : next));
     filtersInitialized.current = true;
     if (typeof next.radius_kms !== "number") next.radius_kms = DEFAULT_RADIUS;
- 
+
     // 2) notify parent only if changed
     // if (!filtersEqual(lastSentFiltersRef.current, next)) {
     //   lastSentFiltersRef.current = next;
@@ -1555,10 +1526,10 @@ if (next.state) {
     // 3) build URL once0000000000000000
     const slugPath = buildSlugFromFilters(next);
     const query = new URLSearchParams();
-   
+
     if (next.radius_kms && next.radius_kms !== DEFAULT_RADIUS)
       query.set("radius_kms", String(next.radius_kms));
-  
+
     const safeSlugPath = slugPath.endsWith("/") ? slugPath : `${slugPath}/`;
     const finalURL = query.toString() ? `${slugPath}?${query}` : safeSlugPath;
     if (lastPushedURLRef.current !== finalURL) {
@@ -1572,31 +1543,25 @@ if (next.state) {
 
   const keepModelOpenRef = useRef(false);
 
-useEffect(() => {
-  if (keepModelOpenRef.current) {
-    setModelOpen(true);
-  }
-}, [model, filters]);
+  useEffect(() => {
+    if (keepModelOpenRef.current) {
+      setModelOpen(true);
+    }
+  }, [model, filters]);
 
   // ✅ Update handleModelSelect with valid check
   const handleModelSelect = (mod: Model) => {
-    
-     keepModelOpenRef.current = false;
+    keepModelOpenRef.current = false;
     const safeMake = isValidMakeSlug(selectedMake) ? selectedMake : undefined;
     const safeModel = isValidModelSlug(mod.slug) ? mod.slug : undefined;
 
     setSelectedModel(mod.slug);
     setSelectedModelName(mod.name);
-triggerGlobalLoaders();
+    triggerGlobalLoaders();
     const updatedFilters: Filters = {
       ...currentFilters,
       make: safeMake,
       model: safeModel,
-      category: selectedCategory || currentFilters.category,
-      state: selectedStateName || currentFilters.state,
-      region: selectedRegionName || currentFilters.region,
-      suburb: selectedSuburbName || currentFilters.suburb,
-      pincode: selectedpincode || currentFilters.pincode,
     };
 
     setFilters(updatedFilters);
@@ -1619,7 +1584,7 @@ triggerGlobalLoaders();
   // useEffect(() => setMounted(true), []);
 
   const resetCategoryFilter = () => {
-     setSelectedCategory(null);
+    setSelectedCategory(null);
     setSelectedCategoryName(null);
 
     const updatedFilters: Filters = {
@@ -1793,8 +1758,6 @@ triggerGlobalLoaders();
   return (
     <>
       <div className="filter-card mobile-search">
-        
-        
         {/* Category Accordion */}
         <div className="cs-full_width_section">
           <div
@@ -1802,20 +1765,24 @@ triggerGlobalLoaders();
             onClick={() => toggle(setCategoryOpen)}
           >
             <h5 className="cfs-filter-label">Category</h5>
-            <BiChevronDown  style={{
+            <BiChevronDown
+              style={{
                 cursor: "pointer",
-               }}  />
+              }}
+            />
           </div>
 
           {/* ✅ Selected Category Chip */}
           {selectedCategoryName && (
             <div className="filter-chip">
               <span>{selectedCategoryName}</span>
-              <span className="filter-chip-close" 
-              onClick={() => {
+              <span
+                className="filter-chip-close"
+                onClick={() => {
                   triggerGlobalLoaders();
-                  resetCategoryFilter()
-              }}>
+                  resetCategoryFilter();
+                }}
+              >
                 ×
               </span>
             </div>
@@ -1890,14 +1857,12 @@ triggerGlobalLoaders();
               {!selectedRegionName && !selectedSuburbName && (
                 <div style={iconRowStyle}>
                   <span
-
                     className="filter-chip-close"
-                  onClick={() => {
-                    triggerGlobalLoaders();
-                    resetStateFilters()
-                    
-               }}>
-                  
+                    onClick={() => {
+                      triggerGlobalLoaders();
+                      resetStateFilters();
+                    }}
+                  >
                     ×
                   </span>
                   {/* This arrow toggles the REGION panel */}
@@ -1975,12 +1940,11 @@ triggerGlobalLoaders();
               {!selectedSuburbName && (
                 <div style={iconRowStyle}>
                   <span
- 
                     className="filter-chip-close"
-                       onClick={() => {
-                         triggerGlobalLoaders();
-                   resetRegionFilters()
-              }}
+                    onClick={() => {
+                      triggerGlobalLoaders();
+                      resetRegionFilters();
+                    }}
                   >
                     ×
                   </span>
@@ -2000,11 +1964,13 @@ triggerGlobalLoaders();
           {selectedSuburbName && (
             <div className="filter-chip" style={accordionSubStyle(true)}>
               <span style={{ flexGrow: 1 }}>{selectedSuburbName}</span>
-              <span  className="filter-chip-close"   
-               onClick={() => {
-                 triggerGlobalLoaders();
-                 resetSuburbFilters()
-              }}>
+              <span
+                className="filter-chip-close"
+                onClick={() => {
+                  triggerGlobalLoaders();
+                  resetSuburbFilters();
+                }}
+              >
                 ×
               </span>
             </div>
@@ -2260,11 +2226,14 @@ triggerGlobalLoaders();
           {selectedSuburbName && selectedStateName && selectedpincode && (
             <div className="filter-chip">
               {/* {locationInput} */}
-               {formatLocationInput(locationInput)}
-              <span className="filter-chip-close"  onClick={() => {
-                triggerGlobalLoaders();
-                resetSuburbFilters()
-              }} >
+              {formatLocationInput(locationInput)}
+              <span
+                className="filter-chip-close"
+                onClick={() => {
+                  triggerGlobalLoaders();
+                  resetSuburbFilters();
+                }}
+              >
                 ×
               </span>
             </div>
@@ -2286,14 +2255,16 @@ triggerGlobalLoaders();
           {selectedMakeName && (
             <div className="filter-chip">
               <span>{selectedMakeName}</span>
-              <span className="filter-chip-close"     onClick={() => {
+              <span
+                className="filter-chip-close"
+                onClick={() => {
                   triggerGlobalLoaders();
-                  resetMakeFilters()
-              }}>
+                  resetMakeFilters();
+                }}
+              >
                 ×
               </span>
             </div>
-
           )}
           {makeOpen && (
             <div className="filter-accordion-items">
@@ -2310,16 +2281,16 @@ triggerGlobalLoaders();
                       selectedMake === make.slug ? "selected" : ""
                     }`}
                     onClick={() => {
-                       // ✅ Reset model state
-                       triggerGlobalLoaders();
+                      // ✅ Reset model state
+                      triggerGlobalLoaders();
                       setSelectedModel(null);
                       setSelectedModelName(null);
 
                       // ✅ Force update make
                       setSelectedMake(make.slug);
                       setSelectedMakeName(make.name);
-setModel(make.models || []);
-  keepModelOpenRef.current = true;
+                      setModel(make.models || []);
+                      keepModelOpenRef.current = true;
 
                       // ✅ Immediately oxxxxxxxx`pen model dropdown
                       setModelOpen(true);
@@ -2343,7 +2314,7 @@ setModel(make.models || []);
                       });
                     }}
                   >
-                    {make.name} 
+                    {make.name}
                   </div>
                 ))}
 
@@ -2365,17 +2336,18 @@ setModel(make.models || []);
             </div>
           )}
         </div>
-        {selectedMake &&  selectedMakeName && (
+        {selectedMake && selectedMakeName && (
           <div className="cs-full_width_section">
             <div
               className="filter-accordion"
               onClick={() => toggle(setModelOpen)}
             >
               <h5 className="cfs-filter-label">Model</h5>
-              <BiChevronDown  style={{
-                cursor: "pointer",
-                 
-              }} />
+              <BiChevronDown
+                style={{
+                  cursor: "pointer",
+                }}
+              />
             </div>
             {selectedModelName && (
               <div className="filter-chip">
@@ -2383,7 +2355,6 @@ setModel(make.models || []);
                 <span
                   className="filter-chip-close"
                   onClick={() => {
-                    
                     setSelectedModel(null);
                     setSelectedModelName(null);
                     const updatedFilters: Filters = {
@@ -2420,38 +2391,36 @@ setModel(make.models || []);
               </div>
             )}
 
-          {modelOpen && (
-  <div className="filter-accordion-items">
+            {modelOpen && (
+              <div className="filter-accordion-items">
+                {(showAllModels ? model : model.slice(0, 5)).map((mod) => (
+                  <div
+                    key={mod.slug}
+                    className={`filter-accordion-item ${
+                      selectedModel === mod.slug ? "selected" : ""
+                    }`}
+                    onClick={() => handleModelSelect(mod)}
+                  >
+                    {mod.name}
+                  </div>
+                ))}
 
-    {(showAllModels ? model : model.slice(0, 5)).map((mod) => (
-      <div
-        key={mod.slug}
-        className={`filter-accordion-item ${
-          selectedModel === mod.slug ? "selected" : ""
-        }`}
-        onClick={() => handleModelSelect(mod)}
-      >
-        {mod.name}
-      </div>
-    ))}
-
-    {model.length > 5 && (
-      <div
-        className="show-more-less"
-        style={{
-          marginTop: "8px",
-          cursor: "pointer",
-          color: "#0070f3",
-          fontWeight: "500"
-        }}
-        onClick={() => setShowAllModels(!showAllModels)}
-      >
-        {showAllModels ? "Show Less" : "Show More"}
-      </div>
-    )}
-  </div>
-)}
-
+                {model.length > 5 && (
+                  <div
+                    className="show-more-less"
+                    style={{
+                      marginTop: "8px",
+                      cursor: "pointer",
+                      color: "#0070f3",
+                      fontWeight: "500",
+                    }}
+                    onClick={() => setShowAllModels(!showAllModels)}
+                  >
+                    {showAllModels ? "Show Less" : "Show More"}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
 
@@ -2514,6 +2483,8 @@ setModel(make.models || []);
               <span
                 className="filter-chip-close"
                 onClick={() => {
+                  triggerGlobalLoaders();
+
                   setAtmFrom(null);
                   setAtmTo(null);
 
@@ -2546,8 +2517,8 @@ setModel(make.models || []);
                 className="cfs-select-input"
                 value={minPrice?.toString() || ""}
                 onChange={(e) => {
-                   const val = e.target.value ? parseInt(e.target.value) : null;
-                     triggerGlobalLoaders();
+                  const val = e.target.value ? parseInt(e.target.value) : null;
+                  triggerGlobalLoaders();
                   setMinPrice(val);
                   const updated: Filters = {
                     ...currentFilters,
@@ -2572,8 +2543,8 @@ setModel(make.models || []);
                 className="cfs-select-input"
                 value={maxPrice?.toString() || ""}
                 onChange={(e) => {
-                   const val = e.target.value ? parseInt(e.target.value) : null;
-                   triggerGlobalLoaders();
+                  const val = e.target.value ? parseInt(e.target.value) : null;
+                  triggerGlobalLoaders();
                   setMaxPrice(val);
                   const updated: Filters = {
                     ...currentFilters,
@@ -2619,7 +2590,7 @@ setModel(make.models || []);
             </div>
           )}
         </div>
-       
+
         {/* Condition Accordion */}
         <div className="cs-full_width_section">
           <div
@@ -2627,9 +2598,11 @@ setModel(make.models || []);
             onClick={() => toggle(setConditionOpen)}
           >
             <h5 className="cfs-filter-label"> Condition</h5>
-            <BiChevronDown  style={{
+            <BiChevronDown
+              style={{
                 cursor: "pointer",
-               }}   />
+              }}
+            />
           </div>
           {selectedConditionName && (
             <div className="filter-chip">
@@ -2677,8 +2650,8 @@ setModel(make.models || []);
                 className="cfs-select-input"
                 value={sleepFrom?.toString() || ""}
                 onChange={(e) => {
-                   const val = e.target.value ? parseInt(e.target.value) : null;
-                   triggerGlobalLoaders();
+                  const val = e.target.value ? parseInt(e.target.value) : null;
+                  triggerGlobalLoaders();
                   setSleepFrom(val);
                   commit({
                     ...currentFilters,
@@ -2702,8 +2675,8 @@ setModel(make.models || []);
                 className="cfs-select-input"
                 value={sleepTo?.toString() || ""}
                 onChange={(e) => {
-                   const val = e.target.value ? parseInt(e.target.value) : null;
-                   triggerGlobalLoaders();
+                  const val = e.target.value ? parseInt(e.target.value) : null;
+                  triggerGlobalLoaders();
                   setSleepTo(val);
                   commit({
                     ...currentFilters,
@@ -2733,6 +2706,8 @@ setModel(make.models || []);
               <span
                 className="filter-chip-close"
                 onClick={() => {
+                  triggerGlobalLoaders();
+
                   setSleepFrom(null);
                   setSleepTo(null);
                   commit({
@@ -2748,72 +2723,71 @@ setModel(make.models || []);
           )}
         </div>
 
-      
         {/* Year Range */}
-    
- <div className="cs-full_width_section">
-  {/* Accordion Header */}
-  <div className="filter-accordion" onClick={() => toggle(setYearOpen)}>
-    <h5 className="cfs-filter-label">Year</h5>
-    <BiChevronDown  style={{
+
+        <div className="cs-full_width_section">
+          {/* Accordion Header */}
+          <div className="filter-accordion" onClick={() => toggle(setYearOpen)}>
+            <h5 className="cfs-filter-label">Year</h5>
+            <BiChevronDown
+              style={{
                 cursor: "pointer",
-                 
-              }} />
-  </div>
+              }}
+            />
+          </div>
 
-  {/* Selected Year Chip */}
-  {yearFrom && yearTo && (
-    <div className="filter-chip">
-      <span>{yearFrom}</span>
-      <span
-        className="filter-chip-close"
-        onClick={() => {
-          setYearFrom(null);
-          setYearTo(null);
-          commit({
-            ...currentFilters,
-            acustom_fromyears: undefined,
-            acustom_toyears: undefined,
-          });
-        }}
-      >
-        ×
-      </span>
-    </div>
-  )}
+          {/* Selected Year Chip */}
+          {yearFrom && yearTo && (
+            <div className="filter-chip">
+              <span>{yearFrom}</span>
+              <span
+                className="filter-chip-close"
+                onClick={() => {
+                  setYearFrom(null);
+                  setYearTo(null);
+                  commit({
+                    ...currentFilters,
+                    acustom_fromyears: undefined,
+                    acustom_toyears: undefined,
+                  });
+                }}
+              >
+                ×
+              </span>
+            </div>
+          )}
 
-  {/* Dropdown Items */}
-  {yearOpen && (
-    <div className="filter-accordion-items">
-      {years.map((yearValue, index) => (
-        <div
-          key={index}
-          className={`filter-accordion-item ${
-            yearFrom === yearValue ? "selected" : ""
-          }`}
-          onClick={() => {
-            triggerGlobalLoaders();
-            const already = yearFrom === yearValue;
-            const selectedValue = already ? null : yearValue;
+          {/* Dropdown Items */}
+          {yearOpen && (
+            <div className="filter-accordion-items">
+              {years.map((yearValue, index) => (
+                <div
+                  key={index}
+                  className={`filter-accordion-item ${
+                    yearFrom === yearValue ? "selected" : ""
+                  }`}
+                  onClick={() => {
+                    triggerGlobalLoaders();
+                    const already = yearFrom === yearValue;
+                    const selectedValue = already ? null : yearValue;
 
-            setYearFrom(selectedValue);
-            setYearTo(selectedValue);
-            setYearOpen(false);
+                    setYearFrom(selectedValue);
+                    setYearTo(selectedValue);
+                    setYearOpen(false);
 
-            commit({
-              ...currentFilters,
-              acustom_fromyears: selectedValue ?? undefined,
-              acustom_toyears: selectedValue ?? undefined,
-            });
-          }}
-        >
-          {yearValue}
+                    commit({
+                      ...currentFilters,
+                      acustom_fromyears: selectedValue ?? undefined,
+                      acustom_toyears: selectedValue ?? undefined,
+                    });
+                  }}
+                >
+                  {yearValue}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
-      ))}
-    </div>
-  )}
-</div>
-
 
         {/* Length Range */}
         <div className="cs-full_width_section">
@@ -2825,7 +2799,7 @@ setModel(make.models || []);
                 className="cfs-select-input"
                 value={lengthFrom || ""}
                 onChange={(e) => {
-                   const val = e.target.value ? parseInt(e.target.value) : null;
+                  const val = e.target.value ? parseInt(e.target.value) : null;
                   setLengthFrom(val);
                   commit({
                     ...currentFilters,
@@ -2849,7 +2823,7 @@ setModel(make.models || []);
                 className="cfs-select-input"
                 value={lengthTo?.toString() || ""}
                 onChange={(e) => {
-                   const val = e.target.value ? parseInt(e.target.value) : null;
+                  const val = e.target.value ? parseInt(e.target.value) : null;
                   setLengthTo(val);
                   commit({
                     ...currentFilters,
@@ -2879,7 +2853,6 @@ setModel(make.models || []);
               <span
                 className="filter-chip-close"
                 onClick={() => {
-                  
                   setLengthFrom(null);
                   setLengthTo(null);
                   commit({
@@ -2903,7 +2876,7 @@ setModel(make.models || []);
             placeholder="Click to choose / type"
             value={toHumanFromQuery(keywordInput)} // ⬅️ show nicely
             onClick={() => {
-               pickedSourceRef.current = null;
+              pickedSourceRef.current = null;
               setModalKeyword(""); // always empty on open
               setKeywordSuggestions([]); // clear list
               setBaseKeywords([]); // optional
@@ -2934,7 +2907,6 @@ setModel(make.models || []);
           )}
         </div>
         {/* Reset Button */}
-       
 
         {/* Modal */}
 
@@ -3006,7 +2978,7 @@ setModel(make.models || []);
                   type="button"
                   className="cfs-btn btn"
                   onClick={() => {
-                                        triggerGlobalLoaders();
+                    triggerGlobalLoaders();
 
                     if (!selectedMakeTemp) return;
 
@@ -3331,7 +3303,6 @@ setModel(make.models || []);
           </div>
         )}
       </div>
-       
     </>
   );
 };
