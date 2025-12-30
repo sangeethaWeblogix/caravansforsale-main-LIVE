@@ -73,7 +73,7 @@
  }
  interface Props {
    data: Product[];
-//  pageTitle: string; // Add pageTitle prop
+  pageTitle: string; // Add pageTitle prop
    metaTitle: string; // Add metaTitle prop
    metaDescription: string; // Add metaDescription prop
    isPremiumLoading: boolean; // Add isMainLoading prop
@@ -81,7 +81,7 @@
  
  export default function ExculisiveContent({
    data,
-//  pageTitle,
+pageTitle,
    metaTitle,
    metaDescription,
    isPremiumLoading,
@@ -200,8 +200,7 @@
            <div className="row align-items-center">
              <div className="col-lg-8">
                <h1 className="show_count">
-                 {/* <strong>{pageTitle}</strong> */}
- <strong>0 Caravans for sale Australia</strong> 
+                 <strong>{pageTitle}</strong>
  
                </h1>  
              </div>

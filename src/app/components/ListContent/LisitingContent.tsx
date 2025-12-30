@@ -119,6 +119,8 @@ export default function ListingContent({
   const [loadedAll, setLoadedAll] = useState<{ [key: string]: boolean }>({});
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [isOrderbyLoading, setIsOrderbyLoading] = useState(false);
+
   console.log(
     "data-main",
     fetauredProducts,
@@ -428,6 +430,11 @@ const checkImage = (url: string): Promise<boolean> => {
   //   }
   // }, [searchParams]); // 👈 NOT empty dependency
   const orderby = searchParams.get("orderby") ?? "featured";
+useEffect(() => {
+  if (products && products.length > 0) {
+    setIsOrderbyLoading(false);
+  }
+}, [products]);
 
   return (
     <>
@@ -472,6 +479,8 @@ const checkImage = (url: string): Promise<boolean> => {
                       value={orderby}
                      onChange={(e) => {
   const value = e.target.value;
+    setIsOrderbyLoading(true);
+
   const params = new URLSearchParams(searchParams.toString());
 
   value === "featured"
@@ -507,7 +516,8 @@ const checkImage = (url: string): Promise<boolean> => {
         <div className="dealers-section product-type">
           <div className="other_items">
             <div className="related-products">
-              {mergedProducts.length === 0 ? (
+              
+              {mergedProducts.length === 0  || isOrderbyLoading ? (
                 <Skelton count={6} />
               ) : (
                 <div className="row g-3">
