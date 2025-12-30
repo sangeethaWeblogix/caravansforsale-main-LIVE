@@ -2743,6 +2743,8 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
               <span
                 className="filter-chip-close"
                 onClick={() => {
+                                    triggerGlobalLoaders();
+
                   setYearFrom(null);
                   setYearTo(null);
                   commit({
@@ -2800,6 +2802,8 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                 value={lengthFrom || ""}
                 onChange={(e) => {
                   const val = e.target.value ? parseInt(e.target.value) : null;
+                                    triggerGlobalLoaders();
+
                   setLengthFrom(val);
                   commit({
                     ...currentFilters,
@@ -2808,6 +2812,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                   });
                 }}
               >
+
                 <option value="">Min</option>
                 {length.map((value, idx) => (
                   <option key={idx} value={value}>
@@ -2824,6 +2829,8 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                 value={lengthTo?.toString() || ""}
                 onChange={(e) => {
                   const val = e.target.value ? parseInt(e.target.value) : null;
+                                    triggerGlobalLoaders();
+
                   setLengthTo(val);
                   commit({
                     ...currentFilters,
@@ -2853,6 +2860,8 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
               <span
                 className="filter-chip-close"
                 onClick={() => {
+                                    triggerGlobalLoaders();
+
                   setLengthFrom(null);
                   setLengthTo(null);
                   commit({
