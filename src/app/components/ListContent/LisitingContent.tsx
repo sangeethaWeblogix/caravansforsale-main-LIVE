@@ -316,25 +316,22 @@ const checkImage = (url: string): Promise<boolean> => {
     (p) => !premiumIds.has(String(p.id))
   );
 
-  // 2️⃣ Read orderby DIRECTLY from URL (🔥 important)
+  // 2️⃣ Read orderby safely
   const orderbyFromUrl = searchParams.get("orderby");
 
-  // 3️⃣ STRICT shuffle rule
-  // ❌ if orderby exists → NO shuffle
-  // ❌ if products < 23 → NO shuffle
-  // ❌ if not refresh → NO shuffle
-  const allowShuffle =
-    !orderbyFromUrl &&           // 👈 orderby must NOT exist in URL
-    isRefreshRef.current &&
-    normal.length >= 23;
+  // 3️⃣ Strict shuffle rule
+  const shouldShuffle =
+    isRefreshRef.current === true &&      // only on refresh
+    normal.length >= 23 &&                // minimum count
+    !orderbyFromUrl;                      // 🔥 NO orderby at all
 
   // 4️⃣ Shuffle ONLY ONCE
-  if (allowShuffle && !hasShuffledRef.current) {
+  if (shouldShuffle && !hasShuffledRef.current) {
     normal = shuffleArray(normal);
     hasShuffledRef.current = true;
   }
 
-  // 5️⃣ Merge products
+  // 5️⃣ Merge premium + exclusive
   const finalMerged = buildMergedProducts(normal);
   setMergedProducts(finalMerged);
 
@@ -342,8 +339,9 @@ const checkImage = (url: string): Promise<boolean> => {
   products,
   preminumProducts,
   exculisiveProducts,
-  searchParams,   // 👈 IMPORTANT dependency
+  searchParams
 ]);
+
 
 
   useEffect(() => {
@@ -418,17 +416,17 @@ const checkImage = (url: string): Promise<boolean> => {
   // ✅ Randomly shuffle premium products on each page load
   // ✅ Premium products shuffle after mount
 
-  useEffect(() => {
-    const orderbyFromUrl = searchParams.get("orderby") ?? undefined;
+  // useEffect(() => {
+  //   const orderbyFromUrl = searchParams.get("orderby") ?? undefined;
 
-    // ⛔ prevent unnecessary state update
-    if (orderbyFromUrl !== currentFilters.orderby) {
-      onFilterChange({
-        ...currentFilters,
-        orderby: orderbyFromUrl,
-      });
-    }
-  }, [searchParams]); // 👈 NOT empty dependency
+  //   // ⛔ prevent unnecessary state update
+  //   if (orderbyFromUrl !== currentFilters.orderby) {
+  //     onFilterChange({
+  //       ...currentFilters,
+  //       orderby: orderbyFromUrl,
+  //     });
+  //   }
+  // }, [searchParams]); // 👈 NOT empty dependency
   const orderby = searchParams.get("orderby") ?? "featured";
 
   return (
