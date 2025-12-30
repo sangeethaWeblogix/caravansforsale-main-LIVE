@@ -18,9 +18,7 @@
      res?.seo?.metatitle?.trim() ||
      "Caravans for Sale in Australia - Find Exclusive Deals";
    const title = rawTitle.trim();
-   const description = (
-     res?.seo?.metadescription || "Browse all available caravans."
-   ).trim();
+   const description =  "Browse new & used caravans for sale across Australia. Compare off-road, hybrid, pop-top & luxury models by price, size, weight and sleeping capacity."
   
 const rawIndex = String(res?.seo?.index ?? "")
   .toLowerCase()
