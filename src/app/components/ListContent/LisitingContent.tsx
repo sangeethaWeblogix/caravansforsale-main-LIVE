@@ -150,6 +150,8 @@ export default function ListingContent({
 
   const { form, errors, touched, submitting, setField, onBlur, onSubmit } =
     useEnquiryForm(enquiryProduct);
+
+    const IMAGE_FORMATS = ["avif", "webp", "jpg", "jpeg", "png"];
 const checkImage = (url: string): Promise<boolean> => {
   return new Promise((resolve) => {
     const img = new Image();
@@ -159,28 +161,38 @@ const checkImage = (url: string): Promise<boolean> => {
   });
 };
 
-  const getFirstImage = (item: Product) => {
-    if (!item.sku || !item.slug) return "/images/sample3.webp";
+const getBaseImageUrl = (item: Product) => {
+  if (!item.sku || !item.slug) return null;
+  return `https://caravansforsale.imagestack.net/400x300/${item.sku}/${item.slug}`;
+};
+  const getFirstValidImage = async (item: Product): Promise<string> => {
+  const base = getBaseImageUrl(item);
+  if (!base) return "/images/sample3.webp";
 
-    return `https://caravansforsale.imagestack.net/400x300/${item.sku}/${item.slug}main1.avif`;
-  };
+  for (const ext of IMAGE_FORMATS) {
+    const url = `${base}main1.${ext}`;
+    if (await checkImage(url)) return url;
+  }
+
+  return "/images/sample3.webp";
+};
+
    const loadRemaining = async (item: Product) => {
-  if (!item.sku || !item.slug) return;
-
-  const base = `https://caravansforsale.imagestack.net/400x300/${item.sku}/${item.slug}`;
-
-  const candidates = [
-    `${base}main1.avif`,
-    ...Array.from({ length: 4 }, (_, i) => `${base}sub${i + 2}.avif`),
-  ];
+  const base = getBaseImageUrl(item);
+  if (!base) return;
 
   const validImages: string[] = [];
 
-  for (const url of candidates) {
-    if (validImages.length === 5) break;
+  for (let i = 0; i < 5; i++) {
+    const suffix = i === 0 ? "main1" : `sub${i + 1}`;
 
-    const exists = await checkImage(url);
-    if (exists) validImages.push(url);
+    for (const ext of IMAGE_FORMATS) {
+      const url = `${base}${suffix}.${ext}`;
+      if (await checkImage(url)) {
+        validImages.push(url);
+        break;
+      }
+    }
   }
 
   setLazyImages((prev) => ({
@@ -525,7 +537,13 @@ useEffect(() => {
                     const href = getHref(item);
                     const images = getProductImages(item.sku, item.slug);
                     const isPriority = index < 5;
-                    const imgs = lazyImages[item.id] || [getFirstImage(item)];
+                     const base = getBaseImageUrl(item);
+const imgs =
+  lazyImages[item.id] ||
+  (base
+    ? [`${base}main1.avif`] // jpg safe default
+    : ["/images/sample3.webp"]);
+
                     return (
                       <div className="col-lg-6 mb-0" key={index}>
                         <Link
