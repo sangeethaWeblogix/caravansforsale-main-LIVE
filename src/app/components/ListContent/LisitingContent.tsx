@@ -161,43 +161,74 @@ const checkImage = (url: string): Promise<boolean> => {
   });
 };
 
+
+const getLegacyBaseImageUrl = (item: Product) => {
+  if (!item.sku || !item.slug) return null;
+  return `https://cdn.imagestack.net/${item.sku}/${item.slug}`;
+};
+
 const getBaseImageUrl = (item: Product) => {
   if (!item.sku || !item.slug) return null;
   return `https://caravansforsale.imagestack.net/400x300/${item.sku}/${item.slug}`;
 };
-  const getFirstValidImage = async (item: Product): Promise<string> => {
-  const base = getBaseImageUrl(item);
-  if (!base) return "/images/sample3.webp";
 
-  for (const ext of IMAGE_FORMATS) {
-    const url = `${base}main1.${ext}`;
-    if (await checkImage(url)) return url;
+const getFirstValidImage = async (item: Product): Promise<string> => {
+  const base = getBaseImageUrl(item);
+  const legacyBase = getLegacyBaseImageUrl(item);
+
+  // 1️⃣ Try NEW imagestack formats
+  if (base) {
+    for (const ext of IMAGE_FORMATS) {
+      const url = `${base}main1.${ext}`;
+      if (await checkImage(url)) return url;
+    }
   }
 
+  // 2️⃣ Try LEGACY CDN jpg
+  if (legacyBase) {
+    const legacyUrl = `${legacyBase}main1.jpg`;
+    if (await checkImage(legacyUrl)) return legacyUrl;
+  }
+
+  // 3️⃣ Final fallback
   return "/images/sample3.webp";
 };
 
+
    const loadRemaining = async (item: Product) => {
   const base = getBaseImageUrl(item);
-  if (!base) return;
+  const legacyBase = getLegacyBaseImageUrl(item);
 
   const validImages: string[] = [];
 
   for (let i = 0; i < 5; i++) {
     const suffix = i === 0 ? "main1" : `sub${i + 1}`;
 
-    for (const ext of IMAGE_FORMATS) {
-      const url = `${base}${suffix}.${ext}`;
-      if (await checkImage(url)) {
-        validImages.push(url);
-        break;
+    // 1️⃣ New imagestack
+    if (base) {
+      for (const ext of IMAGE_FORMATS) {
+        const url = `${base}${suffix}.${ext}`;
+        if (await checkImage(url)) {
+          validImages.push(url);
+          break;
+        }
+      }
+    }
+
+    // 2️⃣ Legacy fallback ONLY if nothing found
+    if (validImages.length <= i && legacyBase) {
+      const legacyUrl = `${legacyBase}${suffix}.jpg`;
+      if (await checkImage(legacyUrl)) {
+        validImages.push(legacyUrl);
       }
     }
   }
 
   setLazyImages((prev) => ({
     ...prev,
-    [item.id]: validImages,
+    [item.id]: validImages.length
+      ? validImages
+      : ["/images/sample3.webp"],
   }));
 
   setLoadedAll((prev) => ({
@@ -205,6 +236,7 @@ const getBaseImageUrl = (item: Product) => {
     [item.id]: true,
   }));
 };
+
 
 
   console.log("lazy", lazyImages);
@@ -441,6 +473,34 @@ const getBaseImageUrl = (item: Product) => {
   //     });
   //   }
   // }, [searchParams]); // 👈 NOT empty dependency
+
+
+  const [primaryImages, setPrimaryImages] = useState<Record<number, string>>({});
+useEffect(() => {
+  let cancelled = false;
+
+  const resolveImages = async () => {
+    const updates: Record<number, string> = {};
+
+    for (const item of mergedProducts) {
+      if (primaryImages[item.id]) continue;
+
+      const img = await getFirstValidImage(item);
+      updates[item.id] = img;
+    }
+
+    if (!cancelled && Object.keys(updates).length) {
+      setPrimaryImages((prev) => ({ ...prev, ...updates }));
+    }
+  };
+
+  resolveImages();
+
+  return () => {
+    cancelled = true;
+  };
+}, [mergedProducts]);
+
   const orderby = searchParams.get("orderby") ?? "featured";
 useEffect(() => {
   if (products && products.length > 0) {
@@ -537,12 +597,12 @@ useEffect(() => {
                     const href = getHref(item);
                     const images = getProductImages(item.sku, item.slug);
                     const isPriority = index < 5;
-                     const base = getBaseImageUrl(item);
-const imgs =
+ const imgs =
   lazyImages[item.id] ||
-  (base
-    ? [`${base}main1.avif`] // jpg safe default
+  (primaryImages[item.id]
+    ? [primaryImages[item.id]]
     : ["/images/sample3.webp"]);
+
 
                     return (
                       <div className="col-lg-6 mb-0" key={index}>
