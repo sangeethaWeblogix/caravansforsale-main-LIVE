@@ -150,8 +150,9 @@ export default function ListingContent({
 
   const { form, errors, touched, submitting, setField, onBlur, onSubmit } =
     useEnquiryForm(enquiryProduct);
-
-    const IMAGE_FORMATS = ["avif", "webp", "jpg", "jpeg", "png"];
+ 
+ const PRIMARY_FORMATS = ["avif", "webp"]; // ONLY these
+const LEGACY_FORMAT = "jpg";
 const checkImage = (url: string): Promise<boolean> => {
   return new Promise((resolve) => {
     const img = new Image();
@@ -172,19 +173,19 @@ const getBaseImageUrl = (item: Product) => {
   return `https://caravansforsale.imagestack.net/400x300/${item.sku}/${item.slug}`;
 };
 
-const getFirstValidImage = async (item: Product): Promise<string> => {
+ const getFirstValidImage = async (item: Product): Promise<string> => {
   const base = getBaseImageUrl(item);
   const legacyBase = getLegacyBaseImageUrl(item);
 
-  // 1️⃣ Try NEW imagestack formats
+  // 1️⃣ Primary CDN (avif / webp ONLY)
   if (base) {
-    for (const ext of IMAGE_FORMATS) {
+    for (const ext of PRIMARY_FORMATS) {
       const url = `${base}main1.${ext}`;
       if (await checkImage(url)) return url;
     }
   }
 
-  // 2️⃣ Try LEGACY CDN jpg
+  // 2️⃣ Legacy CDN (jpg ONLY)
   if (legacyBase) {
     const legacyUrl = `${legacyBase}main1.jpg`;
     if (await checkImage(legacyUrl)) return legacyUrl;
@@ -195,7 +196,8 @@ const getFirstValidImage = async (item: Product): Promise<string> => {
 };
 
 
-   const loadRemaining = async (item: Product) => {
+
+  const loadRemaining = async (item: Product) => {
   const base = getBaseImageUrl(item);
   const legacyBase = getLegacyBaseImageUrl(item);
 
@@ -203,23 +205,26 @@ const getFirstValidImage = async (item: Product): Promise<string> => {
 
   for (let i = 0; i < 5; i++) {
     const suffix = i === 0 ? "main1" : `sub${i + 1}`;
+    let found = false;
 
-    // 1️⃣ New imagestack
+    // 1️⃣ Primary CDN (avif / webp ONLY)
     if (base) {
-      for (const ext of IMAGE_FORMATS) {
+      for (const ext of PRIMARY_FORMATS) {
         const url = `${base}${suffix}.${ext}`;
         if (await checkImage(url)) {
           validImages.push(url);
+          found = true;
           break;
         }
       }
     }
 
-    // 2️⃣ Legacy fallback ONLY if nothing found
-    if (validImages.length <= i && legacyBase) {
+    // 2️⃣ Legacy CDN ONLY if primary failed
+    if (!found && legacyBase) {
       const legacyUrl = `${legacyBase}${suffix}.jpg`;
       if (await checkImage(legacyUrl)) {
         validImages.push(legacyUrl);
+        found = true;
       }
     }
   }
@@ -228,7 +233,7 @@ const getFirstValidImage = async (item: Product): Promise<string> => {
     ...prev,
     [item.id]: validImages.length
       ? validImages
-      : ["/images/sample3.webp"],
+      : "",
   }));
 
   setLoadedAll((prev) => ({
@@ -236,6 +241,7 @@ const getFirstValidImage = async (item: Product): Promise<string> => {
     [item.id]: true,
   }));
 };
+
 
 
 
