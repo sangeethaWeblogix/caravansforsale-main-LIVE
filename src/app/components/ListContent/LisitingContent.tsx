@@ -1,4 +1,4 @@
-"use client";
+ "use client";
 import Link from "next/link";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
@@ -150,9 +150,8 @@ export default function ListingContent({
 
   const { form, errors, touched, submitting, setField, onBlur, onSubmit } =
     useEnquiryForm(enquiryProduct);
- 
- const PRIMARY_FORMATS = ["avif", "webp"]; // ONLY these
-// const LEGACY_FORMAT = "jpg";
+
+    const IMAGE_FORMATS = ["avif", "webp", "jpg", "jpeg", "png"];
 const checkImage = (url: string): Promise<boolean> => {
   return new Promise((resolve) => {
     const img = new Image();
@@ -162,78 +161,43 @@ const checkImage = (url: string): Promise<boolean> => {
   });
 };
 
-
-const getLegacyBaseImageUrl = (item: Product) => {
-  if (!item.sku || !item.slug) return null;
-  return `https://cdn.imagestack.net/${item.sku}/${item.slug}`;
-};
-
 const getBaseImageUrl = (item: Product) => {
   if (!item.sku || !item.slug) return null;
   return `https://caravansforsale.imagestack.net/400x300/${item.sku}/${item.slug}`;
 };
-
- const getFirstValidImage = async (item: Product): Promise<string> => {
+  const getFirstValidImage = async (item: Product): Promise<string> => {
   const base = getBaseImageUrl(item);
-  const legacyBase = getLegacyBaseImageUrl(item);
+  if (!base) return "/images/sample3.webp";
 
-  // 1️⃣ Primary CDN (avif / webp ONLY)
-  if (base) {
-    for (const ext of PRIMARY_FORMATS) {
-      const url = `${base}main1.${ext}`;
-      if (await checkImage(url)) return url;
-    }
+  for (const ext of IMAGE_FORMATS) {
+    const url = `${base}main1.${ext}`;
+    if (await checkImage(url)) return url;
   }
 
-  // 2️⃣ Legacy CDN (jpg ONLY)
-  if (legacyBase) {
-    const legacyUrl = `${legacyBase}main1.jpg`;
-    if (await checkImage(legacyUrl)) return legacyUrl;
-  }
-
-  // 3️⃣ Final fallback
   return "/images/sample3.webp";
 };
 
-
-
-  const loadRemaining = async (item: Product) => {
+   const loadRemaining = async (item: Product) => {
   const base = getBaseImageUrl(item);
-  const legacyBase = getLegacyBaseImageUrl(item);
+  if (!base) return;
 
   const validImages: string[] = [];
 
   for (let i = 0; i < 5; i++) {
     const suffix = i === 0 ? "main1" : `sub${i + 1}`;
-    let found = false;
 
-    // 1️⃣ Primary CDN (avif / webp ONLY)
-    if (base) {
-      for (const ext of PRIMARY_FORMATS) {
-        const url = `${base}${suffix}.${ext}`;
-        if (await checkImage(url)) {
-          validImages.push(url);
-          found = true;
-          break;
-        }
-      }
-    }
-
-    // 2️⃣ Legacy CDN ONLY if primary failed
-    if (!found && legacyBase) {
-      const legacyUrl = `${legacyBase}${suffix}.jpg`;
-      if (await checkImage(legacyUrl)) {
-        validImages.push(legacyUrl);
-        found = true;
+    for (const ext of IMAGE_FORMATS) {
+      const url = `${base}${suffix}.${ext}`;
+      if (await checkImage(url)) {
+        validImages.push(url);
+        break;
       }
     }
   }
 
   setLazyImages((prev) => ({
     ...prev,
-    [item.id]: validImages.length
-      ? validImages
-      : "",
+    [item.id]: validImages,
   }));
 
   setLoadedAll((prev) => ({
@@ -241,8 +205,6 @@ const getBaseImageUrl = (item: Product) => {
     [item.id]: true,
   }));
 };
-
-
 
 
   console.log("lazy", lazyImages);
@@ -479,34 +441,6 @@ const getBaseImageUrl = (item: Product) => {
   //     });
   //   }
   // }, [searchParams]); // 👈 NOT empty dependency
-
-
-  const [primaryImages, setPrimaryImages] = useState<Record<number, string>>({});
-useEffect(() => {
-  let cancelled = false;
-
-  const resolveImages = async () => {
-    const updates: Record<number, string> = {};
-
-    for (const item of mergedProducts) {
-      if (primaryImages[item.id]) continue;
-
-      const img = await getFirstValidImage(item);
-      updates[item.id] = img;
-    }
-
-    if (!cancelled && Object.keys(updates).length) {
-      setPrimaryImages((prev) => ({ ...prev, ...updates }));
-    }
-  };
-
-  resolveImages();
-
-  return () => {
-    cancelled = true;
-  };
-}, [mergedProducts]);
-
   const orderby = searchParams.get("orderby") ?? "featured";
 useEffect(() => {
   if (products && products.length > 0) {
@@ -603,12 +537,12 @@ useEffect(() => {
                     const href = getHref(item);
                     const images = getProductImages(item.sku, item.slug);
                     const isPriority = index < 5;
- const imgs =
+                     const base = getBaseImageUrl(item);
+const imgs =
   lazyImages[item.id] ||
-  (primaryImages[item.id]
-    ? [primaryImages[item.id]]
+  (base
+    ? [`${base}main1.avif`] // jpg safe default
     : ["/images/sample3.webp"]);
-
 
                     return (
                       <div className="col-lg-6 mb-0" key={index}>
