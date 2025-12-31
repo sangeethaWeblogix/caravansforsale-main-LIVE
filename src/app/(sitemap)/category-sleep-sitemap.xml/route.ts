@@ -7,7 +7,7 @@
   export async function GET() {
     try {
       const res = await fetch(
-        "https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap/category-sleep",
+        "https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap/cat-sleep",
         { cache: "no-store" }
       );
   
