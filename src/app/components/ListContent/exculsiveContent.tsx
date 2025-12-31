@@ -40,6 +40,7 @@
    sleeps?: string;
    manufacturer?: string;
    is_exclusive?: boolean;
+   pageTitle?: string;
  }
  
  interface Pagination {

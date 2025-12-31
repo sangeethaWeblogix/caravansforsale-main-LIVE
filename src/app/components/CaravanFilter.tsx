@@ -2517,6 +2517,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                 className="cfs-select-input"
                 value={minPrice?.toString() || ""}
                 onChange={(e) => {
+                  
                   const val = e.target.value ? parseInt(e.target.value) : null;
                   triggerGlobalLoaders();
                   setMinPrice(val);
