@@ -152,7 +152,7 @@ export default function ListingContent({
     useEnquiryForm(enquiryProduct);
  
  const PRIMARY_FORMATS = ["avif", "webp"]; // ONLY these
-const LEGACY_FORMAT = "jpg";
+// const LEGACY_FORMAT = "jpg";
 const checkImage = (url: string): Promise<boolean> => {
   return new Promise((resolve) => {
     const img = new Image();
