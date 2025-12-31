@@ -31,7 +31,7 @@ export async function GET() {
     "region-sleep-sitemap.xml",
     "category-sleep-sitemap.xml",
     "state-length-sitemap.xml",
-    " region-length-sitemap.xml",
+    "region-length-sitemap.xml",
     "category-atm-sitemap.xml",
     "category-length-sitemap.xml",
   ];
