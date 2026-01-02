@@ -487,7 +487,8 @@ const { count, text } = splitCountAndTitle(pageTitle);
     <strong>{count} </strong></span>}
   <h1 className="show_count">
     <strong>{text}</strong></h1>
-</div>
+</div> 
+
 
 
             <div className="col-4 d-lg-none d-md-none">

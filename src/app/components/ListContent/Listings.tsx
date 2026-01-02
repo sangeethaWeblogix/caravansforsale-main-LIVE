@@ -919,7 +919,9 @@ const mergedFilters = mergeFiltersSafely(filtersRef.current, newFilters);
     "to_length",
     "search",
     "keyword",
-    "orderby"
+    "orderby",
+      "acustom_fromyears",
+  "acustom_toyears",
   ];
 
   const hasActiveFilters = FILTER_KEYS_TO_CHECK.some((key) => {
