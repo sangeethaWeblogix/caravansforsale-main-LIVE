@@ -64,6 +64,8 @@
     index?: string;
     canonical?: string;
     follow?: string;
+    list_page_metatitle?: string;
+    
   }
   
   export interface ApiPagination {
@@ -87,7 +89,7 @@
   
   export type ApiResponse = {
     success?: boolean;
-    title?: string;
+     list_page_title?: string;
     seo?: ApiSEO;
     pagination?: ApiPagination;
     data?: ApiData;
@@ -182,7 +184,7 @@ const res = await fetch(url, { cache: "no-store" });
     // ✅ Return all useful sections from API
     return {
       success: json.success,
-      title: json.title,
+       list_page_title: json. list_page_title,
       seo: json.seo,
       pagination: json.pagination,
       data: {

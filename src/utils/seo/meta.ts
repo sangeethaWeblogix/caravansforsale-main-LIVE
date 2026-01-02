@@ -15,7 +15,7 @@
  
    // ✅ Trim metatitle to remove unwanted spaces
    const rawTitle =
-     res?.seo?.metatitle?.trim() ||
+     res?.seo?.list_page_metatitle?.trim() ||
      "Caravans for Sale in Australia - Find Exclusive Deals";
    const title = rawTitle.trim();
    const description =  "Browse new & used caravans for sale across Australia. Compare off-road, hybrid, pop-top & luxury models by price, size, weight and sleeping capacity."

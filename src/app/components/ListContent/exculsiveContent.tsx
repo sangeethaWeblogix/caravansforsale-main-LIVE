@@ -32,7 +32,7 @@
    sku?: string;
    gallery?: string[];
    // Include additional properties that might come from API
-   title?: string;
+    list_page_title?: string;
    weight?: string;
    price?: string;
    thumbnail?: string;
