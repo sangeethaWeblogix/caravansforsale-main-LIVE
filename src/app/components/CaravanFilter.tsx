@@ -473,6 +473,7 @@ console.log(onFilterChange);
   const applyKeywordFromModal = () => {
     const raw = modalKeyword.trim();
     if (!raw) return;
+  triggerGlobalLoaders();
 
     const allItems = [...baseKeywords, ...keywordSuggestions];
     const match = allItems.find(
@@ -2906,6 +2907,8 @@ console.log(onFilterChange);
                     keyword: undefined,
                     search: undefined,
                   };
+                    triggerGlobalLoaders();
+
                   setKeywordInput("");
                   setFilters(next);
                   updateAllFiltersAndURL(next);
