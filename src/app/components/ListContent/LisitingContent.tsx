@@ -441,6 +441,7 @@ const getBaseImageUrl = (item: Product) => {
   //     });
   //   }
   // }, [searchParams]); // 👈 NOT empty dependency
+  console.log(onFilterChange, isMainLoading, getFirstValidImage)
   const orderby = searchParams.get("orderby") ?? "featured";
 useEffect(() => {
   if (products && products.length > 0) {

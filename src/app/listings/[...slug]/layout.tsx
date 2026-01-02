@@ -176,17 +176,17 @@ export async function generateMetadata({
         }
       }
     }
-    const rawIndex = (seo?.index ?? "").trim().toLowerCase(); // "", "index", "noindex"/"no-index"
-    const normIndex = rawIndex === "no-index" ? "noindex" : rawIndex;
+    // const rawIndex = (seo?.index ?? "").trim().toLowerCase(); // "", "index", "noindex"/"no-index"
+    // const normIndex = rawIndex === "no-index" ? "noindex" : rawIndex;
 
     // console.log("[SEO] api.index (raw):", seo?.index ?? "");
     // console.log("[SEO] index.normalized:", normIndex || "(empty)");
 
     // map to Next robots
-    const robots =
-      normIndex === "noindex"
-        ? { index: false, follow: false } // → <meta name="robots" content="noindex, nofollow">
-        : { index: true, follow: true }; // → <meta name="robots" content="index, follow">
+    // const robots =
+    //   normIndex === "noindex"
+    //     ? { index: false, follow: false } // → <meta name="robots" content="noindex, nofollow">
+    //     : { index: true, follow: true }; // → <meta name="robots" content="index, follow">
 
     // console.log(
     //   "[SEO] robots tag:",

@@ -227,7 +227,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     600, 800, 1000, 1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000, 3500, 4000,
     4500,
   ];
-
+console.log(onFilterChange);
   const price = [
     10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000,
     125000, 150000, 175000, 200000, 225000, 250000, 275000, 300000,
@@ -554,20 +554,20 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     return out;
   };
 
-  const clearKeyword = () => {
-    const next: Filters = {
-      ...currentFilters,
-      keyword: undefined,
-      search: undefined,
-    };
+  // const clearKeyword = () => {
+  //   const next: Filters = {
+  //     ...currentFilters,
+  //     keyword: undefined,
+  //     search: undefined,
+  //   };
 
-    setKeywordInput(""); // ← clear the field instantly
-    setFilters(next); // update local first (wins in effect)
-    filtersInitialized.current = true;
-    lastSentFiltersRef.current = next; // avoid re-send flicker
-    // onFilterChange(next); // if your parent needs it
-    updateAllFiltersAndURL(next);
-  };
+  //   setKeywordInput(""); // ← clear the field instantly
+  //   setFilters(next); // update local first (wins in effect)
+  //   filtersInitialized.current = true;
+  //   lastSentFiltersRef.current = next; // avoid re-send flicker
+  //   // onFilterChange(next); // if your parent needs it
+  //   updateAllFiltersAndURL(next);
+  // };
   const didFetchRef = useRef(false);
   useEffect(() => {
     if (didFetchRef.current) return;

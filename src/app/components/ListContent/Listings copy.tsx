@@ -231,7 +231,7 @@ export default function ListingsPage({
   const [models, setModels] = useState<MakeOption[]>(
     initialData?.data?.model_options || []
   );
-  const [pageTitle, setPageTitle] = useState(initialData?.title || " ");
+  const [pageTitle, setPageTitle] = useState(initialData?.list_page_title || " ");
   const [metaTitle, setMetaTitle] = useState(initialData?.seo?.metatitle || "");
   const [metaDescription, setMetaDescription] = useState(
     initialData?.seo?.metadescription || ""
@@ -389,7 +389,7 @@ export default function ListingsPage({
       setMakes(initialData.data.make_options || []);
       setStateOptions(initialData.data.states || []);
       setModels(initialData.data.model_options || []);
-      setPageTitle(initialData.title || "");
+      setPageTitle(initialData. list_page_title || "");
       setMetaTitle(initialData.seo?.metatitle || "");
       setMetaDescription(initialData.seo?.metadescription || "");
       if (initialData.pagination) setPagination(initialData.pagination);

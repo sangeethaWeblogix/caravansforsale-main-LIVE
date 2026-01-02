@@ -29,6 +29,7 @@ interface Product {
   slug?: string;
   description?: string;
   sku?: string;
+  list_page_title?: string;
 }
 
 interface Pagination {
