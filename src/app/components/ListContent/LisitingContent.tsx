@@ -449,6 +449,23 @@ useEffect(() => {
   }
 }, [products]);
 
+
+function splitCountAndTitle(pageTitle: string) {
+  const match = pageTitle.match(/^(\d+)\s+(.*)$/);
+
+  if (!match) {
+    return { count: null, text: pageTitle };
+  }
+
+  return {
+    count: match[1],      // "3279"
+    text: match[2],       // "Off Road Caravans for sale in Australia"
+  };
+}
+
+const { count, text } = splitCountAndTitle(pageTitle);
+
+
   return (
     <>
       <Head>
@@ -465,11 +482,14 @@ useEffect(() => {
       <div className="col-lg-6 ">
         <div className="top-filter mb-10">
           <div className="row align-items-center">
-            <div className="col-lg-8">
-              <h1 className="show_count">
-                <strong>{pageTitle}</strong>
-              </h1>
-            </div>
+           <div className="col-lg-8 show_count_wrapper ">
+  {count && <span className="show_count mb-2">
+    <strong>{count} </strong></span>}
+  <h1 className="show_count">
+    <strong>{text}</strong></h1>
+</div>
+
+
             <div className="col-4 d-lg-none d-md-none">
               <button
                 type="button"
