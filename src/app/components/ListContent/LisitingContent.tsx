@@ -483,7 +483,7 @@ const { count, text } = splitCountAndTitle(pageTitle);
         <div className="top-filter mb-10">
           <div className="row align-items-center">
            <div className="col-lg-8 show_count_wrapper ">
-  {count && <span className="show_count mb-2">
+  {count && <span className="show_count mb-2 d-inline">
     <strong>{count} </strong></span>}
   <h1 className="show_count">
     <strong>{text}</strong></h1>

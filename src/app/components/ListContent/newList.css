@@ -717,3 +717,15 @@ h1.page-title {
   height: 35px;
   color: #fff;
 }
+
+
+.show_count_wrapper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.count {
+  font-weight: 700;
+  font-size: 24px;
+}
