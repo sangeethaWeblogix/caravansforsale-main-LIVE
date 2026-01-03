@@ -1,4 +1,4 @@
- "use client";
+"use client";
 import Link from "next/link";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
@@ -151,61 +151,60 @@ export default function ListingContent({
   const { form, errors, touched, submitting, setField, onBlur, onSubmit } =
     useEnquiryForm(enquiryProduct);
 
-    const IMAGE_FORMATS = ["avif", "webp", "jpg", "jpeg", "png"];
-const checkImage = (url: string): Promise<boolean> => {
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.onload = () => resolve(true);
-    img.onerror = () => resolve(false);
-    img.src = url;
-  });
-};
+  const IMAGE_FORMATS = ["avif", "webp", "jpg", "jpeg", "png"];
+  const checkImage = (url: string): Promise<boolean> => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => resolve(true);
+      img.onerror = () => resolve(false);
+      img.src = url;
+    });
+  };
 
-const getBaseImageUrl = (item: Product) => {
-  if (!item.sku || !item.slug) return null;
-  return `https://caravansforsale.imagestack.net/400x300/${item.sku}/${item.slug}`;
-};
+  const getBaseImageUrl = (item: Product) => {
+    if (!item.sku || !item.slug) return null;
+    return `https://caravansforsale.imagestack.net/400x300/${item.sku}/${item.slug}`;
+  };
   const getFirstValidImage = async (item: Product): Promise<string> => {
-  const base = getBaseImageUrl(item);
-  if (!base) return "/images/sample3.webp";
-
-  for (const ext of IMAGE_FORMATS) {
-    const url = `${base}main1.${ext}`;
-    if (await checkImage(url)) return url;
-  }
-
-  return "/images/sample3.webp";
-};
-
-   const loadRemaining = async (item: Product) => {
-  const base = getBaseImageUrl(item);
-  if (!base) return;
-
-  const validImages: string[] = [];
-
-  for (let i = 0; i < 5; i++) {
-    const suffix = i === 0 ? "main1" : `sub${i + 1}`;
+    const base = getBaseImageUrl(item);
+    if (!base) return "/images/sample3.webp";
 
     for (const ext of IMAGE_FORMATS) {
-      const url = `${base}${suffix}.${ext}`;
-      if (await checkImage(url)) {
-        validImages.push(url);
-        break;
+      const url = `${base}main1.${ext}`;
+      if (await checkImage(url)) return url;
+    }
+
+    return "/images/sample3.webp";
+  };
+
+  const loadRemaining = async (item: Product) => {
+    const base = getBaseImageUrl(item);
+    if (!base) return;
+
+    const validImages: string[] = [];
+
+    for (let i = 0; i < 5; i++) {
+      const suffix = i === 0 ? "main1" : `sub${i + 1}`;
+
+      for (const ext of IMAGE_FORMATS) {
+        const url = `${base}${suffix}.${ext}`;
+        if (await checkImage(url)) {
+          validImages.push(url);
+          break;
+        }
       }
     }
-  }
 
-  setLazyImages((prev) => ({
-    ...prev,
-    [item.id]: validImages,
-  }));
+    setLazyImages((prev) => ({
+      ...prev,
+      [item.id]: validImages,
+    }));
 
-  setLoadedAll((prev) => ({
-    ...prev,
-    [item.id]: true,
-  }));
-};
-
+    setLoadedAll((prev) => ({
+      ...prev,
+      [item.id]: true,
+    }));
+  };
 
   console.log("lazy", lazyImages);
   // Remove all the lazy loading state and just load all images immediately
@@ -318,45 +317,35 @@ const getBaseImageUrl = (item: Product) => {
 
     return merged;
   };
- useEffect(() => {
-  if (!products || products.length === 0) return;
+  useEffect(() => {
+    if (!products || products.length === 0) return;
 
-  // 1️⃣ Remove premium from normal list
-  const premiumIds = new Set(
-    (preminumProducts || []).map((p) => String(p.id))
-  );
+    // 1️⃣ Remove premium from normal list
+    const premiumIds = new Set(
+      (preminumProducts || []).map((p) => String(p.id))
+    );
 
-  let normal = products.filter(
-    (p) => !premiumIds.has(String(p.id))
-  );
+    let normal = products.filter((p) => !premiumIds.has(String(p.id)));
 
-  // 2️⃣ Read orderby safely
-  const orderbyFromUrl = searchParams.get("orderby");
+    // 2️⃣ Read orderby safely
+    const orderbyFromUrl = searchParams.get("orderby");
 
-  // 3️⃣ Strict shuffle rule
-  const shouldShuffle =
-    isRefreshRef.current === true &&      // only on refresh
-    normal.length >= 23 &&                // minimum count
-    !orderbyFromUrl;                      // 🔥 NO orderby at all
+    // 3️⃣ Strict shuffle rule
+    const shouldShuffle =
+      isRefreshRef.current === true && // only on refresh
+      normal.length >= 23 && // minimum count
+      !orderbyFromUrl; // 🔥 NO orderby at all
 
-  // 4️⃣ Shuffle ONLY ONCE
-  if (shouldShuffle && !hasShuffledRef.current) {
-    normal = shuffleArray(normal);
-    hasShuffledRef.current = true;
-  }
+    // 4️⃣ Shuffle ONLY ONCE
+    if (shouldShuffle && !hasShuffledRef.current) {
+      normal = shuffleArray(normal);
+      hasShuffledRef.current = true;
+    }
 
-  // 5️⃣ Merge premium + exclusive
-  const finalMerged = buildMergedProducts(normal);
-  setMergedProducts(finalMerged);
-
-}, [
-  products,
-  preminumProducts,
-  exculisiveProducts,
-  searchParams
-]);
-
-
+    // 5️⃣ Merge premium + exclusive
+    const finalMerged = buildMergedProducts(normal);
+    setMergedProducts(finalMerged);
+  }, [products, preminumProducts, exculisiveProducts, searchParams]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -441,30 +430,28 @@ const getBaseImageUrl = (item: Product) => {
   //     });
   //   }
   // }, [searchParams]); // 👈 NOT empty dependency
-  console.log(onFilterChange, isMainLoading, getFirstValidImage)
+  console.log(onFilterChange, isMainLoading, getFirstValidImage);
   const orderby = searchParams.get("orderby") ?? "featured";
-useEffect(() => {
-  if (products && products.length > 0) {
-    setIsOrderbyLoading(false);
+  useEffect(() => {
+    if (products && products.length > 0) {
+      setIsOrderbyLoading(false);
+    }
+  }, [products]);
+
+  function splitCountAndTitle(pageTitle: string) {
+    const match = pageTitle.match(/^(\d+)\s+(.*)$/);
+
+    if (!match) {
+      return { count: null, text: pageTitle };
+    }
+
+    return {
+      count: match[1], // "3279"
+      text: match[2], // "Off Road Caravans for sale in Australia"
+    };
   }
-}, [products]);
 
-
-function splitCountAndTitle(pageTitle: string) {
-  const match = pageTitle.match(/^(\d+)\s+(.*)$/);
-
-  if (!match) {
-    return { count: null, text: pageTitle };
-  }
-
-  return {
-    count: match[1],      // "3279"
-    text: match[2],       // "Off Road Caravans for sale in Australia"
-  };
-}
-
-const { count, text } = splitCountAndTitle(pageTitle);
-
+  const { count, text } = splitCountAndTitle(pageTitle);
 
   return (
     <>
@@ -482,14 +469,16 @@ const { count, text } = splitCountAndTitle(pageTitle);
       <div className="col-lg-6 ">
         <div className="top-filter mb-10">
           <div className="row align-items-center">
-           <div className="col-lg-8 show_count_wrapper ">
-  {count && <span className="show_count mb-2 d-inline">
-    <strong>{count} </strong></span>}
-  <h1 className="show_count">
-    <strong>{text}</strong></h1>
-</div> 
-
-
+            <div className="col-lg-8 show_count_wrapper ">
+              {count && (
+                <span className="show_count mb-2 d-inline">
+                  <strong>{count} </strong>
+                </span>
+              )}
+              <h1 className="show_count d-inline">
+                <strong>{text}</strong>
+              </h1>
+            </div>
 
             <div className="col-4 d-lg-none d-md-none">
               <button
@@ -511,26 +500,27 @@ const { count, text } = splitCountAndTitle(pageTitle);
                       className="orderby form-select"
                       aria-label="Shop order"
                       value={orderby}
-                     onChange={(e) => {
-  const value = e.target.value;
-    setIsOrderbyLoading(true);
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setIsOrderbyLoading(true);
 
-  const params = new URLSearchParams(searchParams.toString());
+                        const params = new URLSearchParams(
+                          searchParams.toString()
+                        );
 
-  value === "featured"
-    ? params.delete("orderby")
-    : params.set("orderby", value);
+                        value === "featured"
+                          ? params.delete("orderby")
+                          : params.set("orderby", value);
 
-  // ✅ build slug with existing filters
-  const slug = buildSlugFromFilters(currentFilters);
+                        // ✅ build slug with existing filters
+                        const slug = buildSlugFromFilters(currentFilters);
 
-  const finalURL = params.toString()
-    ? `${slug}?${params.toString()}`
-    : slug;
+                        const finalURL = params.toString()
+                          ? `${slug}?${params.toString()}`
+                          : slug;
 
-  router.push(finalURL, { scroll: false });
-}}
-
+                        router.push(finalURL, { scroll: false });
+                      }}
                     >
                       <option value="featured">Featured</option>
                       <option value="price-asc">Price (Low to High)</option>
@@ -550,8 +540,7 @@ const { count, text } = splitCountAndTitle(pageTitle);
         <div className="dealers-section product-type">
           <div className="other_items">
             <div className="related-products">
-              
-              {mergedProducts.length === 0  || isOrderbyLoading ? (
+              {mergedProducts.length === 0 || isOrderbyLoading ? (
                 <Skelton count={6} />
               ) : (
                 <div className="row g-3">
@@ -559,12 +548,12 @@ const { count, text } = splitCountAndTitle(pageTitle);
                     const href = getHref(item);
                     const images = getProductImages(item.sku, item.slug);
                     const isPriority = index < 5;
-                     const base = getBaseImageUrl(item);
-const imgs =
-  lazyImages[item.id] ||
-  (base
-    ? [`${base}main1.avif`] // jpg safe default
-    : ["/images/sample3.webp"]);
+                    const base = getBaseImageUrl(item);
+                    const imgs =
+                      lazyImages[item.id] ||
+                      (base
+                        ? [`${base}main1.avif`] // jpg safe default
+                        : ["/images/sample3.webp"]);
 
                     return (
                       <div className="col-lg-6 mb-0" key={index}>
