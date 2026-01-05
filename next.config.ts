@@ -55,9 +55,9 @@ const nextConfig: NextConfig = {
     optimizeCss: true,
   },
 
-  // compiler: {
-  //   removeConsole: true,
-  // },
+  compiler: {
+    removeConsole: true,
+  },
 
   // ✅ Redirect malformed URLs like /feedfeedfeedfeed → clean version
   async redirects() {
