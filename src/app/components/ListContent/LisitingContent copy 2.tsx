@@ -13,7 +13,6 @@ import ImageWithSkeleton from "../ImageWithSkeleton";
 import { useEnquiryForm } from "./enquiryform";
 import { useRouter, useSearchParams } from "next/navigation";
 import { buildSlugFromFilters } from "../slugBuilter";
-import Image from "next/image";
 
 interface Product {
   id: number;
@@ -121,26 +120,6 @@ export default function ListingContent({
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isOrderbyLoading, setIsOrderbyLoading] = useState(false);
-  const IMAGE_FORMATS = ["avif", "webp", "jpg", "jpeg", "png"];
-  const IMAGE_FILES = ["main1", "sub2", "sub3", "sub4", "sub5", "sub6"];
- const [navigating, setNavigating] = useState(false);
-const handleViewDetails = async (
-  e: React.MouseEvent,
-  productId: number,
-  href: string
-) => {
-  e.preventDefault();      // stop <Link> default
-  e.stopPropagation();     // stop bubbling to parent
-
-  // 🔁 show loader
-  setNavigating(true);
-
-  // 🔁 tracking + session flag
-  await handleProductClick(productId);
-
-  // 🔁 navigate
-  router.push(href);
-};
 
   console.log(
     "data-main",
@@ -156,8 +135,8 @@ const handleViewDetails = async (
   // const handleChange = (e) => {
   //   setOrderBy(e.target.value);
   // };
-  const allowShuffleRef = useRef(false);
-  const didShuffleRef = useRef(false);
+const allowShuffleRef = useRef(false);
+const didShuffleRef = useRef(false);
 
   const enquiryProduct = selectedProduct
     ? {
@@ -174,23 +153,15 @@ const handleViewDetails = async (
   const { form, errors, touched, submitting, setField, onBlur, onSubmit } =
     useEnquiryForm(enquiryProduct);
 
-  const getResizedBase = (item: Product) => {
-    if (!item.sku || !item.slug) return null;
-    return `https://caravansforsale.imagestack.net/400x300/${item.sku}/${item.slug}`;
-  };
-
-  const getOriginalBase = (item: Product) => {
-    if (!item.sku || !item.slug) return null;
-    return `https://caravansforsale.imagestack.net/${item.sku}/${item.slug}`;
-  };
-
-  const checkImage = (url: string): Promise<boolean> =>
-    new Promise((resolve) => {
- const img = new window.Image();
-       img.onload = () => resolve(true);
+  const IMAGE_FORMATS = ["avif", "webp", "jpg", "jpeg", "png"];
+  const checkImage = (url: string): Promise<boolean> => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => resolve(true);
       img.onerror = () => resolve(false);
       img.src = url;
     });
+  };
 
   const getBaseImageUrl = (item: Product) => {
     if (!item.sku || !item.slug) return null;
@@ -209,35 +180,19 @@ const handleViewDetails = async (
   };
 
   const loadRemaining = async (item: Product) => {
-    if (loadedAll[item.id]) return;
-
-    const resizedBase = getResizedBase(item);
-    const originalBase = getOriginalBase(item);
-    if (!resizedBase || !originalBase) return;
+    const base = getBaseImageUrl(item);
+    if (!base) return;
 
     const validImages: string[] = [];
 
-    for (const file of IMAGE_FILES) {
-      let found = false;
+    for (let i = 0; i < 5; i++) {
+      const suffix = i === 0 ? "main1" : `sub${i + 1}`;
 
-      // 1️⃣ Try resized first
       for (const ext of IMAGE_FORMATS) {
-        const url = `${resizedBase}${file}.${ext}`;
+        const url = `${base}${suffix}.${ext}`;
         if (await checkImage(url)) {
           validImages.push(url);
-          found = true;
           break;
-        }
-      }
-
-      // 2️⃣ Fallback to original bucket
-      if (!found) {
-        for (const ext of IMAGE_FORMATS) {
-          const url = `${originalBase}${file}.${ext}`;
-          if (await checkImage(url)) {
-            validImages.push(url);
-            break;
-          }
         }
       }
     }
@@ -264,7 +219,6 @@ const handleViewDetails = async (
       return "";
     }
   };
-  
 
   const handleProductClick = async (id) => {
     await postTrackEvent(
@@ -312,9 +266,11 @@ const handleViewDetails = async (
     return copy;
   };
 
+ 
+
   const [mergedProducts, setMergedProducts] = useState<Product[]>([]);
 
-  // const hasShuffledRef = useRef(false);
+  const hasShuffledRef = useRef(false);
 
   const buildMergedProducts = (normal: Product[]) => {
     const premium = preminumProducts || [];
@@ -362,44 +318,48 @@ const handleViewDetails = async (
     return merged;
   };
 
-  useEffect(() => {
-    const TAB_KEY = "listings_tab_opened";
+ useEffect(() => {
+  const TAB_KEY = "listings_tab_opened";
 
-    if (!sessionStorage.getItem(TAB_KEY)) {
-      allowShuffleRef.current = true; // ✅ new tab
-      sessionStorage.setItem(TAB_KEY, "true");
-    } else {
-      allowShuffleRef.current = false; // ❌ same tab
-    }
-  }, []);
+  if (!sessionStorage.getItem(TAB_KEY)) {
+    allowShuffleRef.current = true;   // ✅ new tab
+    sessionStorage.setItem(TAB_KEY, "true");
+  } else {
+    allowShuffleRef.current = false;  // ❌ same tab
+  }
+}, []);
 
-  useEffect(() => {
-    if (!products || products.length === 0) return;
 
-    // 🔒 Already shuffled → DO NOTHING
-    if (didShuffleRef.current) return;
 
-    const premiumIds = new Set(
-      (preminumProducts || []).map((p) => String(p.id))
-    );
+ useEffect(() => {
+  if (!products || products.length === 0) return;
 
-    let normal = products.filter((p) => !premiumIds.has(String(p.id)));
+  // 🔒 Already shuffled → DO NOTHING
+  if (didShuffleRef.current) return;
 
-    const orderbyFromUrl = searchParams.get("orderby");
+  const premiumIds = new Set(
+    (preminumProducts || []).map((p) => String(p.id))
+  );
 
-    const shouldShuffle =
-      allowShuffleRef.current && // ✅ new tab only
-      normal.length >= 23 &&
-      !orderbyFromUrl;
+  let normal = products.filter(
+    (p) => !premiumIds.has(String(p.id))
+  );
 
-    if (shouldShuffle) {
-      normal = shuffleArray([...normal]); // ✅ CLONE + SHUFFLE
-      didShuffleRef.current = true;
-    }
+  const orderbyFromUrl = searchParams.get("orderby");
 
-    // 🔥 IMPORTANT: mergedProducts set ONLY ONCE
-    setMergedProducts(buildMergedProducts(normal));
-  }, [products, preminumProducts, exculisiveProducts, searchParams]);
+  const shouldShuffle =
+    allowShuffleRef.current &&   // ✅ new tab only
+    normal.length >= 23 &&
+    !orderbyFromUrl;
+
+  if (shouldShuffle) {
+    normal = shuffleArray([...normal]); // ✅ CLONE + SHUFFLE
+    didShuffleRef.current = true;
+  }
+
+  // 🔥 IMPORTANT: mergedProducts set ONLY ONCE
+  setMergedProducts(buildMergedProducts(normal));
+}, [products, preminumProducts, exculisiveProducts, searchParams]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -459,16 +419,16 @@ const handleViewDetails = async (
   console.log("data", exculisiveProducts);
 
   // ✅ Helper: generate up to 5 image URLs from SKU
-  // const getProductImages = (sku?: string, slug?: string): string[] => {
-  //   if (!sku || !slug) return ["/images/sample3.webp"];
+  const getProductImages = (sku?: string, slug?: string): string[] => {
+    if (!sku || !slug) return ["/images/sample3.webp"];
 
-  //   const base = `https://caravansforsale.imagestack.net/400x300/${sku}/${slug}`;
+    const base = `https://caravansforsale.imagestack.net/400x300/${sku}/${slug}`;
 
-  //   return [
-  //     `${base}main1.avif`,
-  //     ...Array.from({ length: 4 }, (_, i) => `${base}sub${i + 2}.avif`),
-  //   ];
-  // };
+    return [
+      `${base}main1.avif`,
+      ...Array.from({ length: 4 }, (_, i) => `${base}sub${i + 2}.avif`),
+    ];
+  };
 
   // ✅ Randomly shuffle premium products on each page load
   // ✅ Premium products shuffle after mount
@@ -600,30 +560,30 @@ const handleViewDetails = async (
                 <div className="row g-3">
                   {mergedProducts.map((item, index) => {
                     const href = getHref(item);
+                    const images = getProductImages(item.sku, item.slug);
                     const isPriority = index < 5;
-                    const resizedBase = getResizedBase(item);
+                    const base = getBaseImageUrl(item);
                     const imgs =
                       lazyImages[item.id] ||
-                      (resizedBase
-                        ? [`${resizedBase}main1.avif`] // ONLY main1 initially
+                      (base
+                        ? [`${base}main1.avif`] // jpg safe default
                         : ["/images/sample3.webp"]);
 
                     return (
                       <div className="col-lg-6 mb-0" key={index}>
-                      <Link
-  href={href}
-  prefetch={false}
-  className="lli_head"
-  onClick={(e) => {
-    e.preventDefault(); // ❗ important
-    // setNavigating(true);
-
-    sessionStorage.setItem("cameFromListings", "true");
-
-    router.push(href);
-  }}
->
-
+                        <Link
+                          href={href}
+                          onClick={() => {
+                            if (typeof window !== "undefined") {
+                              sessionStorage.setItem(
+                                "cameFromListings",
+                                "true"
+                              );
+                            }
+                          }}
+                          prefetch={false}
+                          className="lli_head"
+                        >
                           <div
                             className={`product-card sku-${item.sku}`}
                             data-product-id={item.id}
@@ -631,14 +591,14 @@ const handleViewDetails = async (
                             <div className="img">
                               <div className="background_thumb">
                                 <ImageWithSkeleton
-                                  src={imgs[0]}
+                                  src={images[0]}
                                   priority={isPriority}
                                   alt="Caravan"
                                   width={300}
                                   height={200}
                                 />
                               </div>
-                              <div className="main_thumb position-relative"  onClick={(e) => e.stopPropagation()}>
+                              <div className="main_thumb position-relative">
                                 {item.is_exclusive && (
                                   <span className="lab">Spotlight Van</span>
                                 )}
@@ -842,7 +802,6 @@ const handleViewDetails = async (
                                   className="btn"
                                   onClick={(e) => {
                                     e.preventDefault();
-                                     e.stopPropagation();
                                     setSelectedProduct(item);
                                     setShowContact(true);
                                   }}
@@ -852,8 +811,9 @@ const handleViewDetails = async (
 
                                 <button
                                   className="btn btn-primary"
-                                    onClick={(e) => handleViewDetails(e, item.id, href)}
-
+                                  onClick={() => {
+                                    handleProductClick(item.id);
+                                  }}
                                 >
                                   View Details
                                 </button>
@@ -1048,7 +1008,6 @@ const handleViewDetails = async (
                     <Link href="/privacy-collection-statement" target="_blank">
                       Collection Statement
                     </Link>
-
                     ,{" "}
                     <Link href="/privacy-policy" target="_blank">
                       Privacy Policy
@@ -1074,34 +1033,7 @@ const handleViewDetails = async (
             </div>
           </div>
         </div>
-        
       )}
-      {navigating && (
-  <div
-    className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
-    style={{
-      background: "rgba(255,255,255,0.6)",
-      backdropFilter: "blur(2px)",
-      zIndex: 9999,
-    }}
-    aria-live="polite"
-  >
-    <div className="text-center">
-      <Image
-        className="loader_image"
-        src="/images/loader.gif"
-        alt="Loading..."
-        width={80}
-        height={80}
-        unoptimized
-      />
-      <div className="mt-2 fw-semibold">Loading…</div>
-    </div>
-  </div>
-)}
-
-
     </>
-    
   );
 }

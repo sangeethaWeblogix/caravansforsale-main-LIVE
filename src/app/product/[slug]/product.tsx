@@ -13,6 +13,8 @@ import DOMPurify from "dompurify";
 import { type HomeBlogPost } from "@/api/home/api";
 import { toSlug } from "@/utils/seo/slug";
 import ProductSkelton from "../../components/ProductCardSkeleton";
+import { useRouter } from "next/navigation";
+
   type Attribute = {
   label?: string;
   value?: string;
@@ -77,6 +79,7 @@ export default function ClientLogger({
 }) {
   // const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   console.log("datap", data);
+  const router = useRouter();
 
   // const [activeImage, setActiveImage] = useState<string>("");
   const pd: ApiData = data?.data ?? {};
@@ -162,7 +165,8 @@ const handleImageLoad = () => {
   );
 
  
-  
+  const [navigating, setNavigating] = useState(false);
+
 
   const [activeTab, setActiveTab] = useState<"specifications" | "description">(
     "specifications"
@@ -773,6 +777,12 @@ useEffect(() => {
                                                 <Link
                                                   href={lnk.href}
                                                   prefetch={false}
+                                                  onClick={(e) => {
+    e.preventDefault();        // ⛔ stop default Link
+
+    setNavigating(true);       // ✅ show loader
+    router.push(lnk.href);     // ✅ go to listings
+  }}
                                                 >
                                                   {lnk.text}
                                                 </Link>
@@ -1130,6 +1140,31 @@ useEffect(() => {
             </Swiper>
           </div>
         </div>
+
+
+          {navigating && (
+                <div
+                  className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
+                  style={{
+                    background: "rgba(255,255,255,0.6)",
+                    backdropFilter: "blur(2px)",
+                    zIndex: 9999,
+                  }}
+                  aria-live="polite"
+                >
+                  <div className="text-center">
+                    <Image
+                      className="loader_image"
+                      src="/images/loader.gif" // place inside public/images
+                      alt="Loading..."
+                      width={80}
+                      height={80}
+                      unoptimized
+                    />{" "}
+                    <div className="mt-2 fw-semibold">Loading…</div>
+                  </div>
+                </div>
+              )}
       </div>
     </>
   );

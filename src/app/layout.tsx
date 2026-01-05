@@ -10,6 +10,8 @@
   import { Metadata } from "next";
   import ScrollToTop from "./ScrollToTop";
   import UTMTracker from "./UTMTracker";
+  // import NextTopLoader from "nextjs-toploader";
+
   
   export const metadata: Metadata = {
     title: {
@@ -95,8 +97,16 @@
           <UTMTracker />
           <Navbar />
           <ScrollToTop />
-          <main className="product-page style-5">{children}</main>
+          <main className="product-page style-5">
+            {/* <NextTopLoader
+          color="#ff6600"
+          height={3}
+          showSpinner={false}
+        /> */}
+            {children}
+            </main>
           
+
           <Footer />
         </body>
       </html>
