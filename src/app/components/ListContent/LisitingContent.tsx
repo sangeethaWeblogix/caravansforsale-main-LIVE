@@ -122,25 +122,34 @@ export default function ListingContent({
   const searchParams = useSearchParams();
   const [isOrderbyLoading, setIsOrderbyLoading] = useState(false);
   const IMAGE_FORMATS = ["avif", "webp", "jpg", "jpeg", "png"];
-  const IMAGE_FILES = ["main1", "sub2", "sub3", "sub4", "sub5", "sub6"];
- const [navigating, setNavigating] = useState(false);
-const handleViewDetails = async (
-  e: React.MouseEvent,
-  productId: number,
-  href: string
-) => {
-  e.preventDefault();      // stop <Link> default
-  e.stopPropagation();     // stop bubbling to parent
+  const IMAGE_FILES = [
+    "main1",
+     "sub3",
+    "sub4",
+    "sub5",
+    "sub6",
+    "sub7",
+    "sub8", 
+    "sub9"
+  ];
+  const [navigating, setNavigating] = useState(false);
+  const handleViewDetails = async (
+    e: React.MouseEvent,
+    productId: number,
+    href: string
+  ) => {
+    e.preventDefault(); // stop <Link> default
+    e.stopPropagation(); // stop bubbling to parent
 
-  // 🔁 show loader
-  setNavigating(true);
+    // 🔁 show loader
+    setNavigating(true);
 
-  // 🔁 tracking + session flag
-  await handleProductClick(productId);
+    // 🔁 tracking + session flag
+    await handleProductClick(productId);
 
-  // 🔁 navigate
-  router.push(href);
-};
+    // 🔁 navigate
+    router.push(href);
+  };
 
   console.log(
     "data-main",
@@ -186,8 +195,8 @@ const handleViewDetails = async (
 
   const checkImage = (url: string): Promise<boolean> =>
     new Promise((resolve) => {
- const img = new window.Image();
-       img.onload = () => resolve(true);
+      const img = new window.Image();
+      img.onload = () => resolve(true);
       img.onerror = () => resolve(false);
       img.src = url;
     });
@@ -208,50 +217,104 @@ const handleViewDetails = async (
     return "/images/sample3.webp";
   };
 
-  const loadRemaining = async (item: Product) => {
-    if (loadedAll[item.id]) return;
+  const MAX_SWIPER_IMAGES = 5;
 
-    const resizedBase = getResizedBase(item);
-    const originalBase = getOriginalBase(item);
-    if (!resizedBase || !originalBase) return;
+const loadRemaining = async (item: Product) => {
+  if (loadedAll[item.id]) return;
 
-    const validImages: string[] = [];
+  const resizedBase = getResizedBase(item);
+  const originalBase = getOriginalBase(item);
+  if (!resizedBase || !originalBase) return;
 
-    for (const file of IMAGE_FILES) {
-      let found = false;
+  const validImages: string[] = [];
 
-      // 1️⃣ Try resized first
-      for (const ext of IMAGE_FORMATS) {
-        const url = `${resizedBase}${file}.${ext}`;
-        if (await checkImage(url)) {
-          validImages.push(url);
-          found = true;
-          break;
-        }
-      }
+  for (const file of IMAGE_FILES) {
+    if (validImages.length >= MAX_SWIPER_IMAGES) break; // ✅ STOP at 5
 
-      // 2️⃣ Fallback to original bucket
-      if (!found) {
-        for (const ext of IMAGE_FORMATS) {
-          const url = `${originalBase}${file}.${ext}`;
-          if (await checkImage(url)) {
-            validImages.push(url);
-            break;
-          }
-        }
+    let found = false;
+
+    // 1️⃣ Try resized bucket
+    for (const ext of IMAGE_FORMATS) {
+      const url = `${resizedBase}${file}.${ext}`;
+      if (await checkImage(url)) {
+        validImages.push(url);
+        found = true;
+        break;
       }
     }
 
-    setLazyImages((prev) => ({
-      ...prev,
-      [item.id]: validImages,
-    }));
+    // 2️⃣ Fallback to original bucket
+    if (!found) {
+      for (const ext of IMAGE_FORMATS) {
+        const url = `${originalBase}${file}.${ext}`;
+        if (await checkImage(url)) {
+          validImages.push(url);
+          break;
+        }
+      }
+    }
+  }
 
-    setLoadedAll((prev) => ({
-      ...prev,
-      [item.id]: true,
-    }));
-  };
+  // ❗ If only main1 exists, still safe
+  if (validImages.length === 0) {
+    validImages.push("/images/sample3.webp");
+  }
+
+  setLazyImages((prev) => ({
+    ...prev,
+    [item.id]: validImages, // ✅ ONLY VALID IMAGES
+  }));
+
+  setLoadedAll((prev) => ({
+    ...prev,
+    [item.id]: true,
+  }));
+};
+
+  // const loadRemaining = async (item: Product) => {
+  //   if (loadedAll[item.id]) return;
+
+  //   const resizedBase = getResizedBase(item);
+  //   const originalBase = getOriginalBase(item);
+  //   if (!resizedBase || !originalBase) return;
+
+  //   const validImages: string[] = [];
+
+  //   for (const file of IMAGE_FILES) {
+  //     let found = false;
+
+  //     // 1️⃣ Try resized first
+  //     for (const ext of IMAGE_FORMATS) {
+  //       const url = `${resizedBase}${file}.${ext}`;
+  //       if (await checkImage(url)) {
+  //         validImages.push(url);
+  //         found = true;
+  //         break;
+  //       }
+  //     }
+
+  //     // 2️⃣ Fallback to original bucket
+  //     if (!found) {
+  //       for (const ext of IMAGE_FORMATS) {
+  //         const url = `${originalBase}${file}.${ext}`;
+  //         if (await checkImage(url)) {
+  //           validImages.push(url);
+  //           break;
+  //         }
+  //       }
+  //     }
+  //   }
+
+  //   setLazyImages((prev) => ({
+  //     ...prev,
+  //     [item.id]: validImages,
+  //   }));
+
+  //   setLoadedAll((prev) => ({
+  //     ...prev,
+  //     [item.id]: true,
+  //   }));
+  // };
 
   console.log("lazy", lazyImages);
   // Remove all the lazy loading state and just load all images immediately
@@ -264,7 +327,6 @@ const handleViewDetails = async (
       return "";
     }
   };
-  
 
   const handleProductClick = async (id) => {
     await postTrackEvent(
@@ -610,20 +672,19 @@ const handleViewDetails = async (
 
                     return (
                       <div className="col-lg-6 mb-0" key={index}>
-                      <Link
-  href={href}
-  prefetch={false}
-  className="lli_head"
-  onClick={(e) => {
-    e.preventDefault(); // ❗ important
-    // setNavigating(true);
+                        <Link
+                          href={href}
+                          prefetch={false}
+                          className="lli_head"
+                          onClick={(e) => {
+                            e.preventDefault(); // ❗ important
+                            // setNavigating(true);
 
-    sessionStorage.setItem("cameFromListings", "true");
+                            sessionStorage.setItem("cameFromListings", "true");
 
-    router.push(href);
-  }}
->
-
+                            router.push(href);
+                          }}
+                        >
                           <div
                             className={`product-card sku-${item.sku}`}
                             data-product-id={item.id}
@@ -638,7 +699,10 @@ const handleViewDetails = async (
                                   height={200}
                                 />
                               </div>
-                              <div className="main_thumb position-relative"  onClick={(e) => e.stopPropagation()}>
+                              <div
+                                className="main_thumb position-relative"
+                                onClick={(e) => e.stopPropagation()}
+                              >
                                 {item.is_exclusive && (
                                   <span className="lab">Spotlight Van</span>
                                 )}
@@ -842,7 +906,7 @@ const handleViewDetails = async (
                                   className="btn"
                                   onClick={(e) => {
                                     e.preventDefault();
-                                     e.stopPropagation();
+                                    e.stopPropagation();
                                     setSelectedProduct(item);
                                     setShowContact(true);
                                   }}
@@ -852,8 +916,9 @@ const handleViewDetails = async (
 
                                 <button
                                   className="btn btn-primary"
-                                    onClick={(e) => handleViewDetails(e, item.id, href)}
-
+                                  onClick={(e) =>
+                                    handleViewDetails(e, item.id, href)
+                                  }
                                 >
                                   View Details
                                 </button>
@@ -1048,7 +1113,6 @@ const handleViewDetails = async (
                     <Link href="/privacy-collection-statement" target="_blank">
                       Collection Statement
                     </Link>
-
                     ,{" "}
                     <Link href="/privacy-policy" target="_blank">
                       Privacy Policy
@@ -1074,34 +1138,30 @@ const handleViewDetails = async (
             </div>
           </div>
         </div>
-        
       )}
       {navigating && (
-  <div
-    className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
-    style={{
-      background: "rgba(255,255,255,0.6)",
-      backdropFilter: "blur(2px)",
-      zIndex: 9999,
-    }}
-    aria-live="polite"
-  >
-    <div className="text-center">
-      <Image
-        className="loader_image"
-        src="/images/loader.gif"
-        alt="Loading..."
-        width={80}
-        height={80}
-        unoptimized
-      />
-      <div className="mt-2 fw-semibold">Loading…</div>
-    </div>
-  </div>
-)}
-
-
+        <div
+          className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
+          style={{
+            background: "rgba(255,255,255,0.6)",
+            backdropFilter: "blur(2px)",
+            zIndex: 9999,
+          }}
+          aria-live="polite"
+        >
+          <div className="text-center">
+            <Image
+              className="loader_image"
+              src="/images/loader.gif"
+              alt="Loading..."
+              width={80}
+              height={80}
+              unoptimized
+            />
+            <div className="mt-2 fw-semibold">Loading…</div>
+          </div>
+        </div>
+      )}
     </>
-    
   );
 }
