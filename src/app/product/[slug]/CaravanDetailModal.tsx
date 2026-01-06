@@ -185,6 +185,18 @@ const [index, setIndex] = useState(INITIAL_COUNT);
 
   if (!isOpen) return null;
 
+const getDisplayPrice = () => {
+  const sale = Number(String(product.salePrice).replace(/[^0-9.]/g, ""));
+  const regular = Number(String(product.regularPrice).replace(/[^0-9.]/g, ""));
+
+  if (sale > 0) return product.salePrice;
+  if (regular > 0) return product.regularPrice;
+
+  return "POA";
+};
+
+
+
   return (
     <div className="custom-model-main carava_details show">
       <div className="custom-model-inner">
@@ -202,8 +214,9 @@ const [index, setIndex] = useState(INITIAL_COUNT);
                     <div className="vehicleThumbDetails__part__price pop_up_price">
                       <span>
                         <span className="woocommerce-Price-amount amount">
+                          
                           <bdi>
-                           {product.regularPrice}
+                           {getDisplayPrice()}
                           </bdi>
                         </span>
                       </span>
