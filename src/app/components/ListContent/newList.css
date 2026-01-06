@@ -720,7 +720,7 @@ h1.page-title {
 
 
 .show_count_wrapper {
-  display: flex;
+  display: block;
   align-items: center;
   gap: 6px;
 }
