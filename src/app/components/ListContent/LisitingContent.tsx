@@ -675,7 +675,7 @@ useEffect(() => {
                   {mergedProducts.map((item, index) => {
                     const href = getHref(item);
                     const isPriority = index < 5;
-                    const resizedBase = getResizedBase(item);
+                    // const resizedBase = getResizedBase(item);
                     const imgs =
   lazyImages[item.id] ||
   ["/images/sample3.webp"]; // ALWAYS SAFE
