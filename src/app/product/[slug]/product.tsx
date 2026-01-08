@@ -1,4 +1,4 @@
-  "use client";
+"use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -15,7 +15,7 @@ import { toSlug } from "@/utils/seo/slug";
 import ProductSkelton from "../../components/ProductCardSkeleton";
 import { useRouter } from "next/navigation";
 
-  type Attribute = {
+type Attribute = {
   label?: string;
   value?: string;
   url?: string;
@@ -60,7 +60,7 @@ type ProductData = {
   title?: string;
   location_shortcode?: string;
   sku?: string;
- };
+};
 
 interface BlogPost extends HomeBlogPost {
   // ensure fields you use are present
@@ -83,7 +83,7 @@ export default function ClientLogger({
 
   // const [activeImage, setActiveImage] = useState<string>("");
   const pd: ApiData = data?.data ?? {};
-  console.log("pd", pd)
+  console.log("pd", pd);
   const productDetails: ProductData = pd.product_details ?? {};
   const blogPosts: BlogPost[] = Array.isArray(data?.data?.latest_blog_posts)
     ? data.data.latest_blog_posts!
@@ -93,15 +93,14 @@ export default function ClientLogger({
     ? data.data.related!
     : [];
 
-    console.log("releated", blogPosts)
- const loadedCount = useRef(0);
+  console.log("releated", blogPosts);
+  const loadedCount = useRef(0);
 
-const handleImageLoad = () => {
-  loadedCount.current += 1;
-  if (loadedCount.current >= allSubs.length + 1) {
-    
-  }
-};
+  const handleImageLoad = () => {
+    loadedCount.current += 1;
+    if (loadedCount.current >= allSubs.length + 1) {
+    }
+  };
 
   console.log("datapb", relatedProducts);
 
@@ -158,15 +157,12 @@ const handleImageLoad = () => {
     setSafeHtml(buildSafeDescription(productDetails.description));
   }, [productDetails.description]);
 
- 
   const images: string[] = useMemo(
     () => (Array.isArray(pd.images) ? pd.images.filter(Boolean) : []),
     [pd.images]
   );
 
- 
   const [navigating, setNavigating] = useState(false);
-
 
   const [activeTab, setActiveTab] = useState<"specifications" | "description">(
     "specifications"
@@ -252,7 +248,7 @@ const handleImageLoad = () => {
     { label: "Sleep", value: getAttr("sleeps"), url: findAttr("sleeps")?.url },
     { label: "ATM", value: getAttr("ATM"), url: findAttr("ATM")?.url }, // ✅ API url (e.g. "under-2000-kg-atm")
     { label: "Tare Mass", value: getAttr("Tare Mass") },
-        { label: "Axle Configuration", value: getAttr("Axle Configuration") },
+    { label: "Axle Configuration", value: getAttr("Axle Configuration") },
 
     { label: "Ball Weight", value: getAttr("Ball Weight") },
     {
@@ -263,80 +259,69 @@ const handleImageLoad = () => {
   ];
 
   // prefer API url; fallback to old rules if missing
- const linksForSpec = (
-  label: string,
-  value: string,
-  apiUrl?: string
-): LinkOut[] | null => {
-  const v = (value || "").trim();
-  if (!v) return null;
+  const linksForSpec = (
+    label: string,
+    value: string,
+    apiUrl?: string
+  ): LinkOut[] | null => {
+    const v = (value || "").trim();
+    if (!v) return null;
 
-  const L = label.toLowerCase();
+    const L = label.toLowerCase();
 
-  // ✅ Always force clean path for Year (ignore API URL)
-  if (L === "year" || L === "years") {
-    const s = toInt(v);
-    return s
-      ? [{ href: `/listings/${s}-caravans-range/`, text: v }]
-      : null;
-  }
+    // ✅ Always force clean path for Year (ignore API URL)
+    if (L === "year" || L === "years") {
+      const s = toInt(v);
+      return s ? [{ href: `/listings/${s}-caravans-range/`, text: v }] : null;
+    }
 
-  // ✅ Only use API URL for fields that are NOT year-related
-  if (
-    apiUrl &&
-    apiUrl.trim() &&
-    !["year", "years"].includes(L)
-  ) {
-    return [linkFromApiUrl(apiUrl, v)];
-  }
+    // ✅ Only use API URL for fields that are NOT year-related
+    if (apiUrl && apiUrl.trim() && !["year", "years"].includes(L)) {
+      return [linkFromApiUrl(apiUrl, v)];
+    }
 
-  // ---- fallback logic ----
-  if (L === "category" || L === "type") {
-    return v.split(",").map((c) => ({
-      href: `/listings/${slugify(c)}-category/`,
-      text: c.trim(),
-    }));
-  }
+    // ---- fallback logic ----
+    if (L === "category" || L === "type") {
+      return v.split(",").map((c) => ({
+        href: `/listings/${slugify(c)}-category/`,
+        text: c.trim(),
+      }));
+    }
 
-  if (L === "make")
-    return [{ href: `/listings/${slugify(v)}/`, text: v }];
+    if (L === "make") return [{ href: `/listings/${slugify(v)}/`, text: v }];
 
-  if (L === "model")
-    return [{ href: `/listings/${makeValue}/${slugify(v)}/`, text: v }];
+    if (L === "model")
+      return [{ href: `/listings/${makeValue}/${slugify(v)}/`, text: v }];
 
-  if (L === "location" || L === "state")
-    return [{ href: `/listings/${slugify(v)}-state/`, text: v }];
+    if (L === "location" || L === "state")
+      return [{ href: `/listings/${slugify(v)}-state/`, text: v }];
 
-  if (L === "sleep" || L === "sleeps") {
-    const s = toInt(v);
-    return s
-      ? [{ href: `/listings/under-${s}-people-sleeping-capacity/`, text: v }]
-      : null;
-  }
+    if (L === "sleep" || L === "sleeps") {
+      const s = toInt(v);
+      return s
+        ? [{ href: `/listings/under-${s}-people-sleeping-capacity/`, text: v }]
+        : null;
+    }
 
-  if (L === "length") {
-    const s = toInt(v);
-    return s
-      ? [{ href: `/listings/under-${s}-length-in-feet/`, text: v }]
-      : null;
-  }
+    if (L === "length") {
+      const s = toInt(v);
+      return s
+        ? [{ href: `/listings/under-${s}-length-in-feet/`, text: v }]
+        : null;
+    }
 
-  if (L === "atm") {
-    const s = toInt(v);
-    return s
-      ? [{ href: `/listings/under-${s}-kg-atm/`, text: v }]
-      : null;
-  }
+    if (L === "atm") {
+      const s = toInt(v);
+      return s ? [{ href: `/listings/under-${s}-kg-atm/`, text: v }] : null;
+    }
 
-  if (L === "condition" || L === "conditions") {
-    return [{ href: `/listings/${slugify(v)}-condition/`, text: v }];
-  }
+    if (L === "condition" || L === "conditions") {
+      return [{ href: `/listings/${slugify(v)}-condition/`, text: v }];
+    }
 
-  return null;
-};
+    return null;
+  };
 
-
- 
   const parseAmount = (v: string | number | undefined) => {
     const n = Number(String(v ?? "").replace(/[^0-9.]/g, ""));
     return Number.isFinite(n) ? n : 0;
@@ -401,51 +386,45 @@ const handleImageLoad = () => {
     product.id ?? pd.id ?? product.name;
 
   const productSlug: string | undefined = product.slug ?? pd.slug;
-console.log("product", data)
+  console.log("product", data);
 
-const slug = productSlug || "";
-const sku = productDetails.sku ;
-console.log("slug1", productDetails)
-   console.log("rele", relatedProducts);
+  const slug = productSlug || "";
+  const sku = productDetails.sku;
+  console.log("slug1", productDetails);
+  console.log("rele", relatedProducts);
 
-  
   // ---- gallery state ----
-  
+
   // keep activeImage in sync with main image from API
- 
-  
-  
+
   const base = `https://caravansforsale.imagestack.net/800x600/${sku}/${slug}`;
-  
+
   const main = `${base}main1.avif`;
   const [activeImage, setActiveImage] = useState<string>(main);
-  
-   const [mainsub, setMainsub] = useState<string[]>([]);
 
-useEffect(() => {
-  if (!sku || !slug) {
-    setMainsub([]);
-    return;
-  }
+  const [mainsub, setMainsub] = useState<string[]>([]);
 
-  const base = `https://caravansforsale.imagestack.net/800x600/${sku}/${slug}`;
+  useEffect(() => {
+    if (!sku || !slug) {
+      setMainsub([]);
+      return;
+    }
 
-  const imgs = [
-    `${base}main1.avif`,        // main image
-    `${base}sub2.avif`,         // sub1
-    `${base}sub3.avif`,         // sub2
-    `${base}sub4.avif`,         // sub3
-    `${base}sub5.avif`,         // sub4
-  ];
+    const base = `https://caravansforsale.imagestack.net/800x600/${sku}/${slug}`;
 
-  setMainsub(imgs);
-}, [sku, slug]);
+    const imgs = [
+      `${base}main1.avif`, // main image
+      `${base}sub2.avif`, // sub1
+      `${base}sub3.avif`, // sub2
+      `${base}sub4.avif`, // sub3
+      `${base}sub5.avif`, // sub4
+    ];
 
+    setMainsub(imgs);
+  }, [sku, slug]);
 
+  const [allSubs, setAllSubs] = useState<string[]>([]);
 
-   
-const [allSubs, setAllSubs] = useState<string[]>([]);
- 
   function checkImage(url: string): Promise<boolean> {
     return new Promise((resolve) => {
       if (typeof window === "undefined") return resolve(false);
@@ -457,22 +436,19 @@ const [allSubs, setAllSubs] = useState<string[]>([]);
     });
   }
 
-
   useEffect(() => {
     let cancelled = false;
 
     const loadGallery = async () => {
       // show skeleton while we probe
- 
+
       // Fallback: no sku/slug => just use API images or main image
       if (!sku || !slug) {
-        const fallback = (images.length ? images : [main]).filter(
-          Boolean
-        );
+        const fallback = (images.length ? images : [main]).filter(Boolean);
         if (!cancelled) {
           setAllSubs(fallback);
           setActiveImage(fallback[0] || main);
-         }
+        }
         return;
       }
 
@@ -487,9 +463,6 @@ const [allSubs, setAllSubs] = useState<string[]>([]);
         urls.push(mainUrl);
       }
 
-
-
-
       // 2) allSubs: sub1.avif, sub2.avif, ...
       for (let i = 2; i <= 5; i++) {
         const url = `${base}sub${i}.avif`;
@@ -498,23 +471,18 @@ const [allSubs, setAllSubs] = useState<string[]>([]);
         urls.push(url);
       }
 
-        
-
       // If CDN gave nothing, fall back to API images
       const finalUrls =
         urls.length > 0
           ? urls
           : (images.length ? images : [main]).filter(Boolean);
 
-
- for (let i = 6; i <= 70; i++) {
+      for (let i = 6; i <= 70; i++) {
         const url = `${base}sub${i}.avif`;
         const ok = await checkImage(url);
         if (!ok) break; // stop when next sub doesn't exist
         urls.push(url);
       }
-
-        
 
       // If CDN gave nothing, fall back to API images
       const finalSubUrls =
@@ -525,7 +493,7 @@ const [allSubs, setAllSubs] = useState<string[]>([]);
         setMainsub(finalUrls);
         setAllSubs(finalSubUrls);
         setActiveImage(finalUrls[0] || main);
-       }
+      }
     };
 
     loadGallery();
@@ -535,51 +503,110 @@ const [allSubs, setAllSubs] = useState<string[]>([]);
     };
   }, [sku, slug, images, main]);
   const getIP = async () => {
-  try {
-    const res = await fetch("https://api.ipify.org?format=json");
-    const data = await res.json();
-    return data.ip || "";
-  } catch {
-    return "";
-  }
-};
+    try {
+      const res = await fetch("https://api.ipify.org?format=json");
+      const data = await res.json();
+      return data.ip || "";
+    } catch {
+      return "";
+    }
+  };
 
-const postTrackEvent = async (url: string, product_id: number) => {
-  const ip = await getIP();
-  const user_agent = navigator.userAgent;
+  const postTrackEvent = async (url: string, product_id: number) => {
+    const ip = await getIP();
+    const user_agent = navigator.userAgent;
 
-  await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      product_id,
-      ip,
-      user_agent,
-    }),
-  });
-};
+    await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        product_id,
+        ip,
+        user_agent,
+      }),
+    });
+  };
 
+  useEffect(() => {
+    if (!productDetails?.id) return;
 
-useEffect(() => {
-  if (!productDetails?.id) return;
+    postTrackEvent(
+      "https://www.admin.caravansforsale.com.au/wp-json/cfs/v1/update-clicks",
+      Number(productDetails.id)
+    );
+  }, [productDetails?.id]);
 
-  postTrackEvent(
-    "https://www.admin.caravansforsale.com.au/wp-json/cfs/v1/update-clicks",
-    Number(productDetails.id)
-  );
-}, [productDetails?.id]);
+  // ✅ Add these states after allSubs state
+  const [preloadedImages, setPreloadedImages] = useState<string[]>([]); // First 5
+  const [remainingImages, setRemainingImages] = useState<string[]>([]); // Rest
 
+  // ✅ Update the useEffect where you load gallery
+  useEffect(() => {
+    let cancelled = false;
 
- 
-     
-// const [activeImage, setActiveImage] = useState(main);
+    const loadGallery = async () => {
+      if (!sku || !slug) {
+        const fallback = (images.length ? images : [main]).filter(Boolean);
+        if (!cancelled) {
+          setAllSubs(fallback);
+          setPreloadedImages(fallback.slice(0, 5));
+          setRemainingImages(fallback.slice(5));
+          setActiveImage(fallback[0] || main);
+        }
+        return;
+      }
 
-  
- console.log("image", allSubs)
+      const base = `https://caravansforsale.imagestack.net/800x600/${sku}/${slug}`;
+      const urls: string[] = [];
+
+      // 1) MAIN
+      const mainUrl = `${base}main1.avif`;
+      const hasMain = await checkImage(mainUrl);
+      if (hasMain) urls.push(mainUrl);
+
+      // 2) First 5 subs (sub2 to sub5) - PRELOAD
+      for (let i = 2; i <= 5; i++) {
+        const url = `${base}sub${i}.avif`;
+        const ok = await checkImage(url);
+        if (!ok) break;
+        urls.push(url);
+      }
+
+      // ✅ Set preloaded images immediately
+      if (!cancelled) {
+        setPreloadedImages(urls);
+        setMainsub(urls);
+        setActiveImage(urls[0] || main);
+      }
+
+      // 3) Remaining subs (sub6 to sub70) - LAZY LOAD
+      const remainingUrls: string[] = [];
+      for (let i = 6; i <= 70; i++) {
+        const url = `${base}sub${i}.avif`;
+        const ok = await checkImage(url);
+        if (!ok) break;
+        remainingUrls.push(url);
+      }
+
+      if (!cancelled) {
+        setRemainingImages(remainingUrls);
+        setAllSubs([...urls, ...remainingUrls]);
+      }
+    };
+
+    loadGallery();
+    return () => {
+      cancelled = true;
+    };
+  }, [sku, slug, images, main]);
+
+  // const [activeImage, setActiveImage] = useState(main);
+
+  console.log("image", allSubs);
 
   return (
     <>
-<section className={`product caravan_dtt sku-${sku}`}>
+      <section className={`product caravan_dtt sku-${sku}`}>
         <div className="container">
           <div className="content">
             <div className="row justify-content-center">
@@ -643,90 +670,89 @@ useEffect(() => {
                     </div>
                   </div>
 
-                  {product.location_shortcode && product.location_shortcode.trim() !== "" && (
-  <div className="attributes">
-    <h6 className="category">
-      Location- {product.location_shortcode}
-    </h6>
-  </div>
-)}
+                  {product.location_shortcode &&
+                    product.location_shortcode.trim() !== "" && (
+                      <div className="attributes">
+                        <h6 className="category">
+                          Location- {product.location_shortcode}
+                        </h6>
+                      </div>
+                    )}
                 </div>
 
-               
-  <div className="caravan_slider_visible">
-    <button
-      className="hover_link Click-here"
-      onClick={() => setShowModal(true)}
-    />
+                <div className="caravan_slider_visible">
+                  <button
+                    className="hover_link Click-here"
+                    onClick={() => setShowModal(true)}
+                  />
 
-    {/* Thumbnails */}
-    <div className="slider_thumb_vertical image_container">
-      <div className="image_mop">
-        {mainsub.slice(0, 4).map((image, i) => (
-          <div className="image_item" key={`${image}-${i}`}>
-            <div className="background_thumb">
-            <Image
-                src={image}
-                width={128}
-                height={96}
-                alt="Thumbnail"
-                unoptimized
-                onLoad={handleImageLoad}
-              />
-            </div>
+                  {/* Thumbnails */}
+                  <div className="slider_thumb_vertical image_container">
+                    <div className="image_mop">
+                      {mainsub.slice(0, 4).map((image, i) => (
+                        <div className="image_item" key={`${image}-${i}`}>
+                          <div className="background_thumb">
+                            <Image
+                              src={image}
+                              width={128}
+                              height={96}
+                              alt="Thumbnail"
+                              unoptimized
+                              onLoad={handleImageLoad}
+                            />
+                          </div>
 
-            <div className="img" onClick={() => setActiveImage(image)}>
-            <Image
-                src={image}
-                width={128}
-                height={96}
-                alt={`Thumb ${i + 1}`}
-                priority={i < 4}
-                unoptimized
-                onLoad={handleImageLoad}
-              />
-            </div>
-          </div>
-        ))}
+                          <div
+                            className="img"
+                            onClick={() => setActiveImage(image)}
+                          >
+                            <Image
+                              src={image}
+                              width={128}
+                              height={96}
+                              alt={`Thumb ${i + 1}`}
+                              priority={i < 4}
+                              unoptimized
+                              onLoad={handleImageLoad}
+                            />
+                          </div>
+                        </div>
+                      ))}
 
-        <span className="caravan__image_count">
-          {/* <span>{allSubs.length}+</span> */}
-                    <span> +  </span>
+                      <span className="caravan__image_count">
+                        {/* <span>{allSubs.length}+</span> */}
+                        <span> + </span>
+                      </span>
+                    </div>
+                  </div>
 
-        </span>
-      </div>
-    </div>
+                  {/* Large Image */}
+                  <div className="lager_img_view image_container">
+                    <div className="background_thumb">
+                      <Image
+                        src={activeImage || allSubs[0]}
+                        width={800}
+                        height={600}
+                        alt="Large"
+                        className="img-fluid"
+                        unoptimized
+                        onLoad={handleImageLoad}
+                      />
+                    </div>
 
-    {/* Large Image */}
-    <div className="lager_img_view image_container">
-      <div className="background_thumb">
-      <Image
-          src={activeImage || allSubs[0]}
-          width={800}
-          height={600}
-          alt="Large"
-          className="img-fluid"
-          unoptimized
-          onLoad={handleImageLoad}
-        />
-      </div>
-
-      <Link href="#">
-      <Image
-          src={activeImage || allSubs[0]}
-          width={800}
-          height={600}
-          alt="Large"
-          className="img-fluid"
-          unoptimized
-          onLoad={handleImageLoad}
-        />
-      </Link>
-    </div>
-  </div>
-  
- 
-
+                    <Link href="#">
+                      <Image
+                        src={activeImage || allSubs[0]}
+                        width={800}
+                        height={600}
+                        alt="Large"
+                        className="img-fluid"
+                        unoptimized
+                        onLoad={handleImageLoad}
+                      />
+                    </Link>
+                  </div>
+                </div>
 
                 {/* Tabs */}
                 <section className="product-details">
@@ -778,11 +804,11 @@ useEffect(() => {
                                                   href={lnk.href}
                                                   prefetch={false}
                                                   onClick={(e) => {
-    e.preventDefault();        // ⛔ stop default Link
+                                                    e.preventDefault(); // ⛔ stop default Link
 
-    setNavigating(true);       // ✅ show loader
-    router.push(lnk.href);     // ✅ go to listings
-  }}
+                                                    setNavigating(true); // ✅ show loader
+                                                    router.push(lnk.href); // ✅ go to listings
+                                                  }}
                                                 >
                                                   {lnk.text}
                                                 </Link>
@@ -956,19 +982,18 @@ useEffect(() => {
                 </div>
               </div>
 
-
               {/* Modal */}
               {showModal && (
                 <CaravanDetailModal
                   isOpen={showModal}
                   onClose={() => setShowModal(false)}
-                  images={allSubs}
-                  subImages={mainsub}
+                  preloadedImages={preloadedImages} // ✅ First 5 images
+                  remainingImages={remainingImages} // ✅ Rest images
                   product={{
                     id: productId,
                     slug: productSlug,
                     name: product.name ?? "",
-                    image: activeImage || allSubs[0] ,
+                    image: activeImage || allSubs[0],
                     price: hasSale ? sale : reg,
                     regularPrice: product.regular_price ?? 0,
                     salePrice: product.sale_price ?? 0,
@@ -983,98 +1008,94 @@ useEffect(() => {
       </section>
       {/* ✅ Related Products Section */}
       {relatedProducts.length > 0 && (
+        <div
+          className="related-products section-padding"
+          style={{ position: "relative", zIndex: 0, background: "#ffffffff" }}
+        >
+          <div className="container">
+            <div className="re-title">
+              <div className="tpof_tab">
+                <h3>Browse Similar Caravans</h3>
+              </div>
+            </div>
+            <div className="similar-products-three position-relative">
+              {/* ✅ Swiper React Component */}
+              <Swiper
+                modules={[Navigation]}
+                navigation
+                spaceBetween={20}
+                slidesPerView={4}
+                loop={false}
+                breakpoints={{
+                  320: { slidesPerView: 1 },
+                  768: { slidesPerView: 2 },
+                  1024: { slidesPerView: 4 },
+                }}
+              >
+                {relatedProducts.length === 0
+                  ? Array.from({ length: 4 }).map((_, idx) => (
+                      <SwiperSlide key={`related-skeleton-${idx}`}>
+                        <ProductSkelton />
+                      </SwiperSlide>
+                    ))
+                  : relatedProducts.map((post) => {
+                      const href = getProductHref(post);
+                      const sku = post.sku;
+                      const slug = post.slug;
+                      const base = `https://caravansforsale.imagestack.net/800x600/${sku}/${slug}`;
 
-      <div
-        className="related-products section-padding"
-        style={{ position: "relative", zIndex: 0, background: "#ffffffff" }}
-      >
-        <div className="container">
-          <div className="re-title">
-            <div className="tpof_tab">
-              <h3>Browse Similar Caravans</h3>
+                      const main = `${base}main1.avif`;
+                      return (
+                        <SwiperSlide key={post.id}>
+                          <Link href={href}>
+                            <div className="product-card">
+                              <div className="img">
+                                <Image
+                                  src={main}
+                                  alt="product"
+                                  width={400}
+                                  height={250}
+                                  unoptimized
+                                />
+                              </div>
+                              <div className="product_de">
+                                <div className="info">
+                                  <h6 className="category">
+                                    <i className="fa fa-map-marker-alt"></i>{" "}
+                                    <span>{post.location}</span>
+                                  </h6>
+                                  <h3 className="title">{post.title}</h3>
+                                </div>
+                                <div className="price">
+                                  {parseAmount(post.regular_price) === 0 ? (
+                                    <span>POA</span>
+                                  ) : parseAmount(post.sale_price) > 0 &&
+                                    parseAmount(post.sale_price) <
+                                      parseAmount(post.regular_price) ? (
+                                    <>
+                                      <del>
+                                        {fmt(parseAmount(post.regular_price))}
+                                      </del>{" "}
+                                      <ins>
+                                        {fmt(parseAmount(post.sale_price))}
+                                      </ins>
+                                    </>
+                                  ) : (
+                                    <span>
+                                      {fmt(parseAmount(post.regular_price))}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </Link>
+                        </SwiperSlide>
+                      );
+                    })}
+              </Swiper>
             </div>
           </div>
-          <div className="similar-products-three position-relative">
-            {/* ✅ Swiper React Component */}
-            <Swiper
-              modules={[Navigation]}
-              navigation
-              spaceBetween={20}
-              slidesPerView={4}
-              loop={false}
-              breakpoints={{
-                
-                320: { slidesPerView: 1 },
-                768: { slidesPerView: 2 },
-                1024: { slidesPerView: 4 },
-              }}
-            >
-              {relatedProducts.length === 0
-                ? Array.from({ length: 4 }).map((_, idx) => (
-                    <SwiperSlide key={`related-skeleton-${idx}`}>
-                      <ProductSkelton />
-                    </SwiperSlide>
-                  ))
-                : relatedProducts.map((post) => {
-                    const href = getProductHref(post);
-                    const sku = post.sku 
-                    const slug =  post.slug 
-                      const base = `https://caravansforsale.imagestack.net/800x600/${sku}/${slug}`;
-  
-  const main = `${base}main1.avif`;
-                    return (
-                      <SwiperSlide key={post.id}>
-                        <Link href={href}>
-                          <div className="product-card">
-                            <div className="img">
-                              <Image
-                                src={
-                                  main
-                                }
-                                alt="product"
-                                width={400}
-                                height={250}
-                                unoptimized
-                              />
-                            </div>
-                            <div className="product_de">
-                              <div className="info">
-                                <h6 className="category">
-                                  <i className="fa fa-map-marker-alt"></i>{" "}
-                                  <span>{post.location}</span>
-                                </h6>
-                                <h3 className="title">{post.title}</h3>
-                              </div>
-                              <div className="price">
-                                {parseAmount(post.regular_price) === 0 ? (
-                                  <span>POA</span>
-                                ) : parseAmount(post.sale_price) > 0 &&
-                                  parseAmount(post.sale_price) <
-                                    parseAmount(post.regular_price) ? (
-                                  <>
-                                    <del>
-                                      {fmt(parseAmount(post.regular_price))}
-                                    </del>{" "}
-                                    <ins>
-                                      {fmt(parseAmount(post.sale_price))}
-                                    </ins>
-                                  </>
-                                ) : (
-                                  <span>
-                                    {fmt(parseAmount(post.regular_price))}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        </Link>
-                      </SwiperSlide>
-                    );
-                  })}
-            </Swiper>
-          </div>
         </div>
-      </div>
       )}
 
       {/* ✅ Latest News */}
@@ -1141,30 +1162,29 @@ useEffect(() => {
           </div>
         </div>
 
-
-          {navigating && (
-                <div
-                  className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
-                  style={{
-                    background: "rgba(255,255,255,0.6)",
-                    backdropFilter: "blur(2px)",
-                    zIndex: 9999,
-                  }}
-                  aria-live="polite"
-                >
-                  <div className="text-center">
-                    <Image
-                      className="loader_image"
-                      src="/images/loader.gif" // place inside public/images
-                      alt="Loading..."
-                      width={80}
-                      height={80}
-                      unoptimized
-                    />{" "}
-                    <div className="mt-2 fw-semibold">Loading…</div>
-                  </div>
-                </div>
-              )}
+        {navigating && (
+          <div
+            className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
+            style={{
+              background: "rgba(255,255,255,0.6)",
+              backdropFilter: "blur(2px)",
+              zIndex: 9999,
+            }}
+            aria-live="polite"
+          >
+            <div className="text-center">
+              <Image
+                className="loader_image"
+                src="/images/loader.gif" // place inside public/images
+                alt="Loading..."
+                width={80}
+                height={80}
+                unoptimized
+              />{" "}
+              <div className="mt-2 fw-semibold">Loading…</div>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );

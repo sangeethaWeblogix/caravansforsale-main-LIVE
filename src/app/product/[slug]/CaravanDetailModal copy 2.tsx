@@ -1,25 +1,24 @@
- "use client";
+"use client";
 
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination } from "swiper/modules";
-import type { Swiper as SwiperType } from "swiper";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import "./popup.css";
 import Image from "next/image";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { createProductEnquiry } from "@/api/enquiry/api";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-
-
 type CaravanDetailModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  preloadedImages: string[];
-  remainingImages: string[];
+  images: string[];
+  subImages: string[];
+   preloadedImages: string[];   // ✅ First 5 images (ready to show)
+  remainingImages: string[];   // ✅ Rest images (lazy load)
   product: {
     id?: string | number;
     slug?: string;
@@ -36,49 +35,12 @@ type CaravanDetailModalProps = {
 export default function CaravanDetailModal({
   isOpen,
   onClose,
+  images,
+  product,
+  subImages,
   preloadedImages,
   remainingImages,
-  product,
 }: CaravanDetailModalProps) {
-  
-  // ✅ All images combined
-  const allImages = [...preloadedImages, ...remainingImages];
-  
-  // ✅ Track which images to show
-  const [visibleCount, setVisibleCount] = useState(preloadedImages.length);
-  const swiperRef = useRef<SwiperType | null>(null);
-
-  // ✅ Debug log
-  console.log("preloadedImages:", preloadedImages.length);
-  console.log("remainingImages:", remainingImages.length);
-  console.log("visibleCount:", visibleCount);
-
-  // ✅ Reset when modal opens/closes
-  useEffect(() => {
-    if (isOpen) {
-      setVisibleCount(preloadedImages.length);
-    }
-  }, [isOpen, preloadedImages.length]);
-
-  // ✅ Handle slide change - load more when near end
-  const handleSlideChange = (swiper: SwiperType) => {
-    const currentIndex = swiper.activeIndex;
-    const currentVisible = visibleCount;
-    
-    console.log(`Slide: ${currentIndex + 1} / ${currentVisible}`);
-
-    // When user is 2 slides away from end, load 5 more
-    if (currentIndex >= currentVisible - 3 && currentVisible < allImages.length) {
-      const newCount = Math.min(currentVisible + 5, allImages.length);
-      console.log(`Loading more: ${currentVisible} -> ${newCount}`);
-      setVisibleCount(newCount);
-    }
-  };
-
-  // ✅ Get currently visible slides
-  const visibleSlides = allImages.slice(0, visibleCount);
-
-  // Form states
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -97,13 +59,53 @@ export default function CaravanDetailModal({
   const [submitting, setSubmitting] = useState(false);
   const [okMsg, setOkMsg] = useState<string | null>(null);
   const router = useRouter();
+  // const INITIAL_COUNT = 5;
 
-  // Validation regex
+  const [slides, setSlides] = useState<string[]>(preloadedImages);
+  const [remainingLoaded, setRemainingLoaded] = useState(false);
+
+
+  // validation regex
   const NAME_RE = /^[A-Za-z][A-Za-z\s'.-]{1,49}$/;
   const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
   const PHONE_RE = /^\d{7,15}$/;
   const POST_RE = /^\d{4}$/;
 
+
+ useEffect(() => {
+    if (preloadedImages.length > 0) {
+      setSlides(preloadedImages);
+    }
+  }, [preloadedImages]);
+
+  // ✅ Reset when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setSlides(preloadedImages);
+      setRemainingLoaded(false);
+    }
+  }, [isOpen, preloadedImages]);
+
+  // useEffect(() => {
+  //   if (!isOpen) return;
+
+  //   const firstBatch = images.slice(0, INITIAL_COUNT);
+  //   setSlides(firstBatch);
+  //   setIndex(firstBatch.length);
+  // }, [isOpen, images]);
+
+    const handleSlideChange = (swiper: any) => {
+    const activeIndex = swiper.activeIndex;
+    const totalSlides = slides.length;
+
+    // When user is at last 2 slides, load remaining
+    if (activeIndex >= totalSlides - 2 && !remainingLoaded && remainingImages.length > 0) {
+      setSlides(prev => [...prev, ...remainingImages]);
+      setRemainingLoaded(true);
+    }
+  };
+
+  if (!isOpen) return null;
   const validate = (f = form) => {
     const e: Partial<typeof form> = {};
     if (!f.name.trim()) e.name = "Name is required";
@@ -154,6 +156,7 @@ export default function CaravanDetailModal({
         postcode: form.postcode.trim(),
       });
 
+      // ✅ redirect logic
       if (data?.success && data.data?.redirect_slug) {
         router.push(`/${data.data.redirect_slug}`);
       } else {
@@ -225,14 +228,11 @@ export default function CaravanDetailModal({
                       modules={[Navigation, Pagination]}
                       navigation
                       pagination={{ clickable: true }}
-                      onSwiper={(swiper) => {
-                        swiperRef.current = swiper;
-                      }}
                       onSlideChange={handleSlideChange}
                     >
-                      {visibleSlides.map((img, idx) => (
+                      {slides.map((img, idx) => (
                         <SwiperSlide
-                          key={`slide-${idx}-${img}`}
+                          key={idx}
                           className="flex justify-center items-center"
                         >
                           <Image
@@ -243,21 +243,10 @@ export default function CaravanDetailModal({
                             sizes="100vw"
                             className="w-full h-auto"
                             unoptimized
-                            priority={idx < 2}
                           />
                         </SwiperSlide>
                       ))}
                     </Swiper>
-
-                    {/* ✅ Image counter */}
-                    <div className="image-counter" style={{ 
-                      textAlign: 'center', 
-                      marginTop: '10px',
-                      fontSize: '14px',
-                      color: '#666'
-                    }}>
-                      Showing {visibleCount} of {allImages.length} images
-                    </div>
                   </div>
                 </div>
 
@@ -358,7 +347,6 @@ export default function CaravanDetailModal({
                             </div>
                           )}
                         </div>
-
                         {/* Postcode */}
                         <div className="form-item">
                           <p>
@@ -448,8 +436,10 @@ export default function CaravanDetailModal({
                     </form>
                   </div>
                 </div>
+                {/* /Right Content */}
               </div>
             </div>
+
           </div>
         </div>
       </div>
