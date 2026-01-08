@@ -271,6 +271,8 @@ const loadRemaining = async (item: Product) => {
   }));
 };
 
+
+
   // const loadRemaining = async (item: Product) => {
   //   if (loadedAll[item.id]) return;
 
@@ -502,6 +504,16 @@ const loadRemaining = async (item: Product) => {
     };
   }, [showInfo, showContact]);
 
+
+  
+useEffect(() => {
+  mergedProducts.forEach((item) => {
+    if (!loadedAll[item.id]) {
+      loadRemaining(item);
+    }
+  });
+}, [mergedProducts]);
+
   // Example placeholder function for product links
 
   // const imageUrl = "public/favicon.ico";
@@ -665,10 +677,9 @@ const loadRemaining = async (item: Product) => {
                     const isPriority = index < 5;
                     const resizedBase = getResizedBase(item);
                     const imgs =
-                      lazyImages[item.id] ||
-                      (resizedBase
-                        ? [`${resizedBase}main1.avif`] // ONLY main1 initially
-                        : ["/images/sample3.webp"]);
+  lazyImages[item.id] ||
+  ["/images/sample3.webp"]; // ALWAYS SAFE
+
 
                     return (
                       <div className="col-lg-6 mb-0" key={index}>
@@ -736,6 +747,7 @@ const loadRemaining = async (item: Product) => {
                                           alt={`Caravan ${i + 1}`}
                                           width={300}
                                           height={200}
+                                          
                                           priority={isPriority && i === 0}
                                         />
                                       </div>

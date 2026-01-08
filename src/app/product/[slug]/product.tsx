@@ -549,12 +549,13 @@ export default function ClientLogger({
         const fallback = (images.length ? images : [main]).filter(Boolean);
         if (!cancelled) {
           setAllSubs(fallback);
-          setPreloadedImages(fallback.slice(0, 5));
-          setRemainingImages(fallback.slice(5));
+          setPreloadedImages(fallback.slice(0, 10));
+          setRemainingImages(fallback.slice(10));
           setActiveImage(fallback[0] || main);
         }
         return;
       }
+
 
       const base = `https://caravansforsale.imagestack.net/800x600/${sku}/${slug}`;
       const urls: string[] = [];
@@ -721,7 +722,7 @@ export default function ClientLogger({
 
                       <span className="caravan__image_count">
                         {/* <span>{allSubs.length}+</span> */}
-                        <span> + </span>
+                       +
                       </span>
                     </div>
                   </div>

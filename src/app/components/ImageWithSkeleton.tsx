@@ -57,11 +57,14 @@ export default function ImageWithSkeleton({
         alt={alt}
         width={width}
         height={height}
+        
         unoptimized
          priority={priority}  
         onLoad={() => setLoaded(true)}
-        onError={() => setFailed(true)}
-        style={{
+onError={() => {
+  setFailed(true);
+  setLoaded(true); // ⭐ IMPORTANT
+}}        style={{
           width: "100%",
           height: "100%",
           objectFit: "cover",

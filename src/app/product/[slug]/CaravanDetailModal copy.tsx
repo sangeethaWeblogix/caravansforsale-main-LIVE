@@ -8,12 +8,10 @@ import "swiper/css/navigation";
 import "swiper/css/pagination";
 import "./popup.css";
 import Image from "next/image";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { createProductEnquiry } from "@/api/enquiry/api";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-
-
 
 type CaravanDetailModalProps = {
   isOpen: boolean;
@@ -41,61 +39,42 @@ export default function CaravanDetailModal({
   product,
 }: CaravanDetailModalProps) {
   
-  // ✅ All images combined
-  const allImages = [...preloadedImages, ...remainingImages];
-  const [visibleCount, setVisibleCount] = useState(1);
-
-  // ✅ Track which images to show
-  // const [visibleCount, setVisibleCount] = useState(preloadedImages.length);
   const swiperRef = useRef<SwiperType | null>(null);
+  
+  // ✅ Combine all images immediately - no dynamic loading
+  const allImages = [...preloadedImages, ...remainingImages];
+  
+  // ✅ Track loaded state for lazy loading
+  const [loadedIndexes, setLoadedIndexes] = useState<Set<number>>(
+    new Set([0, 1, 2, 3, 4,5,6,7,8,9]) // First 5 loaded
+  );
+const BATCH_SIZE = 10;
+const [visibleCount, setVisibleCount] = useState(BATCH_SIZE);
 
-  useEffect(() => {
-  if (isOpen) {
-    setVisibleCount(1);
-  }
-}, [isOpen]);
+  // ✅ When slide changes, preload nearby images
+ const handleSlideChange = useCallback(
+  (swiper: SwiperType) => {
+    const current = swiper.activeIndex;
 
-  // ✅ Debug log
-  console.log("preloadedImages:", preloadedImages.length);
-  console.log("remainingImages:", remainingImages.length);
-  console.log("visibleCount:", visibleCount);
-
-  // ✅ Reset when modal opens/closes
-  useEffect(() => {
-    if (isOpen) {
-      setVisibleCount(preloadedImages.length);
+    // when user reaches last 2 of current batch → preload next batch
+    if (current >= visibleCount - 2) {
+      setVisibleCount((prev) =>
+        Math.min(prev + BATCH_SIZE, allImages.length)
+      );
     }
-  }, [isOpen, preloadedImages.length]);
+  },
+  [visibleCount, allImages.length]
+);
 
-  // ✅ Handle slide change - load more when near end
 
-
+  // ✅ Reset when modal closes
   useEffect(() => {
-  if (isOpen) {
-    setVisibleCount(Math.min(2, allImages.length));
-  }
-}, [isOpen, allImages.length]);
+    if (!isOpen) {
+      setLoadedIndexes(new Set([0, 1, 2, 3, 4]));
+    }
+  }, [isOpen]);
 
- const handleSlideChange = (swiper: SwiperType) => {
-  const currentIndex = swiper.activeIndex;
-
-  // when user reaches last visible slide, load next
-  if (
-    currentIndex === visibleCount - 1 &&
-    visibleCount < allImages.length
-  ) {
-    setVisibleCount((prev) =>
-      Math.min(prev + 1, allImages.length)
-    );
-  }
-};
-
-
-
-  // ✅ Get currently visible slides
-  const visibleSlides = allImages.slice(0, visibleCount);
-
-  // Form states
+  // Form states (same as before)
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -115,7 +94,6 @@ export default function CaravanDetailModal({
   const [okMsg, setOkMsg] = useState<string | null>(null);
   const router = useRouter();
 
-  // Validation regex
   const NAME_RE = /^[A-Za-z][A-Za-z\s'.-]{1,49}$/;
   const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
   const PHONE_RE = /^\d{7,15}$/;
@@ -180,7 +158,6 @@ export default function CaravanDetailModal({
       const message =
         err instanceof Error ? err.message : "Failed to send. Try again.";
       setErrors((p) => ({ ...p, email: message }));
-      setOkMsg(null);
     } finally {
       setSubmitting(false);
     }
@@ -204,22 +181,27 @@ export default function CaravanDetailModal({
 
   const getDisplayPrice = () => {
     const sale = Number(String(product.salePrice).replace(/[^0-9.]/g, ""));
-    const regular = Number(
-      String(product.regularPrice).replace(/[^0-9.]/g, "")
-    );
-
+    const regular = Number(String(product.regularPrice).replace(/[^0-9.]/g, ""));
     if (sale > 0) return product.salePrice;
     if (regular > 0) return product.regularPrice;
-
     return "POA";
   };
+
+
+  useEffect(() => {
+  if (!isOpen) return;
+
+  // Preload ALL images immediately
+  allImages.forEach((src) => {
+    const img = new window.Image();
+    img.src = src;
+  });
+}, [isOpen, allImages]);
 
   return (
     <div className="custom-model-main carava_details show">
       <div className="custom-model-inner">
-        <div className="close-btn" onClick={onClose}>
-          ×
-        </div>
+        <div className="close-btn" onClick={onClose}>×</div>
         <div className="custom-model-wrap">
           <div className="pop-up-content-wrap">
             <div className="container">
@@ -247,103 +229,111 @@ export default function CaravanDetailModal({
                       }}
                       onSlideChange={handleSlideChange}
                     >
-                      {visibleSlides.map((img, idx) => (
+                      {/* ✅ All slides rendered, but images lazy loaded */}
+  {allImages.map((img, idx) => (
                         <SwiperSlide
-                          key={`slide-${idx}-${img}`}
+                          key={`slide-${idx}`}
                           className="flex justify-center items-center"
                         >
-                          <Image
-                            src={img}
-                            alt={`Slide ${idx + 1}`}
-                            width={0}
-                            height={0}
-                            sizes="100vw"
-                            className="w-full h-auto"
-                            unoptimized
-                            priority={idx < 2}
-                          />
+                          {loadedIndexes.has(idx) ? (
+                            <Image
+                              src={img}
+                              alt={`Slide ${idx + 1}`}
+                              width={0}
+                              height={0}
+                              sizes="100vw"
+                              className="w-full h-auto"
+                              unoptimized
+                              priority={idx < 2}
+                              onLoad={() => {
+                                // Preload next images when current loads
+                                setLoadedIndexes(prev => {
+                                  const newSet = new Set(prev);
+                                  newSet.add(idx + 1);
+                                  newSet.add(idx + 2);
+                                  return newSet;
+                                });
+                              }}
+                            />
+                          ) : (
+                            // ✅ Placeholder while image loads
+
+                            <div 
+                              className="image-placeholder"
+                              style={{
+                                width: '100%',
+                                height: '400px',
+                                background: '#f0f0f0',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                              }}
+                            >
+                              <span>Loading...</span>
+                            </div>
+                          )}
                         </SwiperSlide>
                       ))}
                     </Swiper>
 
-                    {/* ✅ Image counter */}
                     <div className="image-counter" style={{ 
                       textAlign: 'center', 
                       marginTop: '10px',
                       fontSize: '14px',
                       color: '#666'
                     }}>
-                      Showing {visibleCount} of {allImages.length} images
+                      {allImages.length} images
                     </div>
                   </div>
                 </div>
 
-                {/* Right Content - Enquiry Form */}
+                {/* Right Content - Form (same as before) */}
                 <div className="col-lg-3">
                   <div className="sidebar-enquiry">
                     <form className="wpcf7-form" noValidate onSubmit={onSubmit}>
                       <div className="form">
                         <h4>Contact Dealer</h4>
 
-                        {/* Name */}
                         <div className="form-item">
                           <p>
                             <input
                               id="enquiry2-name"
                               name="enquiry2-name"
                               type="text"
-                              className={`wpcf7-form-control${
-                                errors.name && touched.name ? " is-invalid" : ""
-                              }`}
+                              className={`wpcf7-form-control${errors.name && touched.name ? " is-invalid" : ""}`}
                               value={form.name}
                               onChange={(e) => setField("name", e.target.value)}
                               onBlur={() => onBlur("name")}
                               required
                               autoComplete="off"
-                              aria-invalid={!!(errors.name && touched.name)}
-                              aria-describedby="err-name"
                             />
                             <label htmlFor="enquiry2-name">Name</label>
                           </p>
                           {touched.name && errors.name && (
-                            <div id="err-name" className="cfs-error">
-                              {errors.name}
-                            </div>
+                            <div className="cfs-error">{errors.name}</div>
                           )}
                         </div>
 
-                        {/* Email */}
                         <div className="form-item">
                           <p>
                             <input
                               id="enquiry2-email"
                               name="enquiry2-email"
                               type="email"
-                              className={`wpcf7-form-control${
-                                errors.email && touched.email
-                                  ? " is-invalid"
-                                  : ""
-                              }`}
+                              className={`wpcf7-form-control${errors.email && touched.email ? " is-invalid" : ""}`}
                               value={form.email}
-                              onChange={(e) =>
-                                setField("email", e.target.value)
-                              }
+                              onChange={(e) => setField("email", e.target.value)}
                               onBlur={() => onBlur("email")}
                               required
                               autoComplete="off"
-                              aria-invalid={!!(errors.email && touched.email)}
-                              aria-describedby="err-email"
                             />
                             <label htmlFor="enquiry2-email">Email</label>
                           </p>
                           {touched.email && errors.email && (
-                            <div id="err-email" className="cfs-error">
-                              {errors.email}
-                            </div>
+                            <div className="cfs-error">{errors.email}</div>
                           )}
                         </div>
 
-                        {/* Phone */}
                         <div className="form-item">
                           <p className="phone_country">
                             <span className="phone-label">+61</span>
@@ -352,31 +342,20 @@ export default function CaravanDetailModal({
                               name="enquiry2-phone"
                               type="tel"
                               inputMode="numeric"
-                              className={`wpcf7-form-control${
-                                errors.phone && touched.phone
-                                  ? " is-invalid"
-                                  : ""
-                              }`}
+                              className={`wpcf7-form-control${errors.phone && touched.phone ? " is-invalid" : ""}`}
                               value={form.phone}
-                              onChange={(e) =>
-                                setField("phone", e.target.value)
-                              }
+                              onChange={(e) => setField("phone", e.target.value)}
                               onBlur={() => onBlur("phone")}
                               required
                               autoComplete="off"
-                              aria-invalid={!!(errors.phone && touched.phone)}
-                              aria-describedby="err-phone"
                             />
                             <label htmlFor="enquiry2-phone">Phone</label>
                           </p>
                           {touched.phone && errors.phone && (
-                            <div id="err-phone" className="cfs-error">
-                              {errors.phone}
-                            </div>
+                            <div className="cfs-error">{errors.phone}</div>
                           )}
                         </div>
 
-                        {/* Postcode */}
                         <div className="form-item">
                           <p>
                             <input
@@ -385,46 +364,28 @@ export default function CaravanDetailModal({
                               type="text"
                               inputMode="numeric"
                               maxLength={4}
-                              className={`wpcf7-form-control${
-                                errors.postcode && touched.postcode
-                                  ? " is-invalid"
-                                  : ""
-                              }`}
+                              className={`wpcf7-form-control${errors.postcode && touched.postcode ? " is-invalid" : ""}`}
                               value={form.postcode}
-                              onChange={(e) =>
-                                setField("postcode", e.target.value)
-                              }
+                              onChange={(e) => setField("postcode", e.target.value)}
                               onBlur={() => onBlur("postcode")}
                               required
                               autoComplete="off"
-                              aria-invalid={
-                                !!(errors.postcode && touched.postcode)
-                              }
-                              aria-describedby="err-postcode"
                             />
                             <label htmlFor="enquiry2-postcode">Postcode</label>
                           </p>
                           {touched.postcode && errors.postcode && (
-                            <div id="err-postcode" className="cfs-error">
-                              {errors.postcode}
-                            </div>
+                            <div className="cfs-error">{errors.postcode}</div>
                           )}
                         </div>
 
-                        {/* Message */}
                         <div className="form-item">
                           <p>
-                            <label htmlFor="enquiry4-message">
-                              Message (optional)
-                            </label>
+                            <label htmlFor="enquiry4-message">Message (optional)</label>
                             <textarea
                               id="enquiry4-message"
                               name="enquiry4-message"
                               value={form.message}
-                              onBlur={() => onBlur("message")}
-                              onChange={(e) =>
-                                setField("message", e.target.value)
-                              }
+                              onChange={(e) => setField("message", e.target.value)}
                               className="wpcf7-form-control wpcf7-textarea"
                             ></textarea>
                           </p>
@@ -435,10 +396,7 @@ export default function CaravanDetailModal({
                         <p className="terms_text">
                           By clicking &apos;Send Enquiry&apos;, you agree to
                           Caravan Marketplace{" "}
-                          <Link
-                            href="/privacy-collection-statement"
-                            target="_blank"
-                          >
+                          <Link href="/privacy-collection-statement" target="_blank">
                             Collection Statement
                           </Link>
                           ,{" "}

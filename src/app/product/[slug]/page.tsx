@@ -37,7 +37,7 @@ async function fetchProductDetail(slug: string) {
    if (!data || Object.keys(data).length === 0) {
      return {
        title: "Product Not Found - Caravans for Sale",
-       description: "The product you are looking for does not exist.",
+       description: "",
      };
    }
   
