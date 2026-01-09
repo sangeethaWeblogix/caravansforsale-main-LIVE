@@ -140,7 +140,7 @@ export async function generateMetadata({
     );
   if (filters.sleeps) qs.append("sleep", filters.sleeps);
 
-  const url = `https://www.admin.caravansforsale.com.au/wp-json/cfs/v1/new-list?${qs.toString()}`;
+  const url = `https://admin.caravansforsale.com.au/wp-json/cfs/v1/new-list?${qs.toString()}`;
 
   try {
     const res = await fetch(url, {

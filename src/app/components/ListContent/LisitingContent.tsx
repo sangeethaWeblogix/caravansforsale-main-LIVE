@@ -332,7 +332,7 @@ const loadRemaining = async (item: Product) => {
 
   const handleProductClick = async (id) => {
     await postTrackEvent(
-      "https://www.admin.caravansforsale.com.au/wp-json/cfs/v1/update-clicks",
+      "https://admin.caravansforsale.com.au/wp-json/cfs/v1/update-clicks",
       id
     );
 
@@ -472,7 +472,7 @@ const loadRemaining = async (item: Product) => {
           if (entry.isIntersecting) {
             const id = Number(entry.target.getAttribute("data-product-id"));
             postTrackEvent(
-              "https://www.admin.caravansforsale.com.au/wp-json/cfs/v1/update-impressions",
+              "https://admin.caravansforsale.com.au/wp-json/cfs/v1/update-impressions",
               id
             );
             observer.unobserve(entry.target);

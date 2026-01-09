@@ -9,7 +9,7 @@ const nextConfig: NextConfig = {
     domains: [
       "media.caravansforsale.com.au",
       "www.caravansforsale.com.au",
-       "www.admin.caravansforsale.com.au",
+       "admin.caravansforsale.com.au",
       "caravansforsale.b-cdn.net",
       "wb79vudhmjvv4ng6.public.blob.vercel-storage.com",
       "caravansforsale.imagestack.net",
@@ -17,7 +17,7 @@ const nextConfig: NextConfig = {
       remotePatterns: [
       {
         protocol: "https",
-        hostname: "www.admin.caravansforsale.com.au",
+        hostname: "admin.caravansforsale.com.au",
         pathname: "/**",
       },
       {

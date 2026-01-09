@@ -58,7 +58,7 @@ export async function middleware(request: NextRequest) {
       );
 
       const apiUrl =
-        "https://www.admin.caravansforsale.com.au/wp-json/cfs/v1/new_optimize_code?" +
+        "https://admin.caravansforsale.com.au/wp-json/cfs/v1/new_optimize_code?" +
         new URLSearchParams(filters as Record<string, string>).toString();
 
       // ✅ KEY FIX: Add timeout using AbortController

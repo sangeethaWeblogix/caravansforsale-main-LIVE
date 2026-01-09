@@ -77,7 +77,7 @@
         * Build API URL with dynamic filters
         */
        const apiUrl =
-         "https://www.admin.caravansforsale.com.au/wp-json/cfs/v1/new_optimize_code?" +
+         "https://admin.caravansforsale.com.au/wp-json/cfs/v1/new_optimize_code?" +
          new URLSearchParams(filters as Record<string, string>).toString();
  
        const apiRes = await fetch(apiUrl, {

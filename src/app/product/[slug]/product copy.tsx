@@ -549,7 +549,7 @@ useEffect(() => {
     if (!productDetails?.id) return;
 
     postTrackEvent(
-      "https://www.admin.caravansforsale.com.au/wp-json/cfs/v1/update-clicks",
+      "https://admin.caravansforsale.com.au/wp-json/cfs/v1/update-clicks",
       Number(productDetails.id)
     );
   }, [productDetails?.id]);

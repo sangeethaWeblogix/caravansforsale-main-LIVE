@@ -234,7 +234,7 @@ useEffect(() => {
         if (entry.isIntersecting) {
           const id = Number(entry.target.getAttribute("data-product-id"));
           postTrackEvent(
-            "https://www.admin.caravansforsale.com.au/wp-json/cfs/v1/update-impressions",
+            "https://admin.caravansforsale.com.au/wp-json/cfs/v1/update-impressions",
             id
           );
           observer.unobserve(entry.target);

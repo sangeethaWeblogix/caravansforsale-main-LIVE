@@ -6,50 +6,50 @@ import Image from "next/image";
 export default function DealersAndManufacturers() {
   const dealers = [
     {
-      href: "https://www.admin.caravansforsale.com.au/caravan-dealer/everest-caravans-vic",
-      img: "https://www.admin.caravansforsale.com.au/wp-content/uploads/2024/07/Everest-Caravans.png",
+      href: "https://admin.caravansforsale.com.au/caravan-dealer/everest-caravans-vic",
+      img: "https://admin.caravansforsale.com.au/wp-content/uploads/2024/07/Everest-Caravans.png",
       alt: "Everest Caravans - VIC",
       label: "Everest Caravans - VIC",
-      listings: "https://www.admin.caravansforsale.com.au/dealers/everest-caravans-vic",
+      listings: "https://admin.caravansforsale.com.au/dealers/everest-caravans-vic",
     },
     {
-      href: "https://www.admin.caravansforsale.com.au/caravan-dealer/everest-caravans-nsw",
-      img: "https://www.admin.caravansforsale.com.au/wp-content/uploads/2024/10/Everest-Caravans.png",
+      href: "https://admin.caravansforsale.com.au/caravan-dealer/everest-caravans-nsw",
+      img: "https://admin.caravansforsale.com.au/wp-content/uploads/2024/10/Everest-Caravans.png",
       alt: "Everest Caravans - NSW",
       label: "Everest Caravans - NSW",
-      listings: "https://www.admin.caravansforsale.com.au/dealers/everest-caravans-nsw",
+      listings: "https://admin.caravansforsale.com.au/dealers/everest-caravans-nsw",
     },
     {
-      href: "https://www.admin.caravansforsale.com.au/caravan-dealer/everest-caravans-qld",
-      img: "https://www.admin.caravansforsale.com.au/wp-content/uploads/2024/10/Everest-Caravans.png",
+      href: "https://admin.caravansforsale.com.au/caravan-dealer/everest-caravans-qld",
+      img: "https://admin.caravansforsale.com.au/wp-content/uploads/2024/10/Everest-Caravans.png",
       alt: "Everest Caravans - QLD",
       label: "Everest Caravans - QLD",
-      listings: "https://www.admin.caravansforsale.com.au/dealers/everest-caravans-qld",
+      listings: "https://admin.caravansforsale.com.au/dealers/everest-caravans-qld",
     },
   ];
 
   const manufacturers = [
     {
-      href: "https://www.admin.caravansforsale.com.au/caravan-manufacturers/grand-caravans",
-      img: "https://www.admin.caravansforsale.com.au/wp-content/uploads/2025/01/Grand-City-Caravans.png",
+      href: "https://admin.caravansforsale.com.au/caravan-manufacturers/grand-caravans",
+      img: "https://admin.caravansforsale.com.au/wp-content/uploads/2025/01/Grand-City-Caravans.png",
       alt: "Grand Caravans",
       label: "Grand Caravans",
     },
     {
-      href: "https://www.admin.caravansforsale.com.au/caravan-manufacturers/coronet-rv",
-      img: "https://www.admin.caravansforsale.com.au/wp-content/uploads/2025/01/Coronet-RV.png",
+      href: "https://admin.caravansforsale.com.au/caravan-manufacturers/coronet-rv",
+      img: "https://admin.caravansforsale.com.au/wp-content/uploads/2025/01/Coronet-RV.png",
       alt: "Coronet RV",
       label: "Coronet RV",
     },
     {
-      href: "https://www.admin.caravansforsale.com.au/caravan-manufacturers/orbit-caravans",
-      img: "https://www.admin.caravansforsale.com.au/wp-content/uploads/2025/01/Orbit-Caravans.png",
+      href: "https://admin.caravansforsale.com.au/caravan-manufacturers/orbit-caravans",
+      img: "https://admin.caravansforsale.com.au/wp-content/uploads/2025/01/Orbit-Caravans.png",
       alt: "Orbit Caravans",
       label: "Orbit Caravans",
     },
     {
-      href: "https://www.admin.caravansforsale.com.au/caravan-manufacturers/red-centre-caravans",
-      img: "https://www.admin.caravansforsale.com.au/wp-content/uploads/2025/01/Red-Centre-Caravans.png",
+      href: "https://admin.caravansforsale.com.au/caravan-manufacturers/red-centre-caravans",
+      img: "https://admin.caravansforsale.com.au/wp-content/uploads/2025/01/Red-Centre-Caravans.png",
       alt: "Red Centre Caravans",
       label: "Red Centre Caravans",
     },
