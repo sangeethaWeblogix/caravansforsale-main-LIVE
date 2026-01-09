@@ -43,17 +43,27 @@ export default function CaravanDetailModal({
   
   // ✅ All images combined
   const allImages = [...preloadedImages, ...remainingImages];
-  const [visibleCount, setVisibleCount] = useState(1);
+  const INITIAL_LOAD_COUNT = 10;
+const [visibleCount, setVisibleCount] = useState(
+  Math.min(INITIAL_LOAD_COUNT, allImages.length)
+); 
+ const [currentIndex, setCurrentIndex] = useState(0); 
+
 
   // ✅ Track which images to show
   // const [visibleCount, setVisibleCount] = useState(preloadedImages.length);
   const swiperRef = useRef<SwiperType | null>(null);
 
-  useEffect(() => {
+   
+useEffect(() => {
   if (isOpen) {
-    setVisibleCount(1);
+    setVisibleCount(
+      Math.min(INITIAL_LOAD_COUNT, allImages.length)
+    );
+    setCurrentIndex(0);
   }
-}, [isOpen]);
+}, [isOpen, allImages.length]);
+
 
   // ✅ Debug log
   console.log("preloadedImages:", preloadedImages.length);
@@ -61,34 +71,27 @@ export default function CaravanDetailModal({
   console.log("visibleCount:", visibleCount);
 
   // ✅ Reset when modal opens/closes
-  useEffect(() => {
-    if (isOpen) {
-      setVisibleCount(preloadedImages.length);
-    }
-  }, [isOpen, preloadedImages.length]);
+  
 
   // ✅ Handle slide change - load more when near end
 
 
-  useEffect(() => {
-  if (isOpen) {
-    setVisibleCount(Math.min(2, allImages.length));
-  }
-}, [isOpen, allImages.length]);
+ 
 
  const handleSlideChange = (swiper: SwiperType) => {
-  const currentIndex = swiper.activeIndex;
+  const index = swiper.activeIndex;
+  setCurrentIndex(index);
 
-  // when user reaches last visible slide, load next
+  // 🔥 First arrow click triggers full load
   if (
-    currentIndex === visibleCount - 1 &&
-    visibleCount < allImages.length
+    visibleCount < allImages.length &&
+    index > 0
   ) {
-    setVisibleCount((prev) =>
-      Math.min(prev + 1, allImages.length)
-    );
+    setVisibleCount(allImages.length);
   }
 };
+
+
 
 
 
@@ -241,6 +244,8 @@ export default function CaravanDetailModal({
                     <Swiper
                       modules={[Navigation, Pagination]}
                       navigation
+                        watchOverflow={false}
+
                       pagination={{ clickable: true }}
                       onSwiper={(swiper) => {
                         swiperRef.current = swiper;
@@ -273,8 +278,7 @@ export default function CaravanDetailModal({
                       fontSize: '14px',
                       color: '#666'
                     }}>
-                      Showing {visibleCount} of {allImages.length} images
-                    </div>
+ Showing {currentIndex + 1} of {allImages.length} images                    </div>
                   </div>
                 </div>
 
