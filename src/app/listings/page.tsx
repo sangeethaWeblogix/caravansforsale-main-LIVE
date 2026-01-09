@@ -68,7 +68,7 @@
        return (
          <ApiErrorFallback
            title="Unable to load listings"
-           message="We couldn't connect to our servers. Please check your internet connection and try again."
+           message="We couldn't connect to our servers. Please try again."
            showRetry={true}
          />
        );
