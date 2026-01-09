@@ -1,4 +1,4 @@
-// utils/parseFilters.ts
+ // utils/parseFilters.ts
 
 export interface Filters {
   category?: string;
@@ -24,8 +24,9 @@ export interface Filters {
   search?: string;
   from_sleep?: string | number;
   to_sleep?: string | number;
-    clickid?: string | null; 
+  clickid?: string | null;
   keyword?: string; // parsed -> canonicalized to `search`
+  shuffle_seed?: string | number; // NEW: For Cloudflare cache variants
 }
 
 /**
@@ -42,12 +43,7 @@ export function parseSlugToFilters(
     new: "New",
     used: "Used",
   };
-  // function toNumber(val: string | string[] | undefined): number | undefined {
-  //   if (!val) return undefined;
-  //   const str = Array.isArray(val) ? val[0] : val;
-  //   const num = Number(str);
-  //   return isNaN(num) ? undefined : num;
-  // }
+
   const hasReservedSuffix = (s: string) =>
     /-(category|condition|state|region|suburb|keyword)$/.test(s) ||
     /-(kg-atm|length-in-feet|people-sleeping-capacity)$/.test(s) ||
@@ -89,7 +85,7 @@ export function parseSlugToFilters(
         .toLowerCase();
       return;
     }
-   const suburbWithPin = part.match(/^([a-z0-9-]+)-(\d{4})-suburb$/);
+    const suburbWithPin = part.match(/^([a-z0-9-]+)-(\d{4})-suburb$/);
     if (suburbWithPin) {
       const [, suburbPart, pincode] = suburbWithPin;
       filters.suburb = suburbPart.replace(/-/g, " ").toLowerCase();
@@ -97,7 +93,7 @@ export function parseSlugToFilters(
       return;
     }
 
-    // ✅ Suburb only (e.g., jacana-suburb)
+    // Suburb only (e.g., jacana-suburb)
     const suburbOnly = part.match(/^([a-z0-9-]+)-suburb$/);
     if (suburbOnly) {
       const [, suburbPart] = suburbOnly;
@@ -105,7 +101,7 @@ export function parseSlugToFilters(
       return;
     }
 
-    // ✅ Pincode only (rare case)
+    // Pincode only (rare case)
     if (/^\d{4}$/.test(part)) {
       filters.pincode = part;
       return;
@@ -156,22 +152,6 @@ export function parseSlugToFilters(
       }
     }
 
-    // Sleeps (single-value)
-    // if (part.includes("-people-sleeping-capacity")) {
-    //   const between = part.match(
-    //     /^between-(\d+)-and-(\d+)-people-sleeping-capacity$/
-    //   );
-    //   if (between) {
-    //     filters.sleeps = `${between[1]}-people`;
-    //     return;
-    //   }
-    //   const raw = part.replace("-people-sleeping-capacity", "");
-    //   const cleaned = raw.replace(/^over-/, "").replace(/^under-/, "");
-    //   if (!isNaN(Number(cleaned))) {
-    //     filters.sleeps = `${cleaned}-people`;
-    //     return;
-    //   }
-    // }
     // Sleeps (range-based)
     if (part.includes("-people-sleeping-capacity")) {
       // between-x-y-people-sleeping-capacity
@@ -224,7 +204,7 @@ export function parseSlugToFilters(
       }
       return;
     }
-  // ✅ Year (single-year range only)
+    // Year (single-year range only)
     if (part.includes("-caravans-range")) {
       const yearMatch = part.match(/^(\d{4})-caravans-range$/);
       if (yearMatch) {
@@ -232,18 +212,9 @@ export function parseSlugToFilters(
         filters.acustom_toyears = yearMatch[1];
         return;
       }
-
-      
-      
- 
     }
 
     // Search + fallback
-    // if (part.startsWith("search=")) {
-    //   filters.search = decodeURIComponent(part.replace("search=", ""));
-    //   return;
-    // }
-
     if (part.endsWith("-search")) {
       const keyword = part
         .replace(/-search$/, "")
@@ -262,7 +233,7 @@ export function parseSlugToFilters(
       }
     }
 
-    // make / model fallback — only if safe and no search is present
+    // make / model fallback – only if safe and no search is present
     if (
       !hasReservedSuffix(part) &&
       !part.includes("=") &&
@@ -281,23 +252,22 @@ export function parseSlugToFilters(
   });
 
   // If suburb present, ignore region due to canonical URL structure
-  
 
   // ---- QUERY STRING SUPPORT ----
   if (query) {
     // Helper: handle arrays from query (e.g., Next.js gives string[])
     const getScalar = (v: string | string[] | undefined): string | undefined =>
       Array.isArray(v) ? v[0] : v;
- 
-    if (query.radius_kms) filters.radius_kms = getScalar(query.radius_kms);
 
-    
-     if(query.clickid)  filters.clickid = getScalar(query.clickid);
+    if (query.radius_kms) filters.radius_kms = getScalar(query.radius_kms);
+    if (query.clickid) filters.clickid = getScalar(query.clickid);
     if (query.orderby) filters.orderby = getScalar(query.orderby);
     if (query.search) filters.search = getScalar(query.search);
     if (query.keyword && !filters.search)
       filters.search = getScalar(query.keyword); // fallback
-    // You can add any other fields you support in query here.
+
+    // NEW: Parse shuffle_seed from query params (added by Cloudflare Worker)
+    if (query.shuffle_seed) filters.shuffle_seed = getScalar(query.shuffle_seed);
   }
 
   return filters;
