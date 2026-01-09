@@ -10,16 +10,16 @@ export async function middleware(request: NextRequest) {
   const fullPath = url.pathname + url.search;
 
   /* 0️⃣ Country Blocking */
-  const country =
-    request.headers.get("x-vercel-ip-country") ??
-    request.headers.get("cf-ipcountry");
-console.log("Detected1 country:", country);
-  if (country && ["SG", "CN"].includes(country)) {
-    return new NextResponse("This website is not available in your region.", {
-      status: 403,
-    });
-  }
-console.log("Detected country:", country);
+//   const country =
+//     request.headers.get("x-vercel-ip-country") ??
+//     request.headers.get("cf-ipcountry");
+// console.log("Detected1 country:", country);
+//   if (country && ["SG", "CN"].includes(country)) {
+//     return new NextResponse("This website is not available in your region.", {
+//       status: 403,
+//     });
+//   }
+// console.log("Detected country:", country);
 
   /* 1️⃣ Block /feed URLs */
   if (/feed/i.test(fullPath)) {
