@@ -8,7 +8,7 @@ import "swiper/css/navigation";
 import "swiper/css/pagination";
 import "./popup.css";
 import Image from "next/image";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { createProductEnquiry } from "@/api/enquiry/api";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -42,20 +42,22 @@ export default function CaravanDetailModal({
 }: CaravanDetailModalProps) {
   
   // ✅ All images combined
-  const allImages = [...preloadedImages, ...remainingImages];
+const allImages = useMemo(
+  () => [...preloadedImages, ...remainingImages],
+  [preloadedImages, remainingImages]
+);
   const INITIAL_LOAD_COUNT = 10;
-const [visibleCount, setVisibleCount] = useState(
-  Math.min(INITIAL_LOAD_COUNT, allImages.length)
-); 
- const [currentIndex, setCurrentIndex] = useState(0); 
+
+ const [visibleCount, setVisibleCount] = useState(INITIAL_LOAD_COUNT);
+const [currentIndex, setCurrentIndex] = useState(0);
+
 
 
   // ✅ Track which images to show
   // const [visibleCount, setVisibleCount] = useState(preloadedImages.length);
   const swiperRef = useRef<SwiperType | null>(null);
 
-   
-useEffect(() => {
+   useEffect(() => {
   if (isOpen) {
     setVisibleCount(
       Math.min(INITIAL_LOAD_COUNT, allImages.length)
@@ -63,6 +65,16 @@ useEffect(() => {
     setCurrentIndex(0);
   }
 }, [isOpen, allImages.length]);
+ 
+const handleSlideChange = (swiper: SwiperType) => {
+  const index = swiper.activeIndex;
+  setCurrentIndex(index);
+
+  // 🔥 FIRST arrow click → load everything
+  if (visibleCount < allImages.length && index >= 1) {
+    setVisibleCount(allImages.length);
+  }
+};
 
 
   // ✅ Debug log
@@ -78,18 +90,7 @@ useEffect(() => {
 
  
 
- const handleSlideChange = (swiper: SwiperType) => {
-  const index = swiper.activeIndex;
-  setCurrentIndex(index);
-
-  // 🔥 First arrow click triggers full load
-  if (
-    visibleCount < allImages.length &&
-    index > 0
-  ) {
-    setVisibleCount(allImages.length);
-  }
-};
+  
 
 
 
@@ -217,6 +218,10 @@ useEffect(() => {
     return "POA";
   };
 
+
+
+ 
+
   return (
     <div className="custom-model-main carava_details show">
       <div className="custom-model-inner">
@@ -252,7 +257,7 @@ useEffect(() => {
                       }}
                       onSlideChange={handleSlideChange}
                     >
-                      {visibleSlides.map((img, idx) => (
+                      {allImages.map((img, idx) => (
                         <SwiperSlide
                           key={`slide-${idx}-${img}`}
                           className="flex justify-center items-center"

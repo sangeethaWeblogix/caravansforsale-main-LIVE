@@ -400,52 +400,61 @@ export default function ClientLogger({
   const base = `https://caravansforsale.imagestack.net/800x600/${sku}/${slug}`;
 
   const main = `${base}main1.avif`;
- 
-  const [allSubs, setAllSubs] = useState<string[]>([]);
-
-function buildImageCandidates(sku?: string, slug?: string) {
-  if (!sku || !slug) return [];
-
-  const base = `https://caravansforsale.imagestack.net/400x300/${sku}/${slug}`;
-
-  return [
-    `${base}main1.avif`,
-    ...Array.from({ length: 4 }, (_, i) => `${base}sub${i + 2}.avif`),
-  ];
-}
-const [galleryImages, setGalleryImages] = useState<string[]>([]);
   const [activeImage, setActiveImage] = useState<string>(main);
-  
 
-useEffect(() => {
-  let cancelled = false;
+  const [mainsub, setMainsub] = useState<string[]>([]);
 
-  async function loadGallery() {
-    const candidates = buildImageCandidates(sku, slug);
-    const valid: string[] = [];
-
-    for (const url of candidates) {
-      const ok = await checkImage(url);
-      if (ok) valid.push(url);
-    }
-
-    if (cancelled) return;
-
-    // ✅ Product page thumbnails
-    setGalleryImages(valid.slice(0, 4));
-    setActiveImage(valid[0] || "");
-
-    // ✅ Modal logic
-    setPreloadedImages(valid.slice(0, 10));
-    setRemainingImages(valid.slice(10));
+  useEffect(() => {
+  if (!sku || !slug) {
+    setMainsub([]);
+    return;
   }
 
-  loadGallery();
+  const base = `https://caravansforsale.imagestack.net/800x600/${sku}/${slug}`;
+
+  const imageFiles = [
+    "main1.avif",
+    "sub2.avif",
+    "sub3.avif",
+    "sub4.avif",
+    "sub5.avif",
+     "sub6.avif",
+      "sub7.avif",
+  ];
+
+  let cancelled = false;
+
+  async function loadImages() {
+    const validImages: string[] = [];
+
+    for (const file of imageFiles) {
+      const url = `${base}${file}`;
+
+      try {
+        const res = await fetch(url, { method: "HEAD" });
+
+        if (res.ok) {
+          validImages.push(url);
+        }
+      } catch {
+        // ignore failed image
+      }
+    }
+
+    if (!cancelled) {
+      setMainsub(validImages);
+    }
+  }
+
+  loadImages();
+
   return () => {
     cancelled = true;
   };
 }, [sku, slug]);
 
+
+  const [allSubs, setAllSubs] = useState<string[]>([]);
 
   function checkImage(url: string): Promise<boolean> {
     return new Promise((resolve) => {
@@ -458,7 +467,59 @@ useEffect(() => {
     });
   }
 
- 
+  
+
+useEffect(() => {
+  if (!sku || !slug) {
+    setMainsub([]);
+    return;
+  }
+
+  let cancelled = false;
+
+  const base = `https://caravansforsale.imagestack.net/800x600/${sku}/${slug}`;
+
+  const imageFiles = [
+    "main1.avif",
+    "sub2.avif",
+    "sub3.avif",
+    "sub4.avif",
+    "sub5.avif",
+    "sub6.avif",
+    "sub7.avif",
+  ];
+
+  async function loadValidImages() {
+    const valid: string[] = [];
+
+    for (const file of imageFiles) {
+      if (valid.length === 4) break; // ✅ LIMIT 4
+
+      const url = `${base}${file}`;
+
+      try {
+        const res = await fetch(url, { method: "HEAD" });
+        if (res.ok) {
+          valid.push(url);
+        }
+      } catch {
+        // ignore
+      }
+    }
+
+    if (!cancelled) {
+      setMainsub(valid);
+      setActiveImage(valid[0] || "");
+    }
+  }
+
+  loadValidImages();
+
+  return () => {
+    cancelled = true;
+  };
+}, [sku, slug]);
+
   const getIP = async () => {
     try {
       const res = await fetch("https://api.ipify.org?format=json");
@@ -523,7 +584,7 @@ useEffect(() => {
       if (hasMain) urls.push(mainUrl);
 
       // 2) First 5 subs (sub2 to sub5) - PRELOAD
-      for (let i = 2; i <= 10; i++) {
+      for (let i = 2; i <= 5; i++) {
         const url = `${base}sub${i}.avif`;
         const ok = await checkImage(url);
         if (!ok) break;
@@ -533,12 +594,13 @@ useEffect(() => {
       // ✅ Set preloaded images immediately
       if (!cancelled) {
         setPreloadedImages(urls);
-         setActiveImage(urls[0] || main);
+        setMainsub(urls);
+        setActiveImage(urls[0] || main);
       }
 
       // 3) Remaining subs (sub6 to sub70) - LAZY LOAD
       const remainingUrls: string[] = [];
-      for (let i = 11; i <= 80; i++) {
+      for (let i = 6; i <= 70; i++) {
         const url = `${base}sub${i}.avif`;
         const ok = await checkImage(url);
         if (!ok) break;
@@ -646,7 +708,7 @@ useEffect(() => {
                   {/* Thumbnails */}
                   <div className="slider_thumb_vertical image_container">
                     <div className="image_mop">
-                      {galleryImages.map((image, i) => (
+                      {mainsub.map((image, i) => (
                         <div className="image_item" key={`${image}-${i}`}>
                           <div className="background_thumb">
                             <Image
@@ -687,7 +749,7 @@ useEffect(() => {
                   <div className="lager_img_view image_container">
                     <div className="background_thumb">
                       <Image
-                        src={activeImage}
+                        src={activeImage || allSubs[0]}
                         width={800}
                         height={600}
                         alt="Large"
