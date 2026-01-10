@@ -1,4 +1,4 @@
-  "use client";
+ "use client";
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
@@ -10,8 +10,7 @@ interface Props {
   height?: number;
   className?: string;
   style?: React.CSSProperties;
-  priority?: boolean; 
-  
+  priority?: boolean;
 }
 
 export default function ImageWithSkeleton({
@@ -20,8 +19,7 @@ export default function ImageWithSkeleton({
   width = 300,
   height = 200,
   className,
-   priority=false,
-  
+  priority = false,
 }: Props) {
   const [loaded, setLoaded] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -32,10 +30,16 @@ export default function ImageWithSkeleton({
     setFailed(false);
   }, [src]);
 
-  const realSrc =  !src ? "/images/sample3.webp" : src;
-
   return (
-    <div className={className}
+    
+    <div
+      className={className}
+      style={{
+        position: "relative",
+        width,
+        height,
+        overflow: "hidden",
+      }}
     >
       {/* Skeleton */}
       {!loaded && (
@@ -49,27 +53,29 @@ export default function ImageWithSkeleton({
         />
       )}
 
-      {/* Image */}
-      <Image
-        src={realSrc}
-        alt={alt}
-        width={width}
-        height={height}
-        
-        unoptimized
-         priority={priority}  
-        onLoad={() => setLoaded(true)}
-onError={() => {
-  setFailed(true);
-  setLoaded(true); // ⭐ IMPORTANT
-}}        style={{
-          width: "100%",
-          height: "100%",
-          objectFit: "cover",
-          transition: "opacity .35s ease",
-          opacity: loaded ? 1 : 0,
-        }}
-      />
+      {/* Image – ONLY if src exists & not failed */}
+      {src && !failed && (
+        <Image
+          src={src}
+          alt={alt}
+          width={width}
+          height={height}
+          priority={priority}
+          unoptimized
+          onLoad={() => setLoaded(true)}
+          onError={() => {
+            setFailed(true);
+            setLoaded(true); // skeleton stop
+          }}
+          style={{
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            transition: "opacity .35s ease",
+            opacity: loaded ? 1 : 0,
+          }}
+        />
+      )}
 
       <style jsx>{`
         @keyframes pulse {
