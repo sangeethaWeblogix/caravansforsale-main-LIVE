@@ -1,4 +1,4 @@
-"use client";
+ "use client";
 import Link from "next/link";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
@@ -7,7 +7,7 @@ import "swiper/css/pagination";
 import { Navigation, Pagination } from "swiper/modules";
 import Skelton from "../skelton";
 import Head from "next/head";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toSlug } from "@/utils/seo/slug";
 import ImageWithSkeleton from "../ImageWithSkeleton";
 import { useEnquiryForm } from "./enquiryform";
@@ -124,13 +124,13 @@ export default function ListingContent({
   const IMAGE_FORMATS = ["avif", "webp", "jpg", "jpeg", "png"];
   const IMAGE_FILES = [
     "main1",
-    "sub3",
+     "sub3",
     "sub4",
     "sub5",
     "sub6",
     "sub7",
-    "sub8",
-    "sub9",
+    "sub8", 
+    "sub9"
   ];
   const [navigating, setNavigating] = useState(false);
   const handleViewDetails = async (
@@ -207,71 +207,71 @@ export default function ListingContent({
   };
   const getFirstValidImage = async (item: Product): Promise<string> => {
     const base = getBaseImageUrl(item);
-    if (!base) return "/images/imageloading.png";
+    if (!base) return "/images/sample3.webp";
 
     for (const ext of IMAGE_FORMATS) {
       const url = `${base}main1.${ext}`;
       if (await checkImage(url)) return url;
     }
 
-    return "/images/imageloading.png";
+    return "/images/sample3.webp";
   };
 
   const MAX_SWIPER_IMAGES = 5;
-  // 🔥 PRE-FETCH CONFIG
-  const PREFETCH_COUNT = 12; // Pre-fetch first 12 images
-  const PREFETCH_DELAY = 100; // Stagger requests by 100ms
-  const loadRemaining = async (item: Product) => {
-    if (loadedAll[item.id]) return;
 
-    const resizedBase = getResizedBase(item);
-    const originalBase = getOriginalBase(item);
-    if (!resizedBase || !originalBase) return;
+const loadRemaining = async (item: Product) => {
+  if (loadedAll[item.id]) return;
 
-    const validImages: string[] = [];
+  const resizedBase = getResizedBase(item);
+  const originalBase = getOriginalBase(item);
+  if (!resizedBase || !originalBase) return;
 
-    for (const file of IMAGE_FILES) {
-      if (validImages.length >= MAX_SWIPER_IMAGES) break; // ✅ STOP at 5
+  const validImages: string[] = [];
 
-      let found = false;
+  for (const file of IMAGE_FILES) {
+    if (validImages.length >= MAX_SWIPER_IMAGES) break; // ✅ STOP at 5
 
-      // 1️⃣ Try resized bucket
+    let found = false;
+
+    // 1️⃣ Try resized bucket
+    for (const ext of IMAGE_FORMATS) {
+      const url = `${resizedBase}${file}.${ext}`;
+      if (await checkImage(url)) {
+        validImages.push(url);
+        found = true;
+        break;
+      }
+    }
+
+    // 2️⃣ Fallback to original bucket
+    if (!found) {
       for (const ext of IMAGE_FORMATS) {
-        const url = `${resizedBase}${file}.${ext}`;
+        const url = `${originalBase}${file}.${ext}`;
         if (await checkImage(url)) {
           validImages.push(url);
-          found = true;
           break;
         }
       }
-
-      // 2️⃣ Fallback to original bucket
-      if (!found) {
-        for (const ext of IMAGE_FORMATS) {
-          const url = `${originalBase}${file}.${ext}`;
-          if (await checkImage(url)) {
-            validImages.push(url);
-            break;
-          }
-        }
-      }
     }
+  }
 
-    // ❗ If only main1 exists, still safe
-    if (validImages.length === 0) {
-      validImages.push("/images/imageloading.png");
-    }
+  // ❗ If only main1 exists, still safe
+  if (validImages.length === 0) {
+    validImages.push("/images/sample3.webp");
+  }
 
-    setLazyImages((prev) => ({
-      ...prev,
-      [item.id]: validImages, // ✅ ONLY VALID IMAGES
-    }));
+  setLazyImages((prev) => ({
+    ...prev,
+    [item.id]: validImages, // ✅ ONLY VALID IMAGES
+  }));
 
-    setLoadedAll((prev) => ({
-      ...prev,
-      [item.id]: true,
-    }));
-  };
+  setLoadedAll((prev) => ({
+    ...prev,
+    [item.id]: true,
+  }));
+};
+
+
 
   // const loadRemaining = async (item: Product) => {
   //   if (loadedAll[item.id]) return;
@@ -504,13 +504,15 @@ export default function ListingContent({
     };
   }, [showInfo, showContact]);
 
-  useEffect(() => {
-    mergedProducts.forEach((item) => {
-      if (!loadedAll[item.id]) {
-        loadRemaining(item);
-      }
-    });
-  }, [mergedProducts]);
+
+  
+useEffect(() => {
+  mergedProducts.forEach((item) => {
+    if (!loadedAll[item.id]) {
+      loadRemaining(item);
+    }
+  });
+}, [mergedProducts]);
 
   // Example placeholder function for product links
 
@@ -532,7 +534,7 @@ export default function ListingContent({
 
   // ✅ Helper: generate up to 5 image URLs from SKU
   // const getProductImages = (sku?: string, slug?: string): string[] => {
-  //   if (!sku || !slug) return ["/images/imageloading.png"];
+  //   if (!sku || !slug) return ["/images/sample3.webp"];
 
   //   const base = `https://caravansforsale.imagestack.net/400x300/${sku}/${slug}`;
 
@@ -579,77 +581,6 @@ export default function ListingContent({
 
   const { count, text } = splitCountAndTitle(pageTitle);
 
-  const uniqueProducts = useMemo(() => {
-    const seen = new Set<string>();
-    return (products || []).filter((p) => {
-      const k = String(p?.id ?? p?.slug ?? p?.link);
-      if (seen.has(k)) return false;
-      seen.add(k);
-      return true;
-    });
-  }, [products]);
-
-  // 🚀 PRE-FETCH IMAGES - Warm up Cloudflare cache
-  useEffect(() => {
-    if (!uniqueProducts?.length) return;
-
-    // Get first N product images
-    const imagesToPrefetch = uniqueProducts
-      .slice(0, PREFETCH_COUNT)
-      .map((p) => p.image)
-      .filter((img) => img && img.trim() !== "");
-
-    // Pre-fetch with staggered timing to avoid overwhelming the server
-    imagesToPrefetch.forEach((imageUrl, index) => {
-      setTimeout(() => {
-        const img = new window.Image();
-        img.src = imageUrl;
-        // Optional: Log for debugging
-        // console.log(`Pre-fetching image ${index + 1}:`, imageUrl);
-      }, index * PREFETCH_DELAY);
-    });
-
-    // Also use link prefetch for browsers that support it
-    imagesToPrefetch.forEach((imageUrl) => {
-      const link = document.createElement("link");
-      link.rel = "prefetch";
-      link.as = "image";
-      link.href = imageUrl;
-      document.head.appendChild(link);
-    });
-
-    // Cleanup prefetch links on unmount
-    return () => {
-      document
-        .querySelectorAll('link[rel="prefetch"][as="image"]')
-        .forEach((link) => {
-          if (imagesToPrefetch.includes((link as HTMLLinkElement).href)) {
-            link.remove();
-          }
-        });
-    };
-  }, [uniqueProducts]);
-
-  // 🔥 Image error handler with retry
-  const handleImageError = useCallback(
-    (e: React.SyntheticEvent<HTMLImageElement>) => {
-      const img = e.currentTarget;
-      const currentSrc = img.src;
-
-      // Check if already retried
-      if (currentSrc.includes("_retry=")) {
-        // Max retries reached, show fallback
-        img.src = "/images/imageloading.png";
-        return;
-      }
-
-      // Retry with cache-busting param
-      const retryCount = 1;
-      const separator = currentSrc.includes("?") ? "&" : "?";
-      img.src = `${currentSrc}${separator}_retry=${retryCount}&t=${Date.now()}`;
-    },
-    []
-  );
   return (
     <>
       <Head>
@@ -741,11 +672,14 @@ export default function ListingContent({
                 <Skelton count={6} />
               ) : (
                 <div className="row g-3">
-                  {uniqueProducts.map((item, index) => {
+                  {mergedProducts.map((item, index) => {
                     const href = getHref(item);
                     const isPriority = index < 5;
                     // const resizedBase = getResizedBase(item);
-                    const imgs = lazyImages[item.id] || ["/images/imageloading.png"]; // ALWAYS SAFE
+                    const imgs =
+  lazyImages[item.id] ||
+  ["/images/sample3.webp"]; // ALWAYS SAFE
+
 
                     return (
                       <div className="col-lg-6 mb-0" key={index}>
@@ -805,91 +739,20 @@ export default function ListingContent({
                                   }}
                                   className="main_thumb_swiper"
                                 >
-                                  <div className="img">
-                                    <div className="background_thumb">
-                                      <ImageWithSkeleton
-                                        src={
-                                          imgs[0] &&
-                                          !imgs[0].includes("/images/imageloading.png")
-                                            ? imgs[0]
-                                            : item.image || "/images/imageloading.png"
-                                        }
-                                        priority={isPriority}
-                                        alt={item.name || "Caravan"}
-                                        width={300}
-                                        height={200}
-                                      />
-                                    </div>
-                                    <div
-                                      className="main_thumb position-relative"
-                                      onClick={(e) => e.stopPropagation()}
-                                    >
-                                      {item.is_exclusive && (
-                                        <span className="lab">
-                                          Spotlight Van
-                                        </span>
-                                      )}
-                                      <Swiper
-                                        modules={[Navigation, Pagination]}
-                                        spaceBetween={10}
-                                        slidesPerView={1}
-                                        navigation
-                                        pagination={{ clickable: true }}
-                                        onSlideChange={() => {
-                                          if (!loadedAll[item.id])
-                                            loadRemaining(item);
-                                        }}
-                                        onReachBeginning={() => {
-                                          if (!loadedAll[item.id])
-                                            loadRemaining(item);
-                                        }}
-                                        onReachEnd={() => {
-                                          if (!loadedAll[item.id])
-                                            loadRemaining(item);
-                                        }}
-                                        className="main_thumb_swiper"
-                                      >
-                                        {imgs.map((img, i) => (
-                                          <SwiperSlide key={i}>
-                                            <div className="swiper-zoom-container">
-                                              {img &&
-                                              img.trim() !== "" &&
-                                              !img.includes(
-                                                "/images/imageloading.png"
-                                              ) ? (
-                                                <Image
-                                                  src={img}
-                                                  alt={`${
-                                                    item.name || "Caravan"
-                                                  } - Image ${i + 1}`}
-                                                  width={1593}
-                                                  height={1195}
-                                                  priority={
-                                                    isPriority && i === 0
-                                                  }
-                                                  loading={
-                                                    isPriority && i === 0
-                                                      ? "eager"
-                                                      : "lazy"
-                                                  }
-                                                  onError={handleImageError}
-                                                  unoptimized
-                                                />
-                                              ) : (
-                                                <Image
-                                                  src="/images/imageloading.png"
-                                                  alt="Fallback Caravan"
-                                                  width={1593}
-                                                  height={1195}
-                                                  unoptimized
-                                                />
-                                              )}
-                                            </div>
-                                          </SwiperSlide>
-                                        ))}
-                                      </Swiper>
-                                    </div>
-                                  </div>
+                                  {imgs.map((img, i) => (
+                                    <SwiperSlide key={i}>
+                                      <div className="thumb_img">
+                                        <ImageWithSkeleton
+                                          src={img}
+                                          alt={`Caravan ${i + 1}`}
+                                          width={300}
+                                          height={200}
+                                          
+                                          priority={isPriority && i === 0}
+                                        />
+                                      </div>
+                                    </SwiperSlide>
+                                  ))}
                                 </Swiper>
                                 {/* Hidden "View More" button that appears after last slide */}
                                 {/* <div
