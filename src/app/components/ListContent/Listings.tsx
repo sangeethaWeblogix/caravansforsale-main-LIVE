@@ -665,48 +665,67 @@ useEffect(() => {
     }, 0);
   };
   const handleNextPage = useCallback(async () => {
-    if (pagination.current_page < pagination.total_pages) {
-      scrollToTop();
-      setIsMainLoading(true);
-      setIsFeaturedLoading(true);
-      setIsPremiumLoading(true);
+  if (pagination.current_page >= pagination.total_pages) return;
 
-      const nextPage = pagination.current_page + 1;
-      const id = ensureclickid();
-      savePage(id, nextPage); // NEW: create clickid if first time
-      // sessionStorage.setItem(`page_${id}`, String(nextPage)); // save page for this session
-      try {
-        if (nextPageData != null) {
-          const products = nextPageData?.data?.products ?? [];
-          const validProducts = Array.isArray(products)
-            ? products.filter((item) => item != null)
-            : [];
+  scrollToTop();
 
-          if (validProducts.length > 0) {
-            const transformedProducts =
-              transformApiItemsToProducts(validProducts);
-            setProducts(transformedProducts);
-            setPremiumProducts(nextPageData?.data?.premium_products ?? []);
-            setFeaturedProducts(nextPageData?.data?.featured_products ?? []);
-            setExculisiveProducts(nextPageData?.data?.exclusive_products ?? []);
-            if (nextPageData.pagination) setPagination(nextPageData.pagination);
-          }
-        } else {
-          await loadListings(nextPage, filtersRef.current, true);
-        }
-      } catch (error) {
-        console.error("Error loading next page:", error);
-      } finally {
-        setIsMainLoading(false);
-        setIsFeaturedLoading(false);
-        setIsPremiumLoading(false);
+  flushSync(() => {
+    setIsMainLoading(true);
+    setIsFeaturedLoading(true);
+    setIsPremiumLoading(true);
+  });
 
-        setScrollStarted(false);
-        setNextPageData(null);
-        setIsNextLoading(false);
+  const nextPage = pagination.current_page + 1;
+
+  // ✅ always ensure clickid
+  const id = ensureclickid();
+  savePage(id, nextPage);
+
+  try {
+    if (nextPageData?.data?.products?.length) {
+      // ✅ use prefetched data
+      setProducts(
+        transformApiItemsToProducts(nextPageData.data.products)
+      );
+      setPremiumProducts(
+        transformApiItemsToProducts(nextPageData.data.premium_products ?? [])
+      );
+      setFeaturedProducts(
+        transformApiItemsToProducts(nextPageData.data.featured_products ?? [])
+      );
+      setExculisiveProducts(
+        transformApiItemsToProducts(nextPageData.data.exclusive_products ?? [])
+      );
+
+      if (nextPageData.pagination) {
+        setPagination(nextPageData.pagination);
       }
+    } else {
+      // ✅ fallback fetch
+      await loadListings(nextPage, filtersRef.current, true);
     }
-  }, [pagination, loadListings, clickid, ensureclickid, nextPageData]);
+
+    // ✅ VERY IMPORTANT: URL update using router
+    updateURLWithFilters(filtersRef.current, nextPage);
+
+  } catch (error) {
+    console.error("Error loading next page:", error);
+  } finally {
+    setIsMainLoading(false);
+    setIsFeaturedLoading(false);
+    setIsPremiumLoading(false);
+
+    setScrollStarted(false);
+    setNextPageData(null);
+    setIsNextLoading(false);
+  }
+}, [
+  pagination.current_page,
+  pagination.total_pages,
+  nextPageData,
+  loadListings,
+  updateURLWithFilters,
+]);
 
   // ✅ FIXED: Proper handlePrevPage function
 const handlePrevPage = useCallback(async () => {
