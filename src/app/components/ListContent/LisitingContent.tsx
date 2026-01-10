@@ -207,14 +207,14 @@ export default function ListingContent({
   };
   const getFirstValidImage = async (item: Product): Promise<string> => {
     const base = getBaseImageUrl(item);
-    if (!base) return "/images/image.png";
+    if (!base) return "/images/imageloading.png";
 
     for (const ext of IMAGE_FORMATS) {
       const url = `${base}main1.${ext}`;
       if (await checkImage(url)) return url;
     }
 
-    return "/images/image.png";
+    return "/images/imageloading.png";
   };
 
   const MAX_SWIPER_IMAGES = 5;
@@ -259,7 +259,7 @@ export default function ListingContent({
 
     // ❗ If only main1 exists, still safe
     if (validImages.length === 0) {
-      validImages.push("/images/image.png");
+      validImages.push("/images/imageloading.png");
     }
 
     setLazyImages((prev) => ({
@@ -532,7 +532,7 @@ export default function ListingContent({
 
   // ✅ Helper: generate up to 5 image URLs from SKU
   // const getProductImages = (sku?: string, slug?: string): string[] => {
-  //   if (!sku || !slug) return ["/images/image.png"];
+  //   if (!sku || !slug) return ["/images/imageloading.png"];
 
   //   const base = `https://caravansforsale.imagestack.net/400x300/${sku}/${slug}`;
 
@@ -745,7 +745,7 @@ export default function ListingContent({
                     const href = getHref(item);
                     const isPriority = index < 5;
                     // const resizedBase = getResizedBase(item);
-                    const imgs = lazyImages[item.id] || ["/images/image.png"]; // ALWAYS SAFE
+                    const imgs = lazyImages[item.id] || ["/images/imageloading.png"]; // ALWAYS SAFE
 
                     return (
                       <div className="col-lg-6 mb-0" key={index}>
@@ -810,9 +810,9 @@ export default function ListingContent({
                                       <ImageWithSkeleton
                                         src={
                                           imgs[0] &&
-                                          !imgs[0].includes("/images/image.png")
+                                          !imgs[0].includes("/images/imageloading.png")
                                             ? imgs[0]
-                                            : item.image || "/images/image.png"
+                                            : item.image || "/images/imageloading.png"
                                         }
                                         priority={isPriority}
                                         alt={item.name || "Caravan"}

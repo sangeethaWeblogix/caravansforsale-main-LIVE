@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 
 const LOADING_PLACEHOLDER = "/images/imageloading.png";
-const FALLBACK_IMAGE = "/images/imageloading.png";
+const FALLBACK_IMAGE = "/images/image.png";
 const MAX_RETRIES = 3;
 
 interface Props {
@@ -53,7 +53,7 @@ export default function ImageWithSkeleton({
     <div
       style={{
         position: "relative",
-         width: `${width}px`,       // 🔥 FULL AREA
+        width: "100%",
         height: `${height}px`,     // 🔥 FULL AREA
         backgroundColor: "#f2f2f2",
         overflow: "hidden",
