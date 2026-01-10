@@ -260,11 +260,12 @@ const loadRemaining = async (item: Product) => {
   // if (validImages.length === 0) {
   //   validImages.push("/images/sample3.webp");
   // }
-
   setLazyImages((prev) => ({
-    ...prev,
-    [item.id]: validImages, // ✅ ONLY VALID IMAGES
-  }));
+  ...prev,
+  [item.id]: validImages, // ✅ only real images
+}));
+
+  
 
   setLoadedAll((prev) => ({
     ...prev,
@@ -679,7 +680,7 @@ useEffect(() => {
                     const isPriority = index < 5;
                     // const resizedBase = getResizedBase(item);
                     const imgs =
-  lazyImages[item.id] ; // ALWAYS SAFE
+  lazyImages[item.id] || [] ; // ALWAYS SAFE
 
 
                     return (
