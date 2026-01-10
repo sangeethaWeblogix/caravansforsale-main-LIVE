@@ -118,7 +118,7 @@ pageTitle,
      } = useEnquiryForm(enquiryProduct);
  
    const getFirstImage = (item: Product) => {
-     if (!item.sku || !item.slug) return "/images/sample3.webp";
+     if (!item.sku || !item.slug) return "/images/image.pngp";
  
      return `https://caravansforsale.imagestack.net/600x450/${item.sku}/${item.slug}main1.avif`;
    };

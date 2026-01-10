@@ -1,91 +1,93 @@
  "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
+
+const LOADING_PLACEHOLDER = "/images/imageloading.png";
+const FALLBACK_IMAGE = "/images/image.png";
+const MAX_RETRIES = 3;
 
 interface Props {
   src?: string;
   alt?: string;
+  priority?: boolean;
   width?: number;
-  height?: number;
-  className?: string;
-  style?: React.CSSProperties;
-  priority?: boolean; 
-  
+  height?: number; // 👈 control height inline
 }
 
 export default function ImageWithSkeleton({
   src,
   alt = "",
+  priority = false,
   width = 300,
-  height = 200,
-  className,
-   priority=false,
-  
+  height = 220, // 👈 default card height
 }: Props) {
   const [loaded, setLoaded] = useState(false);
   const [failed, setFailed] = useState(false);
+  const [retry, setRetry] = useState(0);
+  const [imgSrc, setImgSrc] = useState(src);
 
-  // reset when src changes
   useEffect(() => {
     setLoaded(false);
     setFailed(false);
+    setRetry(0);
+    setImgSrc(src);
   }, [src]);
 
-  const realSrc = failed || !src ? "/images/sample3.webp" : src;
+  const handleError = useCallback(() => {
+    if (!src) return;
+
+    if (retry < MAX_RETRIES) {
+      setTimeout(() => {
+        setRetry((r) => r + 1);
+        setImgSrc(`${src}?retry=${retry + 1}&t=${Date.now()}`);
+      }, 800);
+    } else {
+      setFailed(true);
+    }
+  }, [retry, src]);
+
+  const finalSrc = failed ? FALLBACK_IMAGE : imgSrc || FALLBACK_IMAGE;
 
   return (
     <div
-      
-      className={className}
+      style={{
+        position: "relative",
+         width: `${width}px`,       // 🔥 FULL AREA
+        height: `${height}px`,     // 🔥 FULL AREA
+        backgroundColor: "#f2f2f2",
+        overflow: "hidden",
+        borderRadius: "6px",
+      }}
     >
-      {/* Skeleton */}
-      {!loaded && (
-        <div
+      {/* ✅ LOADING IMAGE (FULL AREA) */}
+      {!loaded && !failed && (
+        <Image
+          src={LOADING_PLACEHOLDER}
+          alt="Loading"
+          fill
+          unoptimized
           style={{
-            position: "absolute",
-            inset: 0,
-            background: "linear-gradient(90deg,#eee,#ddd,#eee)",
-            animation: "pulse 1.3s infinite",
+            objectFit: "cover",
           }}
         />
       )}
 
-      {/* Image */}
+      {/* ✅ REAL IMAGE */}
       <Image
-        src={realSrc}
+        src={finalSrc}
         alt={alt}
-        width={width}
-        height={height}
-        
+        fill
+        priority={priority}
         unoptimized
-         priority={priority}  
         onLoad={() => setLoaded(true)}
-onError={() => {
-  setFailed(true);
-  setLoaded(true); // ⭐ IMPORTANT
-}}        style={{
-          width: "100%",
-          height: "100%",
+        onError={handleError}
+        style={{
           objectFit: "cover",
-          transition: "opacity .35s ease",
-          opacity: loaded ? 1 : 0,
+          opacity: loaded || failed ? 1 : 0,
+          transition: "opacity 0.3s ease",
         }}
       />
-
-      <style jsx>{`
-        @keyframes pulse {
-          0% {
-            opacity: 1;
-          }
-          50% {
-            opacity: 0.4;
-          }
-          100% {
-            opacity: 1;
-          }
-        }
-      `}</style>
     </div>
   );
 }

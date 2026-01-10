@@ -207,14 +207,14 @@ export default function ListingContent({
   };
   const getFirstValidImage = async (item: Product): Promise<string> => {
     const base = getBaseImageUrl(item);
-    if (!base) return "/images/sample3.webp";
+    if (!base) return "/images/image.png";
 
     for (const ext of IMAGE_FORMATS) {
       const url = `${base}main1.${ext}`;
       if (await checkImage(url)) return url;
     }
 
-    return "/images/sample3.webp";
+    return "/images/image.png";
   };
 
   const MAX_SWIPER_IMAGES = 5;
@@ -257,7 +257,7 @@ const loadRemaining = async (item: Product) => {
 
   // ❗ If only main1 exists, still safe
   if (validImages.length === 0) {
-    validImages.push("/images/sample3.webp");
+    validImages.push("/images/image.png");
   }
 
   setLazyImages((prev) => ({
@@ -534,7 +534,7 @@ useEffect(() => {
 
   // ✅ Helper: generate up to 5 image URLs from SKU
   // const getProductImages = (sku?: string, slug?: string): string[] => {
-  //   if (!sku || !slug) return ["/images/sample3.webp"];
+  //   if (!sku || !slug) return ["/images/image.png"];
 
   //   const base = `https://caravansforsale.imagestack.net/400x300/${sku}/${slug}`;
 
@@ -678,7 +678,7 @@ useEffect(() => {
                     // const resizedBase = getResizedBase(item);
                     const imgs =
   lazyImages[item.id] ||
-  ["/images/sample3.webp"]; // ALWAYS SAFE
+  ["/images/image.png"]; // ALWAYS SAFE
 
 
                     return (
