@@ -207,14 +207,14 @@ export default function ListingContent({
   };
   const getFirstValidImage = async (item: Product): Promise<string> => {
     const base = getBaseImageUrl(item);
-    // if (!base) return "/images/sample3.webp";
+    if (!base) return "/images/sample3.webp";
 
     for (const ext of IMAGE_FORMATS) {
       const url = `${base}main1.${ext}`;
       if (await checkImage(url)) return url;
     }
 
-    return "";
+    return "/images/sample3.webp";
   };
 
   const MAX_SWIPER_IMAGES = 5;
@@ -256,9 +256,9 @@ const loadRemaining = async (item: Product) => {
   }
 
   // ❗ If only main1 exists, still safe
-  // if (validImages.length === 0) {
-  //   validImages.push("/images/sample3.webp");
-  // }
+  if (validImages.length === 0) {
+    validImages.push("/images/sample3.webp");
+  }
 
   setLazyImages((prev) => ({
     ...prev,
@@ -602,7 +602,6 @@ useEffect(() => {
                 <span className="show_count mb-2 d-inline">
                   <strong>{count} </strong>
                 </span>
-                
               )}
               <h1 className="show_count d-inline">
                 <strong>{text}</strong>
@@ -678,7 +677,8 @@ useEffect(() => {
                     const isPriority = index < 5;
                     // const resizedBase = getResizedBase(item);
                     const imgs =
-  lazyImages[item.id] ; // ALWAYS SAFE
+  lazyImages[item.id] ||
+  ["/images/sample3.webp"]; // ALWAYS SAFE
 
 
                     return (
