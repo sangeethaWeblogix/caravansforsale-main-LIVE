@@ -406,7 +406,7 @@ export default function ClientLogger({
 function buildImageCandidates(sku?: string, slug?: string) {
   if (!sku || !slug) return [];
 
-  const base = `https://caravansforsale.imagestack.net/400x300/${sku}/${slug}`;
+  const base = `https://caravansforsale.imagestack.net/800x600/${sku}/${slug}`;
 
   return [
     `${base}main1.avif`,
