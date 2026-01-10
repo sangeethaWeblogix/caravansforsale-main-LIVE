@@ -639,7 +639,7 @@ export default function ListingContent({
       // Check if already retried
       if (currentSrc.includes("_retry=")) {
         // Max retries reached, show fallback
-        img.src = "/images/img.png";
+        img.src = "/images/imageloading.png";
         return;
       }
 
@@ -877,7 +877,7 @@ export default function ListingContent({
                                                 />
                                               ) : (
                                                 <Image
-                                                  src="/images/img.png"
+                                                  src="/images/imageloading.png"
                                                   alt="Fallback Caravan"
                                                   width={1593}
                                                   height={1195}
