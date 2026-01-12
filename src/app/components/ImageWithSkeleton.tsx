@@ -62,6 +62,7 @@ export default function ImageWithSkeleton({
           height={height}
           priority={priority}
           unoptimized
+          loading="lazy"
           onLoad={() => setLoaded(true)}
           onError={() => {
             setFailed(true);
