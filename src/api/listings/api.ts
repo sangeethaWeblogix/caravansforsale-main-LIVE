@@ -52,6 +52,7 @@ export type Item = {
   is_exclusive?: boolean;
   is_premium?: boolean;
   model?: string;
+  image_format?: string[];
 };
 
 export interface ApiSEO {

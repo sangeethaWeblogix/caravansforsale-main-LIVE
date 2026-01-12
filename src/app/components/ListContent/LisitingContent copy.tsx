@@ -1,4 +1,4 @@
-"use client";
+ "use client";
 import Link from "next/link";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
@@ -38,7 +38,6 @@ interface Product {
   list_page_title?: string;
   weight?: string;
   price?: string;
-  image_format?: string[];
   thumbnail?: string;
   url?: string;
   sleeps?: string;
@@ -122,10 +121,17 @@ export default function ListingContent({
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isOrderbyLoading, setIsOrderbyLoading] = useState(false);
-  const IMAGE_BASE_URL = "https://caravansforsale.imagestack.net/400x300/";
-
-  const IMAGE_EXT = ".avif";
-
+  const IMAGE_FORMATS = ["avif", "webp", "jpg", "jpeg", "png"];
+  const IMAGE_FILES = [
+    "main1",
+     "sub3",
+    "sub4",
+    "sub5",
+    "sub6",
+    "sub7",
+    "sub8", 
+    "sub9"
+  ];
   const [navigating, setNavigating] = useState(false);
   const handleViewDetails = async (
     e: React.MouseEvent,
@@ -149,9 +155,7 @@ export default function ListingContent({
     "data-main",
     fetauredProducts,
     isPremiumLoading,
-    isFeaturedLoading,
-    isMainLoading,
-    onFilterChange
+    isFeaturedLoading
   );
   // console.log("data-prod", products);
 
@@ -179,36 +183,142 @@ export default function ListingContent({
   const { form, errors, touched, submitting, setField, onBlur, onSubmit } =
     useEnquiryForm(enquiryProduct);
 
+  const getResizedBase = (item: Product) => {
+    if (!item.sku || !item.slug) return null;
+    return `https://caravansforsale.imagestack.net/400x300/${item.sku}/${item.slug}`;
+  };
+
+  const getOriginalBase = (item: Product) => {
+    if (!item.sku || !item.slug) return null;
+    return `https://caravansforsale.imagestack.net/${item.sku}/${item.slug}`;
+  };
+
+  const checkImage = (url: string): Promise<boolean> =>
+    new Promise((resolve) => {
+      const img = new window.Image();
+      img.onload = () => resolve(true);
+      img.onerror = () => resolve(false);
+      img.src = url;
+    });
+
+  const getBaseImageUrl = (item: Product) => {
+    if (!item.sku || !item.slug) return null;
+    return `https://caravansforsale.imagestack.net/400x300/${item.sku}/${item.slug}`;
+  };
+  const getFirstValidImage = async (item: Product): Promise<string | null> => {
+  const base = getBaseImageUrl(item);
+  if (!base) return null;
+
+  for (const ext of IMAGE_FORMATS) {
+    const url = `${base}main1.${ext}`;
+    if (await checkImage(url)) return url;
+  }
+
+  return null; // ❌ NO sample image
+};
+
+
   const MAX_SWIPER_IMAGES = 5;
 
-  const getFirstImage = (item: Product): string | undefined => {
-    const img = item.image_format?.[0];
-    return img ? `${IMAGE_BASE_URL}${img}${IMAGE_EXT}` : undefined;
-  };
+const loadRemaining = async (item: Product) => {
+  if (loadedAll[item.id]) return;
 
-  const getRemainingImages = (item: Product): string[] => {
-    if (!Array.isArray(item.image_format)) return [];
+  const resizedBase = getResizedBase(item);
+  const originalBase = getOriginalBase(item);
+  if (!resizedBase || !originalBase) return;
 
-    return item.image_format
-      .slice(0, MAX_SWIPER_IMAGES)
-      .map((img) => `${IMAGE_BASE_URL}${img}${IMAGE_EXT}`);
-  };
+  const validImages: string[] = [];
 
-  const loadRemaining = (item: Product) => {
-    if (loadedAll[item.id]) return;
+  for (const file of IMAGE_FILES) {
+    if (validImages.length >= MAX_SWIPER_IMAGES) break; // ✅ STOP at 5
 
-    const images = getRemainingImages(item);
+    let found = false;
 
-    setLazyImages((prev) => ({
-      ...prev,
-      [item.id]: images,
-    }));
+    // 1️⃣ Try resized bucket
+    for (const ext of IMAGE_FORMATS) {
+      const url = `${resizedBase}${file}.${ext}`;
+      if (await checkImage(url)) {
+        validImages.push(url);
+        found = true;
+        break;
+      }
+    }
 
-    setLoadedAll((prev) => ({
-      ...prev,
-      [item.id]: true,
-    }));
-  };
+    // 2️⃣ Fallback to original bucket
+    if (!found) {
+      for (const ext of IMAGE_FORMATS) {
+        const url = `${originalBase}${file}.${ext}`;
+        if (await checkImage(url)) {
+          validImages.push(url);
+          break;
+        }
+      }
+    }
+  }
+
+  // ❗ If only main1 exists, still safe
+  // if (validImages.length === 0) {
+  //   validImages.push("/images/sample3.webp");
+  // }
+  setLazyImages((prev) => ({
+  ...prev,
+  [item.id]: validImages, // ✅ only real images
+}));
+
+  
+
+  setLoadedAll((prev) => ({
+    ...prev,
+    [item.id]: true,
+  }));
+};
+
+
+
+  // const loadRemaining = async (item: Product) => {
+  //   if (loadedAll[item.id]) return;
+
+  //   const resizedBase = getResizedBase(item);
+  //   const originalBase = getOriginalBase(item);
+  //   if (!resizedBase || !originalBase) return;
+
+  //   const validImages: string[] = [];
+
+  //   for (const file of IMAGE_FILES) {
+  //     let found = false;
+
+  //     // 1️⃣ Try resized first
+  //     for (const ext of IMAGE_FORMATS) {
+  //       const url = `${resizedBase}${file}.${ext}`;
+  //       if (await checkImage(url)) {
+  //         validImages.push(url);
+  //         found = true;
+  //         break;
+  //       }
+  //     }
+
+  //     // 2️⃣ Fallback to original bucket
+  //     if (!found) {
+  //       for (const ext of IMAGE_FORMATS) {
+  //         const url = `${originalBase}${file}.${ext}`;
+  //         if (await checkImage(url)) {
+  //           validImages.push(url);
+  //           break;
+  //         }
+  //       }
+  //     }
+  //   }
+
+  //   setLazyImages((prev) => ({
+  //     ...prev,
+  //     [item.id]: validImages,
+  //   }));
+
+  //   setLoadedAll((prev) => ({
+  //     ...prev,
+  //     [item.id]: true,
+  //   }));
+  // };
 
   console.log("lazy", lazyImages);
   // Remove all the lazy loading state and just load all images immediately
@@ -319,13 +429,6 @@ export default function ListingContent({
   };
 
   useEffect(() => {
-    mergedProducts.forEach((item) => {
-      if (!loadedAll[item.id]) {
-        loadRemaining(item);
-      }
-    });
-  }, [mergedProducts]);
-  useEffect(() => {
     const TAB_KEY = "listings_tab_opened";
 
     if (!sessionStorage.getItem(TAB_KEY)) {
@@ -403,13 +506,15 @@ export default function ListingContent({
     };
   }, [showInfo, showContact]);
 
-  useEffect(() => {
-    mergedProducts.forEach((item) => {
-      if (!loadedAll[item.id]) {
-        loadRemaining(item);
-      }
-    });
-  }, [mergedProducts]);
+
+  
+useEffect(() => {
+  mergedProducts.forEach((item) => {
+    if (!loadedAll[item.id]) {
+      loadRemaining(item);
+    }
+  });
+}, [mergedProducts]);
 
   // Example placeholder function for product links
 
@@ -418,9 +523,44 @@ export default function ListingContent({
     const slug = p.slug?.trim() || toSlug(p.name);
     return slug ? `/product/${slug}/` : ""; // trailing slash optional
   };
-
+  // const uniqueProducts = useMemo(() => {
+  //   const seen = new Set<string>();
+  //   return (products || []).filter((p) => {
+  //     const k = String(p?.id ?? p?.slug ?? p?.link);
+  //     if (seen.has(k)) return false;
+  //     seen.add(k);
+  //     return true;
+  //   });
+  // }, [products]);
   console.log("data", exculisiveProducts);
 
+  // ✅ Helper: generate up to 5 image URLs from SKU
+  // const getProductImages = (sku?: string, slug?: string): string[] => {
+  //   if (!sku || !slug) return ["/images/sample3.webp"];
+
+  //   const base = `https://caravansforsale.imagestack.net/400x300/${sku}/${slug}`;
+
+  //   return [
+  //     `${base}main1.avif`,
+  //     ...Array.from({ length: 4 }, (_, i) => `${base}sub${i + 2}.avif`),
+  //   ];
+  // };
+
+  // ✅ Randomly shuffle premium products on each page load
+  // ✅ Premium products shuffle after mount
+
+  // useEffect(() => {
+  //   const orderbyFromUrl = searchParams.get("orderby") ?? undefined;
+
+  //   // ⛔ prevent unnecessary state update
+  //   if (orderbyFromUrl !== currentFilters.orderby) {
+  //     onFilterChange({
+  //       ...currentFilters,
+  //       orderby: orderbyFromUrl,
+  //     });
+  //   }
+  // }, [searchParams]); // 👈 NOT empty dependency
+  console.log(onFilterChange, isMainLoading, getFirstValidImage);
   const orderby = searchParams.get("orderby") ?? "featured";
   useEffect(() => {
     if (products && products.length > 0) {
@@ -464,6 +604,7 @@ export default function ListingContent({
                 <span className="show_count mb-2 d-inline">
                   <strong>{count} </strong>
                 </span>
+                
               )}
               <h1 className="show_count d-inline">
                 <strong>{text}</strong>
@@ -538,10 +679,10 @@ export default function ListingContent({
                     const href = getHref(item);
                     const isPriority = index < 5;
                     // const resizedBase = getResizedBase(item);
-                    const imgs = lazyImages[item.id] ?? [];
-                    const firstImage = getFirstImage(item);
+                    const imgs =
+  lazyImages[item.id] || [] ; // ALWAYS SAFE
 
-                    console.log("imgs", firstImage);
+
                     return (
                       <div className="col-lg-6 mb-0" key={index}>
                         <Link
@@ -564,7 +705,7 @@ export default function ListingContent({
                             <div className="img">
                               <div className="background_thumb">
                                 <ImageWithSkeleton
-                                  src={firstImage}
+                                  src={imgs[0]}
                                   priority={isPriority}
                                   alt="Caravan"
                                   width={300}
@@ -578,32 +719,56 @@ export default function ListingContent({
                                 {item.is_exclusive && (
                                   <span className="lab">Spotlight Van</span>
                                 )}
-
                                 <Swiper
                                   modules={[Navigation, Pagination]}
+                                  spaceBetween={10}
                                   slidesPerView={1}
                                   navigation
-                                  pagination={{ clickable: true }}
-                                  onSlideChange={() => loadRemaining(item)}
-                                  onTouchStart={() => loadRemaining(item)}
+                                  pagination={{
+                                    clickable: true,
+                                  }}
+                                  onSlideChange={() => {
+                                    if (!loadedAll[item.id])
+                                      loadRemaining(item); // Fixed: loadedAll instead of isLoaded
+                                  }}
+                                  onReachBeginning={() => {
+                                    if (!loadedAll[item.id])
+                                      loadRemaining(item); // Fixed: loadedAll instead of isLoaded
+                                  }}
+                                  onReachEnd={() => {
+                                    if (!loadedAll[item.id])
+                                      loadRemaining(item); // Fixed: loadedAll instead of isLoaded
+                                  }}
                                   className="main_thumb_swiper"
                                 >
-                                  {(imgs.length ? imgs : [firstImage]).map(
-                                    (img, i) => (
-                                      <SwiperSlide key={i}>
-                                        <div className="thumb_img">
-                                          <ImageWithSkeleton
-                                            src={img}
-                                            alt={`Caravan ${i + 1}`}
-                                            width={300}
-                                            height={200}
-                                            priority={isPriority && i === 0}
-                                          />
-                                        </div>
-                                      </SwiperSlide>
-                                    )
-                                  )}
+                                  {imgs.map((img, i) => (
+                                    <SwiperSlide key={i}>
+                                      <div className="thumb_img">
+                                        <ImageWithSkeleton
+                                          src={img}
+                                          alt={`Caravan ${i + 1}`}
+                                          width={300}
+                                          height={200}
+                                          
+                                          priority={isPriority && i === 0}
+                                        />
+                                      </div>
+                                    </SwiperSlide>
+                                  ))}
                                 </Swiper>
+                                {/* Hidden "View More" button that appears after last slide */}
+                                {/* <div
+                                 id={`view-more-btn-${item}`}
+                                 className="view-more-btn-wrapper"
+                               >
+                                 <Link
+                                   href="/related-links"
+                                   className="view-more-btn"
+ 
+                                 >
+                                   View More
+                                 </Link>
+                               </div> */}
                               </div>
                             </div>
 

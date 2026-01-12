@@ -83,6 +83,7 @@ export interface MakeOption {
 
 export interface Filters {
   category?: string;
+  image_format?: string[];
   make?: string;
   location?: string | null;
   from_price?: string | number;
@@ -141,6 +142,7 @@ function transformApiItemsToProducts(items: Item[]): Product[] {
     gallery: item.gallery || [],
     is_exclusive: item.is_exclusive,
       is_premium:item.is_premium,
+      image_format: item.image_format|| [],
 
 
     // keep extra props
