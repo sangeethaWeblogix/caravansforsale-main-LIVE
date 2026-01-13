@@ -283,7 +283,6 @@ useEffect(() => {
       <div
         className={`overlay-close ${isOpen ? "active" : ""}`}
         onClick={() => {
-    setNavigating(true); // start loader immediately
     closeNav();
   }}
       ></div>
