@@ -34,12 +34,6 @@ export default function ImageWithSkeleton({
     
     <div
       className={className}
-      style={{
-        position: "relative",
-        width,
-        height,
-        overflow: "hidden",
-      }}
     >
       {/* Skeleton */}
       {!loaded && (
