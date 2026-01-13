@@ -60,10 +60,10 @@ export default function ImageWithSkeleton({
           alt={alt}
           width={width}
           height={height}
-          priority={priority}
-          unoptimized
-          loading="lazy"
-          onLoad={() => setLoaded(true)}
+           unoptimized
+            priority={priority}
+{...(!priority && { loading: "lazy" })}         
+  onLoad={() => setLoaded(true)}
           onError={() => {
             setFailed(true);
             setLoaded(true); // skeleton stop

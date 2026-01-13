@@ -5,10 +5,16 @@ import { fetchListings, ApiResponse, Item } from "../../../api/listings/api";
 import Listing from "./LisitingContent";
 import ExculsiveContent from "./exculsiveContent";
 import CaravanFilter from "../CaravanFilter";
-import SkeletonListing from "../skelton";
-import { flushSync } from "react-dom";
+ import { flushSync } from "react-dom";
 import { v4 as uuidv4 } from "uuid";
 import "./newList.css";
+import dynamic from 'next/dynamic';
+
+const ListingSkeleton = dynamic(
+  () => import('../skelton'),
+  { ssr: false }
+);
+
 
 import {
   redirect,
@@ -56,6 +62,8 @@ interface Product {
   manufacturer?: string;
   is_exclusive?: boolean;
   is_premium?: boolean;
+  image_url?: string[];
+
 }
 
 interface Pagination {
@@ -143,6 +151,7 @@ function transformApiItemsToProducts(items: Item[]): Product[] {
     is_exclusive: item.is_exclusive,
       is_premium:item.is_premium,
       image_format: item.image_format|| [],
+      image_url: item.image_url || [],
 
 
     // keep extra props
@@ -1074,7 +1083,7 @@ const isClearAllRef = useRef(false);
               isFeaturedLoading ||
               isPremiumLoading ? (
                 <div className="col-lg-6">
-                  <SkeletonListing count={8} />
+                  <ListingSkeleton count={8} />
                 </div>
               ) : (
                 <>

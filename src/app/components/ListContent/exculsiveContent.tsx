@@ -41,6 +41,9 @@
    manufacturer?: string;
    is_exclusive?: boolean;
    pageTitle?: string;
+     image_url?: string[];
+     image_format?: string[];
+
  }
  
  interface Pagination {
@@ -117,31 +120,7 @@ pageTitle,
        onSubmit,
      } = useEnquiryForm(enquiryProduct);
  
-   const getFirstImage = (item: Product) => {
-     if (!item.sku || !item.slug) return "/images/image.pngp";
- 
-     return `https://caravansforsale.imagestack.net/600x450/${item.sku}/${item.slug}main1.avif`;
-   };
-   const loadRemaining = (item: Product) => {
-     if (!item.sku || !item.slug) return;
- 
-     const base = `https://caravansforsale.imagestack.net/600x450/${item.sku}/${item.slug}`;
- 
-     const images = [
-       `${base}main1.avif`,
-       ...Array.from({ length: 4 }, (_, i) => `${base}sub${i + 2}.avif`),
-     ];
- 
-     setLazyImages((prev) => ({
-       ...prev,
-       [item.id]: images,
-     }));
- 
-     setLoadedAll((prev) => ({
-       ...prev,
-       [item.id]: true,
-     }));
-   };
+   
  
    // Remove all the lazy loading state and just load all images immediately
  
@@ -180,8 +159,40 @@ pageTitle,
    // ✅ Helper: generate up to 5 image URLs from SKU
   
  
-  
-  
+  const IMAGE_BASE_URL = "https://caravansforsale.imagestack.net/400x300/";
+
+  const IMAGE_EXT = ".avif";
+
+  const MAX_SWIPER_IMAGES = 5;
+
+  const getFirstImage = (item: Product): string | undefined => {
+    const img = item.image_format?.[0];
+    return img ? `${IMAGE_BASE_URL}${img}${IMAGE_EXT}` : undefined;
+  };
+
+  const getRemainingImages = (item: Product): string[] => {
+    if (!Array.isArray(item.image_format)) return [];
+
+    return item.image_format
+      .slice(0, MAX_SWIPER_IMAGES)
+      .map((img) => `${IMAGE_BASE_URL}${img}${IMAGE_EXT}`);
+  };
+
+  const loadRemaining = (item: Product) => {
+    if (loadedAll[item.id]) return;
+
+    const images = getRemainingImages(item);
+
+    setLazyImages((prev) => ({
+      ...prev,
+      [item.id]: images,
+    }));
+
+    setLoadedAll((prev) => ({
+      ...prev,
+      [item.id]: true,
+    }));
+  };
  
    return (
      <>
@@ -236,7 +247,8 @@ pageTitle,
                  {data.map((item, index) => {
                    const href = getHref(item);
                    const isPriority = index < 5;
-                   const imgs = lazyImages[item.id] || [getFirstImage(item)];
+                    const imgs = lazyImages[item.id] ?? [];
+                    const firstImage = getFirstImage(item);
                    return (
                      <div className="col-lg-6 mb-0" key={index}>
                        <Link
@@ -253,8 +265,7 @@ pageTitle,
                            <div className="img">
                              <div className="background_thumb">
                                <ImageWithSkeleton
-                                 src={imgs[0]}
-                                 alt="Caravan"
+ src={firstImage}                                 alt="Caravan"
                                  width={300}
                                  height={200}
                                  priority={isPriority}
@@ -290,19 +301,21 @@ pageTitle,
                                    }}
                                    className="main_thumb_swiper"
                                  >
-                                   {imgs.map((img, i) => (
-                                     <SwiperSlide key={i}>
-                                       <div className="thumb_img">
-                                         <ImageWithSkeleton
-                                           src={img}
-                                           alt={`Caravan ${i + 1}`}
-                                           width={300}
-                                           height={200}
-                                           priority={isPriority && i === 0}
-                                         />
-                                       </div>
-                                     </SwiperSlide>
-                                   ))}
+                                     {(imgs.length ? imgs : [firstImage]).map(
+                                                                       (img, i) => (
+                                                                         <SwiperSlide key={i}>
+                                                                           <div className="thumb_img">
+                                                                             <ImageWithSkeleton
+                                                                               src={img}
+                                                                               alt={`Caravan ${i + 1}`}
+                                                                               width={300}
+                                                                               height={200}
+                                                                               priority={isPriority && i === 0}
+                                                                             />
+                                                                           </div>
+                                                                         </SwiperSlide>
+                                                                       )
+                                                                     )}
                                  </Swiper>
                                )}
  

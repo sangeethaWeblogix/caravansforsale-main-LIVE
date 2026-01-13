@@ -140,6 +140,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
   const [radiusKms, setRadiusKms] = useState<number>(RADIUS_OPTIONS[0]);
   const [categoryOpen, setCategoryOpen] = useState(false);
   const [categories, setCategories] = useState<Option[]>([]);
+  const [visibleCount, setVisibleCount] = useState(10);
 
   const [makes, setMakes] = useState<Make[]>([]);
   const [model, setModel] = useState<Model[]>([]);
@@ -172,6 +173,22 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
   // top (other states kula)
   const [modalKeyword, setModalKeyword] = useState("");
   const [showAllModels, setShowAllModels] = useState(false);
+  const hasCategoryBeenSetRef = useRef(false);
+  const prevSuburbsKeyRef = useRef<string>("");
+  const radiusDebounceRef = useRef<number | null>(null);
+  const regionSetAfterSuburbRef = useRef(false);
+
+  const makeInitializedRef = useRef(false); // ✅ add at top of component
+
+  const lastPushedURLRef = useRef<string>("");
+  const mountedRef = useRef(false);
+
+  const lastSentFiltersRef = useRef<Filters | null>(null);
+
+  const keepModelOpenRef = useRef(false);
+  const isUserTypingRef = useRef(false);
+
+  const hydratedKeyRef = useRef("");
 
   const suburbClickedRef = useRef(false);
   const [selectedConditionName, setSelectedConditionName] = useState<
@@ -227,7 +244,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     600, 800, 1000, 1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000, 3500, 4000,
     4500,
   ];
-console.log(onFilterChange);
+  console.log(onFilterChange);
   const price = [
     10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000,
     125000, 150000, 175000, 200000, 225000, 250000, 275000, 300000,
@@ -473,7 +490,7 @@ console.log(onFilterChange);
   const applyKeywordFromModal = () => {
     const raw = modalKeyword.trim();
     if (!raw) return;
-  triggerGlobalLoaders();
+    triggerGlobalLoaders();
 
     const allItems = [...baseKeywords, ...keywordSuggestions];
     const match = allItems.find(
@@ -1132,7 +1149,6 @@ console.log(onFilterChange);
   //     updateAllFiltersAndURL({ ...reset });
   //   });
   // };
-  const radiusDebounceRef = useRef<number | null>(null);
   const isKnownMake = (slug?: string | null) =>
     !!slug && makes.some((m) => m.slug === slug);
 
@@ -1200,7 +1216,6 @@ console.log(onFilterChange);
 
   // 2) Keep your original effect body unchanged
   // put this near other refs
-  const prevSuburbsKeyRef = useRef<string>("");
 
   // helper to make a stable signature of a suburbs array
   const suburbsKey = (subs?: Suburb[]) =>
@@ -1245,7 +1260,6 @@ console.log(onFilterChange);
     currentFilters.pincode,
   ]);
 
-  const regionSetAfterSuburbRef = useRef(false);
   useEffect(() => {
     if (!isModalOpen || !showSuggestions || !isUserTypingRef.current) return;
 
@@ -1356,8 +1370,6 @@ console.log(onFilterChange);
     }
   }, [selectedMake]);
 
-  const makeInitializedRef = useRef(false); // ✅ add at top of component
-
   useEffect(() => {
     // Block hydration if we already initialized or make was reset
     if (
@@ -1398,7 +1410,6 @@ console.log(onFilterChange);
     }
   }, [pathname, selectedMake, makes, currentFilters.make]);
 
-  const hasCategoryBeenSetRef = useRef(false);
   // --- helpers ---
   // List only the keys you actually care about for equality + URL
   const FILTER_KEYS: (keyof Filters)[] = [
@@ -1452,7 +1463,6 @@ console.log(onFilterChange);
     }
   }, [selectedCategory]);
   // router issue
-  const lastPushedURLRef = useRef<string>("");
 
   useEffect(() => {
     if (!selectedModel || model.length === 0) return;
@@ -1483,9 +1493,6 @@ console.log(onFilterChange);
   useEffect(() => {
     mountedRef.current = true;
   }, []);
-  const mountedRef = useRef(false);
-
-  const lastSentFiltersRef = useRef<Filters | null>(null);
 
   // ✅ Update all filters and URL with validation
   // 🔁 replace this whole function
@@ -1541,8 +1548,6 @@ console.log(onFilterChange);
       }
     }
   };
-
-  const keepModelOpenRef = useRef(false);
 
   useEffect(() => {
     if (keepModelOpenRef.current) {
@@ -1657,7 +1662,6 @@ console.log(onFilterChange);
     });
     return byText || null;
   };
-  const isUserTypingRef = useRef(false);
   const locKey = useMemo(
     () =>
       [
@@ -1668,8 +1672,6 @@ console.log(onFilterChange);
       ].join("|"),
     [selectedSuburbName, selectedRegionName, selectedStateName, selectedpincode]
   );
-
-  const hydratedKeyRef = useRef("");
 
   useEffect(() => {
     if (!selectedSuburbName || !selectedStateName) return;
@@ -1751,7 +1753,6 @@ console.log(onFilterChange);
         !suburbClickedRef.current,
     });
   }, [selectedSuburbName, selectedStateName, selectedRegionName, states]);
-  const [visibleCount, setVisibleCount] = useState(10);
   useEffect(() => {
     setVisibleCount(10);
   }, [selectedStateName]);
@@ -2518,7 +2519,6 @@ console.log(onFilterChange);
                 className="cfs-select-input"
                 value={minPrice?.toString() || ""}
                 onChange={(e) => {
-                  
                   const val = e.target.value ? parseInt(e.target.value) : null;
                   triggerGlobalLoaders();
                   setMinPrice(val);
@@ -2745,7 +2745,7 @@ console.log(onFilterChange);
               <span
                 className="filter-chip-close"
                 onClick={() => {
-                                    triggerGlobalLoaders();
+                  triggerGlobalLoaders();
 
                   setYearFrom(null);
                   setYearTo(null);
@@ -2804,7 +2804,7 @@ console.log(onFilterChange);
                 value={lengthFrom || ""}
                 onChange={(e) => {
                   const val = e.target.value ? parseInt(e.target.value) : null;
-                                    triggerGlobalLoaders();
+                  triggerGlobalLoaders();
 
                   setLengthFrom(val);
                   commit({
@@ -2814,7 +2814,6 @@ console.log(onFilterChange);
                   });
                 }}
               >
-
                 <option value="">Min</option>
                 {length.map((value, idx) => (
                   <option key={idx} value={value}>
@@ -2831,7 +2830,7 @@ console.log(onFilterChange);
                 value={lengthTo?.toString() || ""}
                 onChange={(e) => {
                   const val = e.target.value ? parseInt(e.target.value) : null;
-                                    triggerGlobalLoaders();
+                  triggerGlobalLoaders();
 
                   setLengthTo(val);
                   commit({
@@ -2862,7 +2861,7 @@ console.log(onFilterChange);
               <span
                 className="filter-chip-close"
                 onClick={() => {
-                                    triggerGlobalLoaders();
+                  triggerGlobalLoaders();
 
                   setLengthFrom(null);
                   setLengthTo(null);
@@ -2907,7 +2906,7 @@ console.log(onFilterChange);
                     keyword: undefined,
                     search: undefined,
                   };
-                    triggerGlobalLoaders();
+                  triggerGlobalLoaders();
 
                   setKeywordInput("");
                   setFilters(next);

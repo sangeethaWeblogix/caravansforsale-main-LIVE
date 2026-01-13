@@ -11,6 +11,7 @@
   import ScrollToTop from "./ScrollToTop";
   import UTMTracker from "./UTMTracker";
   // import NextTopLoader from "nextjs-toploader";
+import ThemeRegistry from './components/ThemeRegistry';
 
   
   export const metadata: Metadata = {
@@ -103,8 +104,10 @@
           height={3}
           showSpinner={false}
         /> */}
-            {children}
-            </main>
+ <ThemeRegistry>
+          {children}
+        </ThemeRegistry>
+                    </main>
           
 
           <Footer />

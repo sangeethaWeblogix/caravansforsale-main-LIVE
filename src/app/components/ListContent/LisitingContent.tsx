@@ -45,6 +45,7 @@ interface Product {
   manufacturer?: string;
   is_exclusive?: boolean;
   is_premium?: boolean;
+  image_url?: string[];
 }
 
 interface Pagination {
@@ -122,11 +123,13 @@ export default function ListingContent({
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isOrderbyLoading, setIsOrderbyLoading] = useState(false);
+  const [mergedProducts, setMergedProducts] = useState<Product[]>([]);
+  const [navigating, setNavigating] = useState(false);
+
   const IMAGE_BASE_URL = "https://caravansforsale.imagestack.net/400x300/";
 
   const IMAGE_EXT = ".avif";
 
-  const [navigating, setNavigating] = useState(false);
   const handleViewDetails = async (
     e: React.MouseEvent,
     productId: number,
@@ -267,8 +270,6 @@ export default function ListingContent({
     }
     return copy;
   };
-
-  const [mergedProducts, setMergedProducts] = useState<Product[]>([]);
 
   // const hasShuffledRef = useRef(false);
 

@@ -1,0 +1,104 @@
+/* ================================
+   Base shimmer animation
+================================ */
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: -500px 0;
+  }
+  100% {
+    background-position: 500px 0;
+  }
+}
+
+/* ================================
+   Base skeleton block
+================================ */
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(
+    90deg,
+    #eeeeee 25%,
+    #f5f5f5 37%,
+    #eeeeee 63%
+  );
+  background-size: 400% 100%;
+  animation: skeleton-shimmer 1.4s ease infinite;
+  border-radius: 6px;
+}
+
+/* ================================
+   Common skeleton sizes
+================================ */
+.skeleton-image {
+  width: 100%;
+  height: 200px;
+  border-radius: 10px;
+}
+
+.skeleton-title {
+  height: 22px;
+  width: 70%;
+  margin-bottom: 12px;
+}
+
+.skeleton-text {
+  height: 16px;
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.skeleton-text.short {
+  width: 60%;
+}
+
+.skeleton-text.medium {
+  width: 80%;
+}
+
+/* ================================
+   Buttons / badges
+================================ */
+.skeleton-button {
+  height: 36px;
+  width: 45%;
+  border-radius: 8px;
+}
+
+.skeleton-badge {
+  height: 22px;
+  width: 100px;
+  border-radius: 6px;
+}
+
+/* ================================
+   Layout helpers
+================================ */
+.skeleton-row {
+  display: flex;
+  gap: 12px;
+}
+
+.skeleton-column {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ================================
+   Card wrapper (optional)
+================================ */
+.skeleton-card {
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+/* ================================
+   Spacing utilities
+================================ */
+.mt-1 { margin-top: 4px; }
+.mt-2 { margin-top: 8px; }
+.mt-3 { margin-top: 12px; }
+.mt-4 { margin-top: 16px; }
+.mt-5 { margin-top: 20px; }

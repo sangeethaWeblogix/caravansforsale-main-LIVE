@@ -60,6 +60,7 @@ type ProductData = {
   title?: string;
   location_shortcode?: string;
   sku?: string;
+  image_url?: string[];
 };
 
 interface BlogPost extends HomeBlogPost {
@@ -80,6 +81,8 @@ export default function ClientLogger({
   // const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   console.log("datap", data);
   const router = useRouter();
+  const IMAGE_BASE = "https://caravansforsale.imagestack.net/800x600/";
+  const IMAGE_EXT = ".avif";
 
   // const [activeImage, setActiveImage] = useState<string>("");
   const pd: ApiData = data?.data ?? {};
@@ -87,6 +90,9 @@ export default function ClientLogger({
   const productDetails: ProductData = pd.product_details ?? {};
   const blogPosts: BlogPost[] = Array.isArray(data?.data?.latest_blog_posts)
     ? data.data.latest_blog_posts!
+    : [];
+  const apiImages: string[] = Array.isArray(productDetails.image_url)
+    ? productDetails.image_url.filter(Boolean)
     : [];
 
   const relatedProducts: ProductData[] = Array.isArray(data?.data?.related)
@@ -96,11 +102,11 @@ export default function ClientLogger({
   console.log("releated", blogPosts);
   const loadedCount = useRef(0);
 
-  const handleImageLoad = () => {
-    loadedCount.current += 1;
-    if (loadedCount.current >= allSubs.length + 1) {
-    }
-  };
+  // const handleImageLoad = () => {
+  //   loadedCount.current += 1;
+  //   if (loadedCount.current >= allSubs.length + 1) {
+  //   }
+  // };
 
   console.log("datapb", relatedProducts);
 
@@ -157,10 +163,7 @@ export default function ClientLogger({
     setSafeHtml(buildSafeDescription(productDetails.description));
   }, [productDetails.description]);
 
-  const images: string[] = useMemo(
-    () => (Array.isArray(pd.images) ? pd.images.filter(Boolean) : []),
-    [pd.images]
-  );
+ 
 
   const [navigating, setNavigating] = useState(false);
 
@@ -400,65 +403,61 @@ export default function ClientLogger({
   const base = `https://caravansforsale.imagestack.net/800x600/${sku}/${slug}`;
 
   const main = `${base}main1.avif`;
+
  
-  const [allSubs, setAllSubs] = useState<string[]>([]);
+  // function buildImageCandidates(sku?: string, slug?: string) {
+  //   if (!sku || !slug) return [];
 
-function buildImageCandidates(sku?: string, slug?: string) {
-  if (!sku || !slug) return [];
+  //   const base = `https://caravansforsale.imagestack.net/800x600/${sku}/${slug}`;
 
-  const base = `https://caravansforsale.imagestack.net/800x600/${sku}/${slug}`;
-
-  return [
-    `${base}main1.avif`,
-    ...Array.from({ length: 4 }, (_, i) => `${base}sub${i + 2}.avif`),
-  ];
-}
-const [galleryImages, setGalleryImages] = useState<string[]>([]);
+  //   return [
+  //     `${base}main1.avif`,
+  //     ...Array.from({ length: 4 }, (_, i) => `${base}sub${i + 2}.avif`),
+  //   ];
+  // }
+  const [galleryImages, setGalleryImages] = useState<string[]>([]);
   const [activeImage, setActiveImage] = useState<string>(main);
-  
 
-useEffect(() => {
-  let cancelled = false;
+  // useEffect(() => {
+  //   let cancelled = false;
 
-  async function loadGallery() {
-    const candidates = buildImageCandidates(sku, slug);
-    const valid: string[] = [];
+  //   async function loadGallery() {
+  //     const candidates = buildImageCandidates(sku, slug);
+  //     const valid: string[] = [];
 
-    for (const url of candidates) {
-      const ok = await checkImage(url);
-      if (ok) valid.push(url);
-    }
+  //     for (const url of candidates) {
+  //       const ok = await checkImage(url);
+  //       if (ok) valid.push(url);
+  //     }
 
-    if (cancelled) return;
+  //     if (cancelled) return;
 
-    // ✅ Product page thumbnails
-    setGalleryImages(valid.slice(0, 4));
-    setActiveImage(valid[0] || "");
+  //     // ✅ Product page thumbnails
+  //     setGalleryImages(valid.slice(0, 4));
+  //     setActiveImage(valid[0] || "");
 
-    // ✅ Modal logic
-    setPreloadedImages(valid.slice(0, 10));
-    setRemainingImages(valid.slice(10));
-  }
+  //     // ✅ Modal logic
+  //     setPreloadedImages(valid.slice(0, 10));
+  //     setRemainingImages(valid.slice(10));
+  //   }
 
-  loadGallery();
-  return () => {
-    cancelled = true;
-  };
-}, [sku, slug]);
+  //   loadGallery();
+  //   return () => {
+  //     cancelled = true;
+  //   };
+  // }, [sku, slug]);
 
+  // function checkImage(url: string): Promise<boolean> {
+  //   return new Promise((resolve) => {
+  //     if (typeof window === "undefined") return resolve(false);
 
-  function checkImage(url: string): Promise<boolean> {
-    return new Promise((resolve) => {
-      if (typeof window === "undefined") return resolve(false);
+  //     const img = document.createElement("img");
+  //     img.onload = () => resolve(true);
+  //     img.onerror = () => resolve(false);
+  //     img.src = url;
+  //   });
+  // }
 
-      const img = document.createElement("img");
-      img.onload = () => resolve(true);
-      img.onerror = () => resolve(false);
-      img.src = url;
-    });
-  }
-
- 
   const getIP = async () => {
     try {
       const res = await fetch("https://api.ipify.org?format=json");
@@ -494,72 +493,95 @@ useEffect(() => {
   }, [productDetails?.id]);
 
   // ✅ Add these states after allSubs state
-  const [preloadedImages, setPreloadedImages] = useState<string[]>([]); // First 5
-  const [remainingImages, setRemainingImages] = useState<string[]>([]); // Rest
+  
 
   // ✅ Update the useEffect where you load gallery
-  useEffect(() => {
-    let cancelled = false;
+  // useEffect(() => {
+  //   let cancelled = false;
 
-    const loadGallery = async () => {
-      if (!sku || !slug) {
-        const fallback = (images.length ? images : [main]).filter(Boolean);
-        if (!cancelled) {
-          setAllSubs(fallback);
-          setPreloadedImages(fallback.slice(0, 10));
-          setRemainingImages(fallback.slice(10));
-          setActiveImage(fallback[0] || main);
-        }
-        return;
-      }
+  //   const loadGallery = async () => {
+  //     if (!sku || !slug) {
+  //       const fallback = (images.length ? images : [main]).filter(Boolean);
+  //       if (!cancelled) {
+  //         setAllSubs(fallback);
+  //         setPreloadedImages(fallback.slice(0, 10));
+  //         setRemainingImages(fallback.slice(10));
+  //         setActiveImage(fallback[0] || main);
+  //       }
+  //       return;
+  //     }
 
+  //     const base = `https://caravansforsale.imagestack.net/800x600/${sku}/${slug}`;
+  //     const urls: string[] = [];
 
-      const base = `https://caravansforsale.imagestack.net/800x600/${sku}/${slug}`;
-      const urls: string[] = [];
+  //     // 1) MAIN
+  //     const mainUrl = `${base}main1.avif`;
+  //     const hasMain = await checkImage(mainUrl);
+  //     if (hasMain) urls.push(mainUrl);
 
-      // 1) MAIN
-      const mainUrl = `${base}main1.avif`;
-      const hasMain = await checkImage(mainUrl);
-      if (hasMain) urls.push(mainUrl);
+  //     // 2) First 5 subs (sub2 to sub5) - PRELOAD
+  //     for (let i = 2; i <= 10; i++) {
+  //       const url = `${base}sub${i}.avif`;
+  //       const ok = await checkImage(url);
+  //       if (!ok) break;
+  //       urls.push(url);
+  //     }
 
-      // 2) First 5 subs (sub2 to sub5) - PRELOAD
-      for (let i = 2; i <= 10; i++) {
-        const url = `${base}sub${i}.avif`;
-        const ok = await checkImage(url);
-        if (!ok) break;
-        urls.push(url);
-      }
+  //     // ✅ Set preloaded images immediately
+  //     if (!cancelled) {
+  //       setPreloadedImages(urls);
+  //        setActiveImage(urls[0] || main);
+  //     }
 
-      // ✅ Set preloaded images immediately
-      if (!cancelled) {
-        setPreloadedImages(urls);
-         setActiveImage(urls[0] || main);
-      }
+  //     // 3) Remaining subs (sub6 to sub70) - LAZY LOAD
+  //     const remainingUrls: string[] = [];
+  //     for (let i = 11; i <= 80; i++) {
+  //       const url = `${base}sub${i}.avif`;
+  //       const ok = await checkImage(url);
+  //       if (!ok) break;
+  //       remainingUrls.push(url);
+  //     }
 
-      // 3) Remaining subs (sub6 to sub70) - LAZY LOAD
-      const remainingUrls: string[] = [];
-      for (let i = 11; i <= 80; i++) {
-        const url = `${base}sub${i}.avif`;
-        const ok = await checkImage(url);
-        if (!ok) break;
-        remainingUrls.push(url);
-      }
+  //     if (!cancelled) {
+  //       setRemainingImages(remainingUrls);
+  //       setAllSubs([...urls, ...remainingUrls]);
+  //     }
+  //   };
 
-      if (!cancelled) {
-        setRemainingImages(remainingUrls);
-        setAllSubs([...urls, ...remainingUrls]);
-      }
-    };
-
-    loadGallery();
-    return () => {
-      cancelled = true;
-    };
-  }, [sku, slug, images, main]);
+  //   loadGallery();
+  //   return () => {
+  //     cancelled = true;
+  //   };
+  // }, [sku, slug, images, main]);
 
   // const [activeImage, setActiveImage] = useState(main);
 
-  console.log("image", allSubs);
+   
+
+// ✅ Build image URLs from API image_url array
+const productSubImage: string[] = useMemo(() => {
+  const raw = productDetails.image_url;
+  
+  console.log("API image_url:", raw); // Debug
+  
+  if (Array.isArray(raw) && raw.length > 0) {
+    const urls = raw
+      .filter((v) => typeof v === "string" && v.trim() !== "")
+      .map((key) => `${IMAGE_BASE}${key}${IMAGE_EXT}`);
+    
+    console.log("Built image URLs:", urls); // Debug
+    return urls;
+  }
+  
+  return [];
+}, [productDetails.image_url]);
+
+// ✅ Set active image when productSubImage loads
+useEffect(() => {
+  if (productSubImage.length > 0) {
+    setActiveImage(productSubImage[0]);
+  }
+}, [productSubImage]);
 
   return (
     <>
@@ -646,7 +668,7 @@ useEffect(() => {
                   {/* Thumbnails */}
                   <div className="slider_thumb_vertical image_container">
                     <div className="image_mop">
-                      {galleryImages.map((image, i) => (
+                      {productSubImage.slice(0,4).map((image, i) => (
                         <div className="image_item" key={`${image}-${i}`}>
                           <div className="background_thumb">
                             <Image
@@ -655,8 +677,7 @@ useEffect(() => {
                               height={96}
                               alt="Thumbnail"
                               unoptimized
-                              onLoad={handleImageLoad}
-                            />
+                             />
                           </div>
 
                           <div
@@ -670,16 +691,18 @@ useEffect(() => {
                               alt={`Thumb ${i + 1}`}
                               priority={i < 4}
                               unoptimized
-                              onLoad={handleImageLoad}
-                            />
+                             />
                           </div>
                         </div>
                       ))}
+<div>
 
                       <span className="caravan__image_count">
-                        {/* <span>{allSubs.length}+</span> */}
-                       +
+                         
+                          {productSubImage.length}
+                      
                       </span>
+                      </div>
                     </div>
                   </div>
 
@@ -693,20 +716,17 @@ useEffect(() => {
                         alt="Large"
                         className="img-fluid"
                         unoptimized
-                        onLoad={handleImageLoad}
-                      />
+                       />
                     </div>
-
                     <Link href="#">
                       <Image
-                        src={activeImage || allSubs[0]}
+                        src={activeImage}
                         width={800}
                         height={600}
                         alt="Large"
                         className="img-fluid"
                         unoptimized
-                        onLoad={handleImageLoad}
-                      />
+                       />
                     </Link>
                   </div>
                 </div>
@@ -944,13 +964,12 @@ useEffect(() => {
                 <CaravanDetailModal
                   isOpen={showModal}
                   onClose={() => setShowModal(false)}
-                  preloadedImages={preloadedImages} // ✅ First 5 images
-                  remainingImages={remainingImages} // ✅ Rest images
+                  images={productSubImage}
                   product={{
                     id: productId,
                     slug: productSlug,
                     name: product.name ?? "",
-                    image: activeImage || allSubs[0],
+                    image: activeImage ,
                     price: hasSale ? sale : reg,
                     regularPrice: product.regular_price ?? 0,
                     salePrice: product.sale_price ?? 0,
