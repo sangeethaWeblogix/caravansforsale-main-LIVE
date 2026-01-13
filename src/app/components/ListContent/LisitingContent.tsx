@@ -568,8 +568,8 @@ export default function ListingContent({
                                   src={firstImage}
                                   priority={isPriority}
                                   alt="Caravan"
-                                  width={300}
-                                  height={200}
+                                 width={400}
+  height={300}
                                 />
                               </div>
                               <div
@@ -596,8 +596,8 @@ export default function ListingContent({
                                           <ImageWithSkeleton
                                             src={img}
                                             alt={`Caravan ${i + 1}`}
-                                            width={300}
-                                            height={200}
+                                          width={400}
+  height={300}
                                             priority={isPriority && i === 0}
                                           />
                                         </div>

@@ -16,8 +16,8 @@ interface Props {
 export default function ImageWithSkeleton({
   src,
   alt = "",
-  width = 300,
-  height = 200,
+  width = 400,
+  height = 300,
   className,
   priority = false,
 }: Props) {
