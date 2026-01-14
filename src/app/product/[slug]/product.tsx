@@ -350,7 +350,60 @@ export default function ClientLogger({
   //     window.history.back();
   //   }
   // };
-  const [cameFromSameSite, setCameFromSameSite] = useState(false);
+ const [cameFromSameSite, setCameFromSameSite] = useState(false);
+const [returnUrl, setReturnUrl] = useState<string | null>(null);
+
+useEffect(() => {
+  if (typeof window === "undefined") return;
+
+  const cameFromFlag = sessionStorage.getItem("cameFromListings");
+  const savedReturnUrl = sessionStorage.getItem("listingsReturnUrl");
+
+  // ✅ Case 1: User clicked from listings (flag exists)
+  if (cameFromFlag === "true") {
+    setCameFromSameSite(true);
+    setReturnUrl(savedReturnUrl);
+    
+    // ✅ Clear flags after reading
+    sessionStorage.removeItem("cameFromListings");
+    // Don't remove returnUrl yet - keep it for the back button
+    return;
+  }
+
+  // ✅ Case 2: Check referrer as fallback
+  const referrer = document.referrer;
+  const origin = window.location.origin;
+
+  if (referrer && referrer.startsWith(origin) && referrer.includes("/listings")) {
+    setCameFromSameSite(true);
+    setReturnUrl(referrer);
+  } else {
+    setCameFromSameSite(false);
+  }
+}, []);
+
+// ✅ Improved back button handler
+const handleBackClick = (e: React.MouseEvent) => {
+  e.preventDefault();
+  
+  // ✅ Method 1: Use saved return URL (most reliable)
+  if (returnUrl) {
+    sessionStorage.removeItem("listingsReturnUrl");
+    router.push(returnUrl);
+    return;
+  }
+  
+  // ✅ Method 2: Check if we have history
+  if (window.history.length > 1) {
+    window.history.back();
+    return;
+  }
+  
+  // ✅ Method 3: Fallback to listings page
+  router.push(makeHref);
+};
+
+
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -379,6 +432,8 @@ export default function ClientLogger({
       setCameFromSameSite(false); // Back to Similar Caravans
     }
   }, []);
+
+  
 
   const makeHref =
     makeValue && makeValue.trim()
@@ -592,26 +647,28 @@ useEffect(() => {
               {/* Left Column */}
               <div className="col-xl-8 col-lg-8 col-md-12">
                 {cameFromSameSite ? (
-                  <Link
-                    href="#"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      window.history.back();
-                    }}
-                    className="back_to_search back_to_search_btn"
-                  >
-                    <i className="bi bi-chevron-left"></i> Back to Search
-                  </Link>
-                ) : (
-                  <Link
-                    href={makeHref}
-                    className="back_to_search back_to_search_btn"
-                    prefetch={false}
-                  >
-                    <i className="bi bi-chevron-left"></i> Back to Similar
-                    Caravans
-                  </Link>
-                )}
+  <button
+    type="button"
+    onClick={handleBackClick}
+    className="back_to_search back_to_search_btn"
+    style={{ 
+      background: 'none', 
+      border: 'none', 
+      cursor: 'pointer',
+      padding: 0 
+    }}
+  >
+    <i className="bi bi-chevron-left"></i> Back to Search
+  </button>
+) : (
+  <Link
+    href={makeHref}
+    className="back_to_search back_to_search_btn"
+    prefetch={false}
+  >
+    <i className="bi bi-chevron-left"></i> Back to Similar Caravans
+  </Link>
+)}
 
                 <div className="product-info left-info">
                   <h1 className="title">{product.name}</h1>

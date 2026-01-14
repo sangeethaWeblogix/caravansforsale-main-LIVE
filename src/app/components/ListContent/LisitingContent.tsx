@@ -319,13 +319,13 @@ export default function ListingContent({
     return merged;
   };
 
-  useEffect(() => {
-    mergedProducts.forEach((item) => {
-      if (!loadedAll[item.id]) {
-        loadRemaining(item);
-      }
-    });
-  }, [mergedProducts]);
+  // useEffect(() => {
+  //   mergedProducts.forEach((item) => {
+  //     if (!loadedAll[item.id]) {
+  //       loadRemaining(item);
+  //     }
+  //   });
+  // }, [mergedProducts]);
   useEffect(() => {
     const TAB_KEY = "listings_tab_opened";
 
@@ -457,7 +457,7 @@ export default function ListingContent({
         <meta name="twitter:description" content={metaDescription} />
       </Head>
 
-      <div className="col-lg-6 ">
+      <div className="col-lg-6">
         <div className="top-filter mb-10">
           <div className="row align-items-center">
             <div className="col-lg-8 show_count_wrapper ">
@@ -568,8 +568,8 @@ export default function ListingContent({
                                   src={firstImage}
                                   priority={isPriority}
                                   alt="Caravan"
-                                 width={400}
-  height={300}
+                                  width={400}
+                                  height={300}
                                 />
                               </div>
                               <div
@@ -596,8 +596,8 @@ export default function ListingContent({
                                           <ImageWithSkeleton
                                             src={img}
                                             alt={`Caravan ${i + 1}`}
-                                          width={400}
-  height={300}
+                                            width={400}
+                                            height={300}
                                             priority={isPriority && i === 0}
                                           />
                                         </div>
@@ -1015,3 +1015,4 @@ export default function ListingContent({
     </>
   );
 }
+
