@@ -104,10 +104,9 @@ import ThemeRegistry from './components/ThemeRegistry';
           height={3}
           showSpinner={false}
         /> */}
- <ThemeRegistry>
-          {children}
-        </ThemeRegistry>
-                    </main>
+           {children}
+                     </main>
+                     
           
 
           <Footer />

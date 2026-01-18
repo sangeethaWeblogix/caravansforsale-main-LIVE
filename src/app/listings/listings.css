@@ -1047,6 +1047,79 @@ input[type="number"]::-webkit-outer-spin-button {
   animation: fadeIn 0.2s ease-in forwards;
 }
 
+
+/* app/listings/listings.css */
+
+/* Ensure immediate visibility */
+.listings-page {
+  opacity: 1 !important;
+  visibility: visible !important;
+  background: #ffffff !important;
+}
+
+/* Smooth transitions */
+.listings-fade-in {
+  animation: listingsFadeIn 0.5s ease-in-out;
+}
+
+@keyframes listingsFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Hide skeleton when content loads */
+.listings-loaded .listings-skeleton {
+  display: none !important;
+}
+
+/* Show content when loaded */
+.listings-loaded .listings-content {
+  display: block !important;
+  opacity: 1 !important;
+}
+
+/* Container styling */
+.listings-container {
+  background: #ffffff;
+  min-height: 100vh;
+  position: relative;
+}
+
+/* Ensure filters and listings are visible */
+.filters-section,
+.listings-grid {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Pagination styling */
+.pagination-container {
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+/* Loading animation */
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.loading-shimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite linear;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;

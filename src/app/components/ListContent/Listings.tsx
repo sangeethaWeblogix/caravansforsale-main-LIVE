@@ -345,7 +345,7 @@ useEffect(() => {
 
   // Parse slug ONCE on mount; do not fetch here
   const initializedRef = useRef(false);
-
+ 
   useEffect(() => {
     if (initializedRef.current) return;
     initializedRef.current = true;

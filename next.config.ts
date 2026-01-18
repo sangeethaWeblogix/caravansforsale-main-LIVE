@@ -3,7 +3,7 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   trailingSlash: true,
   reactStrictMode: false,
-//  productionBrowserSourceMaps: false,
+  //  productionBrowserSourceMaps: false,
  images: {
     unoptimized: true,
     domains: [
@@ -53,6 +53,7 @@ const nextConfig: NextConfig = {
   experimental: {
     // ✅ Built-in critical CSS inlining
     optimizeCss: true,
+    scrollRestoration: true,
   },
 
   // compiler: {
