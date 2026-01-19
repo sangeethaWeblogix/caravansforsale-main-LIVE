@@ -1,4 +1,4 @@
-"use client";
+  "use client";
 import Link from "next/link";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
@@ -549,6 +549,10 @@ export default function ListingContent({
                     // const resizedBase = getResizedBase(item);
                     const imgs = lazyImages[item.id] ?? [];
                     const firstImage = getFirstImage(item);
+const isActive = swiperActivated[item.id];
+const slides = isActive
+  ? lazyImages[item.id] ?? []
+  : [firstImage];
 
                     console.log("imgs", firstImage);
                     return (
@@ -593,27 +597,36 @@ export default function ListingContent({
                                   slidesPerView={1}
                                   navigation
                                   pagination={{ clickable: true }}
-                                  onSlideChange={() => loadRemaining(item)}
-                                  onTouchStart={() => loadRemaining(item)}
-                                    onClick={() => loadRemaining(item)}
+                                   allowSlideNext={swiperActivated[item.id]}
+  allowSlidePrev={swiperActivated[item.id]}
+                                   allowTouchMove={false}   // ❌ image swipe disabled
+  onNavigationNext={(swiper) => {
+  if (!swiperActivated[item.id]) {
+    activateSwiper(item);
+    swiper.slideTo(0); // 🔒 stay on first image
+  }
+}}
+onNavigationPrev={(swiper) => {
+  if (!swiperActivated[item.id]) {
+    activateSwiper(item);
+    swiper.slideTo(0); // 🔒 stay on first image
+  }
+}}
 
                                   className="main_thumb_swiper"
                                 >
-                                  {(imgs.length ? imgs : [firstImage]).map(
-                                    (img, i) => (
-                                      <SwiperSlide key={i}>
-                                        <div className="thumb_img">
-                                          <ImageWithSkeleton
-                                            src={img}
-                                            alt={`Caravan ${i + 1}`}
-                                            width={400}
-                                            height={300}
-                                            priority={isPriority && i === 0}
-                                          />
-                                        </div>
-                                      </SwiperSlide>
-                                    )
-                                  )}
+                                  {slides.map((img, i) => (
+    <SwiperSlide key={i}>
+      <div className="thumb_img">
+        <ImageWithSkeleton
+          src={img}
+          alt={`Caravan ${i + 1}`}
+          width={400}
+          height={300}
+        />
+      </div>
+    </SwiperSlide>
+  ))}
                                 </Swiper>
                               </div>
                             </div>
@@ -1025,4 +1038,4 @@ export default function ListingContent({
     </>
   );
 }
-
+ 

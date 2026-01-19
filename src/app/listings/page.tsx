@@ -105,7 +105,7 @@
  
      // All checks passed - render the listings
      return (
-       <Suspense fallback={<div> loading  </div>}>
+       <Suspense >
          <Listing initialData={response} page={page} />
        </Suspense>
      );
