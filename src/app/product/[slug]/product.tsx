@@ -350,89 +350,38 @@ export default function ClientLogger({
   //     window.history.back();
   //   }
   // };
- const [cameFromSameSite, setCameFromSameSite] = useState(false);
-const [returnUrl, setReturnUrl] = useState<string | null>(null);
+ const [returnUrl, setReturnUrl] = useState<string | null>(null);
+
+ const [backReady, setBackReady] = useState(false);
 
 useEffect(() => {
   if (typeof window === "undefined") return;
 
-  const cameFromFlag = sessionStorage.getItem("cameFromListings");
-  const savedReturnUrl = sessionStorage.getItem("listingsReturnUrl");
-
-  // ✅ Case 1: User clicked from listings (flag exists)
-  if (cameFromFlag === "true") {
-    setCameFromSameSite(true);
-    setReturnUrl(savedReturnUrl);
-    
-    // ✅ Clear flags after reading
-    sessionStorage.removeItem("cameFromListings");
-    // Don't remove returnUrl yet - keep it for the back button
-    return;
-  }
-
-  // ✅ Case 2: Check referrer as fallback
-  const referrer = document.referrer;
-  const origin = window.location.origin;
-
-  if (referrer && referrer.startsWith(origin) && referrer.includes("/listings")) {
-    setCameFromSameSite(true);
-    setReturnUrl(referrer);
-  } else {
-    setCameFromSameSite(false);
-  }
-}, []);
-
+  const saved = sessionStorage.getItem("listingsReturnUrl");
+  setReturnUrl(saved);
+  setBackReady(true); // ✅ tell UI it's ready
+}, [])
 // ✅ Improved back button handler
-const handleBackClick = (e: React.MouseEvent) => {
+ const handleBackClick = (e: React.MouseEvent) => {
   e.preventDefault();
-  
-  // ✅ Method 1: Use saved return URL (most reliable)
+
   if (returnUrl) {
     sessionStorage.removeItem("listingsReturnUrl");
     router.push(returnUrl);
     return;
   }
-  
-  // ✅ Method 2: Check if we have history
-  if (window.history.length > 1) {
-    window.history.back();
-    return;
-  }
-  
-  // ✅ Method 3: Fallback to listings page
+
   router.push(makeHref);
 };
+useEffect(() => {
+  sessionStorage.setItem(
+    "listingsReturnUrl",
+    window.location.pathname + window.location.search
+  );
+}, []);
 
 
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const referrer = document.referrer;
-    const origin = window.location.origin;
-    const cameFromFlag = sessionStorage.getItem("cameFromListings");
-
-    // ✅ Case 1: User clicked from listings
-    if (cameFromFlag === "true") {
-      setCameFromSameSite(true);
-      sessionStorage.removeItem("cameFromListings");
-      return;
-    }
-
-    // ✅ Case 2: Opened directly or via copy-paste (no referrer)
-    if (!referrer) {
-      setCameFromSameSite(false); // Back to Similar Caravans
-      return;
-    }
-
-    // ✅ Case 3: Came from same domain listings
-    if (referrer.startsWith(origin) && referrer.includes("/listings")) {
-      setCameFromSameSite(true); // Back to Search
-    } else {
-      setCameFromSameSite(false); // Back to Similar Caravans
-    }
-  }, []);
-
+ 
   
 
   const makeHref =
@@ -646,29 +595,27 @@ useEffect(() => {
             <div className="row justify-content-center">
               {/* Left Column */}
               <div className="col-xl-8 col-lg-8 col-md-12">
-                {cameFromSameSite ? (
-  <button
-    type="button"
-    onClick={handleBackClick}
-    className="back_to_search back_to_search_btn"
-    style={{ 
-      background: 'none', 
-      border: 'none', 
-      cursor: 'pointer',
-      padding: 0 
-    }}
-  >
-    <i className="bi bi-chevron-left"></i> Back to Search
-  </button>
-) : (
-  <Link
-    href={makeHref}
-    className="back_to_search back_to_search_btn"
-    prefetch={false}
-  >
-    <i className="bi bi-chevron-left"></i> Back to Similar Caravans
-  </Link>
+                {backReady && (
+  returnUrl ? (
+    <button
+      type="button"
+      onClick={handleBackClick}
+      className="back_to_search back_to_search_btn"
+      style={{ background: "none", border: "none", padding: 0 }}
+    >
+      <i className="bi bi-chevron-left"></i> Back to Search
+    </button>
+  ) : (
+    <Link
+      href={makeHref}
+      className="back_to_search back_to_search_btn"
+      prefetch={false}
+    >
+      <i className="bi bi-chevron-left"></i> Back to Similar Caravans
+    </Link>
+  )
 )}
+
 
                 <div className="product-info left-info">
                   <h1 className="title">{product.name}</h1>
