@@ -115,6 +115,8 @@ export default function ListingContent({
   // isNextLoading,
   pageTitle,
 }: Props) {
+  const [swiperActivated, setSwiperActivated] = useState<Record<number, boolean>>({});
+
   const [showInfo, setShowInfo] = useState(false);
   const [showContact, setShowContact] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -404,13 +406,7 @@ export default function ListingContent({
     };
   }, [showInfo, showContact]);
 
-  useEffect(() => {
-    mergedProducts.forEach((item) => {
-      if (!loadedAll[item.id]) {
-        loadRemaining(item);
-      }
-    });
-  }, [mergedProducts]);
+ 
 
   // Example placeholder function for product links
 
@@ -443,6 +439,18 @@ export default function ListingContent({
   }
 
   const { count, text } = splitCountAndTitle(pageTitle);
+
+  const activateSwiper = (item: Product) => {
+  if (swiperActivated[item.id]) return;
+
+  setSwiperActivated((prev) => ({
+    ...prev,
+    [item.id]: true,
+  }));
+
+  loadRemaining(item);
+};
+
 
   return (
     <>
@@ -587,20 +595,51 @@ export default function ListingContent({
                                   pagination={{ clickable: true }}
                                   onSlideChange={() => loadRemaining(item)}
                                   onTouchStart={() => loadRemaining(item)}
+                                    onClick={() => loadRemaining(item)}
+
                                   className="main_thumb_swiper"
                                 >
                                   {(imgs.length ? imgs : [firstImage]).map(
                                     (img, i) => (
                                       <SwiperSlide key={i}>
-                                        <div className="thumb_img">
-                                          <ImageWithSkeleton
-                                            src={img}
-                                            alt={`Caravan ${i + 1}`}
-                                            width={400}
-                                            height={300}
-                                            priority={isPriority && i === 0}
-                                          />
-                                        </div>
+                                         {!swiperActivated[item.id] && (
+    <div
+      className="thumb_img"
+      onClick={() => activateSwiper(item)}
+    >
+      <ImageWithSkeleton
+        src={firstImage}
+        alt="Caravan"
+        width={400}
+        height={300}
+      />
+      <div className="swiper_hint">Click to view more images</div>
+    </div>
+  )}
+
+  {/* AFTER interaction → Swiper mounts */}
+  {swiperActivated[item.id] && (
+    <Swiper
+      modules={[Navigation, Pagination]}
+      slidesPerView={1}
+      navigation
+      pagination={{ clickable: true }}
+      onSlideChange={() => loadRemaining(item)}
+      className="main_thumb_swiper"
+    >
+      {(lazyImages[item.id] ?? []).map((img, i) => (
+        <SwiperSlide key={i}>
+          <ImageWithSkeleton
+            src={img}
+            alt={`Caravan ${i + 1}`}
+            width={400}
+            height={300}
+          />
+        </SwiperSlide>
+      ))}
+    </Swiper>
+  )}
+
                                       </SwiperSlide>
                                     )
                                   )}
