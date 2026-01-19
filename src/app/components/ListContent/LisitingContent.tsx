@@ -1,4 +1,4 @@
-"use client";
+  "use client";
 import Link from "next/link";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
@@ -115,10 +115,6 @@ export default function ListingContent({
   // isNextLoading,
   pageTitle,
 }: Props) {
-  const [swiperActivated, setSwiperActivated] = useState<
-    Record<number, boolean>
-  >({});
-
   const [showInfo, setShowInfo] = useState(false);
   const [showContact, setShowContact] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -137,7 +133,7 @@ export default function ListingContent({
   const handleViewDetails = async (
     e: React.MouseEvent,
     productId: number,
-    href: string,
+    href: string
   ) => {
     e.preventDefault(); // stop <Link> default
     e.stopPropagation(); // stop bubbling to parent
@@ -158,7 +154,7 @@ export default function ListingContent({
     isPremiumLoading,
     isFeaturedLoading,
     isMainLoading,
-    onFilterChange,
+    onFilterChange
   );
   // console.log("data-prod", products);
 
@@ -232,7 +228,7 @@ export default function ListingContent({
   const handleProductClick = async (id) => {
     await postTrackEvent(
       "https://admin.caravansforsale.com.au/wp-json/cfs/v1/update-clicks",
-      id,
+      id
     );
 
     // Allow product page to show "Back to Search"
@@ -243,7 +239,7 @@ export default function ListingContent({
 
   useEffect(() => {
     const nav = performance.getEntriesByType(
-      "navigation",
+      "navigation"
     )[0] as PerformanceNavigationTiming;
 
     if (nav?.type === "reload") {
@@ -348,7 +344,7 @@ export default function ListingContent({
     if (didShuffleRef.current) return;
 
     const premiumIds = new Set(
-      (preminumProducts || []).map((p) => String(p.id)),
+      (preminumProducts || []).map((p) => String(p.id))
     );
 
     let normal = products.filter((p) => !premiumIds.has(String(p.id)));
@@ -377,13 +373,13 @@ export default function ListingContent({
             const id = Number(entry.target.getAttribute("data-product-id"));
             postTrackEvent(
               "https://admin.caravansforsale.com.au/wp-json/cfs/v1/update-impressions",
-              id,
+              id
             );
             observer.unobserve(entry.target);
           }
         });
       },
-      { threshold: 0.5 },
+      { threshold: 0.5 }
     );
 
     document
@@ -407,6 +403,14 @@ export default function ListingContent({
       document.body.style.overflow = "";
     };
   }, [showInfo, showContact]);
+
+  useEffect(() => {
+    mergedProducts.forEach((item) => {
+      if (!loadedAll[item.id]) {
+        loadRemaining(item);
+      }
+    });
+  }, [mergedProducts]);
 
   // Example placeholder function for product links
 
@@ -439,17 +443,6 @@ export default function ListingContent({
   }
 
   const { count, text } = splitCountAndTitle(pageTitle);
-
-  const activateSwiper = (item: Product) => {
-    if (swiperActivated[item.id]) return;
-
-    setSwiperActivated((prev) => ({
-      ...prev,
-      [item.id]: true,
-    }));
-
-    loadRemaining(item);
-  };
 
   return (
     <>
@@ -503,7 +496,7 @@ export default function ListingContent({
                         setIsOrderbyLoading(true);
 
                         const params = new URLSearchParams(
-                          searchParams.toString(),
+                          searchParams.toString()
                         );
 
                         value === "featured"
@@ -546,12 +539,8 @@ export default function ListingContent({
                     const href = getHref(item);
                     const isPriority = index < 5;
                     // const resizedBase = getResizedBase(item);
-                    // const imgs = lazyImages[item.id] ?? [];
+                    const imgs = lazyImages[item.id] ?? [];
                     const firstImage = getFirstImage(item);
-                    const isActive = swiperActivated[item.id];
-                    const slides = isActive
-                      ? (lazyImages[item.id] ?? [])
-                      : [firstImage];
 
                     console.log("imgs", firstImage);
                     return (
@@ -596,70 +585,36 @@ export default function ListingContent({
                                   slidesPerView={1}
                                   navigation
                                   pagination={{ clickable: true }}
-                                  allowSlideNext={swiperActivated[item.id]}
-                                  allowSlidePrev={swiperActivated[item.id]}
-   allowTouchMove={true}
-     onTouchStart={() => {
-    if (!swiperActivated[item.id]) {
-      activateSwiper(item);
-    }
-  }}
-
-                                   onNavigationNext={(swiper) => {
-                                    if (!swiperActivated[item.id]) {
-                                      activateSwiper(item);
-                                      swiper.slideTo(0); // 🔒 stay on first image
-                                    }
-                                  }}
-                                  onNavigationPrev={(swiper) => {
-                                    if (!swiperActivated[item.id]) {
-                                      activateSwiper(item);
-                                      swiper.slideTo(0); // 🔒 stay on first image
-                                    }
-                                  }}
+                                  onSlideChange={() => loadRemaining(item)}
+                                  onTouchStart={() => loadRemaining(item)}
                                   className="main_thumb_swiper"
                                 >
-                                  {slides.map((img, i) => (
-                                    <SwiperSlide key={i}>
-                                      <div className="thumb_img">
-                                        <ImageWithSkeleton
-                                          src={img}
-                                          alt={`Caravan ${i + 1}`}
-                                          width={400}
-                                          height={300}
-                                        />
-                                      </div>
-                                    </SwiperSlide>
-                                  ))}
+                                  {(imgs.length ? imgs : [firstImage]).map(
+                                    (img, i) => (
+                                      <SwiperSlide key={i}>
+                                        <div className="thumb_img">
+                                          <ImageWithSkeleton
+                                            src={img}
+                                            alt={`Caravan ${i + 1}`}
+                                            width={400}
+                                            height={300}
+                                            priority={isPriority && i === 0}
+                                          />
+                                        </div>
+                                      </SwiperSlide>
+                                    )
+                                  )}
                                 </Swiper>
                               </div>
                             </div>
 
-
-
                             <div className="product_de">
-                              
-                              
-                                 <Link
-                          href={href}
-                          prefetch={false}
-                          className="lli_head"
-                          onClick={(e) => {
-                            e.preventDefault(); // ❗ important
-                            // setNavigating(true);
-
-                            sessionStorage.setItem("cameFromListings", "true");
-
-                            router.push(href);
-                          }}
-                        >
-                          <div className="info"> 
+                              <div className="info">
                                 {item.name && (
-                                  <h3 className="title cursor-pointer">{item.name}</h3>
+                                  <h3 className="title">{item.name}</h3>
                                 )}
                               </div>
 
-                                </Link>
                               {/* --- PRICE SECTION --- */}
                               {(item.regular_price ||
                                 item.sale_price ||
@@ -680,7 +635,7 @@ export default function ListingContent({
                                             Number(cleanRegular) || 0;
                                           const cleanSale = rawSale.replace(
                                             /[^0-9.]/g,
-                                            "",
+                                            ""
                                           );
                                           const saleNum =
                                             Number(cleanSale) || 0;
@@ -819,8 +774,6 @@ export default function ListingContent({
                                 </button>
                               </div>
                             </div>
-                           
-
                           </div>
                         </Link>
                       </div>
@@ -877,7 +830,7 @@ export default function ListingContent({
                   dangerouslySetInnerHTML={{
                     __html: selectedProduct.description.replace(
                       /\\r\\n/g,
-                      "<br/>",
+                      "<br/>"
                     ),
                   }}
                 />
