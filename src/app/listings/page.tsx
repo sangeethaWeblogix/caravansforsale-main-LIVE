@@ -5,8 +5,6 @@
  import { ensureValidPage } from "@/utils/seo/validatePage";
  import { notFound } from "next/navigation";
  import ApiErrorFallback from "../components/ApiErrorFallback";
- import ListingsLoading from "./loading";
- 
  export const revalidate = 60;
   
     export const metadata: Metadata = {
@@ -107,7 +105,7 @@
  
      // All checks passed - render the listings
      return (
-       <Suspense fallback={<ListingsLoading />}>
+       <Suspense fallback={<div> loading  </div>}>
          <Listing initialData={response} page={page} />
        </Suspense>
      );
