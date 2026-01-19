@@ -602,44 +602,15 @@ export default function ListingContent({
                                   {(imgs.length ? imgs : [firstImage]).map(
                                     (img, i) => (
                                       <SwiperSlide key={i}>
-                                         {!swiperActivated[item.id] && (
-    <div
-      className="thumb_img"
-      onClick={() => activateSwiper(item)}
-    >
-      <ImageWithSkeleton
-        src={firstImage}
-        alt="Caravan"
-        width={400}
-        height={300}
-      />
-      <div className="swiper_hint">Click to view more images</div>
-    </div>
-  )}
-
-  {/* AFTER interaction → Swiper mounts */}
-  {swiperActivated[item.id] && (
-    <Swiper
-      modules={[Navigation, Pagination]}
-      slidesPerView={1}
-      navigation
-      pagination={{ clickable: true }}
-      onSlideChange={() => loadRemaining(item)}
-      className="main_thumb_swiper"
-    >
-      {(lazyImages[item.id] ?? []).map((img, i) => (
-        <SwiperSlide key={i}>
-          <ImageWithSkeleton
-            src={img}
-            alt={`Caravan ${i + 1}`}
-            width={400}
-            height={300}
-          />
-        </SwiperSlide>
-      ))}
-    </Swiper>
-  )}
-
+                                        <div className="thumb_img">
+                                          <ImageWithSkeleton
+                                            src={img}
+                                            alt={`Caravan ${i + 1}`}
+                                            width={400}
+                                            height={300}
+                                            priority={isPriority && i === 0}
+                                          />
+                                        </div>
                                       </SwiperSlide>
                                     )
                                   )}
