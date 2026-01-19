@@ -9,7 +9,7 @@
   text-decoration: none;
   font-weight: 500;
 }
-.main_thumb_swiper .swiper-button-prev,
+/* .main_thumb_swiper .swiper-button-prev,
 .main_thumb_swiper .swiper-button-next {
   opacity: 1 !important;
   visibility: visible !important;
@@ -22,7 +22,7 @@
   font-weight: bold;
   color: #fff;
 }
-
+ */
 
 .header {
   margin-bottom: 0px;

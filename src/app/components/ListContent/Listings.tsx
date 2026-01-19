@@ -1056,7 +1056,7 @@ const isClearAllRef = useRef(false);
                     </span>
                   </div>
                   <div className="smooth_scroll">
-                    <Suspense fallback={<div>Loading filters...</div>}>
+                    <Suspense >
                       <CaravanFilter
                         categories={categories}
                         makes={makes}
@@ -1153,7 +1153,7 @@ const isClearAllRef = useRef(false);
         </div>
 
         <div className="offcanvas-body pt-2">
-          <Suspense fallback={<div>Loading filters...</div>}>
+          <Suspense >
             <CaravanFilter
               categories={categories}
               makes={makes}
