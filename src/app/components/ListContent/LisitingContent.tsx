@@ -570,7 +570,7 @@ export default function ListingContent({
                     console.log("imgs", firstImage);
                     return (
                       <div className="col-lg-6 mb-0" key={index}>
-                        {/* <Link
+                        <Link
                           href={href}
                           prefetch={false}
                           className="lli_head"
@@ -578,16 +578,13 @@ export default function ListingContent({
     e.preventDefault();
     goToProduct(href);
   }}
-                        > */}
+                        >
                           <div
                             className={`product-card sku-${item.sku}`}
                             data-product-id={item.id}
                           >
                             <div className="img">
-                              <div className="background_thumb"  onClick={(e) => {
-    e.preventDefault();
-    goToProduct(href);
-  }}>
+                              <div className="background_thumb">
                                 <ImageWithSkeleton
                                   src={firstImage}
                                   priority={isPriority}
@@ -618,16 +615,18 @@ allowSlidePrev={true}
     }
   }}
 
-                                onNavigationNext={() => {
-    if (!swiperActivated[item.id]) {
-      activateSwiper(item);
-    }
-  }}
-                                  onNavigationPrev={() => {
-    if (!swiperActivated[item.id]) {
-      activateSwiper(item);
-    }
-  }}
+                                   onNavigationNext={(swiper) => {
+                                    if (!swiperActivated[item.id]) {
+                                      activateSwiper(item);
+                                      swiper.slideTo(0); // 🔒 stay on first image
+                                    }
+                                  }}
+                                  onNavigationPrev={(swiper) => {
+                                    if (!swiperActivated[item.id]) {
+                                      activateSwiper(item);
+                                      swiper.slideTo(0); // 🔒 stay on first image
+                                    }
+                                  }}
                                   className="main_thumb_swiper"
                                 >
                                   {slides.map((img, i) => (
@@ -825,8 +824,7 @@ allowSlidePrev={true}
                            
 
                           </div>
-
-                        {/* </Link> */}
+                        </Link>
                       </div>
                     );
                   })}
