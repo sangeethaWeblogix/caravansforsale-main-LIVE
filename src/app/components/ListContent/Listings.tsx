@@ -5,16 +5,12 @@ import { fetchListings, ApiResponse, Item } from "../../../api/listings/api";
 import Listing from "./LisitingContent";
 import ExculsiveContent from "./exculsiveContent";
 import CaravanFilter from "../CaravanFilter";
- import { flushSync } from "react-dom";
+import { flushSync } from "react-dom";
 import { v4 as uuidv4 } from "uuid";
 import "./newList.css";
-import dynamic from 'next/dynamic';
+import dynamic from "next/dynamic";
 
-const ListingSkeleton = dynamic(
-  () => import('../skelton'),
-  { ssr: false }
-);
-
+const ListingSkeleton = dynamic(() => import("../skelton"), { ssr: false });
 
 import {
   redirect,
@@ -26,7 +22,7 @@ import { buildSlugFromFilters } from "../slugBuilter";
 import { parseSlugToFilters } from "../../components/urlBuilder";
 import Head from "next/head";
 import "./loader.css";
- // import Link from "next/link";
+// import Link from "next/link";
 
 /* --------- GLOBAL de-dupe across StrictMode remounts --------- */
 // let LAST_GLOBAL_REQUEST_KEY = "";
@@ -53,7 +49,7 @@ interface Product {
   sku?: string;
   gallery?: string[];
   // Include additional properties that might come from API
-   list_page_title?: string;
+  list_page_title?: string;
   weight?: string;
   price?: string;
   thumbnail?: string;
@@ -63,7 +59,6 @@ interface Product {
   is_exclusive?: boolean;
   is_premium?: boolean;
   image_url?: string[];
-
 }
 
 interface Pagination {
@@ -149,10 +144,9 @@ function transformApiItemsToProducts(items: Item[]): Product[] {
     sku: item.sku,
     gallery: item.gallery || [],
     is_exclusive: item.is_exclusive,
-      is_premium:item.is_premium,
-      image_format: item.image_format|| [],
-      image_url: item.image_url || [],
-
+    is_premium: item.is_premium,
+    image_format: item.image_format || [],
+    image_url: item.image_url || [],
 
     // keep extra props
   }));
@@ -172,7 +166,7 @@ export default function ListingsPage({
   const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
- 
+
   const [isMainLoading, setIsMainLoading] = useState(false);
   const [isFeaturedLoading, setIsFeaturedLoading] = useState(false);
   const [isPremiumLoading, setIsPremiumLoading] = useState(false);
@@ -204,107 +198,110 @@ export default function ListingsPage({
     redirect("/404");
   }
   // ✅ If page is missing → default to 1
- 
-     const fromYears = searchParams.get("acustom_fromyears");
+
+  const fromYears = searchParams.get("acustom_fromyears");
   const toYears = searchParams.get("acustom_toyears");
 
   if (fromYears !== null || toYears !== null) {
     redirect("/404");
   }
 
+  const getIP = async () => {
+    try {
+      const res = await fetch("https://api.ipify.org?format=json");
+      const data = await res.json();
+      return data.ip || "";
+    } catch {
+      return "";
+    }
+  };
 
- const getIP = async () => {
-  try {
-    const res = await fetch("https://api.ipify.org?format=json");
-    const data = await res.json();
-    return data.ip || "";
-  } catch {
-    return "";
-  }
-};
+  const postTrackEvent = async (url: string, product_id: number) => {
+    const ip = await getIP();
+    const user_agent = navigator.userAgent;
 
-const postTrackEvent = async (url: string, product_id: number) => {
-  const ip = await getIP();
-  const user_agent = navigator.userAgent;
+    await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        product_id,
+        ip,
+        user_agent,
+      }),
+    });
+  };
 
-  await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      product_id,
-      ip,
-      user_agent,
-    }),
-  });
-};
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const id = Number(entry.target.getAttribute("data-product-id"));
+            postTrackEvent(
+              "https://admin.caravansforsale.com.au/wp-json/cfs/v1/update-impressions",
+              id,
+            );
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.3 },
+    );
 
-useEffect(() => {
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          const id = Number(entry.target.getAttribute("data-product-id"));
-          postTrackEvent(
-            "https://admin.caravansforsale.com.au/wp-json/cfs/v1/update-impressions",
-            id
-          );
-          observer.unobserve(entry.target);
-        }
+    document
+      .querySelectorAll(".product-card[data-product-id]")
+      .forEach((el) => {
+        observer.observe(el);
       });
-    },
-    { threshold: 0.3 }
-  );
 
-  document.querySelectorAll(".product-card[data-product-id]").forEach((el) => {
-    observer.observe(el);
-  });
-
-  return () => observer.disconnect();
-}, [ ]);
+    return () => observer.disconnect();
+  }, []);
 
   // Initialize state with initialData if provided
   const [products, setProducts] = useState<Product[]>(
     initialData?.data?.products
       ? transformApiItemsToProducts(initialData.data.products)
-      : []
+      : [],
   );
   const [exculisiveProducts, setExculisiveProducts] = useState<Product[]>(
     initialData?.data?.exclusive_products
       ? transformApiItemsToProducts(initialData.data.exclusive_products)
-      : []
+      : [],
   );
   const [fetauredProducts, setFeaturedProducts] = useState<Product[]>(
     initialData?.data?.featured_products
       ? transformApiItemsToProducts(initialData.data.featured_products)
-      : []
+      : [],
   );
   const [preminumProducts, setPremiumProducts] = useState<Product[]>(
     initialData?.data?.premium_products
       ? transformApiItemsToProducts(initialData.data.premium_products)
-      : []
+      : [],
   );
   const [emptyProduct, setEmptyProduct] = useState<Product[]>(
     initialData?.data?.emp_exclusive_products
       ? transformApiItemsToProducts(initialData.data.emp_exclusive_products)
-      : []
+      : [],
   );
 
   const [categories, setCategories] = useState<Category[]>(
-    initialData?.data?.all_categories || []
+    initialData?.data?.all_categories || [],
   );
   const [makes, setMakes] = useState<MakeOption[]>(
-    initialData?.data?.make_options || []
+    initialData?.data?.make_options || [],
   );
   const [stateOptions, setStateOptions] = useState<StateOption[]>(
-    initialData?.data?.states || []
+    initialData?.data?.states || [],
   );
   const [models, setModels] = useState<MakeOption[]>(
-    initialData?.data?.model_options || []
+    initialData?.data?.model_options || [],
   );
-  const [pageTitle, setPageTitle] = useState(initialData?. list_page_title || " ");
+  const [pageTitle, setPageTitle] = useState(
+    initialData?.list_page_title || " ",
+  );
   const [metaTitle, setMetaTitle] = useState(initialData?.seo?.metatitle || "");
   const [metaDescription, setMetaDescription] = useState(
-    initialData?.seo?.metadescription || ""
+    initialData?.seo?.metadescription || "",
   );
   const [pagination, setPagination] = useState<Pagination>(() => {
     // Use initial data if available, otherwise fall back to default
@@ -322,7 +319,7 @@ useEffect(() => {
       typeof window !== "undefined"
         ? parseInt(
             new URLSearchParams(window.location.search).get("page") || "1",
-            10
+            10,
           )
         : 1;
     return {
@@ -418,29 +415,33 @@ useEffect(() => {
   //   },
   //   [router, DEFAULT_RADIUS]
   // );
- const updateURLWithFilters = useCallback((nextFilters: Filters, pageNum: number) => {
-  console.log(pageNum)
-  const slug = buildSlugFromFilters(nextFilters); // your slug builder
-  const query = new URLSearchParams();
+  const updateURLWithFilters = useCallback(
+    (nextFilters: Filters, pageNum: number) => {
+      console.log(pageNum);
+      const slug = buildSlugFromFilters(nextFilters); // your slug builder
+      const query = new URLSearchParams();
 
-  if (nextFilters.orderby) query.set("orderby", String(nextFilters.orderby));
-  const r = Number(nextFilters.radius_kms);
-  if (!Number.isNaN(r) && r !== DEFAULT_RADIUS) {
-    query.set("radius_kms", String(r));
-  }
-  if (clickid) query.set("clickid", clickid);
+      if (nextFilters.orderby)
+        query.set("orderby", String(nextFilters.orderby));
+      const r = Number(nextFilters.radius_kms);
+      if (!Number.isNaN(r) && r !== DEFAULT_RADIUS) {
+        query.set("radius_kms", String(r));
+      }
+      if (clickid) query.set("clickid", clickid);
 
-  // Use current pathname (do not force a route push)
-  const path = window.location.pathname;
-  const safeSlug = slug ? (slug.endsWith("/") ? slug : `${slug}/`) : path;
-  const finalURL = query.toString() ? `${safeSlug}?${query}` : safeSlug;
+      // Use current pathname (do not force a route push)
+      const path = window.location.pathname;
+      const safeSlug = slug ? (slug.endsWith("/") ? slug : `${slug}/`) : path;
+      const finalURL = query.toString() ? `${safeSlug}?${query}` : safeSlug;
 
-  // Replace history only — avoids Next.js navigation / redirect
-  window.history.replaceState({}, "", finalURL);
+      // Replace history only — avoids Next.js navigation / redirect
+      window.history.replaceState({}, "", finalURL);
 
-  // then fetch data client-side
-  setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 150);
-}, [DEFAULT_RADIUS, clickid]);
+      // then fetch data client-side
+      setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 150);
+    },
+    [DEFAULT_RADIUS, clickid],
+  );
   // put near your other helpers
   const getUrlParams = () => new URLSearchParams(window.location.search);
   const setUrlParams = (params: Record<string, string | undefined>) => {
@@ -474,7 +475,7 @@ useEffect(() => {
   useEffect(() => {
     if (initialData?.data?.products) {
       const transformed = transformApiItemsToProducts(
-        initialData.data.products
+        initialData.data.products,
       );
       setProducts(transformed);
       setCategories(initialData.data.all_categories || []);
@@ -500,13 +501,13 @@ useEffect(() => {
           try {
             const response = await preFetchListings(
               pagination.current_page + 1,
-              filtersRef.current
+              filtersRef.current,
             );
 
             if (response?.success) {
               console.log(
                 "Prefetch success for page:",
-                pagination.current_page + 1
+                pagination.current_page + 1,
               );
               console.log("responsepre", response);
               setNextPageData(response);
@@ -519,7 +520,7 @@ useEffect(() => {
           }
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0.1 },
     );
 
     observer.observe(sentinelRef.current);
@@ -528,7 +529,7 @@ useEffect(() => {
 
   const preFetchListings = async (
     pageNum: number,
-    appliedFilters: Filters = filtersRef.current
+    appliedFilters: Filters = filtersRef.current,
   ): Promise<ApiResponse | undefined> => {
     try {
       console.log("pageNumpageNum", pageNum);
@@ -577,7 +578,7 @@ useEffect(() => {
     async (
       pageNum = 1,
       appliedFilters: Filters = filtersRef.current,
-      skipInitialCheck = false
+      skipInitialCheck = false,
     ): Promise<ApiResponse | undefined> => {
       if (initialData && !skipInitialCheck && isUsingInitialData) {
         setIsUsingInitialData(false);
@@ -588,9 +589,8 @@ useEffect(() => {
         window.scrollTo({ top: 0, behavior: "smooth" });
 
         const safeFilters = normalizeSearchFromMake(appliedFilters);
-                      console.log("appp1",appliedFilters)
-                                    console.log("app",safeFilters.orderby)
-
+        console.log("appp1", appliedFilters);
+        console.log("app", safeFilters.orderby);
 
         const radiusNum = asNumber(safeFilters.radius_kms);
         const radiusParam =
@@ -640,7 +640,7 @@ useEffect(() => {
         setProducts(
           validProducts.length > 0
             ? transformApiItemsToProducts(validProducts)
-            : []
+            : [],
         );
 
         // ---- Store FEATURED, PREMIUM, EXCLUSIVE ----
@@ -666,7 +666,7 @@ useEffect(() => {
         return undefined;
       }
     },
-    [DEFAULT_RADIUS, router, initialData, isUsingInitialData]
+    [DEFAULT_RADIUS, router, initialData, isUsingInitialData],
   );
 
   const scrollToTop = () => {
@@ -676,99 +676,99 @@ useEffect(() => {
     }, 0);
   };
   const handleNextPage = useCallback(async () => {
-  if (pagination.current_page >= pagination.total_pages) return;
+    if (pagination.current_page >= pagination.total_pages) return;
 
-  scrollToTop();
+    scrollToTop();
 
-  flushSync(() => {
+    flushSync(() => {
+      setIsMainLoading(true);
+      setIsFeaturedLoading(true);
+      setIsPremiumLoading(true);
+    });
+
+    const nextPage = pagination.current_page + 1;
+
+    // ✅ always ensure clickid
+    const id = ensureclickid();
+    savePage(id, nextPage);
+
+    try {
+      if (nextPageData?.data?.products?.length) {
+        // ✅ use prefetched data
+        setProducts(transformApiItemsToProducts(nextPageData.data.products));
+        setPremiumProducts(
+          transformApiItemsToProducts(nextPageData.data.premium_products ?? []),
+        );
+        setFeaturedProducts(
+          transformApiItemsToProducts(
+            nextPageData.data.featured_products ?? [],
+          ),
+        );
+        setExculisiveProducts(
+          transformApiItemsToProducts(
+            nextPageData.data.exclusive_products ?? [],
+          ),
+        );
+
+        if (nextPageData.pagination) {
+          setPagination(nextPageData.pagination);
+        }
+      } else {
+        // ✅ fallback fetch
+        await loadListings(nextPage, filtersRef.current, true);
+      }
+
+      // ✅ VERY IMPORTANT: URL update using router
+      updateURLWithFilters(filtersRef.current, nextPage);
+    } catch (error) {
+      console.error("Error loading next page:", error);
+    } finally {
+      setIsMainLoading(false);
+      setIsFeaturedLoading(false);
+      setIsPremiumLoading(false);
+
+      setScrollStarted(false);
+      setNextPageData(null);
+      setIsNextLoading(false);
+    }
+  }, [
+    pagination.current_page,
+    pagination.total_pages,
+    nextPageData,
+    loadListings,
+    updateURLWithFilters,
+  ]);
+
+  // ✅ FIXED: Proper handlePrevPage function
+  const handlePrevPage = useCallback(async () => {
+    if (pagination.current_page <= 1) return;
+
+    const prevPage = pagination.current_page - 1;
+
     setIsMainLoading(true);
     setIsFeaturedLoading(true);
     setIsPremiumLoading(true);
-  });
 
-  const nextPage = pagination.current_page + 1;
-
-  // ✅ always ensure clickid
-  const id = ensureclickid();
-  savePage(id, nextPage);
-
-  try {
-    if (nextPageData?.data?.products?.length) {
-      // ✅ use prefetched data
-      setProducts(
-        transformApiItemsToProducts(nextPageData.data.products)
-      );
-      setPremiumProducts(
-        transformApiItemsToProducts(nextPageData.data.premium_products ?? [])
-      );
-      setFeaturedProducts(
-        transformApiItemsToProducts(nextPageData.data.featured_products ?? [])
-      );
-      setExculisiveProducts(
-        transformApiItemsToProducts(nextPageData.data.exclusive_products ?? [])
-      );
-
-      if (nextPageData.pagination) {
-        setPagination(nextPageData.pagination);
+    try {
+      if (prevPage > 1) {
+        // ✅ ALWAYS generate NEW clickid
+        const newId = ensureclickid();
+        savePage(newId, prevPage);
+      } else {
+        // ✅ first page → remove clickid
+        setclickid(null);
+        setUrlParams({ clickid: undefined });
       }
-    } else {
-      // ✅ fallback fetch
-      await loadListings(nextPage, filtersRef.current, true);
+
+      await loadListings(prevPage, filtersRef.current, true);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsMainLoading(false);
+      setIsFeaturedLoading(false);
+      setIsPremiumLoading(false);
     }
-
-    // ✅ VERY IMPORTANT: URL update using router
-    updateURLWithFilters(filtersRef.current, nextPage);
-
-  } catch (error) {
-    console.error("Error loading next page:", error);
-  } finally {
-    setIsMainLoading(false);
-    setIsFeaturedLoading(false);
-    setIsPremiumLoading(false);
-
-    setScrollStarted(false);
-    setNextPageData(null);
-    setIsNextLoading(false);
-  }
-}, [
-  pagination.current_page,
-  pagination.total_pages,
-  nextPageData,
-  loadListings,
-  updateURLWithFilters,
-]);
-
-  // ✅ FIXED: Proper handlePrevPage function
-const handlePrevPage = useCallback(async () => {
-  if (pagination.current_page <= 1) return;
-
-  const prevPage = pagination.current_page - 1;
-
-  setIsMainLoading(true);
-  setIsFeaturedLoading(true);
-  setIsPremiumLoading(true);
-
-  try {
-    if (prevPage > 1) {
-      // ✅ ALWAYS generate NEW clickid
-      const newId = ensureclickid();
-      savePage(newId, prevPage);
-    } else {
-      // ✅ first page → remove clickid
-      setclickid(null);
-      setUrlParams({ clickid: undefined });
-    }
-
-    await loadListings(prevPage, filtersRef.current, true);
-  } catch (err) {
-    console.error(err);
-  } finally {
-    setIsMainLoading(false);
-    setIsFeaturedLoading(false);
-    setIsPremiumLoading(false);
-  }
-}, [pagination, loadListings]);
-
+  }, [pagination, loadListings]);
 
   // add near other refs
   const restoredOnceRef = useRef(false);
@@ -810,10 +810,10 @@ const handlePrevPage = useCallback(async () => {
   useEffect(() => {
     if (!initializedRef.current) return;
 
-     if (isClearAllRef.current) {
-    isClearAllRef.current = false;
-    return;
-  }
+    if (isClearAllRef.current) {
+      isClearAllRef.current = false;
+      return;
+    }
     if (restoredOnceRef.current) {
       restoredOnceRef.current = false; // reset for future real changes
       return;
@@ -821,15 +821,14 @@ const handlePrevPage = useCallback(async () => {
 
     const slugParts = pathKey.split("/listings/")[1]?.split("/") || [];
     const parsedFromURL = parseSlugToFilters(slugParts);
-const orderbyFromQuery = searchParams.get("orderby") ?? undefined;
+    const orderbyFromQuery = searchParams.get("orderby") ?? undefined;
 
     const pageFromURL = validatePage(searchParams.get("page"));
 
     const merged: Filters = {
       ...parsedFromURL,
       ...incomingFiltersRef.current,
-        ...(orderbyFromQuery ? { orderby: orderbyFromQuery } : {}),
-
+      ...(orderbyFromQuery ? { orderby: orderbyFromQuery } : {}),
     };
 
     const filtersChanged =
@@ -858,31 +857,29 @@ const orderbyFromQuery = searchParams.get("orderby") ?? undefined;
     });
   }, [searchKey, pathKey, loadListings, DEFAULT_RADIUS, searchParams]);
 
-
   const mergeFiltersSafely = (prev: Filters, next: Filters): Filters => {
-  const merged: Filters = { ...prev };
+    const merged: Filters = { ...prev };
 
-  Object.entries(next).forEach(([key, value]) => {
-    if (value === undefined || value === null || value === "") {
-      // ❌ do nothing → keep previous value
-      return;
-    }
-    merged[key as keyof Filters] = value;
-  });
+    Object.entries(next).forEach(([key, value]) => {
+      if (value === undefined || value === null || value === "") {
+        // ❌ do nothing → keep previous value
+        return;
+      }
+      merged[key as keyof Filters] = value;
+    });
 
-  return merged;
-};
+    return merged;
+  };
 
   const handleFilterChange = useCallback(
     async (newFilters: Filters) => {
       // ✅ Show skeleton for ALL sections immediately
-         setIsLoading(true);
-        setIsMainLoading(true);
-        setIsFeaturedLoading(true);
-        setIsPremiumLoading(true);
-      
+      setIsLoading(true);
+      setIsMainLoading(true);
+      setIsFeaturedLoading(true);
+      setIsPremiumLoading(true);
 
-const mergedFilters = mergeFiltersSafely(filtersRef.current, newFilters);
+      const mergedFilters = mergeFiltersSafely(filtersRef.current, newFilters);
 
       // cleanup empty values
       if ("orderby" in newFilters && !newFilters.orderby) {
@@ -917,7 +914,7 @@ const mergedFilters = mergeFiltersSafely(filtersRef.current, newFilters);
         setIsPremiumLoading(false);
       }
     },
-    [updateURLWithFilters, loadListings]
+    [updateURLWithFilters, loadListings],
   );
   useEffect(() => {
     console.log("Loading state:", {
@@ -942,7 +939,7 @@ const mergedFilters = mergeFiltersSafely(filtersRef.current, newFilters);
     "to_price",
     "minKg",
     "maxKg",
-   
+
     "from_sleep",
     "to_sleep",
     "from_length",
@@ -950,53 +947,50 @@ const mergedFilters = mergeFiltersSafely(filtersRef.current, newFilters);
     "search",
     "keyword",
     "orderby",
-      "acustom_fromyears",
-  "acustom_toyears",
+    "acustom_fromyears",
+    "acustom_toyears",
   ];
 
   const hasActiveFilters = FILTER_KEYS_TO_CHECK.some((key) => {
     const value = filters[key];
     return value !== undefined && value !== "" && value !== null;
   });
-const isClearAllRef = useRef(false);
+  const isClearAllRef = useRef(false);
 
   const resetAllFilters = async () => {
-  if (!hasActiveFilters) return;
+    if (!hasActiveFilters) return;
 
-  isClearAllRef.current = true; // 🔒 mark clear-all
+    isClearAllRef.current = true; // 🔒 mark clear-all
 
-  // ✅ show skeleton
-  setIsLoading(true);
-  setIsMainLoading(true);
-  setIsFeaturedLoading(true);
-  setIsPremiumLoading(true);
+    // ✅ show skeleton
+    setIsLoading(true);
+    setIsMainLoading(true);
+    setIsFeaturedLoading(true);
+    setIsPremiumLoading(true);
 
-  // ✅ HARD CLEAR DATA (IMPORTANT)
-  setProducts([]);
-  setFeaturedProducts([]);
-  setPremiumProducts([]);
-  setExculisiveProducts([]);
-  setEmptyProduct([]);
+    // ✅ HARD CLEAR DATA (IMPORTANT)
+    setProducts([]);
+    setFeaturedProducts([]);
+    setPremiumProducts([]);
+    setExculisiveProducts([]);
+    setEmptyProduct([]);
 
-  const clearedFilters: Filters = {};
+    const clearedFilters: Filters = {};
 
-  flushSync(() => {
-    setFilters(clearedFilters);
-    filtersRef.current = clearedFilters;
-  });
+    flushSync(() => {
+      setFilters(clearedFilters);
+      filtersRef.current = clearedFilters;
+    });
 
-  try {
-    // ✅ update URL only (no duplicate fetch)
-    router.replace("/listings", { scroll: false });
+    try {
+      // ✅ update URL only (no duplicate fetch)
+      router.replace("/listings", { scroll: false });
 
-    // ❌ DO NOT call loadListings here
-  } catch (err) {
-    console.error("Clear all failed:", err);
-  }
-};
-
-
-
+      // ❌ DO NOT call loadListings here
+    } catch (err) {
+      console.error("Clear all failed:", err);
+    }
+  };
 
   // Mobile offcanvas filter state
   const mobileFiltersRef = useRef<HTMLDivElement>(null);
@@ -1056,7 +1050,7 @@ const isClearAllRef = useRef(false);
                     </span>
                   </div>
                   <div className="smooth_scroll">
-                    <Suspense >
+                    <Suspense>
                       <CaravanFilter
                         categories={categories}
                         makes={makes}
@@ -1153,7 +1147,7 @@ const isClearAllRef = useRef(false);
         </div>
 
         <div className="offcanvas-body pt-2">
-          <Suspense >
+          <Suspense>
             <CaravanFilter
               categories={categories}
               makes={makes}

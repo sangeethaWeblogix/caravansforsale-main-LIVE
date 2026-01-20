@@ -129,55 +129,54 @@ export default function ListingContent({
   const [isOrderbyLoading, setIsOrderbyLoading] = useState(false);
   const [mergedProducts, setMergedProducts] = useState<Product[]>([]);
   const [navigating, setNavigating] = useState(false);
-const [swiperKey, setSwiperKey] = useState(0);
+  const [swiperKey, setSwiperKey] = useState(0);
 
-const pathname = usePathname();
-useEffect(() => {
-  try {
-    sessionStorage.setItem(
-      "listingsReturnUrl",
-      window.location.pathname + window.location.search
-    );
-  } catch {}
-}, []);
+  const pathname = usePathname();
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(
+        "listingsReturnUrl",
+        window.location.pathname + window.location.search,
+      );
+    } catch {}
+  }, []);
 
-useEffect(() => {
-  // 🔥 Route finished changing → stop loader
-  setNavigating(false);
-}, [pathname]);
+  useEffect(() => {
+    // 🔥 Route finished changing → stop loader
+    setNavigating(false);
+  }, [pathname]);
 
   const IMAGE_BASE_URL = "https://caravansforsale.imagestack.net/400x300/";
 
   const IMAGE_EXT = ".avif";
 
-const goToProduct = (href: string) => {
-  try {
-    sessionStorage.setItem("cameFromListings", "true");
-    sessionStorage.setItem(
-      "listingsReturnUrl",
-      window.location.pathname + window.location.search
-    );
-  } catch {}
+  const goToProduct = (href: string) => {
+    try {
+      sessionStorage.setItem("cameFromListings", "true");
+      sessionStorage.setItem(
+        "listingsReturnUrl",
+        window.location.pathname + window.location.search,
+      );
+    } catch {}
 
-  router.push(href);
-};
+    router.push(href);
+  };
 
+  useEffect(() => {
+    const cameBack = sessionStorage.getItem("cameFromListings");
 
-useEffect(() => {
-  const cameBack = sessionStorage.getItem("cameFromListings");
+    if (cameBack) {
+      // 🔁 force swiper remount
+      setSwiperKey((k) => k + 1);
 
-  if (cameBack) {
-    // 🔁 force swiper remount
-    setSwiperKey((k) => k + 1);
+      // optional: reset activation map
+      setSwiperActivated({});
+      setLazyImages({});
+      setLoadedAll({});
 
-    // optional: reset activation map
-    setSwiperActivated({});
-    setLazyImages({});
-    setLoadedAll({});
-
-    sessionStorage.removeItem("cameFromListings");
-  }
-}, []);
+      sessionStorage.removeItem("cameFromListings");
+    }
+  }, []);
 
   const handleViewDetails = async (
     e: React.MouseEvent,
@@ -194,9 +193,8 @@ useEffect(() => {
     await handleProductClick(productId);
 
     // 🔁 navigate
-    goToProduct(href); 
+    goToProduct(href);
   };
-
 
   console.log(
     "data-main",
@@ -596,11 +594,10 @@ useEffect(() => {
                     const firstImage = getFirstImage(item);
                     const isActive = swiperActivated[item.id];
                     const slides = isActive
-  ? (lazyImages[item.id] ?? [])
-  : firstImage
-    ? [firstImage, firstImage]
-    : [];
-
+                      ? (lazyImages[item.id] ?? [])
+                      : firstImage
+                        ? [firstImage, firstImage]
+                        : [];
 
                     console.log("imgs", firstImage);
                     return (
@@ -609,10 +606,10 @@ useEffect(() => {
                           href={href}
                           prefetch={false}
                           className="lli_head"
-                            onClick={(e) => {
-    e.preventDefault();
-    goToProduct(href);
-  }}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            goToProduct(href);
+                          }}
                         >
                           <div
                             className={`product-card sku-${item.sku}`}
@@ -636,73 +633,70 @@ useEffect(() => {
                                   <span className="lab">Spotlight Van</span>
                                 )}
 
-
-<Swiper
-  key={`${swiperKey}-${item.id}`}
-  modules={[Navigation, Pagination]}
-  slidesPerView={1}
-  navigation
-  pagination={{ clickable: true }}
-  watchOverflow={false}   // 🔥 IMPORTANT
-  allowTouchMove={true}
-  onMouseEnter={() => {
-    if (!swiperActivated[item.id]) {
-      activateSwiper(item);
-    }
-  }}
-  onTouchStart={() => {
-    if (!swiperActivated[item.id]) {
-      activateSwiper(item);
-    }
-  }}
-  onNavigationNext={() => {
-    if (!swiperActivated[item.id]) {
-      activateSwiper(item);
-    }
-  }}
-  onNavigationPrev={() => {
-    if (!swiperActivated[item.id]) {
-      activateSwiper(item);
-    }
-  }}
-  className="main_thumb_swiper"
->
-  {slides.map((img, i) => (
-    <SwiperSlide key={i}>
-      <div className="thumb_img">
-        <ImageWithSkeleton
-          src={img}
-          alt={`Caravan ${i + 1}`}
-          width={400}
-          height={300}
-        />
-      </div>
-    </SwiperSlide>
-  ))}
-</Swiper>
-
-
+                                <Swiper
+                                  key={`${swiperKey}-${item.id}`}
+                                  modules={[Navigation, Pagination]}
+                                  slidesPerView={1}
+                                  navigation
+                                  pagination={{ clickable: true }}
+                                  watchOverflow={false} // 🔥 IMPORTANT
+                                  allowTouchMove={true}
+                                  onMouseEnter={() => {
+                                    if (!swiperActivated[item.id]) {
+                                      activateSwiper(item);
+                                    }
+                                  }}
+                                  onTouchStart={() => {
+                                    if (!swiperActivated[item.id]) {
+                                      activateSwiper(item);
+                                    }
+                                  }}
+                                  onNavigationNext={() => {
+                                    if (!swiperActivated[item.id]) {
+                                      activateSwiper(item);
+                                    }
+                                  }}
+                                  onNavigationPrev={() => {
+                                    if (!swiperActivated[item.id]) {
+                                      activateSwiper(item);
+                                    }
+                                  }}
+                                  className="main_thumb_swiper"
+                                >
+                                  {slides.map((img, i) => (
+                                    <SwiperSlide key={i}>
+                                      <div className="thumb_img">
+                                        <ImageWithSkeleton
+                                          src={img}
+                                          alt={`Caravan ${i + 1}`}
+                                          width={400}
+                                          height={300}
+                                        />
+                                      </div>
+                                    </SwiperSlide>
+                                  ))}
+                                </Swiper>
                               </div>
                             </div>
 
-
-
                             <div className="product_de">
-                              
-                              
-                            
-                          <div className="info"> 
+                              <div className="info">
                                 {item.name && (
-                                  <h3 className="title cursor-pointer"  onClick={(e) => {
-    e.preventDefault();
-        e.stopPropagation();
+                                  <h3
+                                    className="title cursor-pointer"
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      e.stopPropagation();
 
-    goToProduct(href);
-  }}>{item.name}</h3>
+                                      goToProduct(href);
+                                    }}
+                                  >
+                                    {item.name}
+                                  </h3>
                                 )}
                               </div>
 
-                               {/* --- PRICE SECTION --- */}
+                              {/* --- PRICE SECTION --- */}
                               {(item.regular_price ||
                                 item.sale_price ||
                                 item.price_difference) && (
@@ -853,7 +847,7 @@ useEffect(() => {
 
                                 <button
                                   className="btn btn-primary"
-                                   onClick={(e) =>
+                                  onClick={(e) =>
                                     handleViewDetails(e, item.id, href)
                                   }
                                 >
@@ -861,8 +855,6 @@ useEffect(() => {
                                 </button>
                               </div>
                             </div>
-                           
-
                           </div>
                         </Link>
                       </div>

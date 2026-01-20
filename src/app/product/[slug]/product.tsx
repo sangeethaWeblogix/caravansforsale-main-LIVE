@@ -163,12 +163,10 @@ export default function ClientLogger({
     setSafeHtml(buildSafeDescription(productDetails.description));
   }, [productDetails.description]);
 
- 
-
   const [navigating, setNavigating] = useState(false);
 
   const [activeTab, setActiveTab] = useState<"specifications" | "description">(
-    "specifications"
+    "specifications",
   );
   const [showModal, setShowModal] = useState(false);
 
@@ -179,12 +177,12 @@ export default function ClientLogger({
   // ---------- helpers ----------
   const getAttr = (label: string): string =>
     attributes.find(
-      (a) => String(a?.label ?? "").toLowerCase() === label.toLowerCase()
+      (a) => String(a?.label ?? "").toLowerCase() === label.toLowerCase(),
     )?.value ?? "";
 
   const findAttr = (label: string): Attribute | undefined =>
     attributes.find(
-      (a) => String(a?.label ?? "").toLowerCase() === label.toLowerCase()
+      (a) => String(a?.label ?? "").toLowerCase() === label.toLowerCase(),
     );
 
   // build listings link from API-provided url (segment or query)
@@ -200,12 +198,12 @@ export default function ClientLogger({
   const rawCats: Category[] = Array.isArray(productDetails.categories)
     ? productDetails.categories
     : Array.isArray(pd.categories)
-    ? pd.categories
-    : [];
+      ? pd.categories
+      : [];
 
   const categoryNames: string[] = rawCats
     .map((c) =>
-      typeof c === "string" ? c : c?.name ?? c?.label ?? c?.value ?? ""
+      typeof c === "string" ? c : (c?.name ?? c?.label ?? c?.value ?? ""),
     )
     .filter(isNonEmpty);
 
@@ -265,7 +263,7 @@ export default function ClientLogger({
   const linksForSpec = (
     label: string,
     value: string,
-    apiUrl?: string
+    apiUrl?: string,
   ): LinkOut[] | null => {
     const v = (value || "").trim();
     if (!v) return null;
@@ -350,39 +348,35 @@ export default function ClientLogger({
   //     window.history.back();
   //   }
   // };
- const [returnUrl, setReturnUrl] = useState<string | null>(null);
+  const [returnUrl, setReturnUrl] = useState<string | null>(null);
 
- const [backReady, setBackReady] = useState(false);
+  const [backReady, setBackReady] = useState(false);
 
-useEffect(() => {
-  if (typeof window === "undefined") return;
+  useEffect(() => {
+    if (typeof window === "undefined") return;
 
-  const saved = sessionStorage.getItem("listingsReturnUrl");
-  setReturnUrl(saved);
-  setBackReady(true); // ✅ tell UI it's ready
-}, [])
-// ✅ Improved back button handler
- const handleBackClick = (e: React.MouseEvent) => {
-  e.preventDefault();
+    const saved = sessionStorage.getItem("listingsReturnUrl");
+    setReturnUrl(saved);
+    setBackReady(true); // ✅ tell UI it's ready
+  }, []);
+  // ✅ Improved back button handler
+  const handleBackClick = (e: React.MouseEvent) => {
+    e.preventDefault();
 
-  if (returnUrl) {
-    sessionStorage.removeItem("listingsReturnUrl");
-    router.push(returnUrl);
-    return;
-  }
+    if (returnUrl) {
+      sessionStorage.removeItem("listingsReturnUrl");
+      router.push(returnUrl);
+      return;
+    }
 
-  router.push(makeHref);
-};
-useEffect(() => {
-  sessionStorage.setItem(
-    "listingsReturnUrl",
-    window.location.pathname + window.location.search
-  );
-}, []);
-
-
- 
-  
+    router.push(makeHref);
+  };
+  useEffect(() => {
+    sessionStorage.setItem(
+      "listingsReturnUrl",
+      window.location.pathname + window.location.search,
+    );
+  }, []);
 
   const makeHref =
     makeValue && makeValue.trim()
@@ -408,7 +402,6 @@ useEffect(() => {
 
   const main = `${base}main1.avif`;
 
- 
   // function buildImageCandidates(sku?: string, slug?: string) {
   //   if (!sku || !slug) return [];
 
@@ -492,12 +485,11 @@ useEffect(() => {
 
     postTrackEvent(
       "https://admin.caravansforsale.com.au/wp-json/cfs/v1/update-clicks",
-      Number(productDetails.id)
+      Number(productDetails.id),
     );
   }, [productDetails?.id]);
 
   // ✅ Add these states after allSubs state
-  
 
   // ✅ Update the useEffect where you load gallery
   // useEffect(() => {
@@ -560,32 +552,30 @@ useEffect(() => {
 
   // const [activeImage, setActiveImage] = useState(main);
 
-   
+  // ✅ Build image URLs from API image_url array
+  const productSubImage: string[] = useMemo(() => {
+    const raw = productDetails.image_url;
 
-// ✅ Build image URLs from API image_url array
-const productSubImage: string[] = useMemo(() => {
-  const raw = productDetails.image_url;
-  
-  console.log("API image_url:", raw); // Debug
-  
-  if (Array.isArray(raw) && raw.length > 0) {
-    const urls = raw
-      .filter((v) => typeof v === "string" && v.trim() !== "")
-      .map((key) => `${IMAGE_BASE}${key}${IMAGE_EXT}`);
-    
-    console.log("Built image URLs:", urls); // Debug
-    return urls;
-  }
-  
-  return [];
-}, [productDetails.image_url]);
+    console.log("API image_url:", raw); // Debug
 
-// ✅ Set active image when productSubImage loads
-useEffect(() => {
-  if (productSubImage.length > 0) {
-    setActiveImage(productSubImage[0]);
-  }
-}, [productSubImage]);
+    if (Array.isArray(raw) && raw.length > 0) {
+      const urls = raw
+        .filter((v) => typeof v === "string" && v.trim() !== "")
+        .map((key) => `${IMAGE_BASE}${key}${IMAGE_EXT}`);
+
+      console.log("Built image URLs:", urls); // Debug
+      return urls;
+    }
+
+    return [];
+  }, [productDetails.image_url]);
+
+  // ✅ Set active image when productSubImage loads
+  useEffect(() => {
+    if (productSubImage.length > 0) {
+      setActiveImage(productSubImage[0]);
+    }
+  }, [productSubImage]);
 
   return (
     <>
@@ -595,27 +585,26 @@ useEffect(() => {
             <div className="row justify-content-center">
               {/* Left Column */}
               <div className="col-xl-8 col-lg-8 col-md-12">
-                {backReady && (
-  returnUrl ? (
-    <button
-      type="button"
-      onClick={handleBackClick}
-      className="back_to_search back_to_search_btn"
-      style={{ background: "none", border: "none", padding: 0 }}
-    >
-      <i className="bi bi-chevron-left"></i> Back to Search
-    </button>
-  ) : (
-    <Link
-      href={makeHref}
-      className="back_to_search back_to_search_btn"
-      prefetch={false}
-    >
-      <i className="bi bi-chevron-left"></i> Back to Similar Caravans
-    </Link>
-  )
-)}
-
+                {backReady &&
+                  (returnUrl ? (
+                    <button
+                      type="button"
+                      onClick={handleBackClick}
+                      className="back_to_search back_to_search_btn"
+                      style={{ background: "none", border: "none", padding: 0 }}
+                    >
+                      <i className="bi bi-chevron-left"></i> Back to Search
+                    </button>
+                  ) : (
+                    <Link
+                      href={makeHref}
+                      className="back_to_search back_to_search_btn"
+                      prefetch={false}
+                    >
+                      <i className="bi bi-chevron-left"></i> Back to Similar
+                      Caravans
+                    </Link>
+                  ))}
 
                 <div className="product-info left-info">
                   <h1 className="title">{product.name}</h1>
@@ -629,8 +618,8 @@ useEffect(() => {
                               {isPOA || !reg || Number(reg) === 0
                                 ? "POA"
                                 : hasSale && sale
-                                ? fmt(Number(sale))
-                                : fmt(Number(reg))}
+                                  ? fmt(Number(sale))
+                                  : fmt(Number(reg))}
                             </bdi>
                           </div>
 
@@ -672,7 +661,7 @@ useEffect(() => {
                   {/* Thumbnails */}
                   <div className="slider_thumb_vertical image_container">
                     <div className="image_mop">
-                      {productSubImage.slice(0,4).map((image, i) => (
+                      {productSubImage.slice(0, 4).map((image, i) => (
                         <div className="image_item" key={`${image}-${i}`}>
                           <div className="background_thumb">
                             <Image
@@ -681,7 +670,7 @@ useEffect(() => {
                               height={96}
                               alt="Thumbnail"
                               unoptimized
-                             />
+                            />
                           </div>
 
                           <div
@@ -695,17 +684,14 @@ useEffect(() => {
                               alt={`Thumb ${i + 1}`}
                               priority={i < 4}
                               unoptimized
-                             />
+                            />
                           </div>
                         </div>
                       ))}
-<div>
-
-                      <span className="caravan__image_count">
-                         
+                      <div>
+                        <span className="caravan__image_count">
                           {productSubImage.length}
-                      
-                      </span>
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -720,7 +706,7 @@ useEffect(() => {
                         alt="Large"
                         className="img-fluid"
                         unoptimized
-                       />
+                      />
                     </div>
                     <Link href="#">
                       <Image
@@ -730,7 +716,7 @@ useEffect(() => {
                         alt="Large"
                         className="img-fluid"
                         unoptimized
-                       />
+                      />
                     </Link>
                   </div>
                 </div>
@@ -772,7 +758,7 @@ useEffect(() => {
                                   const links = linksForSpec(
                                     f.label,
                                     String(f.value),
-                                    f.url // ✅ prefer API-provided url
+                                    f.url, // ✅ prefer API-provided url
                                   );
                                   return (
                                     <li key={f.label}>
@@ -973,7 +959,7 @@ useEffect(() => {
                     id: productId,
                     slug: productSlug,
                     name: product.name ?? "",
-                    image: activeImage ,
+                    image: activeImage,
                     price: hasSale ? sale : reg,
                     regularPrice: product.regular_price ?? 0,
                     salePrice: product.sale_price ?? 0,
