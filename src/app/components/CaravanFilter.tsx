@@ -174,6 +174,8 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
   const [modalKeyword, setModalKeyword] = useState("");
   const [showAllModels, setShowAllModels] = useState(false);
   const hasCategoryBeenSetRef = useRef(false);
+    const categoryApiCalledRef = useRef(false);
+
   const prevSuburbsKeyRef = useRef<string>("");
   const radiusDebounceRef = useRef<number | null>(null);
   const regionSetAfterSuburbRef = useRef(false);
@@ -304,6 +306,12 @@ const autoCloseTimerRef = useRef<NodeJS.Timeout | null>(null);
   };
 
   // pick a human-readable text from item
+const [tempCategory, setTempCategory] = useState<string | null>(null);
+useEffect(() => {
+  if (isCategoryModalOpen) {
+    setTempCategory(selectedCategory);
+  }
+}, [isCategoryModalOpen]);
 
   // works for (HomeSearchItem | string)[]
   useEffect(() => {
@@ -1759,6 +1767,7 @@ const autoCloseTimerRef = useRef<NodeJS.Timeout | null>(null);
   useEffect(() => {
     setVisibleCount(10);
   }, [selectedStateName]);
+categoryApiCalledRef.current = true;
 
   return (
     <>
@@ -1793,13 +1802,15 @@ const autoCloseTimerRef = useRef<NodeJS.Timeout | null>(null);
     </div>
   )}
 </div>
-{isCategoryModalOpen && (
+ {isCategoryModalOpen && (
   <div className="cfs-modal">
-    <div className="cfs-modal-content">
-
+    <div
+      className="cfs-modal-content"
+      onClick={(e) => e.stopPropagation()}
+    >
       {/* Header */}
       <div className="cfs-modal-header">
-         <span
+        <span
           className="cfs-close"
           onClick={() => setIsCategoryModalOpen(false)}
         >
@@ -1809,88 +1820,111 @@ const autoCloseTimerRef = useRef<NodeJS.Timeout | null>(null);
 
       {/* Body */}
       <div className="cfs-modal-body">
-         <div className="cfs-modal-search-section">
-                  <h5 className="cfs-filter-label">Search Category</h5>
+        <div className="cfs-modal-search-section">
+          <h5 className="cfs-filter-label">Search Category</h5>
 
-        <input
-          type="text"
- className="filter-dropdown cfs-select-input"
-           placeholder="Search category..."
-          value={selectedCategoryName ? selectedCategoryName : categorySearch}
-          onChange={(e) => setCategorySearch(e.target.value)}
-        />
+          <ul className="location-suggestions category-list">
+            {categories
+              .filter((cat) =>
+                cat.name
+                  .toLowerCase()
+                  .includes(categorySearch.toLowerCase())
+              )
+              .map((cat) => {
+                const checked = tempCategory === cat.slug;
 
-        <div className="filter-accordion-items">
-                              <ul className="location-suggestions">
+                return (
+                  <li
+                    key={cat.slug}
+                    className="filter-accordion-item category-item"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <label className="category-checkbox-row">
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={() => {
+                          // ✅ checkbox / name / count click all work
+                          setTempCategory(cat.slug);
 
-          {categories
-            .filter(cat =>
-              cat.name
-                .toLowerCase()
-                .includes(categorySearch.toLowerCase())
-            )
-            .map(cat => (
-              <li
-                key={cat.slug}
-                className={`filter-accordion-item ${
-                  selectedCategory === cat.slug ? "selected" : ""
-                }`}
-                onClick={() => {
-                  triggerGlobalLoaders();
+                          const updatedFilters = {
+                            ...currentFilters,
+                            category: cat.slug,
+                            page: 1,
+                          };
 
-                  setSelectedCategory(cat.slug);
-                  setSelectedCategoryName(cat.name);
+                          setFilters(updatedFilters);
+                          filtersInitialized.current = true;
 
-                  const updatedFilters = {
-                    ...currentFilters,
-                    category: cat.slug,
-                  };
+                          // ✅ API CALL
+    onFilterChange?.(updatedFilters);
 
-                  setFilters(updatedFilters);
-                  filtersInitialized.current = true;
+                          // ✅ mark api called
+                          categoryApiCalledRef.current = true;
+                        }}
+                      />
 
-                  startTransition(() => {
-                    updateAllFiltersAndURL(updatedFilters);
-                  });
+                      <span className="category-name">
+                        {cat.name}
+                      </span>
 
-                  // ✅ Auto close after 1 sec if user doesn't click Search
-                  // if (autoCloseTimerRef.current) {
-                  //   clearTimeout(autoCloseTimerRef.current);
-                  // }
-
-                  // autoCloseTimerRef.current = setTimeout(() => {
-                  //   setIsCategoryModalOpen(false);
-                  // }, 3000);
-                }}
-              >
-                {cat.name}
-              </li>
-            ))}
-            </ul>
+                      {/* <span className="category-count">
+                        pavith
+                      </span> */}
+                    </label>
+                  </li>
+                );
+              })}
+          </ul>
         </div>
       </div>
 
       {/* Footer */}
       <div className="cfs-modal-footer">
         <button
-          className="cfs-btn btn"
-          onClick={() => {
- 
-            // if (autoCloseTimerRef.current) {
-            //   clearTimeout(autoCloseTimerRef.current);
-            // }
-            setIsCategoryModalOpen(false);
-          }}
-        >
-          Search
-        </button>
-      </div>
+  className="cfs-btn btn"
+  onClick={() => {
+    const finalCategory = tempCategory || undefined;
 
-    </div>
+    const updatedFilters = {
+      ...currentFilters,
+      category: finalCategory,
+      page: 1,
+    };
+
+    // 🔥 Skeleton show (Search action)
+    triggerGlobalLoaders();
+
+    // 🔥 ALWAYS do final apply + URL update
+    setFilters(updatedFilters);
+    filtersInitialized.current = true;
+
+    startTransition(() => {
+      updateAllFiltersAndURL(updatedFilters);
+    });
+
+    // UI sync
+    setSelectedCategory(finalCategory || null);
+    setSelectedCategoryName(
+      categories.find(c => c.slug === finalCategory)?.name || null
+    );
+
+    // reset flag
+    categoryApiCalledRef.current = false;
+
+    // close modal
+    setIsCategoryModalOpen(false);
+  }}
+>
+  Search
+</button>
+
+      </div>
     </div>
   </div>
-
 )}
+
+
 
         {/* Location Accordion */}
         {/* ===== LOCATION (DROP-IN) ===== */}
