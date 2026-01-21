@@ -220,7 +220,9 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
   const [searchMake, setSearchMake] = useState("");
   const [filteredMakes, setFilteredMakes] = useState(makes);
   const [selectedMakeTemp, setSelectedMakeTemp] = useState<string | null>(null);
-
+const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+const [categorySearch, setCategorySearch] = useState("");
+const autoCloseTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [baseKeywords, setBaseKeywords] = useState<KeywordItem[]>([]);
   const [keywordLoading, setKeywordLoading] = useState(false);
   const [baseLoading, setBaseLoading] = useState(false);
@@ -1508,6 +1510,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     next.make = sanitizeMake(next.make); // belt & suspenders
     // ✅ safer location preservation logic
     if (next.state) {
+
       // only delete region/suburb if they're explicitly empty strings
       if (next.region === "" || next.region === undefined) delete next.region;
       if (next.suburb === "" || next.suburb === undefined) delete next.suburb;
@@ -1761,68 +1764,133 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     <>
       <div className="filter-card mobile-search">
         {/* Category Accordion */}
-        <div className="cs-full_width_section">
-          <div
-            className="filter-accordion"
-            onClick={() => toggle(setCategoryOpen)}
-          >
-            <h5 className="cfs-filter-label">Category</h5>
-            <BiChevronDown
-              style={{
-                cursor: "pointer",
-              }}
-            />
-          </div>
+        
 
-          {/* ✅ Selected Category Chip */}
-          {selectedCategoryName && (
-            <div className="filter-chip">
-              <span>{selectedCategoryName}</span>
-              <span
-                className="filter-chip-close"
+
+<div className="cs-full_width_section">
+  <div
+    className="filter-accordion"
+    onClick={() => setIsCategoryModalOpen(true)}
+  >
+    <h5 className="cfs-filter-label">Category</h5>
+    <BiChevronDown  style={{
+                cursor: "pointer",
+               }} />
+  </div>
+
+  {selectedCategoryName && (
+    <div className="filter-chip">
+      <span>{selectedCategoryName}</span>
+      <span
+        className="filter-chip-close"
+        onClick={() => {
+          triggerGlobalLoaders();
+          resetCategoryFilter();
+        }}
+      >
+        ×
+      </span>
+    </div>
+  )}
+</div>
+{isCategoryModalOpen && (
+  <div className="cfs-modal">
+    <div className="cfs-modal-content">
+
+      {/* Header */}
+      <div className="cfs-modal-header">
+         <span
+          className="cfs-close"
+          onClick={() => setIsCategoryModalOpen(false)}
+        >
+          ×
+        </span>
+      </div>
+
+      {/* Body */}
+      <div className="cfs-modal-body">
+         <div className="cfs-modal-search-section">
+                  <h5 className="cfs-filter-label">Search Category</h5>
+
+        <input
+          type="text"
+ className="filter-dropdown cfs-select-input"
+           placeholder="Search category..."
+          value={selectedCategoryName ? selectedCategoryName : categorySearch}
+          onChange={(e) => setCategorySearch(e.target.value)}
+        />
+
+        <div className="filter-accordion-items">
+                              <ul className="location-suggestions">
+
+          {categories
+            .filter(cat =>
+              cat.name
+                .toLowerCase()
+                .includes(categorySearch.toLowerCase())
+            )
+            .map(cat => (
+              <li
+                key={cat.slug}
+                className={`filter-accordion-item ${
+                  selectedCategory === cat.slug ? "selected" : ""
+                }`}
                 onClick={() => {
                   triggerGlobalLoaders();
-                  resetCategoryFilter();
+
+                  setSelectedCategory(cat.slug);
+                  setSelectedCategoryName(cat.name);
+
+                  const updatedFilters = {
+                    ...currentFilters,
+                    category: cat.slug,
+                  };
+
+                  setFilters(updatedFilters);
+                  filtersInitialized.current = true;
+
+                  startTransition(() => {
+                    updateAllFiltersAndURL(updatedFilters);
+                  });
+
+                  // ✅ Auto close after 1 sec if user doesn't click Search
+                  // if (autoCloseTimerRef.current) {
+                  //   clearTimeout(autoCloseTimerRef.current);
+                  // }
+
+                  // autoCloseTimerRef.current = setTimeout(() => {
+                  //   setIsCategoryModalOpen(false);
+                  // }, 3000);
                 }}
               >
-                ×
-              </span>
-            </div>
-          )}
-
-          {/* ✅ Dropdown menu */}
-          {categoryOpen && (
-            <div className="filter-accordion-items">
-              {Array.isArray(categories) &&
-                categories.map((cat) => (
-                  <div
-                    key={cat.slug}
-                    className={`filter-accordion-item ${
-                      selectedCategory === cat.slug ? "selected" : ""
-                    }`}
-                    onClick={() => {
-                      triggerGlobalLoaders();
-                      // setNavigating(true);
-                      setSelectedCategory(cat.slug);
-                      setSelectedCategoryName(cat.name);
-                      setCategoryOpen(false);
-                      const updatedFilters: Filters = {
-                        ...currentFilters,
-                        category: cat.slug,
-                      };
-                      setFilters(updatedFilters);
-                      filtersInitialized.current = true;
-                      startTransition(() => {
-                        updateAllFiltersAndURL(updatedFilters); // ✅ this triggers the API + URL update
-                      });
-                    }}
-                  >
-                    {cat.name}
-                  </div>
-                ))}
-            </div>
-          )}
+                {cat.name}
+              </li>
+            ))}
+            </ul>
         </div>
+      </div>
+
+      {/* Footer */}
+      <div className="cfs-modal-footer">
+        <button
+          className="cfs-btn btn"
+          onClick={() => {
+ 
+            // if (autoCloseTimerRef.current) {
+            //   clearTimeout(autoCloseTimerRef.current);
+            // }
+            setIsCategoryModalOpen(false);
+          }}
+        >
+          Search
+        </button>
+      </div>
+
+    </div>
+    </div>
+  </div>
+
+)}
 
         {/* Location Accordion */}
         {/* ===== LOCATION (DROP-IN) ===== */}
