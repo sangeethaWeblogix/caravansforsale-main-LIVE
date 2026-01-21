@@ -1779,12 +1779,13 @@ categoryApiCalledRef.current = true;
 <div className="cs-full_width_section">
   <div
     className="filter-accordion"
+    style={{
+                cursor: "pointer",
+               }}
     onClick={() => setIsCategoryModalOpen(true)}
   >
-    <h5 className="cfs-filter-label">Category</h5>
-    <BiChevronDown  style={{
-                cursor: "pointer",
-               }} />
+    <h5 className="cfs-filter-label"  >Category</h5>
+    <BiChevronDown   />
   </div>
 
   {selectedCategoryName && (
