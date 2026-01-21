@@ -874,10 +874,10 @@ export default function ListingsPage({
   const handleFilterChange = useCallback(
     async (newFilters: Filters) => {
       // ✅ Show skeleton for ALL sections immediately
-      setIsLoading(true);
-      setIsMainLoading(true);
-      setIsFeaturedLoading(true);
-      setIsPremiumLoading(true);
+      // setIsLoading(true);
+      // setIsMainLoading(true);
+      // setIsFeaturedLoading(true);
+      // setIsPremiumLoading(true);
 
       const mergedFilters = mergeFiltersSafely(filtersRef.current, newFilters);
 
@@ -909,9 +909,9 @@ export default function ListingsPage({
       } finally {
         // ✅ Hide all loaders when done
         setIsLoading(false);
-        setIsMainLoading(false);
-        setIsFeaturedLoading(false);
-        setIsPremiumLoading(false);
+        // setIsMainLoading(false);
+        // setIsFeaturedLoading(false);
+        // setIsPremiumLoading(false);
       }
     },
     [updateURLWithFilters, loadListings],
