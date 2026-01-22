@@ -1933,7 +1933,10 @@ categoryApiCalledRef.current = true;
 
         {/* Keyword (opens its own modal) */}
         {/* Keyword (opens its own modal) */}
-        <div className="cs-full_width_section">
+        <div className="cs-full_width_section"  style={{
+                cursor: "pointer",
+                transform: stateLocationOpen ? "rotate(180deg)" : "",
+              }}>
           {/* Header: opens STATE list */}
           <div className="filter-accordion" onClick={() => openOnly("state")}>
             <h5 className="cfs-filter-label">Location</h5>
@@ -1942,10 +1945,7 @@ categoryApiCalledRef.current = true;
                 e.stopPropagation();
                 openOnly(stateLocationOpen ? null : "state");
               }}
-              style={{
-                cursor: "pointer",
-                transform: stateLocationOpen ? "rotate(180deg)" : "",
-              }}
+             
             />
           </div>
 
@@ -2347,14 +2347,13 @@ categoryApiCalledRef.current = true;
 
         {/* Make Accordion */}
         {/* Make Accordion */}
-        <div className="cs-full_width_section">
-          <div className="filter-accordion" onClick={() => toggle(setMakeOpen)}>
-            <h5 className="cfs-filter-label"> Make</h5>
-            <BiChevronDown
-              style={{
+        <div className="cs-full_width_section"   style={{
                 cursor: "pointer",
-                transform: makeOpen ? "rotate(180deg)" : "",
-              }}
+               }}>
+          <div className="filter-accordion" onClick={() => setIsMakeModalOpen(true)}>
+            <h5 className="cfs-filter-label" > Make</h5>
+            <BiChevronDown
+            
             />
           </div>
           {selectedMakeName && (
