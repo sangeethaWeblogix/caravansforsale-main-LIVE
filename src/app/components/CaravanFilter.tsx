@@ -34,6 +34,12 @@ interface Category {
   slug: string;
 }
 
+type CategoryCount = {
+  category_name: string;
+  category_slug: string;
+  product_count: number;
+};
+
 interface StateOption {
   value: string;
   name: string;
@@ -58,6 +64,18 @@ interface Make {
   slug: string;
   models?: MakeModel[];
 }
+type MakeCount = {
+  make_name: string;
+  make_slug: string;
+  product_count: number;
+};
+
+
+type ModelCount = {
+  model_name: string;
+  model_slug: string;
+  product_count: number;
+};
 
 export interface Filters {
   page?: number | string; // <- allow both
@@ -141,6 +159,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
   const [categoryOpen, setCategoryOpen] = useState(false);
   const [categories, setCategories] = useState<Option[]>([]);
   const [visibleCount, setVisibleCount] = useState(10);
+const [modelCounts, setModelCounts] = useState<ModelCount[]>([]);
 
   const [makes, setMakes] = useState<Make[]>([]);
   const [model, setModel] = useState<Model[]>([]);
@@ -157,6 +176,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
   const [isKeywordModalOpen, setIsKeywordModalOpen] = useState(false);
 
   const [locationInput, setLocationInput] = useState("");
+const [makeCounts, setMakeCounts] = useState<MakeCount[]>([]);
 
   const [selectedMake, setSelectedMake] = useState<string | null>(null);
   const [selectedModel, setSelectedModel] = useState<string | null>(null);
@@ -170,6 +190,8 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
   const [selectedModelName, setSelectedModelName] = useState<string | null>(
     null
   );
+  const [categoryCounts, setCategoryCounts] = useState<CategoryCount[]>([]);
+
   // top (other states kula)
   const [modalKeyword, setModalKeyword] = useState("");
   const [showAllModels, setShowAllModels] = useState(false);
@@ -218,11 +240,14 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
   const [keywordSuggestions, setKeywordSuggestions] = useState<KeywordItem[]>(
     []
   );
+    const [isModalMakeOpen, setIsModalMakeOpen] = useState(false);
+
   const [isMakeModalOpen, setIsMakeModalOpen] = useState(false);
   const [searchMake, setSearchMake] = useState("");
   const [filteredMakes, setFilteredMakes] = useState(makes);
   const [selectedMakeTemp, setSelectedMakeTemp] = useState<string | null>(null);
 const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+ 
 const [categorySearch, setCategorySearch] = useState("");
 const autoCloseTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [baseKeywords, setBaseKeywords] = useState<KeywordItem[]>([]);
@@ -276,6 +301,115 @@ const autoCloseTimerRef = useRef<NodeJS.Timeout | null>(null);
     "Northern Territory": "NT",
     "Australian Capital Territory": "ACT",
   };
+
+  useEffect(() => {
+  if (!selectedMake || makes.length === 0) {
+    setModel([]);
+    return;
+  }
+
+  const make = makes.find(m => m.slug === selectedMake);
+  setModel(make?.models || []);
+  setModelOpen(true);
+}, [selectedMake, makes]);
+
+
+const buildParamsFromFilters = (filters: Filters) => {
+  const params = new URLSearchParams();
+
+  Object.entries(filters).forEach(([key, value]) => {
+    if (
+      value !== undefined &&
+      value !== null &&
+      value !== "" &&
+      key !== "page" // page count-ku thevai illa
+    ) {
+      params.set(key, String(value));
+    }
+  });
+
+  return params;
+};
+
+
+const fetchCounts = async (
+  groupBy: "category" | "make" | "model",
+  filters: Filters
+) => {
+  const params = buildParamsFromFilters(filters);
+  params.set("group_by", groupBy);
+
+  const url = `https://admin.caravansforsale.com.au/wp-json/cfs/v1/params_count?${params.toString()}`;
+
+  const res = await fetch(url);
+  const json = await res.json();
+  return json.data || [];
+};
+useEffect(() => {
+  // ⛔ counts update only after filters initialized
+  if (!filtersInitialized.current) return;
+
+  const activeFilters: Filters = {
+    ...filters,
+    ...currentFilters,
+  };
+
+  // CATEGORY COUNTS
+  fetchCounts("category", activeFilters)
+    .then(setCategoryCounts)
+    .catch(console.error);
+
+  // MAKE COUNTS
+  fetchCounts("make", activeFilters)
+    .then(setMakeCounts)
+    .catch(console.error);
+
+  // MODEL COUNTS (only if make selected)
+  if (activeFilters.make) {
+    fetchCounts("model", activeFilters)
+      .then(setModelCounts) // create this state
+      .catch(console.error);
+  }
+}, [
+  filters,
+  currentFilters,
+]);
+
+  useEffect(() => {
+  fetch(
+    "https://admin.caravansforsale.com.au/wp-json/cfs/v1/params_count?group_by=category"
+  )
+    .then(res => res.json())
+    .then(json => setCategoryCounts(json.data || []))
+    .catch(console.error);
+}, []);
+
+useEffect(() => {
+  fetch(
+    "https://admin.caravansforsale.com.au/wp-json/cfs/v1/params_count?group_by=make"
+  )
+    .then(res => res.json())
+    .then(json => setMakeCounts(json.data || []))
+    .catch(console.error);
+}, []);
+
+const displayedMakes = useMemo(() => {
+  if (!searchMake.trim()) return makeCounts; // ✅ full list
+  return makeCounts.filter(m =>
+    m.make_name.toLowerCase().includes(searchMake.toLowerCase())
+  );
+}, [searchMake, makeCounts]);
+useEffect(() => {
+  if (!selectedMake) return;
+
+  fetch(
+    `https://admin.caravansforsale.com.au/wp-json/cfs/v1/params_count?group_by=model&make=${selectedMake}`
+  )
+    .then(res => res.json())
+    .then(json => setModelCounts(json.data || []))
+    .catch(console.error);
+}, [selectedMake]); // 🔥 dependency
+
   // const isNonEmpty = (s: string | undefined | null): s is string =>
   //   typeof s === "string" && s.trim().length > 0;
   // 🔽 put this inside the component, under updateAllFiltersAndURL
@@ -307,11 +441,15 @@ const autoCloseTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // pick a human-readable text from item
 const [tempCategory, setTempCategory] = useState<string | null>(null);
+const [tempModel, setTempModel] = useState<string | null>(null);
 useEffect(() => {
   if (isCategoryModalOpen) {
     setTempCategory(selectedCategory);
   }
-}, [isCategoryModalOpen]);
+    if (isMakeModalOpen) {
+    setTempModel(selectedModel);
+  }
+}, [isCategoryModalOpen, isMakeModalOpen]);
 
   // works for (HomeSearchItem | string)[]
   useEffect(() => {
@@ -724,6 +862,7 @@ useEffect(() => {
   //     return al.localeCompare(bl); // normal alphabetical
   //   });
   // };
+
 
   useEffect(() => {
     if (!filtersInitialized.current) {
@@ -1769,6 +1908,39 @@ useEffect(() => {
   }, [selectedStateName]);
 categoryApiCalledRef.current = true;
 
+
+type OptimizeType =
+  | "category"
+  | "make"
+  | "model"
+  | "state"
+  | "region"
+  | "suburb"
+  | "keyword";
+
+const lastOptimizeRef = useRef<Record<string, string | undefined>>({});
+
+const triggerOptimizeApi = (
+  type: OptimizeType,
+  value?: string | null
+) => {
+  if (!value) return;
+
+  // 🔒 prevent duplicate calls for same value
+  if (lastOptimizeRef.current[type] === value) return;
+  lastOptimizeRef.current[type] = value;
+
+  const url = new URL(
+    "https://admin.caravansforsale.com.au/wp-json/cfs/v1/new_optimize_code"
+  );
+  url.searchParams.set(type, value);
+
+  fetch(url.toString(), {
+    method: "GET",
+    keepalive: true,
+  }).catch(() => {});
+};
+
   return (
     <>
       <div className="filter-card mobile-search">
@@ -1825,67 +1997,34 @@ categoryApiCalledRef.current = true;
           <h5 className="cfs-filter-label">Search Category</h5>
 
           <ul className="location-suggestions category-list">
-            {categories
-              .filter((cat) =>
-                cat.name
-                  .toLowerCase()
-                  .includes(categorySearch.toLowerCase())
-              )
-              .map((cat) => {
-                const checked = tempCategory === cat.slug;
-
-                return (
-                  <li
-                    key={cat.slug}
-                    className="filter-accordion-item category-item"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <label className="category-checkbox-row">
-                      <input
-                        type="checkbox"
-                        checked={checked}
-                        onChange={() => {
-                          // ✅ checkbox / name / count click all work
-                          setTempCategory(cat.slug);
-
-                          const updatedFilters = {
-                            ...currentFilters,
-                            category: cat.slug,
-                            page: 1,
-                          };
-
-                          setFilters(updatedFilters);
-                          filtersInitialized.current = true;
-
-                          // ✅ API CALL
-    onFilterChange?.(updatedFilters);
-
-                          // ✅ mark api called
-                          categoryApiCalledRef.current = true;
-                        }}
-                      />
-
-                      <span className="category-name">
-                        {cat.name}
-                      </span>
-
-                      {/* <span className="category-count">
-                        pavith
-                      </span> */}
-                    </label>
-                  </li>
-                );
-              })}
+             {categoryCounts.map(cat => (
+    <li key={cat.category_slug} className="category-item">
+      <label className="category-checkbox-row">
+        <input
+          type="checkbox"
+          checked={tempCategory === cat.category_slug}
+          onChange={() => {
+            setTempCategory(cat.category_slug);
+            triggerOptimizeApi("category", cat.category_slug); // ✅
+          }}
+        />
+        <span className="category-name">{cat.category_name}</span>
+        <span className="category-count">{cat.product_count}</span>
+      </label>
+    </li>
+  ))}
           </ul>
         </div>
       </div>
 
       {/* Footer */}
       <div className="cfs-modal-footer">
-        <button
+    <button
   className="cfs-btn btn"
   onClick={() => {
     const finalCategory = tempCategory || undefined;
+
+    triggerGlobalLoaders(); // ✅ skeleton ONLY HERE
 
     const updatedFilters = {
       ...currentFilters,
@@ -1893,15 +2032,12 @@ categoryApiCalledRef.current = true;
       page: 1,
     };
 
-    // 🔥 Skeleton show (Search action)
-    triggerGlobalLoaders();
-
-    // 🔥 ALWAYS do final apply + URL update
+    // ✅ FINAL COMMIT
     setFilters(updatedFilters);
     filtersInitialized.current = true;
 
     startTransition(() => {
-      updateAllFiltersAndURL(updatedFilters);
+      updateAllFiltersAndURL(updatedFilters); // ✅ FETCH + URL
     });
 
     // UI sync
@@ -1910,15 +2046,13 @@ categoryApiCalledRef.current = true;
       categories.find(c => c.slug === finalCategory)?.name || null
     );
 
-    // reset flag
     categoryApiCalledRef.current = false;
-
-    // close modal
     setIsCategoryModalOpen(false);
   }}
 >
-  Search
+  Search cat5
 </button>
+
 
       </div>
     </div>
@@ -2370,87 +2504,19 @@ categoryApiCalledRef.current = true;
               </span>
             </div>
           )}
-          {makeOpen && (
-            <div className="filter-accordion-items">
-              {Array.isArray(makes) &&
-                (makes.length <= 10
-                  ? [...makes].sort((a, b) => a.name.localeCompare(b.name))
-                  : [...makes]
-                      .sort((a, b) => a.name.localeCompare(b.name))
-                      .slice(0, 10)
-                ).map((make) => (
-                  <div
-                    key={make.slug}
-                    className={`filter-accordion-item ${
-                      selectedMake === make.slug ? "selected" : ""
-                    }`}
-                    onClick={() => {
-                      // ✅ Reset model state
-                      triggerGlobalLoaders();
-                      setSelectedModel(null);
-                      setSelectedModelName(null);
-
-                      // ✅ Force update make
-                      setSelectedMake(make.slug);
-                      setSelectedMakeName(make.name);
-                      setModel(make.models || []);
-                      keepModelOpenRef.current = true;
-
-                      // ✅ Immediately oxxxxxxxx`pen model dropdown
-                      setModelOpen(true);
-
-                      // ✅ Update filters
-                      const updatedFilters: Filters = {
-                        ...currentFilters,
-                        make: make.slug,
-                        model: undefined,
-                      };
-
-                      setFilters(updatedFilters);
-                      filtersInitialized.current = true;
-
-                      // ✅ Update URL
-
-                      setMakeOpen(false);
-                      setModelOpen(true);
-                      startTransition(() => {
-                        updateAllFiltersAndURL(updatedFilters);
-                      });
-                    }}
-                  >
-                    {make.name}
-                  </div>
-                ))}
-
-              {/* Show More / Show Less toggle */}
-              {makes.length > 10 && (
-                <div
-                  className="filter-accordion-subitem"
-                  style={{
-                    cursor: "pointer",
-                    color: "#007BFF",
-                    marginTop: "8px",
-                    fontWeight: 500,
-                  }}
-                  onClick={() => setIsMakeModalOpen(true)} // ✅ open modal
-                >
-                  Search By Manufacturer
-                </div>
-              )}
-            </div>
-          )}
+         
         </div>
         {selectedMake && selectedMakeName && (
           <div className="cs-full_width_section">
             <div
               className="filter-accordion"
-              onClick={() => toggle(setModelOpen)}
-            >
+ style={{
+                cursor: "pointer",
+               }}
+    onClick={() => setIsModalMakeOpen(true)}            >
               <h5 className="cfs-filter-label">Model</h5>
               <BiChevronDown
-                style={{
-                  cursor: "pointer",
-                }}
+                
               />
             </div>
             {selectedModelName && (
@@ -2467,7 +2533,7 @@ categoryApiCalledRef.current = true;
                     };
                     setFilters(updatedFilters);
                     updateAllFiltersAndURL(updatedFilters);
-                    setModelOpen(true);
+                    setIsModalMakeOpen(true);
                   }}
 
                   // const updatedFilters: Filters = {
@@ -2495,35 +2561,117 @@ categoryApiCalledRef.current = true;
               </div>
             )}
 
-            {modelOpen && (
-              <div className="filter-accordion-items">
-                {(showAllModels ? model : model.slice(0, 5)).map((mod) => (
-                  <div
-                    key={mod.slug}
-                    className={`filter-accordion-item ${
-                      selectedModel === mod.slug ? "selected" : ""
-                    }`}
-                    onClick={() => handleModelSelect(mod)}
-                  >
-                    {mod.name}
-                  </div>
-                ))}
+            {isModalMakeOpen && (
+              // <div className="filter-accordion-items">
+              //   {(showAllModels ? model : model.slice(0, 5)).map((mod) => (
+              //     <div
 
-                {model.length > 5 && (
-                  <div
-                    className="show-more-less"
-                    style={{
-                      marginTop: "8px",
-                      cursor: "pointer",
-                      color: "#0070f3",
-                      fontWeight: "500",
-                    }}
-                    onClick={() => setShowAllModels(!showAllModels)}
-                  >
-                    {showAllModels ? "Show Less" : "Show More"}
-                  </div>
-                )}
-              </div>
+              //       key={mod.slug}
+              //       className={`filter-accordion-item ${
+              //         selectedModel === mod.slug ? "selected" : ""
+              //       }`}
+              //       onClick={() => handleModelSelect(mod)}
+              //     >
+
+              //       {mod.name}
+              //     </div>
+              //   ))}
+
+              //   {model.length > 5 && (
+              //     <div
+              //       className="show-more-less"
+              //       style={{
+              //         marginTop: "8px",
+              //         cursor: "pointer",
+              //         color: "#0070f3",
+              //         fontWeight: "500",
+              //       }}
+              //       onClick={() => setShowAllModels(!showAllModels)}
+              //     >
+              //       {showAllModels ? "Show Less" : "Show More"}
+              //     </div>
+              //   )}
+              // </div>
+              <div className="cfs-modal">
+    <div
+      className="cfs-modal-content"
+      onClick={(e) => e.stopPropagation()}
+    >
+      {/* Header */}
+      <div className="cfs-modal-header">
+        <span
+          className="cfs-close"
+          onClick={() => setIsModalMakeOpen(false)}
+        >
+          ×
+        </span>
+      </div>
+
+      {/* Body */}
+      <div className="cfs-modal-body">
+        <div className="cfs-modal-search-section">
+          <h5 className="cfs-filter-label">Search Model</h5>
+          <ul className="location-suggestions category-list">
+             {modelCounts.map(mod => (
+    <li key={mod.model_slug} className="category-item">
+      <label className="category-checkbox-row">
+        <input
+          type="checkbox"
+          checked={tempModel === mod.model_slug}
+          onChange={() => {
+            setTempModel(mod.model_slug);
+            triggerOptimizeApi("model", mod.model_slug); // ✅
+          }}
+        />
+        <span className="category-name">{mod.model_slug}</span>
+        <span className="category-count">{mod.product_count}</span>
+      </label>
+    </li>
+  ))}
+          </ul>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="cfs-modal-footer">
+    <button
+  className="cfs-btn btn"
+  onClick={() => {
+    const finalCategory = tempCategory || undefined;
+
+    triggerGlobalLoaders(); // ✅ skeleton ONLY HERE
+
+    const updatedFilters = {
+      ...currentFilters,
+      category: finalCategory,
+      page: 1,
+    };
+
+    // ✅ FINAL COMMIT
+    setFilters(updatedFilters);
+    filtersInitialized.current = true;
+
+    startTransition(() => {
+      updateAllFiltersAndURL(updatedFilters); // ✅ FETCH + URL
+    });
+
+    // UI sync
+    setSelectedCategory(finalCategory || null);
+    setSelectedCategoryName(
+      categories.find(c => c.slug === finalCategory)?.name || null
+    );
+
+    categoryApiCalledRef.current = false;
+    setIsCategoryModalOpen(false);
+  }}
+>
+  Search cat5
+</button>
+
+
+      </div>
+    </div>
+  </div>
             )}
           </div>
         )}
@@ -3047,77 +3195,83 @@ categoryApiCalledRef.current = true;
                     className="filter-dropdown cfs-select-input"
                     autoComplete="off"
                     value={searchMake}
-                    onChange={(e) => {
-                      const query = e.target.value.toLowerCase();
-                      setSearchMake(e.target.value);
-                      if (!query.trim()) {
-                        setFilteredMakes([]);
-                        return;
-                      }
-                      setFilteredMakes(
-                        makes.filter((m) =>
-                          m.name.toLowerCase().includes(query)
-                        )
-                      );
-                    }}
+                    onChange={(e) => setSearchMake(e.target.value)}
+
                   />
 
                   {/* 🔽 Filtered Makes */}
-                  {filteredMakes.length > 0 && (
-                    <ul className="location-suggestions">
-                      {filteredMakes.map((make) => (
-                        <li
-                          key={make.slug}
-                          className={`suggestion-item ${
-                            selectedMakeTemp === make.slug ? "selected" : ""
-                          }`}
-                          onMouseDown={() => {
-                            // ✅ Click: fill input and hide suggestions
-                            setSearchMake(make.name);
-                            setSelectedMakeTemp(make.slug);
-                            setSelectedMakeName(make.name);
-                            setFilteredMakes([]); // hide list
-                          }}
-                        >
-                          {make.name}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
+                   <ul className="location-suggestions">
+  {displayedMakes.map((make) => (
+    <li
+      key={make.make_slug}
+      className={`suggestion-item ${
+        selectedMakeTemp === make.make_slug ? "selected" : ""
+      }`}
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+      }}
+      onMouseDown={() => {
+        // ❗ ONLY TEMP SELECT
+        setSelectedMakeTemp(make.make_slug);
+        setSelectedMakeName(make.make_name);
+        setSearchMake(make.make_name);
+      }}
+    >
+      <span>{make.make_name}</span>
+      <span className="category-count">
+        {make.product_count}
+      </span>
+    </li>
+  ))}
+
+  {displayedMakes.length === 0 && (
+    <li className="suggestion-item muted">
+      No manufacturers found
+    </li>
+  )}
+</ul>
+
                 </div>
               </div>
 
               <div className="cfs-modal-footer">
                 <button
-                  type="button"
-                  className="cfs-btn btn"
-                  onClick={() => {
-                    triggerGlobalLoaders();
+  type="button"
+  className="cfs-btn btn"
+  onClick={() => {
+    if (!selectedMakeTemp) return;
 
-                    if (!selectedMakeTemp) return;
+    triggerGlobalLoaders();
 
-                    const updatedFilters: Filters = {
-                      ...currentFilters,
-                      make: selectedMakeTemp,
-                      model: undefined,
-                    };
+    const updatedFilters: Filters = {
+      ...currentFilters,
+      make: selectedMakeTemp,
+      model: undefined, // 🔥 reset model
+      page: 1,
+    };
 
-                    setSelectedMake(selectedMakeTemp);
-                    setFilters(updatedFilters);
-                    filtersInitialized.current = true;
+    // UI sync
+    setSelectedMake(selectedMakeTemp);
+    setFilters(updatedFilters);
+    filtersInitialized.current = true;
 
-                    // ✅ Close modal & open model dropdown
-                    setIsMakeModalOpen(false);
-                    setMakeOpen(false);
-                    setModelOpen(true);
+    // close modal
+    setIsMakeModalOpen(false);
 
-                    startTransition(() =>
-                      updateAllFiltersAndURL(updatedFilters)
-                    );
-                  }}
-                >
-                  Search
-                </button>
+    // 🔥 model list auto open
+    setModelOpen(true);
+
+    startTransition(() => {
+      
+      updateAllFiltersAndURL(updatedFilters);
+    });
+  }}
+>
+  Search Make
+</button>
+
               </div>
             </div>
           </div>
