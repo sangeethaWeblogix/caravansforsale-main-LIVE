@@ -345,70 +345,111 @@ const fetchCounts = async (
   const json = await res.json();
   return json.data || [];
 };
-useEffect(() => {
-  // ⛔ counts update only after filters initialized
-  if (!filtersInitialized.current) return;
-
+ useEffect(() => {
   const activeFilters: Filters = {
-    ...filters,
     ...currentFilters,
+    ...filters,
   };
 
-  // CATEGORY COUNTS
-  fetchCounts("category", activeFilters)
-    .then(setCategoryCounts)
-    .catch(console.error);
-
-  // MAKE COUNTS
-  fetchCounts("make", activeFilters)
-    .then(setMakeCounts)
-    .catch(console.error);
-
-  // MODEL COUNTS (only if make selected)
-  if (activeFilters.make) {
-    fetchCounts("model", activeFilters)
-      .then(setModelCounts) // create this state
-      .catch(console.error);
-  }
-}, [
-  filters,
-  currentFilters,
-]);
-
-  useEffect(() => {
-  fetch(
-    "https://admin.caravansforsale.com.au/wp-json/cfs/v1/params_count?group_by=category"
-  )
+  // CATEGORY COUNTS - exclude category from params so we see all categories
+  const catParams = buildCountParams(activeFilters, "category");
+  catParams.set("group_by", "category");
+  
+  fetch(`https://admin.caravansforsale.com.au/wp-json/cfs/v1/params_count?${catParams.toString()}`)
     .then(res => res.json())
     .then(json => setCategoryCounts(json.data || []))
     .catch(console.error);
-}, []);
 
-useEffect(() => {
-  fetch(
-    "https://admin.caravansforsale.com.au/wp-json/cfs/v1/params_count?group_by=make"
-  )
+  // MAKE COUNTS - exclude make from params
+  const makeParams = buildCountParams(activeFilters, "make");
+  makeParams.set("group_by", "make");
+  
+  fetch(`https://admin.caravansforsale.com.au/wp-json/cfs/v1/params_count?${makeParams.toString()}`)
     .then(res => res.json())
     .then(json => setMakeCounts(json.data || []))
     .catch(console.error);
-}, []);
 
-const displayedMakes = useMemo(() => {
-  if (!searchMake.trim()) return makeCounts; // ✅ full list
-  return makeCounts.filter(m =>
-    m.make_name.toLowerCase().includes(searchMake.toLowerCase())
-  );
-}, [searchMake, makeCounts]);
-useEffect(() => {
-  if (!selectedMake) return;
+  // MODEL COUNTS - only fetch if make is selected, exclude model from params
+  if (activeFilters.make) {
+    const modelParams = buildCountParams(activeFilters, "model");
+    modelParams.set("group_by", "model");
+    // Make sure make is included for model counts
+    modelParams.set("make", activeFilters.make);
+    
+    fetch(`https://admin.caravansforsale.com.au/wp-json/cfs/v1/params_count?${modelParams.toString()}`)
+      .then(res => res.json())
+      .then(json => setModelCounts(json.data || []))
+      .catch(console.error);
+  } else {
+    setModelCounts([]);
+  }
+}, [
+  // Watch all filter values that should trigger count updates
+  currentFilters.category,
+  currentFilters.make,
+  currentFilters.model,
+  currentFilters.condition,
+  currentFilters.state,
+  currentFilters.region,
+  currentFilters.suburb,
+  currentFilters.from_price,
+  currentFilters.to_price,
+  currentFilters.minKg,
+  currentFilters.maxKg,
+  currentFilters.acustom_fromyears,
+  currentFilters.acustom_toyears,
+  currentFilters.from_length,
+  currentFilters.to_length,
+  currentFilters.from_sleep,
+  currentFilters.to_sleep,
+  currentFilters.search,
+  currentFilters.keyword,
+  filters.category,
+  filters.make,
+  filters.model,
+]);
 
-  fetch(
-    `https://admin.caravansforsale.com.au/wp-json/cfs/v1/params_count?group_by=model&make=${selectedMake}`
-  )
-    .then(res => res.json())
-    .then(json => setModelCounts(json.data || []))
-    .catch(console.error);
-}, [selectedMake]); // 🔥 dependency
+
+const buildCountParams = (filters: Filters, excludeField?: string) => {
+  const params = new URLSearchParams();
+  
+  const filterMap: Record<string, string | number | undefined | null> = {
+    category: filters.category,
+    make: filters.make,
+    model: filters.model,
+    condition: filters.condition,
+    state: filters.state,
+    region: filters.region,
+    suburb: filters.suburb,
+    pincode: filters.pincode,
+    from_price: filters.from_price,
+    to_price: filters.to_price,
+    minKg: filters.minKg,
+    maxKg: filters.maxKg,
+    acustom_fromyears: filters.acustom_fromyears,
+    acustom_toyears: filters.acustom_toyears,
+    from_length: filters.from_length,
+    to_length: filters.to_length,
+    from_sleep: filters.from_sleep,
+    to_sleep: filters.to_sleep,
+    search: filters.search,
+    keyword: filters.keyword,
+  };
+
+  Object.entries(filterMap).forEach(([key, value]) => {
+    // Skip the field we're grouping by (so category count doesn't filter by category)
+    if (key === excludeField) return;
+    
+    if (value !== undefined && value !== null && value !== "") {
+      params.set(key, String(value));
+    }
+  });
+
+  return params;
+};
+
+
+// 🔥 dependency
 
   // const isNonEmpty = (s: string | undefined | null): s is string =>
   //   typeof s === "string" && s.trim().length > 0;
@@ -807,6 +848,13 @@ useEffect(() => {
     }
   }, [currentFilters.radius_kms]);
 
+
+  const displayedMakes = useMemo(() => {
+  if (!searchMake.trim()) return makeCounts; // ✅ full list
+  return makeCounts.filter(m =>
+    m.make_name.toLowerCase().includes(searchMake.toLowerCase())
+  );
+}, [searchMake, makeCounts]);
   const handleATMChange = (newFrom: number | null, newTo: number | null) => {
     triggerGlobalLoaders();
     setAtmFrom(newFrom);
