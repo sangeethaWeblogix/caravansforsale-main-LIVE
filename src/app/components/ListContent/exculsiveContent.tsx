@@ -147,7 +147,7 @@ export default function ExculisiveContent({
   }, [showInfo, showContact]);
 
   // Example placeholder function for product links
-
+console.log("exxx", data)
   // const imageUrl = "public/favicon.ico";
   const getHref = (p: Product) => {
     const slug = p.slug?.trim() || toSlug(p.name);
