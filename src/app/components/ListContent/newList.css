@@ -288,12 +288,12 @@ h1.page-title {
 
 .secrch_icon i {
     position: absolute;
-    top: 20px;
+       top: 33px;
     left: 12px;
 }
 
 .secrch_icon .cfs-select-input {
-  padding-left: 35px;
+  padding-left: 40px;
 }
 
 .bottom_mid {
