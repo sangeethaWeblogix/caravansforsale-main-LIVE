@@ -1,5 +1,4 @@
-
-import { fetchLocations } from "@/api/location/api";
+ import { fetchLocations } from "@/api/location/api";
 import React, {
   useState,
   Dispatch,
@@ -229,7 +228,6 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
   const hydratedKeyRef = useRef("");
   const [searchText, setSearchText] = useState("");
   const suburbClickedRef = useRef(false);
-  const isModalSelectionRef = useRef(false); // 🔧 FIX: Track modal selection to prevent double API call
   const [selectedConditionName, setSelectedConditionName] = useState<
     string | null
   >(null);
@@ -1271,10 +1269,19 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
   };
 
   const handleSearchClick = () => {
+    console.log("🔍 handleSearchClick called");
+    console.log("suburbClickedRef:", suburbClickedRef.current);
+    console.log("selectedSuggestion:", selectedSuggestion);
+    
     // Remove resetSuburbFilters call here as it clears the selections
     // resetSuburbFilters();
     triggerGlobalLoaders();
-    if (!suburbClickedRef.current || !selectedSuggestion) return;
+    if (!suburbClickedRef.current || !selectedSuggestion) {
+      console.log("❌ Early return - condition failed");
+      return;
+    }
+
+    console.log("✅ Proceeding with search...");
 
     const parts = selectedSuggestion.uri.split("/");
     const suburbSlug = parts[0] || "";
@@ -1322,11 +1329,14 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
       radius_kms: radiusKms,
     });
 
+    console.log("📦 updatedFilters:", updatedFilters);
+
     setFilters(updatedFilters);
     filtersInitialized.current = true;
 
     suburbClickedRef.current = true;
     setTimeout(() => {
+      console.log("🚀 Calling updateAllFiltersAndURL");
       updateAllFiltersAndURL(updatedFilters);
     }, 100);
     const shortAddr =
@@ -1420,29 +1430,8 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     make: sanitizeMake(f.make),
   });
 
-  // 🔧 FIX: This useEffect should ONLY trigger API call when radiusKms changes
-  // NOT when location is initially selected (that's handled by handleSearchClick)
-  const prevRadiusRef = useRef<number | null>(null);
-  
   useEffect(() => {
     if (!selectedSuggestion) return;
-    // 🔧 FIX: Skip API call if modal is open (user is still selecting)
-    if (isModalSelectionRef.current) return;
-    
-    // 🔧 FIX: Only trigger API call if radiusKms actually changed (not on initial mount)
-    if (prevRadiusRef.current === null) {
-      // First time - just store the value, don't call API
-      prevRadiusRef.current = radiusKms;
-      return;
-    }
-    
-    // If radius hasn't changed, skip API call (other deps changed due to handleSearchClick)
-    if (prevRadiusRef.current === radiusKms) {
-      return;
-    }
-    
-    // Radius actually changed - update ref and call API
-    prevRadiusRef.current = radiusKms;
 
     if (radiusDebounceRef.current) clearTimeout(radiusDebounceRef.current);
 
@@ -2650,12 +2639,9 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
             id="afilter_locations_text"
             className="cfs-select-input"
             placeholder=""
-            value={formatLocationInput(locationInput)} // 👈 display formatted
+            value={formatLocationInput(locationInput)} // 👈 display formatted          onClick={() => setIsModalOpen(true)}
             onChange={(e) => setLocationInput(e.target.value)}
-            onClick={() => {
-              isModalSelectionRef.current = true; // 🔧 FIX: Mark modal selection started
-              setIsModalOpen(true);
-            }}
+            onClick={() => setIsModalOpen(true)}
           />
 
           {/* ✅ Show selected suburb below input, like a pill with X */}
@@ -4143,10 +4129,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
               <div className="cfs-modal-header">
                 <h5 className="cfs-filter-label">Search by Location</h5>
                 <span
-                  onClick={() => {
-                    isModalSelectionRef.current = false; // 🔧 FIX: Reset on close
-                    setIsModalOpen(false);
-                  }}
+                  onClick={() => setIsModalOpen(false)}
                   className="cfs-close"
                 >
                   <svg
@@ -4306,7 +4289,6 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                   type="button"
                   className="cfs-btn btn"
                   onClick={() => {
-                    isModalSelectionRef.current = false; // 🔧 FIX: Reset before API call
                     handleSearchClick();
                     if (selectedSuggestion)
                       setLocationInput(selectedSuggestion.short_address);
