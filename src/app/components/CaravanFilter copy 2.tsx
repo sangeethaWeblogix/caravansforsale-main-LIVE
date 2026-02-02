@@ -2130,10 +2130,7 @@ const triggerOptimizeApi = (
 
         {/* Keyword (opens its own modal) */}
         {/* Keyword (opens its own modal) */}
-        <div className="cs-full_width_section"  style={{
-                cursor: "pointer",
-                transform: stateLocationOpen ? "rotate(180deg)" : "",
-              }}>
+        <div className="cs-full_width_section"   >
           {/* Header: opens STATE list */}
           <div className="filter-accordion" onClick={() => openOnly("state")}>
             <h5 className="cfs-filter-label">Location</h5>
@@ -2142,7 +2139,10 @@ const triggerOptimizeApi = (
                 e.stopPropagation();
                 openOnly(stateLocationOpen ? null : "state");
               }}
-             
+               style={{
+                cursor: "pointer",
+                transform: stateLocationOpen ? "rotate(180deg)" : "",
+              }}
             />
           </div>
 

@@ -1,3 +1,4 @@
+
 import { fetchLocations } from "@/api/location/api";
 import React, {
   useState,
@@ -211,8 +212,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
   const hasCategoryBeenSetRef = useRef(false);
   const categoryApiCalledRef = useRef(false);
 
-  const isModalSelectionRef = useRef(false); // 🔧 ADD THIS LINE
-const prevSuburbsKeyRef = useRef<string>("");
+  const prevSuburbsKeyRef = useRef<string>("");
   const radiusDebounceRef = useRef<number | null>(null);
   const regionSetAfterSuburbRef = useRef(false);
 
@@ -229,6 +229,7 @@ const prevSuburbsKeyRef = useRef<string>("");
   const hydratedKeyRef = useRef("");
   const [searchText, setSearchText] = useState("");
   const suburbClickedRef = useRef(false);
+  const isModalSelectionRef = useRef(false); // 🔧 FIX: Track modal selection to prevent double API call
   const [selectedConditionName, setSelectedConditionName] = useState<
     string | null
   >(null);
@@ -1419,8 +1420,29 @@ const prevSuburbsKeyRef = useRef<string>("");
     make: sanitizeMake(f.make),
   });
 
+  // 🔧 FIX: This useEffect should ONLY trigger API call when radiusKms changes
+  // NOT when location is initially selected (that's handled by handleSearchClick)
+  const prevRadiusRef = useRef<number | null>(null);
+  
   useEffect(() => {
     if (!selectedSuggestion) return;
+    // 🔧 FIX: Skip API call if modal is open (user is still selecting)
+    if (isModalSelectionRef.current) return;
+    
+    // 🔧 FIX: Only trigger API call if radiusKms actually changed (not on initial mount)
+    if (prevRadiusRef.current === null) {
+      // First time - just store the value, don't call API
+      prevRadiusRef.current = radiusKms;
+      return;
+    }
+    
+    // If radius hasn't changed, skip API call (other deps changed due to handleSearchClick)
+    if (prevRadiusRef.current === radiusKms) {
+      return;
+    }
+    
+    // Radius actually changed - update ref and call API
+    prevRadiusRef.current = radiusKms;
 
     if (radiusDebounceRef.current) clearTimeout(radiusDebounceRef.current);
 
@@ -2628,9 +2650,12 @@ const prevSuburbsKeyRef = useRef<string>("");
             id="afilter_locations_text"
             className="cfs-select-input"
             placeholder=""
-            value={formatLocationInput(locationInput)} // 👈 display formatted          onClick={() => setIsModalOpen(true)}
+            value={formatLocationInput(locationInput)} // 👈 display formatted
             onChange={(e) => setLocationInput(e.target.value)}
-            onClick={() => setIsModalOpen(true)}
+            onClick={() => {
+              isModalSelectionRef.current = true; // 🔧 FIX: Mark modal selection started
+              setIsModalOpen(true);
+            }}
           />
 
           {/* ✅ Show selected suburb below input, like a pill with X */}
@@ -4118,7 +4143,10 @@ const prevSuburbsKeyRef = useRef<string>("");
               <div className="cfs-modal-header">
                 <h5 className="cfs-filter-label">Search by Location</h5>
                 <span
-                  onClick={() => setIsModalOpen(false)}
+                  onClick={() => {
+                    isModalSelectionRef.current = false; // 🔧 FIX: Reset on close
+                    setIsModalOpen(false);
+                  }}
                   className="cfs-close"
                 >
                   <svg
@@ -4278,6 +4306,7 @@ const prevSuburbsKeyRef = useRef<string>("");
                   type="button"
                   className="cfs-btn btn"
                   onClick={() => {
+                    isModalSelectionRef.current = false; // 🔧 FIX: Reset before API call
                     handleSearchClick();
                     if (selectedSuggestion)
                       setLocationInput(selectedSuggestion.short_address);
