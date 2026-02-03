@@ -3987,10 +3987,18 @@
                </div>
  
                <div className="cfs-modal-body">
-                 <div className="cfs-modal-search-section">
+                 <div className="cfs-modal-secrch-section">
                    {/* 🔍 Search Input */}
-                   <div className="secrch_icon">
-                     <i className="bi bi-search search-icon"></i>
+                  <div className="secrch_icon" style={{ position: "relative" }}>
+                     <i className="bi bi-search search-icon" style={{
+      position: "absolute",
+      left: "14px",
+      top: "50%",
+      transform: "translateY(-50%)",
+      color: "#888",
+      fontSize: "18px",
+      pointerEvents: "none",
+    }}></i>
                      <input
                        type="text"
                        // placeholder="Search make..."
@@ -4173,12 +4181,20 @@
                </div>
  
                <div className="cfs-modal-body">
-                 <div className="cfs-modal-search-section">
+                 <div className="cfs-modal-secrch-section" >
                    <p className="mb-1 label-text">
                      Search suburb, postcode, state, region
                    </p>
-                   <div className="secrch_icon">
-                     <i className="bi bi-search search-icon"></i>
+                   <div className="secrch_icon" style={{ position: "relative" }}>
+                     <i className="bi bi-search search-icon" style={{
+      position: "absolute",
+      left: "14px",
+      top: "50%",
+      transform: "translateY(-50%)",
+      color: "#888",
+      fontSize: "18px",
+      pointerEvents: "none",
+    }}></i>
                      <input
                        type="text"
                        //placeholder="Suburb or postcode..."

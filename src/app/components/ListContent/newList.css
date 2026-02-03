@@ -281,9 +281,19 @@ h1.page-title {
   line-height: normal;
   display: inline-block;
 }
+ 
+.cfs-modal-secrch-section {
+    position: relative;
+}
 
-.secrch_icon {
-  position: relative;
+.cfs-modal-secrch-section .secrch-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #888;
+    font-size: 18px;
+    pointer-events: none;
 }
 
 /* .secrch_icon i {
