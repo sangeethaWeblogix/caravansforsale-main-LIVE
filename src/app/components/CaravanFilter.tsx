@@ -4007,7 +4007,7 @@
                      {!isSearching && popularMakes.length > 0 && (
                        <>
                          <p className="mb-1 mt-3 label-text fs-6 fw-semibold">
-                           Popular manufacturer
+                           Popular manufacturers
                          </p>
                          {popularMakes.map((make) => (
                            <li key={make.make_slug} className="category-item">
@@ -4016,7 +4016,7 @@
                         category-checkbox-row checkbox"
                              >
                                <div
-                                 className="d-flex align-items-center"
+                                 className="d-flex align-items-center position-relative"
                                  onChange={() => handleMakeSelect(make)}
                                >
                                  <input
@@ -4056,7 +4056,7 @@
  
  <>
                      <p className="mb-1 mt-3 label-text fs-6 fw-semibold">
-                       {isSearching ? "Search Result" : "All  Manufacturer"}
+                       {isSearching ? "Search Result" : "All  Manufacturers"}
                      </p>
                      {displayedMakes.map((make) => (
                            <li key={make.make_slug} className="category-item" >
@@ -4065,12 +4065,13 @@
                         category-checkbox-row checkbox"
                              >
                                <div
-                                 className="d-flex align-items-center"
+                                 className="d-flex align-items-center position-relative"
                                  onChange={() => handleMakeSelect(make)}
                                >
                                  <input
                                    className="checkbox__trigger visuallyhidden"
                                    type="checkbox"
+                       
                                    checked={selectedMakeTemp === make.make_slug}
                                    onChange={() => handleMakeSelect(make)}
                                  />

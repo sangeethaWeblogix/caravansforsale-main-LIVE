@@ -973,7 +973,7 @@ export default function ClientLogger({
         </div>
       </section>
       {/* ✅ Related Products Section */}
-      {relatedProducts.length > 0 && (
+      {/* {relatedProducts.length > 0 && (
         <div
           className="related-products section-padding"
           style={{ position: "relative", zIndex: 0, background: "#ffffffff" }}
@@ -985,8 +985,7 @@ export default function ClientLogger({
               </div>
             </div>
             <div className="similar-products-three position-relative">
-              {/* ✅ Swiper React Component */}
-              <Swiper
+               <Swiper
                 modules={[Navigation]}
                 navigation
                 spaceBetween={20}
@@ -1062,7 +1061,7 @@ export default function ClientLogger({
             </div>
           </div>
         </div>
-      )}
+      )} */}
 
       {/* ✅ Latest News */}
       <div
