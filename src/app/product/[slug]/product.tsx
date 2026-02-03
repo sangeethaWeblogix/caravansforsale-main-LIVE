@@ -362,7 +362,7 @@ export default function ClientLogger({
   // ✅ Improved back button handler
   const handleBackClick = (e: React.MouseEvent) => {
     e.preventDefault();
-
+setNavigating(true);
     if (returnUrl) {
       sessionStorage.removeItem("listingsReturnUrl");
       router.push(returnUrl);
