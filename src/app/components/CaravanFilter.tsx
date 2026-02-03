@@ -433,7 +433,7 @@
      filters.model,
    ]);
  
-   const handleMakeSelect = (make) => {
+    const handleMakeSelect = (make) => {
      // SAME make click again → unselect
      if (selectedMakeTemp === make.make_slug) {
        setSelectedMakeTemp(null);
@@ -447,6 +447,7 @@
      // old UI behaviour
      triggerOptimizeApi("make", make.make_slug);
    };
+
  
    const handleMakeTempSelect = (make: {
      make_slug: string;
@@ -907,7 +908,7 @@
    }, [currentFilters.radius_kms]);
  
    const displayedMakes = useMemo(() => {
-     if (!searchMake.trim()) return makeCounts; // ✅ full list
+     if (!searchText.trim()) return makeCounts; // ✅ full list
      return makeCounts.filter((m) =>
        m.make_name.toLowerCase().includes(searchText.toLowerCase()),
      );
@@ -4016,14 +4017,14 @@
                              >
                                <div
                                  className="d-flex align-items-center"
-                                 onMouseDown={() => handleMakeSelect(make)}
+                                 onChange={() => handleMakeSelect(make)}
                                >
                                  <input
                                    className="checkbox__trigger visuallyhidden"
                                    type="checkbox"
                                    checked={selectedMakeTemp === make.make_slug}
-                                   onMouseDown={() => handleMakeSelect(make)}
-                                 />
+                                   onChange={() => handleMakeSelect(make)}
+                                  />
  
                                  <span className="checkbox__symbol">
                                    <svg
@@ -4053,34 +4054,59 @@
                        </>
                      )}
  
+ <>
                      <p className="mb-1 mt-3 label-text fs-6 fw-semibold">
-                       {isSearching ? "Search Result" : "All Manufacturer"}
+                       {isSearching ? "Search Result" : "All  Manufacturer"}
                      </p>
                      {displayedMakes.map((make) => (
-                       <li
-                         key={make.make_slug}
-                         className={`suggestion-item ${
-                           selectedMakeTemp === make.make_slug ? "selected" : ""
-                         }`}
-                         style={{
-                           display: "flex",
-                           justifyContent: "space-between",
-                           alignItems: "center",
-                         }}
-                         onMouseDown={() => handleMakeSelect(make)}
-                       >
-                         <span>{make.make_name}</span>
-                         <span className="category-count">
-                           ({make.product_count})
-                         </span>
-                       </li>
-                     ))}
+                           <li key={make.make_slug} className="category-item" >
+                             <label
+                               className="
+                        category-checkbox-row checkbox"
+                             >
+                               <div
+                                 className="d-flex align-items-center"
+                                 onChange={() => handleMakeSelect(make)}
+                               >
+                                 <input
+                                   className="checkbox__trigger visuallyhidden"
+                                   type="checkbox"
+                                   checked={selectedMakeTemp === make.make_slug}
+                                   onChange={() => handleMakeSelect(make)}
+                                 />
+ 
+                                 <span className="checkbox__symbol">
+                                   <svg
+                                     aria-hidden="true"
+                                     className="icon-checkbox"
+                                     width="28px"
+                                     height="28px"
+                                     viewBox="0 0 28 28"
+                                     version="1"
+                                     xmlns="http://www.w3.org/2000/svg"
+                                   >
+                                     <path d="M4 14l8 7L24 7"></path>
+                                   </svg>
+                                 </span>
+                                 <span className="category-name">
+                                   {make.make_name}
+                                 </span>
+                               </div>
+                               <div>
+                                 <span className="category-count">
+                                   ({make.product_count})
+                                 </span>
+                               </div>
+                             </label>
+                           </li>
+                         ))}
  
                      {displayedMakes.length === 0 && (
                        <li className="suggestion-item muted">
                          No manufacturers found
                        </li>
                      )}
+                     </>
                    </ul>
                  </div>
                </div>
