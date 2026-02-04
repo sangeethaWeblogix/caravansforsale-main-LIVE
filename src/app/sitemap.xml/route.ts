@@ -25,9 +25,8 @@ export async function GET() {
     "category-region-sitemap.xml",
     "state-atm-sitemap.xml",
     "region-atm-sitemap.xml",
-     "state-sleep-sitemap.xml",
-    "region-sleep-sitemap.xml",
-    "category-sleep-sitemap.xml",
+    
+    
     "state-length-sitemap.xml",
     "region-length-sitemap.xml",
     
