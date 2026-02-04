@@ -6,9 +6,9 @@
   import "@fortawesome/fontawesome-free/css/all.min.css";
   import Navbar from "./navbar/Navbar";
   import Footer from "./footer/Footer";
-  import React from "react";
+  import React, { Suspense } from "react";
   import { Metadata } from "next";
-  import ScrollToTop from "./ScrollToTop";
+  import ScrollToTop from "./navigation/ScrollToTopGlobal";
   import UTMTracker from "./UTMTracker";
   // import NextTopLoader from "nextjs-toploader";
 import ThemeRegistry from './components/ThemeRegistry';
@@ -97,7 +97,10 @@ const gtmServer = "https://gtm.caravansforsale.com.au";
   
           <UTMTracker />
           <Navbar />
+                  <Suspense fallback={null}>
+
           <ScrollToTop />
+          </Suspense>
           <main className="product-page style-5">
             {/* <NextTopLoader
           color="#ff6600"
