@@ -3911,7 +3911,7 @@
            <input
              type="text"
              className="cfs-select-input"
-             placeholder="Click to choose / type"
+             placeholder="Search By Keyword"
              value={toHumanFromQuery(keywordInput)} // ⬅️ show nicely
              onClick={() => {
                pickedSourceRef.current = null;
@@ -4377,7 +4377,7 @@
                      <i className="bi bi-search search-icon"></i>
                      <input
                        type="text"
-                       placeholder="eg: offroad, bunk, ensuite…"
+                       placeholder="Try caravans with bunks" 
                        className="filter-dropdown cfs-select-input"
                        autoComplete="off"
                        value={modalKeyword}
