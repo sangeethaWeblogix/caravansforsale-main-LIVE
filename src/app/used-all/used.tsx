@@ -7,7 +7,17 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Autoplay } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
+import { fetchUsedBlogList } from "@/api/usedBlog/api";
+import { useEffect, useState } from "react";
 
+type BlogItem = {
+  id: number;
+  title: string;
+  image: string;
+  date: string;
+  link: string;
+  slug: string;
+};
 // ── Data ────────────────────────────────────────────────────────────────
 
 const states = [
@@ -110,6 +120,9 @@ const blogs = [
 // ── Components ──────────────────────────────────────────────────────────
 
 function StateCard({ state }: { state: (typeof states)[0] }) {
+
+   
+
   return (
     <div className="service-box">
       <div className="sec_left">
@@ -198,6 +211,32 @@ function ProductCard({ caravan }: { caravan: typeof sampleCaravan }) {
 // ── Main Page ───────────────────────────────────────────────────────────
 
 export default function Home() {
+   const [blogs, setBlogs] = useState<BlogItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+ useEffect(() => {
+  const loadBlogs = async () => {
+    try {
+      const res = await fetchUsedBlogList();
+      console.log("Fetched blogs:", res);
+
+      if (!res?.data?.latest_blog_posts?.items) {
+        setBlogs([]);
+        return;
+      }
+
+      setBlogs(res.data.latest_blog_posts.items);
+    } catch (err) {
+      console.error("Blog fetch failed:", err);
+      setBlogs([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  loadBlogs();
+}, []);
+
   return (
     <div>
       {/* Ad Banner */}
@@ -282,7 +321,7 @@ export default function Home() {
       {/* Regions */}
       <section className="caravans_by_state related-products services section-padding pt-0 style-1">
         <div className="container">
-          <div class="section-head mb-4">
+          <div className="section-head mb-4">
             <h2>Used Caravans For Sale by Region</h2>
             <hr className="mb-6" />
           </div>
@@ -434,6 +473,9 @@ export default function Home() {
             </div>
           </div>
           <div className="content">
+             {loading ? (
+        <p>Loading blogs...</p>
+      ) : (
             <Swiper
               modules={[Navigation]}
               spaceBetween={20}
@@ -456,7 +498,7 @@ export default function Home() {
                       </div>
                       <div className="info">
                         <h4 className="title">
-                          <Link href="/blog/sample-post">
+                          <Link href={blog.slug}>
                             {blog.title}
                           </Link>
                         </h4>
@@ -467,6 +509,7 @@ export default function Home() {
                 </SwiperSlide>
               ))}
             </Swiper>
+ )}
 
             <div className="swiper-button-next blog-next"></div>
             <div className="swiper-button-prev blog-prev"></div>
