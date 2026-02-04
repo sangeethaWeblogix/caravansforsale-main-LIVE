@@ -10,18 +10,16 @@ interface Props {
   height?: number;
   className?: string;
   style?: React.CSSProperties;
-  priority?: boolean; 
-  
+  priority?: boolean;
 }
 
 export default function ImageWithSkeleton({
   src,
   alt = "",
-  width = 300,
-  height = 200,
+  width = 400,
+  height = 300,
   className,
-   priority=false,
-  
+  priority = false,
 }: Props) {
   const [loaded, setLoaded] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -32,12 +30,11 @@ export default function ImageWithSkeleton({
     setFailed(false);
   }, [src]);
 
-  const realSrc = failed || !src ? "/images/sample3.webp" : src;
-
   return (
+    
     <div
-      
       className={className}
+      
     >
       {/* Skeleton */}
       {!loaded && (
@@ -51,24 +48,30 @@ export default function ImageWithSkeleton({
         />
       )}
 
-      {/* Image */}
-      <Image
-        src={realSrc}
-        alt={alt}
-        width={width}
-        height={height}
-        unoptimized
-         priority={priority}  
-        onLoad={() => setLoaded(true)}
-        onError={() => setFailed(true)}
-        style={{
-          width: "100%",
-          height: "100%",
-          objectFit: "cover",
-          transition: "opacity .35s ease",
-          opacity: loaded ? 1 : 0,
-        }}
-      />
+      {/* Image – ONLY if src exists & not failed */}
+      {src && !failed && (
+        <Image
+          src={src}
+          alt={alt}
+          width={width}
+          height={height}
+           unoptimized
+            priority={priority}
+{...(!priority && { loading: "lazy" })}         
+  onLoad={() => setLoaded(true)}
+          onError={() => {
+            setFailed(true);
+            setLoaded(true); // skeleton stop
+          }}
+          style={{
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            transition: "opacity .35s ease",
+            opacity: loaded ? 1 : 0,
+          }}
+        />
+      )}
 
       <style jsx>{`
         @keyframes pulse {

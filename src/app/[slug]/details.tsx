@@ -51,13 +51,22 @@ export default function BlogDetailsPage({
   const post = data?.data?.blog_detail;
   // console.log("dataaa", post);
   useEffect(() => {
-    if (post?.toc) {
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(post.toc, "text/html");
-      const items = Array.from(doc.querySelectorAll("li"));
-      setTocItems(items);
+  if (post?.toc) {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(post.toc, "text/html");
+    
+    // ✅ Get the main ul element
+    const mainUl = doc.querySelector("ul.ez-toc-list");
+    
+    if (mainUl) {
+      // Get only direct children using childNodes filter
+      const items = Array.from(mainUl.children).filter(
+        (child) => child.tagName === "LI"
+      );
+      setTocItems(items as Element[]);
     }
-  }, [post?.toc]);
+  }
+}, [post?.toc]);
   // put this near the top of the file (outside the component)
   const decodeEntities = (s = "") =>
     s
@@ -158,6 +167,7 @@ export default function BlogDetailsPage({
                             ))}
                           </ul>
                         </nav>
+
                         {tocItems.length > 4 && (
                           <button
                             className="mt-2 text-blue-600 underline more_less"

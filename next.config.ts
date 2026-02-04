@@ -9,7 +9,7 @@ const nextConfig: NextConfig = {
     domains: [
       "media.caravansforsale.com.au",
       "www.caravansforsale.com.au",
-       "www.admin.caravansforsale.com.au",
+       "admin.caravansforsale.com.au",
       "caravansforsale.b-cdn.net",
       "wb79vudhmjvv4ng6.public.blob.vercel-storage.com",
       "caravansforsale.imagestack.net",
@@ -17,7 +17,7 @@ const nextConfig: NextConfig = {
       remotePatterns: [
       {
         protocol: "https",
-        hostname: "www.admin.caravansforsale.com.au",
+        hostname: "admin.caravansforsale.com.au",
         pathname: "/**",
       },
       {
@@ -55,9 +55,9 @@ const nextConfig: NextConfig = {
     optimizeCss: true,
   },
 
-  compiler: {
-    removeConsole: true,
-  },
+  // compiler: {
+  //   removeConsole: true,
+  // },
 
   // ✅ Redirect malformed URLs like /feedfeedfeedfeed → clean version
   async redirects() {
@@ -77,6 +77,131 @@ const nextConfig: NextConfig = {
       destination: "/:path*",
       permanent: true,
     },
+    ];
+
+  },
+  async headers() {
+    return [
+      // ===========================================
+      // LISTINGS PAGES - Main caching targets
+      // ===========================================
+      
+      // Main listings page
+      {
+        source: "/listings/",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, s-maxage=3600, stale-while-revalidate=86400",
+          },
+          {
+            key: "CDN-Cache-Control",
+            value: "public, max-age=3600",
+          },
+        ],
+      },
+      
+      // All listing subpages (filters, categories, makes, etc.)
+      {
+        source: "/listings/:path*/",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, s-maxage=3600, stale-while-revalidate=86400",
+          },
+          {
+            key: "CDN-Cache-Control",
+            value: "public, max-age=3600",
+          },
+        ],
+      },
+
+      // ===========================================
+      // CATEGORY PAGES
+      // ===========================================
+      {
+        source: "/:slug-category/",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, s-maxage=3600, stale-while-revalidate=86400",
+          },
+        ],
+      },
+
+      // ===========================================
+      // CONDITION PAGES
+      // ===========================================
+      {
+        source: "/new-condition/",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, s-maxage=3600, stale-while-revalidate=86400",
+          },
+        ],
+      },
+      {
+        source: "/used-condition/",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, s-maxage=3600, stale-while-revalidate=86400",
+          },
+        ],
+      },
+
+      // ===========================================
+      // STATE/LOCATION PAGES
+      // ===========================================
+      {
+        source: "/:state-state/",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, s-maxage=3600, stale-while-revalidate=86400",
+          },
+        ],
+      },
+
+      // ===========================================
+      // STATIC ASSETS - Long cache
+      // ===========================================
+      {
+        source: "/_next/static/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
+
+      // ===========================================
+      // IMAGES - 24 hour cache
+      // ===========================================
+      {
+        source: "/images/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=86400, stale-while-revalidate=604800",
+          },
+        ],
+      },
+
+      // ===========================================
+      // API ROUTES - No cache
+      // ===========================================
+      {
+        source: "/api/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "no-store, no-cache, must-revalidate",
+          },
+        ],
+      },
     ];
   },
 };

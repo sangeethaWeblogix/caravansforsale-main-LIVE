@@ -1,204 +1,206 @@
-     const API_BASE = process.env.NEXT_PUBLIC_CFS_API_BASE;
-  
-  interface Filters {
-    page?: number;
-    category?: string;
-    make?: string;
-    from_price?: string;
-    to_price?: string;
-    minKg?: string;
-    maxKg?: string;
-    condition?: string;
-    sleeps?: string;
-    state?: string;
-    region?: string;
-    suburb?: string;
-    acustom_fromyears?: string | number;
-    acustom_toyears?: string | number;
-    from_length?: string;
-    to_length?: string;
-    model?: string;
-    pincode?: string;
-    orderby?: string;
-    slug?: string;
-    radius_kms?: string;
-    search?: string;
-    keyword?: string;
-    from_sleep?: string | number;
-    to_sleep?: string | number;
-      msid?: string | null; 
-  }
-  
-  export type Item = {
-    id: number;
-    name: string;
-    length: string;
-    kg: string;
-    regular_price: string;
-    sale_price?: string;
-    price_difference?: string;
-    image: string;
-    link: string;
-    condition: string;
-    location?: string;
-    categories?: string[];
-    people?: string;
-    make?: string;
-    slug?: string;
-      description?: string;
-          sku?: string;
-          gallery?: string[];
-            is_exclusive?: boolean
-              is_premium?: boolean;
+const API_BASE = process.env.NEXT_PUBLIC_CFS_API_BASE;
 
-            model?: string;
+interface Filters {
+  page?: number;
+  category?: string;
+  make?: string;
+  from_price?: string;
+  to_price?: string;
+  minKg?: string;
+  maxKg?: string;
+  condition?: string;
+  sleeps?: string;
+  state?: string;
+  region?: string;
+  suburb?: string;
+  acustom_fromyears?: string | number;
+  acustom_toyears?: string | number;
+  from_length?: string;
+  to_length?: string;
+  model?: string;
+  pincode?: string;
+  orderby?: string;
+  slug?: string;
+  radius_kms?: string;
+  search?: string;
+  keyword?: string;
+  from_sleep?: string | number;
+  to_sleep?: string | number;
+  msid?: string | null;
+  shuffle_seed?: string | number; // NEW: For Cloudflare cache variants
+}
 
+export type Item = {
+  id: number;
+  name: string;
+  length: string;
+  kg: string;
+  regular_price: string;
+  sale_price?: string;
+  price_difference?: string;
+  image: string;
+  link: string;
+  condition: string;
+  location?: string;
+  categories?: string[];
+  people?: string;
+  make?: string;
+  slug?: string;
+  description?: string;
+  sku?: string;
+  gallery?: string[];
+  is_exclusive?: boolean;
+  is_premium?: boolean;
+  model?: string;
+  image_format?: string[];
+  image_url?: string[];
 
+};
 
-  };
-  
-  export interface ApiSEO {
-    metadescription?: string;
-    metatitle?: string;
-    metaimage?: string;
-    index?: string;
-    canonical?: string;
-    follow?: string;
-    list_page_metatitle?: string;
-    
-  }
-  
-  export interface ApiPagination {
-    current_page: number;
-    total_pages: number;
-    total_products: number;
-    per_page: number;
-  }
-  
-  export interface ApiData {
-    products?: Item[];
-    exclusive_products?: Item[];
-    featured_products?: Item[];
-    emp_exclusive_products?: Item[];
-    premium_products?: Item[];
-    all_categories?: { name: string; slug: string }[];
-    make_options?: { name: string; slug: string }[];
-    model_options?: { name: string; slug: string }[];
-    states?: { value: string; name: string }[];
-  }
-  
-  export type ApiResponse = {
-    success?: boolean;
-     list_page_title?: string;
-    seo?: ApiSEO;
-    pagination?: ApiPagination;
-    data?: ApiData;
-    message?: string;
-    errors?:string[];
-      msid?: string | null; 
-      canonical?: string;
-  };
-  
-  /** Normalize "+", spaces for search/keyword */
-  const normalizeQuery = (s?: string) =>
-    (s ?? "").replace(/\+/g, " ").trim().replace(/\s+/g, " ");
-  
-  export const fetchListings = async (
-    filters: Filters = {}
-  ): Promise<ApiResponse> => {
-    const {
-      page = 1,
-      category,
-      make,
-      model,
-      from_price,
-      to_price,
-      minKg,
-      maxKg,
-      from_length,
-      to_length,
-      condition,
-      state,
-      region,
-      suburb,
-      pincode,
-      orderby,
-      slug,
-      radius_kms,
-      search,
-      acustom_fromyears,
-      acustom_toyears,
-      from_sleep,
-      to_sleep,
-    } = filters;
-  
-    const params = new URLSearchParams();
-    params.append("page", page.toString());
-    if (category) params.append("category", category);
-    if (slug) params.append("category", slug);
-    if (make) params.append("make", make);
-    if (model) params.append("model", model);
-    if (pincode) params.append("pincode", pincode);
-    if (state) params.append("state", state);
-    if (region) params.append("region", region);
-    if (suburb) params.append("suburb", suburb);
-    if (from_price) params.append("from_price", `${from_price}`);
-    if (to_price) params.append("to_price", `${to_price}`);
-    if (minKg) params.append("from_atm", `${minKg}`);
-    if (maxKg) params.append("to_atm", `${maxKg}`);
-    if (from_length) params.append("from_length", `${from_length}`);
-    if (to_length) params.append("to_length", `${to_length}`);
-    if (acustom_fromyears)
-      params.append("acustom_fromyears", `${acustom_fromyears}`);
-    if (acustom_toyears) params.append("acustom_toyears", `${acustom_toyears}`);
-    if (condition)
-      params.append("condition", condition.toLowerCase().replace(/\s+/g, "-"));
-    if (filters.sleeps) params.append("sleep", filters.sleeps);
-    if (orderby) params.append("orderby", orderby);
-    if (radius_kms) params.append("radius_kms", radius_kms);
-    if (from_sleep) params.append("from_sleep", `${from_sleep}`);
-    if (to_sleep) params.append("to_sleep", `${to_sleep}`);
-  
-    const s = normalizeQuery(search);
-    if (s) params.append("search", s);
-  
+export interface ApiSEO {
+  metadescription?: string;
+  metatitle?: string;
+  metaimage?: string;
+  index?: string;
+  canonical?: string;
+  follow?: string;
+  list_page_metatitle?: string;
+  cacheable?: boolean; // NEW: Cache hint for CDN
+}
+
+export interface ApiPagination {
+  current_page: number;
+  total_pages: number;
+  total_products: number;
+  per_page: number;
+}
+
+export interface ApiData {
+  products?: Item[];
+  exclusive_products?: Item[];
+  featured_products?: Item[];
+  emp_exclusive_products?: Item[];
+  premium_products?: Item[];
+  all_categories?: { name: string; slug: string }[];
+  make_options?: { name: string; slug: string }[];
+  model_options?: { name: string; slug: string }[];
+  states?: { value: string; name: string }[];
+}
+
+export type ApiResponse = {
+  success?: boolean;
+  list_page_title?: string;
+  seo?: ApiSEO;
+  pagination?: ApiPagination;
+  data?: ApiData;
+  message?: string;
+  errors?: string[];
+  msid?: string | null;
+  canonical?: string;
+};
+
+/** Normalize "+", spaces for search/keyword */
+const normalizeQuery = (s?: string) =>
+  (s ?? "").replace(/\+/g, " ").trim().replace(/\s+/g, " ");
+
+export const fetchListings = async (
+  filters: Filters = {}
+): Promise<ApiResponse> => {
+  const {
+    page = 1,
+    category,
+    make,
+    model,
+    from_price,
+    to_price,
+    minKg,
+    maxKg,
+    from_length,
+    to_length,
+    condition,
+    state,
+    region,
+    suburb,
+    pincode,
+    orderby,
+    slug,
+    radius_kms,
+    search,
+    acustom_fromyears,
+    acustom_toyears,
+    from_sleep,
+    to_sleep,
+    shuffle_seed, // NEW: Extract shuffle_seed
+  } = filters;
+
+  const params = new URLSearchParams();
+  params.append("page", page.toString());
+  if (category) params.append("category", category);
+  if (slug) params.append("category", slug);
+  if (make) params.append("make", make);
+  if (model) params.append("model", model);
+  if (pincode) params.append("pincode", pincode);
+  if (state) params.append("state", state);
+  if (region) params.append("region", region);
+  if (suburb) params.append("suburb", suburb);
+  if (from_price) params.append("from_price", `${from_price}`);
+  if (to_price) params.append("to_price", `${to_price}`);
+  if (minKg) params.append("from_atm", `${minKg}`);
+  if (maxKg) params.append("to_atm", `${maxKg}`);
+  if (from_length) params.append("from_length", `${from_length}`);
+  if (to_length) params.append("to_length", `${to_length}`);
+  if (acustom_fromyears)
+    params.append("acustom_fromyears", `${acustom_fromyears}`);
+  if (acustom_toyears) params.append("acustom_toyears", `${acustom_toyears}`);
+  if (condition)
+    params.append("condition", condition.toLowerCase().replace(/\s+/g, "-"));
+  if (filters.sleeps) params.append("sleep", filters.sleeps);
+  if (orderby) params.append("orderby", orderby);
+  if (radius_kms) params.append("radius_kms", radius_kms);
+  if (from_sleep) params.append("from_sleep", `${from_sleep}`);
+  if (to_sleep) params.append("to_sleep", `${to_sleep}`);
+
+  // NEW: Pass shuffle_seed to API for deterministic shuffle (CDN cache variants)
+  if (shuffle_seed) params.append("shuffle_seed", `${shuffle_seed}`);
+
+  const s = normalizeQuery(search);
+  if (s) params.append("search", s);
+
   const url = `${API_BASE}/new_optimize_code?${params.toString()}`;
-const res = await fetch(url, { cache: "no-store" });
-      console.log("[list API] GET", res.url)
+  const res = await fetch(url, { cache: "no-store" });
+  console.log("[list API] GET", res.url);
 
-    if (!res.ok) {
-      const errText = await res.text();
-      console.error("API Error:", res.status, errText);
-      throw new Error(`API failed: ${res.status}`);
-    }
-  
-    const raw = await res.text();
-    let json: ApiResponse;
-    try {
-      json = JSON.parse(raw);
-    } catch {
-      console.error("Invalid JSON response:", raw);
-      throw new Error("Invalid API response");
-    }
-  
-    // ✅ Return all useful sections from API
-    return {
-      success: json.success,
-       list_page_title: json. list_page_title,
-      seo: json.seo,
-      pagination: json.pagination,
-      data: {
-        products: json.data?.products ?? [],
-        exclusive_products: json.data?.exclusive_products ?? [],
-        emp_exclusive_products: json.data?.emp_exclusive_products ?? [],
+  if (!res.ok) {
+    const errText = await res.text();
+    console.error("API Error:", res.status, errText);
+    throw new Error(`API failed: ${res.status}`);
+  }
 
-        featured_products: json.data?.featured_products ?? [],
-        premium_products: json.data?.premium_products ?? [],
-        make_options: json.data?.make_options ?? [],
-        model_options: json.data?.model_options ?? [],
-        all_categories: json.data?.all_categories ?? [],
-        states: json.data?.states ?? [],
-      },
-    };
+  const raw = await res.text();
+  let json: ApiResponse;
+  try {
+    json = JSON.parse(raw);
+  } catch {
+    console.error("Invalid JSON response:", raw);
+    throw new Error("Invalid API response");
+  }
+
+  // Return all useful sections from API
+  return {
+    success: json.success,
+    list_page_title: json.list_page_title,
+    seo: json.seo,
+    pagination: json.pagination,
+    data: {
+      products: json.data?.products ?? [],
+      exclusive_products: json.data?.exclusive_products ?? [],
+      emp_exclusive_products: json.data?.emp_exclusive_products ?? [],
+      featured_products: json.data?.featured_products ?? [],
+      premium_products: json.data?.premium_products ?? [],
+      make_options: json.data?.make_options ?? [],
+      model_options: json.data?.model_options ?? [],
+      all_categories: json.data?.all_categories ?? [],
+      states: json.data?.states ?? [],
+    },
   };
-  
+};

@@ -2,12 +2,13 @@
 
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination } from "swiper/modules";
+import type { Swiper as SwiperType } from "swiper";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import "./popup.css";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { createProductEnquiry } from "@/api/enquiry/api";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -16,7 +17,6 @@ type CaravanDetailModalProps = {
   isOpen: boolean;
   onClose: () => void;
   images: string[];
-  subImages: string[];
   product: {
     id?: string | number;
     slug?: string;
@@ -35,8 +35,9 @@ export default function CaravanDetailModal({
   onClose,
   images,
   product,
-  subImages,
- }: CaravanDetailModalProps) {
+}: CaravanDetailModalProps) {
+  const swiperRef = useRef<SwiperType | null>(null);
+
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -55,53 +56,12 @@ export default function CaravanDetailModal({
   const [submitting, setSubmitting] = useState(false);
   const [okMsg, setOkMsg] = useState<string | null>(null);
   const router = useRouter();
-const INITIAL_COUNT = 10;
 
-const [slides, setSlides] = useState<string[]>([]);
-const [index, setIndex] = useState(INITIAL_COUNT);
- 
-  // validation regex
+  // Validation regex
   const NAME_RE = /^[A-Za-z][A-Za-z\s'.-]{1,49}$/;
   const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
   const PHONE_RE = /^\d{7,15}$/;
   const POST_RE = /^\d{4}$/;
-
-
- useEffect(() => {
-  if (isOpen) {
-    const firstBatch = subImages.slice(0, INITIAL_COUNT);
-    setSlides(firstBatch);
-    setIndex(firstBatch.length);
-
-    // 🔥 Immediately prepare images in background
-    setTimeout(() => {
-      const imgBatch = images.slice(0, INITIAL_COUNT);
-      setSlides((prev) => [...prev, ...imgBatch]);
-    }, 0);
-  }
-}, [isOpen, subImages, images]);
-
-
-
- const handleSlideChange = (swiper) => {
-  const active = swiper.activeIndex;
-
-  // All loaded? Stop.
-  if (slides.length >= subImages.length + images.length) return;
-
-  if (active === slides.length - 1) {
-    const remainingImages = images.slice(index - subImages.length, index - subImages.length + INITIAL_COUNT);
-
-    if (remainingImages.length > 0) {
-      setSlides((prev) => [...prev, ...remainingImages]);
-      setIndex((prev) => prev + remainingImages.length);
-    }
-  }
-};
-
-
-
-
 
   const validate = (f = form) => {
     const e: Partial<typeof form> = {};
@@ -153,7 +113,6 @@ const [index, setIndex] = useState(INITIAL_COUNT);
         postcode: form.postcode.trim(),
       });
 
-      // ✅ redirect logic
       if (data?.success && data.data?.redirect_slug) {
         router.push(`/${data.data.redirect_slug}`);
       } else {
@@ -185,6 +144,18 @@ const [index, setIndex] = useState(INITIAL_COUNT);
 
   if (!isOpen) return null;
 
+  const getDisplayPrice = () => {
+    const sale = Number(String(product.salePrice).replace(/[^0-9.]/g, ""));
+    const regular = Number(
+      String(product.regularPrice).replace(/[^0-9.]/g, "")
+    );
+
+    if (sale > 0) return product.salePrice;
+    if (regular > 0) return product.regularPrice;
+
+    return "POA";
+  };
+
   return (
     <div className="custom-model-main carava_details show">
       <div className="custom-model-inner">
@@ -202,9 +173,7 @@ const [index, setIndex] = useState(INITIAL_COUNT);
                     <div className="vehicleThumbDetails__part__price pop_up_price">
                       <span>
                         <span className="woocommerce-Price-amount amount">
-                          <bdi>
-                           {product.regularPrice}
-                          </bdi>
+                          <bdi>{getDisplayPrice()}</bdi>
                         </span>
                       </span>
                     </div>
@@ -214,13 +183,16 @@ const [index, setIndex] = useState(INITIAL_COUNT);
                     <Swiper
                       modules={[Navigation, Pagination]}
                       navigation
+                      watchOverflow={false}
                       pagination={{ clickable: true }}
-                          onSlideChange={handleSlideChange}
-
+                      onSwiper={(swiper) => {
+                        swiperRef.current = swiper;
+                      }}
+                      loop={images.length > 1}
                     >
-                      {slides.map((img, idx) => (
+                      {images.map((img, idx) => (
                         <SwiperSlide
-                          key={idx}
+                          key={`slide-${idx}-${img}`}
                           className="flex justify-center items-center"
                         >
                           <Image
@@ -231,10 +203,13 @@ const [index, setIndex] = useState(INITIAL_COUNT);
                             sizes="100vw"
                             className="w-full h-auto"
                             unoptimized
+                            priority={idx < 2}
                           />
                         </SwiperSlide>
                       ))}
                     </Swiper>
+
+                    {/* ✅ Image counter */}
                   </div>
                 </div>
 
@@ -425,7 +400,6 @@ const [index, setIndex] = useState(INITIAL_COUNT);
                     </form>
                   </div>
                 </div>
-                {/* /Right Content */}
               </div>
             </div>
           </div>

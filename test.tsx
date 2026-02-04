@@ -120,7 +120,7 @@ const [loadedAll, setLoadedAll] = useState<{ [key: string]: boolean }>({});
 
   
 const getFirstImage = (item: Product) => {
-  if (!item.sku || !item.slug) return "/images/sample3.webp";
+  if (!item.sku || !item.slug) return "/images/image.pngp";
 
   return `https://caravansforsale.imagestack.net/450x338/${item.sku}/${item.slug}main1.avif`;
 };
@@ -213,7 +213,7 @@ const getFirstImage = (item: Product) => {
 
   // ✅ Helper: generate up to 5 image URLs from SKU
   const getProductImages = (sku?: string, slug?: string): string[] => {
-  if (!sku || !slug) return ["/images/sample3.webp"];
+  if (!sku || !slug) return ["/images/image.pngp"];
 
   const base = `https://caravansforsale.imagestack.net/600x450/${sku}/${slug}`;
 

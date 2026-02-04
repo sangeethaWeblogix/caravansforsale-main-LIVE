@@ -16,12 +16,12 @@ import { ReactNode } from "react";
      google: "6tT6MT6AJgGromLaqvdnyyDQouJXq0VHS-7HC194xEo", // ✅ this auto generates <meta name="google-site-verification" />
    },
    alternates: {
-    canonical:    "https://www.admin.caravansforsale.com.au/off-road-caravan-manufacturers/",
+    canonical:    "https://admin.caravansforsale.com.au/off-road-caravan-manufacturers/",
 
    },
    
    openGraph: {
-      url: "https://www.admin.caravansforsale.com.au/off-road-caravan-manufacturers/",
+      url: "https://admin.caravansforsale.com.au/off-road-caravan-manufacturers/",
      title: "Off-Road Caravan Manufacturers in Australia: Top Brands & Models",
      description:
        "Find the best off-road caravan manufacturers in Australia. Off road caravans built with the highest quality standards and offer serious value for money.",

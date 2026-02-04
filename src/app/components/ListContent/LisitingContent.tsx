@@ -1,4 +1,4 @@
- "use client";
+"use client";
 import Link from "next/link";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
@@ -11,8 +11,9 @@ import { useEffect, useRef, useState } from "react";
 import { toSlug } from "@/utils/seo/slug";
 import ImageWithSkeleton from "../ImageWithSkeleton";
 import { useEnquiryForm } from "./enquiryform";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { buildSlugFromFilters } from "../slugBuilter";
+import Image from "next/image";
 
 interface Product {
   id: number;
@@ -37,12 +38,14 @@ interface Product {
   list_page_title?: string;
   weight?: string;
   price?: string;
+  image_format?: string[];
   thumbnail?: string;
   url?: string;
   sleeps?: string;
   manufacturer?: string;
   is_exclusive?: boolean;
   is_premium?: boolean;
+  image_url?: string[];
 }
 
 interface Pagination {
@@ -112,6 +115,10 @@ export default function ListingContent({
   // isNextLoading,
   pageTitle,
 }: Props) {
+  const [swiperActivated, setSwiperActivated] = useState<
+    Record<number, boolean>
+  >({});
+
   const [showInfo, setShowInfo] = useState(false);
   const [showContact, setShowContact] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -120,12 +127,82 @@ export default function ListingContent({
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isOrderbyLoading, setIsOrderbyLoading] = useState(false);
+  const [mergedProducts, setMergedProducts] = useState<Product[]>([]);
+  const [navigating, setNavigating] = useState(false);
+  const [swiperKey, setSwiperKey] = useState(0);
+
+  const pathname = usePathname();
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(
+        "listingsReturnUrl",
+        window.location.pathname + window.location.search,
+      );
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    // 🔥 Route finished changing → stop loader
+    setNavigating(false);
+  }, [pathname]);
+
+  const IMAGE_BASE_URL = "https://caravansforsale.imagestack.net/400x300/";
+
+  const IMAGE_EXT = ".avif";
+
+  const goToProduct = (href: string) => {
+    try {
+      sessionStorage.setItem("cameFromListings", "true");
+      sessionStorage.setItem(
+        "listingsReturnUrl",
+        window.location.pathname + window.location.search,
+      );
+    } catch {}
+
+    router.push(href);
+  };
+
+  useEffect(() => {
+    const cameBack = sessionStorage.getItem("cameFromListings");
+
+    if (cameBack) {
+      // 🔁 force swiper remount
+      setSwiperKey((k) => k + 1);
+
+      // optional: reset activation map
+      setSwiperActivated({});
+      setLazyImages({});
+      setLoadedAll({});
+
+      sessionStorage.removeItem("cameFromListings");
+    }
+  }, []);
+
+  const handleViewDetails = async (
+    e: React.MouseEvent,
+    productId: number,
+    href: string,
+  ) => {
+    e.preventDefault(); // stop <Link> default
+    e.stopPropagation(); // stop bubbling to parent
+
+    // 🔁 show loader
+    setNavigating(true);
+
+    // 🔁 tracking + session flag
+    await handleProductClick(productId);
+
+    // 🔁 navigate
+    goToProduct(href);
+  };
 
   console.log(
     "data-main",
     fetauredProducts,
     isPremiumLoading,
-    isFeaturedLoading
+    isFeaturedLoading,
+    isMainLoading,
+    onFilterChange,
   );
   // console.log("data-prod", products);
 
@@ -135,6 +212,8 @@ export default function ListingContent({
   // const handleChange = (e) => {
   //   setOrderBy(e.target.value);
   // };
+  const allowShuffleRef = useRef(false);
+  const didShuffleRef = useRef(false);
 
   const enquiryProduct = selectedProduct
     ? {
@@ -151,61 +230,36 @@ export default function ListingContent({
   const { form, errors, touched, submitting, setField, onBlur, onSubmit } =
     useEnquiryForm(enquiryProduct);
 
-    const IMAGE_FORMATS = ["avif", "webp", "jpg", "jpeg", "png"];
-const checkImage = (url: string): Promise<boolean> => {
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.onload = () => resolve(true);
-    img.onerror = () => resolve(false);
-    img.src = url;
-  });
-};
+  const MAX_SWIPER_IMAGES = 5;
 
-const getBaseImageUrl = (item: Product) => {
-  if (!item.sku || !item.slug) return null;
-  return `https://caravansforsale.imagestack.net/400x300/${item.sku}/${item.slug}`;
-};
-  const getFirstValidImage = async (item: Product): Promise<string> => {
-  const base = getBaseImageUrl(item);
-  if (!base) return "/images/sample3.webp";
+  const getFirstImage = (item: Product): string | undefined => {
+    const img = item.image_format?.[0];
+    return img ? `${IMAGE_BASE_URL}${img}${IMAGE_EXT}` : undefined;
+  };
 
-  for (const ext of IMAGE_FORMATS) {
-    const url = `${base}main1.${ext}`;
-    if (await checkImage(url)) return url;
-  }
+  const getRemainingImages = (item: Product): string[] => {
+    if (!Array.isArray(item.image_format)) return [];
 
-  return "/images/sample3.webp";
-};
+    return item.image_format
+      .slice(0, MAX_SWIPER_IMAGES)
+      .map((img) => `${IMAGE_BASE_URL}${img}${IMAGE_EXT}`);
+  };
 
-   const loadRemaining = async (item: Product) => {
-  const base = getBaseImageUrl(item);
-  if (!base) return;
+  const loadRemaining = (item: Product) => {
+    if (loadedAll[item.id]) return;
 
-  const validImages: string[] = [];
+    const images = getRemainingImages(item);
 
-  for (let i = 0; i < 5; i++) {
-    const suffix = i === 0 ? "main1" : `sub${i + 1}`;
+    setLazyImages((prev) => ({
+      ...prev,
+      [item.id]: images,
+    }));
 
-    for (const ext of IMAGE_FORMATS) {
-      const url = `${base}${suffix}.${ext}`;
-      if (await checkImage(url)) {
-        validImages.push(url);
-        break;
-      }
-    }
-  }
-
-  setLazyImages((prev) => ({
-    ...prev,
-    [item.id]: validImages,
-  }));
-
-  setLoadedAll((prev) => ({
-    ...prev,
-    [item.id]: true,
-  }));
-};
-
+    setLoadedAll((prev) => ({
+      ...prev,
+      [item.id]: true,
+    }));
+  };
 
   console.log("lazy", lazyImages);
   // Remove all the lazy loading state and just load all images immediately
@@ -221,8 +275,8 @@ const getBaseImageUrl = (item: Product) => {
 
   const handleProductClick = async (id) => {
     await postTrackEvent(
-      "https://www.admin.caravansforsale.com.au/wp-json/cfs/v1/update-clicks",
-      id
+      "https://admin.caravansforsale.com.au/wp-json/cfs/v1/update-clicks",
+      id,
     );
 
     // Allow product page to show "Back to Search"
@@ -233,7 +287,7 @@ const getBaseImageUrl = (item: Product) => {
 
   useEffect(() => {
     const nav = performance.getEntriesByType(
-      "navigation"
+      "navigation",
     )[0] as PerformanceNavigationTiming;
 
     if (nav?.type === "reload") {
@@ -265,13 +319,7 @@ const getBaseImageUrl = (item: Product) => {
     return copy;
   };
 
-  useEffect(() => {
-    hasShuffledRef.current = false;
-  }, [products]);
-
-  const [mergedProducts, setMergedProducts] = useState<Product[]>([]);
-
-  const hasShuffledRef = useRef(false);
+  // const hasShuffledRef = useRef(false);
 
   const buildMergedProducts = (normal: Product[]) => {
     const premium = preminumProducts || [];
@@ -318,45 +366,52 @@ const getBaseImageUrl = (item: Product) => {
 
     return merged;
   };
- useEffect(() => {
-  if (!products || products.length === 0) return;
 
-  // 1️⃣ Remove premium from normal list
-  const premiumIds = new Set(
-    (preminumProducts || []).map((p) => String(p.id))
-  );
+  // useEffect(() => {
+  //   mergedProducts.forEach((item) => {
+  //     if (!loadedAll[item.id]) {
+  //       loadRemaining(item);
+  //     }
+  //   });
+  // }, [mergedProducts]);
+  useEffect(() => {
+    const TAB_KEY = "listings_tab_opened";
 
-  let normal = products.filter(
-    (p) => !premiumIds.has(String(p.id))
-  );
+    if (!sessionStorage.getItem(TAB_KEY)) {
+      allowShuffleRef.current = true; // ✅ new tab
+      sessionStorage.setItem(TAB_KEY, "true");
+    } else {
+      allowShuffleRef.current = false; // ❌ same tab
+    }
+  }, []);
 
-  // 2️⃣ Read orderby safely
-  const orderbyFromUrl = searchParams.get("orderby");
+  useEffect(() => {
+    if (!products || products.length === 0) return;
 
-  // 3️⃣ Strict shuffle rule
-  const shouldShuffle =
-    isRefreshRef.current === true &&      // only on refresh
-    normal.length >= 23 &&                // minimum count
-    !orderbyFromUrl;                      // 🔥 NO orderby at all
+    // 🔒 Already shuffled → DO NOTHING
+    if (didShuffleRef.current) return;
 
-  // 4️⃣ Shuffle ONLY ONCE
-  if (shouldShuffle && !hasShuffledRef.current) {
-    normal = shuffleArray(normal);
-    hasShuffledRef.current = true;
-  }
+    const premiumIds = new Set(
+      (preminumProducts || []).map((p) => String(p.id)),
+    );
 
-  // 5️⃣ Merge premium + exclusive
-  const finalMerged = buildMergedProducts(normal);
-  setMergedProducts(finalMerged);
+    let normal = products.filter((p) => !premiumIds.has(String(p.id)));
 
-}, [
-  products,
-  preminumProducts,
-  exculisiveProducts,
-  searchParams
-]);
+    const orderbyFromUrl = searchParams.get("orderby");
 
+    const shouldShuffle =
+      allowShuffleRef.current && // ✅ new tab only
+      normal.length >= 23 &&
+      !orderbyFromUrl;
 
+    if (shouldShuffle) {
+      normal = shuffleArray([...normal]); // ✅ CLONE + SHUFFLE
+      didShuffleRef.current = true;
+    }
+
+    // 🔥 IMPORTANT: mergedProducts set ONLY ONCE
+    setMergedProducts(buildMergedProducts(normal));
+  }, [products, preminumProducts, exculisiveProducts, searchParams]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -365,14 +420,14 @@ const getBaseImageUrl = (item: Product) => {
           if (entry.isIntersecting) {
             const id = Number(entry.target.getAttribute("data-product-id"));
             postTrackEvent(
-              "https://www.admin.caravansforsale.com.au/wp-json/cfs/v1/update-impressions",
-              id
+              "https://admin.caravansforsale.com.au/wp-json/cfs/v1/update-impressions",
+              id,
             );
             observer.unobserve(entry.target);
           }
         });
       },
-      { threshold: 0.5 }
+      { threshold: 0.5 },
     );
 
     document
@@ -404,67 +459,41 @@ const getBaseImageUrl = (item: Product) => {
     const slug = p.slug?.trim() || toSlug(p.name);
     return slug ? `/product/${slug}/` : ""; // trailing slash optional
   };
-  // const uniqueProducts = useMemo(() => {
-  //   const seen = new Set<string>();
-  //   return (products || []).filter((p) => {
-  //     const k = String(p?.id ?? p?.slug ?? p?.link);
-  //     if (seen.has(k)) return false;
-  //     seen.add(k);
-  //     return true;
-  //   });
-  // }, [products]);
+
   console.log("data", exculisiveProducts);
 
-  // ✅ Helper: generate up to 5 image URLs from SKU
-  const getProductImages = (sku?: string, slug?: string): string[] => {
-    if (!sku || !slug) return ["/images/sample3.webp"];
-
-    const base = `https://caravansforsale.imagestack.net/400x300/${sku}/${slug}`;
-
-    return [
-      `${base}main1.avif`,
-      ...Array.from({ length: 4 }, (_, i) => `${base}sub${i + 2}.avif`),
-    ];
-  };
-
-  // ✅ Randomly shuffle premium products on each page load
-  // ✅ Premium products shuffle after mount
-
-  // useEffect(() => {
-  //   const orderbyFromUrl = searchParams.get("orderby") ?? undefined;
-
-  //   // ⛔ prevent unnecessary state update
-  //   if (orderbyFromUrl !== currentFilters.orderby) {
-  //     onFilterChange({
-  //       ...currentFilters,
-  //       orderby: orderbyFromUrl,
-  //     });
-  //   }
-  // }, [searchParams]); // 👈 NOT empty dependency
-  console.log(onFilterChange, isMainLoading, getFirstValidImage)
   const orderby = searchParams.get("orderby") ?? "featured";
-useEffect(() => {
-  if (products && products.length > 0) {
-    setIsOrderbyLoading(false);
+  useEffect(() => {
+    if (products && products.length > 0) {
+      setIsOrderbyLoading(false);
+    }
+  }, [products]);
+
+  function splitCountAndTitle(pageTitle: string) {
+    const match = pageTitle.match(/^(\d+)\s+(.*)$/);
+
+    if (!match) {
+      return { count: null, text: pageTitle };
+    }
+
+    return {
+      count: match[1], // "3279"
+      text: match[2], // "Off Road Caravans for sale in Australia"
+    };
   }
-}, [products]);
 
+  const { count, text } = splitCountAndTitle(pageTitle);
 
-function splitCountAndTitle(pageTitle: string) {
-  const match = pageTitle.match(/^(\d+)\s+(.*)$/);
+  const activateSwiper = (item: Product) => {
+    if (swiperActivated[item.id]) return;
 
-  if (!match) {
-    return { count: null, text: pageTitle };
-  }
+    setSwiperActivated((prev) => ({
+      ...prev,
+      [item.id]: true,
+    }));
 
-  return {
-    count: match[1],      // "3279"
-    text: match[2],       // "Off Road Caravans for sale in Australia"
+    loadRemaining(item);
   };
-}
-
-const { count, text } = splitCountAndTitle(pageTitle);
-
 
   return (
     <>
@@ -479,17 +508,19 @@ const { count, text } = splitCountAndTitle(pageTitle);
         <meta name="twitter:description" content={metaDescription} />
       </Head>
 
-      <div className="col-lg-6 ">
+      <div className="col-lg-6">
         <div className="top-filter mb-10">
           <div className="row align-items-center">
-           <div className="col-lg-8 show_count_wrapper ">
-  {count && <span className="show_count mb-2 d-inline">
-    <strong>{count} </strong></span>}
-  <h1 className="show_count">
-    <strong>{text}</strong></h1>
-</div> 
-
-
+            <div className="col-lg-8 show_count_wrapper ">
+              {count && (
+                <span className="show_count mb-2 d-inline">
+                  <strong>{count} </strong>
+                </span>
+              )}
+              <h1 className="show_count d-inline">
+                <strong>{text}</strong>
+              </h1>
+            </div>
 
             <div className="col-4 d-lg-none d-md-none">
               <button
@@ -511,26 +542,27 @@ const { count, text } = splitCountAndTitle(pageTitle);
                       className="orderby form-select"
                       aria-label="Shop order"
                       value={orderby}
-                     onChange={(e) => {
-  const value = e.target.value;
-    setIsOrderbyLoading(true);
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setIsOrderbyLoading(true);
 
-  const params = new URLSearchParams(searchParams.toString());
+                        const params = new URLSearchParams(
+                          searchParams.toString(),
+                        );
 
-  value === "featured"
-    ? params.delete("orderby")
-    : params.set("orderby", value);
+                        value === "featured"
+                          ? params.delete("orderby")
+                          : params.set("orderby", value);
 
-  // ✅ build slug with existing filters
-  const slug = buildSlugFromFilters(currentFilters);
+                        // ✅ build slug with existing filters
+                        const slug = buildSlugFromFilters(currentFilters);
 
-  const finalURL = params.toString()
-    ? `${slug}?${params.toString()}`
-    : slug;
+                        const finalURL = params.toString()
+                          ? `${slug}?${params.toString()}`
+                          : slug;
 
-  router.push(finalURL, { scroll: false });
-}}
-
+                        router.push(finalURL, { scroll: false });
+                      }}
                     >
                       <option value="featured">Featured</option>
                       <option value="price-asc">Price (Low to High)</option>
@@ -550,36 +582,34 @@ const { count, text } = splitCountAndTitle(pageTitle);
         <div className="dealers-section product-type">
           <div className="other_items">
             <div className="related-products">
-              
-              {mergedProducts.length === 0  || isOrderbyLoading ? (
+              {mergedProducts.length === 0 || isOrderbyLoading ? (
                 <Skelton count={6} />
               ) : (
                 <div className="row g-3">
                   {mergedProducts.map((item, index) => {
                     const href = getHref(item);
-                    const images = getProductImages(item.sku, item.slug);
                     const isPriority = index < 5;
-                     const base = getBaseImageUrl(item);
-const imgs =
-  lazyImages[item.id] ||
-  (base
-    ? [`${base}main1.avif`] // jpg safe default
-    : ["/images/sample3.webp"]);
+                    // const resizedBase = getResizedBase(item);
+                    // const imgs = lazyImages[item.id] ?? [];
+                    const firstImage = getFirstImage(item);
+                    const isActive = swiperActivated[item.id];
+                    const slides = isActive
+                      ? (lazyImages[item.id] ?? [])
+                      : firstImage
+                        ? [firstImage, firstImage]
+                        : [];
 
+                    console.log("imgs", firstImage);
                     return (
                       <div className="col-lg-6 mb-0" key={index}>
                         <Link
                           href={href}
-                          onClick={() => {
-                            if (typeof window !== "undefined") {
-                              sessionStorage.setItem(
-                                "cameFromListings",
-                                "true"
-                              );
-                            }
-                          }}
                           prefetch={false}
                           className="lli_head"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            goToProduct(href);
+                          }}
                         >
                           <div
                             className={`product-card sku-${item.sku}`}
@@ -588,73 +618,81 @@ const imgs =
                             <div className="img">
                               <div className="background_thumb">
                                 <ImageWithSkeleton
-                                  src={images[0]}
+                                  src={firstImage}
                                   priority={isPriority}
                                   alt="Caravan"
-                                  width={300}
-                                  height={200}
+                                  width={400}
+                                  height={300}
                                 />
                               </div>
-                              <div className="main_thumb position-relative">
+                              <div
+                                className="main_thumb position-relative"
+                                onClick={(e) => e.stopPropagation()}
+                              >
                                 {item.is_exclusive && (
                                   <span className="lab">Spotlight Van</span>
                                 )}
+
                                 <Swiper
+                                  key={`${swiperKey}-${item.id}`}
                                   modules={[Navigation, Pagination]}
-                                  spaceBetween={10}
                                   slidesPerView={1}
                                   navigation
-                                  pagination={{
-                                    clickable: true,
+                                  pagination={{ clickable: true }}
+                                  watchOverflow={false} // 🔥 IMPORTANT
+                                  allowTouchMove={true}
+                                  onMouseEnter={() => {
+                                    if (!swiperActivated[item.id]) {
+                                      activateSwiper(item);
+                                    }
                                   }}
-                                  onSlideChange={() => {
-                                    if (!loadedAll[item.id])
-                                      loadRemaining(item); // Fixed: loadedAll instead of isLoaded
+                                  onTouchStart={() => {
+                                    if (!swiperActivated[item.id]) {
+                                      activateSwiper(item);
+                                    }
                                   }}
-                                  onReachBeginning={() => {
-                                    if (!loadedAll[item.id])
-                                      loadRemaining(item); // Fixed: loadedAll instead of isLoaded
+                                  onNavigationNext={() => {
+                                    if (!swiperActivated[item.id]) {
+                                      activateSwiper(item);
+                                    }
                                   }}
-                                  onReachEnd={() => {
-                                    if (!loadedAll[item.id])
-                                      loadRemaining(item); // Fixed: loadedAll instead of isLoaded
+                                  onNavigationPrev={() => {
+                                    if (!swiperActivated[item.id]) {
+                                      activateSwiper(item);
+                                    }
                                   }}
                                   className="main_thumb_swiper"
                                 >
-                                  {imgs.map((img, i) => (
+                                  {slides.map((img, i) => (
                                     <SwiperSlide key={i}>
                                       <div className="thumb_img">
                                         <ImageWithSkeleton
                                           src={img}
                                           alt={`Caravan ${i + 1}`}
-                                          width={300}
-                                          height={200}
-                                          priority={isPriority && i === 0}
+                                          width={400}
+                                          height={300}
                                         />
                                       </div>
                                     </SwiperSlide>
                                   ))}
                                 </Swiper>
-                                {/* Hidden "View More" button that appears after last slide */}
-                                {/* <div
-                                 id={`view-more-btn-${item}`}
-                                 className="view-more-btn-wrapper"
-                               >
-                                 <Link
-                                   href="/related-links"
-                                   className="view-more-btn"
- 
-                                 >
-                                   View More
-                                 </Link>
-                               </div> */}
                               </div>
                             </div>
 
                             <div className="product_de">
                               <div className="info">
                                 {item.name && (
-                                  <h3 className="title">{item.name}</h3>
+                                  <h3
+                                    className="title cursor-pointer"
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      e.stopPropagation();
+
+                                      goToProduct(href);
+                                    }}
+                                  >
+                                    {item.name}
+                                  </h3>
                                 )}
                               </div>
 
@@ -678,7 +716,7 @@ const imgs =
                                             Number(cleanRegular) || 0;
                                           const cleanSale = rawSale.replace(
                                             /[^0-9.]/g,
-                                            ""
+                                            "",
                                           );
                                           const saleNum =
                                             Number(cleanSale) || 0;
@@ -799,6 +837,7 @@ const imgs =
                                   className="btn"
                                   onClick={(e) => {
                                     e.preventDefault();
+                                    e.stopPropagation();
                                     setSelectedProduct(item);
                                     setShowContact(true);
                                   }}
@@ -808,9 +847,9 @@ const imgs =
 
                                 <button
                                   className="btn btn-primary"
-                                  onClick={() => {
-                                    handleProductClick(item.id);
-                                  }}
+                                  onClick={(e) =>
+                                    handleViewDetails(e, item.id, href)
+                                  }
                                 >
                                   View Details
                                 </button>
@@ -872,7 +911,7 @@ const imgs =
                   dangerouslySetInnerHTML={{
                     __html: selectedProduct.description.replace(
                       /\\r\\n/g,
-                      "<br/>"
+                      "<br/>",
                     ),
                   }}
                 />
@@ -1028,6 +1067,29 @@ const imgs =
                 </div>
               </form>
             </div>
+          </div>
+        </div>
+      )}
+      {navigating && (
+        <div
+          className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
+          style={{
+            background: "rgba(255,255,255,0.6)",
+            backdropFilter: "blur(2px)",
+            zIndex: 9999,
+          }}
+          aria-live="polite"
+        >
+          <div className="text-center">
+            <Image
+              className="loader_image"
+              src="/images/loader.gif"
+              alt="Loading..."
+              width={80}
+              height={80}
+              unoptimized
+            />
+            <div className="mt-2 fw-semibold">Loading…</div>
           </div>
         </div>
       )}

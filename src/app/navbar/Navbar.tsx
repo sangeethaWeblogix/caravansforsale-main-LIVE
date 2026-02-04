@@ -1,4 +1,4 @@
-"use client";
+  "use client";
 
 import "./navbar.css";
 import { useEffect, useState, useRef } from "react";
@@ -264,7 +264,6 @@ export default function Navbar() {
         id="overlay"
         className={`overlay ${isOpen ? "active" : ""}`}
         onClick={() => {
-          setNavigating(true); // start loader immediately
           closeNav();
         }}
       ></div>

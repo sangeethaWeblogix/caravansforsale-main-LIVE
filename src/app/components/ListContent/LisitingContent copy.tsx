@@ -1,15 +1,19 @@
-"use client";
+  "use client";
 import Link from "next/link";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
-import { Navigation, Autoplay, Pagination } from "swiper/modules";
+import { Navigation, Pagination } from "swiper/modules";
 import Skelton from "../skelton";
 import Head from "next/head";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toSlug } from "@/utils/seo/slug";
 import ImageWithSkeleton from "../ImageWithSkeleton";
+import { useEnquiryForm } from "./enquiryform";
+import { useRouter, useSearchParams } from "next/navigation";
+import { buildSlugFromFilters } from "../slugBuilter";
+import Image from "next/image";
 
 interface Product {
   id: number;
@@ -29,7 +33,19 @@ interface Product {
   slug?: string;
   description?: string;
   sku?: string;
+  gallery?: string[];
+  // Include additional properties that might come from API
   list_page_title?: string;
+  weight?: string;
+  price?: string;
+  image_format?: string[];
+  thumbnail?: string;
+  url?: string;
+  sleeps?: string;
+  manufacturer?: string;
+  is_exclusive?: boolean;
+  is_premium?: boolean;
+  image_url?: string[];
 }
 
 interface Pagination {
@@ -77,7 +93,7 @@ interface Props {
   isMainLoading: boolean;
   isFeaturedLoading: boolean;
   isPremiumLoading: boolean;
-  isNextLoading: boolean;
+  // isNextLoading: boolean;
   pageTitle: string;
 }
 
@@ -96,16 +112,52 @@ export default function ListingContent({
   isFeaturedLoading,
   isPremiumLoading,
   isMainLoading,
-  isNextLoading,
+  // isNextLoading,
   pageTitle,
 }: Props) {
+  const [swiperActivated, setSwiperActivated] = useState<Record<number, boolean>>({});
+
   const [showInfo, setShowInfo] = useState(false);
   const [showContact, setShowContact] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
- 
+  const [lazyImages, setLazyImages] = useState<{ [key: string]: string[] }>({});
+  const [loadedAll, setLoadedAll] = useState<{ [key: string]: boolean }>({});
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [isOrderbyLoading, setIsOrderbyLoading] = useState(false);
+  const [mergedProducts, setMergedProducts] = useState<Product[]>([]);
+  const [navigating, setNavigating] = useState(false);
 
-  const prevRef = useRef(null);
-  const nextRef = useRef(null);
+  const IMAGE_BASE_URL = "https://caravansforsale.imagestack.net/400x300/";
+
+  const IMAGE_EXT = ".avif";
+
+  const handleViewDetails = async (
+    e: React.MouseEvent,
+    productId: number,
+    href: string
+  ) => {
+    e.preventDefault(); // stop <Link> default
+    e.stopPropagation(); // stop bubbling to parent
+
+    // 🔁 show loader
+    setNavigating(true);
+
+    // 🔁 tracking + session flag
+    await handleProductClick(productId);
+
+    // 🔁 navigate
+    router.push(href);
+  };
+
+  console.log(
+    "data-main",
+    fetauredProducts,
+    isPremiumLoading,
+    isFeaturedLoading,
+    isMainLoading,
+    onFilterChange
+  );
   // console.log("data-prod", products);
 
   // console.log("data-product", exculisiveProducts);
@@ -114,70 +166,233 @@ export default function ListingContent({
   // const handleChange = (e) => {
   //   setOrderBy(e.target.value);
   // };
-   // 1) Images helper
-  const getMain = (sku?: string, slug?: string) =>
-    sku && slug
-      ? `https://caravansforsale.imagestack.net/450x338/${sku}/${slug}main1.avif`
-      : "/images/sample3.webp";
+  const allowShuffleRef = useRef(false);
+  const didShuffleRef = useRef(false);
 
- 
-  // 2) Component state (top of ListingContent)
-  const [gallery, setGallery] = useState<{ [key: number]: string[] }>({});
+  const enquiryProduct = selectedProduct
+    ? {
+        id: selectedProduct.id,
+        slug: selectedProduct.slug,
+        name: selectedProduct.name,
+      }
+    : {
+        id: 0,
+        slug: "",
+        name: "",
+      };
 
+  const { form, errors, touched, submitting, setField, onBlur, onSubmit } =
+    useEnquiryForm(enquiryProduct);
+
+  const MAX_SWIPER_IMAGES = 5;
+
+  const getFirstImage = (item: Product): string | undefined => {
+    const img = item.image_format?.[0];
+    return img ? `${IMAGE_BASE_URL}${img}${IMAGE_EXT}` : undefined;
+  };
+
+  const getRemainingImages = (item: Product): string[] => {
+    if (!Array.isArray(item.image_format)) return [];
+
+    return item.image_format
+      .slice(0, MAX_SWIPER_IMAGES)
+      .map((img) => `${IMAGE_BASE_URL}${img}${IMAGE_EXT}`);
+  };
+
+  const loadRemaining = (item: Product) => {
+    if (loadedAll[item.id]) return;
+
+    const images = getRemainingImages(item);
+
+    setLazyImages((prev) => ({
+      ...prev,
+      [item.id]: images,
+    }));
+
+    setLoadedAll((prev) => ({
+      ...prev,
+      [item.id]: true,
+    }));
+  };
+
+  console.log("lazy", lazyImages);
   // Remove all the lazy loading state and just load all images immediately
+  const getIP = async () => {
+    try {
+      const res = await fetch("https://api.ipify.org?format=json");
+      const data = await res.json();
+      return data.ip || "";
+    } catch {
+      return "";
+    }
+  };
 
-  const mergedProducts = useMemo(() => {
-    const merged: Product[] = [];
+  const handleProductClick = async (id) => {
+    await postTrackEvent(
+      "https://admin.caravansforsale.com.au/wp-json/cfs/v1/update-clicks",
+      id
+    );
+
+    // Allow product page to show "Back to Search"
+    sessionStorage.setItem("cameFromListings", "true");
+  };
+
+  const isRefreshRef = useRef(false);
+
+  useEffect(() => {
+    const nav = performance.getEntriesByType(
+      "navigation"
+    )[0] as PerformanceNavigationTiming;
+
+    if (nav?.type === "reload") {
+      isRefreshRef.current = true;
+    }
+  }, []);
+
+  const postTrackEvent = async (url: string, product_id: number) => {
+    const ip = await getIP();
+    const user_agent = navigator.userAgent;
+
+    await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        product_id,
+        ip,
+        user_agent,
+      }),
+    });
+  };
+
+  const shuffleArray = <T,>(arr: T[]): T[] => {
+    const copy = [...arr];
+    for (let i = copy.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+    return copy;
+  };
+
+  // const hasShuffledRef = useRef(false);
+
+  const buildMergedProducts = (normal: Product[]) => {
+    const premium = preminumProducts || [];
     const exclusive = exculisiveProducts || [];
-    const normal = products || [];
 
+    const merged: Product[] = [];
     let exclusiveIndex = 0;
 
-    for (let i = 0; i < normal.length; i++) {
-      merged.push(normal[i]);
+    // 1️⃣ Normal + Exclusive placement
+    normal.forEach((item, i) => {
+      merged.push(item);
 
-      // 🔁 After every 10 products, insert one exclusive product if available
       if ((i + 1) % 10 === 0 && exclusiveIndex < exclusive.length) {
         merged.push({
           ...exclusive[exclusiveIndex],
-          name: `${exclusive[exclusiveIndex].name || "Caravan"}`,
+          is_exclusive: true,
         });
         exclusiveIndex++;
       }
-    }
+    });
 
-    // If there are remaining exclusive products, push them at the end
     while (exclusiveIndex < exclusive.length) {
       merged.push({
         ...exclusive[exclusiveIndex],
-        name: `${exclusive[exclusiveIndex].name || "Caravan"}`,
+        is_exclusive: true,
       });
       exclusiveIndex++;
     }
 
+    // 2️⃣ Premium fixed index (DO NOT MOVE)
+    if (merged.length >= 3 && premium.length > 0) {
+      merged.splice(2, 0, {
+        ...premium[0],
+        is_premium: true,
+      });
+
+      if (premium.length > 1) {
+        merged.splice(3, 0, {
+          ...premium[1],
+          is_premium: true,
+        });
+      }
+    }
+
     return merged;
-  }, [products, exculisiveProducts]);
+  };
+
+  // useEffect(() => {
+  //   mergedProducts.forEach((item) => {
+  //     if (!loadedAll[item.id]) {
+  //       loadRemaining(item);
+  //     }
+  //   });
+  // }, [mergedProducts]);
+  useEffect(() => {
+    const TAB_KEY = "listings_tab_opened";
+
+    if (!sessionStorage.getItem(TAB_KEY)) {
+      allowShuffleRef.current = true; // ✅ new tab
+      sessionStorage.setItem(TAB_KEY, "true");
+    } else {
+      allowShuffleRef.current = false; // ❌ same tab
+    }
+  }, []);
 
   useEffect(() => {
-    if (!mergedProducts) return;
+    if (!products || products.length === 0) return;
 
-    const formatted: Record<number, string[]> = {};
+    // 🔒 Already shuffled → DO NOTHING
+    if (didShuffleRef.current) return;
 
-    mergedProducts.forEach((item) => {
-      if (!item.sku || !item.slug) return;
+    const premiumIds = new Set(
+      (preminumProducts || []).map((p) => String(p.id))
+    );
 
-      formatted[item.id] = Array.from(
-        { length: 5 },
-        (_, i) =>
-          `https://caravansforsale.imagestack.net/450x338/${item.sku}/${
-            item.slug
-          }sub${i + 1}.avif`
-      );
-    });
+    let normal = products.filter((p) => !premiumIds.has(String(p.id)));
 
-    setGallery(formatted);
+    const orderbyFromUrl = searchParams.get("orderby");
+
+    const shouldShuffle =
+      allowShuffleRef.current && // ✅ new tab only
+      normal.length >= 23 &&
+      !orderbyFromUrl;
+
+    if (shouldShuffle) {
+      normal = shuffleArray([...normal]); // ✅ CLONE + SHUFFLE
+      didShuffleRef.current = true;
+    }
+
+    // 🔥 IMPORTANT: mergedProducts set ONLY ONCE
+    setMergedProducts(buildMergedProducts(normal));
+  }, [products, preminumProducts, exculisiveProducts, searchParams]);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const id = Number(entry.target.getAttribute("data-product-id"));
+            postTrackEvent(
+              "https://admin.caravansforsale.com.au/wp-json/cfs/v1/update-impressions",
+              id
+            );
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.5 }
+    );
+
+    document
+      .querySelectorAll(".product-card[data-product-id]")
+      .forEach((el) => {
+        observer.observe(el);
+      });
+
+    return () => observer.disconnect();
   }, [mergedProducts]);
-  console.log("gall", gallery);
+
   // ✅ Disable background scroll when popup is open
   useEffect(() => {
     if (showInfo || showContact) {
@@ -191,6 +406,8 @@ export default function ListingContent({
     };
   }, [showInfo, showContact]);
 
+ 
+
   // Example placeholder function for product links
 
   // const imageUrl = "public/favicon.ico";
@@ -198,47 +415,42 @@ export default function ListingContent({
     const slug = p.slug?.trim() || toSlug(p.name);
     return slug ? `/product/${slug}/` : ""; // trailing slash optional
   };
-  const uniqueProducts = useMemo(() => {
-    const seen = new Set<string>();
-    return (products || []).filter((p) => {
-      const k = String(p?.id ?? p?.slug ?? p?.link);
-      if (seen.has(k)) return false;
-      seen.add(k);
-      return true;
-    });
-  }, [products]);
-  console.log("data", uniqueProducts);
 
-  // ✅ Helper: generate up to 5 image URLs from SKU
-  const getProductImages = (sku?: string, slug?: string): string[] => {
-    if (!sku || !slug) return ["/images/sample3.webp"];
+  console.log("data", exculisiveProducts);
 
-    const base = `https://caravansforsale.imagestack.net/450x338/${sku}/${slug}`;
-
-    return [
-      `${base}main1.avif`,
-      ...Array.from({ length: 5 }, (_, i) => `${base}sub${i + 1}.avif`),
-    ];
-  };
-
-  // ✅ Randomly shuffle premium products on each page load
-  // ✅ Premium products shuffle after mount
-  const [shuffledPremiumProducts, setShuffledPremiumProducts] = useState<
-    Product[]
-  >([]);
-
+  const orderby = searchParams.get("orderby") ?? "featured";
   useEffect(() => {
-    if (!preminumProducts || preminumProducts.length === 0) return;
+    if (products && products.length > 0) {
+      setIsOrderbyLoading(false);
+    }
+  }, [products]);
 
-    // Fisher–Yates shuffle
-    const shuffled = [...preminumProducts];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  function splitCountAndTitle(pageTitle: string) {
+    const match = pageTitle.match(/^(\d+)\s+(.*)$/);
+
+    if (!match) {
+      return { count: null, text: pageTitle };
     }
 
-    setShuffledPremiumProducts(shuffled);
-  }, [preminumProducts]);
+    return {
+      count: match[1], // "3279"
+      text: match[2], // "Off Road Caravans for sale in Australia"
+    };
+  }
+
+  const { count, text } = splitCountAndTitle(pageTitle);
+
+  const activateSwiper = (item: Product) => {
+  if (swiperActivated[item.id]) return;
+
+  setSwiperActivated((prev) => ({
+    ...prev,
+    [item.id]: true,
+  }));
+
+  loadRemaining(item);
+};
+
 
   return (
     <>
@@ -253,14 +465,20 @@ export default function ListingContent({
         <meta name="twitter:description" content={metaDescription} />
       </Head>
 
-      <div className="col-lg-6 ">
+      <div className="col-lg-6">
         <div className="top-filter mb-10">
           <div className="row align-items-center">
-            <div className="col-lg-8">
-              <h1 className="show_count">
-                <strong>{pageTitle}</strong>
+            <div className="col-lg-8 show_count_wrapper ">
+              {count && (
+                <span className="show_count mb-2 d-inline">
+                  <strong>{count} </strong>
+                </span>
+              )}
+              <h1 className="show_count d-inline">
+                <strong>{text}</strong>
               </h1>
             </div>
+
             <div className="col-4 d-lg-none d-md-none">
               <button
                 type="button"
@@ -280,16 +498,32 @@ export default function ListingContent({
                       name="orderby"
                       className="orderby form-select"
                       aria-label="Shop order"
-                      onChange={(e) =>
-                        onFilterChange({
-                          orderby: e.target.value || "featured",
-                        })
-                      }
-                      value={currentFilters.orderby ?? "featured"} // <— default to "featured"
+                      value={orderby}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setIsOrderbyLoading(true);
+
+                        const params = new URLSearchParams(
+                          searchParams.toString()
+                        );
+
+                        value === "featured"
+                          ? params.delete("orderby")
+                          : params.set("orderby", value);
+
+                        // ✅ build slug with existing filters
+                        const slug = buildSlugFromFilters(currentFilters);
+
+                        const finalURL = params.toString()
+                          ? `${slug}?${params.toString()}`
+                          : slug;
+
+                        router.push(finalURL, { scroll: false });
+                      }}
                     >
                       <option value="featured">Featured</option>
-                      <option value="price_asc">Price (Low to High)</option>
-                      <option value="price_desc">Price (High to Low)</option>
+                      <option value="price-asc">Price (Low to High)</option>
+                      <option value="price-desc">Price (High to Low)</option>
                       <option value="year-desc">Year Made (High to Low)</option>
                       <option value="year-asc">Year Made (Low to High)</option>
                     </select>
@@ -301,616 +535,102 @@ export default function ListingContent({
             </div>
           </div>
         </div>
-        {fetauredProducts.length > 0 && (
-          <div className="other_items featured_items">
-            <div className="related-products">
-              <div className="d-flex align-items-center justify-content-between mb-3">
-                <h3 className="featured_head">Featured listings</h3>
-                <div className="d-flex gap-2">
-                  <button
-                    ref={prevRef}
-                    className="swiper-button-prev-custom btn btn-light btn-sm"
-                  >
-                    <i className="bi bi-chevron-left"></i>
-                  </button>
-                  <button
-                    ref={nextRef}
-                    className="swiper-button-next-custom btn btn-light btn-sm"
-                  >
-                    <i className="bi bi-chevron-right"></i>
-                  </button>
-                </div>
-              </div>
-              {isFeaturedLoading ? (
-                <Skelton count={3} /> // ✅ show skeletons
-              ) : (
-                <Swiper
-                  modules={[Navigation, Autoplay]}
-                  spaceBetween={10}
-                  slidesPerView={1}
-                  breakpoints={{
-                    640: { slidesPerView: 1 },
-                    768: { slidesPerView: 2 },
-                    1024: { slidesPerView: 2 },
-                  }}
-                  autoplay={{ delay: 5000, disableOnInteraction: false }}
-                  navigation={{
-                    prevEl: prevRef.current,
-                    nextEl: nextRef.current,
-                  }}
-                  onInit={(swiper) => {
-                    if (
-                      swiper.params.navigation &&
-                      typeof swiper.params.navigation !== "boolean"
-                    ) {
-                      swiper.params.navigation.prevEl = prevRef.current;
-                      swiper.params.navigation.nextEl = nextRef.current;
-                      swiper.navigation.init();
-                      swiper.navigation.update();
-                    }
-                  }}
-                  className="featured-swiper"
-                >
-                  {fetauredProducts.map((item, index) => {
-                    const href = getHref(item);
-                    const images = getProductImages(item.sku, item.slug);
-                    const isPriority = index < 5;
 
-                    return (
-                      <SwiperSlide key={index}>
-                        <Link
-                          href={href}
-                          prefetch={false}
-                          onClick={() => {
-                            if (typeof window !== "undefined") {
-                              sessionStorage.setItem(
-                                "cameFromListings",
-                                "true"
-                              );
-                            }
-                          }}
-                        >
-                          <div className="product-card">
-                            <div className="img">
-                              <div className="background_thumb">
-                                <ImageWithSkeleton
-                                  src={images[0]}
-                                  alt="Caravan"
-                                  width={300}
-                                  height={200}
-                                  priority={isPriority}
-                                />
-                              </div>
-                              <div className="main_thumb">
-                                <ImageWithSkeleton
-                                  src={images[0]}
-                                  alt="Caravan"
-                                  width={300}
-                                  height={200}
-                                  priority={isPriority}
-                                />
-                              </div>
-                            </div>
-                            <div className="product_de">
-                              <div className="info">
-                                {item.name && (
-                                  <h3 className="title">{item.name}</h3>
-                                )}
-                              </div>
-
-                              {/* --- PRICE SECTION --- */}
-                              {(item.regular_price ||
-                                item.sale_price ||
-                                item.price_difference) && (
-                                <div className="price">
-                                  <div className="metc2">
-                                    {(item.regular_price ||
-                                      item.sale_price) && (
-                                      <h5 className="slog">
-                                        {/* ✅ Stable price rendering: precompute safely */}
-                                        {(() => {
-                                          const rawRegular =
-                                            item.regular_price || "";
-                                          const rawSale = item.sale_price || "";
-                                          const cleanRegular =
-                                            rawRegular.replace(/[^0-9.]/g, "");
-                                          const regNum =
-                                            Number(cleanRegular) || 0;
-                                          const cleanSale = rawSale.replace(
-                                            /[^0-9.]/g,
-                                            ""
-                                          );
-                                          const saleNum =
-                                            Number(cleanSale) || 0;
-
-                                          // If regular price is 0 → show POA
-                                          if (regNum === 0) {
-                                            return <>POA</>;
-                                          }
-
-                                          // If sale price exists → show sale and strike-through
-                                          if (saleNum > 0) {
-                                            return (
-                                              <>
-                                                <del>{rawRegular}</del>{" "}
-                                                {rawSale}
-                                              </>
-                                            );
-                                          }
-
-                                          // Otherwise → show regular price
-                                          return <>{rawRegular}</>;
-                                        })()}
-                                      </h5>
-                                    )}
-
-                                    {/* ✅ Show SAVE only if > $0 */}
-                                    {(() => {
-                                      const cleanDiff = (
-                                        item.price_difference || ""
-                                      ).replace(/[^0-9.]/g, "");
-                                      const diffNum = Number(cleanDiff) || 0;
-                                      return diffNum > 0 ? (
-                                        <p className="card-price">
-                                          <span>SAVE</span>{" "}
-                                          {item.price_difference}
-                                        </p>
-                                      ) : null;
-                                    })()}
-
-                                    <div className="more_info">
-                                      <button
-                                        onClick={(e) => {
-                                          e.preventDefault();
-                                          setSelectedProduct(item);
-                                          setShowInfo(true);
-                                        }}
-                                      >
-                                        <i className="fa fa-info-circle"></i>{" "}
-                                        Info
-                                      </button>
-                                    </div>
-                                  </div>
-                                </div>
-                              )}
-
-                              {/* --- DETAILS LIST --- */}
-                              <ul className="vehicleDetailsWithIcons simple">
-                                {item.condition && (
-                                  <li>
-                                    <span className="attribute3">
-                                      {item.condition}
-                                    </span>
-                                  </li>
-                                )}
-
-                                {item.categories &&
-                                  item.categories.length > 0 && (
-                                    <li className="attribute3_list">
-                                      <span className="attribute3">
-                                        {item.categories.join(", ")}
-                                      </span>
-                                    </li>
-                                  )}
-
-                                {item.length && (
-                                  <li>
-                                    <span className="attribute3">
-                                      {item.length}
-                                    </span>
-                                  </li>
-                                )}
-
-                                {item.kg && (
-                                  <li>
-                                    <span className="attribute3">
-                                      {item.kg}
-                                    </span>
-                                  </li>
-                                )}
-
-                                {item.make && (
-                                  <li>
-                                    <span className="attribute3">
-                                      {item.make}
-                                    </span>
-                                  </li>
-                                )}
-                              </ul>
-
-                              {/* --- CONDITION + LOCATION --- */}
-                              {(item.condition || item.location) && (
-                                <div className="bottom_mid">
-                                  {item.condition && (
-                                    <span>
-                                      <i className="bi bi-check-circle-fill"></i>{" "}
-                                      Condition {item.condition}
-                                    </span>
-                                  )}
-                                  {item.location && (
-                                    <span>
-                                      <i className="fa fa-map-marker-alt"></i>{" "}
-                                      {item.location}
-                                    </span>
-                                  )}
-                                </div>
-                              )}
-
-                              {/* --- BUTTONS --- */}
-                              <div className="bottom_button">
-                                <button
-                                  className="btn"
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    setShowContact(true);
-                                  }}
-                                >
-                                  Contact Dealer
-                                </button>
-                                <button className="btn btn-primary">
-                                  View Details
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        </Link>
-                      </SwiperSlide>
-                    );
-                  })}
-                </Swiper>
-              )}
-            </div>
-          </div>
-        )}
-        {/* {premium section } */}
         <div className="dealers-section product-type">
           <div className="other_items">
             <div className="related-products">
-              <div className="row g-3">
-                {shuffledPremiumProducts.map((item, index) => {
-                  const href = getHref(item);
-                  const images = getProductImages(item.sku, item.slug);
-                  const galleryImages = Array.from(
-                    { length: 5 },
-                    (_, i) =>
-                      `https://caravansforsale.imagestack.net/450x338/${
-                        item.sku
-                      }/${item.slug}sub${i + 1}.avif`
-                  ).slice(1);
-                  console.log("galleryImages", gallery);
-                  const isPriority = index < 5;
-                  return (
-                    <div className="col-lg-6 mb-0" key={index}>
-                      <Link
-                        href={href}
-                        onClick={() => {
-                          if (typeof window !== "undefined") {
-                            sessionStorage.setItem("cameFromListings", "true");
-                          }
-                        }}
-                        prefetch={false}
-                        className="lli_head"
-                      >
-                        <div className="product-card">
-                          <div className="img">
-                            <div className="background_thumb">
-                              <ImageWithSkeleton
-                                src={images[0]}
-                                alt="Caravan"
-                                width={300}
-                                height={200}
-                                priority={isPriority}
-                              />
-                            </div>
-
-                            <div className="main_thumb position-relative">
-                              <span className="lab">Spotlight Van</span>
-                              {isPremiumLoading ? (
-                                <Skelton count={2} /> // ✅ show skeletons
-                              ) : (
-                                // For Main Products Swiper - FIXED VERSION
-                                <Swiper
-                                  key={galleryImages.length} // 🔥 IMPORTANT FIX
-                                  modules={[Navigation, Pagination]}
-                                  navigation
-                                  pagination={{ clickable: true }}
-                                  slidesPerView={1}
-                                >
-                                  {/* Always first image */}
-                                  <SwiperSlide>
-                                    <ImageWithSkeleton
-                                      src={getMain(item.sku, item.slug)}
-                                      width={300}
-                                      height={200}
-                                      alt="Caravan"
-                                    />
-                                  </SwiperSlide>
-
-                                  {/* Sub Images */}
-                                  {galleryImages?.map((img, idx) => (
-                                    <SwiperSlide key={idx}>
-                                      <ImageWithSkeleton
-                                        src={img}
-                                        width={300}
-                                        height={200}
-                                        alt={`Caravan ${idx + 1}`}
-                                      />
-                                    </SwiperSlide>
-                                  ))}
-                                </Swiper>
-                              )}
-
-                              {/* Hidden "View More" button that appears after last slide */}
-                              {/* <div
-                                id={`view-more-btn-${item}`}
-                                className="view-more-btn-wrapper"
-                              >
-                                <Link
-                                  href="/related-links"
-                                  className="view-more-btn"
-                                >
-                                  View More
-                                </Link>
-                              </div> */}
-                            </div>
-                          </div>
-                          <div className="product_de">
-                            <div className="info">
-                              {item.name && (
-                                <h3 className="title">{item.name}</h3>
-                              )}
-                            </div>
-
-                            {/* --- PRICE SECTION --- */}
-                            {(item.regular_price ||
-                              item.sale_price ||
-                              item.price_difference) && (
-                              <div className="price">
-                                <div className="metc2">
-                                  {(item.regular_price || item.sale_price) && (
-                                    <h5 className="slog">
-                                      {/* ✅ Stable price rendering: precompute safely */}
-                                      {(() => {
-                                        const rawRegular =
-                                          item.regular_price || "";
-                                        const rawSale = item.sale_price || "";
-                                        const cleanRegular = rawRegular.replace(
-                                          /[^0-9.]/g,
-                                          ""
-                                        );
-                                        const regNum =
-                                          Number(cleanRegular) || 0;
-                                        const cleanSale = rawSale.replace(
-                                          /[^0-9.]/g,
-                                          ""
-                                        );
-                                        const saleNum = Number(cleanSale) || 0;
-
-                                        // If regular price is 0 → show POA
-                                        if (regNum === 0) {
-                                          return <>POA</>;
-                                        }
-
-                                        // If sale price exists → show sale and strike-through
-                                        if (saleNum > 0) {
-                                          return (
-                                            <>
-                                              <del>{rawRegular}</del> {rawSale}
-                                            </>
-                                          );
-                                        }
-
-                                        // Otherwise → show regular price
-                                        return <>{rawRegular}</>;
-                                      })()}
-                                    </h5>
-                                  )}
-
-                                  {/* ✅ Show SAVE only if > $0 */}
-                                  {(() => {
-                                    const cleanDiff = (
-                                      item.price_difference || ""
-                                    ).replace(/[^0-9.]/g, "");
-                                    const diffNum = Number(cleanDiff) || 0;
-                                    return diffNum > 0 ? (
-                                      <p className="card-price">
-                                        <span>SAVE</span>{" "}
-                                        {item.price_difference}
-                                      </p>
-                                    ) : null;
-                                  })()}
-
-                                  <div className="more_info">
-                                    <button
-                                      onClick={(e) => {
-                                        e.preventDefault();
-                                        setSelectedProduct(item);
-                                        setShowInfo(true);
-                                      }}
-                                    >
-                                      <i className="fa fa-info-circle"></i> Info
-                                    </button>
-                                  </div>
-                                </div>
-                              </div>
-                            )}
-
-                            {/* --- DETAILS LIST --- */}
-                            <ul className="vehicleDetailsWithIcons simple">
-                              {item.condition && (
-                                <li>
-                                  <span className="attribute3">
-                                    {item.condition}
-                                  </span>
-                                </li>
-                              )}
-
-                              {item.categories &&
-                                item.categories.length > 0 && (
-                                  <li className="attribute3_list">
-                                    <span className="attribute3">
-                                      {item.categories.join(", ")}
-                                    </span>
-                                  </li>
-                                )}
-
-                              {item.length && (
-                                <li>
-                                  <span className="attribute3">
-                                    {item.length}
-                                  </span>
-                                </li>
-                              )}
-
-                              {item.kg && (
-                                <li>
-                                  <span className="attribute3">{item.kg}</span>
-                                </li>
-                              )}
-
-                              {item.make && (
-                                <li>
-                                  <span className="attribute3">
-                                    {item.make}
-                                  </span>
-                                </li>
-                              )}
-                            </ul>
-
-                            {/* --- CONDITION + LOCATION --- */}
-                            {(item.condition || item.location) && (
-                              <div className="bottom_mid">
-                                {item.condition && (
-                                  <span>
-                                    <i className="bi bi-check-circle-fill"></i>{" "}
-                                    Condition {item.condition}
-                                  </span>
-                                )}
-                                {item.location && (
-                                  <span>
-                                    <i className="fa fa-map-marker-alt"></i>{" "}
-                                    {item.location}
-                                  </span>
-                                )}
-                              </div>
-                            )}
-
-                            {/* --- BUTTONS --- */}
-                            <div className="bottom_button">
-                              <button
-                                className="btn"
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  setShowContact(true);
-                                }}
-                              >
-                                Contact Dealer
-                              </button>
-                              <button className="btn btn-primary">
-                                View Details
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </Link>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="dealers-section product-type">
-          <div className="other_items">
-            <div className="related-products">
-              {isMainLoading ? (
+              {mergedProducts.length === 0 || isOrderbyLoading ? (
                 <Skelton count={6} />
               ) : (
                 <div className="row g-3">
                   {mergedProducts.map((item, index) => {
                     const href = getHref(item);
-                    const images = getProductImages(item.sku, item.slug);
-                    const galleryImages = Array.from(
-                      { length: 5 },
-                      (_, i) =>
-                        `https://caravansforsale.imagestack.net/450x338/${
-                          item.sku
-                        }/${item.slug}sub${i + 1}.avif`
-                    ).slice(1);
                     const isPriority = index < 5;
+                    // const resizedBase = getResizedBase(item);
+                    const imgs = lazyImages[item.id] ?? [];
+                    const firstImage = getFirstImage(item);
+const isActive = swiperActivated[item.id];
+const slides = isActive
+  ? lazyImages[item.id] ?? []
+  : [firstImage];
+
+                    console.log("imgs", firstImage);
                     return (
                       <div className="col-lg-6 mb-0" key={index}>
                         <Link
                           href={href}
-                          onClick={() => {
-                            if (typeof window !== "undefined") {
-                              sessionStorage.setItem(
-                                "cameFromListings",
-                                "true"
-                              );
-                            }
-                          }}
                           prefetch={false}
                           className="lli_head"
+                          onClick={(e) => {
+                            e.preventDefault(); // ❗ important
+                            // setNavigating(true);
+
+                            sessionStorage.setItem("cameFromListings", "true");
+
+                            router.push(href);
+                          }}
                         >
-                          <div className="product-card">
+                          <div
+                            className={`product-card sku-${item.sku}`}
+                            data-product-id={item.id}
+                          >
                             <div className="img">
                               <div className="background_thumb">
                                 <ImageWithSkeleton
-                                  src={images[0]}
+                                  src={firstImage}
                                   priority={isPriority}
                                   alt="Caravan"
-                                  width={300}
-                                  height={200}
+                                  width={400}
+                                  height={300}
                                 />
                               </div>
-                              <div className="main_thumb position-relative">
-                                <span className="lab">Spotlight Van</span>
+                              <div
+                                className="main_thumb position-relative"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                {item.is_exclusive && (
+                                  <span className="lab">Spotlight Van</span>
+                                )}
 
                                 <Swiper
                                   modules={[Navigation, Pagination]}
+                                  slidesPerView={1}
                                   navigation
                                   pagination={{ clickable: true }}
-                                  slidesPerView={1}
-                                >
-                                  {/* SLIDE 1 — ALWAYS SHOW MAIN IMAGE */}
-                                  <SwiperSlide>
-                                    <ImageWithSkeleton
-                                      src={getMain(item.sku, item.slug)}
-                                      width={300}
-                                      height={200}
-                                      alt="Caravan"
-                                      priority={index < 1}
-                                    />
-                                  </SwiperSlide>
+                                   allowSlideNext={swiperActivated[item.id]}
+  allowSlidePrev={swiperActivated[item.id]}
+                                   allowTouchMove={false}   // ❌ image swipe disabled
+  onNavigationNext={(swiper) => {
+  if (!swiperActivated[item.id]) {
+    activateSwiper(item);
+    swiper.slideTo(0); // 🔒 stay on first image
+  }
+}}
+onNavigationPrev={(swiper) => {
+  if (!swiperActivated[item.id]) {
+    activateSwiper(item);
+    swiper.slideTo(0); // 🔒 stay on first image
+  }
+}}
 
-                                  {galleryImages?.map((img, idx) => (
-                                    <SwiperSlide key={idx}>
-                                      <ImageWithSkeleton
-                                        src={img}
-                                        width={300}
-                                        height={200}
-                                        alt={`Caravan ${idx + 1}`}
-                                      />
-                                    </SwiperSlide>
-                                  ))}
+                                  className="main_thumb_swiper"
+                                >
+                                  {slides.map((img, i) => (
+    <SwiperSlide key={i}>
+      <div className="thumb_img">
+        <ImageWithSkeleton
+          src={img}
+          alt={`Caravan ${i + 1}`}
+          width={400}
+          height={300}
+        />
+      </div>
+    </SwiperSlide>
+  ))}
                                 </Swiper>
-
-                                {/* Hidden "View More" button that appears after last slide */}
-                                {/* <div
-                                id={`view-more-btn-${item}`}
-                                className="view-more-btn-wrapper"
-                              >
-                                <Link
-                                  href="/related-links"
-                                  className="view-more-btn"
-
-                                >
-                                  View More
-                                </Link>
-                              </div> */}
                               </div>
                             </div>
+
                             <div className="product_de">
                               <div className="info">
                                 {item.name && (
@@ -977,38 +697,35 @@ export default function ListingContent({
                                         </p>
                                       ) : null;
                                     })()}
-
-                                    <div className="more_info">
-                                      <button
-                                        onClick={(e) => {
-                                          e.preventDefault();
-                                          setSelectedProduct(item);
-                                          setShowInfo(true);
-                                        }}
-                                      >
-                                        <i className="fa fa-info-circle"></i>{" "}
-                                        Info
-                                      </button>
-                                    </div>
+                                    {item.is_premium && (
+                                      <div className="more_info">
+                                        <div className="informat">
+                                          <span className="premium_van">
+                                            <i className="fa fa-star"></i>{" "}
+                                            Premium
+                                          </span>
+                                        </div>
+                                      </div>
+                                    )}
                                   </div>
                                 </div>
                               )}
 
                               {/* --- DETAILS LIST --- */}
                               <ul className="vehicleDetailsWithIcons simple">
-                                {item.condition && (
+                                {/* {item.condition && (
                                   <li>
                                     <span className="attribute3">
                                       {item.condition}
                                     </span>
                                   </li>
-                                )}
+                                )} */}
 
                                 {item.categories &&
                                   item.categories.length > 0 && (
                                     <li className="attribute3_list">
                                       <span className="attribute3">
-                                        {item.categories.join(", ")}
+                                        {item.categories.slice(0, 2).join(", ")}
                                       </span>
                                     </li>
                                   )}
@@ -1062,12 +779,20 @@ export default function ListingContent({
                                   className="btn"
                                   onClick={(e) => {
                                     e.preventDefault();
+                                    e.stopPropagation();
+                                    setSelectedProduct(item);
                                     setShowContact(true);
                                   }}
                                 >
                                   Contact Dealer
                                 </button>
-                                <button className="btn btn-primary">
+
+                                <button
+                                  className="btn btn-primary"
+                                  onClick={(e) =>
+                                    handleViewDetails(e, item.id, href)
+                                  }
+                                >
                                   View Details
                                 </button>
                               </div>
@@ -1104,10 +829,7 @@ export default function ListingContent({
                 <button
                   className="next-icon"
                   onClick={onNext}
-                  disabled={
-                    pagination.current_page === pagination.total_pages ||
-                    !isNextLoading
-                  }
+                  disabled={pagination.current_page === pagination.total_pages}
                 >
                   Next
                 </button>
@@ -1123,6 +845,7 @@ export default function ListingContent({
               ×
             </button>
             <h4>Description</h4>
+
             <div className="popup-content">
               {selectedProduct.description ? (
                 <div
@@ -1149,92 +872,110 @@ export default function ListingContent({
             <button
               type="button"
               className="close-popup"
-              onClick={() => setShowContact(false)}
+              onClick={() => {
+                setShowContact(false);
+                setSelectedProduct(null); // reset selected product
+              }}
             >
               ×
             </button>
+
             <h4>Contact Dealer</h4>
+
             <div className="sidebar-enquiry">
-              <form className="wpcf7-form" noValidate>
+              <form className="wpcf7-form" noValidate onSubmit={onSubmit}>
                 <div className="form">
+                  {/* Name */}
                   <div className="form-item">
                     <p>
                       <input
                         id="enquiry2-name"
                         className="wpcf7-form-control"
+                        value={form.name}
+                        onChange={(e) => setField("name", e.target.value)}
+                        onBlur={() => onBlur("name")}
                         required
                         autoComplete="off"
-                        aria-invalid="false"
-                        aria-describedby="err-name"
-                        type="text"
-                        name="enquiry2-name"
                       />
                       <label htmlFor="enquiry2-name">Name</label>
                     </p>
+                    {touched.name && errors.name && (
+                      <div className="cfs-error">{errors.name}</div>
+                    )}
                   </div>
 
+                  {/* Email */}
                   <div className="form-item">
                     <p>
                       <input
                         id="enquiry2-email"
                         className="wpcf7-form-control"
+                        value={form.email}
+                        onChange={(e) => setField("email", e.target.value)}
+                        onBlur={() => onBlur("email")}
                         required
                         autoComplete="off"
-                        aria-invalid="false"
-                        aria-describedby="err-email"
-                        type="email"
-                        name="enquiry2-email"
                       />
                       <label htmlFor="enquiry2-email">Email</label>
                     </p>
+                    {touched.email && errors.email && (
+                      <div className="cfs-error">{errors.email}</div>
+                    )}
                   </div>
 
+                  {/* Phone */}
                   <div className="form-item">
                     <p className="phone_country">
                       <span className="phone-label">+61</span>
                       <input
                         id="enquiry2-phone"
-                        inputMode="numeric"
                         className="wpcf7-form-control"
+                        inputMode="numeric"
+                        value={form.phone}
+                        onChange={(e) => setField("phone", e.target.value)}
+                        onBlur={() => onBlur("phone")}
                         required
                         autoComplete="off"
-                        aria-invalid="false"
-                        aria-describedby="err-phone"
-                        type="tel"
-                        name="enquiry2-phone"
                       />
                       <label htmlFor="enquiry2-phone">Phone</label>
                     </p>
+                    {touched.phone && errors.phone && (
+                      <div className="cfs-error">{errors.phone}</div>
+                    )}
                   </div>
 
+                  {/* Postcode */}
                   <div className="form-item">
                     <p>
                       <input
                         id="enquiry2-postcode"
+                        className="wpcf7-form-control"
                         inputMode="numeric"
                         maxLength={4}
-                        className="wpcf7-form-control"
+                        value={form.postcode}
+                        onChange={(e) => setField("postcode", e.target.value)}
+                        onBlur={() => onBlur("postcode")}
                         required
                         autoComplete="off"
-                        aria-invalid="false"
-                        aria-describedby="err-postcode"
-                        type="text"
-                        name="enquiry2-postcode"
                       />
                       <label htmlFor="enquiry2-postcode">Postcode</label>
                     </p>
+                    {touched.postcode && errors.postcode && (
+                      <div className="cfs-error">{errors.postcode}</div>
+                    )}
                   </div>
 
+                  {/* Message */}
                   <div className="form-item">
                     <p>
                       <label htmlFor="enquiry4-message">
                         Message (optional)
                       </label>
-
                       <textarea
                         id="enquiry4-message"
-                        name="enquiry4-message"
                         className="wpcf7-form-control wpcf7-textarea"
+                        value={form.message}
+                        onChange={(e) => setField("message", e.target.value)}
                       ></textarea>
                     </p>
                   </div>
@@ -1242,23 +983,27 @@ export default function ListingContent({
                   <p className="terms_text">
                     By clicking &lsquo;Send Enquiry&lsquo;, you agree to Caravan
                     Marketplace{" "}
-                    <Link target="_blank" href="/privacy-collection-statement/">
+                    <Link href="/privacy-collection-statement" target="_blank">
                       Collection Statement
                     </Link>
                     ,{" "}
-                    <Link target="_blank" href="/privacy-policy/">
+                    <Link href="/privacy-policy" target="_blank">
                       Privacy Policy
                     </Link>{" "}
                     and{" "}
-                    <Link target="_blank" href="/terms-conditions/">
+                    <Link href="/terms-conditions" target="_blank">
                       Terms and Conditions
                     </Link>
                     .
                   </p>
 
                   <div className="submit-btn">
-                    <button type="submit" className="btn btn-primary">
-                      Send Enquiry
+                    <button
+                      type="submit"
+                      className="btn btn-primary"
+                      disabled={submitting}
+                    >
+                      {submitting ? "Sending..." : "Send Enquiry"}
                     </button>
                   </div>
                 </div>
@@ -1267,6 +1012,30 @@ export default function ListingContent({
           </div>
         </div>
       )}
+      {navigating && (
+        <div
+          className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
+          style={{
+            background: "rgba(255,255,255,0.6)",
+            backdropFilter: "blur(2px)",
+            zIndex: 9999,
+          }}
+          aria-live="polite"
+        >
+          <div className="text-center">
+            <Image
+              className="loader_image"
+              src="/images/loader.gif"
+              alt="Loading..."
+              width={80}
+              height={80}
+              unoptimized
+            />
+            <div className="mt-2 fw-semibold">Loading…</div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
+ 

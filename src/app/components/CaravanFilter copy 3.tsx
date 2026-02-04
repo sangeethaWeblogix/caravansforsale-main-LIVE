@@ -1,4 +1,4 @@
-import { fetchLocations } from "@/api/location/api";
+ import { fetchLocations } from "@/api/location/api";
 import React, {
   useState,
   Dispatch,
@@ -34,6 +34,12 @@ interface Category {
   slug: string;
 }
 
+type CategoryCount = {
+  category_name: string;
+  category_slug: string;
+  product_count: number;
+};
+
 interface StateOption {
   value: string;
   name: string;
@@ -58,6 +64,17 @@ interface Make {
   slug: string;
   models?: MakeModel[];
 }
+type MakeCount = {
+  make_name: string;
+  make_slug: string;
+  product_count: number;
+};
+
+type ModelCount = {
+  model_name: string;
+  model_slug: string;
+  product_count: number;
+};
 
 export interface Filters {
   page?: number | string; // <- allow both
@@ -85,8 +102,6 @@ export interface Filters {
   radius_kms?: number | string; // <- allow both
   search?: string; // <- for search
   keyword?: string; // <- for keyword search
-    __preview?: boolean; // 🔥 ADD THIS
-
 }
 
 interface CaravanFilterProps {
@@ -143,6 +158,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
   const [categoryOpen, setCategoryOpen] = useState(false);
   const [categories, setCategories] = useState<Option[]>([]);
   const [visibleCount, setVisibleCount] = useState(10);
+  const [modelCounts, setModelCounts] = useState<ModelCount[]>([]);
 
   const [makes, setMakes] = useState<Make[]>([]);
   const [model, setModel] = useState<Model[]>([]);
@@ -154,12 +170,21 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
   const [filters, setFilters] = useState<Filters>({});
   const [conditionOpen, setConditionOpen] = useState(false);
   const [yearOpen, setYearOpen] = useState(false);
-const makeApiCalledRef = useRef(false);
+  const [isSleepModalOpen, setIsSleepModalOpen] = useState(false);
+  const [tempSleepFrom, setTempSleepFrom] = useState<number | null>(null);
+  const [tempSleepTo, setTempSleepTo] = useState<number | null>(null);
+  const [isLengthModalOpen, setIsLengthModalOpen] = useState(false);
+  const [tempLengthFrom, setTempLengthFrom] = useState<number | null>(null);
+  const [tempLengthTo, setTempLengthTo] = useState<number | null>(null);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isKeywordModalOpen, setIsKeywordModalOpen] = useState(false);
 
   const [locationInput, setLocationInput] = useState("");
+  const [makeCounts, setMakeCounts] = useState<MakeCount[]>([]);
+  const [isPriceModalOpen, setIsPriceModalOpen] = useState(false);
+  const [tempPriceFrom, setTempPriceFrom] = useState<number | null>(null);
+  const [tempPriceTo, setTempPriceTo] = useState<number | null>(null);
 
   const [selectedMake, setSelectedMake] = useState<string | null>(null);
   const [selectedModel, setSelectedModel] = useState<string | null>(null);
@@ -171,13 +196,20 @@ const makeApiCalledRef = useRef(false);
   >(null);
   const [selectedMakeName, setSelectedMakeName] = useState<string | null>(null);
   const [selectedModelName, setSelectedModelName] = useState<string | null>(
-    null
+    null,
   );
+  const [categoryCounts, setCategoryCounts] = useState<CategoryCount[]>([]);
+  // ATM modal states
+  const [isATMModalOpen, setIsATMModalOpen] = useState(false);
+
+  const [tempAtmFrom, setTempAtmFrom] = useState<number | null>(null);
+  const [tempAtmTo, setTempAtmTo] = useState<number | null>(null);
+
   // top (other states kula)
   const [modalKeyword, setModalKeyword] = useState("");
   const [showAllModels, setShowAllModels] = useState(false);
   const hasCategoryBeenSetRef = useRef(false);
-    const categoryApiCalledRef = useRef(false);
+  const categoryApiCalledRef = useRef(false);
 
   const prevSuburbsKeyRef = useRef<string>("");
   const radiusDebounceRef = useRef<number | null>(null);
@@ -194,7 +226,7 @@ const makeApiCalledRef = useRef(false);
   const isUserTypingRef = useRef(false);
 
   const hydratedKeyRef = useRef("");
-
+  const [searchText, setSearchText] = useState("");
   const suburbClickedRef = useRef(false);
   const [selectedConditionName, setSelectedConditionName] = useState<
     string | null
@@ -205,13 +237,13 @@ const makeApiCalledRef = useRef(false);
 
   const [selectedState, setSelectedState] = useState<string | null>(null);
   const [selectedStateName, setSelectedStateName] = useState<string | null>(
-    null
+    null,
   );
   const [selectedRegionName, setSelectedRegionName] = useState<string | null>(
-    null
+    null,
   );
   const [selectedSuburbName, setSelectedSuburbName] = useState<string | null>(
-    null
+    null,
   );
   // const [navigating, setNavigating] = useState(false);
 
@@ -219,15 +251,19 @@ const makeApiCalledRef = useRef(false);
     useState<LocationSuggestion | null>(null);
   const [keywordInput, setKeywordInput] = useState("");
   const [keywordSuggestions, setKeywordSuggestions] = useState<KeywordItem[]>(
-    []
+    [],
   );
+  const [isModalMakeOpen, setIsModalMakeOpen] = useState(false);
+  const [isYearModalOpen, setIsYearModalOpen] = useState(false);
+  const [tempYear, setTempYear] = useState<number | null>(null);
+
   const [isMakeModalOpen, setIsMakeModalOpen] = useState(false);
   const [searchMake, setSearchMake] = useState("");
-  const [filteredMakes, setFilteredMakes] = useState(makes);
   const [selectedMakeTemp, setSelectedMakeTemp] = useState<string | null>(null);
-const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
-const [categorySearch, setCategorySearch] = useState("");
-const autoCloseTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+
+  const [categorySearch, setCategorySearch] = useState("");
+  const autoCloseTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [baseKeywords, setBaseKeywords] = useState<KeywordItem[]>([]);
   const [keywordLoading, setKeywordLoading] = useState(false);
   const [baseLoading, setBaseLoading] = useState(false);
@@ -246,6 +282,7 @@ const autoCloseTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [yearTo, setYearTo] = useState<number | null>(null);
   const [sleepFrom, setSleepFrom] = useState<number | null>(null);
   const [sleepTo, setSleepTo] = useState<number | null>(null);
+  const [popularMakes, setPopularMakes] = useState<MakeCount[]>([]);
 
   const atm = [
     600, 800, 1000, 1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000, 3500, 4000,
@@ -279,6 +316,199 @@ const autoCloseTimerRef = useRef<NodeJS.Timeout | null>(null);
     "Northern Territory": "NT",
     "Australian Capital Territory": "ACT",
   };
+
+  useEffect(() => {
+    if (!selectedMake || makes.length === 0) {
+      setModel([]);
+      return;
+    }
+
+    const make = makes.find((m) => m.slug === selectedMake);
+    setModel(make?.models || []);
+    setModelOpen(true);
+  }, [selectedMake, makes]);
+
+  const buildParamsFromFilters = (filters: Filters) => {
+    const params = new URLSearchParams();
+
+    Object.entries(filters).forEach(([key, value]) => {
+      if (
+        value !== undefined &&
+        value !== null &&
+        value !== "" &&
+        key !== "page" // page count-ku thevai illa
+      ) {
+        params.set(key, String(value));
+      }
+    });
+
+    return params;
+  };
+
+  const fetchCounts = async (
+    groupBy: "category" | "make" | "model",
+    filters: Filters,
+  ) => {
+    const params = buildParamsFromFilters(filters);
+    params.set("group_by", groupBy);
+
+    const url = `https://admin.caravansforsale.com.au/wp-json/cfs/v1/params_count?${params.toString()}`;
+
+    const res = await fetch(url);
+    const json = await res.json();
+    return json.data || [];
+  };
+  useEffect(() => {
+    const activeFilters: Filters = {
+      ...currentFilters,
+      ...filters,
+    };
+
+    // CATEGORY COUNTS - exclude category from params so we see all categories
+    const catParams = buildCountParams(activeFilters, "category");
+    catParams.set("group_by", "category");
+
+    fetch(
+      `https://admin.caravansforsale.com.au/wp-json/cfs/v1/params_count?${catParams.toString()}`,
+    )
+      .then((res) => res.json())
+      .then((json) => setCategoryCounts(json.data || []))
+      .catch(console.error);
+
+    // MAKE COUNTS - exclude make from params
+    const makeParams = buildCountParams(activeFilters, "make");
+    makeParams.set("group_by", "make");
+
+    fetch(
+      `https://admin.caravansforsale.com.au/wp-json/cfs/v1/params_count?${makeParams.toString()}`,
+    )
+      .then((res) => res.json())
+      .then((json) => {
+        setMakeCounts(json.data || []);
+
+        // 🔥 THIS IS THE KEY LINE
+        setPopularMakes(json.popular_makes || []);
+      })
+      .catch(console.error);
+
+    // MODEL COUNTS - only fetch if make is selected, exclude model from params
+    if (activeFilters.make) {
+      const modelParams = buildCountParams(activeFilters, "model");
+      modelParams.set("group_by", "model");
+      // Make sure make is included for model counts
+      modelParams.set("make", activeFilters.make);
+
+      fetch(
+        `https://admin.caravansforsale.com.au/wp-json/cfs/v1/params_count?${modelParams.toString()}`,
+      )
+        .then((res) => res.json())
+        .then((json) => setModelCounts(json.data || []))
+        .catch(console.error);
+    } else {
+      setModelCounts([]);
+    }
+  }, [
+    // Watch all filter values that should trigger count updates
+    currentFilters.category,
+    currentFilters.make,
+    currentFilters.model,
+    currentFilters.condition,
+    currentFilters.state,
+    currentFilters.region,
+    currentFilters.suburb,
+    currentFilters.from_price,
+    currentFilters.to_price,
+    currentFilters.minKg,
+    currentFilters.maxKg,
+    currentFilters.acustom_fromyears,
+    currentFilters.acustom_toyears,
+    currentFilters.from_length,
+    currentFilters.to_length,
+    currentFilters.from_sleep,
+    currentFilters.to_sleep,
+    currentFilters.search,
+    currentFilters.keyword,
+    filters.category,
+    filters.make,
+    filters.model,
+  ]);
+
+  const handleMakeSelect = (make) => {
+    // SAME make click again → unselect
+    if (selectedMakeTemp === make.make_slug) {
+      setSelectedMakeTemp(null);
+      setSearchMake("");
+      return;
+    }
+
+    // New selection
+    setSelectedMakeTemp(make.make_slug);
+
+    // old UI behaviour
+    triggerOptimizeApi("make", make.make_slug);
+  };
+
+  const handleMakeTempSelect = (make: {
+    make_slug: string;
+    make_name: string;
+  }) => {
+    setSelectedMakeTemp(make.make_slug);
+    setSearchMake(make.make_name);
+
+    // ⚡ OLD UI behaviour preserved
+    triggerOptimizeApi("make", make.make_slug);
+  };
+
+  const buildCountParams = (filters: Filters, excludeField?: string) => {
+    const params = new URLSearchParams();
+
+    const filterMap: Record<string, string | number | undefined | null> = {
+      category: filters.category,
+      make: filters.make,
+      model: filters.model,
+      condition: filters.condition,
+      state: filters.state,
+      region: filters.region,
+      suburb: filters.suburb,
+      pincode: filters.pincode,
+      from_price: filters.from_price,
+      to_price: filters.to_price,
+      minKg: filters.minKg,
+      maxKg: filters.maxKg,
+      acustom_fromyears: filters.acustom_fromyears,
+      acustom_toyears: filters.acustom_toyears,
+      from_length: filters.from_length,
+      to_length: filters.to_length,
+      from_sleep: filters.from_sleep,
+      to_sleep: filters.to_sleep,
+      search: filters.search,
+      keyword: filters.keyword,
+    };
+
+    Object.entries(filterMap).forEach(([key, value]) => {
+      // Skip the field we're grouping by (so category count doesn't filter by category)
+      if (key === excludeField) return;
+
+      if (value !== undefined && value !== null && value !== "") {
+        params.set(key, String(value));
+      }
+    });
+
+    return params;
+  };
+
+  const isSearching = searchText.trim().length > 0;
+
+  const filteredMakes = useMemo(() => {
+    if (!searchMake) return makeCounts;
+
+    return makeCounts.filter((m) =>
+      m.make_name.toLowerCase().includes(searchMake.toLowerCase()),
+    );
+  }, [makeCounts, searchMake]);
+
+  // 🔥 dependency
+
   // const isNonEmpty = (s: string | undefined | null): s is string =>
   //   typeof s === "string" && s.trim().length > 0;
   // 🔽 put this inside the component, under updateAllFiltersAndURL
@@ -309,12 +539,16 @@ const autoCloseTimerRef = useRef<NodeJS.Timeout | null>(null);
   };
 
   // pick a human-readable text from item
-const [tempCategory, setTempCategory] = useState<string | null>(null);
-useEffect(() => {
-  if (isCategoryModalOpen) {
-    setTempCategory(selectedCategory);
-  }
-}, [isCategoryModalOpen]);
+  const [tempCategory, setTempCategory] = useState<string | null>(null);
+  const [tempModel, setTempModel] = useState<string | null>(null);
+  useEffect(() => {
+    if (isCategoryModalOpen) {
+      setTempCategory(selectedCategory);
+    }
+    if (isMakeModalOpen) {
+      setTempModel(selectedModel);
+    }
+  }, [isCategoryModalOpen, isMakeModalOpen]);
 
   // works for (HomeSearchItem | string)[]
   useEffect(() => {
@@ -351,11 +585,11 @@ useEffect(() => {
                   x.slug ??
                   "",
                 url: (x as HomeSearchItem).url || "",
-              }
+              },
         );
 
         const uniq = Array.from(
-          new Map(items.map((i) => [i.label.trim(), i])).values()
+          new Map(items.map((i) => [i.label.trim(), i])).values(),
         ).filter((i) => i.label);
 
         setBaseKeywords(uniq);
@@ -386,8 +620,8 @@ useEffect(() => {
 
         setKeywordSuggestions(
           Array.from(new Set(items.map((i) => i.label))).map(
-            (label) => items.find((i) => i.label === label)!
-          )
+            (label) => items.find((i) => i.label === label)!,
+          ),
         );
       } catch (e: unknown) {
         if (e instanceof DOMException && e.name === "AbortError") return;
@@ -507,7 +741,7 @@ useEffect(() => {
 
     const allItems = [...baseKeywords, ...keywordSuggestions];
     const match = allItems.find(
-      (x) => x.label.toLowerCase() === raw.toLowerCase()
+      (x) => x.label.toLowerCase() === raw.toLowerCase(),
     );
 
     if (match?.url && match.url.trim().length > 0) {
@@ -536,7 +770,7 @@ useEffect(() => {
   const buildShortAddress = (
     suburb?: string | null,
     state?: string | null,
-    pincode?: string | null
+    pincode?: string | null,
   ) => {
     const abbr = state && AUS_ABBR[state] ? AUS_ABBR[state] : state || "";
     return [suburb, abbr, pincode].filter(Boolean).join(" ");
@@ -631,7 +865,7 @@ useEffect(() => {
         typeof o === "object" &&
         o !== null &&
         typeof (o as UnknownRec).name === "string" &&
-        typeof (o as UnknownRec).slug === "string"
+        typeof (o as UnknownRec).slug === "string",
     );
 
   const isStateOptionArray = (v: unknown): v is StateOption[] =>
@@ -641,7 +875,7 @@ useEffect(() => {
         typeof s === "object" &&
         s !== null &&
         typeof (s as UnknownRec).name === "string" &&
-        typeof (s as UnknownRec).value === "string"
+        typeof (s as UnknownRec).value === "string",
     );
 
   useEffect(() => {
@@ -672,6 +906,13 @@ useEffect(() => {
     }
   }, [currentFilters.radius_kms]);
 
+  const displayedMakes = useMemo(() => {
+    if (!searchMake.trim()) return makeCounts; // ✅ full list
+    return makeCounts.filter((m) =>
+      m.make_name.toLowerCase().includes(searchText.toLowerCase()),
+    );
+  }, [makeCounts, searchText, isSearching]);
+
   const handleATMChange = (newFrom: number | null, newTo: number | null) => {
     triggerGlobalLoaders();
     setAtmFrom(newFrom);
@@ -693,19 +934,19 @@ useEffect(() => {
   const getValidRegionName = (
     stateName: string | null | undefined,
     regionName: string | null | undefined,
-    allStates: StateOption[]
+    allStates: StateOption[],
   ): string | undefined => {
     if (!stateName || !regionName) return undefined;
     const st = allStates.find(
       (s) =>
         s.name.toLowerCase() === stateName.toLowerCase() ||
-        s.value.toLowerCase() === stateName.toLowerCase()
+        s.value.toLowerCase() === stateName.toLowerCase(),
     );
     if (!st?.regions?.length) return undefined;
     const reg = st.regions.find(
       (r) =>
         r.name.toLowerCase() === regionName.toLowerCase() ||
-        r.value.toLowerCase() === regionName.toLowerCase()
+        r.value.toLowerCase() === regionName.toLowerCase(),
     );
     return reg?.name; // return canonical name if valid, else undefined
   };
@@ -731,10 +972,14 @@ useEffect(() => {
   useEffect(() => {
     if (!filtersInitialized.current) {
       setAtmFrom(
-        currentFilters.minKg !== undefined ? Number(currentFilters.minKg) : null
+        currentFilters.minKg !== undefined
+          ? Number(currentFilters.minKg)
+          : null,
       );
       setAtmTo(
-        currentFilters.maxKg !== undefined ? Number(currentFilters.maxKg) : null
+        currentFilters.maxKg !== undefined
+          ? Number(currentFilters.maxKg)
+          : null,
       );
     }
   }, [currentFilters.minKg, currentFilters.maxKg]);
@@ -742,32 +987,32 @@ useEffect(() => {
   // correct -2
   useEffect(() => {
     setAtmFrom(
-      currentFilters.minKg !== undefined ? Number(currentFilters.minKg) : null
+      currentFilters.minKg !== undefined ? Number(currentFilters.minKg) : null,
     );
     setAtmTo(
-      currentFilters.maxKg !== undefined ? Number(currentFilters.maxKg) : null
+      currentFilters.maxKg !== undefined ? Number(currentFilters.maxKg) : null,
     );
 
     setMinPrice(
       currentFilters.from_price !== undefined
         ? Number(currentFilters.from_price)
-        : null
+        : null,
     );
     setMaxPrice(
       currentFilters.to_price !== undefined
         ? Number(currentFilters.to_price)
-        : null
+        : null,
     );
 
     setLengthFrom(
       currentFilters.from_length !== undefined
         ? Number(currentFilters.from_length)
-        : null
+        : null,
     );
     setLengthTo(
       currentFilters.to_length !== undefined
         ? Number(currentFilters.to_length)
-        : null
+        : null,
     );
 
     setSelectedConditionName(currentFilters.condition ?? null);
@@ -1024,10 +1269,19 @@ useEffect(() => {
   };
 
   const handleSearchClick = () => {
+    console.log("🔍 handleSearchClick called");
+    console.log("suburbClickedRef:", suburbClickedRef.current);
+    console.log("selectedSuggestion:", selectedSuggestion);
+    
     // Remove resetSuburbFilters call here as it clears the selections
     // resetSuburbFilters();
     triggerGlobalLoaders();
-    if (!suburbClickedRef.current || !selectedSuggestion) return;
+    if (!suburbClickedRef.current || !selectedSuggestion) {
+      console.log("❌ Early return - condition failed");
+      return;
+    }
+
+    console.log("✅ Proceeding with search...");
 
     const parts = selectedSuggestion.uri.split("/");
     const suburbSlug = parts[0] || "";
@@ -1075,11 +1329,14 @@ useEffect(() => {
       radius_kms: radiusKms,
     });
 
+    console.log("📦 updatedFilters:", updatedFilters);
+
     setFilters(updatedFilters);
     filtersInitialized.current = true;
 
     suburbClickedRef.current = true;
     setTimeout(() => {
+      console.log("🚀 Calling updateAllFiltersAndURL");
       updateAllFiltersAndURL(updatedFilters);
     }, 100);
     const shortAddr =
@@ -1187,7 +1444,7 @@ useEffect(() => {
         region: getValidRegionName(
           selectedStateName ?? currentFilters.state ?? filters.state,
           selectedRegionName ?? currentFilters.region ?? filters.region,
-          states
+          states,
         ),
         suburb: selectedSuburbName ?? currentFilters.suburb ?? filters.suburb,
         pincode: selectedpincode ?? currentFilters.pincode ?? filters.pincode,
@@ -1241,14 +1498,14 @@ useEffect(() => {
     const matchedState = states.find(
       (s) =>
         s.name.toLowerCase() === selectedStateName.toLowerCase() ||
-        s.value.toLowerCase() === selectedStateName.toLowerCase()
+        s.value.toLowerCase() === selectedStateName.toLowerCase(),
     );
     if (!matchedState) return;
 
     const matchedRegion = matchedState.regions?.find(
       (r) =>
         r.name.toLowerCase() === selectedRegionName.toLowerCase() ||
-        r.value.toLowerCase() === selectedRegionName.toLowerCase()
+        r.value.toLowerCase() === selectedRegionName.toLowerCase(),
     );
 
     const nextSubs = matchedRegion?.suburbs ?? [];
@@ -1293,7 +1550,7 @@ useEffect(() => {
               item.short_address
                 .toLowerCase()
                 .includes(formattedValue.toLowerCase()) ||
-              item.address.toLowerCase().includes(formattedValue.toLowerCase())
+              item.address.toLowerCase().includes(formattedValue.toLowerCase()),
           );
           setLocationSuggestions(filtered);
         })
@@ -1365,23 +1622,23 @@ useEffect(() => {
     selectedModelName,
   ]);
 
-  // useEffect(() => {
-  //   if (
-  //     !makeInitializedRef.current &&
-  //     selectedMake &&
-  //     filtersInitialized.current &&
-  //     (!filters.make || filters.make !== selectedMake)
-  //   ) {
-  //     const updatedFilters = {
-  //       ...currentFilters,
-  //       make: selectedMake,
-  //       model: filters.model,
-  //     };
-  //     setFilters(updatedFilters);
-  //     // onFilterChange(updatedFilters);
-  //     makeInitializedRef.current = true;
-  //   }
-  // }, [selectedMake]);
+  useEffect(() => {
+    if (
+      !makeInitializedRef.current &&
+      selectedMake &&
+      filtersInitialized.current &&
+      (!filters.make || filters.make !== selectedMake)
+    ) {
+      const updatedFilters = {
+        ...currentFilters,
+        make: selectedMake,
+        model: filters.model,
+      };
+      setFilters(updatedFilters);
+      // onFilterChange(updatedFilters);
+      makeInitializedRef.current = true;
+    }
+  }, [selectedMake]);
 
   useEffect(() => {
     // Block hydration if we already initialized or make was reset
@@ -1398,7 +1655,7 @@ useEffect(() => {
     const segments = pathname.split("/listings/")[1]?.split("/") || [];
 
     const matchedMakeSlug = segments.find((segment) =>
-      makes.some((m) => m.slug === segment)
+      makes.some((m) => m.slug === segment),
     );
 
     if (matchedMakeSlug) {
@@ -1521,7 +1778,6 @@ useEffect(() => {
     next.make = sanitizeMake(next.make); // belt & suspenders
     // ✅ safer location preservation logic
     if (next.state) {
-
       // only delete region/suburb if they're explicitly empty strings
       if (next.region === "" || next.region === undefined) delete next.region;
       if (next.suburb === "" || next.suburb === undefined) delete next.suburb;
@@ -1647,7 +1903,7 @@ useEffect(() => {
     region: string | null,
     state: string | null,
     pincode: string | null,
-    suggestions: LocationSuggestion[]
+    suggestions: LocationSuggestion[],
   ): LocationSuggestion | null => {
     const ss = slug(suburb);
     const rr = slug(region || "");
@@ -1684,7 +1940,12 @@ useEffect(() => {
         selectedStateName ?? "",
         selectedpincode ?? "",
       ].join("|"),
-    [selectedSuburbName, selectedRegionName, selectedStateName, selectedpincode]
+    [
+      selectedSuburbName,
+      selectedRegionName,
+      selectedStateName,
+      selectedpincode,
+    ],
   );
 
   useEffect(() => {
@@ -1728,7 +1989,7 @@ useEffect(() => {
           selectedRegionName,
           selectedStateName,
           selectedpincode || null,
-          exactMatches || []
+          exactMatches || [],
         );
 
         if (!match || cancelled) return;
@@ -1770,158 +2031,191 @@ useEffect(() => {
   useEffect(() => {
     setVisibleCount(10);
   }, [selectedStateName]);
-categoryApiCalledRef.current = true;
+  categoryApiCalledRef.current = true;
+
+  type OptimizeType =
+    | "category"
+    | "make"
+    | "model"
+    | "state"
+    | "region"
+    | "suburb"
+    | "keyword"
+    | "atm";
+
+  const lastOptimizeRef = useRef<Record<string, string | undefined>>({});
+
+  const triggerOptimizeApi = (type: OptimizeType, value?: string | null) => {
+    if (!value) return;
+
+    // 🔒 prevent duplicate calls for same value
+    if (lastOptimizeRef.current[type] === value) return;
+    lastOptimizeRef.current[type] = value;
+
+    const url = new URL(
+      "https://admin.caravansforsale.com.au/wp-json/cfs/v1/new_optimize_code",
+    );
+    url.searchParams.set(type, value);
+
+    fetch(url.toString(), {
+      method: "GET",
+      keepalive: true,
+    }).catch(() => {});
+  };
 
   return (
     <>
       <div className="filter-card mobile-search">
         {/* Category Accordion */}
-        
 
+        <div className="cs-full_width_section">
+          <div
+            className="filter-accordion"
+            onClick={() => setIsCategoryModalOpen(true)}
+          >
+            <h5 className="cfs-filter-label">Category</h5>
+            <BiChevronDown />
+          </div>
 
-<div className="cs-full_width_section">
-  <div
-    className="filter-accordion"
-    style={{
-                cursor: "pointer",
-               }}
-    onClick={() => setIsCategoryModalOpen(true)}
-  >
-    <h5 className="cfs-filter-label"  >Category</h5>
-    <BiChevronDown   />
-  </div>
-
-  {selectedCategoryName && (
-    <div className="filter-chip">
-      <span>{selectedCategoryName}</span>
-      <span
-        className="filter-chip-close"
-        onClick={() => {
-          triggerGlobalLoaders();
-          resetCategoryFilter();
-        }}
-      >
-        ×
-      </span>
-    </div>
-  )}
-</div>
- {isCategoryModalOpen && (
-  <div className="cfs-modal">
-    <div
-      className="cfs-modal-content"
-      onClick={(e) => e.stopPropagation()}
-    >
-      {/* Header */}
-      <div className="cfs-modal-header">
-        <span
-          className="cfs-close"
- onClick={() => {
-    setTempCategory(selectedCategory); // revert
-    setIsCategoryModalOpen(false);
-  }}        >
-          ×
-        </span>
-      </div>
-
-      {/* Body */}
-      <div className="cfs-modal-body">
-        <div className="cfs-modal-search-section">
-          <h5 className="cfs-filter-label">Search Category</h5>
-
-          <ul className="location-suggestions category-list">
-            {categories
-              .filter((cat) =>
-                cat.name
-                  .toLowerCase()
-                  .includes(categorySearch.toLowerCase())
-              )
-              .map((cat) => {
-                const checked = tempCategory === cat.slug;
-
-                return (
-                  <li
-                    key={cat.slug}
-                    className="filter-accordion-item category-item"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <label className="category-checkbox-row">
-                      <input
-                        type="checkbox"
-  checked={tempCategory === cat.slug}
-                        onChange={() => {
-                          // ✅ checkbox / name / count click all work
-                          setTempCategory(cat.slug);
- 
-  // ❗ API call only – NO state / URL / title
- onFilterChange({
-    category: cat.slug,
-    page: 1,
-    __preview: true, // 🔥 IMPORTANT
-  });}}
- 
-                      />
-
-                      <span className="category-name">
-                        {cat.name}
-                      </span>
-
-                      {/* <span className="category-count">
-                        pavith
-                      </span> */}
-                    </label>
-                  </li>
-                );
-              })}
-          </ul>
+          {selectedCategoryName && (
+            <div className="filter-chip">
+              <span>{selectedCategoryName}</span>
+              <span
+                className="filter-chip-close"
+                onClick={() => {
+                  triggerGlobalLoaders();
+                  resetCategoryFilter();
+                }}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  x="0px"
+                  y="0px"
+                  width="100"
+                  height="100"
+                  viewBox="0 0 64 64"
+                >
+                  <path d="M 16 14 C 15.488 14 14.976938 14.194937 14.585938 14.585938 C 13.804937 15.366937 13.804937 16.633063 14.585938 17.414062 L 29.171875 32 L 14.585938 46.585938 C 13.804938 47.366938 13.804937 48.633063 14.585938 49.414062 C 14.976937 49.805062 15.488 50 16 50 C 16.512 50 17.023062 49.805062 17.414062 49.414062 L 32 34.828125 L 46.585938 49.414062 C 47.366938 50.195063 48.633063 50.195062 49.414062 49.414062 C 50.195063 48.633062 50.195062 47.366937 49.414062 46.585938 L 34.828125 32 L 49.414062 17.414062 C 50.195063 16.633063 50.195062 15.366938 49.414062 14.585938 C 48.633062 13.804938 47.366937 13.804938 46.585938 14.585938 L 32 29.171875 L 17.414062 14.585938 C 17.023062 14.194938 16.512 14 16 14 z"></path>
+                </svg>
+              </span>
+            </div>
+          )}
         </div>
-      </div>
+        {isCategoryModalOpen && (
+          <div className="cfs-modal">
+            <div
+              className="cfs-modal-content"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="cfs-modal-header">
+                <h5 className="cfs-filter-label">Search by Category</h5>
+                <span
+                  className="cfs-close"
+                  onClick={() => setIsCategoryModalOpen(false)}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    x="0px"
+                    y="0px"
+                    width="100"
+                    height="100"
+                    viewBox="0 0 64 64"
+                  >
+                    <path d="M 16 14 C 15.488 14 14.976938 14.194937 14.585938 14.585938 C 13.804937 15.366937 13.804937 16.633063 14.585938 17.414062 L 29.171875 32 L 14.585938 46.585938 C 13.804938 47.366938 13.804937 48.633063 14.585938 49.414062 C 14.976937 49.805062 15.488 50 16 50 C 16.512 50 17.023062 49.805062 17.414062 49.414062 L 32 34.828125 L 46.585938 49.414062 C 47.366938 50.195063 48.633063 50.195062 49.414062 49.414062 C 50.195063 48.633062 50.195062 47.366937 49.414062 46.585938 L 34.828125 32 L 49.414062 17.414062 C 50.195063 16.633063 50.195062 15.366938 49.414062 14.585938 C 48.633062 13.804938 47.366937 13.804938 46.585938 14.585938 L 32 29.171875 L 17.414062 14.585938 C 17.023062 14.194938 16.512 14 16 14 z"></path>
+                  </svg>
+                </span>
+              </div>
 
-      {/* Footer */}
-      <div className="cfs-modal-footer">
-      <button
-  className="cfs-btn btn"
-  onClick={() => {
-    const finalCategory = tempCategory || null;
+              {/* Body */}
+              <div className="cfs-modal-body">
+                <div className="cfs-modal-search-section">
+                  <ul className="location-suggestions category-list">
+                    {categoryCounts.map((cat) => (
+                      <li key={cat.category_slug} className="category-item">
+                        <label className="category-checkbox-row checkbox">
+                          <div className="d-flex align-items-center">
+                            <input
+                              type="checkbox"
+                              className="checkbox__trigger visuallyhidden"
+                              checked={tempCategory === cat.category_slug}
+                              onChange={() => {
+                                setTempCategory(cat.category_slug);
+                                triggerOptimizeApi(
+                                  "category",
+                                  cat.category_slug,
+                                ); // ✅
+                              }}
+                            />
+                            <span className="checkbox__symbol">
+                              <svg
+                                aria-hidden="true"
+                                className="icon-checkbox"
+                                width="28px"
+                                height="28px"
+                                viewBox="0 0 28 28"
+                                version="1"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path d="M4 14l8 7L24 7"></path>
+                              </svg>
+                            </span>
+                            <span className="category-name">
+                              {cat.category_name}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="category-count">
+                              ({cat.product_count})
+                            </span>
+                          </div>
+                        </label>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
 
-    const updatedFilters = {
-      ...currentFilters,
-      category: finalCategory || undefined,
-      page: 1,
-    };
+              {/* Footer */}
+              <div className="cfs-modal-footer">
+                <button
+                  className="cfs-btn btn"
+                  onClick={() => {
+                    const finalCategory = tempCategory || undefined;
 
-    // 🔥 Skeleton
-    triggerGlobalLoaders();
+                    triggerGlobalLoaders(); // ✅ skeleton ONLY HERE
 
-    // 🔥 FINAL APPLY
-    setFilters(updatedFilters);
-    filtersInitialized.current = true;
+                    const updatedFilters = {
+                      ...currentFilters,
+                      category: finalCategory,
+                      page: 1,
+                    };
 
-    startTransition(() => {
-      updateAllFiltersAndURL(updatedFilters);
-    });
+                    // ✅ FINAL COMMIT
+                    setFilters(updatedFilters);
+                    filtersInitialized.current = true;
 
-    // 🔥 Field value set ONLY HERE
-    setSelectedCategory(finalCategory);
-    setSelectedCategoryName(
-      categories.find(c => c.slug === finalCategory)?.name || null
-    );
+                    startTransition(() => {
+                      updateAllFiltersAndURL(updatedFilters); // ✅ FETCH + URL
+                    });
 
-    // reset
-    categoryApiCalledRef.current = false;
-    setIsCategoryModalOpen(false);
-  }}
->
-  Search cat
-</button>
+                    // UI sync
+                    setSelectedCategory(finalCategory || null);
+                    setSelectedCategoryName(
+                      categories.find((c) => c.slug === finalCategory)?.name ||
+                        null,
+                    );
 
-
-      </div>
-    </div>
-  </div>
-)}
-
-
+                    categoryApiCalledRef.current = false;
+                    setIsCategoryModalOpen(false);
+                  }}
+                >
+                  Search
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Location Accordion */}
         {/* ===== LOCATION (DROP-IN) ===== */}
@@ -1929,10 +2223,7 @@ categoryApiCalledRef.current = true;
 
         {/* Keyword (opens its own modal) */}
         {/* Keyword (opens its own modal) */}
-        <div className="cs-full_width_section"  style={{
-                cursor: "pointer",
-                transform: stateLocationOpen ? "rotate(180deg)" : "",
-              }}>
+        <div className="cs-full_width_section">
           {/* Header: opens STATE list */}
           <div className="filter-accordion" onClick={() => openOnly("state")}>
             <h5 className="cfs-filter-label">Location</h5>
@@ -1941,7 +2232,10 @@ categoryApiCalledRef.current = true;
                 e.stopPropagation();
                 openOnly(stateLocationOpen ? null : "state");
               }}
-             
+              style={{
+                cursor: "pointer",
+                transform: stateLocationOpen ? "rotate(180deg)" : "",
+              }}
             />
           </div>
 
@@ -1964,7 +2258,16 @@ categoryApiCalledRef.current = true;
                       resetStateFilters();
                     }}
                   >
-                    ×
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      x="0px"
+                      y="0px"
+                      width="100"
+                      height="100"
+                      viewBox="0 0 64 64"
+                    >
+                      <path d="M 16 14 C 15.488 14 14.976938 14.194937 14.585938 14.585938 C 13.804937 15.366937 13.804937 16.633063 14.585938 17.414062 L 29.171875 32 L 14.585938 46.585938 C 13.804938 47.366938 13.804937 48.633063 14.585938 49.414062 C 14.976937 49.805062 15.488 50 16 50 C 16.512 50 17.023062 49.805062 17.414062 49.414062 L 32 34.828125 L 46.585938 49.414062 C 47.366938 50.195063 48.633063 50.195062 49.414062 49.414062 C 50.195063 48.633062 50.195062 47.366937 49.414062 46.585938 L 34.828125 32 L 49.414062 17.414062 C 50.195063 16.633063 50.195062 15.366938 49.414062 14.585938 C 48.633062 13.804938 47.366937 13.804938 46.585938 14.585938 L 32 29.171875 L 17.414062 14.585938 C 17.023062 14.194938 16.512 14 16 14 z"></path>
+                    </svg>
                   </span>
                   {/* This arrow toggles the REGION panel */}
                   <BiChevronDown
@@ -1996,7 +2299,7 @@ categoryApiCalledRef.current = true;
                       if (selectedSuggestion?.uri) {
                         const parts = selectedSuggestion.uri.split("/");
                         const regionPart = parts.find((p) =>
-                          p.endsWith("-region")
+                          p.endsWith("-region"),
                         );
                         if (regionPart) {
                           const regionName = regionPart
@@ -2015,7 +2318,7 @@ categoryApiCalledRef.current = true;
                           s.name.toLowerCase() ===
                             selectedStateName?.toLowerCase() ||
                           s.value.toLowerCase() ===
-                            selectedStateName?.toLowerCase()
+                            selectedStateName?.toLowerCase(),
                       );
 
                       const matchedRegion = matchedState?.regions?.find(
@@ -2023,13 +2326,13 @@ categoryApiCalledRef.current = true;
                           region.suburbs?.some(
                             (sub) =>
                               sub.name.toLowerCase().trim() ===
-                              selectedSuburbName?.toLowerCase().trim()
-                          )
+                              selectedSuburbName?.toLowerCase().trim(),
+                          ),
                       );
 
                       console.log(
                         "🧩 Matched Region (Fallback):",
-                        matchedRegion
+                        matchedRegion,
                       );
 
                       return (
@@ -2047,7 +2350,16 @@ categoryApiCalledRef.current = true;
                       resetRegionFilters();
                     }}
                   >
-                    ×
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      x="0px"
+                      y="0px"
+                      width="100"
+                      height="100"
+                      viewBox="0 0 64 64"
+                    >
+                      <path d="M 16 14 C 15.488 14 14.976938 14.194937 14.585938 14.585938 C 13.804937 15.366937 13.804937 16.633063 14.585938 17.414062 L 29.171875 32 L 14.585938 46.585938 C 13.804938 47.366938 13.804937 48.633063 14.585938 49.414062 C 14.976937 49.805062 15.488 50 16 50 C 16.512 50 17.023062 49.805062 17.414062 49.414062 L 32 34.828125 L 46.585938 49.414062 C 47.366938 50.195063 48.633063 50.195062 49.414062 49.414062 C 50.195063 48.633062 50.195062 47.366937 49.414062 46.585938 L 34.828125 32 L 49.414062 17.414062 C 50.195063 16.633063 50.195062 15.366938 49.414062 14.585938 C 48.633062 13.804938 47.366937 13.804938 46.585938 14.585938 L 32 29.171875 L 17.414062 14.585938 C 17.023062 14.194938 16.512 14 16 14 z"></path>
+                    </svg>
                   </span>
                   <BiChevronDown
                     onClick={(e) => {
@@ -2072,7 +2384,16 @@ categoryApiCalledRef.current = true;
                   resetSuburbFilters();
                 }}
               >
-                ×
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  x="0px"
+                  y="0px"
+                  width="100"
+                  height="100"
+                  viewBox="0 0 64 64"
+                >
+                  <path d="M 16 14 C 15.488 14 14.976938 14.194937 14.585938 14.585938 C 13.804937 15.366937 13.804937 16.633063 14.585938 17.414062 L 29.171875 32 L 14.585938 46.585938 C 13.804938 47.366938 13.804937 48.633063 14.585938 49.414062 C 14.976937 49.805062 15.488 50 16 50 C 16.512 50 17.023062 49.805062 17.414062 49.414062 L 32 34.828125 L 46.585938 49.414062 C 47.366938 50.195063 48.633063 50.195062 49.414062 49.414062 C 50.195063 48.633062 50.195062 47.366937 49.414062 46.585938 L 34.828125 32 L 49.414062 17.414062 C 50.195063 16.633063 50.195062 15.366938 49.414062 14.585938 C 48.633062 13.804938 47.366937 13.804938 46.585938 14.585938 L 32 29.171875 L 17.414062 14.585938 C 17.023062 14.194938 16.512 14 16 14 z"></path>
+                </svg>
               </span>
             </div>
           )}
@@ -2148,7 +2469,7 @@ categoryApiCalledRef.current = true;
                 states.find(
                   (s) =>
                     s.name.toLowerCase().trim() ===
-                    selectedStateName?.toLowerCase().trim()
+                    selectedStateName?.toLowerCase().trim(),
                 )?.regions || []
               )
                 .slice(0, visibleCount)
@@ -2230,7 +2551,7 @@ categoryApiCalledRef.current = true;
                             selectedRegionName,
                             selectedStateName,
                             pincode,
-                            res || []
+                            res || [],
                           );
                         } catch {}
 
@@ -2264,7 +2585,7 @@ categoryApiCalledRef.current = true;
                         const validRegion = getValidRegionName(
                           safeState,
                           selectedRegionName,
-                          states
+                          states,
                         );
 
                         // drive UI
@@ -2335,7 +2656,16 @@ categoryApiCalledRef.current = true;
                   resetSuburbFilters();
                 }}
               >
-                ×
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  x="0px"
+                  y="0px"
+                  width="100"
+                  height="100"
+                  viewBox="0 0 64 64"
+                >
+                  <path d="M 16 14 C 15.488 14 14.976938 14.194937 14.585938 14.585938 C 13.804937 15.366937 13.804937 16.633063 14.585938 17.414062 L 29.171875 32 L 14.585938 46.585938 C 13.804938 47.366938 13.804937 48.633063 14.585938 49.414062 C 14.976937 49.805062 15.488 50 16 50 C 16.512 50 17.023062 49.805062 17.414062 49.414062 L 32 34.828125 L 46.585938 49.414062 C 47.366938 50.195063 48.633063 50.195062 49.414062 49.414062 C 50.195063 48.633062 50.195062 47.366937 49.414062 46.585938 L 34.828125 32 L 49.414062 17.414062 C 50.195063 16.633063 50.195062 15.366938 49.414062 14.585938 C 48.633062 13.804938 47.366937 13.804938 46.585938 14.585938 L 32 29.171875 L 17.414062 14.585938 C 17.023062 14.194938 16.512 14 16 14 z"></path>
+                </svg>
               </span>
             </div>
           )}
@@ -2343,14 +2673,13 @@ categoryApiCalledRef.current = true;
 
         {/* Make Accordion */}
         {/* Make Accordion */}
-        <div className="cs-full_width_section"   style={{
-                cursor: "pointer",
-               }}>
-          <div className="filter-accordion" onClick={() => setIsMakeModalOpen(true)}>
-            <h5 className="cfs-filter-label" > Make</h5>
-            <BiChevronDown
-            
-            />
+        <div className="cs-full_width_section">
+          <div
+            className="filter-accordion"
+            onClick={() => setIsMakeModalOpen(true)}
+          >
+            <h5 className="cfs-filter-label"> Make</h5>
+            <BiChevronDown />
           </div>
           {selectedMakeName && (
             <div className="filter-chip">
@@ -2362,158 +2691,31 @@ categoryApiCalledRef.current = true;
                   resetMakeFilters();
                 }}
               >
-                ×
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  x="0px"
+                  y="0px"
+                  width="100"
+                  height="100"
+                  viewBox="0 0 64 64"
+                >
+                  <path d="M 16 14 C 15.488 14 14.976938 14.194937 14.585938 14.585938 C 13.804937 15.366937 13.804937 16.633063 14.585938 17.414062 L 29.171875 32 L 14.585938 46.585938 C 13.804938 47.366938 13.804937 48.633063 14.585938 49.414062 C 14.976937 49.805062 15.488 50 16 50 C 16.512 50 17.023062 49.805062 17.414062 49.414062 L 32 34.828125 L 46.585938 49.414062 C 47.366938 50.195063 48.633063 50.195062 49.414062 49.414062 C 50.195063 48.633062 50.195062 47.366937 49.414062 46.585938 L 34.828125 32 L 49.414062 17.414062 C 50.195063 16.633063 50.195062 15.366938 49.414062 14.585938 C 48.633062 13.804938 47.366937 13.804938 46.585938 14.585938 L 32 29.171875 L 17.414062 14.585938 C 17.023062 14.194938 16.512 14 16 14 z"></path>
+                </svg>
               </span>
             </div>
           )}
-           {isMakeModalOpen && (
-          <div className="cfs-modal">
-            <div className="cfs-modal-content"  onClick={(e) => e.stopPropagation()}>
-              <div className="cfs-modal-header">
-                <span
-                  onClick={() => setIsMakeModalOpen(false)}
-                  className="cfs-close"
-                >
-                  ×
-                </span>
-              </div>
-
-              <div className="cfs-modal-body">
-                <div className="cfs-modal-search-section">
-                  <h5 className="cfs-filter-label">Search Manufacturer</h5>
-
-                  {/* 🔍 Search Input */}
-                  <input
-                    type="text"
-                    placeholder="Search make..."
-                    className="filter-dropdown cfs-select-input"
-                    autoComplete="off"
-                    value={searchMake}
-                    onChange={(e) => {
-                      const query = e.target.value.toLowerCase();
-                      setSearchMake(e.target.value);
-                      if (!query.trim()) {
-                        setFilteredMakes([]);
-                        return;
-                      }
-                      setFilteredMakes(
-                        makes.filter((m) =>
-                          m.name.toLowerCase().includes(query)
-                        )
-                      );
-                    }}
-                  />
-
-                  {/* 🔽 Filtered Makes */}
-                  {filteredMakes.length > 0 && (
-                    <ul className="location-suggestions">
-                      {filteredMakes.map((make) => (
-                        <li
-                        key={make.slug}
-                        className={`suggestion-item ${
-                          selectedMakeTemp === make.slug ? "selected" : ""
-                        }`}
-                        onClick={(e) => e.stopPropagation()}
-                        onMouseDown={() => {
-  setSearchMake(make.name);
-  setSelectedMakeTemp(make.slug);
-  // setSelectedMakeName(make.name);
-  setFilteredMakes([]);
-
-  // ✅ BACKGROUND API CALL (popup close illa)
-  const updatedFilters: Filters = {
-    ...currentFilters,
-    make: make.slug,
-    model: undefined,
-    page: 1,
-  };
-
-   
-
-  // onFilterChange?.(updatedFilters);
-   setFilters(updatedFilters);
- filtersInitialized.current = true;
-
-    // startTransition(() => {
-    //   updateAllFiltersAndURL(updatedFilters);
-    // });
-
- }}
-
-                        >
-                          {make.name} 
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              </div>
-
-
-              <div className="cfs-modal-footer">
-               <button
-  type="button"
-  className="cfs-btn btn"
-  onClick={() => {
-    if (!selectedMakeTemp) return;
-
-    const updatedFilters: Filters = {
-      ...currentFilters,
-      make: selectedMakeTemp,
-      model: undefined,
-      page: 1,
-    };
-
-    // 🔥 show skeleton (UX)
-    triggerGlobalLoaders();
-
-    // ✅ IF API NOT already called → call now
-    if (!makeApiCalledRef.current) {
-      setFilters(updatedFilters);
-      filtersInitialized.current = true;
-
-     }
-
-    // ✅ ALWAYS update URL (no API)
-    startTransition(() => {
-      updateAllFiltersAndURL(updatedFilters);
-    });
-
-    // UI sync
-    setSelectedMake(selectedMakeTemp);
-
-    // reset flag
-    makeApiCalledRef.current = false;
-
-    // close popup
-    setIsMakeModalOpen(false);
-    setMakeOpen(false);
-    setModelOpen(true);
-  }}
->
-  Search56
-</button>
-
-
-              </div>
-            </div>
-          </div>
-        )}
         </div>
-
-        
         {selectedMake && selectedMakeName && (
           <div className="cs-full_width_section">
             <div
               className="filter-accordion"
-              onClick={() => toggle(setModelOpen)}
+              style={{
+                cursor: "pointer",
+              }}
+              onClick={() => setIsModalMakeOpen(true)}
             >
               <h5 className="cfs-filter-label">Model</h5>
-              <BiChevronDown
-                style={{
-                  cursor: "pointer",
-                }}
-              />
+              <BiChevronDown />
             </div>
             {selectedModelName && (
               <div className="filter-chip">
@@ -2529,7 +2731,7 @@ categoryApiCalledRef.current = true;
                     };
                     setFilters(updatedFilters);
                     updateAllFiltersAndURL(updatedFilters);
-                    setModelOpen(true);
+                    setIsModalMakeOpen(true);
                   }}
 
                   // const updatedFilters: Filters = {
@@ -2552,39 +2754,159 @@ categoryApiCalledRef.current = true;
                   //   );
                   // }}
                 >
-                  ×
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    x="0px"
+                    y="0px"
+                    width="100"
+                    height="100"
+                    viewBox="0 0 64 64"
+                  >
+                    <path d="M 16 14 C 15.488 14 14.976938 14.194937 14.585938 14.585938 C 13.804937 15.366937 13.804937 16.633063 14.585938 17.414062 L 29.171875 32 L 14.585938 46.585938 C 13.804938 47.366938 13.804937 48.633063 14.585938 49.414062 C 14.976937 49.805062 15.488 50 16 50 C 16.512 50 17.023062 49.805062 17.414062 49.414062 L 32 34.828125 L 46.585938 49.414062 C 47.366938 50.195063 48.633063 50.195062 49.414062 49.414062 C 50.195063 48.633062 50.195062 47.366937 49.414062 46.585938 L 34.828125 32 L 49.414062 17.414062 C 50.195063 16.633063 50.195062 15.366938 49.414062 14.585938 C 48.633062 13.804938 47.366937 13.804938 46.585938 14.585938 L 32 29.171875 L 17.414062 14.585938 C 17.023062 14.194938 16.512 14 16 14 z"></path>
+                  </svg>
                 </span>
               </div>
             )}
 
-            {modelOpen && (
-              <div className="filter-accordion-items">
-                {(showAllModels ? model : model.slice(0, 5)).map((mod) => (
-                  <div
-                    key={mod.slug}
-                    className={`filter-accordion-item ${
-                      selectedModel === mod.slug ? "selected" : ""
-                    }`}
-                    onClick={() => handleModelSelect(mod)}
-                  >
-                    {mod.name}
-                  </div>
-                ))}
+            {isModalMakeOpen && (
+              // <div className="filter-accordion-items">
+              //   {(showAllModels ? model : model.slice(0, 5)).map((mod) => (
+              //     <div
 
-                {model.length > 5 && (
-                  <div
-                    className="show-more-less"
-                    style={{
-                      marginTop: "8px",
-                      cursor: "pointer",
-                      color: "#0070f3",
-                      fontWeight: "500",
-                    }}
-                    onClick={() => setShowAllModels(!showAllModels)}
-                  >
-                    {showAllModels ? "Show Less" : "Show More"}
+              //       key={mod.slug}
+              //       className={`filter-accordion-item ${
+              //         selectedModel === mod.slug ? "selected" : ""
+              //       }`}
+              //       onClick={() => handleModelSelect(mod)}
+              //     >
+
+              //       {mod.name}
+              //     </div>
+              //   ))}
+
+              //   {model.length > 5 && (
+              //     <div
+              //       className="show-more-less"
+              //       style={{
+              //         marginTop: "8px",
+              //         cursor: "pointer",
+              //         color: "#0070f3",
+              //         fontWeight: "500",
+              //       }}
+              //       onClick={() => setShowAllModels(!showAllModels)}
+              //     >
+              //       {showAllModels ? "Show Less" : "Show More"}
+              //     </div>
+              //   )}
+              // </div>
+              <div className="cfs-modal">
+                <div
+                  className="cfs-modal-content"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {/* Header */}
+                  <div className="cfs-modal-header">
+                    <h5 className="cfs-filter-label">Search by Model</h5>
+                    <span
+                      className="cfs-close"
+                      onClick={() => setIsModalMakeOpen(false)}
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        x="0px"
+                        y="0px"
+                        width="100"
+                        height="100"
+                        viewBox="0 0 64 64"
+                      >
+                        <path d="M 16 14 C 15.488 14 14.976938 14.194937 14.585938 14.585938 C 13.804937 15.366937 13.804937 16.633063 14.585938 17.414062 L 29.171875 32 L 14.585938 46.585938 C 13.804938 47.366938 13.804937 48.633063 14.585938 49.414062 C 14.976937 49.805062 15.488 50 16 50 C 16.512 50 17.023062 49.805062 17.414062 49.414062 L 32 34.828125 L 46.585938 49.414062 C 47.366938 50.195063 48.633063 50.195062 49.414062 49.414062 C 50.195063 48.633062 50.195062 47.366937 49.414062 46.585938 L 34.828125 32 L 49.414062 17.414062 C 50.195063 16.633063 50.195062 15.366938 49.414062 14.585938 C 48.633062 13.804938 47.366937 13.804938 46.585938 14.585938 L 32 29.171875 L 17.414062 14.585938 C 17.023062 14.194938 16.512 14 16 14 z"></path>
+                      </svg>
+                    </span>
                   </div>
-                )}
+
+                  {/* Body */}
+                  <div className="cfs-modal-body">
+                    <div className="cfs-modal-search-section">
+                      <ul className="location-suggestions category-list">
+                        {modelCounts.map((mod) => (
+                          <li key={mod.model_slug} className="category-item">
+                            <label className="category-checkbox-row checkbox">
+                              <div className="d-flex align-items-center">
+                                <input
+                                  type="checkbox"
+                                  className="checkbox__trigger visuallyhidden"
+                                  checked={tempModel === mod.model_slug}
+                                  onChange={() => {
+                                    setTempModel(mod.model_slug);
+                                    triggerOptimizeApi("model", mod.model_slug); // ✅
+                                  }}
+                                />
+                                <span className="checkbox__symbol">
+                                  <svg
+                                    aria-hidden="true"
+                                    className="icon-checkbox"
+                                    width="28px"
+                                    height="28px"
+                                    viewBox="0 0 28 28"
+                                    version="1"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                  >
+                                    <path d="M4 14l8 7L24 7"></path>
+                                  </svg>
+                                </span>
+                                <span className="category-name">
+                                  {mod.model_slug}
+                                </span>
+                              </div>
+                              <div>
+                                <span className="category-count">
+                                  ({mod.product_count})
+                                </span>
+                              </div>
+                            </label>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+
+                  {/* Footer */}
+                  <div className="cfs-modal-footer">
+                    <button
+                      className="cfs-btn btn"
+                      onClick={() => {
+                        const finalModel = tempModel || undefined;
+
+                        triggerGlobalLoaders(); // ✅ skeleton ONLY HERE
+
+                        const updatedFilters = {
+                          ...currentFilters,
+                          model: finalModel,
+                          page: 1,
+                        };
+
+                        // ✅ FINAL COMMIT
+                        setFilters(updatedFilters);
+                        filtersInitialized.current = true;
+
+                        startTransition(() => {
+                          updateAllFiltersAndURL(updatedFilters); // ✅ FETCH + URL
+                        });
+
+                        // UI sync
+                        setSelectedModel(finalModel || null);
+                        setSelectedModelName(
+                          modelCounts.find((m) => m.model_slug === finalModel)
+                            ?.model_slug || null,
+                        );
+
+                        setIsModalMakeOpen(false);
+                      }}
+                    >
+                      Search
+                    </button>
+                  </div>
+                </div>
               </div>
             )}
           </div>
@@ -2593,50 +2915,18 @@ categoryApiCalledRef.current = true;
         {/* ATM Range */}
         {/* ATM Range */}
         {/* ATM Range */}
-        <div className="cs-full_width_section">
-          <h5 className="cfs-filter-label">ATM</h5>
-          <div className="row">
-            {/* ATM From */}
-            <div className="col-6">
-              <h6 className="cfs-filter-label-sub">From</h6>
-              <select
-                className="cfs-select-input"
-                value={atmFrom?.toString() || ""}
-                onChange={(e) => {
-                  const val = e.target.value ? parseInt(e.target.value) : null;
-                  handleATMChange(val, atmTo); // ✅ pass current `atmTo`
-                }}
-              >
-                <option value="">Min</option>
-                {atm.map((val) => (
-                  <option key={val} value={val}>
-                    {val.toLocaleString()} kg
-                  </option>
-                ))}
-              </select>
-            </div>
 
-            {/* ATM To */}
-            <div className="col-6">
-              <h6 className="cfs-filter-label-sub">To</h6>
-              <select
-                className="cfs-select-input"
-                value={atmTo?.toString() || ""}
-                onChange={(e) => {
-                  const val = e.target.value ? parseInt(e.target.value) : null;
-                  handleATMChange(atmFrom, val); // ✅ pass current `atmFrom`
-                }}
-              >
-                <option value="">Max</option>
-                {atm
-                  .filter((val) => !atmFrom || val > atmFrom) // ✅ Show only values >= From
-                  .map((val) => (
-                    <option key={val} value={val}>
-                      {val.toLocaleString()} kg
-                    </option>
-                  ))}
-              </select>
-            </div>
+        <div className="cs-full_width_section">
+          <div
+            className="filter-accordion"
+            onClick={() => {
+              setTempAtmFrom(atmFrom);
+              setTempAtmTo(atmTo);
+              setIsATMModalOpen(true);
+            }}
+          >
+            <h5 className="cfs-filter-label">ATM</h5>
+            <BiChevronDown />
           </div>
 
           {/* ✅ Filter Chip Display */}
@@ -2667,69 +2957,224 @@ categoryApiCalledRef.current = true;
                   });
                 }}
               >
-                ×
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  x="0px"
+                  y="0px"
+                  width="100"
+                  height="100"
+                  viewBox="0 0 64 64"
+                >
+                  <path d="M 16 14 C 15.488 14 14.976938 14.194937 14.585938 14.585938 C 13.804937 15.366937 13.804937 16.633063 14.585938 17.414062 L 29.171875 32 L 14.585938 46.585938 C 13.804938 47.366938 13.804937 48.633063 14.585938 49.414062 C 14.976937 49.805062 15.488 50 16 50 C 16.512 50 17.023062 49.805062 17.414062 49.414062 L 32 34.828125 L 46.585938 49.414062 C 47.366938 50.195063 48.633063 50.195062 49.414062 49.414062 C 50.195063 48.633062 50.195062 47.366937 49.414062 46.585938 L 34.828125 32 L 49.414062 17.414062 C 50.195063 16.633063 50.195062 15.366938 49.414062 14.585938 C 48.633062 13.804938 47.366937 13.804938 46.585938 14.585938 L 32 29.171875 L 17.414062 14.585938 C 17.023062 14.194938 16.512 14 16 14 z"></path>
+                </svg>
               </span>
             </div>
           )}
         </div>
 
-        {/* Price Range */}
-        <div className="cs-full_width_section">
-          <h5 className="cfs-filter-label">Price</h5>
-          <div className="row">
-            <div className="col-6">
-              <h6 className="cfs-filter-label-sub">From</h6>
-              <select
-                className="cfs-select-input"
-                value={minPrice?.toString() || ""}
-                onChange={(e) => {
-                  const val = e.target.value ? parseInt(e.target.value) : null;
-                  triggerGlobalLoaders();
-                  setMinPrice(val);
-                  const updated: Filters = {
-                    ...currentFilters,
-                    from_price: val ?? undefined,
-                    to_price: maxPrice ?? undefined,
-                  };
-                  commit(updated);
-                }}
-              >
-                <option value="">Min</option>
-                {price.map((val) => (
-                  <option key={val} value={val}>
-                    ${val.toLocaleString()}
-                  </option>
-                ))}
-              </select>
-            </div>
+        {isATMModalOpen && (
+          <div className="cfs-modal">
+            <div
+              className="cfs-modal-content"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="cfs-modal-header">
+                <h5 className="cfs-filter-label">Search by ATM</h5>
+                <span
+                  className="cfs-close"
+                  onClick={() => setIsATMModalOpen(false)}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    x="0px"
+                    y="0px"
+                    width="100"
+                    height="100"
+                    viewBox="0 0 64 64"
+                  >
+                    <path d="M 16 14 C 15.488 14 14.976938 14.194937 14.585938 14.585938 C 13.804937 15.366937 13.804937 16.633063 14.585938 17.414062 L 29.171875 32 L 14.585938 46.585938 C 13.804938 47.366938 13.804937 48.633063 14.585938 49.414062 C 14.976937 49.805062 15.488 50 16 50 C 16.512 50 17.023062 49.805062 17.414062 49.414062 L 32 34.828125 L 46.585938 49.414062 C 47.366938 50.195063 48.633063 50.195062 49.414062 49.414062 C 50.195063 48.633062 50.195062 47.366937 49.414062 46.585938 L 34.828125 32 L 49.414062 17.414062 C 50.195063 16.633063 50.195062 15.366938 49.414062 14.585938 C 48.633062 13.804938 47.366937 13.804938 46.585938 14.585938 L 32 29.171875 L 17.414062 14.585938 C 17.023062 14.194938 16.512 14 16 14 z"></path>
+                  </svg>
+                </span>
+              </div>
 
-            <div className="col-6">
-              <h6 className="cfs-filter-label-sub">To</h6>
-              <select
-                className="cfs-select-input"
-                value={maxPrice?.toString() || ""}
-                onChange={(e) => {
-                  const val = e.target.value ? parseInt(e.target.value) : null;
-                  triggerGlobalLoaders();
-                  setMaxPrice(val);
-                  const updated: Filters = {
-                    ...currentFilters,
-                    from_price: minPrice ?? undefined,
-                    to_price: val ?? undefined,
-                  };
-                  commit(updated);
-                }}
-              >
-                <option value="">Max</option>
-                {price
-                  .filter((val) => !minPrice || val > minPrice)
-                  .map((val) => (
-                    <option key={val} value={val}>
-                      ${val.toLocaleString()}
+              {/* Body */}
+              <div className="cfs-modal-body">
+                {/* FROM */}
+                <p className="mb-0 label-text">Min</p>
+                <select
+                  className="cfs-select-input form-select mb-3"
+                  value={tempAtmFrom ?? ""}
+                  onChange={(e) => {
+                    const val = e.target.value ? Number(e.target.value) : null;
+                    setTempAtmFrom(val);
+
+                    // 🔥 OPTIMIZE ONLY
+                    triggerOptimizeApi("atm", String(val));
+                  }}
+                >
+                  <option value="">Any</option>
+                  {atm.map((v) => (
+                    <option key={v} value={v}>
+                      {v} kg
                     </option>
                   ))}
-              </select>
+                </select>
+
+                {/* TO */}
+                <p className="mb-0 label-text">Max</p>
+                <select
+                  className="cfs-select-input form-select"
+                  value={tempAtmTo ?? ""}
+                  onChange={(e) => {
+                    const val = e.target.value ? Number(e.target.value) : null;
+                    setTempAtmTo(val);
+                  }}
+                >
+                  <option value="">Any</option>
+                  {atm
+                    .filter((v) => !tempAtmFrom || v > tempAtmFrom)
+                    .map((v) => (
+                      <option key={v} value={v}>
+                        {v} kg
+                      </option>
+                    ))}
+                </select>
+              </div>
+
+              {/* Footer */}
+              <div className="cfs-modal-footer">
+                <button
+                  className="cfs-btn btn"
+                  onClick={() => {
+                    triggerGlobalLoaders();
+
+                    const updatedFilters: Filters = {
+                      ...currentFilters,
+                      minKg: tempAtmFrom ?? undefined,
+                      maxKg: tempAtmTo ?? undefined,
+                      page: 1,
+                    };
+
+                    // ✅ FINAL COMMIT
+                    setAtmFrom(tempAtmFrom);
+                    setAtmTo(tempAtmTo);
+                    setFilters(updatedFilters);
+                    filtersInitialized.current = true;
+
+                    startTransition(() => {
+                      updateAllFiltersAndURL(updatedFilters);
+                    });
+
+                    setIsATMModalOpen(false);
+                  }}
+                >
+                  Search
+                </button>
+              </div>
             </div>
+          </div>
+        )}
+
+        {/* Price Range */}
+        {/* <div className="cs-full_width_section">
+             <h5 className="cfs-filter-label">Price</h5>
+             <div className="row">
+               <div className="col-6">
+                 <h6 className="cfs-filter-label-sub">From</h6>
+                 <select
+                   className="cfs-select-input"
+                   value={minPrice?.toString() || ""}
+                   onChange={(e) => {
+                     const val = e.target.value ? parseInt(e.target.value) : null;
+                     triggerGlobalLoaders();
+                     setMinPrice(val);
+                     const updated: Filters = {
+                       ...currentFilters,
+                       from_price: val ?? undefined,
+                       to_price: maxPrice ?? undefined,
+                     };
+                     commit(updated);
+                   }}
+                 >
+                   <option value="">Min</option>
+                   {price.map((val) => (
+                     <option key={val} value={val}>
+                       ${val.toLocaleString()}
+                     </option>
+                   ))}
+                 </select>
+               </div>
+   
+               <div className="col-6">
+                 <h6 className="cfs-filter-label-sub">To</h6>
+                 <select
+                   className="cfs-select-input"
+                   value={maxPrice?.toString() || ""}
+                   onChange={(e) => {
+                     const val = e.target.value ? parseInt(e.target.value) : null;
+                     triggerGlobalLoaders();
+                     setMaxPrice(val);
+                     const updated: Filters = {
+                       ...currentFilters,
+                       from_price: minPrice ?? undefined,
+                       to_price: val ?? undefined,
+                     };
+                     commit(updated);
+                   }}
+                 >
+                   <option value="">Max</option>
+                   {price
+                     .filter((val) => !minPrice || val > minPrice)
+                     .map((val) => (
+                       <option key={val} value={val}>
+                         ${val.toLocaleString()}
+                       </option>
+                     ))}
+                 </select>
+               </div>
+             </div>
+   
+             {(minPrice || maxPrice) && (
+               <div className="filter-chip">
+                 <span>
+                   {minPrice ? `$${minPrice.toLocaleString()}` : "Min"} –{" "}
+                   {maxPrice ? `$${maxPrice.toLocaleString()}` : "Max"}
+                 </span>
+                 <span
+                   className="filter-chip-close"
+                   onClick={() => {
+                     triggerGlobalLoaders();
+                     setMinPrice(null);
+                     setMaxPrice(null);
+                     commit({
+                       ...currentFilters,
+                       from_price: undefined,
+                       to_price: undefined,
+                     });
+                   }}
+                 >
+                   <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="100" height="100" viewBox="0 0 64 64">
+  <path d="M 16 14 C 15.488 14 14.976938 14.194937 14.585938 14.585938 C 13.804937 15.366937 13.804937 16.633063 14.585938 17.414062 L 29.171875 32 L 14.585938 46.585938 C 13.804938 47.366938 13.804937 48.633063 14.585938 49.414062 C 14.976937 49.805062 15.488 50 16 50 C 16.512 50 17.023062 49.805062 17.414062 49.414062 L 32 34.828125 L 46.585938 49.414062 C 47.366938 50.195063 48.633063 50.195062 49.414062 49.414062 C 50.195063 48.633062 50.195062 47.366937 49.414062 46.585938 L 34.828125 32 L 49.414062 17.414062 C 50.195063 16.633063 50.195062 15.366938 49.414062 14.585938 C 48.633062 13.804938 47.366937 13.804938 46.585938 14.585938 L 32 29.171875 L 17.414062 14.585938 C 17.023062 14.194938 16.512 14 16 14 z"></path>
+  </svg>
+                 </span>
+               </div>
+             )}
+           </div> */}
+        {/* PRICE */}
+
+        {/* PRICE */}
+        <div className="cs-full_width_section">
+          <div
+            className="filter-accordion"
+            onClick={() => {
+              setTempPriceFrom(minPrice);
+              setTempPriceTo(maxPrice);
+              setIsPriceModalOpen(true);
+            }}
+          >
+            <h5 className="cfs-filter-label">Price</h5>
+            <BiChevronDown />
           </div>
 
           {(minPrice || maxPrice) && (
@@ -2740,22 +3185,144 @@ categoryApiCalledRef.current = true;
               </span>
               <span
                 className="filter-chip-close"
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation();
                   triggerGlobalLoaders();
+
                   setMinPrice(null);
                   setMaxPrice(null);
-                  commit({
+
+                  const updatedFilters: Filters = {
                     ...currentFilters,
                     from_price: undefined,
                     to_price: undefined,
+                  };
+
+                  setFilters(updatedFilters);
+                  filtersInitialized.current = true;
+
+                  startTransition(() => {
+                    updateAllFiltersAndURL(updatedFilters);
                   });
                 }}
               >
-                ×
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  x="0px"
+                  y="0px"
+                  width="100"
+                  height="100"
+                  viewBox="0 0 64 64"
+                >
+                  <path d="M 16 14 C 15.488 14 14.976938 14.194937 14.585938 14.585938 C 13.804937 15.366937 13.804937 16.633063 14.585938 17.414062 L 29.171875 32 L 14.585938 46.585938 C 13.804938 47.366938 13.804937 48.633063 14.585938 49.414062 C 14.976937 49.805062 15.488 50 16 50 C 16.512 50 17.023062 49.805062 17.414062 49.414062 L 32 34.828125 L 46.585938 49.414062 C 47.366938 50.195063 48.633063 50.195062 49.414062 49.414062 C 50.195063 48.633062 50.195062 47.366937 49.414062 46.585938 L 34.828125 32 L 49.414062 17.414062 C 50.195063 16.633063 50.195062 15.366938 49.414062 14.585938 C 48.633062 13.804938 47.366937 13.804938 46.585938 14.585938 L 32 29.171875 L 17.414062 14.585938 C 17.023062 14.194938 16.512 14 16 14 z"></path>
+                </svg>
               </span>
             </div>
           )}
         </div>
+        {isPriceModalOpen && (
+          <div className="cfs-modal">
+            <div
+              className="cfs-modal-content"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="cfs-modal-header">
+                <h5 className="cfs-filter-label">Search by Price</h5>
+                <span
+                  className="cfs-close"
+                  onClick={() => setIsPriceModalOpen(false)}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    x="0px"
+                    y="0px"
+                    width="100"
+                    height="100"
+                    viewBox="0 0 64 64"
+                  >
+                    <path d="M 16 14 C 15.488 14 14.976938 14.194937 14.585938 14.585938 C 13.804937 15.366937 13.804937 16.633063 14.585938 17.414062 L 29.171875 32 L 14.585938 46.585938 C 13.804938 47.366938 13.804937 48.633063 14.585938 49.414062 C 14.976937 49.805062 15.488 50 16 50 C 16.512 50 17.023062 49.805062 17.414062 49.414062 L 32 34.828125 L 46.585938 49.414062 C 47.366938 50.195063 48.633063 50.195062 49.414062 49.414062 C 50.195063 48.633062 50.195062 47.366937 49.414062 46.585938 L 34.828125 32 L 49.414062 17.414062 C 50.195063 16.633063 50.195062 15.366938 49.414062 14.585938 C 48.633062 13.804938 47.366937 13.804938 46.585938 14.585938 L 32 29.171875 L 17.414062 14.585938 C 17.023062 14.194938 16.512 14 16 14 z"></path>
+                  </svg>
+                </span>
+              </div>
+
+              {/* Body */}
+              <div className="cfs-modal-body">
+                {/* FROM */}
+                <p className="mb-0 label-text">Min</p>
+                <select
+                  className="cfs-select-input form-select mb-3"
+                  value={tempPriceFrom ?? ""}
+                  onChange={(e) => {
+                    const val = e.target.value ? Number(e.target.value) : null;
+                    setTempPriceFrom(val);
+
+                    // ✅ background optimize ONLY (no URL, no data)
+                    triggerOptimizeApi("keyword", String(val));
+                  }}
+                >
+                  <option value="">Any</option>
+                  {price.map((v) => (
+                    <option key={v} value={v}>
+                      ${v.toLocaleString()}
+                    </option>
+                  ))}
+                </select>
+
+                {/* TO */}
+                <p className="mb-0 label-text">Max</p>
+                <select
+                  className="cfs-select-input form-select"
+                  value={tempPriceTo ?? ""}
+                  onChange={(e) => {
+                    const val = e.target.value ? Number(e.target.value) : null;
+                    setTempPriceTo(val);
+                  }}
+                >
+                  <option value="">Any</option>
+                  {price
+                    .filter((v) => !tempPriceFrom || v > tempPriceFrom)
+                    .map((v) => (
+                      <option key={v} value={v}>
+                        ${v.toLocaleString()}
+                      </option>
+                    ))}
+                </select>
+              </div>
+
+              {/* Footer */}
+              <div className="cfs-modal-footer">
+                <button
+                  className="cfs-btn btn"
+                  onClick={() => {
+                    triggerGlobalLoaders();
+
+                    const updatedFilters: Filters = {
+                      ...currentFilters,
+                      from_price: tempPriceFrom ?? undefined,
+                      to_price: tempPriceTo ?? undefined,
+                      page: 1,
+                    };
+
+                    // ✅ FINAL COMMIT (same as ATM)
+                    setMinPrice(tempPriceFrom);
+                    setMaxPrice(tempPriceTo);
+                    setFilters(updatedFilters);
+                    filtersInitialized.current = true;
+
+                    startTransition(() => {
+                      updateAllFiltersAndURL(updatedFilters);
+                    });
+
+                    setIsPriceModalOpen(false);
+                  }}
+                >
+                  Search
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Condition Accordion */}
         <div className="cs-full_width_section">
@@ -2781,7 +3348,16 @@ categoryApiCalledRef.current = true;
                   commit({ ...currentFilters, condition: undefined });
                 }}
               >
-                ×
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  x="0px"
+                  y="0px"
+                  width="100"
+                  height="100"
+                  viewBox="0 0 64 64"
+                >
+                  <path d="M 16 14 C 15.488 14 14.976938 14.194937 14.585938 14.585938 C 13.804937 15.366937 13.804937 16.633063 14.585938 17.414062 L 29.171875 32 L 14.585938 46.585938 C 13.804938 47.366938 13.804937 48.633063 14.585938 49.414062 C 14.976937 49.805062 15.488 50 16 50 C 16.512 50 17.023062 49.805062 17.414062 49.414062 L 32 34.828125 L 46.585938 49.414062 C 47.366938 50.195063 48.633063 50.195062 49.414062 49.414062 C 50.195063 48.633062 50.195062 47.366937 49.414062 46.585938 L 34.828125 32 L 49.414062 17.414062 C 50.195063 16.633063 50.195062 15.366938 49.414062 14.585938 C 48.633062 13.804938 47.366937 13.804938 46.585938 14.585938 L 32 29.171875 L 17.414062 14.585938 C 17.023062 14.194938 16.512 14 16 14 z"></path>
+                </svg>
               </span>
             </div>
           )}
@@ -2807,213 +3383,386 @@ categoryApiCalledRef.current = true;
           )}
         </div>
 
+        {/* <div className="cs-full_width_section">
+             <h5 className="cfs-filter-label">Sleep</h5>
+             <div className="row">
+               <div className="col-6">
+                 <h6 className="cfs-filter-label-sub">From</h6>
+                 <select
+                   className="cfs-select-input"
+                   value={sleepFrom?.toString() || ""}
+                   onChange={(e) => {
+                     const val = e.target.value ? parseInt(e.target.value) : null;
+                     triggerGlobalLoaders();
+                     setSleepFrom(val);
+                     commit({
+                       ...currentFilters,
+                       from_sleep: val ?? undefined,
+                       to_sleep: sleepTo ?? currentFilters.to_sleep,
+                     });
+                   }}
+                 >
+                   <option value="">Min</option>
+                   {sleep.map((value) => (
+                     <option key={value} value={value}>
+                       {value}
+                     </option>
+                   ))}
+                 </select>
+               </div>
+   
+               <div className="col-6">
+                 <h6 className="cfs-filter-label-sub">To</h6>
+                 <select
+                   className="cfs-select-input"
+                   value={sleepTo?.toString() || ""}
+                   onChange={(e) => {
+                     const val = e.target.value ? parseInt(e.target.value) : null;
+                     triggerGlobalLoaders();
+                     setSleepTo(val);
+                     commit({
+                       ...currentFilters,
+                       from_sleep: sleepFrom ?? currentFilters.from_sleep,
+                       to_sleep: val ?? undefined,
+                     });
+                   }}
+                 >
+                   <option value="">Max</option>
+                   {sleep
+                     .filter((value) => !sleepFrom || value > sleepFrom)
+                     .map((value) => (
+                       <option key={value} value={value}>
+                         {value}
+                       </option>
+                     ))}
+                 </select>
+               </div>
+             </div>
+   
+             {(sleepFrom || sleepTo) && (
+               <div className="filter-chip">
+                 <span>
+                   {sleepFrom ? sleepFrom : "Min"} – {sleepTo ? sleepTo : "Max"}{" "}
+                   People
+                 </span>
+                 <span
+                   className="filter-chip-close"
+                   onClick={() => {
+                     triggerGlobalLoaders();
+   
+                     setSleepFrom(null);
+                     setSleepTo(null);
+                     commit({
+                       ...currentFilters,
+                       from_sleep: undefined,
+                       to_sleep: undefined,
+                     });
+                   }}
+                 >
+                   <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="100" height="100" viewBox="0 0 64 64">
+  <path d="M 16 14 C 15.488 14 14.976938 14.194937 14.585938 14.585938 C 13.804937 15.366937 13.804937 16.633063 14.585938 17.414062 L 29.171875 32 L 14.585938 46.585938 C 13.804938 47.366938 13.804937 48.633063 14.585938 49.414062 C 14.976937 49.805062 15.488 50 16 50 C 16.512 50 17.023062 49.805062 17.414062 49.414062 L 32 34.828125 L 46.585938 49.414062 C 47.366938 50.195063 48.633063 50.195062 49.414062 49.414062 C 50.195063 48.633062 50.195062 47.366937 49.414062 46.585938 L 34.828125 32 L 49.414062 17.414062 C 50.195063 16.633063 50.195062 15.366938 49.414062 14.585938 C 48.633062 13.804938 47.366937 13.804938 46.585938 14.585938 L 32 29.171875 L 17.414062 14.585938 C 17.023062 14.194938 16.512 14 16 14 z"></path>
+  </svg>
+                 </span>
+               </div>
+             )}
+           </div> */}
+        {/* ================= SLEEP ================= */}
         <div className="cs-full_width_section">
-          <h5 className="cfs-filter-label">Sleep</h5>
-          <div className="row">
-            <div className="col-6">
-              <h6 className="cfs-filter-label-sub">From</h6>
-              <select
-                className="cfs-select-input"
-                value={sleepFrom?.toString() || ""}
-                onChange={(e) => {
-                  const val = e.target.value ? parseInt(e.target.value) : null;
-                  triggerGlobalLoaders();
-                  setSleepFrom(val);
-                  commit({
-                    ...currentFilters,
-                    from_sleep: val ?? undefined,
-                    to_sleep: sleepTo ?? currentFilters.to_sleep,
-                  });
-                }}
-              >
-                <option value="">Min</option>
-                {sleep.map((value) => (
-                  <option key={value} value={value}>
-                    {value}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="col-6">
-              <h6 className="cfs-filter-label-sub">To</h6>
-              <select
-                className="cfs-select-input"
-                value={sleepTo?.toString() || ""}
-                onChange={(e) => {
-                  const val = e.target.value ? parseInt(e.target.value) : null;
-                  triggerGlobalLoaders();
-                  setSleepTo(val);
-                  commit({
-                    ...currentFilters,
-                    from_sleep: sleepFrom ?? currentFilters.from_sleep,
-                    to_sleep: val ?? undefined,
-                  });
-                }}
-              >
-                <option value="">Max</option>
-                {sleep
-                  .filter((value) => !sleepFrom || value > sleepFrom)
-                  .map((value) => (
-                    <option key={value} value={value}>
-                      {value}
-                    </option>
-                  ))}
-              </select>
-            </div>
+          <div
+            className="filter-accordion"
+            onClick={() => {
+              setTempSleepFrom(sleepFrom);
+              setTempSleepTo(sleepTo);
+              setIsSleepModalOpen(true);
+            }}
+          >
+            <h5 className="cfs-filter-label">Sleep</h5>
+            <BiChevronDown />
           </div>
 
           {(sleepFrom || sleepTo) && (
             <div className="filter-chip">
               <span>
-                {sleepFrom ? sleepFrom : "Min"} – {sleepTo ? sleepTo : "Max"}{" "}
-                People
+                {sleepFrom ?? "Min"} – {sleepTo ?? "Max"} People
               </span>
               <span
                 className="filter-chip-close"
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation();
                   triggerGlobalLoaders();
 
                   setSleepFrom(null);
                   setSleepTo(null);
-                  commit({
+
+                  const updatedFilters: Filters = {
                     ...currentFilters,
                     from_sleep: undefined,
                     to_sleep: undefined,
-                  });
+                  };
+
+                  setFilters(updatedFilters);
+                  startTransition(() => updateAllFiltersAndURL(updatedFilters));
                 }}
               >
-                ×
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  x="0px"
+                  y="0px"
+                  width="100"
+                  height="100"
+                  viewBox="0 0 64 64"
+                >
+                  <path d="M 16 14 C 15.488 14 14.976938 14.194937 14.585938 14.585938 C 13.804937 15.366937 13.804937 16.633063 14.585938 17.414062 L 29.171875 32 L 14.585938 46.585938 C 13.804938 47.366938 13.804937 48.633063 14.585938 49.414062 C 14.976937 49.805062 15.488 50 16 50 C 16.512 50 17.023062 49.805062 17.414062 49.414062 L 32 34.828125 L 46.585938 49.414062 C 47.366938 50.195063 48.633063 50.195062 49.414062 49.414062 C 50.195063 48.633062 50.195062 47.366937 49.414062 46.585938 L 34.828125 32 L 49.414062 17.414062 C 50.195063 16.633063 50.195062 15.366938 49.414062 14.585938 C 48.633062 13.804938 47.366937 13.804938 46.585938 14.585938 L 32 29.171875 L 17.414062 14.585938 C 17.023062 14.194938 16.512 14 16 14 z"></path>
+                </svg>
               </span>
             </div>
           )}
         </div>
 
+        {isSleepModalOpen && (
+          <div className="cfs-modal">
+            <div
+              className="cfs-modal-content"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="cfs-modal-header">
+                <h5 className="cfs-filter-label">Search by Sleep</h5>
+                <span
+                  className="cfs-close"
+                  onClick={() => setIsSleepModalOpen(false)}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    x="0px"
+                    y="0px"
+                    width="100"
+                    height="100"
+                    viewBox="0 0 64 64"
+                  >
+                    <path d="M 16 14 C 15.488 14 14.976938 14.194937 14.585938 14.585938 C 13.804937 15.366937 13.804937 16.633063 14.585938 17.414062 L 29.171875 32 L 14.585938 46.585938 C 13.804938 47.366938 13.804937 48.633063 14.585938 49.414062 C 14.976937 49.805062 15.488 50 16 50 C 16.512 50 17.023062 49.805062 17.414062 49.414062 L 32 34.828125 L 46.585938 49.414062 C 47.366938 50.195063 48.633063 50.195062 49.414062 49.414062 C 50.195063 48.633062 50.195062 47.366937 49.414062 46.585938 L 34.828125 32 L 49.414062 17.414062 C 50.195063 16.633063 50.195062 15.366938 49.414062 14.585938 C 48.633062 13.804938 47.366937 13.804938 46.585938 14.585938 L 32 29.171875 L 17.414062 14.585938 C 17.023062 14.194938 16.512 14 16 14 z"></path>
+                  </svg>
+                </span>
+              </div>
+
+              {/* Body */}
+              <div className="cfs-modal-body">
+                {/* FROM */}
+                <p className="mb-0 label-text">Min</p>
+                <select
+                  className="cfs-select-input form-select mb-3"
+                  value={tempSleepFrom ?? ""}
+                  onChange={(e) => {
+                    const val = e.target.value ? Number(e.target.value) : null;
+                    setTempSleepFrom(val);
+                    // 🔥 background only (no commit)
+                  }}
+                >
+                  <option value="">Any</option>
+                  {sleep.map((v) => (
+                    <option key={v} value={v}>
+                      {v}
+                    </option>
+                  ))}
+                </select>
+
+                {/* TO */}
+                <p className="mb-0 label-text">Max</p>
+                <select
+                  className="cfs-select-input form-select"
+                  value={tempSleepTo ?? ""}
+                  onChange={(e) => {
+                    const val = e.target.value ? Number(e.target.value) : null;
+                    setTempSleepTo(val);
+                  }}
+                >
+                  <option value="">Any</option>
+                  {sleep
+                    .filter((v) => !tempSleepFrom || v > tempSleepFrom)
+                    .map((v) => (
+                      <option key={v} value={v}>
+                        {v}
+                      </option>
+                    ))}
+                </select>
+              </div>
+
+              {/* Footer */}
+              <div className="cfs-modal-footer">
+                <button
+                  className="cfs-btn btn"
+                  onClick={() => {
+                    triggerGlobalLoaders();
+
+                    const updatedFilters: Filters = {
+                      ...currentFilters,
+                      from_sleep: tempSleepFrom ?? undefined,
+                      to_sleep: tempSleepTo ?? undefined,
+                      page: 1,
+                    };
+
+                    setSleepFrom(tempSleepFrom);
+                    setSleepTo(tempSleepTo);
+                    setFilters(updatedFilters);
+                    filtersInitialized.current = true;
+
+                    startTransition(() =>
+                      updateAllFiltersAndURL(updatedFilters),
+                    );
+                    setIsSleepModalOpen(false);
+                  }}
+                >
+                  Search
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Year Range */}
 
+        {/* ================= YEAR ================= */}
         <div className="cs-full_width_section">
-          {/* Accordion Header */}
-          <div className="filter-accordion" onClick={() => toggle(setYearOpen)}>
+          <div
+            className="filter-accordion"
+            onClick={() => {
+              setTempYear(yearFrom); // reuse yearFrom as selected year
+              setIsYearModalOpen(true);
+            }}
+          >
             <h5 className="cfs-filter-label">Year</h5>
-            <BiChevronDown
-              style={{
-                cursor: "pointer",
-              }}
-            />
+            <BiChevronDown />
           </div>
 
-          {/* Selected Year Chip */}
-          {yearFrom && yearTo && (
+          {yearFrom && (
             <div className="filter-chip">
               <span>{yearFrom}</span>
               <span
                 className="filter-chip-close"
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation();
                   triggerGlobalLoaders();
 
                   setYearFrom(null);
                   setYearTo(null);
-                  commit({
+
+                  const updatedFilters: Filters = {
                     ...currentFilters,
                     acustom_fromyears: undefined,
                     acustom_toyears: undefined,
-                  });
+                  };
+
+                  setFilters(updatedFilters);
+                  startTransition(() => updateAllFiltersAndURL(updatedFilters));
                 }}
               >
-                ×
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  x="0px"
+                  y="0px"
+                  width="100"
+                  height="100"
+                  viewBox="0 0 64 64"
+                >
+                  <path d="M 16 14 C 15.488 14 14.976938 14.194937 14.585938 14.585938 C 13.804937 15.366937 13.804937 16.633063 14.585938 17.414062 L 29.171875 32 L 14.585938 46.585938 C 13.804938 47.366938 13.804937 48.633063 14.585938 49.414062 C 14.976937 49.805062 15.488 50 16 50 C 16.512 50 17.023062 49.805062 17.414062 49.414062 L 32 34.828125 L 46.585938 49.414062 C 47.366938 50.195063 48.633063 50.195062 49.414062 49.414062 C 50.195063 48.633062 50.195062 47.366937 49.414062 46.585938 L 34.828125 32 L 49.414062 17.414062 C 50.195063 16.633063 50.195062 15.366938 49.414062 14.585938 C 48.633062 13.804938 47.366937 13.804938 46.585938 14.585938 L 32 29.171875 L 17.414062 14.585938 C 17.023062 14.194938 16.512 14 16 14 z"></path>
+                </svg>
               </span>
             </div>
           )}
+        </div>
+        {isYearModalOpen && (
+          <div className="cfs-modal">
+            <div
+              className="cfs-modal-content"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="cfs-modal-header">
+                <h5 className="cfs-filter-label">Search by Year</h5>
+                <span
+                  className="cfs-close"
+                  onClick={() => setIsYearModalOpen(false)}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    x="0px"
+                    y="0px"
+                    width="100"
+                    height="100"
+                    viewBox="0 0 64 64"
+                  >
+                    <path d="M 16 14 C 15.488 14 14.976938 14.194937 14.585938 14.585938 C 13.804937 15.366937 13.804937 16.633063 14.585938 17.414062 L 29.171875 32 L 14.585938 46.585938 C 13.804938 47.366938 13.804937 48.633063 14.585938 49.414062 C 14.976937 49.805062 15.488 50 16 50 C 16.512 50 17.023062 49.805062 17.414062 49.414062 L 32 34.828125 L 46.585938 49.414062 C 47.366938 50.195063 48.633063 50.195062 49.414062 49.414062 C 50.195063 48.633062 50.195062 47.366937 49.414062 46.585938 L 34.828125 32 L 49.414062 17.414062 C 50.195063 16.633063 50.195062 15.366938 49.414062 14.585938 C 48.633062 13.804938 47.366937 13.804938 46.585938 14.585938 L 32 29.171875 L 17.414062 14.585938 C 17.023062 14.194938 16.512 14 16 14 z"></path>
+                  </svg>
+                </span>
+              </div>
 
-          {/* Dropdown Items */}
-          {yearOpen && (
-            <div className="filter-accordion-items">
-              {years.map((yearValue, index) => (
-                <div
-                  key={index}
-                  className={`filter-accordion-item ${
-                    yearFrom === yearValue ? "selected" : ""
-                  }`}
-                  onClick={() => {
-                    triggerGlobalLoaders();
-                    const already = yearFrom === yearValue;
-                    const selectedValue = already ? null : yearValue;
-
-                    setYearFrom(selectedValue);
-                    setYearTo(selectedValue);
-                    setYearOpen(false);
-
-                    commit({
-                      ...currentFilters,
-                      acustom_fromyears: selectedValue ?? undefined,
-                      acustom_toyears: selectedValue ?? undefined,
-                    });
+              {/* Body */}
+              <div className="cfs-modal-body">
+                <select
+                  className="cfs-select-input form-select"
+                  value={tempYear ?? ""}
+                  onChange={(e) => {
+                    const val = e.target.value ? Number(e.target.value) : null;
+                    setTempYear(val);
+                    // 🔥 background only – no commit
                   }}
                 >
-                  {yearValue}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+                  <option value="">Any</option>
 
-        {/* Length Range */}
-        <div className="cs-full_width_section">
-          <h5 className="cfs-filter-label">Length</h5>
-          <div className="row">
-            <div className="col-6">
-              <h6 className="cfs-filter-label-sub">From</h6>
-              <select
-                className="cfs-select-input"
-                value={lengthFrom || ""}
-                onChange={(e) => {
-                  const val = e.target.value ? parseInt(e.target.value) : null;
-                  triggerGlobalLoaders();
-
-                  setLengthFrom(val);
-                  commit({
-                    ...currentFilters,
-                    from_length: val ?? undefined,
-                    to_length: lengthTo ?? undefined,
-                  });
-                }}
-              >
-                <option value="">Min</option>
-                {length.map((value, idx) => (
-                  <option key={idx} value={value}>
-                    {value} ft
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="col-6">
-              <h6 className="cfs-filter-label-sub">To</h6>
-              <select
-                className="cfs-select-input"
-                value={lengthTo?.toString() || ""}
-                onChange={(e) => {
-                  const val = e.target.value ? parseInt(e.target.value) : null;
-                  triggerGlobalLoaders();
-
-                  setLengthTo(val);
-                  commit({
-                    ...currentFilters,
-                    from_length: lengthFrom ?? undefined,
-                    to_length: val ?? undefined,
-                  });
-                }}
-              >
-                <option value="">Max</option>
-                {length
-                  .filter((value) => !lengthFrom || value > lengthFrom)
-                  .map((value, idx) => (
-                    <option key={idx} value={value}>
-                      {value} ft
+                  {years.map((y) => (
+                    <option key={y} value={y}>
+                      {y}
                     </option>
                   ))}
-              </select>
+                </select>
+              </div>
+
+              {/* Footer */}
+              <div className="cfs-modal-footer">
+                <button
+                  className="cfs-btn btn"
+                  onClick={() => {
+                    triggerGlobalLoaders();
+
+                    const updatedFilters: Filters = {
+                      ...currentFilters,
+                      acustom_fromyears: tempYear ?? undefined,
+                      acustom_toyears: tempYear ?? undefined,
+                      page: 1,
+                    };
+
+                    setYearFrom(tempYear);
+                    setYearTo(tempYear);
+                    setFilters(updatedFilters);
+                    filtersInitialized.current = true;
+
+                    startTransition(() =>
+                      updateAllFiltersAndURL(updatedFilters),
+                    );
+                    setIsYearModalOpen(false);
+                  }}
+                >
+                  Search
+                </button>
+              </div>
             </div>
+          </div>
+        )}
+
+        {/* Length Range */}
+        {/* ================= LENGTH ================= */}
+
+        <div className="cs-full_width_section">
+          <div
+            className="filter-accordion"
+            onClick={() => {
+              setTempLengthFrom(lengthFrom);
+              setTempLengthTo(lengthTo);
+              setIsLengthModalOpen(true);
+            }}
+          >
+            <h5 className="cfs-filter-label">Length</h5>
+            <BiChevronDown />
           </div>
 
           {(lengthFrom || lengthTo) && (
@@ -3024,23 +3773,137 @@ categoryApiCalledRef.current = true;
               </span>
               <span
                 className="filter-chip-close"
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation();
                   triggerGlobalLoaders();
 
                   setLengthFrom(null);
                   setLengthTo(null);
-                  commit({
+
+                  const updatedFilters: Filters = {
                     ...currentFilters,
                     from_length: undefined,
                     to_length: undefined,
-                  });
+                  };
+
+                  setFilters(updatedFilters);
+                  startTransition(() => updateAllFiltersAndURL(updatedFilters));
                 }}
               >
-                ×
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  x="0px"
+                  y="0px"
+                  width="100"
+                  height="100"
+                  viewBox="0 0 64 64"
+                >
+                  <path d="M 16 14 C 15.488 14 14.976938 14.194937 14.585938 14.585938 C 13.804937 15.366937 13.804937 16.633063 14.585938 17.414062 L 29.171875 32 L 14.585938 46.585938 C 13.804938 47.366938 13.804937 48.633063 14.585938 49.414062 C 14.976937 49.805062 15.488 50 16 50 C 16.512 50 17.023062 49.805062 17.414062 49.414062 L 32 34.828125 L 46.585938 49.414062 C 47.366938 50.195063 48.633063 50.195062 49.414062 49.414062 C 50.195063 48.633062 50.195062 47.366937 49.414062 46.585938 L 34.828125 32 L 49.414062 17.414062 C 50.195063 16.633063 50.195062 15.366938 49.414062 14.585938 C 48.633062 13.804938 47.366937 13.804938 46.585938 14.585938 L 32 29.171875 L 17.414062 14.585938 C 17.023062 14.194938 16.512 14 16 14 z"></path>
+                </svg>
               </span>
             </div>
           )}
         </div>
+
+        {isLengthModalOpen && (
+          <div className="cfs-modal">
+            <div
+              className="cfs-modal-content"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="cfs-modal-header">
+                <h5 className="cfs-filter-label">Search by Length</h5>
+                <span
+                  className="cfs-close"
+                  onClick={() => setIsLengthModalOpen(false)}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    x="0px"
+                    y="0px"
+                    width="100"
+                    height="100"
+                    viewBox="0 0 64 64"
+                  >
+                    <path d="M 16 14 C 15.488 14 14.976938 14.194937 14.585938 14.585938 C 13.804937 15.366937 13.804937 16.633063 14.585938 17.414062 L 29.171875 32 L 14.585938 46.585938 C 13.804938 47.366938 13.804937 48.633063 14.585938 49.414062 C 14.976937 49.805062 15.488 50 16 50 C 16.512 50 17.023062 49.805062 17.414062 49.414062 L 32 34.828125 L 46.585938 49.414062 C 47.366938 50.195063 48.633063 50.195062 49.414062 49.414062 C 50.195063 48.633062 50.195062 47.366937 49.414062 46.585938 L 34.828125 32 L 49.414062 17.414062 C 50.195063 16.633063 50.195062 15.366938 49.414062 14.585938 C 48.633062 13.804938 47.366937 13.804938 46.585938 14.585938 L 32 29.171875 L 17.414062 14.585938 C 17.023062 14.194938 16.512 14 16 14 z"></path>
+                  </svg>
+                </span>
+              </div>
+
+              {/* Body */}
+              <div className="cfs-modal-body">
+                {/* FROM */}
+                <p className="mb-0 label-text">Min</p>
+                <select
+                  className="cfs-select-input form-select mb-3"
+                  value={tempLengthFrom ?? ""}
+                  onChange={(e) => {
+                    const val = e.target.value ? Number(e.target.value) : null;
+                    setTempLengthFrom(val);
+                  }}
+                >
+                  <option value="">Any</option>
+                  {length.map((v) => (
+                    <option key={v} value={v}>
+                      {v} ft
+                    </option>
+                  ))}
+                </select>
+
+                {/* TO */}
+                <p className="mb-0 label-text">Max</p>
+                <select
+                  className="cfs-select-input form-select"
+                  value={tempLengthTo ?? ""}
+                  onChange={(e) => {
+                    const val = e.target.value ? Number(e.target.value) : null;
+                    setTempLengthTo(val);
+                  }}
+                >
+                  <option value="">Any</option>
+                  {length
+                    .filter((v) => !tempLengthFrom || v > tempLengthFrom)
+                    .map((v) => (
+                      <option key={v} value={v}>
+                        {v} ft
+                      </option>
+                    ))}
+                </select>
+              </div>
+
+              {/* Footer */}
+              <div className="cfs-modal-footer">
+                <button
+                  className="cfs-btn btn"
+                  onClick={() => {
+                    triggerGlobalLoaders();
+
+                    const updatedFilters: Filters = {
+                      ...currentFilters,
+                      from_length: tempLengthFrom ?? undefined,
+                      to_length: tempLengthTo ?? undefined,
+                      page: 1,
+                    };
+
+                    setLengthFrom(tempLengthFrom);
+                    setLengthTo(tempLengthTo);
+                    setFilters(updatedFilters);
+                    filtersInitialized.current = true;
+
+                    startTransition(() =>
+                      updateAllFiltersAndURL(updatedFilters),
+                    );
+                    setIsLengthModalOpen(false);
+                  }}
+                >
+                  Search
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Keyword Search (hidden or toggle if needed) */}
         <div className="cs-full_width_section">
           <h5 className="cfs-filter-label">Keyword</h5>
@@ -3077,7 +3940,16 @@ categoryApiCalledRef.current = true;
                   updateAllFiltersAndURL(next);
                 }}
               >
-                ×
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  x="0px"
+                  y="0px"
+                  width="100"
+                  height="100"
+                  viewBox="0 0 64 64"
+                >
+                  <path d="M 16 14 C 15.488 14 14.976938 14.194937 14.585938 14.585938 C 13.804937 15.366937 13.804937 16.633063 14.585938 17.414062 L 29.171875 32 L 14.585938 46.585938 C 13.804938 47.366938 13.804937 48.633063 14.585938 49.414062 C 14.976937 49.805062 15.488 50 16 50 C 16.512 50 17.023062 49.805062 17.414062 49.414062 L 32 34.828125 L 46.585938 49.414062 C 47.366938 50.195063 48.633063 50.195062 49.414062 49.414062 C 50.195063 48.633062 50.195062 47.366937 49.414062 46.585938 L 34.828125 32 L 49.414062 17.414062 C 50.195063 16.633063 50.195062 15.366938 49.414062 14.585938 C 48.633062 13.804938 47.366937 13.804938 46.585938 14.585938 L 32 29.171875 L 17.414062 14.585938 C 17.023062 14.194938 16.512 14 16 14 z"></path>
+                </svg>
               </span>
             </div>
           )}
@@ -3086,76 +3958,256 @@ categoryApiCalledRef.current = true;
 
         {/* Modal */}
 
-       
-
-        {isModalOpen && (
+        {isMakeModalOpen && (
           <div className="cfs-modal">
             <div className="cfs-modal-content">
               <div className="cfs-modal-header">
+                <h5 className="cfs-filter-label">Search by Manufacturer</h5>
                 <span
-                  onClick={() => setIsModalOpen(false)}
+                  onClick={() => {
+                    // ✅ Clear temp states when opening modal - same pattern as ATM, Price etc.
+                    setSelectedMakeTemp(null);
+                    setSearchMake("");
+                    setIsMakeModalOpen(false);
+                  }}
                   className="cfs-close"
                 >
-                  ×
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    x="0px"
+                    y="0px"
+                    width="100"
+                    height="100"
+                    viewBox="0 0 64 64"
+                  >
+                    <path d="M 16 14 C 15.488 14 14.976938 14.194937 14.585938 14.585938 C 13.804937 15.366937 13.804937 16.633063 14.585938 17.414062 L 29.171875 32 L 14.585938 46.585938 C 13.804938 47.366938 13.804937 48.633063 14.585938 49.414062 C 14.976937 49.805062 15.488 50 16 50 C 16.512 50 17.023062 49.805062 17.414062 49.414062 L 32 34.828125 L 46.585938 49.414062 C 47.366938 50.195063 48.633063 50.195062 49.414062 49.414062 C 50.195063 48.633062 50.195062 47.366937 49.414062 46.585938 L 34.828125 32 L 49.414062 17.414062 C 50.195063 16.633063 50.195062 15.366938 49.414062 14.585938 C 48.633062 13.804938 47.366937 13.804938 46.585938 14.585938 L 32 29.171875 L 17.414062 14.585938 C 17.023062 14.194938 16.512 14 16 14 z"></path>
+                  </svg>
                 </span>
               </div>
 
               <div className="cfs-modal-body">
                 <div className="cfs-modal-search-section">
-                  <h5 className="cfs-filter-label">Select Location</h5>
-                  <input
-                    type="text"
-                    placeholder="Suburb or postcode..."
-                    className="filter-dropdown cfs-select-input"
-                    autoComplete="off"
-                    value={formatted(modalInput)} // 👈 modalInput} // 👈 use modalInput
-                    onFocus={() => setShowSuggestions(true)}
-                    onChange={(e) => {
-                      // isUserTypingRef.current = true;
-                      setShowSuggestions(true);
+                  {/* 🔍 Search Input */}
+                  <div className="secrch_icon">
+                    <i className="bi bi-search search-icon"></i>
+                    <input
+                      type="text"
+                      // placeholder="Search make..."
+                      className="filter-dropdown cfs-select-input"
+                      autoComplete="off"
+                      value={searchText}
+                      onChange={(e) => {
+                        setSearchText(e.target.value);
+                      }}
+                    />
+                  </div>
 
-                      const rawValue = e.target.value;
-                      // Format for filtering suggestions only
-                      setModalInput(rawValue); // 👈 Store raw value
-                      // const formattedValue = formatLocationInput(modalInput);
-                      const formattedValue = /^\d+$/.test(rawValue)
-                        ? rawValue // if user types only numbers, don’t format
-                        : formatLocationInput(rawValue);
+                  <ul className="location-suggestions ">
+                    {!isSearching && popularMakes.length > 0 && (
+                      <>
+                        <p className="mb-1 mt-3 label-text fs-6 fw-semibold">
+                          Popular manufacturer
+                        </p>
+                        {popularMakes.map((make) => (
+                          <li key={make.make_slug} className="category-item">
+                            <label
+                              className="
+                       category-checkbox-row checkbox"
+                            >
+                              <div
+                                className="d-flex align-items-center"
+                                onMouseDown={() => handleMakeSelect(make)}
+                              >
+                                <input
+                                  className="checkbox__trigger visuallyhidden"
+                                  type="checkbox"
+                                  checked={selectedMakeTemp === make.make_slug}
+                                  onMouseDown={() => handleMakeSelect(make)}
+                                />
 
-                      // Use the existing locationSuggestions state or fetch new data
-                      // Since you're already fetching locations in useEffect, you can filter the existing suggestions
-                      // OR trigger the same API call logic here
-                      if (formattedValue.length < 1) {
-                        setLocationSuggestions([]);
-                        return;
+                                <span className="checkbox__symbol">
+                                  <svg
+                                    aria-hidden="true"
+                                    className="icon-checkbox"
+                                    width="28px"
+                                    height="28px"
+                                    viewBox="0 0 28 28"
+                                    version="1"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                  >
+                                    <path d="M4 14l8 7L24 7"></path>
+                                  </svg>
+                                </span>
+                                <span className="category-name">
+                                  {make.make_name}
+                                </span>
+                              </div>
+                              <div>
+                                <span className="category-count">
+                                  ({make.product_count})
+                                </span>
+                              </div>
+                            </label>
+                          </li>
+                        ))}
+                      </>
+                    )}
+
+                    <p className="mb-1 mt-3 label-text fs-6 fw-semibold">
+                      {isSearching ? "Search Result" : "All Manufacturer"}
+                    </p>
+                    {displayedMakes.map((make) => (
+                      <li
+                        key={make.make_slug}
+                        className={`suggestion-item ${
+                          selectedMakeTemp === make.make_slug ? "selected" : ""
+                        }`}
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                        }}
+                        onMouseDown={() => handleMakeSelect(make)}
+                      >
+                        <span>{make.make_name}</span>
+                        <span className="category-count">
+                          ({make.product_count})
+                        </span>
+                      </li>
+                    ))}
+
+                    {displayedMakes.length === 0 && (
+                      <li className="suggestion-item muted">
+                        No manufacturers found
+                      </li>
+                    )}
+                  </ul>
+                </div>
+              </div>
+
+              <div className="cfs-modal-footer">
+                <button
+                  type="button"
+                  className="cfs-btn btn"
+                  onClick={() => {
+                    if (!selectedMakeTemp) return;
+
+                    triggerGlobalLoaders();
+
+                    const updatedFilters: Filters = {
+                      ...currentFilters,
+                      make: selectedMakeTemp,
+                      model: undefined, // 🔥 reset model
+                      page: 1,
+                    };
+
+                    // UI sync
+                    setSelectedMake(selectedMakeTemp);
+                    setFilters(updatedFilters);
+
+                    // close modal
+                    setIsMakeModalOpen(false);
+
+                    // 🔥 model list auto open
+                    setModelOpen(true);
+
+                    startTransition(() => {
+                      updateAllFiltersAndURL(updatedFilters);
+                    });
+                  }}
+                >
+                  Search
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {isModalOpen && (
+          <div className="cfs-modal">
+            <div className="cfs-modal-content">
+              <div className="cfs-modal-header">
+                <h5 className="cfs-filter-label">Search by Location</h5>
+                <span
+                  onClick={() => setIsModalOpen(false)}
+                  className="cfs-close"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    x="0px"
+                    y="0px"
+                    width="100"
+                    height="100"
+                    viewBox="0 0 64 64"
+                  >
+                    <path d="M 16 14 C 15.488 14 14.976938 14.194937 14.585938 14.585938 C 13.804937 15.366937 13.804937 16.633063 14.585938 17.414062 L 29.171875 32 L 14.585938 46.585938 C 13.804938 47.366938 13.804937 48.633063 14.585938 49.414062 C 14.976937 49.805062 15.488 50 16 50 C 16.512 50 17.023062 49.805062 17.414062 49.414062 L 32 34.828125 L 46.585938 49.414062 C 47.366938 50.195063 48.633063 50.195062 49.414062 49.414062 C 50.195063 48.633062 50.195062 47.366937 49.414062 46.585938 L 34.828125 32 L 49.414062 17.414062 C 50.195063 16.633063 50.195062 15.366938 49.414062 14.585938 C 48.633062 13.804938 47.366937 13.804938 46.585938 14.585938 L 32 29.171875 L 17.414062 14.585938 C 17.023062 14.194938 16.512 14 16 14 z"></path>
+                  </svg>
+                </span>
+              </div>
+
+              <div className="cfs-modal-body">
+                <div className="cfs-modal-search-section">
+                  <p className="mb-1 label-text">
+                    Search suburb, postcode, state, region
+                  </p>
+                  <div className="secrch_icon">
+                    <i className="bi bi-search search-icon"></i>
+                    <input
+                      type="text"
+                      //placeholder="Suburb or postcode..."
+                      className="filter-dropdown cfs-select-input"
+                      autoComplete="off"
+                      value={formatted(modalInput)} // 👈 modalInput} // 👈 use modalInput
+                      onFocus={() => setShowSuggestions(true)}
+                      onChange={(e) => {
+                        // isUserTypingRef.current = true;
+                        setShowSuggestions(true);
+
+                        const rawValue = e.target.value;
+                        // Format for filtering suggestions only
+                        setModalInput(rawValue); // 👈 Store raw value
+                        // const formattedValue = formatLocationInput(modalInput);
+                        const formattedValue = /^\d+$/.test(rawValue)
+                          ? rawValue // if user types only numbers, don’t format
+                          : formatLocationInput(rawValue);
+
+                        // Use the existing locationSuggestions state or fetch new data
+                        // Since you're already fetching locations in useEffect, you can filter the existing suggestions
+                        // OR trigger the same API call logic here
+                        if (formattedValue.length < 1) {
+                          setLocationSuggestions([]);
+                          return;
+                        }
+
+                        // Use the same API call logic as in your useEffect
+                        const suburb = formattedValue.split(" ")[0];
+                        fetchLocations(suburb)
+                          .then((data) => {
+                            // Filter the API results based on the formatted input
+                            const filtered = data.filter((item) => {
+                              const searchValue = formattedValue.toLowerCase();
+                              return (
+                                item.short_address
+                                  .toLowerCase()
+                                  .includes(searchValue) ||
+                                item.address
+                                  .toLowerCase()
+                                  .includes(searchValue) ||
+                                (item.postcode &&
+                                  item.postcode
+                                    .toString()
+                                    .includes(searchValue)) // ✅ added
+                              );
+                            });
+                            setLocationSuggestions(filtered);
+                          })
+                          .catch(console.error);
+                      }}
+                      onBlur={() =>
+                        setTimeout(() => setShowSuggestions(false), 150)
                       }
-
-                      // Use the same API call logic as in your useEffect
-                      const suburb = formattedValue.split(" ")[0];
-                      fetchLocations(suburb)
-                        .then((data) => {
-                          // Filter the API results based on the formatted input
-                          const filtered = data.filter((item) => {
-                            const searchValue = formattedValue.toLowerCase();
-                            return (
-                              item.short_address
-                                .toLowerCase()
-                                .includes(searchValue) ||
-                              item.address
-                                .toLowerCase()
-                                .includes(searchValue) ||
-                              (item.postcode &&
-                                item.postcode.toString().includes(searchValue)) // ✅ added
-                            );
-                          });
-                          setLocationSuggestions(filtered);
-                        })
-                        .catch(console.error);
-                    }}
-                    onBlur={() =>
-                      setTimeout(() => setShowSuggestions(false), 150)
-                    }
-                  />
+                    />
+                  </div>
 
                   {/* 🔽 Styled suggestion list */}
                   {showSuggestions && locationSuggestions.length > 0 && (
@@ -3213,8 +4265,8 @@ categoryApiCalledRef.current = true;
                             value={Math.max(
                               0,
                               RADIUS_OPTIONS.indexOf(
-                                radiusKms as (typeof RADIUS_OPTIONS)[number]
-                              )
+                                radiusKms as (typeof RADIUS_OPTIONS)[number],
+                              ),
                             )}
                             onChange={(e) => {
                               const idx = parseInt(e.target.value, 10);
@@ -3254,6 +4306,7 @@ categoryApiCalledRef.current = true;
           <div className="cfs-modal">
             <div className="cfs-modal-content">
               <div className="cfs-modal-header">
+                <h5 className="cfs-filter-label">Search by Keyword</h5>
                 <span
                   onClick={() => {
                     setIsKeywordModalOpen(false);
@@ -3262,29 +4315,39 @@ categoryApiCalledRef.current = true;
                   }}
                   className="cfs-close"
                 >
-                  ×
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    x="0px"
+                    y="0px"
+                    width="100"
+                    height="100"
+                    viewBox="0 0 64 64"
+                  >
+                    <path d="M 16 14 C 15.488 14 14.976938 14.194937 14.585938 14.585938 C 13.804937 15.366937 13.804937 16.633063 14.585938 17.414062 L 29.171875 32 L 14.585938 46.585938 C 13.804938 47.366938 13.804937 48.633063 14.585938 49.414062 C 14.976937 49.805062 15.488 50 16 50 C 16.512 50 17.023062 49.805062 17.414062 49.414062 L 32 34.828125 L 46.585938 49.414062 C 47.366938 50.195063 48.633063 50.195062 49.414062 49.414062 C 50.195063 48.633062 50.195062 47.366937 49.414062 46.585938 L 34.828125 32 L 49.414062 17.414062 C 50.195063 16.633063 50.195062 15.366938 49.414062 14.585938 C 48.633062 13.804938 47.366937 13.804938 46.585938 14.585938 L 32 29.171875 L 17.414062 14.585938 C 17.023062 14.194938 16.512 14 16 14 z"></path>
+                  </svg>
                 </span>
               </div>
 
               <div className="cfs-modal-body">
                 <div className="cfs-modal-search-section">
-                  <h5 className="cfs-filter-label">Search by Keyword</h5>
-
-                  <input
-                    type="text"
-                    placeholder="eg: offroad, bunk, ensuite…"
-                    className="filter-dropdown cfs-select-input"
-                    autoComplete="off"
-                    value={modalKeyword}
-                    onFocus={() => setShowSuggestions(true)} // ✅ only show when focusing
-                    onChange={(e) => {
-                      pickedSourceRef.current = "typed";
-                      setModalKeyword(e.target.value);
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") applyKeywordFromModal();
-                    }}
-                  />
+                  <div className="secrch_icon">
+                    <i className="bi bi-search search-icon"></i>
+                    <input
+                      type="text"
+                      placeholder="eg: offroad, bunk, ensuite…"
+                      className="filter-dropdown cfs-select-input"
+                      autoComplete="off"
+                      value={modalKeyword}
+                      onFocus={() => setShowSuggestions(true)} // ✅ only show when focusing
+                      onChange={(e) => {
+                        pickedSourceRef.current = "typed";
+                        setModalKeyword(e.target.value);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") applyKeywordFromModal();
+                      }}
+                    />
+                  </div>
                   {showSuggestions && (
                     <>
                       {/* Show base list when field is empty (<2 chars) */}

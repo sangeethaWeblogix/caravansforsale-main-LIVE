@@ -14,7 +14,7 @@ export default function EverestCaravans() {
                 <li className="breadcrumbs-item">
                   <Link
                     className="breadcrumbs-link"
-                    href="https://www.admin.caravansforsale.com.au/"
+                    href="https://admin.caravansforsale.com.au/"
                   >
                     Home
                   </Link>
@@ -22,7 +22,7 @@ export default function EverestCaravans() {
                 <li className="breadcrumbs-item">
                   <Link
                     className="breadcrumbs-link"
-                    href="https://www.admin.caravansforsale.com.au/caravan-manufacturers/all/"
+                    href="https://admin.caravansforsale.com.au/caravan-manufacturers/all/"
                   >
                     Manufacturers
                   </Link>

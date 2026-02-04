@@ -116,7 +116,7 @@
     // };
   
     const getMainImage = (sku?: string, slug?: string): string => {
-      if (!sku || !slug) return "/images/sample3.webp";
+      if (!sku || !slug) return "/images/image.pngp";
       return `https://caravansforsale.imagestack.net/800x600/${sku}/${slug}main1.webp`;
     };
   

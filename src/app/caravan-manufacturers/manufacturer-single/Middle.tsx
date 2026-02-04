@@ -32,7 +32,7 @@ export default function EverestCaravans() {
                       <div className="box1">
                         <div className="box_mid">
                           <Image
-                            src="https://www.admin.caravansforsale.com.au/wp-content/uploads/2023/08/1-13.png"
+                            src="https://admin.caravansforsale.com.au/wp-content/uploads/2023/08/1-13.png"
                             alt="Falcon Caravan"
                             width={1000}
                             height={476}
@@ -54,7 +54,7 @@ export default function EverestCaravans() {
                           <h6 className="pb-20">FULL OFF ROAD</h6>
                         </div>
                         <Link
-                          href="https://www.admin.caravansforsale.com.au/range/falcon-everest-caravans/"
+                          href="https://admin.caravansforsale.com.au/range/falcon-everest-caravans/"
                           className="button"
                         >
                           View Details
@@ -77,7 +77,7 @@ export default function EverestCaravans() {
                       <div className="box1">
                         <div className="box_mid">
                           <Image
-                            src="https://www.admin.caravansforsale.com.au/wp-content/uploads/2023/08/1-16.png"
+                            src="https://admin.caravansforsale.com.au/wp-content/uploads/2023/08/1-16.png"
                             alt="Nitro Extreme Caravan"
                             width={1000}
                             height={476}
@@ -99,7 +99,7 @@ export default function EverestCaravans() {
                           <h6 className="pb-20">OFF ROAD</h6>
                         </div>
                         <Link
-                          href="https://www.admin.caravansforsale.com.au/range/nitro-extreme-everest-caravans/"
+                          href="https://admin.caravansforsale.com.au/range/nitro-extreme-everest-caravans/"
                           className="button"
                         >
                           View Details
@@ -146,11 +146,11 @@ export default function EverestCaravans() {
             >
               {/* Slide 1 */}
               <SwiperSlide>
-                <Link href="https://www.admin.caravansforsale.com.au/product/2024-everest-warrior-19-6-extreme-off-road-with-ensuite-4-berth/">
+                <Link href="https://admin.caravansforsale.com.au/product/2024-everest-warrior-19-6-extreme-off-road-with-ensuite-4-berth/">
                   <div className="product-card">
                     <div className="img">
                       <Image
-                        src="https://www.admin.caravansforsale.com.au/wp-content/uploads/2024/07/2024-everest-20-6-warrior-new-extreme-off-road-caravan-left-l-shape-lounge-5-86-maini.jpg"
+                        src="https://admin.caravansforsale.com.au/wp-content/uploads/2024/07/2024-everest-20-6-warrior-new-extreme-off-road-caravan-left-l-shape-lounge-5-86-maini.jpg"
                         alt="Everest Warrior Ensuite"
                         width={1837}
                         height={1037}
@@ -185,11 +185,11 @@ export default function EverestCaravans() {
 
               {/* Slide 2 */}
               <SwiperSlide>
-                <Link href="https://www.admin.caravansforsale.com.au/product/2024-everest-warrior-19-6-extreme-off-road-with-club-lounge/">
+                <Link href="https://admin.caravansforsale.com.au/product/2024-everest-warrior-19-6-extreme-off-road-with-club-lounge/">
                   <div className="product-card">
                     <div className="img">
                       <Image
-                        src="https://www.admin.caravansforsale.com.au/wp-content/uploads/2024/07/2024-everest-20-6-warrior-new-extreme-off-road-caravan-left-l-shape-lounge-5-86-maini.jpg"
+                        src="https://admin.caravansforsale.com.au/wp-content/uploads/2024/07/2024-everest-20-6-warrior-new-extreme-off-road-caravan-left-l-shape-lounge-5-86-maini.jpg"
                         alt="Everest Warrior Club Lounge"
                         width={1837}
                         height={1037}

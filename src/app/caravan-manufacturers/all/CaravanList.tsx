@@ -85,7 +85,7 @@ export default function CaravanManufacturers() {
             <div className="tpof_tab">
               <h3>Everest Caravans</h3>
               <div className="viewall_bttn">
-                <Link href="https://www.admin.caravansforsale.com.au/caravan-manufacturers/everest-caravans/">
+                <Link href="https://admin.caravansforsale.com.au/caravan-manufacturers/everest-caravans/">
                   <i className="bi bi-chevron-right"></i>
                 </Link>
               </div>
@@ -108,7 +108,7 @@ export default function CaravanManufacturers() {
             >
               <SwiperSlide>
                 <FeatureCard
-                  image="https://www.admin.caravansforsale.com.au/wp-content/uploads/2023/08/1-13.png"
+                  image="https://admin.caravansforsale.com.au/wp-content/uploads/2023/08/1-13.png"
                   alt="Falcon Caravan"
                   title="Falcon - FULL OFF ROAD"
                   subtitle="FULL OFF ROAD"
@@ -118,7 +118,7 @@ export default function CaravanManufacturers() {
 
               <SwiperSlide>
                 <FeatureCard
-                  image="https://www.admin.caravansforsale.com.au/wp-content/uploads/2023/08/1-16.png"
+                  image="https://admin.caravansforsale.com.au/wp-content/uploads/2023/08/1-16.png"
                   alt="Nitro Extreme Caravan"
                   title="Nitro Extreme - OFF ROAD"
                   subtitle="OFF ROAD"
@@ -127,7 +127,7 @@ export default function CaravanManufacturers() {
               </SwiperSlide>
               <SwiperSlide>
                 <FeatureCard
-                  image="https://www.admin.caravansforsale.com.au/wp-content/uploads/2023/08/1-17.png"
+                  image="https://admin.caravansforsale.com.au/wp-content/uploads/2023/08/1-17.png"
                   alt="Calibra Caravan"
                   title="Calibra - FULL OFF ROAD"
                   subtitle="FULL OFF ROAD"
@@ -137,7 +137,7 @@ export default function CaravanManufacturers() {
               </SwiperSlide>
               <SwiperSlide>
                 <FeatureCard
-                  image="https://www.admin.caravansforsale.com.au/wp-content/uploads/2023/08/1-19.png"
+                  image="https://admin.caravansforsale.com.au/wp-content/uploads/2023/08/1-19.png"
                   alt="Summitt"
                   title="Summitt - FULL OFF ROAD"
                   subtitle="FULL OFF ROAD"
@@ -160,20 +160,20 @@ export default function CaravanManufacturers() {
               <a>1</a>
             </div>
             <div className="pagination:number">
-              <Link href="https://www.admin.caravansforsale.com.au/caravan-manufacturers/all/page-2/">
+              <Link href="https://admin.caravansforsale.com.au/caravan-manufacturers/all/page-2/">
                 {" "}
                 2{" "}
               </Link>
             </div>
             <div className="pagination:number">
-              <Link href="https://www.admin.caravansforsale.com.au/caravan-manufacturers/all/page-3/">
+              <Link href="https://admin.caravansforsale.com.au/caravan-manufacturers/all/page-3/">
                 {" "}
                 3{" "}
               </Link>
             </div>{" "}
             {/* Add more pagination items here */}{" "}
             <div className="pagination:number arrow">
-              <Link href="https://www.admin.caravansforsale.com.au/caravan-manufacturers/all/page-2/">
+              <Link href="https://admin.caravansforsale.com.au/caravan-manufacturers/all/page-2/">
                 <svg width="18" height="18">
                   <use xlinkHref="#right" />
                 </svg>

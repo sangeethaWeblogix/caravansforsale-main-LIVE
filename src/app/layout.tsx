@@ -10,6 +10,9 @@
   import { Metadata } from "next";
   import ScrollToTop from "./ScrollToTop";
   import UTMTracker from "./UTMTracker";
+  // import NextTopLoader from "nextjs-toploader";
+import ThemeRegistry from './components/ThemeRegistry';
+
   
   export const metadata: Metadata = {
     title: {
@@ -36,8 +39,8 @@
   }: {
     children: React.ReactNode;
   }) {
-    const gtmId = process.env.NEXT_PUBLIC_GTM_ID;
-    const gtmServer = process.env.NEXT_PUBLIC_GTM_SERVER_URL;
+  const gtmId = "GTM-N3362FGQ";
+const gtmServer = "https://gtm.caravansforsale.com.au";
     return (
       <html lang="en">
         <head>
@@ -55,23 +58,22 @@
   
           {/* ✅ Google Tag Manager (Head) */}
            <script
-        dangerouslySetInnerHTML={{
-          __html: `
-            window.dataLayer = window.dataLayer || [];
-            (function(w,d,s,l,i){
-              w[l]=w[l]||[];
-              w[l].push({'gtm.start': new Date().getTime(),event:'gtm.js'});
-              var f=d.getElementsByTagName(s)[0],
-                  j=d.createElement(s),
-                  dl=l!='dataLayer'?'&l='+l:'';
-              j.async=true;
-              j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl+
-                    '&gtm_url=${gtmServer}';
-              f.parentNode.insertBefore(j,f);
-            })(window,document,'script','dataLayer','${gtmId}');
-          `,
-        }}
-      />
+  dangerouslySetInnerHTML={{
+    __html: `
+      (function(w,d,s,l,i){
+        w[l]=w[l]||[];
+        w[l].push({'gtm.start': new Date().getTime(),event:'gtm.js'});
+        var f=d.getElementsByTagName(s)[0],
+            j=d.createElement(s),
+            dl=l!='dataLayer'?'&l='+l:'';
+        j.async=true;
+        j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;
+        f.parentNode.insertBefore(j,f);
+      })(window,document,'script','dataLayer','GTM-N3362FGQ');
+    `,
+  }}
+/>
+
         
           
         </head>
@@ -83,20 +85,31 @@
           }}
         >
           {/* ✅ Google Tag Manager (noscript) - right after body */}
-            <noscript>
-      <iframe
-        src={`https://www.googletagmanager.com/ns.html?id=${process.env.NEXT_PUBLIC_GTM_ID}`}
-        height="0"
-        width="0"
-        style={{ display: "none", visibility: "hidden" }}
-      />
-    </noscript>
+         <noscript>
+  <iframe
+    src="https://www.googletagmanager.com/ns.html?id=GTM-N3362FGQ"
+    height="0"
+    width="0"
+    style={{ display: "none", visibility: "hidden" }}
+  />
+</noscript>
+
   
           <UTMTracker />
           <Navbar />
           <ScrollToTop />
-          <main className="product-page style-5">{children}</main>
+          <main className="product-page style-5">
+            {/* <NextTopLoader
+          color="#ff6600"
+          height={3}
+          showSpinner={false}
+        /> */}
+ <ThemeRegistry>
+          {children}
+        </ThemeRegistry>
+                    </main>
           
+
           <Footer />
         </body>
       </html>
