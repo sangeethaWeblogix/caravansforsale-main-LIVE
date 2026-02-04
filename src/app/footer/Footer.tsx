@@ -21,7 +21,7 @@ const Footer = () => {
     <>
       <footer className="style-8">
         <div className="container">
-          <div className="foot py-4 border-1 border-top brd-gray">
+          <div className="foot py-4  brd-gray">
             <div className="row">
               {/* Left Column */}
               <div className="col-lg-6">
@@ -117,7 +117,7 @@ const Footer = () => {
             </div>
 
             {/* Social Icons */}
-            <div className="content mt-3">
+            {/*<div className="content mt-3">
               <div className="foot-info logo-social">
                 <div className="socials">
                   <a
@@ -171,7 +171,7 @@ const Footer = () => {
                   </a>
                 </div>
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
       </footer>

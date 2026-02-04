@@ -1,4 +1,4 @@
- .navbar.style-4 {
+.navbar.style-4 {
   position: inherit;
   z-index: 1;
   padding: 0;
@@ -18,7 +18,7 @@
   line-height: inherit;
   display: flex;
   align-items: center;
-  padding-top: 0;
+  padding: 0;
 }
 .logo_left .navbar-brand {
   margin-left: 0px;
@@ -26,7 +26,7 @@
 .header_right_info {
   display: flex;
   align-items: center;
-  gap: 40px;
+  gap: 30px;
 }
 .navbar.style-4 .navbar-nav .nav-item .nav-link {
   color: #ffffff;
@@ -35,7 +35,7 @@
   font-style: inherit;
   margin: 0 0px 0px 30px;
   text-transform: capitalize;
-  padding: 20px 0px;
+  padding: 10px 0px;
 }
 .dropdown-toggle::after {
   position: relative;
@@ -285,8 +285,8 @@ input[type="checkbox"]:checked ~ .menuIconToggle > .dia.p-2 {
 }
 
 .sidebar-navigation ul li ul.open {
-    background: #fff;
-    display: block;
+  background: #fff;
+  display: block;
 }
 
 .sidebar-navigation ul li ul li a,
@@ -330,6 +330,16 @@ input[type="checkbox"]:checked ~ .menuIconToggle > .dia.p-2 {
 
 .sidebar-navigation ul li ul li.selected.selected--last > a:before {
   background-color: #fff;
+}
+.navbar.style-4.header-white .navbar-nav .nav-item.login .nav-link {
+    background-color: #ddd;
+    padding: 6px 10px;
+    border-radius: 6px;
+    margin-top: 4px;
+}
+.navbar.style-4.header-white .navbar-nav .nav-item.login .nav-link:hover {
+  background: #f58333;
+  color: #000000;
 }
 .overlay {
   position: fixed;
@@ -422,6 +432,75 @@ input[type="checkbox"]:checked ~ .menuIconToggle > .dia.p-2 {
 .sidebar-navigation ul li.selected .drop_down::after {
   transform: rotate(180deg);
 }
+
+.navbar-right {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* Profile Icon Button */
+.profile-btn {
+  cursor: pointer;
+  background: #fff;
+  border: 1px solid #8a8a8a;
+  border-radius: 50%;
+  justify-content: center;
+  align-items: center;
+  width: 42px;
+  height: 42px;
+  display: flex;
+}
+
+.profile-icon {
+  font-size: 20px;
+  color: #333;
+}
+
+/* Dropdown */
+.profile-dropdown {
+    z-index: 999;
+    background: #fff;
+    border-radius: 10px;
+    width: 180px;
+    padding: 0px 0;
+    position: absolute;
+    top: 55px;
+    right: 0;
+    box-shadow: 0 10px 30px #00000026;
+    overflow: hidden;
+}
+
+/* Dropdown items */
+.profile-dropdown .dropdown-item {
+    color: #333;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 18px;
+    font-size: 16px;
+    text-decoration: none;
+    display: flex;
+    border-bottom: 1px solid #ddd;
+}
+
+.profile-dropdown .dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.profile-dropdown .dropdown-item:hover {
+  background: #f5f5f5;
+}
+
+.profile-dropdown .dropdown-item i {
+  font-size: 20px;}
+
+/* Mobile fix */
+@media (max-width: 768px) {
+  .profile-dropdown {
+    right: -10px;
+  }
+}
+
 @media (min-width: 768px) and (max-width: 991px) {
   .navbar.style-4.header-white {
     padding: 8px 0px;

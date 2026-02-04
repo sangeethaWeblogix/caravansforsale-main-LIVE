@@ -3,6 +3,10 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/navigation";
 import { fetchHomePage, type HomeBlogPost } from "@/api/home/api";
 import { formatPostDate } from "@/utils/date";
 import { toSlug } from "@/utils/seo/slug";
@@ -61,8 +65,22 @@ export default function HomeLatestBlogs() {
             </div>
           </div>
         </div>
-
+      
         <div className="content">
+          <Swiper
+                modules={[Navigation]}
+                navigation={{
+                  nextEl: ".blog-manu-next",
+                  prevEl: ".blog-manu-prev",
+                }}
+                //autoplay={{ delay: 3000 }}
+                spaceBetween={20}
+                slidesPerView={1}
+                breakpoints={{
+                  768: { slidesPerView: 2 },
+                  1024: { slidesPerView: 3 },
+                }}
+              >
           {loading ? (
             <div className="row">
               {[...Array(3)].map((_, i) => (
@@ -71,11 +89,12 @@ export default function HomeLatestBlogs() {
             </div>
           ) : (
             <div className="blog-content">
-              <div className="row">
+              
                 {blogPosts.map((post) => {
                   const href = getHref(post);
                   return (
-                    <div className="col-lg-4 col-sm-6" key={post.id}>
+                    <SwiperSlide key={post.id}>
+                    
                       <div className="side-posts">
                         <div className="item">
                           <div className="img img-cover">
@@ -104,16 +123,25 @@ export default function HomeLatestBlogs() {
                           </div>
                         </div>
                       </div>
-                    </div>
+                    </SwiperSlide>
+
                   );
                 })}
                 {!blogPosts.length && (
                   <div className="col-12 py-3 text-muted">No posts found.</div>
                 )}
-              </div>
+              
             </div>
           )}
+          </Swiper>
+        
+                {/* Arrows */}
+                <div className="swiper-button-next blog-manu-next" />
+                <div className="swiper-button-prev blog-manu-prev" />
         </div>
+
+        
+
       </div>
     </section>
   );

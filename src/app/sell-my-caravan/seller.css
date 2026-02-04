@@ -1,0 +1,27 @@
+.coming-soon {
+  min-height: 100vh;
+  background: #ffffff;
+  color: #000000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont;
+}
+
+.coming-soon h1 {
+  font-size: 3rem;
+  margin-bottom: 10px;
+}
+
+.coming-soon p {
+  font-size: 1.2rem;
+  opacity: 0.85;
+}
+
+.coming-soon span {
+  display: block;
+  margin-top: 10px;
+  font-size: 0.95rem;
+  opacity: 0.6;
+}
