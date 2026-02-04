@@ -9,6 +9,18 @@ import "swiper/css";
 import "swiper/css/navigation";
 import { fetchUsedBlogList } from "@/api/usedBlog/api";
 import { useEffect, useState } from "react";
+import { fetchUsedStateBasedCaravans } from "@/api/homeApi/usedState/api";
+import { fetchSleepBands } from "@/api/homeApi/sleep/api";
+import { fetchRegion } from "@/api/homeApi/region/api";
+import { fetchManufactures } from "@/api/homeApi/manufacture/api";
+import { fetchPriceBasedCaravans } from "@/api/homeApi/price/api";
+import { fetchAtmBasedCaravans } from "@/api/homeApi/weight/api";
+import { fetchLengthBasedCaravans } from "@/api/homeApi/length/api";
+import { fetchUsedCaravansList } from "@/api/homeApi/usedCaravanList/api";
+import { fetchFeaturedUsedCaravans } from "@/api/featuredCaravanList/api";
+import FetauredLsit from './fetauredList'
+import LatestList from './usedCaravanList'
+import { fetchLatestUsedCaravans } from "@/api/usedCaravanList/api";
 
 type BlogItem = {
   id: number;
@@ -18,6 +30,46 @@ type BlogItem = {
   link: string;
   slug: string;
 };
+
+interface Item {
+  label: string;
+  capacity: number;
+  slug: string;
+  permalink: string;
+  caravan_count: number;
+  starting_price: number;
+  display_text: string;
+  state: string;
+}
+
+type CategorySection = {
+  title: string;
+  items: {
+    label: string;
+    count: string;
+    
+    url: string;
+    display_text?: string;
+    permalink?: string;
+  }[];
+};
+
+
+type Product = {
+ id: number;
+  name: string;
+  regular_price: string;
+  sale_price: string;
+  condition: string;
+  location: string;
+  make: string;
+  model: string;
+  length: string;
+  kg: string;
+  slug: string;
+  sku: string;
+};
+
 // ── Data ────────────────────────────────────────────────────────────────
 
 const states = [
@@ -29,192 +81,65 @@ const states = [
   { name: "Tasmania", count: "182", startPrice: "$14,990", map: "/images/tas_map.svg" },
 ];
 
-const regions = [
-  { name: "Melbourne", count: "1,779", startPrice: "$10,777" },
-  { name: "Sydney", count: "382", startPrice: "$18,500" },
-  { name: "Brisbane", count: "243", startPrice: "$18,990" },
-];
+ 
+ 
 
-const categories = [
-  {
-    title: "Caravans For Sale By Price",
-    items: [
-      { label: "Caravans under $20,000", count: "766", start: "$10,990" },
-      { label: "Caravans under $30,000", count: "236", start: "$30,990" },
-      { label: "Caravans under $40,000", count: "166", start: "$46,800" },
-    ],
-  },
-  {
-    title: "Caravans For Sale By Weight",
-    items: [
-      { label: "Caravans under 1500 Kgs", count: "766", start: "$10,990" },
-      { label: "Caravans under 1750 Kgs", count: "236", start: "$30,990" },
-      { label: "Caravans under 2000 Kgs", count: "166", start: "$46,800" },
-    ],
-  },
-  {
-    title: "Caravans For Sale By Length",
-    items: [
-      { label: "Caravans under 12ft Length", count: "766", start: "$10,990" },
-      { label: "Caravans under 14ft Length", count: "236", start: "$30,990" },
-      { label: "Caravans under 16ft Length", count: "166", start: "$46,800" },
-    ],
-  },
-  {
-    title: "Caravans For Sale By Sleeps",
-    items: [
-      { label: "Caravans under 2 People", count: "766", start: "$10,990" },
-      { label: "Caravans under 3 People", count: "236", start: "$30,990" },
-      { label: "Caravans under 4 People", count: "166", start: "$46,800" },
-    ],
-  },
-  {
-    title: "Caravans For Sale By Type",
-    items: [
-      { label: "Off Road Caravans", count: "766", start: "$10,990" },
-      { label: "Hybrid Caravans", count: "236", start: "$30,990" },
-      { label: "Pop Top Caravans", count: "166", start: "$46,800" },
-    ],
-  },
-  {
-    title: "Caravans By Popular Manufacturers",
-    items: [
-      { label: "JB Caravans", count: "766", start: "$10,990" },
-      { label: "Lotus Caravans", count: "236", start: "$30,990" },
-      { label: "New Age Caravans", count: "166", start: "$46,800" },
-    ],
-  },
-];
+ 
 
-const sampleCaravan = {
-  title: "2025 Lotus Trooper TR21CL 21'0 Luxury Off Road",
-  price: "$176,990",
-  image: "https://caravansforsale.imagestack.net/400x300/CFS-N-600024/2025-lotus-trooper-tr21cl-210-luxury-off-roadmain1.avif",
-  tags: ["Off Road", "21 ft", "4495 Kg", "Lotus"],
-  condition: "Used",
-  location: "WA",
-};
-
-const featuredCaravans = Array(6).fill(sampleCaravan); // duplicate for demo
-
-const latestCaravans = Array(6).fill(sampleCaravan);
-
-const blogs = [
-  {
-    title: "How to Choose the Right Caravan",
-    date: "12 Jan 2025",
-    image: "/images/Best-Luxury-Caravans-2026-Top-Models-Prices-and-Features-in-Australia-Mobile.jpg",
-  },
-  {
-    title: "Best Off-Road Caravans in Australia",
-    date: "05 Jan 2025",
-    image: "/images/Top-10-Off-Road-Caravans-for-2026-in-Australia-Mobile.jpg",
-  },
-  {
-    title: "New Caravan Buying Checklist",
-    date: "28 Dec 2024",
-    image: "/images/Best-Off-Grid-Caravans-2026-Australia-Mobile.jpg",
-  },
-];
+ 
+ 
+ 
 
 // ── Components ──────────────────────────────────────────────────────────
 
-function StateCard({ state }: { state: (typeof states)[0] }) {
-
-   
-
-  return (
-    <div className="service-box">
-      <div className="sec_left">
-        <h5>{state.name}</h5>
-        <div className="info">
-          <div className="quick_linkss">
-            <p>
-              {state.count} used caravans listings starting at {state.startPrice}
-            </p>
-            <Link href="#" className="view_all">
-              View All <i className="bi bi-chevron-right"></i>
-            </Link>
-          </div>
-        </div>
-      </div>
-      <div className="sec_right">
-        <Image
-          src={state.map}
-          alt={`${state.name} map`}
-          width={100}
-          height={100}
-          className="object-contain"
-        />
-      </div>
-    </div>
-  );
-}
-
-function ProductCard({ caravan }: { caravan: typeof sampleCaravan }) {
-  return (
-    <Link href="#" className="lli_head">
-      <div className="product-card">
-        <div className="img">
-          <div className="background_thumb">
-            <Image src={caravan.image} alt="Caravan" fill className="object-cover blur-sm opacity-30" />
-          </div>
-          <div className="main_thumb position-relative">
-            <Image
-              src={caravan.image}
-              alt={caravan.title}
-              width={400}
-              height={300}
-              className="w-full object-cover"
-              sizes="(max-width: 768px) 100vw, 33vw"
-            />
-          </div>
-        </div>
-
-        <div className="product_de">
-          <div className="info"><h3 className="title cursor-pointer">{caravan.title}</h3></div>
-
-          <div className="price">
-            <div className="metc2">
-              <h5 className="slog">{caravan.price}</h5>
-            </div>
-          </div>
-
-          <ul className="vehicleDetailsWithIcons simple">
-            {caravan.tags.map((tag, i) => (
-              <li key={i} className="attribute3_list">
-                <span>{tag}</span>
-              </li>
-            ))}
-          </ul>
-
-          <div className="bottom_mid">
-            <span>
-              <i className="bi bi-check-circle-fill"></i> {caravan.condition}
-            </span>
-            <span>
-              <i className="fa fa-map-marker-alt"></i> {caravan.location}
-            </span>
-          </div>
-
-          <div className="bottom_button">
-            <button className="btn btn-primary">
-              View Details
-            </button>
-          </div>
-        </div>
-      </div>
-    </Link>
-  );
-}
+ 
+ 
+ 
 
 // ── Main Page ───────────────────────────────────────────────────────────
 
 export default function Home() {
    const [blogs, setBlogs] = useState<BlogItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [stateBands, setStateBands] = useState<Item[]>([]);
+ const [sleepBands, setSleepBands] = useState<Item[]>([]);
+  const [regionBands, setRegionBands] = useState<Item[]>([]);
+  const [manufactureBands, setManufactureBands] = useState<Item[]>([]);
+  const [lengthBands, setLengthBands] = useState<Item[]>([]);
+  const [atmBands, setAtmBands] = useState<Item[]>([]);
+  const [usedCategoryList, setUsedCategoryList] = useState<Item[]>([]);
+  const [priceBands, setPriceBands] = useState<Item[]>([]);
+  const [usedState, setUsedState] = useState<Item[]>([]);
+  const [usedRegion, setUsedRegion] = useState<Item[]>([]);
+
+
+
+  const [products, setProducts] = useState<Product[]>([]);
+    const [latestCaravans, setLatestCaravans] = useState<Product[]>([]);
+
+ 
+  useEffect(() => {
+    const loadData = async () => {
+      const data = await fetchFeaturedUsedCaravans();
+      setProducts(data?.products || []);
+      setLoading(false);
+    };
+
+    loadData();
+  }, []);
 
  useEffect(() => {
+    const loadData = async () => {
+      const data = await fetchLatestUsedCaravans();
+      setLatestCaravans(data?.products || []);
+      setLoading(false);
+    };
+
+    loadData();
+  }, []);
+
+
+    useEffect(() => {
   const loadBlogs = async () => {
     try {
       const res = await fetchUsedBlogList();
@@ -250,6 +175,91 @@ const formatBlogDate = (dateString: string) => {
     year: "numeric",
   });
 };
+  const stateMeta = {
+    "victoria": { code: "VIC", image: "/images/vic_map.svg" },
+    "new-south-wales": { code: "NSW", image: "/images/nsw_map.svg" },
+    "queensland": { code: "QLD", image: "/images/qld_map.svg" },
+    "south-australia": { code: "SA", image: "/images/sa_map.svg" },
+    "western-australia": { code: "WA", image: "/images/wa_map.svg" },
+    "tasmania": { code: "TAS", image: "/images/tas_map.svg" }
+  };
+
+ 
+ useEffect(() => {
+    async function loadAll() {
+      // const [sleep, region, weight, length] = await Promise.all([
+      const [sleep, region, manufactures, weight, length, price, usedData, state] =
+        await Promise.all([
+          fetchSleepBands(),
+          fetchRegion(),
+          fetchManufactures(),
+          fetchAtmBasedCaravans(),
+          fetchLengthBasedCaravans(),
+          fetchPriceBasedCaravans(),
+          fetchUsedCaravansList(),
+          fetchUsedStateBasedCaravans(),
+          ,
+        ]);
+
+      setSleepBands(sleep);
+      setRegionBands(region);
+      setManufactureBands(manufactures);
+      setAtmBands(weight);
+      setLengthBands(length);
+      setPriceBands(price);
+      setUsedCategoryList(usedData.by_category);
+      setUsedState(usedData.by_state);
+      setUsedRegion(usedData.by_region);
+      setStateBands(state);
+
+    }
+
+    loadAll();
+  }, []);
+
+  const categories: CategorySection[] = [
+  {
+    title: "Caravans For Sale By Price",
+    items: priceBands.map((item) => ({
+      label:  item.label,
+      count: item.display_text  ,
+      url: `/listings/${item.permalink}`,
+    })),
+  },
+  {
+    title: "Caravans For Sale By Weight",
+    items: atmBands.map((item) => ({
+     label:  item.label,
+      count: item.display_text  ,
+      url: `/listings/${item.permalink}`,
+    })),
+  },
+  {
+    title: "Caravans For Sale By Length",
+    items: lengthBands.map((item) => ({
+     label:  item.label,
+      count: item.display_text  ,
+      url: `/listings/${item.permalink}`,
+    })),
+  },
+  {
+    title: "Caravans For Sale By Sleeps",
+    items: sleepBands.map((item) => ({
+    label:  item.label,
+      count: item.display_text  ,
+      url: `/listings/${item.permalink}`,
+    })),
+  },
+  {
+    title: "Caravans By Popular Manufacturers",
+    items: manufactureBands.map((item) => ({
+     label:  item.label,
+      count: item.display_text  ,
+      url: `/listings/${item.permalink}`,
+    })),
+  },
+];
+
 
   return (
     <div>
@@ -304,26 +314,74 @@ const formatBlogDate = (dateString: string) => {
           </div>
           <div className="content">
             <div className="explore-state position-relative">
-              <Swiper
-                modules={[Navigation]}
-                spaceBetween={20}
-                slidesPerView={1}
-                breakpoints={{
-                  640: { slidesPerView: 2 },
-                  1024: { slidesPerView: 3 },
-                  1280: { slidesPerView: 4 },
-                }}
-                navigation={{
-                  nextEl: ".state-manu-next",
-                  prevEl: ".state-manu-prev",
-                }}
-              >
-                {states.map((state, i) => (
-                  <SwiperSlide key={i}>
-                    <StateCard state={state} />
-                  </SwiperSlide>
-                ))}
-              </Swiper>
+               <Swiper
+                              modules={[Navigation]}
+                              navigation={{
+                                nextEl: ".state-manu-next",
+                                prevEl: ".state-manu-prev",
+                              }}
+                              //autoplay={{ delay: 3000 }}
+                              spaceBetween={20}
+                              slidesPerView={1}
+                              breakpoints={{
+                                768: { slidesPerView: 2 },
+                                1024: { slidesPerView: 4 },
+                                 1280: { slidesPerView: 4 },
+                              }}
+                            >
+              
+                              {/* {stateBands.map((item, index) => { */}
+                                {stateBands.slice(0, 5).map((item, index) => {
+
+                                const key = item.state.toLowerCase().replace(/\s+/g, "-");
+              
+                                const meta = stateMeta[key] || {};
+                                const stateCode = meta.code || "";
+                                const mapImage = meta.image ;
+              
+                                return (
+                                  <SwiperSlide key={index}>
+              
+                                    <div className="service-box">
+              
+                                      <div className="sec_left">
+                                        <h5>
+                                          {item.state}
+                                        </h5>
+              
+                                        <div className="info">
+                                          <div className="quick_linkss">
+                                            {/* ✔ API BASED DISPLAY TEXT */}
+                                            <p>{item.display_text}</p>
+              
+                                            <Link className="view_all" href={`/listings${item.permalink}`}>
+                                              View All Caravans in {stateCode}
+              
+                                            </Link>
+                                          </div>
+                                        </div>
+                                      </div>
+              
+                                      <div className="sec_right">
+                                        <span>
+                                          {mapImage ? (
+
+                                          <Image
+                                            src={mapImage}
+                                            alt={`${item.state} map`}
+                                            width={100}
+                                            height={100}
+                                          />
+                                          ) : null}
+                                        </span>
+                                      </div>
+                                    </div>
+              
+                                  </SwiperSlide>
+                                );
+                              })}
+              
+                            </Swiper>
 
               <div className="swiper-button-next state-manu-next"></div>
               <div className="swiper-button-prev state-manu-prev"></div>
@@ -341,13 +399,15 @@ const formatBlogDate = (dateString: string) => {
           </div>
           <div className="content listing_region">
             <ul>
-              {regions.map((r, i) => (
+              {regionBands.map((r, i) => (
                 <li key={i} >
-                  <Link href="#" className="font-medium text-blue-600">
-                    Used Caravans For Sale in {r.name}
+                  <Link                               
+                    href={`https://www.caravansforsale.com.au/listings/${r.permalink}/`}
+ className="font-medium text-blue-600">
+                   {r.label}
                   </Link>
                   <span className="block mt-1 text-sm text-gray-600">
-                    {r.count} caravan listings starting at {r.startPrice}
+                    {r.display_text}
                   </span>
                 </li>
               ))}
@@ -368,8 +428,8 @@ const formatBlogDate = (dateString: string) => {
                 <ul>
                   {cat.items.map((item, j) => (
                     <li key={j}>
-                      <Link href="#">
-                        {item.label} <span>({item.count} listings starting at {item.start})</span>
+                      <Link href={`/listings${item.permalink}`}>
+                        {item.label} <span>({item.count})</span>
                       </Link>
                     </li>
                   ))}
@@ -379,6 +439,7 @@ const formatBlogDate = (dateString: string) => {
           </div>
         </div>
       </section>
+
 
       {/* Featured Caravans */}
       <section className="caravans_by_state related-products services section-padding style-1">
@@ -402,9 +463,9 @@ const formatBlogDate = (dateString: string) => {
                   prevEl: ".featured-prev",
                 }}
               >
-                {featuredCaravans.map((car, i) => (
+                {products.map((caravan, i) => (
                   <SwiperSlide key={i}>
-                    <ProductCard caravan={car} />
+                   <FetauredLsit key={caravan.id} caravan={caravan} />
                   </SwiperSlide>
                 ))}
               </Swiper>
@@ -463,7 +524,7 @@ const formatBlogDate = (dateString: string) => {
               >
                 {latestCaravans.map((car, i) => (
                   <SwiperSlide key={i}>
-                    <ProductCard caravan={car} />
+                    <LatestList caravan={car} />
                   </SwiperSlide>
                 ))}
               </Swiper>

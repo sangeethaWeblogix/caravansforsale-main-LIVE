@@ -241,6 +241,7 @@ export default function HomePage() {
                 breakpoints={{
                   768: { slidesPerView: 2 },
                   1024: { slidesPerView: 4 },
+                   1280: { slidesPerView: 4 },
                 }}
               >
 
