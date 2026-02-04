@@ -39,8 +39,8 @@ import ThemeRegistry from './components/ThemeRegistry';
   }: {
     children: React.ReactNode;
   }) {
-    const gtmId = process.env.NEXT_PUBLIC_GTM_ID;
-    const gtmServer = process.env.NEXT_PUBLIC_GTM_SERVER_URL;
+  const gtmId = "GTM-N3362FGQ";
+const gtmServer = "https://gtm.caravansforsale.com.au";
     return (
       <html lang="en">
         <head>
