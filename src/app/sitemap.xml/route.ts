@@ -20,8 +20,8 @@ export async function GET() {
     "sleep-sitemap.xml",
     "state-make-sitemap.xml",
     "region-make-sitemap.xml",
-    "state-price-sitemap.xml",
-    "region-price-sitemap.xml",
+    
+    
     "category-state-sitemap.xml",
     "category-region-sitemap.xml",
     "state-atm-sitemap.xml",
