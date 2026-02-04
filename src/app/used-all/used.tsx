@@ -236,6 +236,20 @@ export default function Home() {
 
   loadBlogs();
 }, []);
+const formatBlogDate = (dateString: string) => {
+  if (!dateString) return "";
+
+  // "2026-1-20 22.18.54" → "2026-1-20"
+  const cleanDate = dateString.split(" ")[0];
+
+  const date = new Date(cleanDate);
+
+  return date.toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+};
 
   return (
     <div>
@@ -491,6 +505,7 @@ export default function Home() {
             >
               {blogs.map((blog, i) => (
                 <SwiperSlide key={i}>
+                      <Link href={`/${blog.slug}`}>
                   <div className="side-posts">
                     <div className="item">
                       <div className="img img-cover">
@@ -498,14 +513,13 @@ export default function Home() {
                       </div>
                       <div className="info">
                         <h4 className="title">
-                          <Link href={blog.slug}>
-                            {blog.title}
-                          </Link>
-                        </h4>
-                        <div className="date-author">{blog.date}</div>
+                             {blog.title}
+                         </h4>
+                        <div className="date-author">{formatBlogDate(blog.date)}</div>
                       </div>
                     </div>
                   </div>
+                    </Link>
                 </SwiperSlide>
               ))}
             </Swiper>
