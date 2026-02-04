@@ -104,7 +104,28 @@ const PRICES = [
               <span className="navbar-toggler-icon"></span>
             </button>
 
-         +
+          {/* <div
+              className="collapse navbar-collapse justify-content-end"
+              id="navbarSupportedContent"
+            >
+              <ul className="navbar-nav mb-2 mb-lg-0">
+                <li className="nav-item">
+                  <Link className="nav-link" href="/sell-my-caravan/">
+                    Sell My Caravan
+                  </Link>
+                </li>
+                <li className="nav-item">
+                  <Link className="nav-link" href="/dealer-advertising/">
+                    Dealer Advertising
+                  </Link>
+                </li>
+                <li className="nav-item login">
+                  <Link className="nav-link" href="/login/">
+                    <i className="bi bi-person-fill"></i> Login
+                  </Link>
+                </li>
+              </ul>
+            </div> */}
 
             {/*<div className="navbar-right" ref={dropdownRef}>
               <button className="profile-btn" onClick={() => setOpen(!open)}>
