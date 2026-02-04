@@ -794,7 +794,7 @@ export default function SearchSection() {
       <div className="custom-tabs-content">
         <div className="custom-card-grid">
           {currentTab?.cards?.map((item, index) => (
-            <a href="#" className="custom-card" key={index}>
+            <a href={item.url} className="custom-card" key={index}>
               <h4 className="custom-card-title">{item.title}</h4>
               <p className="custom-card-sub">{item.sub}</p>
             </a>

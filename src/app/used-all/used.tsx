@@ -363,7 +363,7 @@ const formatBlogDate = (dateString: string) => {
                                             <p>{item.display_text}</p>
               
                                             <Link className="view_all" href={`/listings${item.permalink}`}>
-                                              View All Caravans in {stateCode}
+                                              View All 
               
                                             </Link>
                                           </div>
