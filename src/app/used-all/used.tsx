@@ -250,6 +250,14 @@ const formatBlogDate = (dateString: string) => {
       url: `/listings/${item.permalink}`,
     })),
   },
+   {
+    title: "Caravans For Sale By Type",
+    items: usedCategoryList.map((item) => ({
+    label:  item.label,
+      count: item.display_text  ,
+      url: `/listings/${item.permalink}`,
+    })),
+  },
   {
     title: "Caravans By Popular Manufacturers",
     items: manufactureBands.map((item) => ({

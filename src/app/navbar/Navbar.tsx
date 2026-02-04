@@ -104,7 +104,7 @@ const PRICES = [
               <span className="navbar-toggler-icon"></span>
             </button>
 
-            <div
+            {/* <div
               className="collapse navbar-collapse justify-content-end"
               id="navbarSupportedContent"
             >
@@ -125,7 +125,7 @@ const PRICES = [
                   </Link>
                 </li>
               </ul>
-            </div>
+            </div> */}
 
             {/*<div className="navbar-right" ref={dropdownRef}>
               <button className="profile-btn" onClick={() => setOpen(!open)}>
