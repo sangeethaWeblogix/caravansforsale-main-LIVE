@@ -324,9 +324,9 @@ export default function HomePage() {
                 the trusted marketplace for Aussie caravan owners.
               </p>
 
-              <Link href="#" className="btn">
+              {/* <Link href="#" className="btn">
                 SELL YOUR CARAVAN
-              </Link>
+              </Link> */}
             </div>
           </section>
 
