@@ -25,14 +25,12 @@ export async function GET() {
     "category-region-sitemap.xml",
     "state-atm-sitemap.xml",
     "region-atm-sitemap.xml",
-    "category-price-sitemap.xml",
-    "state-sleep-sitemap.xml",
+     "state-sleep-sitemap.xml",
     "region-sleep-sitemap.xml",
     "category-sleep-sitemap.xml",
     "state-length-sitemap.xml",
     "region-length-sitemap.xml",
-    "category-atm-sitemap.xml",
-    "category-length-sitemap.xml",
+    
   ];
 
   const lastModified = new Date().toISOString().split("T")[0];
