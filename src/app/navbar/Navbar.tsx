@@ -6,6 +6,18 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useSearchParams } from "next/navigation";
 
+
+type DropdownType = "state" | "category" | "price" | null;
+export default function Navbar() {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const [openDropdown, setOpenDropdown] = useState<DropdownType>(null);
+  const toggleNav = () => setIsOpen(!isOpen);
+  const [navigating, setNavigating] = useState(false);
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [open, setOpen] = useState(false);
+const dropdownRef = useRef<HTMLDivElement | null>(null);
 const STATES = [
   "New South Wales",
   "Queensland",
@@ -29,18 +41,6 @@ const PRICES = [
   50000, 60000, 70000, 80000, 90000, 100000, 120000, 140000, 160000, 180000,
   200000,
 ];
-type DropdownType = "state" | "category" | "price" | null;
-export default function Navbar() {
-  const [isOpen, setIsOpen] = useState(false);
-
-  const [openDropdown, setOpenDropdown] = useState<DropdownType>(null);
-  const toggleNav = () => setIsOpen(!isOpen);
-  const [navigating, setNavigating] = useState(false);
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const [open, setOpen] = useState(false);
-  const dropdownRef = useRef(null);
-
   // Close dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (e) => {
