@@ -362,7 +362,7 @@ const formatBlogDate = (dateString: string) => {
                                             {/* ✔ API BASED DISPLAY TEXT */}
                                             <p>{item.display_text}</p>
               
-                                            <Link className="view_all" href={`/listings${item.permalink}`}>
+                                            <Link className="view_all" href={`/listings/${item.permalink}`}>
                                               View All 
               
                                             </Link>
@@ -436,7 +436,7 @@ const formatBlogDate = (dateString: string) => {
                 <ul>
                   {cat.items.map((item, j) => (
                     <li key={j}>
-                      <Link href={`/listings${item.permalink}`}>
+                      <Link href={item.url}>
                         {item.label} <span>({item.count})</span>
                       </Link>
                     </li>
