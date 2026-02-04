@@ -7,7 +7,7 @@ import "swiper/css";
 import "swiper/css/navigation";
 import Image from "next/image";
 import Link from "next/link";
-   import '../app/home/main.css'
+import '../app/home/main.css'
 
 
 const data = [

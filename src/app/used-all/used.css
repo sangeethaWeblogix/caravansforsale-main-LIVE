@@ -546,21 +546,20 @@
 }
 
 .caravans_by_state .service-box {
-  z-index: 1;
-  -o-transition: all 0.3s ease;
-  background-color: #fff;
-  border: 1px solid #9993;
-  border-radius: 12px;
-  align-items: center;
-  gap: 15px;
-  margin-bottom: 10px;
-  padding: 20px;
-  -webkit-transition: all 0.3s;
-  transition: all 0.3s;
-  display: flex;
-  position: relative;
-  box-shadow: 5px 5px 3px #6262621a;
-  height: 200px;
+    z-index: 1;
+    -o-transition: all 0.3s ease;
+    background-color: #fff;
+    border: 1px solid #9993;
+    border-radius: 12px;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    padding: 20px;
+    -webkit-transition: all 0.3s;
+    transition: all 0.3s;
+    display: flex;
+    position: relative;
+    height: 200px;
 }
 
 .caravans_by_state .service-box:hover {
@@ -611,6 +610,201 @@
   height: auto;
 }
 
+.listing_region ul {
+    width: 100%;
+    padding-left: 0;
+    display: inline-block;
+    margin: 0;
+}
+
+.listing_region ul li {
+    float: left;
+    width: 33.33%;
+    margin-bottom: 15px;
+    list-style: none;
+}
+
+.listing_region ul li a {
+    color: #1153a6;
+    font-size: 16px;
+    font-weight: 500;
+    text-decoration: underline!important;
+}
+
+.listing_region ul li span {
+    font-size: 14px;
+    display: block;
+    margin-top: 2px;
+}
+
+.search_home .btn {
+	    color: #fff;
+    letter-spacing: .5px;
+    background: #f58333;
+    padding: 12px 22px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all .25s;
+    display: inline-block;
+}
+
+.search_home .btn.btn-outline {
+    border: 1px solid #ddd;
+    background: #fff;
+    color: #000;
+}
+
+.search_home .btn.btn-outline:hover {
+	background: #f3751c;
+	border-color:#f3751c;
+	color:#fff
+}
+
+.shop-used-caravans {
+  padding: 50px 0px;
+  padding-top:20px;
+  background: #ffffff;
+}
+
+.shop-used-caravans h2 {
+  font-size: 22px;
+  margin-bottom: 30px;
+  font-weight: 600;
+}
+
+.shop-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.shop-card {
+    background: #ffffff;
+    border-radius: 6px;
+    padding: 15px;
+    border: 1px solid #e5e7eb;
+}
+
+.shop-card h3 {
+    font-size: 17px;
+    margin-bottom: 15px;
+    font-weight: 600;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 8px;
+}
+
+.shop-card ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.shop-card li {
+    margin-bottom: 6px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #f1f1f1;
+}
+.shop-card li:last-child {
+	border-bottom:none;
+}
+
+.shop-card a {
+    text-decoration: none;
+    color: #1153a6;
+    font-size: 16px;
+    display: block;
+    padding-left: 0px;
+    position: relative;
+    font-weight: 500;
+}
+
+.shop-card a span {
+	font-weight:400;
+	font-size:14px;
+	color: #444;
+	display:block;
+	margin-top:2px;
+}
+
+/* .shop-card a::before {
+  content: "\f143";
+  font-family: bootstrap-icons !important;
+  position: absolute;
+  left: 0;
+  top: 0;
+} */
+
+.shop-card a:hover {
+      color: #1153a6;
+}
+
+/* Tablet */
+@media (max-width: 991px) {
+  .shop-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Mobile */
+@media (max-width: 575px) {
+  .shop-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .shop-used-caravans h2 {
+    font-size: 22px;
+  }
+}
+
+.lli_head {
+    height: 100%;
+    display: block;
+}
+
+.product-page .related-products .explore-state .product-card .img {
+    justify-content: center;
+    align-items: center;
+    min-height: 230px;
+    max-height: 230px;
+    display: flex;
+    overflow: hidden;
+    background: #eee;
+    position: relative;
+}
+
+.product-page .related-products .product-card .img {
+    background: #eee;
+    justify-content: center;
+    align-items: center;
+    min-height: 230px;
+    max-height: 230px;
+    display: flex;
+    overflow: hidden;
+	height:auto
+}
+
+.product-card .background_thumb {
+    background: #464545;
+    position: absolute;
+    transform: scale(1.5);
+}
+
+.product-card .background_thumb img {
+    filter: blur(6px);
+    opacity: .5;
+}
+
+.main_thumb {
+    align-items: center;
+    min-height: 250px;
+    max-height: 250px;
+    display: flex;
+    position: relative;
+    overflow: hidden;
+}
+
+
 .caravans_by_state .sec_left a {
   color: #333;
   margin-bottom: 3px;
@@ -646,6 +840,136 @@
 
 .caravans_by_state .sec_left a.view_all i {
   font-size: 13px;
+}
+
+.product-page .explore-state .product-card .info .title {
+    font-size: 17px;
+    text-transform: capitalize;
+    font-weight: 500;
+    margin-bottom: 0;
+    text-decoration: inherit;
+    height: auto;
+    color: #000;
+    margin-top: 0;
+}
+
+.product-page .explore-state .product-card .info {
+    margin-top: 10px;
+    min-height: inherit;
+    margin-bottom: 10px;
+    -webkit-transition: all 0.4s ease;
+    -o-transition: all 0.4s ease;
+    transition: all 0.4s ease;
+}
+
+.product-page .explore-state .product-card .price .metc2 {
+    justify-content: start;
+    align-items: center;
+    gap: 13px;
+    width: 100%;
+    display: flex;
+}
+
+.product-page .explore-state .product-card .price .metc2 h5.slog {
+    color: #000;
+    letter-spacing: 0;
+    text-align: left;
+    margin-top: 0;
+    margin-bottom: 0;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.explore-state .vehicleDetailsWithIcons.simple {
+    border-top: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
+    height: 90px;
+    margin: 10px 0 5px;
+    padding: 5px 0;
+    width: 100%!important;
+    display: inline-block!important;
+}
+
+.explore-state .vehicleDetailsWithIcons.simple li {
+    color: #fff;
+    text-align: center;
+    vertical-align: top;
+    float: left;
+    align-items: center;
+    width: 35%;
+    margin-right: 25px;
+    padding: 3px;
+    font-size: 14px;
+    line-height: 19px;
+    display: flex;
+}
+
+.explore-state .vehicleDetailsWithIcons.simple li:before {
+    content: "";
+    color: #797979;
+    margin-right: 5px;
+    font-family: "Font Awesome 6 Free";
+    font-size: 9px;
+    font-style: normal;
+    font-weight: 900;
+    position: relative;
+}
+
+.explore-state .vehicleDetailsWithIcons.simple li span {
+    color: #000;
+    font-weight: 400;
+    line-height: normal;
+    display: inline-block;
+}
+
+.explore-state .attribute3 {
+    white-space: nowrap;
+    display: inline-block;
+}
+
+.explore-state .bottom_mid {
+    gap: 10px;
+    margin-bottom: 13px;
+    display: flex;
+}
+
+.explore-state .bottom_mid span {
+    color: #000;
+    font-size: 14px;
+}
+
+.explore-state .bottom_mid span i {
+    color: #adadad;
+    margin-right: 2px;
+}
+
+.explore-state .bottom_button {
+    gap: 10px;
+    display: flex;
+}
+
+.product-page .explore-state .product-card .btn {
+    color: #333;
+    text-transform: capitalize;
+    letter-spacing: .5px;
+    background: 0 0;
+    border: 1px solid #333;
+    width: 100%;
+    padding: 8px;
+    font-size: 14px;
+    display: block;
+}
+
+.product-page .explore-state .product-card .btn.btn-primary {
+    color: #fff;
+    background-color: #ec7200;
+    border-color: #ec7200;
+}
+
+.product-page .explore-state .product-card .btn:hover, .product-page .explore-state .product-card .btn.btn-primary:hover {
+    color: #fff;
+    background-color: #000;
+    border-color: #000;
 }
 
 a.ignoretext {
@@ -838,9 +1162,10 @@ a.ignoretext {
 }
 
 .caravans_by_state.services.style-1 {
-  position: relative;
-  background: #f1f1f1;
-  padding: 30px 0;
+    position: relative;
+    background: #ffffff;
+    padding: 30px 0;
+   
 }
 
 .m_label {
@@ -886,7 +1211,7 @@ a.ignoretext {
 }
 
 .blog.style-8 .side-posts .item .info .date-author .date {
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .search-container {
@@ -1183,7 +1508,7 @@ a.ignoretext {
     height: auto;
   }
   .home_top {
-    padding-top: 0px;
+    padding-top: 30px;
     padding-bottom: 0px;
   }
   .product-page .related-products .swiper-button-next,
@@ -1204,17 +1529,23 @@ a.ignoretext {
     margin-top: 10px;
   }
   .home_top p {
-    text-align: left;
+    text-align: center;
   }
- 
   main .section-head a.btn {
     color: #fff;
     margin-bottom: 12px;
     font-size: 16px;
-    padding: 7px 10px;
-  }
+    padding: 10px 10px;
+    width: 100%;
+}
   .deal-of-month .inside_col h2 {
     font-size: 23px;
+  }
+  .listing_region ul li {
+	  width: 100%;
+  }
+  .product-page .explore-state .product-card .btn.btn-primary {
+	  font-size: 16px;
   }
   .deal-of-month .inside_col .header_posistion {
     margin-bottom: 15px;
@@ -1504,8 +1835,16 @@ a.ignoretext {
 }
 
 .banner_sell_caravan .bgImg {
-  object-fit: cover;
-  z-index: 1;
+    object-fit: cover;
+    z-index: 1;
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    color: transparent;
 }
 
 .banner_sell_caravan .overlay {
@@ -1749,9 +2088,6 @@ main .section-head .category_icon li img {
   }
   .key_points {
     gap: 8px;
-  }
-   .custom-card-title {
-    font-size: 16px;
   }
 }
 
