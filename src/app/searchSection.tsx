@@ -12,7 +12,35 @@ import {
   fetchKeywordSuggestions, // GET /home_search/?keyword=<q> (typed list)
 } from "@/api/homeSearch/api";
 import '../app/home/main.css'
+import { fetchSleepBands } from "@/api/homeApi/sleep/api";
+import { fetchRegion } from "@/api/homeApi/region/api";
+import { fetchManufactures } from "@/api/homeApi/manufacture/api";
+import { fetchPriceBasedCaravans } from "@/api/homeApi/price/api";
+import { fetchAtmBasedCaravans } from "@/api/homeApi/weight/api";
+import { fetchLengthBasedCaravans } from "@/api/homeApi/length/api";
+import { fetchUsedCaravansList } from "@/api/homeApi/usedCaravanList/api";
+import { fetchStateBasedCaravans } from "@/api/homeApi/state/api";
+interface TabsItem {
+  label: string;
+  capacity: number;
+  slug: string;
+  permalink: string;
+  caravan_count: string;
+  starting_price: number;
+  display_text: string;
+  state: string;
+  short_label: string;
+  short_count: string;
+   region: string;
+}
 
+type TabCard = {
+  title: string;
+  sub: string;
+  url: string;
+};
+
+ 
 type Item = {
   title?: string;
   name?: string;
@@ -25,16 +53,7 @@ type Item = {
   id?: string | number;
   label?: string;
 } & Record<string, unknown>;
-
-// Safe label extractor (avoid mixing ?? and || without parens)
-//  const labelOf = (x: Item): string => {
-//    const basic =
-//      x?.title ??
-//      x?.name ??
-//      x?.heading ??
-//      [x?.make, x?.model, x?.variant].filter(Boolean).join(" ");
-//    return (basic && String(basic).trim()) || String(x?.slug ?? x?.id ?? "");
-//  };
+ 
 
 export default function SearchSection() {
   const router = useRouter();
@@ -52,102 +71,117 @@ export default function SearchSection() {
   const [conditionValue, setConditionValue] = useState("");
   const isSearchEnabled = category || location || conditionValue;
   const [activeIndex, setActiveIndex] = useState(0);
-  const tabsData = [
+
+
+    const [sleepBands, setSleepBands] = useState<TabsItem[]>([]);
+    const [regionBands, setRegionBands] = useState<TabsItem[]>([]);
+    const [manufactureBands, setManufactureBands] = useState<TabsItem[]>([]);
+    const [lengthBands, setLengthBands] = useState<TabsItem[]>([]);
+    const [atmBands, setAtmBands] = useState<TabsItem[]>([]);
+    const [usedCategoryList, setUsedCategoryList] = useState<TabsItem[]>([]);
+    const [priceBands, setPriceBands] = useState<TabsItem[]>([]);
+    const [usedState, setUsedState] = useState<TabsItem[]>([]);
+    const [usedRegion, setUsedRegion] = useState<TabsItem[]>([]);
+     const [stateBands, setStateBands] = useState<TabsItem[]>([]);
+
+   useEffect(() => {
+      async function loadAll() {
+        // const [sleep, region, weight, length] = await Promise.all([
+        const [sleep, region, manufactures, weight, length, price, usedData, state] =
+          await Promise.all([
+            fetchSleepBands(),
+            fetchRegion(),
+            fetchManufactures(),
+            fetchAtmBasedCaravans(),
+            fetchLengthBasedCaravans(),
+            fetchPriceBasedCaravans(),
+            fetchUsedCaravansList(),
+            fetchStateBasedCaravans(),
+            ,
+          ]);
+  
+        setSleepBands(sleep);
+        setRegionBands(region);
+        setManufactureBands(manufactures);
+        setAtmBands(weight);
+        setLengthBands(length);
+        setPriceBands(price);
+        setUsedCategoryList(usedData.by_category);
+        setUsedState(usedData.by_state);
+        setUsedRegion(usedData.by_region);
+        setStateBands(state);
+  
+      }
+  
+      loadAll();
+    }, []);
+
+  const tabsData: {
+  key: string;
+  label: string;
+  cards: TabCard[];
+}[] = [
     {
       key: "price",
       label: "Price",
-      cards: [
-        { title: "Under $20k", sub: "757 caravans listings." },
-        { title: "Under $30k", sub: "123 caravans listings" },
-        { title: "Under $40k", sub: "675 caravans listings" },
-        { title: "Under $50k", sub: "899 caravans listings" },
-        { title: "Under $75k", sub: "6599 caravans listings" },
-        { title: "Under $100k", sub: "522 caravans listings" },
-        { title: "Under $150k", sub: "522 caravans listings" },
-        { title: "Under $200k", sub: "522 caravans listings" },
-        { title: "Over $200k", sub: "235 caravans listings" },
-      ],
+        cards: priceBands.map((item) => ({
+      title: item.short_label,
+      sub: item.short_count,
+      url: `/listings/${item.permalink}`,
+    })),
     },
     {
       key: "Region",
       label: "Region",
-      cards: [
-        { title: "Melbourne", sub: "230 caravans listings" },
-        { title: "Sydney", sub: "1,520 caravans listings" },
-        { title: "Brisbane", sub: "80 caravans listings" },
-        { title: "Perth", sub: "40 caravans listings" },
-        { title: "Adelaide", sub: "1,870 caravans listings" },
-        { title: "Newcastle", sub: "230 caravans listings" },
-        { title: "Geelong", sub: "1,520 caravans listings" },
-        { title: "Hobart", sub: "80 caravans listings" },
-        { title: "Townsville", sub: "40 caravans listings" },
-        { title: "Cairns", sub: "1,870 caravans listings" },
-      ],
+       cards: regionBands.map((item) => ({
+      title: item.region,
+  sub: `${item.caravan_count ?? 0} caravan listings`,      url: `/listings/${item.permalink}`,
+    })),
     },
     {
       key: "Weight",
       label: "Weight",
-      cards: [
-        { title: "Under 1500 Kgs", sub: "540 listings" },
-        { title: "Under 2500 Kgs", sub: "610 listings" },
-        { title: "Under 3500 Kgs", sub: "480 listings" },
-        { title: "Under 4500 Kgs", sub: "210 listings" },
-        { title: "Over 4500 Kgs", sub: "190 listings" },
-       
-      ],
+     cards: atmBands.map((item) => ({
+      title: item.short_label,
+      sub: item.short_count,
+      url: `/listings/${item.permalink}`,
+    })),
     },
     {
       key: "Sleep",
       label: "Sleep",
-      cards: [
-        { title: "Under 2 People", sub: "540 listings" },
-        { title: "Under 4 People", sub: "610 listings" },
-        { title: "Under 6 People", sub: "480 listings" },
-        { title: "Over 6 People", sub: "210 listings" },
-        
-      ],
+       cards: sleepBands.map((item) => ({
+      title: item.short_label,
+      sub: item.short_count,
+      url: `/listings/${item.permalink}`,
+    })),
     },
     {
       key: "Length",
       label: "Length",
-      cards: [
-        { title: "Under 12ft Length", sub: "540 listings" },
-        { title: "Under 14ft Length", sub: "610 listings" },
-        { title: "Under 17ft Length", sub: "480 listings" },
-        { title: "Under 20ft Length", sub: "210 listings" },
-        { title: "Under 23ft Length", sub: "190 listings" },
-        { title: "Over 24ft Length", sub: "540 listings" },
-        
-      ],
+       cards: lengthBands.map((item) => ({
+      title: item.short_label,
+      sub: item.short_count,
+      url: `/listings/${item.permalink}`,
+    })),
     },
     {
       key: "Used",
       label: "Used",
-      cards: [
-        { title: "Off Road", sub: "540 listings" },
-        { title: "Touring", sub: "610 listings" },
-        { title: "Pop Top", sub: "480 listings" },
-        { title: "Family", sub: "210 listings" },
-        { title: "Luxury", sub: "190 listings" },
-        { title: "Hybrid", sub: "540 listings" },
-      ],
+      cards: usedCategoryList.map((item) => ({
+      title: item.short_label,
+      sub: item.short_count,
+      url: `/listings/${item.permalink}`,
+    })),
     },
     {
       key: "Manufacturer",
       label: "Manufacturer",
-      cards: [
-        { title: "Jayco", sub: "540 listings" },
-        { title: "Snowy River", sub: "610 listings" },
-        { title: "New Age", sub: "480 listings" },
-        { title: "Evernew", sub: "210 listings" },
-        { title: "Crusader", sub: "190 listings" },
-        { title: "Mdc", sub: "540 listings" },
-        { title: "Design RV", sub: "610 listings" },
-        { title: "JB", sub: "480 listings" },
-        { title: "Supreme", sub: "210 listings" },
-        { title: "Avan", sub: "190 listings" },
-        
-      ],
+     cards: manufactureBands.map((item) => ({
+      title: item.short_label,
+      sub: item.short_count,
+      url: `/listings/${item.permalink}`,
+    })),
     },
   ];
 

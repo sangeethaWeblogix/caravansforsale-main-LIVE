@@ -94,9 +94,9 @@ export default function HomeLatestBlogs() {
                   const href = getHref(post);
                   return (
                     <SwiperSlide key={post.id}>
-                    
                       <div className="side-posts">
                         <div className="item">
+                     <Link href={href} scroll>
                           <div className="img img-cover">
                             {post.image && (
                               <Image
@@ -109,6 +109,8 @@ export default function HomeLatestBlogs() {
                               />
                             )}
                           </div>
+                                                </Link>
+
                           <div className="info">
                             <h4 className="title">
                               <Link href={href} scroll>
