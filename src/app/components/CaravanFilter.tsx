@@ -358,98 +358,170 @@
      const json = await res.json();
      return json.data || [];
    };
-   useEffect(() => {
-     const activeFilters: Filters = {
-       ...currentFilters,
-       ...filters,
-     };
+ // ✅ Smart merge: local filters win, but only if they have a real value
+ // ✅ Smart merge: local filters win ONLY if they have a real value
  
-     // CATEGORY COUNTS - exclude category from params so we see all categories
-     const catParams = buildCountParams(activeFilters, "category");
-     catParams.set("group_by", "category");
- 
-     fetch(
-       `https://admin.caravansforsale.com.au/wp-json/cfs/v1/params_count?${catParams.toString()}`,
-     )
-       .then((res) => res.json())
-       .then((json) => setCategoryCounts(json.data || []))
-       .catch(console.error);
- 
-     // MAKE COUNTS - exclude make from params
-     const makeParams = buildCountParams(activeFilters, "make");
-     makeParams.set("group_by", "make");
- 
-     fetch(
-       `https://admin.caravansforsale.com.au/wp-json/cfs/v1/params_count?${makeParams.toString()}`,
-     )
-       .then((res) => res.json())
-       .then((json) => {
-         setMakeCounts(json.data || []);
- 
-         // 🔥 THIS IS THE KEY LINE
-         setPopularMakes(json.popular_makes || []);
-       })
-       .catch(console.error);
- 
-     // MODEL COUNTS - only fetch if make is selected, exclude model from params
-     if (activeFilters.make) {
-       const modelParams = buildCountParams(activeFilters, "model");
-       modelParams.set("group_by", "model");
-       // Make sure make is included for model counts
-       modelParams.set("make", activeFilters.make);
- 
-       fetch(
-         `https://admin.caravansforsale.com.au/wp-json/cfs/v1/params_count?${modelParams.toString()}`,
-       )
-         .then((res) => res.json())
-         .then((json) => setModelCounts(json.data || []))
-         .catch(console.error);
-     } else {
-       setModelCounts([]);
-     }
-   }, [
-     // Watch all filter values that should trigger count updates
-     currentFilters.category,
-     currentFilters.make,
-     currentFilters.model,
-     currentFilters.condition,
-     currentFilters.state,
-     currentFilters.region,
-     currentFilters.suburb,
-     currentFilters.from_price,
-     currentFilters.to_price,
-     currentFilters.minKg,
-     currentFilters.maxKg,
-     currentFilters.acustom_fromyears,
-     currentFilters.acustom_toyears,
-     currentFilters.from_length,
-     currentFilters.to_length,
-     currentFilters.from_sleep,
-     currentFilters.to_sleep,
-     currentFilters.search,
-     currentFilters.keyword,
-     filters.category,
-     filters.make,
-     filters.model,
-       filters.state,        // ✅ ADD
-  filters.region,       // ✅ ADD
-  filters.suburb,       // ✅ ADD
-  filters.condition,    // ✅ ADD
-  filters.from_price,   // ✅ ADD
-  filters.to_price,     // ✅ ADD
-  filters.minKg,        // ✅ ADD
-  filters.maxKg,        // ✅ ADD
-  filters.acustom_fromyears,  // ✅ ADD
-  filters.acustom_toyears,    // ✅ ADD
-  filters.from_length,  // ✅ ADD
-  filters.to_length,    // ✅ ADD
-  filters.from_sleep,   // ✅ ADD
-  filters.to_sleep,     // ✅ ADD
-  filters.search,       // ✅ ADD
-  filters.keyword,      // ✅ ADD
 
-   ]);
- 
+// ✅ NEW: buildCountParams that supports excluding MULTIPLE fields
+ // ✅ Smart merge: local filters win ONLY if they have a real value
+const mergeFilters = (base: Filters, local: Filters): Filters => {
+  const merged: Filters = { ...base };
+  for (const key of Object.keys(local) as (keyof Filters)[]) {
+    const val = local[key];
+    if (val !== undefined && val !== null && val !== "") {
+      (merged as any)[key] = val;
+    }
+  }
+  return merged;
+};
+
+// ✅ NEW: buildCountParams that supports excluding MULTIPLE fields
+const buildCountParamsMulti = (
+  filters: Filters,
+  excludeFields: string[] = []
+) => {
+  const params = new URLSearchParams();
+
+  const filterMap: Record<string, string | number | undefined | null> = {
+    category: filters.category,
+    make: filters.make,
+    model: filters.model,
+    condition: filters.condition,
+    state: filters.state?.toLowerCase(),
+    region: filters.region,
+    suburb: filters.suburb,
+    pincode: filters.pincode,
+    from_price: filters.from_price,
+    to_price: filters.to_price,
+    minKg: filters.minKg,
+    maxKg: filters.maxKg,
+    acustom_fromyears: filters.acustom_fromyears,
+    acustom_toyears: filters.acustom_toyears,
+    from_length: filters.from_length,
+    to_length: filters.to_length,
+    from_sleep: filters.from_sleep,
+    to_sleep: filters.to_sleep,
+    search: filters.search,
+    keyword: filters.keyword,
+  };
+
+  Object.entries(filterMap).forEach(([key, value]) => {
+    // Skip ALL excluded fields
+    if (excludeFields.includes(key)) return;
+
+    if (value !== undefined && value !== null && value !== "") {
+      params.set(key, String(value));
+    }
+  });
+
+  return params;
+};
+
+ // Replace your count useEffect with this:
+
+useEffect(() => {
+  const activeFilters: Filters = mergeFilters(currentFilters, filters);
+
+  const controller = new AbortController();
+  const { signal } = controller;
+
+  // ─── CATEGORY COUNTS ───
+  const catParams = buildCountParamsMulti(activeFilters, ["category"]);
+  catParams.set("group_by", "category");
+
+  fetch(
+    `https://admin.caravansforsale.com.au/wp-json/cfs/v1/params_count?${catParams.toString()}`,
+    { signal }
+  )
+    .then((res) => res.json())
+    .then((json) => {
+      if (!signal.aborted) setCategoryCounts(json.data || []);
+    })
+    .catch((e) => { if (e.name !== "AbortError") console.error(e); });
+
+  // ─── MAKE COUNTS ───
+  const makeParams = buildCountParamsMulti(activeFilters, ["make", "model"]);
+  makeParams.set("group_by", "make");
+
+  // 🔍 DEBUG: Log exact URL being fetched
+  const makeURL = `https://admin.caravansforsale.com.au/wp-json/cfs/v1/params_count?${makeParams.toString()}`;
+  console.log("🔢 MAKE FETCH URL:", makeURL);
+
+  fetch(makeURL, { signal })
+    .then((res) => res.json())
+    .then((json) => {
+      if (!signal.aborted) {
+        console.log("🔢 MAKE RESPONSE:", json.data?.length, "makes received");
+        console.log("🔢 MAKE SAMPLE:", json.data?.slice(0, 3));
+        setMakeCounts(json.data || []);
+        setPopularMakes(json.popular_makes || []);
+      } else {
+        console.log("🔢 MAKE ABORTED — stale response ignored");
+      }
+    })
+    .catch((e) => { if (e.name !== "AbortError") console.error(e); });
+
+  // ─── MODEL COUNTS ───
+  const activeMake = activeFilters.make;
+  if (activeMake) {
+    const modelParams = buildCountParamsMulti(activeFilters, ["model"]);
+    modelParams.set("group_by", "model");
+    modelParams.set("make", activeMake);
+
+    fetch(
+      `https://admin.caravansforsale.com.au/wp-json/cfs/v1/params_count?${modelParams.toString()}`,
+      { signal }
+    )
+      .then((res) => res.json())
+      .then((json) => {
+        if (!signal.aborted) setModelCounts(json.data || []);
+      })
+      .catch((e) => { if (e.name !== "AbortError") console.error(e); });
+  } else {
+    setModelCounts([]);
+  }
+
+  return () => controller.abort();
+}, [
+  currentFilters.category,
+  currentFilters.make,
+  currentFilters.model,
+  currentFilters.condition,
+  currentFilters.state,
+  currentFilters.region,
+  currentFilters.suburb,
+  currentFilters.from_price,
+  currentFilters.to_price,
+  currentFilters.minKg,
+  currentFilters.maxKg,
+  currentFilters.acustom_fromyears,
+  currentFilters.acustom_toyears,
+  currentFilters.from_length,
+  currentFilters.to_length,
+  currentFilters.from_sleep,
+  currentFilters.to_sleep,
+  currentFilters.search,
+  currentFilters.keyword,
+  filters.category,
+  filters.make,
+  filters.model,
+  filters.state,
+  filters.region,
+  filters.suburb,
+  filters.condition,
+  filters.from_price,
+  filters.to_price,
+  filters.minKg,
+  filters.maxKg,
+  filters.acustom_fromyears,
+  filters.acustom_toyears,
+  filters.from_length,
+  filters.to_length,
+  filters.from_sleep,
+  filters.to_sleep,
+  filters.search,
+  filters.keyword,
+]);
     const handleMakeSelect = (make) => {
      // SAME make click again → unselect
      if (selectedMakeTemp === make.slug) {
@@ -485,7 +557,7 @@
        make: filters.make,
        model: filters.model,
        condition: filters.condition,
-       state: filters.state,
+        state: filters.state?.toLowerCase(),
        region: filters.region,
        suburb: filters.suburb,
        pincode: filters.pincode,
