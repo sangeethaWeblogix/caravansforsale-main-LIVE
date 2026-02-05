@@ -431,6 +431,23 @@
      filters.category,
      filters.make,
      filters.model,
+       filters.state,        // ✅ ADD
+  filters.region,       // ✅ ADD
+  filters.suburb,       // ✅ ADD
+  filters.condition,    // ✅ ADD
+  filters.from_price,   // ✅ ADD
+  filters.to_price,     // ✅ ADD
+  filters.minKg,        // ✅ ADD
+  filters.maxKg,        // ✅ ADD
+  filters.acustom_fromyears,  // ✅ ADD
+  filters.acustom_toyears,    // ✅ ADD
+  filters.from_length,  // ✅ ADD
+  filters.to_length,    // ✅ ADD
+  filters.from_sleep,   // ✅ ADD
+  filters.to_sleep,     // ✅ ADD
+  filters.search,       // ✅ ADD
+  filters.keyword,      // ✅ ADD
+
    ]);
  
     const handleMakeSelect = (make) => {
