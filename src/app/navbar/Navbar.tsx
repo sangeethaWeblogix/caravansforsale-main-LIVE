@@ -82,7 +82,7 @@ const PRICES = [
           <div className="logo_left">
             <Link className="navbar-brand" href="/">
               <Image
-                src="/images/cfs-logo-black.svg"
+                src="/images/cfs-logo-black.svg?=1"
                 alt="Caravans For Sale"
                 width={150}
                 height={50}
