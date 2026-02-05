@@ -21,6 +21,7 @@ import { fetchFeaturedUsedCaravans } from "@/api/featuredCaravanList/api";
 import FetauredLsit from './fetauredList'
 import LatestList from './usedCaravanList'
 import { fetchLatestUsedCaravans } from "@/api/usedCaravanList/api";
+import { fetchCaravanList } from "@/api/caravanlist/api";
 
 type BlogItem = {
   id: number;
@@ -69,8 +70,7 @@ type Product = {
   slug: string;
   sku: string;
 };
-
-// ── Data ────────────────────────────────────────────────────────────────
+ 
 
 const states = [
   { name: "Victoria", count: "2,726", startPrice: "$9,000", map: "/images/vic_map.svg" },
@@ -81,22 +81,7 @@ const states = [
   { name: "Tasmania", count: "182", startPrice: "$14,990", map: "/images/tas_map.svg" },
 ];
 
- 
- 
-
- 
-
- 
- 
- 
-
-// ── Components ──────────────────────────────────────────────────────────
-
- 
- 
- 
-
-// ── Main Page ───────────────────────────────────────────────────────────
+  
 
 export default function Home() {
    const [blogs, setBlogs] = useState<BlogItem[]>([]);
@@ -111,6 +96,8 @@ export default function Home() {
   const [priceBands, setPriceBands] = useState<Item[]>([]);
   const [usedState, setUsedState] = useState<Item[]>([]);
   const [usedRegion, setUsedRegion] = useState<Item[]>([]);
+    const [categoryBands, setCategoryBands] = useState<Item[]>([]);
+
 
 
 
@@ -188,7 +175,7 @@ const formatBlogDate = (dateString: string) => {
  useEffect(() => {
     async function loadAll() {
       // const [sleep, region, weight, length] = await Promise.all([
-      const [sleep, region, manufactures, weight, length, price, usedData, state] =
+      const [sleep, region, manufactures, weight, length, price, usedData, state, caravan] =
         await Promise.all([
           fetchSleepBands(),
           fetchRegion(),
@@ -198,6 +185,8 @@ const formatBlogDate = (dateString: string) => {
           fetchPriceBasedCaravans(),
           fetchUsedCaravansList(),
           fetchUsedStateBasedCaravans(),
+          fetchCaravanList()
+          
           ,
         ]);
 
@@ -211,6 +200,7 @@ const formatBlogDate = (dateString: string) => {
       setUsedState(usedData.by_state);
       setUsedRegion(usedData.by_region);
       setStateBands(state);
+      setCategoryBands(caravan);
 
     }
 
@@ -252,7 +242,7 @@ const formatBlogDate = (dateString: string) => {
   },
    {
     title: "Caravans For Sale By Type",
-    items: usedCategoryList.map((item) => ({
+    items: categoryBands.map((item) => ({
     label:  item.label,
       count: item.display_text  ,
       url: `/listings/${item.permalink}`,
@@ -436,9 +426,9 @@ const formatBlogDate = (dateString: string) => {
                 <ul>
                   {cat.items.map((item, j) => (
                     <li key={j}>
-                      <Link href={item.url}>
+                      <a href={item.url}>
                         {item.label} <span>({item.count})</span>
-                      </Link>
+                      </a>
                     </li>
                   ))}
                 </ul>

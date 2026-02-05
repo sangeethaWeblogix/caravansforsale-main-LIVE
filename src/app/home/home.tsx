@@ -187,46 +187,6 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* <div className="content">
-             <div className="explore-state position-relative">
-               <div className="row">
-                 {stateBands.map((state, index) => (
-                   <div className="col-lg-4" key={index}>
-                     <div className="service-box">
-                       <div className="sec_left">
-                         <h5>{state.state}</h5>
-                         <div className="info">
-                           <div className="quick_linkss">
-                             <p>{state.display_text}</p>
-                             <Link
-                               className="view_all"
-                               href={`/listings/${state.state
-                                 .toLowerCase()
-                                 .replace(/\s+/g, "-")}-state/`}
-                             >
-                               View All Caravans For Sale in {state.statecode}{" "}
-                               <i className="bi bi-chevron-right" />
-                             </Link>
-                           </div>
-                         </div>
-                       </div>
-                       <div className="sec_right">
-                         <span>
-                           <Image
-                             src={state.image}
-                             alt={`${state.state} map`}
-                             width={100}
-                             height={100}
-                           />
-                         </span>
-                       </div>
-                     </div>
-                   </div>
-                 ))}
-                   
-               </div>
-             </div>
-           </div> */}
           <div className="content">
             <div className="explore-state position-relative">
               <Swiper
@@ -261,16 +221,15 @@ export default function HomePage() {
                           <h5>
                             {item.state}
                           </h5>
-
                           <div className="info">
                             <div className="quick_linkss">
                               {/* ✔ API BASED DISPLAY TEXT */}
                               <p>{item.display_text}</p>
 
-                              <Link className="view_all" href={`/listings${item.permalink}`}>
+                              <a className="view_all" href={`/listings${item.permalink}`}>
                                 View All 
 
-                              </Link>
+                              </a>
                             </div>
                           </div>
                         </div>

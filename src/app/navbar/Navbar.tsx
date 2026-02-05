@@ -195,58 +195,58 @@ const PRICES = [
               </li> */}
               
               <li>
-                <Link href="/listings/"
+                <a href="/listings/"
                   onClick={() => {
                     setNavigating(true); // start loader immediately
                     closeNav();
                   }}
                 >
                   All Listings
-                </Link>
+                </a>
               </li>
              <li>
-                <Link href="/used-all/"
+                <a href="/used-all/"
                   onClick={() => {
                     setNavigating(true); // start loader immediately
                     closeNav();
                   }}
                 >
                   Used Caravans
-                </Link>
+                </a>
               </li> 
               <li>
-                <Link href="/blog/" onClick={() => {
+                <a href="/blog/" onClick={() => {
                   setNavigating(true); // start loader immediately
                   closeNav();
                 }} >
                   Blog
-                </Link>
+                </a>
               </li>
               <li>
-                <Link href="/about-us/" onClick={() => {
+                <a href="/about-us/" onClick={() => {
                   setNavigating(true); // start loader immediately
                   closeNav();
                 }} >
                   About
-                </Link>
+                </a>
               </li>
               <li>
-                <Link href="/contact/" onClick={() => {
+                <a href="/contact/" onClick={() => {
                   setNavigating(true); // start loader immediately
                   closeNav();
                 }}>
                   Contact
-                </Link>
+                </a>
               </li>
             </ul>
             <div className="mobile_cta hidden-lg hidden-md">
               <span>Find Your Ideal Caravan</span>
-              <Link className="btn btn-primary" href="/caravan-enquiry-form/" onClick={() => {
+              <a className="btn btn-primary" href="/caravan-enquiry-form/" onClick={() => {
                 setNavigating(true); // start loader immediately
                 closeNav();
               }}>
                 Enquire Now
-              </Link>
+              </a>
             </div>
           </div>
         </div>
