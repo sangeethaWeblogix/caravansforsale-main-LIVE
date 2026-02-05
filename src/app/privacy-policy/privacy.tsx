@@ -12,7 +12,7 @@ const PrivacyPolicyPage = () => {
             <div className="section-head mb-40">
               <h1 className="divide-orange pb-20">Privacy Policy</h1>
               <p>
-                At Caravan Marketplace, safeguarding your privacy and ensuring
+                At Marketplace Network, safeguarding your privacy and ensuring
                 the security of your personal information are top priorities for
                 us. This comprehensive privacy policy elaborates on how we
                 collect, utilize, safeguard, and provide access to your
