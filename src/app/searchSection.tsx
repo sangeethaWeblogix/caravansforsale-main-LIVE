@@ -574,7 +574,7 @@ export default function SearchSection() {
                     <div className="content-info text-center pb-0">
                       <ul className="category_icon list-unstyled d-flex flex-wrap justify-content-start">
                         <li>
-                          <Link href="https://www.caravansforsale.com.au/listings/off-road-category/">
+                          <a href="/listings/off-road-category/">
                             <div className="item-image">
                               <Image
                                 src="/images/off-road.webp"
@@ -585,11 +585,11 @@ export default function SearchSection() {
                               />
                             </div>
                             <span>Off Road</span>
-                          </Link>
+                          </a>
                         </li>
 
                         <li>
-                          <Link href="https://www.caravansforsale.com.au/listings/hybrid-category/">
+                          <a href="https://www.caravansforsale.com.au/listings/hybrid-category/">
                             <div className="item-image">
                               <Image
                                 src="/images/hybrid.webp"
@@ -600,11 +600,11 @@ export default function SearchSection() {
                               />
                             </div>
                             <span>Hybrid</span>
-                          </Link>
+                          </a>
                         </li>
 
                         <li>
-                          <Link href="https://www.caravansforsale.com.au/listings/pop-top-category/">
+                          <a href="https://www.caravansforsale.com.au/listings/pop-top-category/">
                             <div className="item-image">
                               <Image
                                 src="/images/pop-top.webp"
@@ -615,11 +615,11 @@ export default function SearchSection() {
                               />
                             </div>
                             <span>Pop Top</span>
-                          </Link>
+                          </a>
                         </li>
 
                         <li>
-                          <Link href="https://www.caravansforsale.com.au/listings/luxury-category/">
+                          <a href="https://www.caravansforsale.com.au/listings/luxury-category/">
                             <div className="item-image">
                               <Image
                                 src="/images/luxury.webp"
@@ -630,11 +630,11 @@ export default function SearchSection() {
                               />
                             </div>
                             <span>Luxury</span>
-                          </Link>
+                          </a>
                         </li>
 
                         <li>
-                          <Link href="https://www.caravansforsale.com.au/listings/family-category/">
+                          <a href="https://www.caravansforsale.com.au/listings/family-category/">
                             <div className="item-image">
                               <Image
                                 src="/images/family.webp"
@@ -645,11 +645,11 @@ export default function SearchSection() {
                               />
                             </div>
                             <span>Family</span>
-                          </Link>
+                          </a>
                         </li>
 
                         <li>
-                          <Link href="https://www.caravansforsale.com.au/listings/touring-category/">
+                          <a href="https://www.caravansforsale.com.au/listings/touring-category/">
                             <div className="item-image">
                               <Image
                                 src="/images/touring.webp"
@@ -660,7 +660,7 @@ export default function SearchSection() {
                               />
                             </div>
                             <span>Touring</span>
-                          </Link>
+                          </a>
                         </li>
 
                       </ul>
