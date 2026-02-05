@@ -263,7 +263,7 @@ const formatBlogDate = (dateString: string) => {
     <div>
       {/* Ad Banner */}
       <div className="ad_banner">
-        <Link href="https://www.caravansforsale.com.au/listings/">
+        <a href="https://www.caravansforsale.com.au/listings/">
           <div className="item-image">
             <Image
               src="/images/banner_top_dk.jpg"
@@ -283,7 +283,7 @@ const formatBlogDate = (dateString: string) => {
               sizes="100vw"
             />
           </div>
-        </Link>
+        </a>
       </div>
 
       {/* Hero / Search Requirement */}
@@ -297,9 +297,9 @@ const formatBlogDate = (dateString: string) => {
             <p>
               Whether you’re searching by price, weight, length, caravan type, sleeping capacity, manufacturer, or location, CaravansForSale.com.au makes it easy to compare options and find the right caravan for your lifestyle. Browse Australia-wide used caravan listings, explore popular categories, and access expert buying guides to help you make a confident decision.
             </p>
-            <Link href="/listings/used-condition/" className="btn">
+            <a href="/listings/used-condition/" className="btn">
               Browse Used Caravans
-            </Link>
+            </a>
           </div>
         </div>
       </div>
@@ -352,10 +352,10 @@ const formatBlogDate = (dateString: string) => {
                                             {/* ✔ API BASED DISPLAY TEXT */}
                                             <p>{item.display_text}</p>
               
-                                            <Link className="view_all" href={`/listings/${item.permalink}`}>
+                                            <a className="view_all" href={`/listings/${item.permalink}`}>
                                               View All 
               
-                                            </Link>
+                                            </a>
                                           </div>
                                         </div>
                                       </div>
@@ -399,11 +399,11 @@ const formatBlogDate = (dateString: string) => {
             <ul>
               {regionBands.map((r, i) => (
                 <li key={i} >
-                  <Link                               
+                  <a                               
                     href={`https://www.caravansforsale.com.au/listings/${r.permalink}/`}
  className="font-medium text-blue-600">
                    {r.label}
-                  </Link>
+                  </a>
                   <span className="block mt-1 text-sm text-gray-600">
                     {r.display_text}
                   </span>
@@ -490,9 +490,9 @@ const formatBlogDate = (dateString: string) => {
                 List your caravan for sale on CaravansForSale.com.au,<br />
                 the trusted marketplace for Aussie caravan owners.
               </p>
-              <Link href="#" className="btn">
+              {/* <a href="#" className="btn">
                 SELL YOUR CARAVAN
-              </Link>
+              </a> */}
             </div>
           </div>
         </div>
@@ -540,9 +540,9 @@ const formatBlogDate = (dateString: string) => {
           <div className="title">
             <div className="tpof_tab">
               <h3>Latest Blogs on Used Caravans</h3>
-              <Link href="/blog">
+              <a href="/blog">
                 View All <i className="bi bi-chevron-right"></i>
-              </Link>
+              </a>
             </div>
           </div>
           <div className="content">
@@ -564,7 +564,7 @@ const formatBlogDate = (dateString: string) => {
             >
               {blogs.map((blog, i) => (
                 <SwiperSlide key={i}>
-                      <Link href={`/${blog.slug}`}>
+                      <a href={`/${blog.slug}`}>
                   <div className="side-posts">
                     <div className="item">
                       <div className="img img-cover">
@@ -578,7 +578,7 @@ const formatBlogDate = (dateString: string) => {
                       </div>
                     </div>
                   </div>
-                    </Link>
+                    </a>
                 </SwiperSlide>
               ))}
             </Swiper>
