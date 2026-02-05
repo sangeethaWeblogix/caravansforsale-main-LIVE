@@ -35,9 +35,9 @@
  }
  
  type CategoryCount = {
-   category_name: string;
-   category_slug: string;
-   product_count: number;
+   name: string;
+   slug: string;
+   count: number;
  };
  
  interface StateOption {
@@ -65,15 +65,15 @@
    models?: MakeModel[];
  }
  type MakeCount = {
-   make_name: string;
-   make_slug: string;
-   product_count: number;
+   name: string;
+   slug: string;
+   count: number;
  };
  
  type ModelCount = {
-   model_name: string;
-   model_slug: string;
-   product_count: number;
+   name: string;
+   slug: string;
+   count: number;
  };
  
  export interface Filters {
@@ -435,29 +435,29 @@
  
     const handleMakeSelect = (make) => {
      // SAME make click again → unselect
-     if (selectedMakeTemp === make.make_slug) {
+     if (selectedMakeTemp === make.slug) {
        setSelectedMakeTemp(null);
        setSearchMake("");
        return;
      }
  
      // New selection
-     setSelectedMakeTemp(make.make_slug);
+     setSelectedMakeTemp(make.slug);
  
      // old UI behaviour
-     triggerOptimizeApi("make", make.make_slug);
+     triggerOptimizeApi("make", make.slug);
    };
 
  
    const handleMakeTempSelect = (make: {
-     make_slug: string;
-     make_name: string;
+     slug: string;
+     name: string;
    }) => {
-     setSelectedMakeTemp(make.make_slug);
-     setSearchMake(make.make_name);
+     setSelectedMakeTemp(make.slug);
+     setSearchMake(make.name);
  
      // ⚡ OLD UI behaviour preserved
-     triggerOptimizeApi("make", make.make_slug);
+     triggerOptimizeApi("make", make.slug);
    };
  
    const buildCountParams = (filters: Filters, excludeField?: string) => {
@@ -504,7 +504,7 @@
      if (!searchMake) return makeCounts;
  
      return makeCounts.filter((m) =>
-       m.make_name.toLowerCase().includes(searchMake.toLowerCase()),
+       m.name.toLowerCase().includes(searchMake.toLowerCase()),
      );
    }, [makeCounts, searchMake]);
  
@@ -910,7 +910,7 @@
    const displayedMakes = useMemo(() => {
      if (!searchText.trim()) return makeCounts; // ✅ full list
      return makeCounts.filter((m) =>
-       m.make_name.toLowerCase().includes(searchText.toLowerCase()),
+       m.name.toLowerCase().includes(searchText.toLowerCase()),
      );
    }, [makeCounts, searchText, isSearching]);
  
@@ -2133,18 +2133,18 @@
                  <div className="cfs-modal-search-section">
                    <ul className="location-suggestions category-list">
                      {categoryCounts.map((cat) => (
-                       <li key={cat.category_slug} className="category-item">
+                       <li key={cat.slug} className="category-item">
                          <label className="category-checkbox-row checkbox">
                            <div className="d-flex align-items-center">
                              <input
                                type="checkbox"
                                className="checkbox__trigger visuallyhidden"
-                               checked={tempCategory === cat.category_slug}
+                               checked={tempCategory === cat.slug}
                                onChange={() => {
-                                 setTempCategory(cat.category_slug);
+                                 setTempCategory(cat.slug);
                                  triggerOptimizeApi(
                                    "category",
-                                   cat.category_slug,
+                                   cat.slug,
                                  ); // ✅
                                }}
                              />
@@ -2162,12 +2162,12 @@
                                </svg>
                              </span>
                              <span className="category-name">
-                               {cat.category_name}
+                               {cat.name}
                              </span>
                            </div>
                            <div>
                              <span className="category-count">
-                               ({cat.product_count})
+                               ({cat.count})
                              </span>
                            </div>
                          </label>
@@ -2830,16 +2830,16 @@
                      <div className="cfs-modal-search-section">
                        <ul className="location-suggestions category-list">
                          {modelCounts.map((mod) => (
-                           <li key={mod.model_slug} className="category-item">
+                           <li key={mod.slug} className="category-item">
                              <label className="category-checkbox-row checkbox">
                                <div className="d-flex align-items-center">
                                  <input
                                    type="checkbox"
                                    className="checkbox__trigger visuallyhidden"
-                                   checked={tempModel === mod.model_slug}
+                                   checked={tempModel === mod.slug}
                                    onChange={() => {
-                                     setTempModel(mod.model_slug);
-                                     triggerOptimizeApi("model", mod.model_slug); // ✅
+                                     setTempModel(mod.slug);
+                                     triggerOptimizeApi("model", mod.slug); // ✅
                                    }}
                                  />
                                  <span className="checkbox__symbol">
@@ -2856,12 +2856,12 @@
                                    </svg>
                                  </span>
                                  <span className="category-name">
-                                   {mod.model_slug}
+                                   {mod.slug}
                                  </span>
                                </div>
                                <div>
                                  <span className="category-count">
-                                   ({mod.product_count})
+                                   ({mod.count})
                                  </span>
                                </div>
                              </label>
@@ -2897,8 +2897,8 @@
                          // UI sync
                          setSelectedModel(finalModel || null);
                          setSelectedModelName(
-                           modelCounts.find((m) => m.model_slug === finalModel)
-                             ?.model_slug || null,
+                           modelCounts.find((m) => m.slug === finalModel)
+                             ?.slug || null,
                          );
  
                          setIsModalMakeOpen(false);
@@ -4018,7 +4018,7 @@
                            Popular manufacturers
                          </p>
                          {popularMakes.map((make) => (
-                           <li key={make.make_slug} className="category-item">
+                           <li key={make.slug} className="category-item">
                              <label
                                className="
                         category-checkbox-row checkbox"
@@ -4030,7 +4030,7 @@
                                  <input
                                    className="checkbox__trigger visuallyhidden"
                                    type="checkbox"
-                                   checked={selectedMakeTemp === make.make_slug}
+                                   checked={selectedMakeTemp === make.slug}
                                    onChange={() => handleMakeSelect(make)}
                                   />
  
@@ -4048,12 +4048,12 @@
                                    </svg>
                                  </span>
                                  <span className="category-name">
-                                   {make.make_name}
+                                   {make.name}
                                  </span>
                                </div>
                                <div>
                                  <span className="category-count">
-                                   ({make.product_count})
+                                   ({make.count})
                                  </span>
                                </div>
                              </label>
@@ -4067,7 +4067,7 @@
                        {isSearching ? "Search Result" : "All  Manufacturers"}
                      </p>
                      {displayedMakes.map((make) => (
-                           <li key={make.make_slug} className="category-item" >
+                           <li key={make.slug} className="category-item" >
                              <label
                                className="
                         category-checkbox-row checkbox"
@@ -4080,7 +4080,7 @@
                                    className="checkbox__trigger visuallyhidden"
                                    type="checkbox"
                        
-                                   checked={selectedMakeTemp === make.make_slug}
+                                   checked={selectedMakeTemp === make.slug}
                                    onChange={() => handleMakeSelect(make)}
                                  />
  
@@ -4098,12 +4098,12 @@
                                    </svg>
                                  </span>
                                  <span className="category-name">
-                                   {make.make_name}
+                                   {make.name}
                                  </span>
                                </div>
                                <div>
                                  <span className="category-count">
-                                   ({make.product_count})
+                                   ({make.count})
                                  </span>
                                </div>
                              </label>
