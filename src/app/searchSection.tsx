@@ -471,7 +471,8 @@ export default function SearchSection() {
           </div>
       </div> */}
       <div className="ad_banner">
-        <Link href="https://www.caravansforsale.com.au/listings/">
+        <a href="https://www.caravansforsale.com.au/listings/">
+        
           <div className="item-image">
             <Image
               src="/images/banner_top_dk.jpg"
@@ -493,7 +494,7 @@ export default function SearchSection() {
             />
           </div>
 
-        </Link>
+        </a>
       </div>
       <div className="search_requirement_area">
         <div className="container">

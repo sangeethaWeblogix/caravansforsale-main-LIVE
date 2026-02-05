@@ -59,9 +59,9 @@ export default function HomeLatestBlogs() {
           <div className="tpof_tab">
             <h3>Latest Blogs</h3>
             <div className="viewall_bttn">
-              <Link href="/blog/">
+              <a href="/blog/">
                 <i className="bi bi-chevron-right" />
-              </Link>
+              </a>
             </div>
           </div>
         </div>
@@ -96,7 +96,7 @@ export default function HomeLatestBlogs() {
                     <SwiperSlide key={post.id}>
                       <div className="side-posts">
                         <div className="item">
-                     <Link href={href} scroll>
+                     <a href={href} >
                           <div className="img img-cover">
                             {post.image && (
                               <Image
@@ -109,7 +109,6 @@ export default function HomeLatestBlogs() {
                               />
                             )}
                           </div>
-                                                </Link>
 
                           <div className="info">
                             <h4 className="title">
@@ -123,6 +122,8 @@ export default function HomeLatestBlogs() {
                               </Link>
                             </div>
                           </div>
+                                                                          </a>
+
                         </div>
                       </div>
                     </SwiperSlide>

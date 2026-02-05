@@ -333,11 +333,11 @@ export default function HomePage() {
                         <ul>
                           {regionBands.map((item, index) => (
                             <li key={index}>
-                              <Link
+                              <a
                                 href={`https://www.caravansforsale.com.au/listings/${item.permalink}`}
                               >
                                 {item.label}
-                              </Link>
+                              </a>
                               <span>{item.display_text}</span>
                             </li>
                           ))}
@@ -370,11 +370,11 @@ export default function HomePage() {
                         <ul>
                           {priceBands.map((item, index) => (
                             <li key={index}>
-                              <Link
+                              <a
                                 href={`https://www.caravansforsale.com.au/listings/${item.permalink}/`}
                               >
                                 {item.label}
-                              </Link>
+                              </a>
                               <span>{item.display_text}</span>
                             </li>
                           ))}
@@ -407,11 +407,11 @@ export default function HomePage() {
                         <ul>
                           {atmBands.map((item, index) => (
                             <li key={index}>
-                              <Link
+                              <a
                                 href={`https://www.caravansforsale.com.au/listings/${item.permalink}`}
                               >
                                 {item.label}
-                              </Link>
+                              </a>
                               <span>{item.display_text}</span>
                             </li>
                           ))}
@@ -444,11 +444,11 @@ export default function HomePage() {
                         <ul>
                           {sleepBands.map((item, index) => (
                             <li key={index}>
-                              <Link
+                              <a
                                 href={`https://www.caravansforsale.com.au/listings/${item.permalink}`}
                               >
                                 {item.label}
-                              </Link>
+                              </a>
                               <span>{item.display_text}</span>
                             </li>
                           ))}
@@ -480,14 +480,14 @@ export default function HomePage() {
                       <div className="accordion-body">
                         <ul>
                           {lengthBands.map((item, index) => (
-                            <li key={index}>
+                            <a key={index}>
                               <Link
                                 href={`https://www.caravansforsale.com.au/listings/${item.permalink}`}
                               >
                                 {item.label}
                               </Link>
                               <span>{item.display_text}</span>
-                            </li>
+                            </a>
                           ))}
                         </ul>
                       </div>
@@ -518,11 +518,11 @@ export default function HomePage() {
                         <ul>
                           {usedCategoryList.map((item, index) => (
                             <li key={index}>
-                              <Link
+                              <a
                                 href={`https://www.caravansforsale.com.au/listings/${item.permalink}`}
                               >
                                 {item.label}
-                              </Link>
+                              </a>
                               <span>{item.display_text}</span>
                             </li>
                           ))}
@@ -533,11 +533,11 @@ export default function HomePage() {
                         <ul>
                           {usedState.map((item, index) => (
                             <li key={index}>
-                              <Link
+                              <a
                                 href={`https://www.caravansforsale.com.au/listings/${item.permalink}`}
                               >
                                 {item.label}
-                              </Link>
+                              </a>
                               <span>{item.display_text}</span>
                             </li>
                           ))}
@@ -545,14 +545,14 @@ export default function HomePage() {
                         <hr></hr>
                         <ul>
                           {usedRegion.map((item, index) => (
-                            <li key={index}>
+                            <a key={index}>
                               <Link
                                 href={`https://www.caravansforsale.com.au/listings/${item.permalink}`}
                               >
                                 {item.label}
                               </Link>
                               <span>{item.display_text}</span>
-                            </li>
+                            </a>
                           ))}
                         </ul>
                       </div>
@@ -582,11 +582,11 @@ export default function HomePage() {
                         <ul>
                           {manufactureBands.map((item, index) => (
                             <li key={index}>
-                              <Link
+                              <a
                                 href={`https://www.caravansforsale.com.au/listings/${item.permalink}/`}
                               >
                                 {item.label}
-                              </Link>
+                              </a>
                               <span>{item.display_text}</span>
                             </li>
                           ))}
@@ -598,41 +598,7 @@ export default function HomePage() {
               </div>
             </div>
           </div>
-
-          {/* <div className="banner_ads_ls" ref={bannerSectionRef}>
-             {[
-               { name: "masterpiece", mobile: "masterpiece-m" },
-               { name: "orbit", mobile: "orbit-m" },
-               { name: "redcenter", mobile: "redcenter-m" },
-             ].map((banner, index) => (
-               <div
-                 className="items"
-                 key={banner.name}
-                 style={{ display: index === adIndex ? "block" : "none" }}
-               >
-                 <Link href="#" target="_blank">
-                   <Image
-                     className="hidden-xs"
-                     src={`/images/banner_ad_top-${banner.name}.jpg`}
-                     alt="banner"
-                     width={0}
-                     height={0}
-                     unoptimized
-                     style={{ width: "auto", height: "auto" }}
-                   />
-                   <Image
-                     className="hidden-lg hidden-md hidden-sm"
-                     src={`/images/banner_ad_top-${banner.mobile}.jpg`}
-                     alt="banner mobile"
-                     width={0}
-                     height={0}
-                     unoptimized
-                     style={{ width: "auto", height: "auto" }}
-                   />
-                 </Link>
-               </div>
-             ))}
-           </div> */}
+ 
         </div>
       </section>
 
