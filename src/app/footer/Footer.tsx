@@ -27,7 +27,7 @@ const Footer = () => {
               <div className="col-lg-8">
                 <div>
                   <p>
-                    Marketplace Network Pty Ltd (Web Logix) ABN 70 694 987 052. <br />
+                    Marketplace Network Pty Ltd. ABN : 70 694 987 052 <br />
                     Copyright © {currentYear ?? "----"}. All Rights Reserved.
                   </p>
                 </div>
