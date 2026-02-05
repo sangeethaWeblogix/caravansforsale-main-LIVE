@@ -13,7 +13,7 @@ export default function PrivacyCollectionStatement() {
               <h1 className="divide-orange pb-20">Privacy Collection Statement</h1>
 
       <p>
-        Caravan Marketplace ABN 92 009 784 881 (we, us or our) is committed to protecting
+        Marketplace Network ABN 70 694 987 052 (we, us or our) is committed to protecting
         the privacy of your personal information. You can access our full privacy policy
         on our website at{' '}
         <Link
