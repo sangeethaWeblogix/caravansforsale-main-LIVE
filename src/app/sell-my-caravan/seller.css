@@ -1,27 +1,295 @@
-.coming-soon {
-  min-height: 100vh;
-  background: #ffffff;
-  color: #000000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont;
+:root {
+    --light-purple: #ff9d57;
+    --purple: #f58333;
+    --bg-purple: #f58333;
+    --dark-purple: #ee6200;
+    --body-text-purple: #3E3F66;
+    --text-white: #ffffff;
+    --bg-white: #ffffff;
+    --slider-dots-color: #D4D2DD;
+    --light-bg: #DFDAF3;
+}
+.page_wrapper {
+    width: 100%;
+    overflow-x: hidden;
+}
+.banner_section {
+    margin-top: 30px;
+    position: relative;
+}
+.banner_section .banner_text {
+    margin-top: 0px;
+}
+.banner_section .banner_text h1 {
+    font-size: 55px;
+    color: #000000;
+    letter-spacing: 0;
+    font-weight: 700;
+    text-transform: capitalize;
+}
+.banner_section .banner_text h1 article {
+    gap: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: baseline;
+}
+.banner_section .banner_text h1 span {
+    color: var(--purple);
+}
+.white_btn {
+    padding: 15px 65px;
+    border: 1px solid var(--purple);
+    color: #ffffff;
+    border-radius: 6px;
+    background-color: var(--purple);
+    font-weight: 700;
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+    font-weight: 500;
+    font-size: 20px;
+}
+.white_btn:hover {
+    color: var(--text-white);
+    background-color: var(--dark-purple);
+}
+.white_btn::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 0%;
+    height: 100%;
+    background-color: var(--dark-purple);
+    border-radius: 50px;
+    transition: .6s all;
+    z-index: -1;
+}
+.white_btn:hover::before {
+    width: 110%;
+}
+.bottom_layout_section .caravan-mobile-img {
+  width: 100%;
+}
+.free_app_section {
+    padding-top: 30px;
+    position: relative;
+    padding-bottom: 15px;
+}
+.free_app_section .container .free_app_inner {
+    background-color: #2c2a2b;
+    border-radius: 20px;
+    padding: 40px 50px;
+    padding-bottom: 25px;
+    position: relative;
+    z-index: 999999;
+    border-bottom: 8px solid #f58333;
+}
+.free_app_section .why_box {
+    position: relative;
+    margin-bottom: 0;
+    text-align: center;
+}
+.free_app_section .icon {
+    position: relative;
+    left: 0;
+    margin-bottom: 12px;
+}
+.free_app_section .icon img {
+    height: 50px;
+}
+.free_app_section .text {
+    padding-left: 0px;
+}
+.free_app_section .text h4 {
+    font-size: 18px;
+    color: #ffffff;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+.free_app_section .text p {
+    font-size: 16px;
+    font-weight: 300;
+    color: #fff;
+}
+.bottom_layout_section {
+    padding-top: 40px;
+    padding-bottom: 30px;
+}
+.comparison {
+    background: transparent;
+    padding-top: 0;
+    border-radius: 20px;
+    border: none;
+}
+.comparison h2 {
+    font-weight: 600;
+    color: #000000;
+    text-align: center;
+    font-size: 28px;
+    padding-bottom: 25px;
+    padding-top: 15px;
+    margin: 0;
+}
+.pricing {
+    padding: 40px 0;
+    background: transparent;
+}
+.pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+}
+.price-box {
+    background: transparent;
+    border-radius: 0;
+    padding-top: 22px;
+    border-right: 1px solid #f5ece9;
+}
+.price {
+    font-size: 60px;
+    color: #ec7200;
+    margin-bottom: 10px;
+    font-weight: 600;
+    line-height: 50px;
+}
+.price sup {
+    top: -13px;
+    margin-right: 5px;
+}
+.price sup small {
+  font-size: 30px;
+}
+.special_tag {
+    margin-bottom: 15px;
+    display: block;
+    color: #f58333;
+}
+.first-box {
+  padding-top: 15px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.096);
+  margin-bottom: 5px;
 }
 
-.coming-soon h1 {
-  font-size: 3rem;
+.price-box ul {
+    margin-bottom: 20px;
+    list-style: none;
+    padding: 0;
+}
+.price-box ul li {
+    margin-bottom: 10px;
+    position: relative;
+    padding-left: 22px;
+    font-size: 17px;
+    color: #000000;
+}
+.price-box ul li:before {
+    content: '';
+    width: 15px;
+    height: 15px;
+    position: absolute;
+    background: url(/images/check-orange.svg);
+    background-size: cover;
+    left: 0;
+    top: 5px;
+}
+
+.accordion .card {
   margin-bottom: 10px;
+  box-shadow: 5px 5px 3px #62626212;
 }
 
-.coming-soon p {
-  font-size: 1.2rem;
-  opacity: 0.85;
+.accordion .card-body {
+  border-bottom: 1px solid #00000024;
 }
 
-.coming-soon span {
-  display: block;
-  margin-top: 10px;
-  font-size: 0.95rem;
-  opacity: 0.6;
+.accordion .card-body p {
+  color: #000000;
+}
+
+.accordion .btn-link {
+  position: relative;
+  padding-right: 45px;
+  color: #000;
+  text-decoration: none !important;
+}
+
+.accordion .btn {
+    letter-spacing: 0;
+    background-color: #fff;
+    border-bottom: 1px solid #0000001f;
+    justify-content: space-between;
+    width: 100%;
+    padding: 10px;
+    font-size: 17px;
+    font-weight: 500;
+    display: flex;
+    color: #000 !important;
+}
+
+/* ICON WRAPPER */
+.accordion .accordion-icon {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 18px;
+}
+
+
+
+.accordion .btn-link:not(.collapsed) .fa-angle-up {
+  display: inline-block;
+}
+.footer-box {
+  margin-bottom: 30px;
+  color: #ffffff;
+  /* font-weight: 200; */
+  padding-right: 30px;
+}
+
+.footer-box p {
+  color: #a3a3a3;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.first-box h3 {
+  font-weight: 300;
+  border-bottom: 1px solid rgba(228, 228, 228, 0.726);
+  padding-bottom: 5px;
+}
+
+.first-box h3 {
+  text-transform: uppercase;
+  color: #a3a3a3;
+  border-bottom: 1px solid #8e8e8e;
+
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.main-first-box li a:hover {
+  color: #ffffff;
+}
+
+.main-first-box li a {
+  color: #a3a3a3;
+}
+
+.first-box a {
+  color: #ffffff;
+}
+
+@media screen and (max-width: 767px) {
+    .banner_section .banner_text h1 {
+        font-size: 35px;
+    }
+    .banner_section .banner_text h1 article {
+      display: block;
+    }
+    .accordion .btn {
+      text-align: left;
+    }
 }
