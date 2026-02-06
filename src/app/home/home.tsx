@@ -227,7 +227,7 @@ export default function HomePage() {
                               <p>{item.display_text}</p>
 
                               <a className="view_all" href={`/listings${item.permalink}`}>
-                                View All 
+                                View All Caravans for Sale in {stateCode}
 
                               </a>
                             </div>

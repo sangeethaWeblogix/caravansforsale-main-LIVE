@@ -31,7 +31,7 @@ interface TabsItem {
   state: string;
   short_label: string;
   short_count: string;
-   region: string;
+  region: string;
 }
 
 type TabCard = {
@@ -40,7 +40,7 @@ type TabCard = {
   url: string;
 };
 
- 
+
 type Item = {
   title?: string;
   name?: string;
@@ -53,7 +53,7 @@ type Item = {
   id?: string | number;
   label?: string;
 } & Record<string, unknown>;
- 
+
 
 export default function SearchSection() {
   const router = useRouter();
@@ -73,117 +73,117 @@ export default function SearchSection() {
   const [activeIndex, setActiveIndex] = useState(0);
 
 
-    const [sleepBands, setSleepBands] = useState<TabsItem[]>([]);
-    const [regionBands, setRegionBands] = useState<TabsItem[]>([]);
-    const [manufactureBands, setManufactureBands] = useState<TabsItem[]>([]);
-    const [lengthBands, setLengthBands] = useState<TabsItem[]>([]);
-    const [atmBands, setAtmBands] = useState<TabsItem[]>([]);
-    const [usedCategoryList, setUsedCategoryList] = useState<TabsItem[]>([]);
-    const [priceBands, setPriceBands] = useState<TabsItem[]>([]);
-    const [usedState, setUsedState] = useState<TabsItem[]>([]);
-    const [usedRegion, setUsedRegion] = useState<TabsItem[]>([]);
-     const [stateBands, setStateBands] = useState<TabsItem[]>([]);
+  const [sleepBands, setSleepBands] = useState<TabsItem[]>([]);
+  const [regionBands, setRegionBands] = useState<TabsItem[]>([]);
+  const [manufactureBands, setManufactureBands] = useState<TabsItem[]>([]);
+  const [lengthBands, setLengthBands] = useState<TabsItem[]>([]);
+  const [atmBands, setAtmBands] = useState<TabsItem[]>([]);
+  const [usedCategoryList, setUsedCategoryList] = useState<TabsItem[]>([]);
+  const [priceBands, setPriceBands] = useState<TabsItem[]>([]);
+  const [usedState, setUsedState] = useState<TabsItem[]>([]);
+  const [usedRegion, setUsedRegion] = useState<TabsItem[]>([]);
+  const [stateBands, setStateBands] = useState<TabsItem[]>([]);
 
-   useEffect(() => {
-      async function loadAll() {
-        // const [sleep, region, weight, length] = await Promise.all([
-        const [sleep, region, manufactures, weight, length, price, usedData, state] =
-          await Promise.all([
-            fetchSleepBands(),
-            fetchRegion(),
-            fetchManufactures(),
-            fetchAtmBasedCaravans(),
-            fetchLengthBasedCaravans(),
-            fetchPriceBasedCaravans(),
-            fetchUsedCaravansList(),
-            fetchStateBasedCaravans(),
-            ,
-          ]);
-  
-        setSleepBands(sleep);
-        setRegionBands(region);
-        setManufactureBands(manufactures);
-        setAtmBands(weight);
-        setLengthBands(length);
-        setPriceBands(price);
-        setUsedCategoryList(usedData.by_category);
-        setUsedState(usedData.by_state);
-        setUsedRegion(usedData.by_region);
-        setStateBands(state);
-  
-      }
-  
-      loadAll();
-    }, []);
+  useEffect(() => {
+    async function loadAll() {
+      // const [sleep, region, weight, length] = await Promise.all([
+      const [sleep, region, manufactures, weight, length, price, usedData, state] =
+        await Promise.all([
+          fetchSleepBands(),
+          fetchRegion(),
+          fetchManufactures(),
+          fetchAtmBasedCaravans(),
+          fetchLengthBasedCaravans(),
+          fetchPriceBasedCaravans(),
+          fetchUsedCaravansList(),
+          fetchStateBasedCaravans(),
+          ,
+        ]);
+
+      setSleepBands(sleep);
+      setRegionBands(region);
+      setManufactureBands(manufactures);
+      setAtmBands(weight);
+      setLengthBands(length);
+      setPriceBands(price);
+      setUsedCategoryList(usedData.by_category);
+      setUsedState(usedData.by_state);
+      setUsedRegion(usedData.by_region);
+      setStateBands(state);
+
+    }
+
+    loadAll();
+  }, []);
 
   const tabsData: {
-  key: string;
-  label: string;
-  cards: TabCard[];
-}[] = [
-    {
-      key: "price",
-      label: "Price",
+    key: string;
+    label: string;
+    cards: TabCard[];
+  }[] = [
+      {
+        key: "price",
+        label: "Price",
         cards: priceBands.map((item) => ({
-      title: item.short_label,
-      sub: item.short_count,
-      url: `/listings/${item.permalink}`,
-    })),
-    },
-    {
-      key: "Region",
-      label: "Region",
-       cards: regionBands.map((item) => ({
-      title: item.region,
-  sub: `${item.caravan_count ?? 0} caravan listings`,      url: `/listings/${item.permalink}`,
-    })),
-    },
-    {
-      key: "Weight",
-      label: "Weight",
-     cards: atmBands.map((item) => ({
-      title: item.short_label,
-      sub: item.short_count,
-      url: `/listings/${item.permalink}`,
-    })),
-    },
-    {
-      key: "Sleep",
-      label: "Sleep",
-       cards: sleepBands.map((item) => ({
-      title: item.short_label,
-      sub: item.short_count,
-      url: `/listings/${item.permalink}`,
-    })),
-    },
-    {
-      key: "Length",
-      label: "Length",
-       cards: lengthBands.map((item) => ({
-      title: item.short_label,
-      sub: item.short_count,
-      url: `/listings/${item.permalink}`,
-    })),
-    },
-    {
-      key: "Used",
-      label: "Used",
-      cards: usedCategoryList.map((item) => ({
-      title: item.short_label,
-      sub: item.short_count,
-      url: `/listings/${item.permalink}`,
-    })),
-    },
-    {
-      key: "Manufacturer",
-      label: "Manufacturer",
-     cards: manufactureBands.map((item) => ({
-      title: item.short_label,
-      sub: item.short_count,
-      url: `/listings/${item.permalink}`,
-    })),
-    },
-  ];
+          title: item.short_label,
+          sub: item.short_count,
+          url: `/listings/${item.permalink}`,
+        })),
+      },
+      {
+        key: "Region",
+        label: "Region",
+        cards: regionBands.map((item) => ({
+          title: item.region,
+          sub: `${item.caravan_count ?? 0} caravan listings`, url: `/listings/${item.permalink}`,
+        })),
+      },
+      {
+        key: "Weight",
+        label: "Weight",
+        cards: atmBands.map((item) => ({
+          title: item.short_label,
+          sub: item.short_count,
+          url: `/listings/${item.permalink}`,
+        })),
+      },
+      {
+        key: "Sleep",
+        label: "Sleep",
+        cards: sleepBands.map((item) => ({
+          title: item.short_label,
+          sub: item.short_count,
+          url: `/listings/${item.permalink}`,
+        })),
+      },
+      {
+        key: "Length",
+        label: "Length",
+        cards: lengthBands.map((item) => ({
+          title: item.short_label,
+          sub: item.short_count,
+          url: `/listings/${item.permalink}`,
+        })),
+      },
+      {
+        key: "Used",
+        label: "Used",
+        cards: usedCategoryList.map((item) => ({
+          title: item.short_label,
+          sub: item.short_count,
+          url: `/listings/${item.permalink}`,
+        })),
+      },
+      {
+        key: "Manufacturer",
+        label: "Manufacturer",
+        cards: manufactureBands.map((item) => ({
+          title: item.short_label,
+          sub: item.short_count,
+          url: `/listings/${item.permalink}`,
+        })),
+      },
+    ];
 
   const [activeTab, setActiveTab] = useState(tabsData[0].key);
   const currentTab = tabsData.find((t) => t.key === activeTab);
@@ -472,7 +472,7 @@ export default function SearchSection() {
       </div> */}
       <div className="ad_banner">
         <a href="https://www.caravansforsale.com.au/listings/">
-        
+
           <div className="item-image">
             <Image
               src="/images/banner_top_dk.jpg"
@@ -495,6 +495,16 @@ export default function SearchSection() {
           </div>
 
         </a>
+      </div>
+      <div className="container">
+      <div className="row align-items-center justify-content-center">
+        <div className="col-lg-12">
+          <div className="section-head text-center">
+            <h1 className="divide-orange">Browse New &amp; Used Caravans For Sale</h1>
+            <p>Find your ideal caravan from thousands of new and used listings across Australia’s top brands, dealers, and private sellers. Search by type, condition, location, and budget.</p>
+          </div>
+        </div>
+      </div>
       </div>
       <div className="search_requirement_area">
         <div className="container">
@@ -770,40 +780,39 @@ export default function SearchSection() {
         </div>
       </div>
       <div className="quick_links_tabs">
-            <div className="container">
-                          <div className="custom-tabs-wrap">
-      {/* Tabs */}
-      <div className="custom-tabs-top">
-        <div className="custom-tabs-nav">
-          {tabsData.map((tab) => (
-            <button
-              key={tab.key}
-              className={`custom-tab-btn ${
-                activeTab === tab.key ? "active" : ""
-              }`}
-              onClick={() => setActiveTab(tab.key)}
-              type="button"
-            >
-              {tab.label}
-              {tab.label === "More" && <span className="tab-arrow">⌄</span>}
-            </button>
-          ))}
-        </div>
-      </div>
+        <div className="container">
+          <div className="custom-tabs-wrap">
+            {/* Tabs */}
+            <div className="custom-tabs-top">
+              <div className="custom-tabs-nav">
+                {tabsData.map((tab) => (
+                  <button
+                    key={tab.key}
+                    className={`custom-tab-btn ${activeTab === tab.key ? "active" : ""
+                      }`}
+                    onClick={() => setActiveTab(tab.key)}
+                    type="button"
+                  >
+                    {tab.label}
+                    {tab.label === "More" && <span className="tab-arrow">⌄</span>}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-      {/* Cards */}
-      <div className="custom-tabs-content">
-        <div className="custom-card-grid">
-          {currentTab?.cards?.map((item, index) => (
-            <a href={item.url} className="custom-card" key={index}>
-              <h4 className="custom-card-title">{item.title}</h4>
-              <p className="custom-card-sub">{item.sub}</p>
-            </a>
-          ))}
+            {/* Cards */}
+            <div className="custom-tabs-content">
+              <div className="custom-card-grid">
+                {currentTab?.cards?.map((item, index) => (
+                  <a href={item.url} className="custom-card" key={index}>
+                    <h4 className="custom-card-title">{item.title}</h4>
+                    <p className="custom-card-sub">{item.sub}</p>
+                  </a>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
-            </div>              
       </div>
       {navigating && (
         <div
