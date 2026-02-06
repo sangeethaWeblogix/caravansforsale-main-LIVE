@@ -62,7 +62,20 @@ async function fetchSitemapUrls(sitemapPath) {
       for (const urlEntry of parsed.urlset.url) {
         if (urlEntry.loc && urlEntry.loc[0]) {
           const fullUrl = urlEntry.loc[0];
-          const urlPath = fullUrl.replace(PRODUCTION_DOMAIN, '').replace(/\/$/, '') + '/';
+          
+          // ✅ FIX: Ensure path starts with / and ends with /
+          let urlPath = fullUrl.replace(PRODUCTION_DOMAIN, '');
+          
+          // Ensure leading slash
+          if (!urlPath.startsWith('/')) {
+            urlPath = '/' + urlPath;
+          }
+          
+          // Ensure trailing slash
+          if (!urlPath.endsWith('/')) {
+            urlPath = urlPath + '/';
+          }
+          
           urls.push({
             fullUrl: fullUrl,
             path: urlPath
@@ -146,15 +159,29 @@ async function generateVariantForUrl(urlData, variantNumber) {
     html = html.replace('</head>', `${seoTags}\n</head>`);
     html = html.replace(/<meta\s+name="robots"\s+content="noindex[^"]*"\s*\/?>/gi, '');
     
-    // Create KV key
-    const pathSlug = path
-      .replace(/^\/listings\//, '')
-      .replace(/^\//, '')
-      .replace(/\/$/, '')
-      .replace(/\//g, '-')
-      .substring(0, 150);
+    // Create KV key - FIXED to handle all path formats
+    let pathSlug = path;
+    
+    // Remove /listings/ prefix if present
+    if (pathSlug.startsWith('/listings/')) {
+      pathSlug = pathSlug.substring(10); // Remove '/listings/'
+    }
+    
+    // Remove leading/trailing slashes
+    pathSlug = pathSlug.replace(/^\/+|\/+$/g, '');
+    
+    // Replace remaining slashes with hyphens
+    pathSlug = pathSlug.replace(/\//g, '-');
+    
+    // Limit length
+    pathSlug = pathSlug.substring(0, 150);
     
     const kvKey = `${pathSlug}-v${variantNumber}`;
+    
+    console.log(`   🔍 Path processing:`);
+    console.log(`      Original: ${path}`);
+    console.log(`      Processed: ${pathSlug}`);
+    console.log(`      Final KV key: ${kvKey}`);
     
     console.log(`   💾 KV Key: ${kvKey}`);
     console.log(`   📦 Size: ${Math.round(html.length / 1024)}KB`);
@@ -269,16 +296,18 @@ async function generateSitemapCache() {
   }
   
   console.log('\n📋 Creating sitemap routes mapping...');
+  console.log('📝 Routes mapping to upload:');
+  console.log(JSON.stringify(routesMapping, null, 2));
+  
   const mappingJson = JSON.stringify(routesMapping, null, 2);
   const mappingUploaded = await uploadToKV('sitemap-routes-mapping', mappingJson);
   
   if (mappingUploaded) {
-    console.log('✅ Sitemap routes mapping uploaded');
+    console.log('✅ Sitemap routes mapping uploaded successfully!');
     console.log(`   📊 Total paths mapped: ${Object.keys(routesMapping).length}`);
-    console.log('\n📄 Mapping contents:');
-    console.log(JSON.stringify(routesMapping, null, 2));
+    console.log('   🔑 KV key: sitemap-routes-mapping');
   } else {
-    console.error('❌ Sitemap routes mapping upload failed');
+    console.error('❌ Sitemap routes mapping upload failed!');
   }
   
   const duration = Math.round((Date.now() - startTime) / 1000);
