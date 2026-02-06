@@ -8,13 +8,17 @@
   position: relative;
 }
 
+.home_top  .section-head {
+padding-top:30px;
+}
+
 .search_home {
     background: #fff;
     border-radius: 12px;
-    margin-top: -80px;
+    margin-top: 0;
     padding: 20px;
     position: relative;
-    box-shadow: 0px 0px 13px #6262621a;
+    box-shadow: 0 0 13px #6262621a;
 }
 
 .home_top h1 {
@@ -25,9 +29,10 @@
 }
 
 .home_top p {
-  color: #000000;
-  max-width: 1000px;
-  margin: 0 auto 15px;
+    color: #000;
+    max-width: 1000px;
+    margin: 0 auto;
+    font-size: 17px;
 }
 
 .home_top .btn {
@@ -1206,6 +1211,10 @@ a.ignoretext {
   .home_top p {
     text-align: left;
   }
+
+  .home_top .section-head p {
+    text-align: center;
+}
  
   main .section-head a.btn {
     color: #fff;
