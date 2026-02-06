@@ -12,29 +12,14 @@ const CF_ACCOUNT_ID = process.env.CF_ACCOUNT_ID;
 const CF_KV_NAMESPACE_ID = process.env.CF_KV_NAMESPACE_ID;
 const CF_API_TOKEN = process.env.CF_API_TOKEN;
 
-// Sitemap URLs to fetch (these contain the actual page URLs)
+// ✅ TEST VERSION: Only categories sitemap
 const SITEMAP_URLS = [
   '/categories-sitemap.xml',
-  '/states-sitemap.xml',
-  '/regions-sitemap.xml',
-  '/makes-sitemap.xml',
-  '/weights-sitemap.xml',
-  '/prices-sitemap.xml',
-  '/conditions-sitemap.xml',
-  '/length-sitemap.xml',
-  '/sleep-sitemap.xml',
-  '/state-make-sitemap.xml',
-  '/region-make-sitemap.xml',
-  '/category-state-sitemap.xml',
-  '/category-region-sitemap.xml',
-  '/region-length-sitemap.xml',
-  '/state-used-sitemap.xml',
-  '/region-used-sitemap.xml',
 ];
 
 // Number of variants per URL
 const VARIANTS_PER_URL = 5;
-const BATCH_SIZE = 10;
+const BATCH_SIZE = 3; // Small batch for testing
 
 async function uploadToKV(key, value) {
   const url = `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/storage/kv/namespaces/${CF_KV_NAMESPACE_ID}/values/${key}`;
@@ -70,20 +55,13 @@ async function fetchSitemapUrls(sitemapPath) {
     }
     
     const xmlText = await response.text();
-    
-    // Log first 500 chars for debugging
-    console.log(`   📄 XML Preview: ${xmlText.substring(0, 500)}...`);
-    
     const parsed = await parseXML(xmlText);
     
-    // Extract URLs from sitemap
     const urls = [];
     if (parsed.urlset && parsed.urlset.url) {
       for (const urlEntry of parsed.urlset.url) {
         if (urlEntry.loc && urlEntry.loc[0]) {
           const fullUrl = urlEntry.loc[0];
-          
-          // Extract just the path (remove domain)
           const urlPath = fullUrl.replace(PRODUCTION_DOMAIN, '').replace(/\/$/, '') + '/';
           urls.push({
             fullUrl: fullUrl,
@@ -95,15 +73,11 @@ async function fetchSitemapUrls(sitemapPath) {
     
     console.log(`   ✅ Found ${urls.length} URLs in ${sitemapPath}`);
     
-    // Log first 3 URLs for verification
     if (urls.length > 0) {
-      console.log(`   📋 Sample URLs:`);
-      urls.slice(0, 3).forEach(u => {
+      console.log(`   📋 URLs:`);
+      urls.forEach(u => {
         console.log(`      - ${u.path}`);
       });
-      if (urls.length > 3) {
-        console.log(`      ... and ${urls.length - 3} more`);
-      }
     }
     
     return urls;
@@ -119,8 +93,8 @@ async function generateVariantForUrl(urlData, variantNumber) {
   
   try {
     // ✅ FIX: Ensure proper URL construction
-    const baseUrl = VERCEL_BASE_URL.replace(/\/$/, ''); // Remove trailing slash from base
-    const urlPath = path.startsWith('/') ? path : `/${path}`; // Ensure leading slash on path
+    const baseUrl = VERCEL_BASE_URL.replace(/\/$/, '');
+    const urlPath = path.startsWith('/') ? path : `/${path}`;
     const vercelUrl = `${baseUrl}${urlPath}?shuffle_seed=${variantNumber}`;
     
     console.log(`   🔗 Fetching: ${vercelUrl}`);
@@ -143,8 +117,18 @@ async function generateVariantForUrl(urlData, variantNumber) {
       throw new Error('Invalid HTML response');
     }
     
-    // Check if page is index/follow
-    const isIndexFollow = html.includes('"index":"index"') && html.includes('"follow":"follow"');
+    // ✅ FIXED: Check for BOTH JSON format AND HTML meta tag format
+    const hasJsonIndexFollow = html.includes('"index":"index"') && html.includes('"follow":"follow"');
+    const hasMetaIndexFollow = html.includes('content="index, follow"') || html.includes("content='index, follow'");
+    const hasNoIndex = html.includes('noindex') || html.includes('"index":"noindex"');
+    
+    const isIndexFollow = (hasJsonIndexFollow || hasMetaIndexFollow) && !hasNoIndex;
+    
+    console.log(`   🔍 Detection:`);
+    console.log(`      - JSON format (index/follow): ${hasJsonIndexFollow}`);
+    console.log(`      - Meta tag (index, follow): ${hasMetaIndexFollow}`);
+    console.log(`      - Contains noindex: ${hasNoIndex}`);
+    console.log(`      - Final decision: ${isIndexFollow ? 'INDEX/FOLLOW ✅' : 'NOINDEX ❌'}`);
     
     if (!isIndexFollow) {
       console.log(`   ⚠️  Skipping: Not index/follow`);
@@ -162,13 +146,13 @@ async function generateVariantForUrl(urlData, variantNumber) {
     html = html.replace('</head>', `${seoTags}\n</head>`);
     html = html.replace(/<meta\s+name="robots"\s+content="noindex[^"]*"\s*\/?>/gi, '');
     
-    // Create KV key: path-based slug + variant
+    // Create KV key
     const pathSlug = path
-      .replace(/^\/listings\//, '')  // Remove /listings/ prefix
-      .replace(/^\//, '')             // Remove leading slash
-      .replace(/\/$/, '')             // Remove trailing slash
-      .replace(/\//g, '-')            // Replace slashes with hyphens
-      .substring(0, 150);             // Limit length
+      .replace(/^\/listings\//, '')
+      .replace(/^\//, '')
+      .replace(/\/$/, '')
+      .replace(/\//g, '-')
+      .substring(0, 150);
     
     const kvKey = `${pathSlug}-v${variantNumber}`;
     
@@ -209,45 +193,38 @@ async function processBatch(urlsData, startIdx, batchSize) {
         results.push(result);
       }
       
-      // Small delay between requests to avoid rate limiting
-      await new Promise(resolve => setTimeout(resolve, 300));
+      await new Promise(resolve => setTimeout(resolve, 500));
     }
     
-    // Slightly longer delay between different URLs
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise(resolve => setTimeout(resolve, 1000));
   }
   
   return results;
 }
 
 async function generateSitemapCache() {
-  console.log('🚀 Starting sitemap URL cache generation...');
+  console.log('🚀 TEST RUN: Categories Sitemap Only');
   console.log(`📍 Vercel URL: ${VERCEL_BASE_URL}`);
   console.log(`📍 Production: ${PRODUCTION_DOMAIN}`);
-  console.log(`🔢 Variants per URL: ${VARIANTS_PER_URL}`);
-  console.log(`📑 Sitemaps to process: ${SITEMAP_URLS.length}\n`);
+  console.log(`🔢 Variants per URL: ${VARIANTS_PER_URL}\n`);
   
   const results = {
     success: 0,
     failed: 0,
     skipped: 0,
     pages: [],
-    errors: [],
     sitemapStats: {}
   };
   
   const startTime = Date.now();
   const routesMapping = {};
   
-  // Fetch all sitemap URLs
   let allUrlsData = [];
   for (const sitemapPath of SITEMAP_URLS) {
     const urlsFromSitemap = await fetchSitemapUrls(sitemapPath);
     
-    // Track per-sitemap stats
     results.sitemapStats[sitemapPath] = {
       totalUrls: urlsFromSitemap.length,
-      processed: 0,
       succeeded: 0,
       failed: 0
     };
@@ -256,22 +233,13 @@ async function generateSitemapCache() {
       ...u,
       sourceSitemap: sitemapPath
     })));
-    
-    await new Promise(resolve => setTimeout(resolve, 1000));
   }
   
   console.log(`\n${'='.repeat(60)}`);
-  console.log(`📊 SITEMAP SUMMARY`);
-  console.log(`${'='.repeat(60)}`);
-  for (const [sitemap, stats] of Object.entries(results.sitemapStats)) {
-    console.log(`${sitemap}: ${stats.totalUrls} URLs`);
-  }
-  console.log(`${'='.repeat(60)}`);
   console.log(`📊 Total URLs to process: ${allUrlsData.length}`);
   console.log(`📦 Total variants to generate: ${allUrlsData.length * VARIANTS_PER_URL}`);
-  console.log(`⏱️  Estimated time: ~${Math.round(allUrlsData.length * VARIANTS_PER_URL * 0.8 / 60)} minutes\n`);
+  console.log(`${'='.repeat(60)}\n`);
   
-  // Process in batches
   for (let i = 0; i < allUrlsData.length; i += BATCH_SIZE) {
     const batchResults = await processBatch(allUrlsData, i, BATCH_SIZE);
     
@@ -280,37 +248,26 @@ async function generateSitemapCache() {
         results.success++;
         results.pages.push(result);
         
-        // Update per-sitemap stats
         const urlData = allUrlsData.find(u => u.path === result.path);
         if (urlData && urlData.sourceSitemap) {
           results.sitemapStats[urlData.sourceSitemap].succeeded++;
         }
         
-        // Build routes mapping (group variants by path)
         if (!routesMapping[result.path]) {
           routesMapping[result.path] = [];
         }
         routesMapping[result.path].push(result.kvKey);
       } else {
         results.failed++;
-        
-        // Track failed URLs
-        const currentBatch = allUrlsData.slice(i, i + BATCH_SIZE);
-        const failedUrl = currentBatch[Math.floor((results.failed - 1) / VARIANTS_PER_URL)];
-        if (failedUrl && failedUrl.sourceSitemap) {
-          results.sitemapStats[failedUrl.sourceSitemap].failed++;
-        }
       }
     }
     
     const progress = Math.min(i + BATCH_SIZE, allUrlsData.length);
-    const percentage = Math.round((progress / allUrlsData.length) * 100);
-    console.log(`\n📈 Progress: ${progress}/${allUrlsData.length} URLs (${percentage}%)`);
+    console.log(`\n📈 Progress: ${progress}/${allUrlsData.length} URLs`);
     console.log(`   ✅ Succeeded: ${results.success} variants`);
     console.log(`   ❌ Failed: ${results.failed} variants`);
   }
   
-  // Upload routes mapping
   console.log('\n📋 Creating sitemap routes mapping...');
   const mappingJson = JSON.stringify(routesMapping, null, 2);
   const mappingUploaded = await uploadToKV('sitemap-routes-mapping', mappingJson);
@@ -318,6 +275,8 @@ async function generateSitemapCache() {
   if (mappingUploaded) {
     console.log('✅ Sitemap routes mapping uploaded');
     console.log(`   📊 Total paths mapped: ${Object.keys(routesMapping).length}`);
+    console.log('\n📄 Mapping contents:');
+    console.log(JSON.stringify(routesMapping, null, 2));
   } else {
     console.error('❌ Sitemap routes mapping upload failed');
   }
@@ -331,20 +290,7 @@ async function generateSitemapCache() {
   console.log('='.repeat(60));
   console.log(`✅ Success: ${results.success} variants`);
   console.log(`❌ Failed: ${results.failed} variants`);
-  console.log(`⏭️  Skipped: ${results.skipped} (noindex pages)`);
   console.log(`⏱️  Duration: ${minutes}m ${seconds}s`);
-  console.log(`📦 Average: ${Math.round(duration / allUrlsData.length * 10) / 10}s per URL`);
-  
-  console.log('\n📑 PER-SITEMAP BREAKDOWN:');
-  for (const [sitemap, stats] of Object.entries(results.sitemapStats)) {
-    const successRate = stats.totalUrls > 0 
-      ? Math.round((stats.succeeded / (stats.totalUrls * VARIANTS_PER_URL)) * 100) 
-      : 0;
-    console.log(`\n${sitemap}:`);
-    console.log(`   📄 Total URLs: ${stats.totalUrls}`);
-    console.log(`   ✅ Succeeded: ${stats.succeeded}/${stats.totalUrls * VARIANTS_PER_URL} (${successRate}%)`);
-    console.log(`   ❌ Failed: ${stats.failed}`);
-  }
   
   console.log('\n✨ Done!\n');
   
