@@ -30,7 +30,7 @@ const BOT_USER_AGENTS = [
 // Routes mapping - generateStaticPages.js-ல இருக்கிற FOLLOW_PAGES-க்கு match ஆகணும்
 const STATIC_ROUTES_MAPPING: Record<string, string> = {
   '/': 'homepage',
-  
+   
 };
 
 function isBot(userAgent: string): boolean {

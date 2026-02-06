@@ -17,7 +17,6 @@ const CF_API_TOKEN = process.env.CF_API_TOKEN;
 const FOLLOW_PAGES = [
 
   { path: '/', slug: 'homepage' },
-
  
 
 ];
