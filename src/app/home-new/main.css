@@ -1,12 +1,6 @@
-
- /* Home page*/
+  /* Home page*/
 
 .home_top {
-  background-color: #f2f2f2;
-  border-bottom: solid 1px #e1e1e1;
-  border-top: solid 1px #e1e1e1;
-  padding-top: 35px;
-  padding-bottom: 55px;
   background-color: #f2f2f2;
   border-bottom: solid 1px #e1e1e1;
   border-top: solid 1px #e1e1e1;
@@ -23,8 +17,6 @@
 
 .home_top p {
   max-width: 1000px;
-  margin: 0 auto;
-  margin-bottom: 15px;
   margin: 0 auto;
   margin-bottom: 15px;
 }
