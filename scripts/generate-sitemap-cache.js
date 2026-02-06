@@ -119,7 +119,10 @@ async function generateVariantForUrl(urlData, variantNumber) {
   
   try {
     // Fetch from Vercel with shuffle_seed
-    const vercelUrl = `${VERCEL_BASE_URL}${path}?shuffle_seed=${variantNumber}`;
+    // ✅ FIX: Ensure proper URL construction
+    const baseUrl = VERCEL_BASE_URL.replace(/\/$/, ''); // Remove trailing slash
+    const urlPath = path.startsWith('/') ? path : `/${path}`; // Ensure leading slash
+    const vercelUrl = `${baseUrl}${urlPath}?shuffle_seed=${variantNumber}`;
     
     console.log(`   🔗 Fetching: ${vercelUrl}`);
     
