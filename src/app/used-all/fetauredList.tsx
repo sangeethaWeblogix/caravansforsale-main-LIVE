@@ -32,7 +32,7 @@ export default function ProductCard({ caravan }: { caravan: Product }) {
   ].filter(Boolean);
 
   return (
-    <Link href={href} className="lli_head">
+    <a href={href} className="lli_head">
       <div className="product-card">
         <div className="img">
           <div className="background_thumb">
@@ -94,6 +94,6 @@ export default function ProductCard({ caravan }: { caravan: Product }) {
                      
         </div>
       </div>
-    </Link>
+    </a>
   );
 }

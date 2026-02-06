@@ -602,10 +602,9 @@ export default function ListingContent({
                     console.log("imgs", firstImage);
                     return (
                       <div className="col-lg-6 mb-0" key={index}>
-                        <Link
+                        <a
                           href={href}
-                          prefetch={false}
-                          className="lli_head"
+                           className="lli_head"
                           onClick={(e) => {
                             e.preventDefault();
                             goToProduct(href);
@@ -680,7 +679,8 @@ export default function ListingContent({
                             </div>
 
                             <div className="product_de">
-                              <div className="info">
+                               <div className="info">
+                                
                                 {item.name && (
                                   <h3
                                     className="title cursor-pointer"
@@ -856,7 +856,7 @@ export default function ListingContent({
                               </div>
                             </div>
                           </div>
-                        </Link>
+                        </a>
                       </div>
                     );
                   })}
@@ -1041,17 +1041,17 @@ export default function ListingContent({
                   <p className="terms_text">
                     By clicking &lsquo;Send Enquiry&lsquo;, you agree to Caravan
                     Marketplace{" "}
-                    <Link href="/privacy-collection-statement" target="_blank">
+                    <a href="/privacy-collection-statement" target="_blank">
                       Collection Statement
-                    </Link>
+                    </a>
                     ,{" "}
-                    <Link href="/privacy-policy" target="_blank">
+                    <a href="/privacy-policy" target="_blank">
                       Privacy Policy
-                    </Link>{" "}
+                    </a>{" "}
                     and{" "}
-                    <Link href="/terms-conditions" target="_blank">
+                    <a href="/terms-conditions" target="_blank">
                       Terms and Conditions
-                    </Link>
+                    </a>
                     .
                   </p>
 
