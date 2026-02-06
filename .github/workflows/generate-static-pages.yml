@@ -1,24 +1,36 @@
-name: Generate Static Pages
+name: Generate Static Pages (Homepage + Sitemaps)
 
 on:
   schedule:
-    # Runs every hour at minute 0
-    - cron: '0 * * * *'
+    # Run every 12 hours at 00:00 and 12:00 UTC
+    - cron: '0 0,12 * * *'
   
-  # Allow manual trigger
+  # Allow manual trigger with options
   workflow_dispatch:
+    inputs:
+      target:
+        description: 'What to generate'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - homepage-only
+          - sitemap-only
   
-  # Trigger on push to main (optional)
+  # Optional: Trigger on script changes
   push:
     branches:
       - main
     paths:
       - 'scripts/generate-static-pages.js'
+      - 'scripts/generate-sitemap-cache.js'
       - '.github/workflows/generate-static-pages.yml'
 
 jobs:
   generate-and-upload:
     runs-on: ubuntu-latest
+    timeout-minutes: 120
     
     steps:
       - name: 📥 Checkout repository
@@ -32,8 +44,15 @@ jobs:
       - name: 📦 Install dependencies
         run: |
           npm install node-fetch@2
+          npm install xml2js
       
-      - name: 🚀 Generate and upload static pages
+      - name: 🏠 Generate Homepage & Listings
+        if: |
+          github.event_name == 'push' || 
+          github.event_name == 'schedule' ||
+          github.event.inputs.target == 'all' || 
+          github.event.inputs.target == 'homepage-only' || 
+          github.event.inputs.target == ''
         env:
           VERCEL_BASE_URL: ${{ secrets.VERCEL_BASE_URL }}
           PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
@@ -41,7 +60,23 @@ jobs:
           CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
         run: |
+          echo "🏠 Generating homepage & listings static HTML..."
           node scripts/generate-static-pages.js
+      
+      - name: 🗺️ Generate Sitemap URL Variants
+        if: |
+          github.event_name == 'schedule' ||
+          github.event.inputs.target == 'all' || 
+          github.event.inputs.target == 'sitemap-only'
+        env:
+          VERCEL_BASE_URL: ${{ secrets.VERCEL_BASE_URL }}
+          PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+        run: |
+          echo "🗺️ Generating sitemap URL variants (5 per URL)..."
+          node scripts/generate-sitemap-cache.js
       
       - name: 📊 Upload generation log (on failure)
         if: failure()
@@ -56,3 +91,9 @@ jobs:
         run: |
           echo "::error::Static page generation failed. Check the logs above."
           echo "::error::Review the artifacts for detailed error information."
+      
+      - name: ✅ Completion Summary
+        if: success()
+        run: |
+          echo "::notice::✅ Static page generation completed successfully!"
+          echo "::notice::📊 Check job logs above for detailed statistics"
