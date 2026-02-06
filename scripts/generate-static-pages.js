@@ -18,29 +18,7 @@ const FOLLOW_PAGES = [
 
   { path: '/', slug: 'homepage' },
 
-  { path: '/listings/', slug: 'listings-home' },
-
-  { path: '/listings/caravans-for-sale/', slug: 'category-caravans' },
-
-  { path: '/listings/caravans-for-sale/victoria/', slug: 'caravans-victoria' },
-
-  { path: '/listings/caravans-for-sale/new-south-wales/', slug: 'caravans-nsw' },
-
-  { path: '/listings/caravans-for-sale/queensland/', slug: 'caravans-qld' },
-
-  { path: '/listings/caravans-for-sale/south-australia/', slug: 'caravans-sa' },
-
-  { path: '/listings/caravans-for-sale/western-australia/', slug: 'caravans-wa' },
-
-  { path: '/listings/caravans-for-sale/tasmania/', slug: 'caravans-tas' },
-
-  { path: '/listings/caravans-for-sale/jayco/', slug: 'make-jayco' },
-
-  { path: '/listings/caravans-for-sale/coromal/', slug: 'make-coromal' },
-
-  { path: '/listings/caravans-for-sale/used/', slug: 'condition-used' },
-
-  { path: '/listings/caravans-for-sale/victoria/jayco/', slug: 'victoria-jayco' },
+ 
 
 ];
  
