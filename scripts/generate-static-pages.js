@@ -8,11 +8,21 @@ const CF_ACCOUNT_ID = process.env.CF_ACCOUNT_ID;
 const CF_KV_NAMESPACE_ID = process.env.CF_KV_NAMESPACE_ID;
 const CF_API_TOKEN = process.env.CF_API_TOKEN;
 
-// Define all follow pages - slugs must match middleware.ts STATIC_ROUTES_MAPPING
-const FOLLOW_PAGES = [
-  { path: '/', slug: 'homepage' },
- 
+// Number of variants to generate for /listings/
+const LISTINGS_VARIANTS = 5;
 
+// Define pages to generate
+const STATIC_PAGES = [
+  { 
+    path: '/', 
+    slug: 'homepage',
+    variants: 1  // Only 1 variant for homepage
+  },
+  { 
+    path: '/listings/', 
+    slug: 'listings-home',
+    variants: LISTINGS_VARIANTS  // 5 variants for listings
+  },
 ];
 
 async function uploadToKV(key, value) {
@@ -31,11 +41,82 @@ async function uploadToKV(key, value) {
   return result.success;
 }
 
+async function generatePageVariant(page, variantNumber) {
+  // Build URL with shuffle_seed for listings variants
+  let url = `${VERCEL_BASE_URL}${page.path}`;
+  if (page.variants > 1) {
+    url += `?shuffle_seed=${variantNumber}`;
+  }
+  
+  const kvKey = page.variants > 1 ? `${page.slug}-v${variantNumber}` : page.slug;
+  
+  console.log(`\n📥 Fetching: ${page.path}${page.variants > 1 ? ` (variant ${variantNumber})` : ''}`);
+  console.log(`   URL: ${url}`);
+  console.log(`   KV Key: ${kvKey}`);
+  
+  try {
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'StaticGenerator/1.0',
+        'Accept': 'text/html'
+      },
+      timeout: 30000
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    
+    let html = await response.text();
+    
+    if (!html.includes('</html>')) {
+      throw new Error('Invalid HTML response (no closing </html> tag)');
+    }
+    
+    const canonicalUrl = `${PRODUCTION_DOMAIN}${page.path}`;
+    const seoTags = `
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="${canonicalUrl}">
+    <meta name="generated-at" content="${new Date().toISOString()}">
+    <meta name="static-version" content="2.0">
+    <meta name="static-variant" content="${variantNumber}">`;
+    
+    html = html.replace('</head>', `${seoTags}\n</head>`);
+    html = html.replace(/<meta\s+name="robots"\s+content="noindex[^"]*"\s*\/?>/gi, '');
+    
+    console.log(`   ⬆️  Uploading to KV...`);
+    const uploaded = await uploadToKV(kvKey, html);
+    
+    if (uploaded) {
+      console.log(`   ✅ Success! (${Math.round(html.length / 1024)}KB)`);
+      return {
+        path: page.path,
+        slug: kvKey,
+        variant: variantNumber,
+        status: 'success',
+        size: Math.round(html.length / 1024) + 'KB'
+      };
+    } else {
+      throw new Error('KV upload returned false');
+    }
+    
+  } catch (error) {
+    console.error(`   ❌ Failed: ${error.message}`);
+    return {
+      path: page.path,
+      slug: kvKey,
+      variant: variantNumber,
+      status: 'failed',
+      error: error.message
+    };
+  }
+}
+
 async function generateStaticPages() {
   console.log('🚀 Starting static page generation...');
   console.log(`📍 Vercel URL: ${VERCEL_BASE_URL}`);
   console.log(`📍 Production: ${PRODUCTION_DOMAIN}`);
-  console.log(`📄 Total pages: ${FOLLOW_PAGES.length}\n`);
+  console.log(`🔢 Listings variants: ${LISTINGS_VARIANTS}\n`);
   
   const results = {
     success: 0,
@@ -46,73 +127,43 @@ async function generateStaticPages() {
   
   const startTime = Date.now();
   
-  for (const page of FOLLOW_PAGES) {
-    const url = `${VERCEL_BASE_URL}${page.path}`;
-    console.log(`\n📥 Fetching: ${page.path}`);
-    console.log(`   URL: ${url}`);
-    
-    try {
-      const response = await fetch(url, {
-        headers: {
-          'User-Agent': 'StaticGenerator/1.0',
-          'Accept': 'text/html'
-        },
-        timeout: 30000
-      });
+  // Generate all pages and their variants
+  for (const page of STATIC_PAGES) {
+    for (let variant = 1; variant <= page.variants; variant++) {
+      const result = await generatePageVariant(page, variant);
       
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-      
-      let html = await response.text();
-      
-      if (!html.includes('</html>')) {
-        throw new Error('Invalid HTML response (no closing </html> tag)');
-      }
-      
-      const canonicalUrl = `${PRODUCTION_DOMAIN}${page.path}`;
-      const seoTags = `
-    <meta name="robots" content="index, follow">
-    <link rel="canonical" href="${canonicalUrl}">
-    <meta name="generated-at" content="${new Date().toISOString()}">
-    <meta name="static-version" content="1.0">`;
-      
-      html = html.replace('</head>', `${seoTags}\n</head>`);
-      html = html.replace(/<meta\s+name="robots"\s+content="noindex[^"]*"\s*\/?>/gi, '');
-      
-      console.log(`   ⬆️  Uploading to KV as: ${page.slug}`);
-      const uploaded = await uploadToKV(page.slug, html);
-      
-      if (uploaded) {
-        console.log(`   ✅ Success!`);
+      if (result.status === 'success') {
         results.success++;
-        results.pages.push({
-          path: page.path,
-          slug: page.slug,
-          status: 'success',
-          size: Math.round(html.length / 1024) + 'KB'
-        });
+        results.pages.push(result);
       } else {
-        throw new Error('KV upload returned false');
+        results.failed++;
+        results.errors.push(result);
       }
       
       await new Promise(resolve => setTimeout(resolve, 500));
-      
-    } catch (error) {
-      console.error(`   ❌ Failed: ${error.message}`);
-      results.failed++;
-      results.errors.push({
-        path: page.path,
-        error: error.message
-      });
     }
   }
   
+  // Create routes mapping
   console.log('\n📋 Creating routes mapping...');
   const mapping = {};
-  FOLLOW_PAGES.forEach(page => {
-    mapping[page.path] = page.slug;
-  });
+  
+  for (const page of STATIC_PAGES) {
+    if (page.variants === 1) {
+      // Single variant: direct mapping
+      mapping[page.path] = page.slug;
+    } else {
+      // Multiple variants: array of variant keys
+      const variants = [];
+      for (let i = 1; i <= page.variants; i++) {
+        variants.push(`${page.slug}-v${i}`);
+      }
+      mapping[page.path] = variants;
+    }
+  }
+  
+  console.log('📝 Routes mapping:');
+  console.log(JSON.stringify(mapping, null, 2));
   
   const mappingJson = JSON.stringify(mapping, null, 2);
   const mappingUploaded = await uploadToKV('routes-mapping', mappingJson);
@@ -124,19 +175,21 @@ async function generateStaticPages() {
   }
   
   const duration = Math.round((Date.now() - startTime) / 1000);
+  const totalVariants = STATIC_PAGES.reduce((sum, page) => sum + page.variants, 0);
   
   console.log('\n' + '='.repeat(60));
   console.log('📊 GENERATION COMPLETE');
   console.log('='.repeat(60));
-  console.log(`✅ Success: ${results.success} pages`);
-  console.log(`❌ Failed: ${results.failed} pages`);
+  console.log(`✅ Success: ${results.success} variants`);
+  console.log(`❌ Failed: ${results.failed} variants`);
+  console.log(`📄 Total variants generated: ${totalVariants}`);
   console.log(`⏱️  Duration: ${duration} seconds`);
-  console.log(`📦 Average: ${Math.round(duration / FOLLOW_PAGES.length * 10) / 10}s per page`);
+  console.log(`📦 Average: ${Math.round(duration / totalVariants * 10) / 10}s per variant`);
   
   if (results.errors.length > 0) {
     console.log('\n❌ ERRORS:');
     results.errors.forEach(err => {
-      console.log(`   ${err.path}: ${err.error}`);
+      console.log(`   ${err.path} (v${err.variant}): ${err.error}`);
     });
   }
   
