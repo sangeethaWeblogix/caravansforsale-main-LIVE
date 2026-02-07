@@ -13,12 +13,27 @@
  * All variants stored with consistent naming: {slug}-v{1-5}
  */
 
-const puppeteer = require('puppeteer');
 const fetch = require('node-fetch');
 const { parseString } = require('xml2js');
 const { promisify } = require('util');
 
 const parseXML = promisify(parseString);
+
+// Puppeteer is optional - only needed for priority pages with USE_PUPPETEER=true
+let puppeteer = null;
+async function loadPuppeteer() {
+  if (!puppeteer) {
+    try {
+      puppeteer = require('puppeteer');
+      return puppeteer;
+    } catch (error) {
+      console.error('⚠️  Puppeteer not installed. Install with: npm install puppeteer');
+      console.error('   Falling back to HTTP fetch for all pages.');
+      return null;
+    }
+  }
+  return puppeteer;
+}
 
 // Environment variables
 const VERCEL_BASE_URL = process.env.VERCEL_BASE_URL || 'https://caravansforsale-main-live.vercel.app';
@@ -370,12 +385,19 @@ async function generatePriorityPages() {
   try {
     // Launch browser if using Puppeteer
     if (USE_PUPPETEER) {
-      console.log('\n🌐 Launching headless browser...');
-      browser = await puppeteer.launch({
-        headless: 'new',
-        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
-      });
-      console.log('✅ Browser launched!\n');
+      console.log('\n🌐 Loading Puppeteer...');
+      const pptr = await loadPuppeteer();
+      
+      if (pptr) {
+        console.log('🌐 Launching headless browser...');
+        browser = await pptr.launch({
+          headless: 'new',
+          args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
+        });
+        console.log('✅ Browser launched!\n');
+      } else {
+        console.log('⚠️  Puppeteer not available, using HTTP fetch instead\n');
+      }
     }
     
     let totalGenerated = 0;
