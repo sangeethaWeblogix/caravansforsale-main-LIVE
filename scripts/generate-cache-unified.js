@@ -175,8 +175,6 @@ function shouldCachePage(html) {
 // ============================================
 
 async function fetchWithPuppeteer(url, browser) {
-  console.log(`   🌐 Using Puppeteer...`);
-  
   const page = await browser.newPage();
   await page.setViewport({ width: 1920, height: 1080 });
   
@@ -195,8 +193,6 @@ async function fetchWithPuppeteer(url, browser) {
 }
 
 async function fetchWithHttp(url) {
-  console.log(`   🌐 Using HTTP Fetch...`);
-  
   const response = await fetch(url, {
     headers: {
       'User-Agent': 'CFS-CacheGenerator/2.0',
@@ -229,16 +225,23 @@ async function generatePageVariant(pageConfig, variantNumber, browser = null) {
   
   console.log(`\n📄 Generating: ${path} (variant ${variantNumber})`);
   console.log(`   Slug: ${kvKey}`);
-  console.log(`   URL: ${fetchUrl}`);
+  console.log(`   URL: ***?shuffle_seed=${variantNumber}`);
   
   try {
     // Fetch HTML
     let html;
+    const fetchStart = Date.now();
+    
     if (usePuppeteer && browser) {
+      console.log(`   🌐 Using Puppeteer...`);
       html = await fetchWithPuppeteer(fetchUrl, browser);
     } else {
+      console.log(`   🌐 Using HTTP Fetch...`);
       html = await fetchWithHttp(fetchUrl);
     }
+    
+    const fetchDuration = Date.now() - fetchStart;
+    console.log(`   ⏱️  Fetched in ${Math.round(fetchDuration / 1000)}s`);
     
     // Validate HTML
     if (!html.includes('</html>')) {
@@ -246,8 +249,11 @@ async function generatePageVariant(pageConfig, variantNumber, browser = null) {
     }
     
     // Check if should be cached
-    if (!shouldCachePage(html)) {
-      console.log(`   ⚠️  Skipping: Not index/follow`);
+    const shouldCache = shouldCachePage(html);
+    console.log(`   🔍 Index/Follow check: ${shouldCache ? '✅' : '❌'}`);
+    
+    if (!shouldCache) {
+      console.log(`   ⏭️  Skipping: Not index/follow`);
       return { status: 'skipped', path, kvKey };
     }
     
@@ -256,7 +262,8 @@ async function generatePageVariant(pageConfig, variantNumber, browser = null) {
     html = injectSEOTags(html, canonicalUrl, variantNumber, usePuppeteer ? 'puppeteer' : 'http');
     
     // Upload to KV
-    console.log(`   ⬆️  Uploading (${Math.round(html.length / 1024)}KB)...`);
+    const sizeKB = Math.round(html.length / 1024);
+    console.log(`   ℹ️  Uploading (${sizeKB}KB)...`);
     
     const metadata = {
       path,
@@ -264,16 +271,20 @@ async function generatePageVariant(pageConfig, variantNumber, browser = null) {
       generated: new Date().toISOString()
     };
     
+    const uploadStart = Date.now();
     const uploaded = await uploadToKV(kvKey, html, metadata);
+    const uploadDuration = Date.now() - uploadStart;
     
     if (uploaded) {
-      console.log(`   ✅ Success!`);
+      console.log(`   ✅ Success! Uploaded in ${Math.round(uploadDuration / 1000)}s`);
       return {
         status: 'success',
         path,
         kvKey,
         variant: variantNumber,
-        size: Math.round(html.length / 1024) + 'KB'
+        size: sizeKB + 'KB',
+        fetchTime: fetchDuration,
+        uploadTime: uploadDuration
       };
     } else {
       throw new Error('KV upload failed');
@@ -346,7 +357,11 @@ async function fetchSitemapUrls(sitemapPath) {
 
 async function generatePriorityPages() {
   console.log('\n' + '='.repeat(70));
-  console.log('🎯 GENERATING PRIORITY PAGES');
+  console.log('🎯 GENERATING PRIORITY PAGES (Homepage & Listings)');
+  console.log('='.repeat(70));
+  console.log(`📋 Pages to generate: ${PRIORITY_PAGES.length}`);
+  console.log(`🔢 Variants per page: ${VARIANTS_PER_URL}`);
+  console.log(`📦 Total variants: ${PRIORITY_PAGES.length * VARIANTS_PER_URL}`);
   console.log('='.repeat(70));
   
   const results = { success: 0, failed: 0, skipped: 0, pages: [] };
@@ -355,16 +370,28 @@ async function generatePriorityPages() {
   try {
     // Launch browser if using Puppeteer
     if (USE_PUPPETEER) {
-      console.log('\n🌐 Launching browser...');
+      console.log('\n🌐 Launching headless browser...');
       browser = await puppeteer.launch({
         headless: 'new',
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
+        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
       });
-      console.log('✅ Browser ready\n');
+      console.log('✅ Browser launched!\n');
     }
     
+    let totalGenerated = 0;
+    const totalVariants = PRIORITY_PAGES.length * VARIANTS_PER_URL;
+    
     for (const page of PRIORITY_PAGES) {
+      console.log('\n' + '-'.repeat(70));
+      console.log(`📍 Processing: ${page.path}`);
+      console.log('-'.repeat(70));
+      
       for (let variant = 1; variant <= VARIANTS_PER_URL; variant++) {
+        totalGenerated++;
+        const progress = Math.round((totalGenerated / totalVariants) * 100);
+        
+        console.log(`\n[${totalGenerated}/${totalVariants}] Progress: ${progress}%`);
+        
         const result = await generatePageVariant(page, variant, browser);
         
         if (result.status === 'success') {
@@ -382,10 +409,19 @@ async function generatePriorityPages() {
     
   } finally {
     if (browser) {
+      console.log('\n🔒 Closing browser...');
       await browser.close();
-      console.log('\n🔒 Browser closed');
+      console.log('✅ Browser closed');
     }
   }
+  
+  console.log('\n' + '='.repeat(70));
+  console.log('📊 PRIORITY PAGES - SUMMARY');
+  console.log('='.repeat(70));
+  console.log(`✅ Success: ${results.success} variants`);
+  console.log(`⏭️  Skipped: ${results.skipped} variants`);
+  console.log(`❌ Failed: ${results.failed} variants`);
+  console.log('='.repeat(70));
   
   return results;
 }
@@ -403,25 +439,46 @@ async function generateSitemapPages(targetSitemap = null) {
     const sitemapPath = `/${targetSitemap}-sitemap.xml`;
     if (SITEMAP_URLS.includes(sitemapPath)) {
       sitemapsToProcess = [sitemapPath];
-      console.log(`🎯 Processing single sitemap: ${sitemapPath}\n`);
+      console.log(`🎯 Target: Single sitemap (${targetSitemap})`);
     } else {
       console.error(`❌ Unknown sitemap: ${targetSitemap}`);
       return results;
     }
+  } else {
+    console.log(`📑 Target: All sitemaps (${sitemapsToProcess.length})`);
   }
+  console.log('='.repeat(70));
   
   // Step 1: Fetch all URLs
+  console.log('\n📥 STEP 1: Fetching sitemap URLs...\n');
+  
   let allUrls = [];
-  for (const sitemapPath of sitemapsToProcess) {
+  for (let i = 0; i < sitemapsToProcess.length; i++) {
+    const sitemapPath = sitemapsToProcess[i];
+    console.log(`[${i + 1}/${sitemapsToProcess.length}] Fetching: ${sitemapPath}`);
+    
     const urls = await fetchSitemapUrls(sitemapPath);
     allUrls = allUrls.concat(urls);
     await new Promise(resolve => setTimeout(resolve, 500));
   }
   
-  console.log(`\n📊 Total URLs to process: ${allUrls.length}`);
-  console.log(`📦 Total variants: ${allUrls.length * VARIANTS_PER_URL}\n`);
+  console.log('\n' + '='.repeat(70));
+  console.log('📊 SITEMAP FETCH COMPLETE');
+  console.log('='.repeat(70));
+  console.log(`📄 Total URLs found: ${allUrls.length}`);
+  console.log(`🔢 Variants per URL: ${VARIANTS_PER_URL}`);
+  console.log(`📦 Total variants to generate: ${allUrls.length * VARIANTS_PER_URL}`);
+  
+  const estimatedMinutes = Math.round(allUrls.length * VARIANTS_PER_URL * 2 / 60);
+  console.log(`⏱️  Estimated time: ~${estimatedMinutes} minutes`);
+  console.log('='.repeat(70));
   
   // Step 2: Generate variants
+  console.log('\n🔨 STEP 2: Generating HTML variants...\n');
+  
+  let totalProcessed = 0;
+  const startTime = Date.now();
+  
   for (let i = 0; i < allUrls.length; i++) {
     const urlData = allUrls[i];
     const slug = convertPathToSlug(urlData.path);
@@ -432,9 +489,18 @@ async function generateSitemapPages(targetSitemap = null) {
       usePuppeteer: false
     };
     
-    console.log(`\n[${i + 1}/${allUrls.length}] ${urlData.path}`);
+    console.log('\n' + '-'.repeat(70));
+    console.log(`📍 URL [${i + 1}/${allUrls.length}]: ${urlData.path}`);
+    console.log(`   Slug: ${slug}`);
+    console.log(`   Source: ${urlData.sourceSitemap}`);
+    console.log('-'.repeat(70));
     
     for (let variant = 1; variant <= VARIANTS_PER_URL; variant++) {
+      totalProcessed++;
+      const overallProgress = Math.round((totalProcessed / (allUrls.length * VARIANTS_PER_URL)) * 100);
+      
+      console.log(`\n[Variant ${variant}/${VARIANTS_PER_URL}] Overall: ${totalProcessed}/${allUrls.length * VARIANTS_PER_URL} (${overallProgress}%)`);
+      
       const result = await generatePageVariant(pageConfig, variant);
       
       if (result.status === 'success') {
@@ -452,10 +518,29 @@ async function generateSitemapPages(targetSitemap = null) {
     await new Promise(resolve => setTimeout(resolve, DELAY_BETWEEN_URLS));
     
     // Progress update every 10 URLs
-    if ((i + 1) % 10 === 0) {
-      console.log(`\n📈 Progress: ${i + 1}/${allUrls.length} URLs | ✅ ${results.success} | ❌ ${results.failed} | ⏭️  ${results.skipped}`);
+    if ((i + 1) % 10 === 0 || i === allUrls.length - 1) {
+      const elapsed = Math.round((Date.now() - startTime) / 1000 / 60);
+      const remaining = Math.round((allUrls.length - i - 1) * VARIANTS_PER_URL * 2 / 60);
+      
+      console.log('\n' + '='.repeat(70));
+      console.log('📈 PROGRESS UPDATE');
+      console.log('='.repeat(70));
+      console.log(`📊 URLs: ${i + 1}/${allUrls.length} (${Math.round((i + 1) / allUrls.length * 100)}%)`);
+      console.log(`✅ Success: ${results.success} variants`);
+      console.log(`⏭️  Skipped: ${results.skipped} variants`);
+      console.log(`❌ Failed: ${results.failed} variants`);
+      console.log(`⏱️  Elapsed: ${elapsed} min | Remaining: ~${remaining} min`);
+      console.log('='.repeat(70));
     }
   }
+  
+  console.log('\n' + '='.repeat(70));
+  console.log('📊 SITEMAP GENERATION - SUMMARY');
+  console.log('='.repeat(70));
+  console.log(`✅ Success: ${results.success} variants`);
+  console.log(`⏭️  Skipped: ${results.skipped} variants`);
+  console.log(`❌ Failed: ${results.failed} variants`);
+  console.log('='.repeat(70));
   
   return results;
 }
@@ -467,6 +552,8 @@ async function updateRoutesMapping(results) {
   
   // Build mapping from results
   const mapping = {};
+  
+  console.log('🔨 Building mapping from generated pages...');
   
   for (const page of results.pages) {
     if (!mapping[page.path]) {
@@ -484,18 +571,39 @@ async function updateRoutesMapping(results) {
     });
   }
   
-  console.log(`\n📊 Mapping contains ${Object.keys(mapping).length} paths`);
+  console.log(`✅ Built mapping for ${Object.keys(mapping).length} paths`);
+  
+  // Show sample paths
+  console.log('\n📝 Sample routes mapping:');
+  const samplePaths = Object.keys(mapping).slice(0, 5);
+  samplePaths.forEach((path, idx) => {
+    console.log(`\n${idx + 1}. ${path}`);
+    console.log(`   Variants: ${mapping[path].join(', ')}`);
+  });
+  
+  if (Object.keys(mapping).length > 5) {
+    console.log(`\n   ... and ${Object.keys(mapping).length - 5} more paths`);
+  }
   
   // Upload to KV
+  console.log('\n⬆️  Uploading routes mapping to KV...');
+  
   const mappingJson = JSON.stringify(mapping, null, 2);
+  const sizeKB = Math.round(mappingJson.length / 1024);
+  console.log(`   Size: ${sizeKB}KB`);
+  
   const uploaded = await uploadToKV('routes-mapping', mappingJson);
   
   if (uploaded) {
     console.log('✅ Routes mapping uploaded successfully!');
-    console.log(`   Size: ${Math.round(mappingJson.length / 1024)}KB`);
+    console.log(`   KV Key: routes-mapping`);
+    console.log(`   Total paths: ${Object.keys(mapping).length}`);
+    console.log(`   Total variants: ${results.pages.length}`);
   } else {
     console.error('❌ Routes mapping upload failed!');
   }
+  
+  console.log('='.repeat(70));
   
   return mapping;
 }
@@ -505,13 +613,14 @@ async function updateRoutesMapping(results) {
 // ============================================
 
 async function main() {
+  console.log('\n' + '█'.repeat(70));
   console.log('🚀 CFS UNIFIED CACHE GENERATION');
-  console.log('='.repeat(70));
+  console.log('█'.repeat(70));
   console.log(`📍 Domain: ${PRODUCTION_DOMAIN}`);
-  console.log(`🔢 Variants: ${VARIANTS_PER_URL}`);
+  console.log(`🔢 Variants per URL: ${VARIANTS_PER_URL}`);
   console.log(`🎯 Target: ${TARGET}`);
-  console.log(`🤖 Puppeteer: ${USE_PUPPETEER ? 'Enabled' : 'Disabled'}`);
-  console.log('='.repeat(70));
+  console.log(`🤖 Puppeteer: ${USE_PUPPETEER ? 'Enabled (Priority Pages)' : 'Disabled'}`);
+  console.log('█'.repeat(70));
   
   const startTime = Date.now();
   let allResults = { success: 0, failed: 0, skipped: 0, pages: [] };
@@ -544,10 +653,13 @@ async function main() {
     // Update routes mapping
     if (allResults.pages.length > 0) {
       await updateRoutesMapping(allResults);
+    } else {
+      console.log('\n⚠️  No pages generated - skipping routes mapping update');
     }
     
   } catch (error) {
     console.error('\n💥 Fatal error:', error);
+    console.error(error.stack);
     process.exit(1);
   }
   
@@ -556,16 +668,40 @@ async function main() {
   const minutes = Math.floor(duration / 60);
   const seconds = duration % 60;
   
-  console.log('\n' + '='.repeat(70));
+  console.log('\n\n' + '█'.repeat(70));
   console.log('📊 FINAL SUMMARY');
-  console.log('='.repeat(70));
+  console.log('█'.repeat(70));
+  console.log(`🎯 Target: ${TARGET}`);
   console.log(`✅ Success: ${allResults.success} variants`);
+  console.log(`⏭️  Skipped: ${allResults.skipped} variants (not index/follow)`);
   console.log(`❌ Failed: ${allResults.failed} variants`);
-  console.log(`⏭️  Skipped: ${allResults.skipped} variants`);
   console.log(`📄 Unique paths: ${new Set(allResults.pages.map(p => p.path)).size}`);
-  console.log(`⏱️  Duration: ${minutes}m ${seconds}s`);
-  console.log('='.repeat(70));
-  console.log('✨ Done!\n');
+  console.log(`⏱️  Total duration: ${minutes}m ${seconds}s`);
+  
+  if (allResults.pages.length > 0) {
+    const avgTime = Math.round(duration / allResults.pages.length * 10) / 10;
+    console.log(`📦 Average: ${avgTime}s per variant`);
+    
+    const totalSize = allResults.pages.reduce((sum, p) => {
+      const size = parseInt(p.size) || 0;
+      return sum + size;
+    }, 0);
+    console.log(`💾 Total storage: ~${Math.round(totalSize / 1024)}MB`);
+  }
+  
+  console.log('█'.repeat(70));
+  
+  // Success/failure indicators
+  if (allResults.failed === 0 && allResults.success > 0) {
+    console.log('✨ ALL VARIANTS GENERATED SUCCESSFULLY!');
+  } else if (allResults.failed > 0 && allResults.success > 0) {
+    console.log('⚠️  COMPLETED WITH SOME FAILURES');
+  } else if (allResults.success === 0) {
+    console.log('❌ NO VARIANTS GENERATED');
+  }
+  
+  console.log('█'.repeat(70));
+  console.log();
   
   process.exit(allResults.failed > 0 ? 1 : 0);
 }
