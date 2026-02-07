@@ -45,6 +45,7 @@ jobs:
         run: |
           npm install node-fetch@2
           npm install xml2js
+          npm install puppeteer
       
       - name: 🏠 Generate Homepage & Listings
         if: |
@@ -59,8 +60,9 @@ jobs:
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: false
         run: |
-          echo "🏠 Generating homepage & listings static HTML..."
+          echo "🏠 Generating homepage & listings static HTML with Puppeteer..."
           node scripts/generate-static-pages.js
       
       - name: 🗺️ Generate Sitemap URL Variants
