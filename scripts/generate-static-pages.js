@@ -123,8 +123,30 @@ async function generatePageVariant(page, variantNumber, browser) {
       }
     }
     
+    // Add performance optimizations for images
+    const imageOptimizations = `
+    <link rel="dns-prefetch" href="https://caravansforsale.imagestack.net" />
+    <link rel="preconnect" href="https://caravansforsale.imagestack.net" crossorigin />`;
+    
+    // Extract and preload first 6 images
+    const imageMatches = [...html.matchAll(/src="([^"]+\/(CFS-[^/]+)\/[^"]+\.(jpg|jpeg|png|webp))"/gi)];
+    const firstImages = imageMatches.slice(0, 6).map(match => {
+      const imgPath = match[1];
+      // If already using your image worker, keep it; otherwise optimize
+      if (imgPath.includes('caravansforsale.imagestack.net')) {
+        return imgPath;
+      }
+      const fileName = imgPath.split('/').slice(-2).join('/');
+      return `https://caravansforsale.imagestack.net/800x800/${fileName}`;
+    });
+    
+    const preloadLinks = firstImages
+      .map(url => `<link rel="preload" as="image" href="${url}" fetchpriority="high" />`)
+      .join('\n');
+    
     const canonicalUrl = `${PRODUCTION_DOMAIN}${page.path}`;
-    const seoTags = `
+    const seoTags = `${imageOptimizations}
+    ${preloadLinks}
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="${canonicalUrl}">
     <meta name="generated-at" content="${new Date().toISOString()}">
