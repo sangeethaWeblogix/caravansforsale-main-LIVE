@@ -351,32 +351,33 @@ export default function ClientLogger({
   const [returnUrl, setReturnUrl] = useState<string | null>(null);
 
   const [backReady, setBackReady] = useState(false);
+ useEffect(() => {
+  if (typeof window === "undefined") return;
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
+  // ✅ Check if user came FROM listings (via referrer OR sessionStorage)
+  const saved = sessionStorage.getItem("listingsReturnUrl");
+  const referrer = document.referrer;
 
-    const saved = sessionStorage.getItem("listingsReturnUrl");
+  if (saved && saved.includes("/listings")) {
     setReturnUrl(saved);
-    setBackReady(true); // ✅ tell UI it's ready
-  }, []);
+  } else if (referrer && referrer.includes("/listings")) {
+    setReturnUrl(referrer);
+  }
+
+  setBackReady(true);
+}, []);
   // ✅ Improved back button handler
   const handleBackClick = (e: React.MouseEvent) => {
     e.preventDefault();
-setNavigating(true);
-    if (returnUrl) {
-      sessionStorage.removeItem("listingsReturnUrl");
-      router.push(returnUrl);
-      return;
-    }
+// setNavigating(true);
+  if (returnUrl) {
+    window.history.back(); // ✅ real back — preserves scroll + filters
+    return;
+  }
 
     router.push(makeHref);
   };
-  useEffect(() => {
-    sessionStorage.setItem(
-      "listingsReturnUrl",
-      window.location.pathname + window.location.search,
-    );
-  }, []);
+ 
 
   const makeHref =
     makeValue && makeValue.trim()
@@ -593,17 +594,17 @@ setNavigating(true);
                       className="back_to_search back_to_search_btn"
                       style={{ background: "none", border: "none", padding: 0 }}
                     >
-                      <i className="bi bi-chevron-left"></i> Back to Search
+                      <i className="bi bi-chevron-left"></i>
+                    Back to Search 
                     </button>
                   ) : (
-                    <Link
+                    <a
                       href={makeHref}
                       className="back_to_search back_to_search_btn"
-                      prefetch={false}
-                    >
+                     >
                       <i className="bi bi-chevron-left"></i> Back to Similar
                       Caravans
-                    </Link>
+                    </a>
                   ))}
 
                 <div className="product-info left-info">
@@ -767,18 +768,12 @@ setNavigating(true);
                                         {links
                                           ? links.map((lnk, idx) => (
                                               <span key={lnk.href}>
-                                                <Link
+                                                <a
                                                   href={lnk.href}
-                                                  prefetch={false}
-                                                  onClick={(e) => {
-                                                    e.preventDefault(); // ⛔ stop default Link
-
-                                                    setNavigating(true); // ✅ show loader
-                                                    router.push(lnk.href); // ✅ go to listings
-                                                  }}
+                                                   
                                                 >
                                                   {lnk.text}
-                                                </Link>
+                                                </a>
                                                 {idx < links.length - 1
                                                   ? ", "
                                                   : ""}
@@ -863,12 +858,12 @@ setNavigating(true);
                   </button>
                   <p className="terms_text small">
                     By clicking &apos;Send Enquiry&apos;, you agree to our
-                    <Link href="/privacy-collection-statement">
+                    <a href="/privacy-collection-statement">
                       {" "}
                       Collection Statement
-                    </Link>
-                    , <Link href="/privacy-policy">Privacy Policy</Link>, and{" "}
-                    <Link href="/terms-conditions">Terms and Conditions</Link>.
+                    </a>
+                    , <a href="/privacy-policy">Privacy Policy</a>, and{" "}
+                    <a href="/terms-conditions">Terms and Conditions</a>.
                   </p>
                 </div>
               </div>
@@ -1098,7 +1093,7 @@ setNavigating(true);
                     const href = getHref(post);
                     return (
                       <SwiperSlide key={post.id}>
-                        <Link href={href}>
+                        <a href={href}>
                           <div className="product-card">
                             <div className="img">
                               <Image
@@ -1116,7 +1111,7 @@ setNavigating(true);
                               </div>
                             </div>
                           </div>
-                        </Link>
+                        </a>
                       </SwiperSlide>
                     );
                   })}
