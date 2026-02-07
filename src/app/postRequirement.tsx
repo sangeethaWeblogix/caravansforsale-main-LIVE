@@ -88,7 +88,7 @@ useEffect(() => {
 // };
   return (
     <div>
-      <div className="container">
+      
         <div className="post_bgs">
           <div className="row align-items-center">
             {/* LEFT SIDE */}
@@ -192,7 +192,7 @@ useEffect(() => {
             </div>
           </div>
         </div>
-      </div>
+      
     </div>
   );
 };

@@ -7,6 +7,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { flushSync } from "react-dom";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/navigation";
 import {
   fetchHomeSearchList, // GET /home_search (base list)
   fetchKeywordSuggestions, // GET /home_search/?keyword=<q> (typed list)
@@ -72,6 +76,15 @@ export default function SearchSection() {
   const isSearchEnabled = category || location || conditionValue;
   const [activeIndex, setActiveIndex] = useState(0);
 
+  const stateMeta = {
+    "victoria": { code: "VIC", image: "/images/vic_map.svg?=1" },
+    "new-south-wales": { code: "NSW", image: "/images/nsw_map.svg?=1" },
+    "queensland": { code: "QLD", image: "/images/qld_map.svg?=1" },
+    "south-australia": { code: "SA", image: "/images/sa_map.svg?=1" },
+    "western-australia": { code: "WA", image: "/images/wa_map.svg?=1" },
+    "tasmania": { code: "TAS", image: "/images/tas_map.svg?=1" }
+  };
+
 
   const [sleepBands, setSleepBands] = useState<TabsItem[]>([]);
   const [regionBands, setRegionBands] = useState<TabsItem[]>([]);
@@ -121,29 +134,31 @@ export default function SearchSection() {
     label: string;
     cards: TabCard[];
   }[] = [
+
       {
-        key: "price",
-        label: "Price",
-        cards: priceBands.map((item) => ({
-          title: item.short_label,
-          sub: item.short_count,
+        key: "Region",
+        label: "Location",
+        cards: regionBands.map((item) => ({
+          title: "Caravans for Sale in " + item.region,
+          sub: `${item.caravan_count ?? 0}`,
           url: `/listings/${item.permalink}`,
         })),
       },
       {
-        key: "Region",
-        label: "Region",
-        cards: regionBands.map((item) => ({
-          title: item.region,
-          sub: `${item.caravan_count ?? 0} caravan listings`, url: `/listings/${item.permalink}`,
+        key: "price",
+        label: "Price",
+        cards: priceBands.map((item) => ({
+          title: "Caravans for Sale " + item.short_label,
+          sub: `${item.caravan_count ?? 0}`,
+          url: `/listings/${item.permalink}`,
         })),
       },
       {
         key: "Weight",
         label: "Weight",
         cards: atmBands.map((item) => ({
-          title: item.short_label,
-          sub: item.short_count,
+          title: "Caravans for Sale " + item.short_label,
+          sub: `${item.caravan_count ?? 0}`,
           url: `/listings/${item.permalink}`,
         })),
       },
@@ -151,8 +166,8 @@ export default function SearchSection() {
         key: "Sleep",
         label: "Sleep",
         cards: sleepBands.map((item) => ({
-          title: item.short_label,
-          sub: item.short_count,
+          title: "Caravans for Sale " + item.short_label,
+          sub: `${item.caravan_count ?? 0}`,
           url: `/listings/${item.permalink}`,
         })),
       },
@@ -160,26 +175,26 @@ export default function SearchSection() {
         key: "Length",
         label: "Length",
         cards: lengthBands.map((item) => ({
-          title: item.short_label,
-          sub: item.short_count,
+          title: "Caravans for Sale " + item.short_label,
+          sub: `${item.caravan_count ?? 0}`,
           url: `/listings/${item.permalink}`,
         })),
       },
-      {
-        key: "Used",
-        label: "Used",
-        cards: usedCategoryList.map((item) => ({
-          title: item.short_label,
-          sub: item.short_count,
-          url: `/listings/${item.permalink}`,
-        })),
-      },
+      // {
+      //   key: "Used",
+      //   label: "Used",
+      //   cards: usedCategoryList.map((item) => ({
+      //     title: item.short_label,
+      //     sub: item.short_count,
+      //     url: `/listings/${item.permalink}`,
+      //   })),
+      // },
       {
         key: "Manufacturer",
         label: "Manufacturer",
         cards: manufactureBands.map((item) => ({
-          title: item.short_label,
-          sub: item.short_count,
+          title: item.short_label + " Caravans for Sale",
+          sub: `${item.caravan_count ?? 0}`,
           url: `/listings/${item.permalink}`,
         })),
       },
@@ -424,58 +439,13 @@ export default function SearchSection() {
 
   return (
     <div>
-      {/* <div className="container">
-        <div className="row align-items-center justify-content-center">
-          <div className="col-lg-12">
-            <div className="section-head top_head text-center">
-              <h1 className="divide-orange">
-                Browse New & Used Caravans For Sale
-              </h1>
-              <p>
-                CFS is dedicated to revolutionising your caravan buying experience with new & used off-road, luxury and touring caravans from major brands and smaller Australian manufacturers and dealers, helping you secure the best price and value.
-              </p>
-              <ul className="key_points list-unstyled">
-                <li><i className="bi bi-check2-square"></i> Verified Dealers</li>
-                <li><i className="bi bi-check2-square"></i> Private Sellers</li>
-                <li><i className="bi bi-check2-square"></i> New Listings Daily</li>
-              </ul>
-            </div>
-          </div>
-
-        </div>
-        <div className="row align-items-center justify-content-center">
-
-            <div className="col-lg-10">
-            <Link href="/caravan-enquiry-form/">
-              <div className="advertisement">
-                <Image
-                  className="hidden-xs"
-                  src="/images/static_index_dk_banner.jpg"
-                  alt="Everest Caravans - best caravan manufacturer in any off road category"
-                  width={1200}
-                  height={400}
-                  unoptimized
-                />
-                <Image
-                  className="hidden-lg hidden-md hidden-sm br-m-8"
-                  src="/images/static_index_mb_banner_3.jpg"
-                  alt="Everest Caravans - best caravan manufacturer in any off road category"
-                  width={600}
-                  height={400}
-                  unoptimized
-                />
-              </div>
-            </Link>
-            </div>
-
-          </div>
-      </div> */}
+      
       <div className="ad_banner">
         <a href="https://www.caravansforsale.com.au/listings/">
 
           <div className="item-image">
             <Image
-              src="/images/banner_top_dk.jpg"
+              src="/images/banner_top_dk.jpg?=1"
               className="hidden-xs"
               alt="off-road"
               width={2000}
@@ -484,7 +454,7 @@ export default function SearchSection() {
               unoptimized
             />
             <Image
-              src="/images/banner_top_mb.jpg"
+              src="/images/banner_top_mb.jpg?=1"
               className="hidden-lg hidden-md hidden-sm"
               alt="off-road"
               width={2000}
@@ -497,46 +467,19 @@ export default function SearchSection() {
         </a>
       </div>
       <div className="container">
-      <div className="row align-items-center justify-content-center">
-        <div className="col-lg-12">
-          <div className="section-head text-center">
-            <h1 className="divide-orange">Browse New &amp; Used Caravans For Sale</h1>
-            <p>Find your ideal caravan from thousands of new and used listings across Australia’s top brands, dealers, and private sellers. Search by type, condition, location, and budget.</p>
+        <div className="row align-items-center justify-content-center">
+          <div className="col-lg-12">
+            <div className="section-head text-center">
+              <h1 className="divide-orange">Browse New &amp; Used Caravans For Sale</h1>
+              <p>Find your ideal caravan from thousands of new and used listings across Australia’s top brands, dealers, and private sellers. Search by type, condition, location, and budget.</p>
+            </div>
           </div>
         </div>
-      </div>
       </div>
       <div className="search_requirement_area">
         <div className="container">
           <div className="row align-items-center justify-content-start">
-            {/* <div className="col-lg-6">
-              <div className="home-post_head">
-                <h2>Match Me a <span>Caravan</span></h2>
-                <p>Tell us what you want - we'll match you with the right dealers.</p>
-                <div className="flip-wrapper">
-                  {flips.map((item, index) => (
-                    <div
-                      key={index}
-                      className={`flip ${index === activeIndex ? 'active' : ''}`}
-                    >
-                      <div className="type_data">
-                        <span>Type: {item.type}</span>
-                        <span>Budget: {item.budget}</span>
-                      </div>
-
-                      <div className="requirement_msg">{item.msg}</div>
-                    </div>
-                  ))}
-                </div>
-
-              </div>
-
-              <div className="final_post_btn">
-                <Link href="/caravan-enquiry-form/" className="btn">
-                  Post Your Requirements
-                </Link>
-              </div>
-            </div> */}
+            
             <div className="col-lg-12">
               <div className="section-head search_home text-center">
 
@@ -779,8 +722,94 @@ export default function SearchSection() {
           </div>
         </div>
       </div>
+      {/* Caravans by State Section */}
+      <div className="caravans_by_state related-products services section-padding style-1 pt-0">
+        <div className="container">
+          <div className="row">
+            <div className="col">
+              <div className="section-head mb-2 py-2">
+                <h2>Browse Caravans for sale in Australia by State</h2>
+              </div>
+            </div>
+          </div>
+
+          <div className="content">
+            <div className="explore-state position-relative">
+              <Swiper
+                modules={[Navigation]}
+                navigation={{
+                  nextEl: ".state-manu-next",
+                  prevEl: ".state-manu-prev",
+                }}
+                //autoplay={{ delay: 3000 }}
+                spaceBetween={20}
+                slidesPerView={1}
+                breakpoints={{
+                  768: { slidesPerView: 2 },
+                  1024: { slidesPerView: 4 },
+                  1280: { slidesPerView: 4 },
+                }}
+              >
+
+                {stateBands.map((item, index) => {
+                  const key = item.state.toLowerCase().replace(/\s+/g, "-");
+
+                  const meta = stateMeta[key] || {};
+                  const stateCode = meta.code || "";
+                  const mapImage = meta.image || "";
+
+                  return (
+                    <SwiperSlide key={index}>
+
+                      <div className="service-box">
+                      <div className="sec_right">
+                          <span>
+                            <Image
+                              src={mapImage}
+                              alt={`${item.state} map`}
+                              width={100}
+                              height={100}
+                            />
+                          </span>
+                        </div>
+                        <div className="sec_left">
+                          <h5>
+                            {item.state}
+                          </h5>
+                          <div className="info">
+                            <div className="quick_linkss">
+                              {/* ✔ API BASED DISPLAY TEXT */}
+                              <p>{item.display_text}</p>
+
+                              <a className="view_all" href={`/listings${item.permalink}`}>
+                                View All Caravans for Sale in {stateCode} <i className="bi bi-chevron-right"></i>
+
+                              </a>
+                            </div>
+                          </div>
+                        </div>
+
+                        
+                      </div>
+
+                    </SwiperSlide>
+                  );
+                })}
+
+              </Swiper>
+
+              {/* Arrows */}
+              <div className="swiper-button-next state-manu-next" />
+              <div className="swiper-button-prev state-manu-prev" />
+            </div>
+          </div>
+        </div>
+      </div>
       <div className="quick_links_tabs">
         <div className="container">
+          <div className="section-head mb-2 py-2">
+            <h2>Caravans For Sale in Australia by Popular Search</h2>
+          </div>
           <div className="custom-tabs-wrap">
             {/* Tabs */}
             <div className="custom-tabs-top">
@@ -805,8 +834,8 @@ export default function SearchSection() {
               <div className="custom-card-grid">
                 {currentTab?.cards?.map((item, index) => (
                   <a href={item.url} className="custom-card" key={index}>
-                    <h4 className="custom-card-title">{item.title}</h4>
-                    <p className="custom-card-sub">{item.sub}</p>
+                    <h4 className="custom-card-title"><span className="count">{item.sub}</span> {item.title}</h4>
+                    {/* <p className="custom-card-sub">{item.sub}</p> */}
                   </a>
                 ))}
               </div>
