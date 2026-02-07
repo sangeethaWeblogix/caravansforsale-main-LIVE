@@ -11,7 +11,7 @@ import { ReactNode } from "react";
    description:
      "Browse thousands of used caravans for sale across Australia. Search by price, weight, length, type, brand or location from dealers and private sellers.",
    icons: { icon: "/favicon.ico" },
-   robots: "index, follow",
+   robots: "noindex, nofollow",
    verification: {
      google: "6tT6MT6AJgGromLaqvdnyyDQouJXq0VHS-7HC194xEo", // ✅ this auto generates <meta name="google-site-verification" />
    },

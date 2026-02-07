@@ -197,14 +197,14 @@ const PRICES = [
               <li>
                 <a href="/listings/"
                   onClick={() => {
-                    setNavigating(true); // start loader immediately
+                    // setNavigating(true); // start loader immediately
                     closeNav();
                   }}
                 >
                   All Listings
                 </a>
               </li>
-             <li>
+             {/* <li>
                 <a href="/used-all/"
                   onClick={() => {
                     setNavigating(true); // start loader immediately
@@ -213,10 +213,10 @@ const PRICES = [
                 >
                   Used Caravans
                 </a>
-              </li> 
+              </li>  */}
               <li>
                 <a href="/blog/" onClick={() => {
-                  setNavigating(true); // start loader immediately
+                  // setNavigating(true); // start loader immediately
                   closeNav();
                 }} >
                   Blog
@@ -224,7 +224,7 @@ const PRICES = [
               </li>
               <li>
                 <a href="/about-us/" onClick={() => {
-                  setNavigating(true); // start loader immediately
+                  // setNavigating(true); // start loader immediately
                   closeNav();
                 }} >
                   About
@@ -232,7 +232,7 @@ const PRICES = [
               </li>
               <li>
                 <a href="/contact/" onClick={() => {
-                  setNavigating(true); // start loader immediately
+                  // setNavigating(true); // start loader immediately
                   closeNav();
                 }}>
                   Contact
