@@ -2,7 +2,8 @@ name: Generate Static Pages
 
 on:
   schedule:
-    - cron: '0 2 * * *'  # Once daily at 2 AM UTC
+    # Run all caches daily at 2 AM UTC
+    - cron: '0 2 * * *'
   
   workflow_dispatch:
     inputs:
@@ -13,8 +14,22 @@ on:
         type: choice
         options:
           - all
-          - homepage-only
-          - sitemap-only
+          - homepage
+          - listings-home
+          - categories
+          - states
+          - regions
+          - makes
+          - weights
+          - prices
+          - conditions
+          - length
+          - sleep
+          - category-state
+          - category-region
+          - region-length
+          - state-used
+          - region-used
 
 jobs:
   generate-homepage:
@@ -22,8 +37,7 @@ jobs:
     timeout-minutes: 30
     if: |
       github.event.inputs.target == 'all' ||
-      github.event.inputs.target == 'homepage-only' ||
-      github.event.inputs.target == '' ||
+      github.event.inputs.target == 'homepage' ||
       github.event_name == 'schedule'
     
     steps:
@@ -47,14 +61,60 @@ jobs:
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          TARGET_PAGE: 'homepage'
+        run: node scripts/generate-static-pages.js
+
+  generate-listings:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    if: |
+      github.event.inputs.target == 'all' ||
+      github.event.inputs.target == 'listings-home' ||
+      github.event_name == 'schedule'
+    
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+      
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      
+      - name: 📦 Install dependencies
+        run: |
+          npm install node-fetch@2
+          npm install puppeteer
+      
+      - name: 📋 Generate Listings Home
+        env:
+          VERCEL_BASE_URL: ${{ secrets.VERCEL_BASE_URL }}
+          PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          TARGET_PAGE: 'listings'
         run: node scripts/generate-static-pages.js
 
   generate-sitemaps:
     runs-on: ubuntu-latest
-    timeout-minutes: 360  # 6 hours max
+    timeout-minutes: 360
     if: |
       github.event.inputs.target == 'all' ||
-      github.event.inputs.target == 'sitemap-only' ||
+      github.event.inputs.target == 'categories' ||
+      github.event.inputs.target == 'states' ||
+      github.event.inputs.target == 'regions' ||
+      github.event.inputs.target == 'makes' ||
+      github.event.inputs.target == 'weights' ||
+      github.event.inputs.target == 'prices' ||
+      github.event.inputs.target == 'conditions' ||
+      github.event.inputs.target == 'length' ||
+      github.event.inputs.target == 'sleep' ||
+      github.event.inputs.target == 'category-state' ||
+      github.event.inputs.target == 'category-region' ||
+      github.event.inputs.target == 'region-length' ||
+      github.event.inputs.target == 'state-used' ||
+      github.event.inputs.target == 'region-used' ||
       github.event_name == 'schedule'
     
     steps:
@@ -78,9 +138,10 @@ jobs:
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          TARGET_SITEMAP: ${{ github.event.inputs.target }}
         run: node scripts/generate-sitemap-cache.js
       
       - name: 📊 Summary
         if: always()
         run: |
-          echo "::notice::Check logs above for generation statistics"
+          echo "::notice::Generation completed. Check logs for statistics."
