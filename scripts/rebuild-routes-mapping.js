@@ -56,16 +56,10 @@ async function uploadToKV(key, value) {
 }
 
 function reconstructPathFromKey(kvKey) {
-  // Remove variant suffix: "victoria-v1" -> "victoria"
+  // Remove variant suffix
   const baseKey = kvKey.replace(/-v\d+$/, '');
   
-  // Convert hyphens back to slashes for multi-part paths
-  // But need to be smart about it:
-  // "victoria" -> "/listings/victoria/"
-  // "off-road-category" -> "/listings/off-road-category/"
-  // "off-road-category-victoria" -> "/listings/off-road-category/victoria/"
-  
-  // Known categories (add more as needed)
+  // Known categories
   const categories = [
     'family-category',
     'hybrid-category', 
@@ -75,20 +69,51 @@ function reconstructPathFromKey(kvKey) {
     'touring-category'
   ];
   
-  // Check if key starts with a known category
+  // Handle state patterns: "victoria-state" -> "/listings/victoria/"
+  if (baseKey.endsWith('-state') && !baseKey.includes('-region')) {
+    const stateName = baseKey.replace(/-state$/, '');
+    return `/listings/${stateName.replace(/-/g, '/')}/`;
+  }
+  
+  // Handle state-region patterns: "victoria-state-melbourne-region"
+  const stateRegionMatch = baseKey.match(/^(.+)-state-(.+)-region$/);
+  if (stateRegionMatch) {
+    const stateName = stateRegionMatch[1];
+    const regionName = stateRegionMatch[2];
+    return `/listings/${stateName.replace(/-/g, '/')}/${regionName.replace(/-/g, '/')}/`;
+  }
+  
+  // Handle categories (exact match)
+  if (categories.includes(baseKey)) {
+    return `/listings/${baseKey}/`;
+  }
+  
+  // Handle category combinations (but not if it ends with "-category")
   for (const category of categories) {
     if (baseKey.startsWith(category + '-')) {
-      // This is category + something else
       const remainder = baseKey.substring(category.length + 1);
+      
+      // Check if remainder is a state
+      if (remainder.endsWith('-state')) {
+        const stateName = remainder.replace(/-state$/, '');
+        return `/listings/${category}/${stateName.replace(/-/g, '/')}/`;
+      }
+      
+      // Otherwise it's a region or other combo
       return `/listings/${category}/${remainder.replace(/-/g, '/')}/`;
-    } else if (baseKey === category) {
-      // Just the category alone
-      return `/listings/${category}/`;
     }
   }
   
-  // Not a category combination, so it's a simple state/region/make/etc
-  // Just replace hyphens with slashes (but this might not always be right)
+  // Handle special patterns
+  if (baseKey === 'home' || baseKey === 'listings-home') {
+    return `/listings/`;
+  }
+  
+  if (baseKey === 'used-condition') {
+    return `/listings/used/`;
+  }
+  
+  // Default: simple path conversion
   return `/listings/${baseKey.replace(/-/g, '/')}/`;
 }
 
@@ -101,14 +126,15 @@ async function rebuildRoutesMapping() {
   
   console.log('📋 Analyzing keys...');
   
-  // Filter variant keys only (ending with -v1, -v2, etc.)
+  // Filter variant keys (exclude bad "listings-*" keys)
   const variantKeys = allKeys
     .map(k => k.name)
     .filter(name => name.match(/-v\d+$/))
-    .filter(name => name !== 'routes-mapping' && name !== 'sitemap-routes-mapping');
+    .filter(name => name !== 'routes-mapping' && name !== 'sitemap-routes-mapping')
+    .filter(name => !name.startsWith('listings-')); // ✅ Exclude incorrectly prefixed keys
   
-  console.log(`   ✅ Found ${variantKeys.length} variant keys`);
-  console.log(`   ℹ️  Skipped ${allKeys.length - variantKeys.length} non-variant keys\n`);
+  console.log(`   ✅ Found ${variantKeys.length} valid variant keys`);
+  console.log(`   ℹ️  Skipped ${allKeys.length - variantKeys.length} non-variant/invalid keys\n`);
   
   if (variantKeys.length === 0) {
     console.error('❌ No variant keys found! Nothing to rebuild.');
@@ -117,15 +143,16 @@ async function rebuildRoutesMapping() {
   
   // Show some samples
   console.log('📝 Sample keys found:');
-  variantKeys.slice(0, 10).forEach(key => {
-    console.log(`   - ${key}`);
+  variantKeys.slice(0, 15).forEach(key => {
+    const path = reconstructPathFromKey(key);
+    console.log(`   ${key} → ${path}`);
   });
-  if (variantKeys.length > 10) {
-    console.log(`   ... and ${variantKeys.length - 10} more\n`);
+  if (variantKeys.length > 15) {
+    console.log(`   ... and ${variantKeys.length - 15} more\n`);
   }
   
   // Group by path
-  console.log('🔨 Building routes mapping...');
+  console.log('\n🔨 Building routes mapping...');
   const routesMapping = {};
   
   for (const kvKey of variantKeys) {
@@ -152,32 +179,19 @@ async function rebuildRoutesMapping() {
   // Display summary by type
   console.log('📊 Breakdown by path type:');
   const categories = Object.keys(routesMapping).filter(p => p.match(/\/listings\/[^/]+-category\/$/));
-  const states = Object.keys(routesMapping).filter(p => !p.includes('-category') && p.split('/').length === 4);
-  const combinations = Object.keys(routesMapping).filter(p => p.split('/').length > 4);
+  const states = Object.keys(routesMapping).filter(p => p.match(/\/listings\/[^/]+\/state\/$/));
+  const stateRegions = Object.keys(routesMapping).filter(p => p.match(/\/listings\/[^/]+\/state\/[^/]+\/region\/$/));
+  const other = Object.keys(routesMapping).filter(p => 
+    !categories.includes(p) && !states.includes(p) && !stateRegions.includes(p)
+  );
   
   console.log(`   Categories: ${categories.length} paths`);
-  console.log(`   States/Regions/Makes: ${states.length} paths`);
-  console.log(`   Combinations: ${combinations.length} paths\n`);
-  
-  // Show sample of each type
-  console.log('📝 Sample paths created:');
-  console.log('\n   Categories:');
-  categories.slice(0, 3).forEach(path => {
-    console.log(`   ${path} → ${routesMapping[path].length} variants`);
-  });
-  
-  console.log('\n   States/Regions:');
-  states.slice(0, 5).forEach(path => {
-    console.log(`   ${path} → ${routesMapping[path].length} variants`);
-  });
-  
-  console.log('\n   Combinations:');
-  combinations.slice(0, 5).forEach(path => {
-    console.log(`   ${path} → ${routesMapping[path].length} variants`);
-  });
+  console.log(`   States: ${states.length} paths`);
+  console.log(`   State+Regions: ${stateRegions.length} paths`);
+  console.log(`   Other (makes/prices/etc): ${other.length} paths\n`);
   
   // Upload to KV
-  console.log('\n' + '='.repeat(70));
+  console.log('=' .repeat(70));
   console.log('⬆️  Uploading routes mapping to KV...');
   
   const mappingJson = JSON.stringify(routesMapping, null, 2);
