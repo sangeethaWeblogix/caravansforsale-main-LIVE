@@ -371,7 +371,7 @@ export default function HomePage() {
                     <div className="row align-items-center">
                       <div className="col-lg-6">
                         <div className="content">
-                          <h2 className="title">Sell Your Caravan Today!</h2>
+                          <h3 className="title">Sell Your Caravan Today!</h3>
 
                           <p className="desc">
                             Reach thousands of potential buyers in minutes.

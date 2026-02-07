@@ -331,7 +331,7 @@
   position: relative;
 }
 
-.caravans_by_state .home-post_head h2 {
+.caravans_by_state .home-post_head h3 {
     color: #000;
     text-transform: uppercase;
     margin-bottom: 8px;
@@ -340,7 +340,7 @@
     line-height: 33px;
 }
 
-.home-post_head h2 span {
+.home-post_head h3 span {
   color: #ec7200;
 }
 
@@ -617,7 +617,7 @@
     text-align: center;
 }
 
-.caravans_by_state .service-box h5 {
+.caravans_by_state .service-box h3 {
   font-weight: 600;
   margin-bottom: 10px;
   font-size: 19px;
