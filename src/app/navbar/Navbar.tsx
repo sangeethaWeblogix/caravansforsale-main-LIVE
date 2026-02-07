@@ -197,7 +197,7 @@ const PRICES = [
               <li>
                 <a href="/listings/"
                   onClick={() => {
-                    setNavigating(true); // start loader immediately
+                     
                     closeNav();
                   }}
                 >
