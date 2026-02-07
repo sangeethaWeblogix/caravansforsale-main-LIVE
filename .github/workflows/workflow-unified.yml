@@ -1,0 +1,187 @@
+name: Generate Cache (Unified)
+
+on:
+  schedule:
+    # Run daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'What to generate'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - priority
+          - sitemap
+          - categories
+          - states
+          - regions
+          - makes
+          - weights
+          - prices
+          - conditions
+          - length
+          - sleep
+          - category-state
+          - category-region
+          - region-length
+          - state-used
+          - region-used
+
+jobs:
+  # ==========================================
+  # PRIORITY PAGES (Homepage + Listings)
+  # ==========================================
+  generate-priority:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    if: |
+      (github.event_name == 'schedule') ||
+      (github.event_name == 'workflow_dispatch' && 
+       (github.event.inputs.target == 'all' || github.event.inputs.target == 'priority'))
+    
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+      
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      
+      - name: 📦 Install dependencies
+        run: |
+          npm install node-fetch@2
+          npm install puppeteer
+          npm install xml2js
+      
+      - name: 🎯 Generate Priority Pages
+        env:
+          VERCEL_BASE_URL: ${{ secrets.VERCEL_BASE_URL }}
+          PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          TARGET: 'priority'
+          USE_PUPPETEER: 'true'
+        run: node scripts/generate-cache-unified.js
+      
+      - name: ✅ Complete
+        if: success()
+        run: echo "::notice::✅ Priority pages generated successfully!"
+
+  # ==========================================
+  # ALL SITEMAPS (Parallel Matrix)
+  # ==========================================
+  generate-sitemaps:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    if: |
+      (github.event_name == 'schedule') ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.target == 'all')
+    
+    strategy:
+      matrix:
+        sitemap: 
+          - categories
+          - states
+          - regions
+          - makes
+          - weights
+          - prices
+          - conditions
+          - length
+          - sleep
+          - category-state
+          - category-region
+          - region-length
+          - state-used
+          - region-used
+      fail-fast: false
+      max-parallel: 14  # Run all in parallel
+    
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+      
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      
+      - name: 📦 Install dependencies
+        run: |
+          npm install node-fetch@2
+          npm install xml2js
+      
+      - name: 🗺️ Generate ${{ matrix.sitemap }}
+        env:
+          VERCEL_BASE_URL: ${{ secrets.VERCEL_BASE_URL }}
+          PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          TARGET: ${{ matrix.sitemap }}
+          USE_PUPPETEER: 'false'
+        run: node scripts/generate-cache-unified.js
+      
+      - name: ✅ ${{ matrix.sitemap }} Complete
+        if: success()
+        run: echo "::notice::✅ ${{ matrix.sitemap }} completed!"
+
+  # ==========================================
+  # INDIVIDUAL MANUAL RUNS
+  # ==========================================
+  generate-individual:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    if: |
+      github.event_name == 'workflow_dispatch' && 
+      github.event.inputs.target != 'all' &&
+      github.event.inputs.target != 'priority'
+    
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+      
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      
+      - name: 📦 Install dependencies
+        run: |
+          npm install node-fetch@2
+          npm install xml2js
+      
+      - name: 🎯 Generate ${{ github.event.inputs.target }}
+        env:
+          VERCEL_BASE_URL: ${{ secrets.VERCEL_BASE_URL }}
+          PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          TARGET: ${{ github.event.inputs.target }}
+          USE_PUPPETEER: 'false'
+        run: node scripts/generate-cache-unified.js
+      
+      - name: ✅ Complete
+        if: success()
+        run: echo "::notice::✅ ${{ github.event.inputs.target }} completed!"
+
+  # ==========================================
+  # SUMMARY
+  # ==========================================
+  summary:
+    runs-on: ubuntu-latest
+    needs: [generate-priority, generate-sitemaps]
+    if: always() && github.event_name == 'schedule'
+    
+    steps:
+      - name: 📊 Summary
+        run: |
+          echo "::notice::✅ All cache generation jobs completed!"
+          echo "::notice::Check individual job logs for statistics"
