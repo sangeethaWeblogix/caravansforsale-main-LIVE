@@ -53,6 +53,10 @@ const nextConfig: NextConfig = {
   experimental: {
     // ✅ Built-in critical CSS inlining
     optimizeCss: true,
+   staleTimes: {   
+       dynamic: 0,
+      static: 0,
+    },
   },
 
   // compiler: {
