@@ -1,4 +1,5 @@
 /* eslint-disable */
+const puppeteer = require('puppeteer');
 const fetch = require('node-fetch');
 
 // Environment variables (from GitHub secrets)
@@ -16,12 +17,14 @@ const STATIC_PAGES = [
   { 
     path: '/', 
     slug: 'homepage',
-    variants: 1  // Only 1 variant for homepage
+    variants: 1,  // Only 1 variant for homepage
+    waitForCategories: false  // Homepage doesn't need categories
   },
   { 
     path: '/listings/', 
     slug: 'listings-home',
-    variants: LISTINGS_VARIANTS  // 5 variants for listings
+    variants: LISTINGS_VARIANTS,  // 5 variants for listings
+    waitForCategories: true  // Wait for categories to load
   },
 ];
 
@@ -41,7 +44,7 @@ async function uploadToKV(key, value) {
   return result.success;
 }
 
-async function generatePageVariant(page, variantNumber) {
+async function generatePageVariant(page, variantNumber, browser) {
   // Build URL with shuffle_seed for listings variants
   let url = `${VERCEL_BASE_URL}${page.path}`;
   if (page.variants > 1) {
@@ -55,22 +58,69 @@ async function generatePageVariant(page, variantNumber) {
   console.log(`   KV Key: ${kvKey}`);
   
   try {
-    const response = await fetch(url, {
-      headers: {
-        'User-Agent': 'StaticGenerator/1.0',
-        'Accept': 'text/html'
-      },
-      timeout: 30000
+    // Create new page in the browser
+    const browserPage = await browser.newPage();
+    
+    // Set viewport
+    await browserPage.setViewport({ width: 1920, height: 1080 });
+    
+    console.log(`   🌐 Loading page...`);
+    
+    // Navigate to the page
+    await browserPage.goto(url, { 
+      waitUntil: 'networkidle0',  // Wait until network is idle
+      timeout: 45000  // 45 second timeout
     });
     
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    // If this page needs categories, wait for them to load
+    if (page.waitForCategories) {
+      console.log(`   ⏳ Waiting for categories to load...`);
+      
+      try {
+        // Wait for the category data to be populated in the page
+        await browserPage.waitForFunction(() => {
+          // Look for the script tag that contains the data
+          const scripts = Array.from(document.querySelectorAll('script'));
+          for (const script of scripts) {
+            if (script.textContent.includes('"all_categories"')) {
+              // Check if all_categories is not an empty array
+              const match = script.textContent.match(/"all_categories":\s*\[([^\]]*)\]/);
+              if (match && match[1].trim().length > 10) {
+                return true;
+              }
+            }
+          }
+          return false;
+        }, { 
+          timeout: 15000  // 15 second timeout for categories
+        });
+        
+        console.log(`   ✅ Categories loaded successfully!`);
+      } catch (waitError) {
+        console.log(`   ⚠️  Timeout waiting for categories, continuing anyway...`);
+      }
     }
     
-    let html = await response.text();
+    // Get the fully rendered HTML
+    let html = await browserPage.content();
+    
+    // Close the page
+    await browserPage.close();
     
     if (!html.includes('</html>')) {
       throw new Error('Invalid HTML response (no closing </html> tag)');
+    }
+    
+    // Verify categories are present if needed
+    if (page.waitForCategories) {
+      const hasCategories = html.includes('"all_categories"') && 
+                           !html.includes('"all_categories":[]');
+      
+      if (!hasCategories) {
+        console.log(`   ⚠️  Warning: Categories data may not be fully loaded`);
+      } else {
+        console.log(`   ✅ Verified: Categories data present in HTML`);
+      }
     }
     
     const canonicalUrl = `${PRODUCTION_DOMAIN}${page.path}`;
@@ -84,11 +134,11 @@ async function generatePageVariant(page, variantNumber) {
     html = html.replace('</head>', `${seoTags}\n</head>`);
     html = html.replace(/<meta\s+name="robots"\s+content="noindex[^"]*"\s*\/?>/gi, '');
     
-    console.log(`   ⬆️  Uploading to KV...`);
+    console.log(`   ⬆️  Uploading to KV (${Math.round(html.length / 1024)}KB)...`);
     const uploaded = await uploadToKV(kvKey, html);
     
     if (uploaded) {
-      console.log(`   ✅ Success! (${Math.round(html.length / 1024)}KB)`);
+      console.log(`   ✅ Success!`);
       return {
         path: page.path,
         slug: kvKey,
@@ -113,7 +163,7 @@ async function generatePageVariant(page, variantNumber) {
 }
 
 async function generateStaticPages() {
-  console.log('🚀 Starting static page generation...');
+  console.log('🚀 Starting static page generation with Puppeteer...');
   console.log(`📍 Vercel URL: ${VERCEL_BASE_URL}`);
   console.log(`📍 Production: ${PRODUCTION_DOMAIN}`);
   console.log(`🔢 Listings variants: ${LISTINGS_VARIANTS}\n`);
@@ -127,21 +177,42 @@ async function generateStaticPages() {
   
   const startTime = Date.now();
   
-  // Generate all pages and their variants
-  for (const page of STATIC_PAGES) {
-    for (let variant = 1; variant <= page.variants; variant++) {
-      const result = await generatePageVariant(page, variant);
-      
-      if (result.status === 'success') {
-        results.success++;
-        results.pages.push(result);
-      } else {
-        results.failed++;
-        results.errors.push(result);
+  // Launch browser once for all pages
+  console.log('🌐 Launching headless browser...');
+  const browser = await puppeteer.launch({
+    headless: 'new',
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-gpu'
+    ]
+  });
+  
+  console.log('✅ Browser launched!\n');
+  
+  try {
+    // Generate all pages and their variants
+    for (const page of STATIC_PAGES) {
+      for (let variant = 1; variant <= page.variants; variant++) {
+        const result = await generatePageVariant(page, variant, browser);
+        
+        if (result.status === 'success') {
+          results.success++;
+          results.pages.push(result);
+        } else {
+          results.failed++;
+          results.errors.push(result);
+        }
+        
+        // Short delay between requests
+        await new Promise(resolve => setTimeout(resolve, 1000));
       }
-      
-      await new Promise(resolve => setTimeout(resolve, 500));
     }
+  } finally {
+    // Always close the browser
+    console.log('\n🔒 Closing browser...');
+    await browser.close();
   }
   
   // Create routes mapping
