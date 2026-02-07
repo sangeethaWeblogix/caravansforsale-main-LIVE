@@ -12,14 +12,29 @@ const CF_ACCOUNT_ID = process.env.CF_ACCOUNT_ID;
 const CF_KV_NAMESPACE_ID = process.env.CF_KV_NAMESPACE_ID;
 const CF_API_TOKEN = process.env.CF_API_TOKEN;
 
-// ✅ TEST VERSION: Only categories sitemap
+// ✅ ALL SITEMAP URLS
 const SITEMAP_URLS = [
   '/categories-sitemap.xml',
+  '/states-sitemap.xml',
+  '/regions-sitemap.xml',
+  '/makes-sitemap.xml',
+  '/weights-sitemap.xml',
+  '/prices-sitemap.xml',
+  '/conditions-sitemap.xml',
+  '/length-sitemap.xml',
+  '/sleep-sitemap.xml',
+  '/category-state-sitemap.xml',
+  '/category-region-sitemap.xml',
+  '/region-length-sitemap.xml',
+  '/state-used-sitemap.xml',
+  '/region-used-sitemap.xml',
 ];
 
 // Number of variants per URL
 const VARIANTS_PER_URL = 5;
-const BATCH_SIZE = 3; // Small batch for testing
+const BATCH_SIZE = 5; // Process 5 URLs at a time
+const DELAY_BETWEEN_VARIANTS = 300; // 300ms between variants
+const DELAY_BETWEEN_URLS = 800; // 800ms between URLs
 
 async function uploadToKV(key, value) {
   const url = `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/storage/kv/namespaces/${CF_KV_NAMESPACE_ID}/values/${key}`;
@@ -63,7 +78,7 @@ async function fetchSitemapUrls(sitemapPath) {
         if (urlEntry.loc && urlEntry.loc[0]) {
           const fullUrl = urlEntry.loc[0];
           
-          // ✅ FIX: Ensure path starts with / and ends with /
+          // ✅ Ensure path starts with / and ends with /
           let urlPath = fullUrl.replace(PRODUCTION_DOMAIN, '');
           
           // Ensure leading slash
@@ -86,11 +101,17 @@ async function fetchSitemapUrls(sitemapPath) {
     
     console.log(`   ✅ Found ${urls.length} URLs in ${sitemapPath}`);
     
-    if (urls.length > 0) {
+    if (urls.length > 0 && urls.length <= 10) {
       console.log(`   📋 URLs:`);
       urls.forEach(u => {
         console.log(`      - ${u.path}`);
       });
+    } else if (urls.length > 10) {
+      console.log(`   📋 First 5 URLs:`);
+      urls.slice(0, 5).forEach(u => {
+        console.log(`      - ${u.path}`);
+      });
+      console.log(`      ... and ${urls.length - 5} more`);
     }
     
     return urls;
@@ -105,7 +126,7 @@ async function generateVariantForUrl(urlData, variantNumber) {
   console.log(`\n📄 Variant ${variantNumber}: ${path}`);
   
   try {
-    // ✅ FIX: Ensure proper URL construction
+    // ✅ Ensure proper URL construction
     const baseUrl = VERCEL_BASE_URL.replace(/\/$/, '');
     const urlPath = path.startsWith('/') ? path : `/${path}`;
     const vercelUrl = `${baseUrl}${urlPath}?shuffle_seed=${variantNumber}`;
@@ -130,7 +151,7 @@ async function generateVariantForUrl(urlData, variantNumber) {
       throw new Error('Invalid HTML response');
     }
     
-    // ✅ FIXED: Check for BOTH JSON format AND HTML meta tag format
+    // ✅ Check for BOTH JSON format AND HTML meta tag format
     const hasJsonIndexFollow = html.includes('"index":"index"') && html.includes('"follow":"follow"');
     const hasMetaIndexFollow = html.includes('content="index, follow"') || html.includes("content='index, follow'");
     const hasNoIndex = html.includes('noindex') || html.includes('"index":"noindex"');
@@ -159,7 +180,7 @@ async function generateVariantForUrl(urlData, variantNumber) {
     html = html.replace('</head>', `${seoTags}\n</head>`);
     html = html.replace(/<meta\s+name="robots"\s+content="noindex[^"]*"\s*\/?>/gi, '');
     
-    // Create KV key - FIXED to handle all path formats
+    // Create KV key - handle all path formats
     let pathSlug = path;
     
     // Remove /listings/ prefix if present
@@ -178,11 +199,6 @@ async function generateVariantForUrl(urlData, variantNumber) {
     
     const kvKey = `${pathSlug}-v${variantNumber}`;
     
-    console.log(`   🔍 Path processing:`);
-    console.log(`      Original: ${path}`);
-    console.log(`      Processed: ${pathSlug}`);
-    console.log(`      Final KV key: ${kvKey}`);
-    
     console.log(`   💾 KV Key: ${kvKey}`);
     console.log(`   📦 Size: ${Math.round(html.length / 1024)}KB`);
     console.log(`   ⬆️  Uploading to KV...`);
@@ -195,7 +211,8 @@ async function generateVariantForUrl(urlData, variantNumber) {
         path: path,
         variant: variantNumber,
         kvKey: kvKey,
-        size: Math.round(html.length / 1024) + 'KB'
+        size: Math.round(html.length / 1024) + 'KB',
+        sourceSitemap: urlData.sourceSitemap
       };
     } else {
       throw new Error('KV upload returned false');
@@ -211,29 +228,39 @@ async function processBatch(urlsData, startIdx, batchSize) {
   const batch = urlsData.slice(startIdx, startIdx + batchSize);
   const results = [];
   
-  console.log(`\n🔄 Processing batch: URLs ${startIdx + 1}-${Math.min(startIdx + batchSize, urlsData.length)}`);
+  console.log(`\n${'='.repeat(70)}`);
+  console.log(`🔄 Processing batch: URLs ${startIdx + 1}-${Math.min(startIdx + batchSize, urlsData.length)} of ${urlsData.length}`);
+  console.log(`${'='.repeat(70)}`);
   
   for (const urlData of batch) {
+    console.log(`\n📍 Processing: ${urlData.path}`);
+    console.log(`   From: ${urlData.sourceSitemap}`);
+    
     for (let variant = 1; variant <= VARIANTS_PER_URL; variant++) {
       const result = await generateVariantForUrl(urlData, variant);
       if (result) {
         results.push(result);
       }
       
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Delay between variants
+      if (variant < VARIANTS_PER_URL) {
+        await new Promise(resolve => setTimeout(resolve, DELAY_BETWEEN_VARIANTS));
+      }
     }
     
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    // Delay between URLs
+    await new Promise(resolve => setTimeout(resolve, DELAY_BETWEEN_URLS));
   }
   
   return results;
 }
 
 async function generateSitemapCache() {
-  console.log('🚀 TEST RUN: Categories Sitemap Only');
+  console.log('🚀 Starting Sitemap Cache Generation');
   console.log(`📍 Vercel URL: ${VERCEL_BASE_URL}`);
   console.log(`📍 Production: ${PRODUCTION_DOMAIN}`);
-  console.log(`🔢 Variants per URL: ${VARIANTS_PER_URL}\n`);
+  console.log(`🔢 Variants per URL: ${VARIANTS_PER_URL}`);
+  console.log(`📑 Sitemaps to process: ${SITEMAP_URLS.length}\n`);
   
   const results = {
     success: 0,
@@ -246,6 +273,11 @@ async function generateSitemapCache() {
   const startTime = Date.now();
   const routesMapping = {};
   
+  // Step 1: Fetch all URLs from all sitemaps
+  console.log('='.repeat(70));
+  console.log('📥 STEP 1: Fetching all sitemaps');
+  console.log('='.repeat(70));
+  
   let allUrlsData = [];
   for (const sitemapPath of SITEMAP_URLS) {
     const urlsFromSitemap = await fetchSitemapUrls(sitemapPath);
@@ -253,19 +285,31 @@ async function generateSitemapCache() {
     results.sitemapStats[sitemapPath] = {
       totalUrls: urlsFromSitemap.length,
       succeeded: 0,
-      failed: 0
+      failed: 0,
+      skipped: 0
     };
     
     allUrlsData = allUrlsData.concat(urlsFromSitemap.map(u => ({
       ...u,
       sourceSitemap: sitemapPath
     })));
+    
+    // Small delay between sitemap fetches
+    await new Promise(resolve => setTimeout(resolve, 500));
   }
   
-  console.log(`\n${'='.repeat(60)}`);
-  console.log(`📊 Total URLs to process: ${allUrlsData.length}`);
+  console.log(`\n${'='.repeat(70)}`);
+  console.log(`📊 SUMMARY: All Sitemaps Fetched`);
+  console.log(`${'='.repeat(70)}`);
+  console.log(`📄 Total URLs to process: ${allUrlsData.length}`);
   console.log(`📦 Total variants to generate: ${allUrlsData.length * VARIANTS_PER_URL}`);
-  console.log(`${'='.repeat(60)}\n`);
+  console.log(`⏱️  Estimated time: ${Math.round(allUrlsData.length * VARIANTS_PER_URL * 2 / 60)} minutes`);
+  console.log(`${'='.repeat(70)}\n`);
+  
+  // Step 2: Generate variants for all URLs
+  console.log('='.repeat(70));
+  console.log('🔨 STEP 2: Generating variants');
+  console.log('='.repeat(70));
   
   for (let i = 0; i < allUrlsData.length; i += BATCH_SIZE) {
     const batchResults = await processBatch(allUrlsData, i, BATCH_SIZE);
@@ -280,24 +324,51 @@ async function generateSitemapCache() {
           results.sitemapStats[urlData.sourceSitemap].succeeded++;
         }
         
+        // Build routes mapping
         if (!routesMapping[result.path]) {
           routesMapping[result.path] = [];
         }
         routesMapping[result.path].push(result.kvKey);
       } else {
         results.failed++;
+        
+        // Track failures in sitemap stats
+        const urlData = allUrlsData[Math.floor((i + results.pages.length + results.failed - 1) / VARIANTS_PER_URL)];
+        if (urlData && urlData.sourceSitemap) {
+          results.sitemapStats[urlData.sourceSitemap].failed++;
+        }
       }
     }
     
+    // Progress update
     const progress = Math.min(i + BATCH_SIZE, allUrlsData.length);
-    console.log(`\n📈 Progress: ${progress}/${allUrlsData.length} URLs`);
-    console.log(`   ✅ Succeeded: ${results.success} variants`);
-    console.log(`   ❌ Failed: ${results.failed} variants`);
+    const percentComplete = Math.round((progress / allUrlsData.length) * 100);
+    
+    console.log(`\n${'='.repeat(70)}`);
+    console.log(`📈 PROGRESS UPDATE`);
+    console.log(`${'='.repeat(70)}`);
+    console.log(`📊 URLs processed: ${progress}/${allUrlsData.length} (${percentComplete}%)`);
+    console.log(`✅ Variants succeeded: ${results.success}`);
+    console.log(`❌ Variants failed: ${results.failed}`);
+    console.log(`⏱️  Elapsed time: ${Math.round((Date.now() - startTime) / 1000 / 60)} minutes`);
+    console.log(`${'='.repeat(70)}`);
   }
   
-  console.log('\n📋 Creating sitemap routes mapping...');
-  console.log('📝 Routes mapping to upload:');
-  console.log(JSON.stringify(routesMapping, null, 2));
+  // Step 3: Upload routes mapping
+  console.log('\n\n' + '='.repeat(70));
+  console.log('📋 STEP 3: Creating and uploading routes mapping');
+  console.log('='.repeat(70));
+  
+  console.log(`\n📊 Total paths mapped: ${Object.keys(routesMapping).length}`);
+  console.log(`\n📝 Sample routes mapping (first 5):`);
+  
+  const samplePaths = Object.keys(routesMapping).slice(0, 5);
+  samplePaths.forEach(path => {
+    console.log(`\n${path}:`);
+    routesMapping[path].forEach(key => console.log(`  - ${key}`));
+  });
+  
+  console.log(`\n⬆️  Uploading routes mapping to KV...`);
   
   const mappingJson = JSON.stringify(routesMapping, null, 2);
   const mappingUploaded = await uploadToKV('sitemap-routes-mapping', mappingJson);
@@ -310,26 +381,49 @@ async function generateSitemapCache() {
     console.error('❌ Sitemap routes mapping upload failed!');
   }
   
+  // Final summary
   const duration = Math.round((Date.now() - startTime) / 1000);
   const minutes = Math.floor(duration / 60);
   const seconds = duration % 60;
   
-  console.log('\n' + '='.repeat(60));
-  console.log('📊 GENERATION COMPLETE');
-  console.log('='.repeat(60));
-  console.log(`✅ Success: ${results.success} variants`);
-  console.log(`❌ Failed: ${results.failed} variants`);
-  console.log(`⏱️  Duration: ${minutes}m ${seconds}s`);
+  console.log('\n\n' + '='.repeat(70));
+  console.log('📊 FINAL SUMMARY');
+  console.log('='.repeat(70));
+  console.log(`✅ Total variants succeeded: ${results.success}`);
+  console.log(`❌ Total variants failed: ${results.failed}`);
+  console.log(`📄 Total unique paths: ${Object.keys(routesMapping).length}`);
+  console.log(`⏱️  Total duration: ${minutes}m ${seconds}s`);
+  console.log(`📦 Average speed: ${Math.round(duration / allUrlsData.length * 10) / 10}s per URL`);
   
-  console.log('\n✨ Done!\n');
+  // Per-sitemap breakdown
+  console.log('\n📊 Per-Sitemap Breakdown:');
+  console.log('-'.repeat(70));
+  
+  for (const [sitemap, stats] of Object.entries(results.sitemapStats)) {
+    const successRate = stats.totalUrls > 0 
+      ? Math.round((stats.succeeded / (stats.totalUrls * VARIANTS_PER_URL)) * 100) 
+      : 0;
+    
+    console.log(`\n${sitemap}`);
+    console.log(`  Total URLs: ${stats.totalUrls}`);
+    console.log(`  Succeeded: ${stats.succeeded} variants (${successRate}%)`);
+    console.log(`  Failed: ${stats.failed} variants`);
+  }
+  
+  console.log('\n' + '='.repeat(70));
+  console.log('✨ Generation Complete!');
+  console.log('='.repeat(70));
+  console.log('\n');
   
   return results;
 }
 
+// Run if called directly
 if (require.main === module) {
   generateSitemapCache()
     .then((results) => {
       if (results.failed > results.success) {
+        console.error('\n⚠️  More failures than successes. Exiting with error code.');
         process.exit(1);
       }
       process.exit(0);

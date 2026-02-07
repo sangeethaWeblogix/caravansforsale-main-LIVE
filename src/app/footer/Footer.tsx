@@ -43,7 +43,7 @@ Marketplace Network makes no representations or warranties regarding the accurac
 
               {/* About Us Column */}
               <div className="col-lg-4 col-sm-12">
-                <h6 className="foot-title foot_xs">About Us</h6>
+                <h6 className="foot-title foot_xs">Company</h6>
                 <ul className="menu footer_xs">
                   <li>
                     <Link href="/listings/">For Sale</Link>

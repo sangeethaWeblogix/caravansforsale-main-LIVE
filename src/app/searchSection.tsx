@@ -497,7 +497,7 @@ export default function SearchSection() {
                       aria-controls="pills-find"
                       aria-selected="true"
                     >
-                      <span>Search Category</span>
+                      <span>Caravan Type</span>
                     </button>
                   </li>
                   <li className="nav-item" role="presentation">
@@ -773,9 +773,9 @@ export default function SearchSection() {
                           </span>
                         </div>
                         <div className="sec_left">
-                          <h5>
+                          <h3>
                             {item.state}
-                          </h5>
+                          </h3>
                           <div className="info">
                             <div className="quick_linkss">
                               {/* ✔ API BASED DISPLAY TEXT */}
@@ -808,7 +808,7 @@ export default function SearchSection() {
       <div className="quick_links_tabs">
         <div className="container">
           <div className="section-head mb-2 py-2">
-            <h2>Caravans For Sale in Australia by Popular Search</h2>
+            <h2>Popular Caravan Searches Across Australia</h2>
           </div>
           <div className="custom-tabs-wrap">
             {/* Tabs */}

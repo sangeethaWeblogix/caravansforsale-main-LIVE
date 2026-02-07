@@ -94,10 +94,10 @@ useEffect(() => {
             {/* LEFT SIDE */}
             <div className="col-lg-6">
               <div className="home-post_head">
-                <h2>
+                <h3>
                   <span>Find Your Ideal Caravan</span>
                   <br />– Post Your Requirements
-                </h2>
+                </h3>
                 <p>
                   Tell us what you&apos;re looking for and we&apos;ll match you
                   with the right caravan for sale, from trusted dealers at a
