@@ -1,4 +1,4 @@
- // app/(listings)/[[...slug]]/page.tsx
+// app/(listings)/[[...slug]]/page.tsx
 function normalizeSlug(v: string = "") {
   return decodeURIComponent(v)
     .replace(/\s+/g, "+")     // convert spaces back to +
@@ -108,6 +108,9 @@ export default async function Listings({
  // ───── Validate MAKE & MODEL using API data ─────
  // helper: check if slug is a typed value (category, state, year, price, etc)
 function isTypedFilter(slug: string) {
+  // 🔧 FIX: Add null/undefined check
+  if (!slug || typeof slug !== 'string') return false;
+  
   return (
     slug.endsWith("-category") ||
     slug.endsWith("-condition") ||
@@ -212,6 +215,9 @@ if (
 
   // ← Fixed: removed unused `index`
   for (const part of slug) {
+    // 🔧 FIX: Add null/undefined check for part
+    if (!part || typeof part !== 'string') continue;
+    
     const lower = part.toLowerCase();
     let detectedType: SegmentType | null = null;
 
