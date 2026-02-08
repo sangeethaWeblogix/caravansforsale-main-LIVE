@@ -1,4 +1,4 @@
-// REBUILD FIX v3 - Force fresh build to apply endsWith null checks
+// REBUILD FIX v4 - Complete null check fixes for endsWith error
 function normalizeSlug(v: string = "") {
   return decodeURIComponent(v)
     .replace(/\s+/g, "+")     // convert spaces back to +
@@ -160,7 +160,7 @@ if (slug.length >= 1 && !isTypedFilter(slug[0])) {
 const forbiddenPattern = /(page|feed)/i;
 
 if (
-  slug.some((s) => forbiddenPattern.test(s)) ||
+  slug.some((s) => s && typeof s === 'string' && forbiddenPattern.test(s)) ||  // 🔧 FIX #1: Add null check for s
   Object.keys(resolvedSearchParams).some((k) => forbiddenPattern.test(k)) ||
   Object.values(resolvedSearchParams).some((v) =>
     forbiddenPattern.test(String(v))
@@ -173,6 +173,9 @@ if (
  
   // Reject gibberish / pin-code spam
   const hasGibberish = slug.some((part) => {
+    // 🔧 FIX #2: Add null/undefined check for part
+    if (!part || typeof part !== 'string') return false;
+    
     const lower = part.toLowerCase();
     const isPureNumber = /^[0-9]{5,}$/.test(lower);
     const isWeirdSymbols = /^[^a-z0-9-]+$/.test(lower);
@@ -215,7 +218,7 @@ if (
 
   // ← Fixed: removed unused `index`
   for (const part of slug) {
-    // 🔧 FIX: Add null/undefined check for part
+    // 🔧 FIX #3: Add null/undefined check for part
     if (!part || typeof part !== 'string') continue;
     
     const lower = part.toLowerCase();
