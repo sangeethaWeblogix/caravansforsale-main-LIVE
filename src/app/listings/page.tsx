@@ -5,8 +5,6 @@ function normalizeSlug(v: string = "") {
     .trim()
     .toLowerCase();
 }
-
- 
 export const dynamic = "force-dynamic";
 
 import ListingsPage from "@/app/components/ListContent/Listings";
