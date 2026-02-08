@@ -1,161 +1,281 @@
-import React, { Suspense } from "react";
-import Listing from "../components/ListContent/Listings";
-import { fetchListings } from "@/api/listings/api";
+// app/(listings)/[[...slug]]/page.tsx
+function normalizeSlug(v: string = "") {
+  return decodeURIComponent(v)
+    .replace(/\s+/g, "+")     // convert spaces back to +
+    .trim()
+    .toLowerCase();
+}
+
+ 
+export const dynamic = "force-dynamic";
+
+import ListingsPage from "@/app/components/ListContent/Listings";
+import { parseSlugToFilters } from "../../components/urlBuilder";
+import { metaFromSlug } from "../../../utils/seo/meta";
 import type { Metadata } from "next";
-import { ensureValidPage } from "@/utils/seo/validatePage";
-import { notFound } from "next/navigation";
-import ApiErrorFallback from "../components/ApiErrorFallback";
-export const revalidate = 0;
+import { fetchListings } from "@/api/listings/api";
+import { redirect } from "next/navigation";
+import "../../components/ListContent/newList.css";
+  import "../listings.css"
+import { fetchMakeDetails } from "@/api/make-new/api";
+// ─────────────────────────────────────────────────────────────────────────────
+// Types
+// ─────────────────────────────────────────────────────────────────────────────
+type Params = Promise<{ slug?: string[] }>;
+type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
-export const metadata: Metadata = {
-  title: "Caravans For Sale in Australia - Find Exclusive Deals",
-  description:
-    "Browse new & used caravans for sale across Australia. Compare off-road, hybrid, pop-top & luxury models by price, size, weight and sleeping capacity.",
-  robots: "index, follow",
-  openGraph: {
-    title: "Caravans For Sale in Australia - Find Exclusive Deals",
-    description:
-      "Browse new & used caravans for sale across Australia. Compare off-road, hybrid, pop-top & luxury models by price, size, weight and sleeping capacity.",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Caravans For Sale in Australia - Find Exclusive Deals",
-    description:
-      "Browse new & used caravans for sale across Australia. Compare off-road, hybrid, pop-top & luxury models by price, size, weight and sleeping capacity.",
-  },
-  alternates: {
-    canonical: "https://www.caravansforsale.com.au/listings",
-  },
-  verification: {
-    google: "6tT6MT6AJgGromLaqvdnyyDQouJXq0VHS-7HC194xEo", // ✅ add here
-  },
-};
+type SegmentType =
+  | "make"
+  | "model"
+  | "condition"
+  | "category"
+  | "state"
+  | "region"
+  | "suburb"
+  | "price"
+  | "weight"
+  | "length"
+  | "sleeps"
+  | "year"
+  | "search";
 
-export default async function ListingsPage({
+const FLEXIBLE_TYPES: SegmentType[] = ["price", "year", "search"];
+const STRICT_ORDER: SegmentType[] = [
+  "make",
+  "model",
+  "condition",
+  "category",
+  "state",
+  "region",
+  "suburb",
+  "weight",
+  "length",
+  "sleeps",
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Metadata
+// ─────────────────────────────────────────────────────────────────────────────
+export async function generateMetadata({
+  params,
   searchParams,
 }: {
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
+  params: Params;
+  searchParams: SearchParams;
+}): Promise<Metadata> {
+  const [p, sp] = await Promise.all([params, searchParams]);
+  return metaFromSlug(p.slug || [], sp);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Page Component
+// ─────────────────────────────────────────────────────────────────────────────
+export default async function Listings({
+  params,
+  searchParams,
+}: {
+  params: Params;
+  searchParams: SearchParams;
 }) {
-  let resolvedSearchParams: Record<string, string | string[] | undefined>;
+  const [resolvedParams, resolvedSearchParams] = await Promise.all([
+    params,
+    searchParams,
+  ]);
 
-  try {
-    resolvedSearchParams = await searchParams;
-  } catch {
-    // If searchParams resolution fails, use empty object
-    resolvedSearchParams = {};
-  }
+  const slug = resolvedParams.slug || [];
+  // const slugString = slug.join("/");
 
-  const fullQuery = Object.entries(resolvedSearchParams)
-    .map(([k, v]) => `${k}=${Array.isArray(v) ? v.join(",") : (v ?? "")}`)
-    .join("&");
+  // ───── Basic security & sanity checks ─────
+  // if (
+  //   slug.length > 0 &&
+  //   (/[^\w/-]/.test(slugString) ||
+  //     slugString.includes("..") ||
+  //     slugString.includes("//") ||
+  //     slugString.includes("&") ||
+  //     slugString.includes("?") ||
+  //     slugString.includes("="))
+  // ) {
+  //   redirect("/404");
+  // }
+   
 
-  let page: number;
-  try {
-    page = ensureValidPage(resolvedSearchParams.page, fullQuery);
-  } catch {
-    page = 1;
-  }
+  
 
-  // Wrap API call in try-catch to handle failures gracefully
-  try {
-    const response = await fetchListings({ page });
+// ───── Block any "acustom" usage ─────
+ 
 
-    // Check if response is valid
-    if (!response) {
-      // API returned nothing - show error fallback
-      return (
-        <ApiErrorFallback
-          title="Unable to load listings"
-          message="We couldn't connect to our servers. Please try again."
-          showRetry={true}
-        />
-      );
-    }
+  // Validate REAL make/model from API
+ // ───── Validate MAKE & MODEL using API data ─────
+ // helper: check if slug is a typed value (category, state, year, price, etc)
+function isTypedFilter(slug: string) {
+  // 🔧 FIX: Add null/undefined check
+  if (!slug || typeof slug !== 'string') return false;
+  
+  return (
+    slug.endsWith("-category") ||
+    slug.endsWith("-condition") ||
+    slug.endsWith("-state") ||
+    slug.endsWith("-region") ||
+    slug.includes("-suburb") ||
+    slug.includes("-kg-atm") ||
+    slug.includes("-length-in-feet") ||
+    slug.includes("-people-sleeping-capacity") ||
+    slug.endsWith("-search") ||
+    /^over-\d+$/.test(slug) ||
+    /^under-\d+$/.test(slug) ||
+    /^between-\d+-\d+$/.test(slug) ||
+    /\d{4}(-caravans-range)?$/.test(slug)
+  );
+}
 
-    // Check if API explicitly returned failure
-    if (response.success === false) {
-      return (
-        <ApiErrorFallback
-          title="Service temporarily unavailable"
-          message="Our listing service is currently experiencing issues. Please try again in a few moments."
-          showRetry={true}
-        />
-      );
-    }
+// ───── Validate MAKE & MODEL only if NOT typed filter ─────
+const makesData = await fetchMakeDetails();
 
-    // Check if data structure is valid
-    if (!response.data) {
-      return (
-        <ApiErrorFallback
-          title="No data available"
-          message="We received an incomplete response from our servers. Please try again."
-          showRetry={true}
-        />
-      );
-    }
+if (slug.length >= 1 && !isTypedFilter(slug[0])) {
+  const makeSlug = normalizeSlug(slug[0]);
 
-    // Check if products array exists and has items
-    if (
-      !Array.isArray(response.data.products) ||
-      response.data.products.length === 0
-    ) {
-      // No products found - this is a 404 case
-      notFound();
-    }
+  const matchedMake = makesData.find(
+    (m) => normalizeSlug(m.slug) === makeSlug
+  );
 
-    // All checks passed - render the listings
-    return (
-      <Suspense>
-        <Listing initialData={response} page={page} />
-      </Suspense>
+  if (!matchedMake) redirect("/404");
+
+  if (slug.length >= 2 && !isTypedFilter(slug[1])) {
+    const modelSlug = normalizeSlug(slug[1]);
+
+    const matchedModel = matchedMake.models?.some(
+      (mod) => normalizeSlug(mod.slug) === modelSlug
     );
-  } catch (error) {
-    // Log the error for debugging
-    console.error("Listings page API error:", error);
 
-    // Determine error type and show appropriate message
-    const isNetworkError =
-      error instanceof Error &&
-      (error.message.includes("fetch") ||
-        error.message.includes("network") ||
-        error.message.includes("ECONNREFUSED") ||
-        error.message.includes("ETIMEDOUT"));
-
-    const isApiError =
-      error instanceof Error &&
-      (error.message.includes("API failed") ||
-        error.message.includes("Invalid API response"));
-
-    if (isNetworkError) {
-      return (
-        <ApiErrorFallback
-          title="Connection failed"
-          message="We couldn't reach our servers. Please check your internet connection and try again."
-          showRetry={true}
-          errorType="network"
-        />
-      );
-    }
-
-    if (isApiError) {
-      return (
-        <ApiErrorFallback
-          title="Service error"
-          message="Our listing service encountered an error. Our team has been notified and is working on it."
-          showRetry={true}
-          errorType="api"
-        />
-      );
-    }
-
-    // Generic error fallback
-    return (
-      <ApiErrorFallback
-        title="Something went wrong"
-        message="We're having trouble loading the listings. Please try again or come back later."
-        showRetry={true}
-        errorType="unknown"
-      />
-    );
+    if (!matchedModel) redirect("/404");
   }
+}
+
+
+
+
+  
+  // Block page/feed keywords
+ // 🚫 Fully block "page" or "feed" in URL
+const forbiddenPattern = /(page|feed)/i;
+
+if (
+  slug.some((s) => forbiddenPattern.test(s)) ||
+  Object.keys(resolvedSearchParams).some((k) => forbiddenPattern.test(k)) ||
+  Object.values(resolvedSearchParams).some((v) =>
+    forbiddenPattern.test(String(v))
+  )
+) {
+  redirect("/404");
+}
+
+
+ 
+  // Reject gibberish / pin-code spam
+  const hasGibberish = slug.some((part) => {
+    const lower = part.toLowerCase();
+    const isPureNumber = /^[0-9]{5,}$/.test(lower);
+    const isWeirdSymbols = /^[^a-z0-9-]+$/.test(lower);
+    const allowed = [
+
+      /^over-\d+$/,
+      /^under-\d+$/,
+      /^between-\d+-\d+$/,
+      /\d{4}(-caravans-range)?$/,
+      /-state$/,
+      /-region$/,
+      /-suburb$/,
+      /-condition$/,
+      /-category$/,
+      /-search$/,
+      /-kg-atm$/,
+      /-length-in-feet$/,
+      /-people-sleeping-capacity$/,
+    ].some((r) => r.test(lower));
+    return (isPureNumber || isWeirdSymbols) && !allowed;
+  });
+
+  if (hasGibberish) redirect("/404");
+
+  // ───── Parse filters (needed for location rules) ─────
+  const filters = parseSlugToFilters(slug, resolvedSearchParams);
+
+  // ───── Location hierarchy validation ─────
+  const hasState = !!filters.state;
+  const hasRegion = !!filters.region;
+
+  const hasSuburb = !!filters.suburb;
+
+  if ((hasRegion || hasSuburb) && !hasState) redirect("/404");
+  if (hasSuburb && !hasRegion) redirect("/404");
+
+  // ───── Segment type detection + order validation ─────
+  const seenTypes = new Set<SegmentType>();
+  let lastStrictIndex = -1;
+
+  // ← Fixed: removed unused `index`
+  for (const part of slug) {
+    // 🔧 FIX: Add null/undefined check for part
+    if (!part || typeof part !== 'string') continue;
+    
+    const lower = part.toLowerCase();
+    let detectedType: SegmentType | null = null;
+
+    // Price
+    if (/^(over|under)-\d+$/.test(lower) || /^between-\d+-\d+$/.test(lower)) {
+      detectedType = "price";
+    }
+    // Other typed segments
+    else if (lower.includes("-kg-atm")) detectedType = "weight";
+    else if (lower.includes("-length-in-feet")) detectedType = "length";
+    else if (lower.includes("-people-sleeping-capacity")) detectedType = "sleeps";
+    else if (/\d{4}(-caravans-range)?$/.test(lower)) detectedType = "year";
+    else if (lower.endsWith("-search")) detectedType = "search";
+    else if (lower.endsWith("-condition")) detectedType = "condition";
+    else if (lower.endsWith("-category")) detectedType = "category";
+    else if (lower.endsWith("-state")) detectedType = "state";
+    else if (lower.endsWith("-region")) detectedType = "region";
+    else if (lower.includes("-suburb")) detectedType = "suburb";
+    // Make / Model (simple alphanumeric segments)
+  else if (
+  /^[a-z]+[0-9]+$/.test(lower) ||        // string + number
+  /^[a-z]+[0-9]+\+$/.test(lower)         // string + number + +
+) {
+  if (!seenTypes.has("make")) detectedType = "make";
+  else if (!seenTypes.has("model")) detectedType = "model";
+} else if (/^[0-9]+$/.test(lower) || /^[0-9]+\+$/.test(lower) || /^[a-z]+\+$/.test(lower)) {
+  redirect("/404"); // block bad patterns: only numbers, number+, or string+ without number
+}
+
+    if (detectedType) {
+      // Duplicate type → 404
+      if (seenTypes.has(detectedType)) redirect("/404");
+      seenTypes.add(detectedType);
+
+      // Enforce strict order for non-flexible types
+      if (!FLEXIBLE_TYPES.includes(detectedType)) {
+        const currentStrictIndex = STRICT_ORDER.indexOf(detectedType);
+        if (currentStrictIndex !== -1 && currentStrictIndex < lastStrictIndex) {
+          redirect("/404"); // Out of order
+        }
+        lastStrictIndex = Math.max(lastStrictIndex, currentStrictIndex);
+      }
+    }
+  }
+ 
+
+  // ───── Page param ─────
+  let page = 1;
+  const pageParam = resolvedSearchParams.page;
+  if (pageParam) {
+    const val = Array.isArray(pageParam) ? pageParam[0] : pageParam;
+    const n = parseInt(val as string, 10);
+    if (!isNaN(n) && n > 0) page = n;
+  }
+
+  // ───── Fetch listings ─────
+  const response = await fetchListings({ ...filters, page });
+
+  // ───── Render ─────
+  return <ListingsPage {...filters} initialData={response} />;
 }
