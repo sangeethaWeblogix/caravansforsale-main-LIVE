@@ -5,6 +5,8 @@ function normalizeSlug(v: string = "") {
     .trim()
     .toLowerCase();
 }
+
+ 
 export const dynamic = "force-dynamic";
 
 import ListingsPage from "@/app/components/ListContent/Listings";
@@ -13,8 +15,8 @@ import { metaFromSlug } from "../../../utils/seo/meta";
 import type { Metadata } from "next";
 import { fetchListings } from "@/api/listings/api";
 import { redirect } from "next/navigation";
-import "../../components/ListContent/newList.css";
-  import "../listings.css"
+// import "../../components/ListContent/newList.css";
+// import "../listings.css"
 import { fetchMakeDetails } from "@/api/make-new/api";
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
