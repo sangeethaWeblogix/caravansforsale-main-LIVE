@@ -1,4 +1,4 @@
-// app/(listings)/[[...slug]]/page.tsx
+// REBUILD FIX v3 - Force fresh build to apply endsWith null checks
 function normalizeSlug(v: string = "") {
   return decodeURIComponent(v)
     .replace(/\s+/g, "+")     // convert spaces back to +
