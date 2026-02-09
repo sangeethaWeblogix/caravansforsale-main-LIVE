@@ -2105,8 +2105,11 @@ useEffect(() => {
  
      // match by URI parts first
      const byUri = suggestions.find((it) => {
-       const [sub, reg, sta, pc] = it.uri.split("/");
-       const matchSub = sub?.startsWith(`${ss}-suburb`);
+const parts = it.uri.split("/");
+const sta = parts[0] || "";
+const reg = parts[1] || "";
+const sub = parts[2] || "";
+const pc = parts[3] || "";       const matchSub = sub?.startsWith(`${ss}-suburb`);
        const matchReg = reg?.startsWith(`${rr}-region`);
        const matchSta = sta?.startsWith(`${st}-state`);
        const matchPc = pincode ? (pc || "").includes(pincode) : true;
@@ -2164,17 +2167,18 @@ const data = Array.isArray(rawData) ? rawData : flattenLocationResponse(rawData)
            .replace(/\s+/g, " ");
  
          // ✅ Filter only exact suburb matches (ignore East/North variations)
-         const exactMatches = (data || []).filter((item) => {
-           // normalize fetched suburb from URI
-           const suburbFromUri = item.uri
-             ?.split("/")[0]
-             ?.replace(/-suburb$/, "")
-             ?.replace(/-/g, " ")
-             ?.trim()
-             ?.toLowerCase();
- 
-           return suburbFromUri === target;
-         });
+        const exactMatches = (data || []).filter((item) => {
+  // New API URI format: "state/region/suburb/pincode"
+  const parts = item.uri?.split("/") || [];
+  const suburbPart = parts.find((p: string) => p.endsWith("-suburb")) || parts[0] || "";
+  const suburbFromUri = suburbPart
+    ?.replace(/-suburb$/, "")
+    ?.replace(/-/g, " ")
+    ?.trim()
+    ?.toLowerCase();
+
+  return suburbFromUri === target;
+});
  
          console.log("🎯 exact suburb matches:", exactMatches);
  
@@ -2756,9 +2760,7 @@ const res = Array.isArray(rawRes) ? rawRes : flattenLocationResponse(rawRes);   
                            const uSta = slug(selectedStateName || "");
                            match = {
                              key: `${uSub}-${uReg}-${uSta}-${pincode || ""}`,
-                             uri: `${uSub}-suburb/${uReg}-region/${uSta}-state/${
-                               pincode || ""
-                             }`,
+                             uri: `${uSta}-state/${uReg}-region/${uSub}-suburb/${pincode || ""}`,
                              address: [
                                suburb.name,
                                selectedRegionName || "",
