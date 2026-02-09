@@ -15,7 +15,7 @@ const CF_KV_NAMESPACE_ID = process.env.CF_KV_NAMESPACE_ID;
 const CF_API_TOKEN = process.env.CF_API_TOKEN;
 const TARGET_PAGE = process.env.TARGET_PAGE || 'all';
 
-const LISTINGS_VARIANTS = 5;
+const LISTINGS_VARIANTS = 4;
 
 const STATIC_PAGES = [
   { 
