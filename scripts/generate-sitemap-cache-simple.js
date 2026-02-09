@@ -19,9 +19,11 @@ const CF_API_TOKEN = process.env.CF_API_TOKEN;
 const TARGET_SITEMAP = process.env.TARGET_SITEMAP || 'all'; // all, categories, states, etc.
 
 // Configuration
-const VARIANTS_PER_URL = 5;
+const VARIANTS_PER_URL = 4;
 const DELAY_BETWEEN_VARIANTS = 300; // 300ms
 const DELAY_BETWEEN_URLS = 800; // 800ms
+const BATCH_SIZE = process.env.BATCH_SIZE ? parseInt(process.env.BATCH_SIZE) : null;
+const BATCH_NUMBER = process.env.BATCH_NUMBER ? parseInt(process.env.BATCH_NUMBER) : null;
 
 // All sitemap URLs
 const SITEMAP_URLS = [
@@ -276,6 +278,9 @@ async function main() {
   console.log(`📍 Domain: ${PRODUCTION_DOMAIN}`);
   console.log(`🔢 Variants per URL: ${VARIANTS_PER_URL}`);
   console.log(`🎯 Target: ${TARGET_SITEMAP}`);
+  if (BATCH_SIZE && BATCH_NUMBER) {
+    console.log(`📦 Batch mode: Batch ${BATCH_NUMBER}, Size ${BATCH_SIZE}`);
+  }
   console.log('█'.repeat(70));
   
   const results = { success: 0, failed: 0, skipped: 0, pages: [] };
@@ -310,10 +315,26 @@ async function main() {
     await new Promise(resolve => setTimeout(resolve, 500));
   }
   
+  // Apply batching if specified
+  const totalUrlsBeforeBatch = allUrls.length;
+  if (BATCH_SIZE && BATCH_NUMBER) {
+    const start = (BATCH_NUMBER - 1) * BATCH_SIZE;
+    const end = start + BATCH_SIZE;
+    allUrls = allUrls.slice(start, end);
+    
+    console.log('\n' + '='.repeat(70));
+    console.log('📦 BATCH FILTERING APPLIED');
+    console.log('='.repeat(70));
+    console.log(`📊 Total URLs in sitemap: ${totalUrlsBeforeBatch}`);
+    console.log(`📦 Batch ${BATCH_NUMBER}: Processing URLs ${start + 1} to ${Math.min(end, totalUrlsBeforeBatch)}`);
+    console.log(`📄 URLs in this batch: ${allUrls.length}`);
+    console.log('='.repeat(70));
+  }
+  
   console.log('\n' + '='.repeat(70));
   console.log('📊 SITEMAP FETCH COMPLETE');
   console.log('='.repeat(70));
-  console.log(`📄 Total URLs found: ${allUrls.length}`);
+  console.log(`📄 Total URLs to process: ${allUrls.length}`);
   console.log(`📦 Total variants to generate: ${allUrls.length * VARIANTS_PER_URL}`);
   const estimatedMinutes = Math.round(allUrls.length * VARIANTS_PER_URL * 2 / 60);
   console.log(`⏱️  Estimated time: ~${estimatedMinutes} minutes`);
@@ -371,45 +392,54 @@ async function main() {
     }
   }
   
-  // Step 3: Update routes mapping
-  console.log('\n' + '='.repeat(70));
-  console.log('📋 UPDATING ROUTES MAPPING');
-  console.log('='.repeat(70));
+  // Step 3: Update routes mapping (only if not in batch mode or if it's the last batch)
+  const shouldUpdateMapping = !BATCH_SIZE || !BATCH_NUMBER;
   
-  const mapping = {};
-  for (const page of results.pages) {
-    if (!mapping[page.path]) {
-      mapping[page.path] = [];
+  if (shouldUpdateMapping) {
+    console.log('\n' + '='.repeat(70));
+    console.log('📋 UPDATING ROUTES MAPPING');
+    console.log('='.repeat(70));
+    
+    const mapping = {};
+    for (const page of results.pages) {
+      if (!mapping[page.path]) {
+        mapping[page.path] = [];
+      }
+      mapping[page.path].push(page.kvKey);
     }
-    mapping[page.path].push(page.kvKey);
-  }
-  
-  // Sort variants
-  for (const path in mapping) {
-    mapping[path].sort((a, b) => {
-      const variantA = parseInt(a.match(/-v(\d+)$/)?.[1] || '0');
-      const variantB = parseInt(b.match(/-v(\d+)$/)?.[1] || '0');
-      return variantA - variantB;
-    });
-  }
-  
-  console.log(`\n📊 Built mapping for ${Object.keys(mapping).length} paths`);
-  
-  // Upload to KV
-  console.log('\n⬆️  Uploading routes mapping to KV...');
-  const mappingJson = JSON.stringify(mapping, null, 2);
-  const sizeKB = Math.round(mappingJson.length / 1024);
-  console.log(`   Size: ${sizeKB}KB`);
-  
-  const uploaded = await uploadToKV('routes-mapping', mappingJson);
-  
-  if (uploaded) {
-    console.log('✅ Routes mapping uploaded successfully!');
+    
+    // Sort variants
+    for (const path in mapping) {
+      mapping[path].sort((a, b) => {
+        const variantA = parseInt(a.match(/-v(\d+)$/)?.[1] || '0');
+        const variantB = parseInt(b.match(/-v(\d+)$/)?.[1] || '0');
+        return variantA - variantB;
+      });
+    }
+    
+    console.log(`\n📊 Built mapping for ${Object.keys(mapping).length} paths`);
+    
+    // Upload to KV
+    console.log('\n⬆️  Uploading routes mapping to KV...');
+    const mappingJson = JSON.stringify(mapping, null, 2);
+    const sizeKB = Math.round(mappingJson.length / 1024);
+    console.log(`   Size: ${sizeKB}KB`);
+    
+    const uploaded = await uploadToKV('routes-mapping', mappingJson);
+    
+    if (uploaded) {
+      console.log('✅ Routes mapping uploaded successfully!');
+    } else {
+      console.error('❌ Routes mapping upload failed!');
+    }
+    
+    console.log('='.repeat(70));
   } else {
-    console.error('❌ Routes mapping upload failed!');
+    console.log('\n' + '='.repeat(70));
+    console.log('⏭️  SKIPPING ROUTES MAPPING UPDATE (Batch mode)');
+    console.log('   Note: Routes mapping should be regenerated after all batches complete');
+    console.log('='.repeat(70));
   }
-  
-  console.log('='.repeat(70));
   
   // Final summary
   const duration = Math.round((Date.now() - startTime) / 1000);
@@ -420,10 +450,13 @@ async function main() {
   console.log('📊 FINAL SUMMARY');
   console.log('█'.repeat(70));
   console.log(`🎯 Target: ${TARGET_SITEMAP}`);
+  if (BATCH_SIZE && BATCH_NUMBER) {
+    console.log(`📦 Batch: ${BATCH_NUMBER} (size ${BATCH_SIZE})`);
+  }
   console.log(`✅ Success: ${results.success} variants`);
   console.log(`⏭️  Skipped: ${results.skipped} variants`);
   console.log(`❌ Failed: ${results.failed} variants`);
-  console.log(`📄 Unique paths: ${Object.keys(mapping).length}`);
+  console.log(`📄 Unique paths: ${results.pages.length > 0 ? Object.keys(results.pages.reduce((acc, p) => ({ ...acc, [p.path]: true }), {})).length : 0}`);
   console.log(`⏱️  Total duration: ${minutes}m ${seconds}s`);
   
   if (results.pages.length > 0) {
