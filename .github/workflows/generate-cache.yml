@@ -1,0 +1,291 @@
+name: Generate Cache (With Batching)
+
+on:
+  schedule:
+    # Run daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'What to generate'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - priority
+          - small-sitemaps
+          - large-sitemaps
+          - categories
+          - states
+          - regions
+          - weights
+          - prices
+          - conditions
+          - length
+          - sleep
+          - category-state
+          - state-used
+          - region-used
+          - makes
+          - category-region
+          - region-length
+
+jobs:
+  # ==========================================
+  # PRIORITY PAGES (Homepage + Listings) - WITH PUPPETEER
+  # ==========================================
+  generate-priority:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    if: |
+      (github.event_name == 'schedule') ||
+      (github.event_name == 'workflow_dispatch' && 
+       (github.event.inputs.target == 'all' || github.event.inputs.target == 'priority'))
+    
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+      
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      
+      - name: 📦 Install dependencies
+        run: |
+          npm install node-fetch@2
+          npm install puppeteer
+      
+      - name: 🎯 Generate Priority Pages
+        env:
+          VERCEL_BASE_URL: ${{ secrets.VERCEL_BASE_URL }}
+          PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          TARGET_PAGE: 'all'
+        run: node scripts/generate-priority-pages.js
+      
+      - name: ✅ Complete
+        if: success()
+        run: echo "::notice::✅ Priority pages generated successfully!"
+
+  # ==========================================
+  # SMALL SITEMAPS (Parallel) - NO PUPPETEER
+  # ==========================================
+  generate-small-sitemaps:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    if: |
+      (github.event_name == 'schedule') ||
+      (github.event_name == 'workflow_dispatch' && 
+       (github.event.inputs.target == 'all' || github.event.inputs.target == 'small-sitemaps'))
+    
+    strategy:
+      matrix:
+        sitemap: 
+          - categories
+          - states
+          - regions
+          - weights
+          - prices
+          - conditions
+          - length
+          - sleep
+          - category-state
+          - state-used
+          - region-used
+      fail-fast: false
+      max-parallel: 11  # Run all small sitemaps in parallel
+    
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+      
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      
+      - name: 📦 Install dependencies
+        run: |
+          npm install node-fetch@2
+          npm install xml2js
+      
+      - name: 🗺️ Generate ${{ matrix.sitemap }}
+        env:
+          PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          TARGET_SITEMAP: ${{ matrix.sitemap }}
+        run: node scripts/generate-sitemap-cache-simple.js
+      
+      - name: ✅ ${{ matrix.sitemap }} Complete
+        if: success()
+        run: echo "::notice::✅ ${{ matrix.sitemap }} completed!"
+
+  # ==========================================
+  # LARGE SITEMAPS (Batched) - NO PUPPETEER
+  # Split into 3 batches each to stay under 90min timeout
+  # ==========================================
+  generate-large-sitemaps:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    if: |
+      (github.event_name == 'schedule') ||
+      (github.event_name == 'workflow_dispatch' && 
+       (github.event.inputs.target == 'all' || github.event.inputs.target == 'large-sitemaps'))
+    
+    strategy:
+      matrix:
+        sitemap: 
+          - makes              # ~1345 URLs → ~5380 variants → ~3 hours full
+          - category-region    # ~1271 URLs → ~5084 variants → ~2.8 hours full
+          - region-length      # ~1271 URLs → ~5084 variants → ~2.8 hours full
+        batch: [1, 2, 3]       # Split each into 3 batches (~450 URLs each)
+      fail-fast: false
+      max-parallel: 9          # Process all batches in parallel
+    
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+      
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      
+      - name: 📦 Install dependencies
+        run: |
+          npm install node-fetch@2
+          npm install xml2js
+      
+      - name: 🗺️ Generate ${{ matrix.sitemap }} (Batch ${{ matrix.batch }}/3)
+        env:
+          PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          TARGET_SITEMAP: ${{ matrix.sitemap }}
+          BATCH_SIZE: 450
+          BATCH_NUMBER: ${{ matrix.batch }}
+        run: node scripts/generate-sitemap-cache-simple.js
+      
+      - name: ✅ ${{ matrix.sitemap }} Batch ${{ matrix.batch }} Complete
+        if: success()
+        run: echo "::notice::✅ ${{ matrix.sitemap }} batch ${{ matrix.batch }} completed!"
+
+  # ==========================================
+  # INDIVIDUAL MANUAL RUNS (Small Sitemaps)
+  # ==========================================
+  generate-individual-small:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    if: |
+      github.event_name == 'workflow_dispatch' && 
+      (github.event.inputs.target == 'categories' ||
+       github.event.inputs.target == 'states' ||
+       github.event.inputs.target == 'regions' ||
+       github.event.inputs.target == 'weights' ||
+       github.event.inputs.target == 'prices' ||
+       github.event.inputs.target == 'conditions' ||
+       github.event.inputs.target == 'length' ||
+       github.event.inputs.target == 'sleep' ||
+       github.event.inputs.target == 'category-state' ||
+       github.event.inputs.target == 'state-used' ||
+       github.event.inputs.target == 'region-used')
+    
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+      
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      
+      - name: 📦 Install dependencies
+        run: |
+          npm install node-fetch@2
+          npm install xml2js
+      
+      - name: 🎯 Generate ${{ github.event.inputs.target }}
+        env:
+          PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          TARGET_SITEMAP: ${{ github.event.inputs.target }}
+        run: node scripts/generate-sitemap-cache-simple.js
+      
+      - name: ✅ Complete
+        if: success()
+        run: echo "::notice::✅ ${{ github.event.inputs.target }} completed!"
+
+  # ==========================================
+  # INDIVIDUAL MANUAL RUNS (Large Sitemaps - Batched)
+  # ==========================================
+  generate-individual-large:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    if: |
+      github.event_name == 'workflow_dispatch' && 
+      (github.event.inputs.target == 'makes' ||
+       github.event.inputs.target == 'category-region' ||
+       github.event.inputs.target == 'region-length')
+    
+    strategy:
+      matrix:
+        batch: [1, 2, 3]
+      fail-fast: false
+      max-parallel: 3
+    
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+      
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      
+      - name: 📦 Install dependencies
+        run: |
+          npm install node-fetch@2
+          npm install xml2js
+      
+      - name: 🎯 Generate ${{ github.event.inputs.target }} (Batch ${{ matrix.batch }}/3)
+        env:
+          PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          TARGET_SITEMAP: ${{ github.event.inputs.target }}
+          BATCH_SIZE: 450
+          BATCH_NUMBER: ${{ matrix.batch }}
+        run: node scripts/generate-sitemap-cache-simple.js
+      
+      - name: ✅ Batch ${{ matrix.batch }} Complete
+        if: success()
+        run: echo "::notice::✅ ${{ github.event.inputs.target }} batch ${{ matrix.batch }} completed!"
+
+  # ==========================================
+  # SUMMARY
+  # ==========================================
+  summary:
+    runs-on: ubuntu-latest
+    needs: [generate-priority, generate-small-sitemaps, generate-large-sitemaps]
+    if: always() && github.event_name == 'schedule'
+    
+    steps:
+      - name: 📊 Summary
+        run: |
+          echo "::notice::✅ All cache generation jobs completed!"
+          echo "::notice::Priority pages: Homepage + Listings (4 variants each)"
+          echo "::notice::Small sitemaps: 11 sitemaps processed"
+          echo "::notice::Large sitemaps: 3 sitemaps × 3 batches = 9 batch jobs"
+          echo "::notice::Total: ~16,630 pages × 4 variants = ~66,520 cached variants"
+          echo "::notice::Check individual job logs for detailed statistics"

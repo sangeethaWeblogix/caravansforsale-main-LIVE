@@ -1,15 +1,14 @@
- import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { parseSlugToFilters } from "@/app/components/urlBuilder";
 
 /* ──────────────────────────────────────────────
    Edge-safe in-memory cache
 ────────────────────────────────────────────── */
 const seoCache = new Map<string, { robots: string; expires: number }>();
-
 const CACHE_TTL = 60 * 1000; // 1 minute
 
 /* ──────────────────────────────────────────────
-   Bot Detection for Static HTML Serving
+   Bot Detection
 ────────────────────────────────────────────── */
 const BOT_USER_AGENTS = [
   'googlebot',
@@ -27,45 +26,10 @@ const BOT_USER_AGENTS = [
   'bot'
 ] as const;
 
-// Routes mapping - generateStaticPages.js-ல இருக்கிற FOLLOW_PAGES-க்கு match ஆகணும்
-const STATIC_ROUTES_MAPPING: Record<string, string> = {
-  '/': 'homepage',
-   
-};
-
 function isBot(userAgent: string): boolean {
   if (!userAgent) return false;
   const ua = userAgent.toLowerCase();
   return BOT_USER_AGENTS.some(bot => ua.includes(bot));
-}
-
-async function getStaticHtmlFromKV(pathname: string): Promise<string | null> {
-  const kvKey = STATIC_ROUTES_MAPPING[pathname];
-  
-  if (!kvKey) {
-    return null;
-  }
-
-  try {
-    const kvResponse = await fetch(
-      `https://api.cloudflare.com/client/v4/accounts/${process.env.CF_ACCOUNT_ID}/storage/kv/namespaces/${process.env.CF_KV_NAMESPACE_ID}/values/${kvKey}`,
-      {
-        headers: {
-          'Authorization': `Bearer ${process.env.CF_API_TOKEN}`,
-        },
-        // @ts-ignore - Edge runtime specific
-        next: { revalidate: 3600 }
-      }
-    );
-
-    if (kvResponse.ok) {
-      return await kvResponse.text();
-    }
-  } catch (error) {
-    console.error('KV fetch error:', error);
-  }
-
-  return null;
 }
 
 export async function middleware(request: NextRequest) {
@@ -73,29 +37,18 @@ export async function middleware(request: NextRequest) {
   const fullPath = url.pathname + url.search;
   const userAgent = request.headers.get('user-agent') || '';
 
-  /* 🤖 STEP 1: Check for Bot & Serve Static HTML */
+  /* 🤖 STEP 1: Bot Detection - Let Cloudflare Worker Handle It */
   if (isBot(userAgent)) {
     console.log(`🤖 Bot detected: ${userAgent.substring(0, 50)}...`);
-    console.log(`📍 Checking static version for: ${url.pathname}`);
     
-    const staticHtml = await getStaticHtmlFromKV(url.pathname);
+    // Just pass through - Cloudflare Worker will serve from KV
+    // Don't try to fetch from KV API here - let the Worker do it
+    const response = NextResponse.next();
     
-    if (staticHtml) {
-      console.log(`✅ Serving static HTML from KV for: ${url.pathname}`);
-      
-      return new NextResponse(staticHtml, {
-        status: 200,
-        headers: {
-          'Content-Type': 'text/html; charset=utf-8',
-          'Cache-Control': 'public, max-age=3600, s-maxage=86400',
-          'X-Served-From': 'KV-Static',
-          'X-Robot-Friendly': 'true',
-          'X-Robots-Tag': 'index, follow',
-        },
-      });
-    } else {
-      console.log(`⚠️ No static version found, falling back to Next.js`);
-    }
+    // Add header to help Worker identify bot traffic
+    response.headers.set('X-Is-Bot', 'true');
+    
+    return response;
   }
 
   /* 1️⃣ Block /feed URLs */

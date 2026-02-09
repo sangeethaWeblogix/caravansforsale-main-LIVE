@@ -1,30 +1,34 @@
 /* eslint-disable */
+/**
+ * Priority Pages Generation Script
+ * Generates HTML cache for homepage and listings home using Puppeteer
+ * REQUIRES PUPPETEER
+ */
+
 const puppeteer = require('puppeteer');
 const fetch = require('node-fetch');
 
-// Environment variables (from GitHub secrets)
 const VERCEL_BASE_URL = process.env.VERCEL_BASE_URL || 'https://caravansforsale-main-live.vercel.app';
 const PRODUCTION_DOMAIN = process.env.PRODUCTION_DOMAIN || 'https://www.caravansforsale.com.au';
 const CF_ACCOUNT_ID = process.env.CF_ACCOUNT_ID;
 const CF_KV_NAMESPACE_ID = process.env.CF_KV_NAMESPACE_ID;
 const CF_API_TOKEN = process.env.CF_API_TOKEN;
+const TARGET_PAGE = process.env.TARGET_PAGE || 'all';
 
-// Number of variants to generate for /listings/
-const LISTINGS_VARIANTS = 5;
+const LISTINGS_VARIANTS = 4;
 
-// Define pages to generate
 const STATIC_PAGES = [
   { 
     path: '/', 
     slug: 'homepage',
-    variants: 1,  // Only 1 variant for homepage
-    waitForCategories: false  // Homepage doesn't need categories
+    variants: LISTINGS_VARIANTS,
+    id: 'homepage'
   },
   { 
     path: '/listings/', 
     slug: 'listings-home',
-    variants: LISTINGS_VARIANTS,  // 5 variants for listings
-    waitForCategories: true  // Wait for categories to load
+    variants: LISTINGS_VARIANTS,
+    id: 'listings'
   },
 ];
 
@@ -45,7 +49,6 @@ async function uploadToKV(key, value) {
 }
 
 async function generatePageVariant(page, variantNumber, browser) {
-  // Build URL with shuffle_seed for listings variants
   let url = `${VERCEL_BASE_URL}${page.path}`;
   if (page.variants > 1) {
     url += `?shuffle_seed=${variantNumber}`;
@@ -53,120 +56,62 @@ async function generatePageVariant(page, variantNumber, browser) {
   
   const kvKey = page.variants > 1 ? `${page.slug}-v${variantNumber}` : page.slug;
   
-  console.log(`\n📥 Fetching: ${page.path}${page.variants > 1 ? ` (variant ${variantNumber})` : ''}`);
-  console.log(`   URL: ${url}`);
-  console.log(`   KV Key: ${kvKey}`);
+  console.log(`\n📄 Generating: ${page.path} (variant ${variantNumber})`);
+  console.log(`   Slug: ${kvKey}`);
+  console.log(`   URL: ***?shuffle_seed=${variantNumber}`);
   
   try {
-    // Create new page in the browser
     const browserPage = await browser.newPage();
-    
-    // Set viewport
     await browserPage.setViewport({ width: 1920, height: 1080 });
     
-    console.log(`   🌐 Loading page...`);
+    console.log(`   🌐 Using Puppeteer...`);
     
-    // Navigate to the page
+    const fetchStart = Date.now();
     await browserPage.goto(url, { 
-      waitUntil: 'networkidle0',  // Wait until network is idle
-      timeout: 45000  // 45 second timeout
+      waitUntil: 'networkidle0',
+      timeout: 45000
     });
     
-    // If this page needs categories, wait for them to load
-    if (page.waitForCategories) {
-      console.log(`   ⏳ Waiting for categories to load...`);
-      
-      try {
-        // Wait for the category data to be populated in the page
-        await browserPage.waitForFunction(() => {
-          // Look for the script tag that contains the data
-          const scripts = Array.from(document.querySelectorAll('script'));
-          for (const script of scripts) {
-            if (script.textContent.includes('"all_categories"')) {
-              // Check if all_categories is not an empty array
-              const match = script.textContent.match(/"all_categories":\s*\[([^\]]*)\]/);
-              if (match && match[1].trim().length > 10) {
-                return true;
-              }
-            }
-          }
-          return false;
-        }, { 
-          timeout: 15000  // 15 second timeout for categories
-        });
-        
-        console.log(`   ✅ Categories loaded successfully!`);
-      } catch (waitError) {
-        console.log(`   ⚠️  Timeout waiting for categories, continuing anyway...`);
-      }
-    }
+    // Wait for content to load
+    await new Promise(resolve => setTimeout(resolve, 2000));
     
-    // Get the fully rendered HTML
     let html = await browserPage.content();
-    
-    // Close the page
     await browserPage.close();
+    
+    const fetchDuration = Math.round((Date.now() - fetchStart) / 1000);
+    console.log(`   ⏱️  Fetched in ${fetchDuration}s`);
     
     if (!html.includes('</html>')) {
       throw new Error('Invalid HTML response (no closing </html> tag)');
     }
     
-    // Verify categories are present if needed
-    if (page.waitForCategories) {
-      const hasCategories = html.includes('"all_categories"') && 
-                           !html.includes('"all_categories":[]');
-      
-      if (!hasCategories) {
-        console.log(`   ⚠️  Warning: Categories data may not be fully loaded`);
-      } else {
-        console.log(`   ✅ Verified: Categories data present in HTML`);
-      }
-    }
-    
-    // Add performance optimizations for images
-    const imageOptimizations = `
-    <link rel="dns-prefetch" href="https://caravansforsale.imagestack.net" />
-    <link rel="preconnect" href="https://caravansforsale.imagestack.net" crossorigin />`;
-    
-    // Extract and preload first 6 images
-    const imageMatches = [...html.matchAll(/src="([^"]+\/(CFS-[^/]+)\/[^"]+\.(jpg|jpeg|png|webp))"/gi)];
-    const firstImages = imageMatches.slice(0, 6).map(match => {
-      const imgPath = match[1];
-      // If already using your image worker, keep it; otherwise optimize
-      if (imgPath.includes('caravansforsale.imagestack.net')) {
-        return imgPath;
-      }
-      const fileName = imgPath.split('/').slice(-2).join('/');
-      return `https://caravansforsale.imagestack.net/800x800/${fileName}`;
-    });
-    
-    const preloadLinks = firstImages
-      .map(url => `<link rel="preload" as="image" href="${url}" fetchpriority="high" />`)
-      .join('\n');
-    
+    // Inject SEO tags
     const canonicalUrl = `${PRODUCTION_DOMAIN}${page.path}`;
-    const seoTags = `${imageOptimizations}
-    ${preloadLinks}
+    const seoTags = `
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="${canonicalUrl}">
     <meta name="generated-at" content="${new Date().toISOString()}">
-    <meta name="static-version" content="2.0">
-    <meta name="static-variant" content="${variantNumber}">`;
+    <meta name="static-variant" content="${variantNumber}">
+    <meta name="static-source" content="puppeteer">`;
     
     html = html.replace('</head>', `${seoTags}\n</head>`);
     html = html.replace(/<meta\s+name="robots"\s+content="noindex[^"]*"\s*\/?>/gi, '');
     
-    console.log(`   ⬆️  Uploading to KV (${Math.round(html.length / 1024)}KB)...`);
+    const sizeKB = Math.round(html.length / 1024);
+    console.log(`   ⬆️  Uploading (${sizeKB}KB)...`);
+    
+    const uploadStart = Date.now();
     const uploaded = await uploadToKV(kvKey, html);
+    const uploadDuration = Math.round((Date.now() - uploadStart) / 1000);
     
     if (uploaded) {
-      console.log(`   ✅ Success!`);
+      console.log(`   ✅ Success! Uploaded in ${uploadDuration}s`);
       return {
         path: page.path,
         slug: kvKey,
         variant: variantNumber,
         status: 'success',
-        size: Math.round(html.length / 1024) + 'KB'
+        size: sizeKB + 'KB'
       };
     } else {
       throw new Error('KV upload returned false');
@@ -185,10 +130,30 @@ async function generatePageVariant(page, variantNumber, browser) {
 }
 
 async function generateStaticPages() {
-  console.log('🚀 Starting static page generation with Puppeteer...');
+  console.log('\n' + '█'.repeat(70));
+  console.log('🎯 PRIORITY PAGES GENERATION (With Puppeteer)');
+  console.log('█'.repeat(70));
   console.log(`📍 Vercel URL: ${VERCEL_BASE_URL}`);
   console.log(`📍 Production: ${PRODUCTION_DOMAIN}`);
-  console.log(`🔢 Listings variants: ${LISTINGS_VARIANTS}\n`);
+  console.log(`🎯 Target: ${TARGET_PAGE || 'all'}`);
+  console.log(`🔢 Variants: ${LISTINGS_VARIANTS}`);
+  console.log('█'.repeat(70));
+  
+  // Filter pages based on target
+  let pagesToGenerate = STATIC_PAGES;
+  if (TARGET_PAGE && TARGET_PAGE !== 'all') {
+    pagesToGenerate = STATIC_PAGES.filter(p => p.id === TARGET_PAGE);
+    
+    if (pagesToGenerate.length === 0) {
+      console.error(`\n❌ Unknown target page: ${TARGET_PAGE}`);
+      console.error(`   Valid options: homepage, listings, all`);
+      process.exit(1);
+    }
+    
+    console.log(`\n🎯 Generating only: ${pagesToGenerate[0].path}\n`);
+  } else {
+    console.log(`\n📋 Generating all ${pagesToGenerate.length} pages\n`);
+  }
   
   const results = {
     success: 0,
@@ -199,8 +164,10 @@ async function generateStaticPages() {
   
   const startTime = Date.now();
   
-  // Launch browser once for all pages
+  console.log('='.repeat(70));
   console.log('🌐 Launching headless browser...');
+  console.log('='.repeat(70));
+  
   const browser = await puppeteer.launch({
     headless: 'new',
     args: [
@@ -214,9 +181,20 @@ async function generateStaticPages() {
   console.log('✅ Browser launched!\n');
   
   try {
-    // Generate all pages and their variants
-    for (const page of STATIC_PAGES) {
+    let totalGenerated = 0;
+    const totalVariants = pagesToGenerate.reduce((sum, page) => sum + page.variants, 0);
+    
+    for (const page of pagesToGenerate) {
+      console.log('\n' + '-'.repeat(70));
+      console.log(`📍 Processing: ${page.path}`);
+      console.log('-'.repeat(70));
+      
       for (let variant = 1; variant <= page.variants; variant++) {
+        totalGenerated++;
+        const progress = Math.round((totalGenerated / totalVariants) * 100);
+        
+        console.log(`\n[${totalGenerated}/${totalVariants}] Progress: ${progress}%`);
+        
         const result = await generatePageVariant(page, variant, browser);
         
         if (result.status === 'success') {
@@ -227,26 +205,27 @@ async function generateStaticPages() {
           results.errors.push(result);
         }
         
-        // Short delay between requests
         await new Promise(resolve => setTimeout(resolve, 1000));
       }
     }
   } finally {
-    // Always close the browser
-    console.log('\n🔒 Closing browser...');
+    console.log('\n' + '='.repeat(70));
+    console.log('🔒 Closing browser...');
     await browser.close();
+    console.log('✅ Browser closed');
+    console.log('='.repeat(70));
   }
   
-  // Create routes mapping
-  console.log('\n📋 Creating routes mapping...');
-  const mapping = {};
+  // Update routes mapping
+  console.log('\n' + '='.repeat(70));
+  console.log('📋 Updating routes mapping...');
+  console.log('='.repeat(70));
   
-  for (const page of STATIC_PAGES) {
+  const mapping = {};
+  for (const page of pagesToGenerate) {
     if (page.variants === 1) {
-      // Single variant: direct mapping
       mapping[page.path] = page.slug;
     } else {
-      // Multiple variants: array of variant keys
       const variants = [];
       for (let i = 1; i <= page.variants; i++) {
         variants.push(`${page.slug}-v${i}`);
@@ -255,28 +234,31 @@ async function generateStaticPages() {
     }
   }
   
-  console.log('📝 Routes mapping:');
+  console.log('\n📝 Routes mapping:');
   console.log(JSON.stringify(mapping, null, 2));
   
   const mappingJson = JSON.stringify(mapping, null, 2);
   const mappingUploaded = await uploadToKV('routes-mapping', mappingJson);
   
   if (mappingUploaded) {
-    console.log('✅ Routes mapping uploaded');
+    console.log('\n✅ Routes mapping uploaded');
   } else {
-    console.error('❌ Routes mapping upload failed');
+    console.error('\n❌ Routes mapping upload failed');
   }
   
   const duration = Math.round((Date.now() - startTime) / 1000);
-  const totalVariants = STATIC_PAGES.reduce((sum, page) => sum + page.variants, 0);
+  const minutes = Math.floor(duration / 60);
+  const seconds = duration % 60;
+  const totalVariants = pagesToGenerate.reduce((sum, page) => sum + page.variants, 0);
   
-  console.log('\n' + '='.repeat(60));
+  console.log('\n' + '█'.repeat(70));
   console.log('📊 GENERATION COMPLETE');
-  console.log('='.repeat(60));
+  console.log('█'.repeat(70));
+  console.log(`🎯 Target: ${TARGET_PAGE || 'all'}`);
   console.log(`✅ Success: ${results.success} variants`);
   console.log(`❌ Failed: ${results.failed} variants`);
   console.log(`📄 Total variants generated: ${totalVariants}`);
-  console.log(`⏱️  Duration: ${duration} seconds`);
+  console.log(`⏱️  Duration: ${minutes}m ${seconds}s`);
   console.log(`📦 Average: ${Math.round(duration / totalVariants * 10) / 10}s per variant`);
   
   if (results.errors.length > 0) {
@@ -301,6 +283,7 @@ if (require.main === module) {
     })
     .catch(error => {
       console.error('\n💥 Fatal error:', error);
+      console.error(error.stack);
       process.exit(1);
     });
 }

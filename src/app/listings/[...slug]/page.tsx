@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 
 import ListingsPage from "@/app/components/ListContent/Listings";
 import { parseSlugToFilters } from "../../components/urlBuilder";
-import { metaFromSlug } from "../../../utils/seo/meta";
+import { metaFromSlug } from "@/utils/seo/meta";
 import type { Metadata } from "next";
 import { fetchListings } from "@/api/listings/api";
 import { redirect } from "next/navigation";
@@ -108,6 +108,9 @@ export default async function Listings({
  // ───── Validate MAKE & MODEL using API data ─────
  // helper: check if slug is a typed value (category, state, year, price, etc)
 function isTypedFilter(slug: string) {
+  // 🔧 FIX: Add null/undefined check
+  if (!slug || typeof slug !== 'string') return false;
+  
   return (
     slug.endsWith("-category") ||
     slug.endsWith("-condition") ||
@@ -157,7 +160,7 @@ if (slug.length >= 1 && !isTypedFilter(slug[0])) {
 const forbiddenPattern = /(page|feed)/i;
 
 if (
-  slug.some((s) => forbiddenPattern.test(s)) ||
+  slug.some((s) => s && typeof s === 'string' && forbiddenPattern.test(s)) ||  // 🔧 FIX #1: Add null check for s
   Object.keys(resolvedSearchParams).some((k) => forbiddenPattern.test(k)) ||
   Object.values(resolvedSearchParams).some((v) =>
     forbiddenPattern.test(String(v))
@@ -170,6 +173,9 @@ if (
  
   // Reject gibberish / pin-code spam
   const hasGibberish = slug.some((part) => {
+    // 🔧 FIX #2: Add null/undefined check for part
+    if (!part || typeof part !== 'string') return false;
+    
     const lower = part.toLowerCase();
     const isPureNumber = /^[0-9]{5,}$/.test(lower);
     const isWeirdSymbols = /^[^a-z0-9-]+$/.test(lower);
@@ -212,6 +218,9 @@ if (
 
   // ← Fixed: removed unused `index`
   for (const part of slug) {
+    // 🔧 FIX #3: Add null/undefined check for part
+    if (!part || typeof part !== 'string') continue;
+    
     const lower = part.toLowerCase();
     let detectedType: SegmentType | null = null;
 
