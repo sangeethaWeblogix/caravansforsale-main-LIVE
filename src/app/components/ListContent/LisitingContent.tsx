@@ -146,7 +146,7 @@ export default function ListingContent({
     setNavigating(false);
   }, [pathname]);
 
-  const IMAGE_BASE_URL = "https://caravansforsale.imagestack.net/400x300/";
+  const IMAGE_BASE_URL = "https://caravansforsale.imagestack.net/800x600/";
 
   const IMAGE_EXT = ".avif";
 
@@ -620,8 +620,8 @@ export default function ListingContent({
                                   src={firstImage}
                                   priority={isPriority}
                                   alt="Caravan"
-                                  width={400}
-                                  height={300}
+                                  width={800}
+                                  height={600}
                                 />
                               </div>
                               <div
@@ -668,12 +668,12 @@ export default function ListingContent({
                                         <ImageWithSkeleton
                                           src={img}
                                           alt={`Caravan ${i + 1}`}
-                                          width={400}
-                                          height={300}
+                                          width={800}
+                                          height={600}
                                         />
                                       </div>
                                     </SwiperSlide>
-                                  ))}
+                                  ))}thu
                                 </Swiper>
                               </div>
                             </div>
@@ -905,7 +905,7 @@ export default function ListingContent({
                   <div className="img">
                     <span className="lab">Spotlight Van</span>
                     <Image
-                          src="https://caravansforsale.imagestack.net/400x300/CFS-N-12800004/2025-newgen-ngb21s-21-luxury-slide-out-2main1.avif"
+                          src="https://caravansforsale.imagestack.net/800x600/CFS-N-12800004/2025-newgen-ngb21s-21-luxury-slide-out-2main1.avif"
                           alt="Caravan"
                           width={400}
                           height={300}
