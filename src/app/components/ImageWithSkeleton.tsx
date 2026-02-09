@@ -34,6 +34,7 @@ export default function ImageWithSkeleton({
     
     <div
       className={className}
+      
     >
       {/* Skeleton */}
       {!loaded && (

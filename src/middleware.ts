@@ -1,25 +1,55 @@
- import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { parseSlugToFilters } from "@/app/components/urlBuilder";
 
-// Simple in-memory cache (edge-compatible)
+/* ──────────────────────────────────────────────
+   Edge-safe in-memory cache
+────────────────────────────────────────────── */
 const seoCache = new Map<string, { robots: string; expires: number }>();
 const CACHE_TTL = 60 * 1000; // 1 minute
+
+/* ──────────────────────────────────────────────
+   Bot Detection
+────────────────────────────────────────────── */
+const BOT_USER_AGENTS = [
+  'googlebot',
+  'bingbot',
+  'slurp',
+  'duckduckbot',
+  'baiduspider',
+  'yandexbot',
+  'facebookexternalhit',
+  'twitterbot',
+  'linkedinbot',
+  'whatsapp',
+  'crawler',
+  'spider',
+  'bot'
+] as const;
+
+function isBot(userAgent: string): boolean {
+  if (!userAgent) return false;
+  const ua = userAgent.toLowerCase();
+  return BOT_USER_AGENTS.some(bot => ua.includes(bot));
+}
 
 export async function middleware(request: NextRequest) {
   const url = request.nextUrl.clone();
   const fullPath = url.pathname + url.search;
+  const userAgent = request.headers.get('user-agent') || '';
 
-  /* 0️⃣ Country Blocking */
-//   const country =
-//     request.headers.get("x-vercel-ip-country") ??
-//     request.headers.get("cf-ipcountry");
-// console.log("Detected1 country:", country);
-//   if (country && ["SG", "CN"].includes(country)) {
-//     return new NextResponse("This website is not available in your region.", {
-//       status: 403,
-//     });
-//   }
-// console.log("Detected country:", country);
+  /* 🤖 STEP 1: Bot Detection - Let Cloudflare Worker Handle It */
+  if (isBot(userAgent)) {
+    console.log(`🤖 Bot detected: ${userAgent.substring(0, 50)}...`);
+    
+    // Just pass through - Cloudflare Worker will serve from KV
+    // Don't try to fetch from KV API here - let the Worker do it
+    const response = NextResponse.next();
+    
+    // Add header to help Worker identify bot traffic
+    response.headers.set('X-Is-Bot', 'true');
+    
+    return response;
+  }
 
   /* 1️⃣ Block /feed URLs */
   if (/feed/i.test(fullPath)) {
@@ -35,11 +65,11 @@ export async function middleware(request: NextRequest) {
   /* 3️⃣ Default response */
   const response = NextResponse.next();
 
-  /* 4️⃣ SEO Header - WITH TIMEOUT & CACHE */
+  /* 4️⃣ SEO Middleware (LISTINGS ONLY) */
   if (url.pathname.startsWith("/listings")) {
-    const cacheKey = url.pathname;
+    const cacheKey = fullPath;
 
-    // Check cache first
+    /* 🔹 Cache hit */
     const cached = seoCache.get(cacheKey);
     if (cached && cached.expires > Date.now()) {
       response.headers.set("X-Robots-Tag", cached.robots);
@@ -61,43 +91,53 @@ export async function middleware(request: NextRequest) {
         "https://admin.caravansforsale.com.au/wp-json/cfs/v1/new_optimize_code?" +
         new URLSearchParams(filters as Record<string, string>).toString();
 
-      // ✅ KEY FIX: Add timeout using AbortController
+      /* 🔹 AbortController with safe timeout */
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 800); // 800ms timeout
+      const timeoutId = setTimeout(() => controller.abort(), 1200);
 
       const apiRes = await fetch(apiUrl, {
-        headers: { "User-Agent": "next-middleware" },
+        headers: {
+          "User-Agent": "next-middleware",
+        },
         signal: controller.signal,
-        // @ts-ignore - Next.js edge cache
+        // @ts-ignore - Edge runtime specific
         next: { revalidate: 60 },
       });
 
       clearTimeout(timeoutId);
 
+      let robotsHeader = "index, follow";
+
       if (apiRes.ok) {
         const data = await apiRes.json();
 
-        const rawIndex = String(data?.seo?.index ?? "").toLowerCase().trim();
-        const rawFollow = String(data?.seo?.follow ?? "").toLowerCase().trim();
+        const rawIndex = String(data?.seo?.index ?? "")
+          .toLowerCase()
+          .trim();
 
-        const robotsHeader =
+        const rawFollow = String(data?.seo?.follow ?? "")
+          .toLowerCase()
+          .trim();
+
+        robotsHeader =
           (rawIndex === "noindex" ? "noindex" : "index") +
           ", " +
           (rawFollow === "nofollow" ? "nofollow" : "follow");
-
-        // Save to cache
-        seoCache.set(cacheKey, {
-          robots: robotsHeader,
-          expires: Date.now() + CACHE_TTL,
-        });
-
-        response.headers.set("X-Robots-Tag", robotsHeader);
-      } else {
-        response.headers.set("X-Robots-Tag", "index, follow");
       }
-    } catch (error) {
-      // Timeout or network error - use safe default
-      console.error("Middleware SEO error:", error);
+
+      /* 🔹 Save to cache */
+      seoCache.set(cacheKey, {
+        robots: robotsHeader,
+        expires: Date.now() + CACHE_TTL,
+      });
+
+      response.headers.set("X-Robots-Tag", robotsHeader);
+    } catch (error: any) {
+      /* ✅ AbortError is EXPECTED → ignore silently */
+      if (error?.name !== "AbortError") {
+        console.error("Middleware SEO error:", error);
+      }
+
       response.headers.set("X-Robots-Tag", "index, follow");
     }
   }
@@ -105,8 +145,12 @@ export async function middleware(request: NextRequest) {
   return response;
 }
 
+/* ──────────────────────────────────────────────
+   Matcher
+────────────────────────────────────────────── */
 export const config = {
   matcher: [
+    "/",
     "/listings/:path*",
     "/((?!_next/static|_next/image|favicon.ico).*)",
   ],

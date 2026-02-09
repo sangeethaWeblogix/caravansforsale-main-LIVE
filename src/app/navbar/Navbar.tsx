@@ -1,11 +1,23 @@
- "use client";
+  "use client";
 
 import "./navbar.css";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
- import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 
+
+type DropdownType = "state" | "category" | "price" | null;
+export default function Navbar() {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const [openDropdown, setOpenDropdown] = useState<DropdownType>(null);
+  const toggleNav = () => setIsOpen(!isOpen);
+  const [navigating, setNavigating] = useState(false);
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [open, setOpen] = useState(false);
+const dropdownRef = useRef<HTMLDivElement | null>(null);
 const STATES = [
   "New South Wales",
   "Queensland",
@@ -29,29 +41,30 @@ const PRICES = [
   50000, 60000, 70000, 80000, 90000, 100000, 120000, 140000, 160000, 180000,
   200000,
 ];
-type DropdownType = "state" | "category" | "price" | null;
-export default function Navbar() {
-  const [isOpen, setIsOpen] = useState(false);
- 
-  const [openDropdown, setOpenDropdown] = useState<DropdownType>(null);
-  const toggleNav = () => setIsOpen(!isOpen);
-     const [navigating, setNavigating] = useState(false);
-  const pathname = usePathname();
-const searchParams = useSearchParams();
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
-useEffect(() => {
-  if (navigating) {
-    // When URL changes → navigation is completed
-    setNavigating(false);
-  }
-}, [pathname, searchParams]);
+  useEffect(() => {
+    if (navigating) {
+      // When URL changes → navigation is completed
+      setNavigating(false);
+    }
+  }, [pathname, searchParams]);
 
   const closeNav = () => {
     setIsOpen(false);
     setOpenDropdown(null);
   };
 
-  
+
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
     setMounted(true);
@@ -69,7 +82,7 @@ useEffect(() => {
           <div className="logo_left">
             <Link className="navbar-brand" href="/">
               <Image
-                src="/images/cfs-logo-black.svg"
+                src="/images/cfs-logo-black.svg?=1"
                 alt="Caravans For Sale"
                 width={150}
                 height={50}
@@ -91,18 +104,46 @@ useEffect(() => {
               <span className="navbar-toggler-icon"></span>
             </button>
 
-            <div
+          {/* <div
               className="collapse navbar-collapse justify-content-end"
               id="navbarSupportedContent"
             >
-              {/* <ul className="navbar-nav mb-2 mb-lg-0">
+              <ul className="navbar-nav mb-2 mb-lg-0">
                 <li className="nav-item">
-                  <Link className="nav-link" href="/listings/">
-                    About Our Deals
+                  <Link className="nav-link" href="/sell-my-caravan/">
+                    Sell My Caravan
                   </Link>
                 </li>
-              </ul> */}
-            </div>
+                <li className="nav-item">
+                  <Link className="nav-link" href="/dealer-advertising/">
+                    Dealer Advertising
+                  </Link>
+                </li>
+                <li className="nav-item login">
+                  <Link className="nav-link" href="/login/">
+                    <i className="bi bi-person-fill"></i> Login
+                  </Link>
+                </li>
+              </ul>
+            </div> */}
+
+            {/*<div className="navbar-right" ref={dropdownRef}>
+              <button className="profile-btn" onClick={() => setOpen(!open)}>
+                <span className="profile-icon"><i className="bi bi-person-fill"></i></span>
+              </button>
+
+              {open && (
+                <div className="profile-dropdown">
+                  <a href="/login" className="dropdown-item">
+                    <span><i className="bi bi-person-fill"></i></span> Login
+                  </a>
+                  <a href="/login" className="dropdown-item">
+                    <span><i className="bi bi-person-fill-add"></i></span> Register
+                  </a>
+                </div>
+              )}
+            </div> */}
+
 
             <div className="left_menu">
               <input
@@ -130,150 +171,82 @@ useEffect(() => {
         <div id="mySidenav" className={`sidenav ${isOpen ? "open" : ""}`}>
           <div className="sidebar-navigation">
             <ul>
-              <li className={openDropdown === "state" ? "selected" : ""}>
-                {" "}
-                <div
-                  className="drop_down"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    toggleDropdown("state");
-                  }}
-                >
-                  Browse by State
-                </div>
-                <ul
-                  className={
-                    openDropdown === "state" ? "submenu open" : "submenu"
-                  }
-                >
-                  {STATES.map((state) => (
-                    <li key={state}>
-                      <Link
-                        className="dropdown-item"
-                        href={`/listings/${state
-                          .toLowerCase()
-                          .replace(/ /g, "-")}-state/`}
-                        onClick={() => {
-    setNavigating(true); // start loader immediately
-    closeNav();
-  }}
-                      >
-                        {state}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </li>
-
-              <li className={openDropdown === "category" ? "selected" : ""}>
-                <div
-                  className="drop_down"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    toggleDropdown("category");
-                  }}
-                >
-                  Browse by Category
-                </div>
-                <ul
-                  className={
-                    openDropdown === "category" ? "submenu open" : "submenu"
-                  }
-                >
-                  {CATEGORIES.map((cat) => (
-                    <li key={cat}>
-                      <Link
-                        className="dropdown-item"
-                        href={`/listings/${cat}-category/`}
-                        onClick={() => {
-    setNavigating(true); // start loader immediately
-    closeNav();
-  }}
-                      >
-                        {cat
-                          .replace(/-/g, " ")
-                          .replace(/\b\w/g, (c) => c.toUpperCase())}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </li>
-
-              <li className={openDropdown === "price" ? "selected" : ""}>
-                <div
-                  className="drop_down"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    toggleDropdown("price");
-                  }}
-                >
-                  Browse by Price
-                </div>
-                <ul
-                  className={
-                    openDropdown === "price" ? "submenu open" : "submenu"
-                  }
-                >
-                  {PRICES.map((price) => (
-                    <li key={price}>
-                      <Link
-                        className="dropdown-item"
-                        href={`/listings/under-${price}/`}
-                        onClick={() => {
-    setNavigating(true); // start loader immediately
-    closeNav();
-  }}
-                      >
-                        Under ${price.toLocaleString()}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </li>
 
               {/* <li>
-              <Link href="/caravan-dealers/" onClick={() => {
-    setNavigating(true); // start loader immediately
-    closeNav();
-  }}>
-                Caravan Dealers
-              </Link>
-            </li> */}
+                <Link href="/sell-my-caravan/"
+                  onClick={() => {
+                    setNavigating(true); // start loader immediately
+                    closeNav();
+                  }}
+                >
+                  Sell My Caravan
+                </Link>
+              </li> */}
+
+              {/* <li>
+                <Link href="/dealer-advertising/"
+                  onClick={() => {
+                    setNavigating(true); // start loader immediately
+                    closeNav();
+                  }}
+                >
+                  Dealer Advertising
+                </Link>
+              </li> */}
+              
               <li>
-                <Link href="/listings/"  
-  onClick={() => {
-    setNavigating(true); // start loader immediately
-    closeNav();
-  }}
->
+                <a href="/listings/"
+                  onClick={() => {
+                     
+                    closeNav();
+                  }}
+                >
                   All Listings
-                </Link>
+                </a>
               </li>
+             {/* <li>
+                <a href="/used-all/"
+                  onClick={() => {
+                    setNavigating(true); // start loader immediately
+                    closeNav();
+                  }}
+                >
+                  Used Caravans
+                </a>
+              </li>  */}
               <li>
-                <Link href="/blog/" onClick={() => {
-    setNavigating(true); // start loader immediately
-    closeNav();
-  }} >
+                <a href="/blog/" onClick={() => {
+                  // setNavigating(true); // start loader immediately
+                  closeNav();
+                }} >
                   Blog
-                </Link>
+                </a>
               </li>
               <li>
-                <Link href="/contact/" onClick={() => {
-    setNavigating(true); // start loader immediately
-    closeNav();
-  }}>
+                <a href="/about-us/" onClick={() => {
+                  // setNavigating(true); // start loader immediately
+                  closeNav();
+                }} >
+                  About
+                </a>
+              </li>
+              <li>
+                <a href="/contact/" onClick={() => {
+                  // setNavigating(true); // start loader immediately
+                  closeNav();
+                }}>
                   Contact
-                </Link>
+                </a>
               </li>
             </ul>
             <div className="mobile_cta hidden-lg hidden-md">
               <span>Find Your Ideal Caravan</span>
-              <Link className="btn btn-primary" href="/caravan-enquiry-form/" onClick={() => {
-    setNavigating(true); // start loader immediately
-    closeNav();
-  }}>
+              <a className="btn btn-primary" href="/caravan-enquiry-form/" onClick={() => {
+                setNavigating(true); // start loader immediately
+                closeNav();
+              }}>
                 Enquire Now
-              </Link>
+              </a>
             </div>
           </div>
         </div>
@@ -283,8 +256,9 @@ useEffect(() => {
       <div
         className={`overlay-close ${isOpen ? "active" : ""}`}
         onClick={() => {
-    closeNav();
-  }}
+          setNavigating(true); // start loader immediately
+          closeNav();
+        }}
       ></div>
       <div
         id="overlay"
@@ -294,29 +268,29 @@ useEffect(() => {
         }}
       ></div>
 
-         {navigating && (
-         <div
-           className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
-           style={{
-             background: "rgba(255,255,255,0.6)",
-             backdropFilter: "blur(2px)",
-             zIndex: 9999,
-           }}
-           aria-live="polite"
-         >
-           <div className="text-center">
-             <Image
-               className="loader_image"
-               src="/images/loader.gif" // place inside public/images
-               alt="Loading..."
-               width={80}
-               height={80}
-              />{" "}
-             <div className="mt-2 fw-semibold">Loading…</div>
-           </div>
-         </div>
+      {navigating && (
+        <div
+          className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
+          style={{
+            background: "rgba(255,255,255,0.6)",
+            backdropFilter: "blur(2px)",
+            zIndex: 9999,
+          }}
+          aria-live="polite"
+        >
+          <div className="text-center">
+            <Image
+              className="loader_image"
+              src="/images/loader.gif" // place inside public/images
+              alt="Loading..."
+              width={80}
+              height={80}
+            />{" "}
+            <div className="mt-2 fw-semibold">Loading…</div>
+          </div>
+        </div>
 
-       )}
+      )}
     </>
   );
 }

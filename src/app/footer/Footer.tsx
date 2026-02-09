@@ -21,38 +21,29 @@ const Footer = () => {
     <>
       <footer className="style-8">
         <div className="container">
-          <div className="foot py-4 border-1 border-top brd-gray">
+          <div className="foot py-4  brd-gray">
             <div className="row">
               {/* Left Column */}
-              <div className="col-lg-6">
+              <div className="col-lg-8">
                 <div>
                   <p>
-                    Caravan Marketplace (Web Logix) ABN 92 009 784 881. <br />
+                    Marketplace Network Pty Ltd. ABN : 70 694 987 052 <br />
                     Copyright © {currentYear ?? "----"}. All Rights Reserved.
                   </p>
                 </div>
                 <div className="disclaimer" style={{ marginTop: "12px" }}>
                   <p>
-                    Disclaimer: Caravan marketplace is not affiliated with any
-                    manufacturers, dealers listed on our website. All product
-                    data listed on our website including logos, and brands are
-                    property of their respective owners. Product information is
-                    provided for informational purposes only.
+                    Disclaimer: Marketplace Network operates a portfolio of independent “for sale” marketplace websites. Marketplace Network is not affiliated with, endorsed by, or associated with any manufacturers, dealers, advertisers, or sellers listed on our websites unless expressly stated.
                     <br />
-                    Caravan marketplace does not make any warranty as to the
-                    accuracy, completeness or reliability of the information or
-                    accept any liability arising in any way from any omissions
-                    or errors. The information should not be regarded as advice
-                    or relied upon by you or any other person and we recommend
-                    that you seek professional advice before making any purchase
-                    decisions.
+                    All product information, images, logos, trademarks, and brand names displayed on our websites are the property of their respective owners and are used for identification and informational purposes only.
+Marketplace Network makes no representations or warranties regarding the accuracy, completeness, or reliability of any information published on its platforms and accepts no liability for any loss or damage arising from reliance on such information. Information provided on our websites should not be considered professional, financial, or purchasing advice. Users are encouraged to conduct their own due diligence and seek independent professional advice before making any purchasing or commercial decisions.
                   </p>
                 </div>
               </div>
 
               {/* About Us Column */}
-              <div className="col-lg-3 col-sm-6">
-                <h6 className="foot-title foot_xs">About Us</h6>
+              <div className="col-lg-4 col-sm-12">
+                <h6 className="foot-title foot_xs">Company</h6>
                 <ul className="menu footer_xs">
                   <li>
                     <Link href="/listings/">For Sale</Link>
@@ -81,7 +72,7 @@ const Footer = () => {
               </div>
 
               {/* Popular Pages Column */}
-              <div className="col-lg-3 col-sm-6">
+              {/* <div className="col-lg-3 col-sm-6">
                 <h6 className="foot-title foot_xs">Popular Pages</h6>
                 <ul className="menu footer_xs">
                   <li>
@@ -113,11 +104,11 @@ const Footer = () => {
                     <Link href="/touring-caravans/">Best Touring Caravans</Link>
                   </li>
                 </ul>
-              </div>
+              </div> */}
             </div>
 
             {/* Social Icons */}
-            <div className="content mt-3">
+            {/*<div className="content mt-3">
               <div className="foot-info logo-social">
                 <div className="socials">
                   <a
@@ -171,7 +162,7 @@ const Footer = () => {
                   </a>
                 </div>
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
       </footer>

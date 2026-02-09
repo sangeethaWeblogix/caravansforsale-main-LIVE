@@ -1,17 +1,17 @@
- import React, { ReactNode } from "react";
-  import "../components/ListContent/newList.css"
-import "./listings.css"
+import React, { ReactNode } from "react";
+import "../components/ListContent/newList.css";
+import "./listings.css";
 import { Metadata } from "next";
 
-export const revalidate = 60;
- 
- export const metadata: Metadata = {
+export const revalidate = 0;
+
+export const metadata: Metadata = {
   title: "Caravans For Sale in Australia - Find Exclusive Deals",
-    description:
-      "Browse new & used caravans for sale across Australia. Compare off-road, hybrid, pop-top & luxury models by price, size, weight and sleeping capacity.",
+  description:
+    "Browse new & used caravans for sale across Australia. Compare off-road, hybrid, pop-top & luxury models by price, size, weight and sleeping capacity.",
   robots: "index, follow",
   openGraph: {
-     title: "Caravans For Sale in Australia - Find Exclusive Deals",
+    title: "Caravans For Sale in Australia - Find Exclusive Deals",
     description:
       "Browse new & used caravans for sale across Australia. Compare off-road, hybrid, pop-top & luxury models by price, size, weight and sleeping capacity.",
   },
@@ -29,7 +29,6 @@ export const revalidate = 60;
   },
 };
 
-  export default function Layout({ children }: { children: ReactNode }) {
-   return <div>{children}</div>;
- }
- 
+export default function Layout({ children }: { children: ReactNode }) {
+  return <div>{children}</div>;
+}

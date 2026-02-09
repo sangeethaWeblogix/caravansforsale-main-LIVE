@@ -64,18 +64,7 @@ export default function ListingsError({ error, reset }: ErrorProps) {
               Try Again
             </button>
 
-            <Link
-              href="/"
-              className="btn btn-outline-secondary px-8 py-3 rounded-lg font-medium transition-all"
-              style={{
-                border: "2px solid #6c757d",
-                color: "#6c757d",
-                textDecoration: "none",
-              }}
-            >
-              <i className="bi bi-house me-2"></i>
-              Go to Homepage
-            </Link>
+            
           </div>
 
           {/* Help Text */}
