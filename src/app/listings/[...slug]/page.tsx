@@ -1,4 +1,4 @@
- // app/(listings)/[[...slug]]/page.tsx
+  // app/(listings)/[[...slug]]/page.tsx
 function normalizeSlug(v: string = "") {
   return decodeURIComponent(v)
     .replace(/\s+/g, "+")     // convert spaces back to +
