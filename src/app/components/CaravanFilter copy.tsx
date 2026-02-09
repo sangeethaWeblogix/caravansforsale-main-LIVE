@@ -10,9 +10,8 @@ import React, {
 } from "react";
 import { BiChevronDown } from "react-icons/bi";
 import { usePathname, useRouter } from "next/navigation";
-import { useSearchParams } from "next/navigation";
+// import { useSearchParams } from "next/navigation";
 import { fetchProductList } from "@/api/productList/api";
-import { fetchModelsByMake } from "@/api/model/api";
 import "./filter.css";
 import { buildSlugFromFilters } from "./slugBuilter";
 import { buildUpdatedFilters } from "./buildUpdatedFilters";
@@ -20,6 +19,8 @@ import {
   fetchKeywordSuggestions,
   fetchHomeSearchList,
 } from "@/api/homeSearch/api";
+import { flushSync } from "react-dom";
+import { fetchMakeDetails } from "@/api/make-new/api";
 
 type LocationSuggestion = {
   key: string;
@@ -46,14 +47,18 @@ interface StateOption {
   }[];
 }
 
+interface MakeModel {
+  name: string;
+  slug: string;
+}
+
 interface Make {
+  id?: number;
   name: string;
   slug: string;
+  models?: MakeModel[];
 }
-interface Model {
-  name: string;
-  slug: string;
-}
+
 export interface Filters {
   page?: number | string; // <- allow both
   category?: string;
@@ -80,12 +85,18 @@ export interface Filters {
   radius_kms?: number | string; // <- allow both
   search?: string; // <- for search
   keyword?: string; // <- for keyword search
+    __preview?: boolean; // 🔥 ADD THIS
+
 }
 
 interface CaravanFilterProps {
   categories: Category[];
   makes: Make[];
   models: Model[];
+  setIsLoading?: (val: boolean) => void;
+  setIsMainLoading?: (val: boolean) => void;
+  setIsFeaturedLoading?: (val: boolean) => void;
+  setIsPremiumLoading?: (val: boolean) => void;
   states: StateOption[];
   currentFilters: Filters;
   onFilterChange: (filters: Filters) => void;
@@ -119,16 +130,21 @@ type KeywordItem = { label: string; url?: string };
 const CaravanFilter: React.FC<CaravanFilterProps> = ({
   onFilterChange,
   currentFilters,
+  setIsFeaturedLoading,
+  setIsPremiumLoading,
+  setIsMainLoading,
+  setIsLoading,
 }) => {
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
+  // const searchParams = useSearchParams();
   const RADIUS_OPTIONS = [50, 100, 250, 500, 1000] as const;
   const [radiusKms, setRadiusKms] = useState<number>(RADIUS_OPTIONS[0]);
   const [categoryOpen, setCategoryOpen] = useState(false);
   const [categories, setCategories] = useState<Option[]>([]);
+  const [visibleCount, setVisibleCount] = useState(10);
 
-  const [makes, setMakes] = useState<Option[]>([]);
+  const [makes, setMakes] = useState<Make[]>([]);
   const [model, setModel] = useState<Model[]>([]);
   const [states, setStates] = useState<StateOption[]>([]);
   const [makeOpen, setMakeOpen] = useState(false);
@@ -137,7 +153,9 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
   const [filteredSuburbs, setFilteredSuburbs] = useState<Suburb[]>([]);
   const [filters, setFilters] = useState<Filters>({});
   const [conditionOpen, setConditionOpen] = useState(false);
-  const [sleepsOpen, setSleepsOpen] = useState(false);
+  const [yearOpen, setYearOpen] = useState(false);
+const makeApiCalledRef = useRef(false);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isKeywordModalOpen, setIsKeywordModalOpen] = useState(false);
 
@@ -157,6 +175,25 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
   );
   // top (other states kula)
   const [modalKeyword, setModalKeyword] = useState("");
+  const [showAllModels, setShowAllModels] = useState(false);
+  const hasCategoryBeenSetRef = useRef(false);
+    const categoryApiCalledRef = useRef(false);
+
+  const prevSuburbsKeyRef = useRef<string>("");
+  const radiusDebounceRef = useRef<number | null>(null);
+  const regionSetAfterSuburbRef = useRef(false);
+
+  const makeInitializedRef = useRef(false); // ✅ add at top of component
+
+  const lastPushedURLRef = useRef<string>("");
+  const mountedRef = useRef(false);
+
+  const lastSentFiltersRef = useRef<Filters | null>(null);
+
+  const keepModelOpenRef = useRef(false);
+  const isUserTypingRef = useRef(false);
+
+  const hydratedKeyRef = useRef("");
 
   const suburbClickedRef = useRef(false);
   const [selectedConditionName, setSelectedConditionName] = useState<
@@ -188,7 +225,9 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
   const [searchMake, setSearchMake] = useState("");
   const [filteredMakes, setFilteredMakes] = useState(makes);
   const [selectedMakeTemp, setSelectedMakeTemp] = useState<string | null>(null);
-
+const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+const [categorySearch, setCategorySearch] = useState("");
+const autoCloseTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [baseKeywords, setBaseKeywords] = useState<KeywordItem[]>([]);
   const [keywordLoading, setKeywordLoading] = useState(false);
   const [baseLoading, setBaseLoading] = useState(false);
@@ -201,9 +240,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
   const conditionDatas = ["New", "Used"];
   const [minPrice, setMinPrice] = useState<number | null>(null);
   const [maxPrice, setMaxPrice] = useState<number | null>(null);
-  const [selectedSleepName, setSelectedSleepName] = useState<string | null>(
-    null
-  );
+
   const filtersInitialized = useRef(false);
   const [yearFrom, setYearFrom] = useState<number | null>(null);
   const [yearTo, setYearTo] = useState<number | null>(null);
@@ -214,15 +251,15 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     600, 800, 1000, 1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000, 3500, 4000,
     4500,
   ];
-
+  console.log(onFilterChange);
   const price = [
     10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000,
     125000, 150000, 175000, 200000, 225000, 250000, 275000, 300000,
   ];
 
   const years = [
-    2025, 2024, 2023, 2022, 2021, 2020, 2019, 2018, 2017, 2016, 2015, 2014,
-    2013, 2012, 2011, 2010, 2009, 2008, 2007, 2006, 2005, 2004,
+    2026, 2025, 2024, 2023, 2022, 2021, 2020, 2019, 2018, 2017, 2016, 2015,
+    2014, 2013, 2012, 2011, 2010, 2009, 2008, 2007, 2006, 2005, 2004,
   ];
 
   const length = [
@@ -246,15 +283,38 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
   //   typeof s === "string" && s.trim().length > 0;
   // 🔽 put this inside the component, under updateAllFiltersAndURL
   const commit = (next: Filters) => {
-    setFilters(next);
+    // Preserve existing filters that aren't being explicitly updated
+    const mergedFilters = {
+      ...currentFilters,
+      ...filters, // Include any pending local filter changes
+      ...next, // Apply the new changes
+    };
+
+    setFilters(mergedFilters);
     filtersInitialized.current = true;
-    lastSentFiltersRef.current = next; // dedupe
+    lastSentFiltersRef.current = mergedFilters;
+
     startTransition(() => {
-      updateAllFiltersAndURL(next); // ← pass the fresh object
+      updateAllFiltersAndURL(mergedFilters);
+    });
+  };
+
+  const triggerGlobalLoaders = () => {
+    flushSync(() => {
+      if (setIsLoading) setIsLoading(true);
+      if (setIsMainLoading) setIsMainLoading(true);
+      if (setIsFeaturedLoading) setIsFeaturedLoading(true);
+      if (setIsPremiumLoading) setIsPremiumLoading(true);
     });
   };
 
   // pick a human-readable text from item
+const [tempCategory, setTempCategory] = useState<string | null>(null);
+useEffect(() => {
+  if (isCategoryModalOpen) {
+    setTempCategory(selectedCategory);
+  }
+}, [isCategoryModalOpen]);
 
   // works for (HomeSearchItem | string)[]
   useEffect(() => {
@@ -443,6 +503,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
   const applyKeywordFromModal = () => {
     const raw = modalKeyword.trim();
     if (!raw) return;
+    triggerGlobalLoaders();
 
     const allItems = [...baseKeywords, ...keywordSuggestions];
     const match = allItems.find(
@@ -499,58 +560,45 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     return () => clearTimeout(t);
   }, [locationInput, showSuggestions]);
 
+  // 🔧 FIXED hydrateLocation function
   const hydrateLocation = (next: Filters): Filters => {
     const out: Filters = { ...next };
 
-    // const safeState = next.state || selectedStateName || null;
+    for (const key of ["state", "region", "suburb", "pincode"] as const) {
+      if (typeof out[key] === "string" && !out[key]?.trim()) delete out[key];
+    }
 
-    if (out.state === undefined && !next.state) {
+    // ⛔ DO NOT rehydrate if user manually cleared
+    if (
+      !out.region &&
+      selectedRegionName &&
+      !regionManuallyClearedRef.current
+    ) {
+      out.region = selectedRegionName;
+    }
+
+    if (suburbManuallyClearedRef.current) {
+      delete out.suburb;
+      delete out.pincode;
       return out;
     }
-
-    // if (safeState) {
-    //   const abbr = AUS_ABBR[safeState] || safeState;
-    //   out.state = abbr; // always abbreviation if mapping exists
-    // }
-
-    if (!out.state && selectedStateName) {
-      out.state = selectedStateName;
-    }
-
-    const validRegion = getValidRegionName(
-      out.state || selectedStateName,
-      out.region,
-      states
-    );
-
-    if (out.region && !validRegion) {
-      delete out.region;
-    } else if (validRegion) {
-      out.region = validRegion;
-    }
-
-    if (typeof out.suburb === "string" && out.suburb.trim() === "")
-      delete out.suburb;
-    if (typeof out.pincode === "string" && out.pincode.trim() === "")
-      delete out.pincode;
-
     return out;
   };
 
-  const clearKeyword = () => {
-    const next: Filters = {
-      ...currentFilters,
-      keyword: undefined,
-      search: undefined,
-    };
+  // const clearKeyword = () => {
+  //   const next: Filters = {
+  //     ...currentFilters,
+  //     keyword: undefined,
+  //     search: undefined,
+  //   };
 
-    setKeywordInput(""); // ← clear the field instantly
-    setFilters(next); // update local first (wins in effect)
-    filtersInitialized.current = true;
-    lastSentFiltersRef.current = next; // avoid re-send flicker
-    // onFilterChange(next); // if your parent needs it
-    updateAllFiltersAndURL(next);
-  };
+  //   setKeywordInput(""); // ← clear the field instantly
+  //   setFilters(next); // update local first (wins in effect)
+  //   filtersInitialized.current = true;
+  //   lastSentFiltersRef.current = next; // avoid re-send flicker
+  //   // onFilterChange(next); // if your parent needs it
+  //   updateAllFiltersAndURL(next);
+  // };
   const didFetchRef = useRef(false);
   useEffect(() => {
     if (didFetchRef.current) return;
@@ -559,11 +607,19 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
       const res = await fetchProductList();
       if (res?.data) {
         setCategories(res.data.all_categories || []);
-        setMakes(res.data.make_options || []);
         setStates(res.data.states || []);
       }
     };
     loadFilters();
+  }, []);
+
+  useEffect(() => {
+    const load = async () => {
+      const list = await fetchMakeDetails();
+      setMakes(list); // includes models[]
+      setModelOpen(true);
+    };
+    load();
   }, []);
 
   type UnknownRec = Record<string, unknown>;
@@ -617,6 +673,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
   }, [currentFilters.radius_kms]);
 
   const handleATMChange = (newFrom: number | null, newTo: number | null) => {
+    triggerGlobalLoaders();
     setAtmFrom(newFrom);
     setAtmTo(newTo);
 
@@ -713,11 +770,6 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
         : null
     );
 
-    setSelectedSleepName(
-      currentFilters.sleeps
-        ? currentFilters.sleeps.replace("-people", "")
-        : null
-    );
     setSelectedConditionName(currentFilters.condition ?? null);
   }, [
     currentFilters.minKg,
@@ -730,29 +782,17 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     currentFilters.condition,
   ]);
 
-  const isModelFetchCompleteRef = useRef(false); // ADD THIS
-
   // correct 3
   useEffect(() => {
-    if (!selectedMake) {
+    if (!selectedMake || makes.length === 0) {
       setModel([]);
-      setSelectedModel(null);
-      setSelectedModelName(null);
-      setModelOpen(false);
       return;
     }
 
-    // Just fetch models — no URL updates
-    fetchModelsByMake(selectedMake)
-      .then((models) => {
-        setModel(models || []);
-        isModelFetchCompleteRef.current = true;
-        setSelectedModel(null);
-        setSelectedModelName(null);
-        setModelOpen(true);
-      })
-      .catch(console.error);
-  }, [selectedMake]);
+    const make = makes.find((m) => m.slug === selectedMake);
+    setModel(make?.models || []);
+    setModelOpen(true);
+  }, [selectedMake, makes]);
 
   const [locationSuggestions, setLocationSuggestions] = useState<
     LocationSuggestion[]
@@ -791,6 +831,13 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     padding: "6px 23px",
     cursor: "pointer",
     background: highlight ? "#f7f7f7" : "transparent",
+  });
+  const suburbStyle = (isSelected: boolean) => ({
+    marginLeft: "24px",
+    cursor: "pointer",
+    padding: "6px 12px",
+    borderRadius: "4px",
+    backgroundColor: isSelected ? "#e8f0fe" : "transparent",
   });
   const iconRowStyle = {
     display: "flex",
@@ -886,41 +933,38 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
   ]);
 
   const resetStateFilters = () => {
-    // ✅ Clear all location-related UI state
+    // UI
     setSelectedState(null);
     setSelectedStateName(null);
     setSelectedRegion("");
     setSelectedRegionName(null);
     setSelectedSuburbName(null);
     setSelectedpincode(null);
-    // setFilteredRegions([]);
     setFilteredSuburbs([]);
     setLocationInput("");
-    setStateRegionOpen(false);
 
-    // ✅ Delay filter clearing until React state updates apply
-    setTimeout(() => {
-      const updatedFilters: Filters = {
-        ...currentFilters,
-        ...filters,
-        state: undefined,
-        region: undefined,
-        suburb: undefined,
-        pincode: undefined,
-        location: null,
-      };
-      setFilters(updatedFilters);
-      onFilterChange(updatedFilters);
-      // filtersInitialized.current = true;
-      // setFilters(updatedFilters);
+    // Filters
+    const updatedFilters: Filters = {
+      ...currentFilters,
+      state: undefined,
+      region: undefined,
+      suburb: undefined,
+      pincode: undefined,
+      location: null,
+    };
 
-      // startTransition(() => {
-      //   updateAllFiltersAndURL(updatedFilters);
-      // });
-    }, 0); // Allow React to flush UI state
+    setFilters(updatedFilters);
+    filtersInitialized.current = true;
+
+    startTransition(() => {
+      updateAllFiltersAndURL(updatedFilters);
+    });
   };
-
+  const regionManuallyClearedRef = useRef(false);
   const resetRegionFilters = () => {
+    regionManuallyClearedRef.current = true; // 👈 IMPORTANT
+
+    // UI
     setSelectedRegion("");
     setSelectedRegionName(null);
     setSelectedSuburbName(null);
@@ -929,13 +973,18 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
 
     const updatedFilters: Filters = {
       ...currentFilters,
-      region: undefined,
-      suburb: undefined,
-      pincode: undefined,
     };
 
+    delete updatedFilters.region;
+    delete updatedFilters.suburb;
+    delete updatedFilters.pincode;
+
     setFilters(updatedFilters);
-    onFilterChange(updatedFilters);
+    filtersInitialized.current = true;
+
+    startTransition(() => {
+      updateAllFiltersAndURL(updatedFilters);
+    });
   };
 
   const formatted = (s: string) =>
@@ -950,42 +999,24 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
       .replace(/\s{3,}/g, "  ") // collapse 3+ spaces -> 2
       .trim()
       .replace(/\b\w/g, (char) => char.toUpperCase());
+  const suburbManuallyClearedRef = useRef(false);
+
   const resetSuburbFilters = () => {
-    // ✅ keep state & region
-    // suppressLocationAutoClearRef.current = true; // 👈 tell the auto-clear effect to skip once
+    suburbManuallyClearedRef.current = true; // 👈 VERY IMPORTANT
+
     setSelectedSuburbName(null);
     setSelectedpincode(null);
     setLocationInput("");
-    setRadiusKms(RADIUS_OPTIONS[0]); // reset radius to default
-    setLocationSuggestions([]);
-    // ✅ rehydrate suburb list for the currently selected region
-    if (selectedStateName && selectedRegionName) {
-      const st = states.find(
-        (s) =>
-          s.name.toLowerCase() === selectedStateName.toLowerCase() ||
-          s.value.toLowerCase() === selectedStateName.toLowerCase()
-      );
-      const reg = st?.regions?.find(
-        (r) =>
-          r.name.toLowerCase() === selectedRegionName.toLowerCase() ||
-          r.value.toLowerCase() === selectedRegionName.toLowerCase()
-      );
-      setFilteredSuburbs(reg?.suburbs ?? []);
-    }
 
     const updatedFilters: Filters = {
       ...currentFilters,
-      // ✅ explicitly preserve state & region
-      state: selectedStateName || currentFilters.state,
-      region: selectedRegionName || currentFilters.region,
-      suburb: undefined,
-      pincode: undefined,
-      radius_kms: RADIUS_OPTIONS[0], // reset radius to default
     };
+
+    delete updatedFilters.suburb;
+    delete updatedFilters.pincode;
 
     setFilters(updatedFilters);
     filtersInitialized.current = true;
-    lastSentFiltersRef.current = updatedFilters;
 
     startTransition(() => {
       updateAllFiltersAndURL(updatedFilters);
@@ -995,7 +1026,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
   const handleSearchClick = () => {
     // Remove resetSuburbFilters call here as it clears the selections
     // resetSuburbFilters();
-
+    triggerGlobalLoaders();
     if (!suburbClickedRef.current || !selectedSuggestion) return;
 
     const parts = selectedSuggestion.uri.split("/");
@@ -1047,10 +1078,10 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     setFilters(updatedFilters);
     filtersInitialized.current = true;
 
-    startTransition(() => {
+    suburbClickedRef.current = true;
+    setTimeout(() => {
       updateAllFiltersAndURL(updatedFilters);
-    });
-
+    }, 100);
     const shortAddr =
       selectedSuggestion?.short_address ||
       buildShortAddress(suburb, state, pincode);
@@ -1063,72 +1094,74 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     suburbClickedRef.current = false;
   };
 
-  const resetFilters = () => {
-    const reset: Filters = {
-      make: undefined,
-      model: undefined,
-      category: undefined,
-      condition: undefined,
-      state: undefined,
-      region: undefined,
-      suburb: undefined,
-      pincode: undefined,
-      from_price: undefined,
-      to_price: undefined,
-      minKg: undefined,
-      maxKg: undefined,
-      sleeps: undefined,
-      from_length: undefined,
-      to_length: undefined,
-      acustom_fromyears: undefined,
-      acustom_toyears: undefined,
-      location: null,
-      radius_kms: RADIUS_OPTIONS[0], // ✅ 50 in payload
-    };
+  // const resetFilters = () => {
+  //   const reset: Filters = {
+  //     make: undefined,
+  //     model: undefined,
+  //     category: undefined,
+  //     condition: undefined,
+  //     state: undefined,
+  //     region: undefined,
+  //     suburb: undefined,
+  //     pincode: undefined,
+  //     from_price: undefined,
+  //     to_price: undefined,
+  //     from_sleep: undefined,
+  //     to_sleep: undefined,
+  //     minKg: undefined,
+  //     maxKg: undefined,
+  //     sleeps: undefined,
+  //     from_length: undefined,
+  //     to_length: undefined,
+  //     acustom_fromyears: undefined,
+  //     acustom_toyears: undefined,
+  //     location: null,
+  //     radius_kms: RADIUS_OPTIONS[0], // ✅ 50 in payload
+  //   };
 
-    // Clear UI states
-    setSelectedCategory(null);
-    setSelectedCategoryName(null);
-    setSelectedMake(null);
-    setSelectedMakeName(null);
-    setSelectedModel(null);
-    setSelectedModelName(null);
-    setSelectedConditionName(null);
-    setSelectedSleepName(null);
-    setModel([]);
-    // setFilteredRegions([]);
-    setFilteredSuburbs([]);
-    setLocationInput("");
-    setSelectedState(null);
-    setSelectedStateName(null);
-    setSelectedRegionName(null);
-    setSelectedSuburbName(null);
-    setSelectedpincode(null);
-    setMinPrice(null);
-    setMaxPrice(null);
-    setAtmFrom(null);
-    setAtmTo(null);
-    setYearFrom(null);
-    setYearTo(null);
-    setLengthFrom(null);
-    setLengthTo(null);
-    setRadiusKms(RADIUS_OPTIONS[0]);
+  //   // Clear UI states
+  //   setSelectedCategory(null);
+  //   setSelectedCategoryName(null);
+  //   setSelectedMake(null);
+  //   setSelectedMakeName(null);
+  //   setSelectedModel(null);
+  //   setSelectedModelName(null);
+  //   setSelectedConditionName(null);
+  //   setModel([]);
+  //   // setFilteredRegions([]);
+  //   setFilteredSuburbs([]);
+  //   setLocationInput("");
+  //   setSelectedState(null);
+  //   setSelectedStateName(null);
+  //   setSelectedRegionName(null);
+  //   setSelectedSuburbName(null);
+  //   setSelectedpincode(null);
+  //   setMinPrice(null);
+  //   setMaxPrice(null);
+  //   setAtmFrom(null);
+  //   setAtmTo(null);
+  //   setYearFrom(null);
+  //   setYearTo(null);
+  //   setSleepFrom(null);
+  //   setSleepTo(null);
+  //   setLengthFrom(null);
+  //   setLengthTo(null);
+  //   setRadiusKms(RADIUS_OPTIONS[0]);
 
-    filtersInitialized.current = true;
-    makeInitializedRef.current = false;
-    regionSetAfterSuburbRef.current = false;
-    suburbClickedRef.current = false;
-    clearKeyword();
-    // ✅ Fix: Call parent state update
-    onFilterChange(reset);
+  //   filtersInitialized.current = true;
+  //   makeInitializedRef.current = false;
+  //   regionSetAfterSuburbRef.current = false;
+  //   suburbClickedRef.current = false;
+  //   clearKeyword();
+  //   // ✅ Fix: Call parent state update
+  //   onFilterChange(reset);
 
-    setFilters(reset);
+  //   setFilters(reset);
 
-    startTransition(() => {
-      updateAllFiltersAndURL({ ...reset });
-    });
-  };
-  const radiusDebounceRef = useRef<number | null>(null);
+  //   startTransition(() => {
+  //     updateAllFiltersAndURL({ ...reset });
+  //   });
+  // };
   const isKnownMake = (slug?: string | null) =>
     !!slug && makes.some((m) => m.slug === slug);
 
@@ -1158,10 +1191,9 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
         ),
         suburb: selectedSuburbName ?? currentFilters.suburb ?? filters.suburb,
         pincode: selectedpincode ?? currentFilters.pincode ?? filters.pincode,
-        make: sanitizeMake(selectedMake || filters.make || currentFilters.make),
-        model: selectedModel || filters.model || currentFilters.model,
-        category:
-          selectedCategory || filters.category || currentFilters.category,
+        make: selectedMake ?? filters.make,
+        model: selectedModel ?? filters.model,
+        category: selectedCategory ?? filters.category,
       };
 
       const updated = buildUpdatedFilters(base, { radius_kms: radiusKms });
@@ -1197,7 +1229,6 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
 
   // 2) Keep your original effect body unchanged
   // put this near other refs
-  const prevSuburbsKeyRef = useRef<string>("");
 
   // helper to make a stable signature of a suburbs array
   const suburbsKey = (subs?: Suburb[]) =>
@@ -1242,7 +1273,6 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     currentFilters.pincode,
   ]);
 
-  const regionSetAfterSuburbRef = useRef(false);
   useEffect(() => {
     if (!isModalOpen || !showSuggestions || !isUserTypingRef.current) return;
 
@@ -1289,17 +1319,17 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
   }, [currentFilters.category, selectedCategory, categories]);
 
   // adaa
-  useEffect(() => {
-    const fromYearParam = searchParams.get("acustom_fromyears");
-    const toYearParam = searchParams.get("acustom_toyears");
 
-    if (fromYearParam) {
-      setYearFrom(parseInt(fromYearParam));
+  // 👇 Add this inside your component
+  useEffect(() => {
+    if (currentFilters?.acustom_fromyears) {
+      setYearFrom(Number(currentFilters.acustom_fromyears));
+      setYearTo(Number(currentFilters.acustom_toyears));
+    } else {
+      setYearFrom(null);
+      setYearTo(null);
     }
-    if (toYearParam) {
-      setYearTo(parseInt(toYearParam));
-    }
-  }, [searchParams]);
+  }, [currentFilters?.acustom_fromyears, currentFilters?.acustom_toyears]);
 
   useEffect(() => {
     if (
@@ -1335,25 +1365,23 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     selectedModelName,
   ]);
 
-  useEffect(() => {
-    if (
-      !makeInitializedRef.current &&
-      selectedMake &&
-      filtersInitialized.current &&
-      (!filters.make || filters.make !== selectedMake)
-    ) {
-      const updatedFilters = {
-        ...currentFilters,
-        make: selectedMake,
-        model: filters.model,
-      };
-      setFilters(updatedFilters);
-      // onFilterChange(updatedFilters);
-      makeInitializedRef.current = true;
-    }
-  }, [selectedMake]);
-
-  const makeInitializedRef = useRef(false); // ✅ add at top of component
+  // useEffect(() => {
+  //   if (
+  //     !makeInitializedRef.current &&
+  //     selectedMake &&
+  //     filtersInitialized.current &&
+  //     (!filters.make || filters.make !== selectedMake)
+  //   ) {
+  //     const updatedFilters = {
+  //       ...currentFilters,
+  //       make: selectedMake,
+  //       model: filters.model,
+  //     };
+  //     setFilters(updatedFilters);
+  //     // onFilterChange(updatedFilters);
+  //     makeInitializedRef.current = true;
+  //   }
+  // }, [selectedMake]);
 
   useEffect(() => {
     // Block hydration if we already initialized or make was reset
@@ -1395,7 +1423,6 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     }
   }, [pathname, selectedMake, makes, currentFilters.make]);
 
-  const hasCategoryBeenSetRef = useRef(false);
   // --- helpers ---
   // List only the keys you actually care about for equality + URL
   const FILTER_KEYS: (keyof Filters)[] = [
@@ -1449,7 +1476,6 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     }
   }, [selectedCategory]);
   // router issue
-  const lastPushedURLRef = useRef<string>("");
 
   useEffect(() => {
     if (!selectedModel || model.length === 0) return;
@@ -1477,51 +1503,38 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
   const isValidModelSlug = (slug: string | null | undefined): slug is string =>
     !!slug && isNaN(Number(slug)) && model.some((m) => m.slug === slug);
 
-  // useEffect(() => {
-  //   if (!filtersInitialized.current) return;
-
-  //   const slugPath = buildSlugFromFilters(filters);
-  //   const query = new URLSearchParams();
-
-  //   if (!searchParams.has("page")) {
-  //     const page = searchParams.get("page");
-  //     if (page && page !== "1") {
-  //       query.set("page", page);
-  //     }
-  //   }
-
-  //   // ✅ Clean URL before pushing
-  //   const deduped = new URLSearchParams(query.toString());
-  //   const finalURL = deduped.toString() ? `${slugPath}?${deduped}` : slugPath;
-
-  //   if (lastPushedURLRef.current !== finalURL) {
-  //     lastPushedURLRef.current = finalURL;
-  //     startTransition(() => {
-  //       router.push(finalURL);
-  //     });
-  //   }
-  // }, [filters]);
   useEffect(() => {
     mountedRef.current = true;
   }, []);
-  const mountedRef = useRef(false);
-
-  const lastSentFiltersRef = useRef<Filters | null>(null);
 
   // ✅ Update all filters and URL with validation
   // 🔁 replace this whole function
   const updateAllFiltersAndURL = (override?: Filters) => {
     const DEFAULT_RADIUS = 50;
-    // const nextRaw: Filters = override ?? filters;
-    // const next: Filters = hydrateLocation(normalizeFilters(nextRaw));
-    // 1) set local filters only if changed
 
     const nextRaw: Filters = override ?? filters;
     const next: Filters = {
       ...clean(hydrateLocation(normalizeFilters(nextRaw))),
       page: 1, // ← Add this line to reset page
     };
+
     next.make = sanitizeMake(next.make); // belt & suspenders
+    // ✅ safer location preservation logic
+    if (next.state) {
+
+      // only delete region/suburb if they're explicitly empty strings
+      if (next.region === "" || next.region === undefined) delete next.region;
+      if (next.suburb === "" || next.suburb === undefined) delete next.suburb;
+      if (next.pincode === "" || next.pincode === undefined)
+        delete next.pincode;
+    } else {
+      // if no state, clear all location data
+      delete next.state;
+      delete next.region;
+      delete next.suburb;
+      delete next.pincode;
+    }
+
     setFilters((prev) => (filtersEqual(prev, next) ? (prev as Filters) : next));
     filtersInitialized.current = true;
     if (typeof next.radius_kms !== "number") next.radius_kms = DEFAULT_RADIUS;
@@ -1535,15 +1548,9 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     // 3) build URL once0000000000000000
     const slugPath = buildSlugFromFilters(next);
     const query = new URLSearchParams();
-    if (next.acustom_fromyears)
-      query.set("acustom_fromyears", String(next.acustom_fromyears));
-    if (next.acustom_toyears)
-      query.set("acustom_toyears", String(next.acustom_toyears));
+
     if (next.radius_kms && next.radius_kms !== DEFAULT_RADIUS)
       query.set("radius_kms", String(next.radius_kms));
-    if (next.page && Number(next.page) > 1) {
-      query.set("page", String(next.page));
-    }
 
     const safeSlugPath = slugPath.endsWith("/") ? slugPath : `${slugPath}/`;
     const finalURL = query.toString() ? `${slugPath}?${query}` : safeSlugPath;
@@ -1556,23 +1563,25 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     }
   };
 
+  useEffect(() => {
+    if (keepModelOpenRef.current) {
+      setModelOpen(true);
+    }
+  }, [model, filters]);
+
   // ✅ Update handleModelSelect with valid check
   const handleModelSelect = (mod: Model) => {
+    keepModelOpenRef.current = false;
     const safeMake = isValidMakeSlug(selectedMake) ? selectedMake : undefined;
     const safeModel = isValidModelSlug(mod.slug) ? mod.slug : undefined;
 
     setSelectedModel(mod.slug);
     setSelectedModelName(mod.name);
-
+    triggerGlobalLoaders();
     const updatedFilters: Filters = {
       ...currentFilters,
       make: safeMake,
       model: safeModel,
-      category: selectedCategory || currentFilters.category,
-      state: selectedStateName || currentFilters.state,
-      region: selectedRegionName || currentFilters.region,
-      suburb: selectedSuburbName || currentFilters.suburb,
-      pincode: selectedpincode || currentFilters.pincode,
     };
 
     setFilters(updatedFilters);
@@ -1667,7 +1676,6 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     });
     return byText || null;
   };
-  const isUserTypingRef = useRef(false);
   const locKey = useMemo(
     () =>
       [
@@ -1678,8 +1686,6 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
       ].join("|"),
     [selectedSuburbName, selectedRegionName, selectedStateName, selectedpincode]
   );
-
-  const hydratedKeyRef = useRef("");
 
   useEffect(() => {
     if (!selectedSuburbName || !selectedStateName) return;
@@ -1761,69 +1767,161 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
         !suburbClickedRef.current,
     });
   }, [selectedSuburbName, selectedStateName, selectedRegionName, states]);
-  const [visibleCount, setVisibleCount] = useState(10);
   useEffect(() => {
     setVisibleCount(10);
   }, [selectedStateName]);
+categoryApiCalledRef.current = true;
 
   return (
     <>
       <div className="filter-card mobile-search">
-        <div className="card-title align-items-center d-flex justify-content-between hidden-xs">
-          <h3 className="filter_title">Filter</h3>
-        </div>
         {/* Category Accordion */}
-        <div className="cs-full_width_section">
-          <div
-            className="filter-accordion"
-            onClick={() => toggle(setCategoryOpen)}
-          >
-            <h5 className="cfs-filter-label">Category</h5>
-            <BiChevronDown />
-          </div>
+        
 
-          {/* ✅ Selected Category Chip */}
-          {selectedCategoryName && (
-            <div className="filter-chip">
-              <span>{selectedCategoryName}</span>
-              <span className="filter-chip-close" onClick={resetCategoryFilter}>
-                ×
-              </span>
-            </div>
-          )}
 
-          {/* ✅ Dropdown menu */}
-          {categoryOpen && (
-            <div className="filter-accordion-items">
-              {Array.isArray(categories) &&
-                categories.map((cat) => (
-                  <div
+<div className="cs-full_width_section">
+  <div
+    className="filter-accordion"
+    style={{
+                cursor: "pointer",
+               }}
+    onClick={() => setIsCategoryModalOpen(true)}
+  >
+    <h5 className="cfs-filter-label"  >Category</h5>
+    <BiChevronDown   />
+  </div>
+
+  {selectedCategoryName && (
+    <div className="filter-chip">
+      <span>{selectedCategoryName}</span>
+      <span
+        className="filter-chip-close"
+        onClick={() => {
+          triggerGlobalLoaders();
+          resetCategoryFilter();
+        }}
+      >
+        ×
+      </span>
+    </div>
+  )}
+</div>
+ {isCategoryModalOpen && (
+  <div className="cfs-modal">
+    <div
+      className="cfs-modal-content"
+      onClick={(e) => e.stopPropagation()}
+    >
+      {/* Header */}
+      <div className="cfs-modal-header">
+        <span
+          className="cfs-close"
+ onClick={() => {
+    setTempCategory(selectedCategory); // revert
+    setIsCategoryModalOpen(false);
+  }}        >
+          ×
+        </span>
+      </div>
+
+      {/* Body */}
+      <div className="cfs-modal-body">
+        <div className="cfs-modal-search-section">
+          <h5 className="cfs-filter-label">Search Category</h5>
+
+          <ul className="location-suggestions category-list">
+            {categories
+              .filter((cat) =>
+                cat.name
+                  .toLowerCase()
+                  .includes(categorySearch.toLowerCase())
+              )
+              .map((cat) => {
+                const checked = tempCategory === cat.slug;
+
+                return (
+                  <li
                     key={cat.slug}
-                    className={`filter-accordion-item ${
-                      selectedCategory === cat.slug ? "selected" : ""
-                    }`}
-                    onClick={() => {
-                      // setNavigating(true);
-                      setSelectedCategory(cat.slug);
-                      setSelectedCategoryName(cat.name);
-                      setCategoryOpen(false);
-                      const updatedFilters: Filters = {
-                        ...currentFilters,
-                        category: cat.slug,
-                      };
-                      setFilters(updatedFilters);
-                      filtersInitialized.current = true;
-                      startTransition(() => {
-                        updateAllFiltersAndURL(updatedFilters); // ✅ this triggers the API + URL update
-                      });
-                    }}
+                    className="filter-accordion-item category-item"
+                    onClick={(e) => e.stopPropagation()}
                   >
-                    {cat.name}
-                  </div>
-                ))}
-            </div>
-          )}
+                    <label className="category-checkbox-row">
+                      <input
+                        type="checkbox"
+  checked={tempCategory === cat.slug}
+                        onChange={() => {
+                          // ✅ checkbox / name / count click all work
+                          setTempCategory(cat.slug);
+ 
+  // ❗ API call only – NO state / URL / title
+ onFilterChange({
+    category: cat.slug,
+    page: 1,
+    __preview: true, // 🔥 IMPORTANT
+  });}}
+ 
+                      />
+
+                      <span className="category-name">
+                        {cat.name}
+                      </span>
+
+                      {/* <span className="category-count">
+                        pavith
+                      </span> */}
+                    </label>
+                  </li>
+                );
+              })}
+          </ul>
         </div>
+      </div>
+
+      {/* Footer */}
+      <div className="cfs-modal-footer">
+      <button
+  className="cfs-btn btn"
+  onClick={() => {
+    const finalCategory = tempCategory || null;
+
+    const updatedFilters = {
+      ...currentFilters,
+      category: finalCategory || undefined,
+      page: 1,
+    };
+
+    // 🔥 Skeleton
+    triggerGlobalLoaders();
+
+    // 🔥 FINAL APPLY
+    setFilters(updatedFilters);
+    filtersInitialized.current = true;
+
+    startTransition(() => {
+      updateAllFiltersAndURL(updatedFilters);
+    });
+
+    // 🔥 Field value set ONLY HERE
+    setSelectedCategory(finalCategory);
+    setSelectedCategoryName(
+      categories.find(c => c.slug === finalCategory)?.name || null
+    );
+
+    // reset
+    categoryApiCalledRef.current = false;
+    setIsCategoryModalOpen(false);
+  }}
+>
+  Search cat
+</button>
+
+
+      </div>
+    </div>
+  </div>
+)}
+
+
 
         {/* Location Accordion */}
         {/* ===== LOCATION (DROP-IN) ===== */}
@@ -1831,7 +1929,10 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
 
         {/* Keyword (opens its own modal) */}
         {/* Keyword (opens its own modal) */}
-        <div className="cs-full_width_section">
+        <div className="cs-full_width_section"  style={{
+                cursor: "pointer",
+                transform: stateLocationOpen ? "rotate(180deg)" : "",
+              }}>
           {/* Header: opens STATE list */}
           <div className="filter-accordion" onClick={() => openOnly("state")}>
             <h5 className="cfs-filter-label">Location</h5>
@@ -1840,10 +1941,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                 e.stopPropagation();
                 openOnly(stateLocationOpen ? null : "state");
               }}
-              style={{
-                cursor: "pointer",
-                transform: stateLocationOpen ? "rotate(180deg)" : "",
-              }}
+             
             />
           </div>
 
@@ -1860,8 +1958,11 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
               {!selectedRegionName && !selectedSuburbName && (
                 <div style={iconRowStyle}>
                   <span
-                    onClick={resetStateFilters}
                     className="filter-chip-close"
+                    onClick={() => {
+                      triggerGlobalLoaders();
+                      resetStateFilters();
+                    }}
                   >
                     ×
                   </span>
@@ -1940,8 +2041,11 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
               {!selectedSuburbName && (
                 <div style={iconRowStyle}>
                   <span
-                    onClick={resetRegionFilters}
                     className="filter-chip-close"
+                    onClick={() => {
+                      triggerGlobalLoaders();
+                      resetRegionFilters();
+                    }}
                   >
                     ×
                   </span>
@@ -1961,7 +2065,13 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
           {selectedSuburbName && (
             <div className="filter-chip" style={accordionSubStyle(true)}>
               <span style={{ flexGrow: 1 }}>{selectedSuburbName}</span>
-              <span onClick={resetSuburbFilters} className="filter-chip-close">
+              <span
+                className="filter-chip-close"
+                onClick={() => {
+                  triggerGlobalLoaders();
+                  resetSuburbFilters();
+                }}
+              >
                 ×
               </span>
             </div>
@@ -1977,6 +2087,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                     selectedState === state.value ? "selected" : ""
                   }`}
                   onClick={() => {
+                    triggerGlobalLoaders();
                     setSelectedState(state.value);
                     setSelectedStateName(state.name);
                     setSelectedRegionName(null);
@@ -2047,6 +2158,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                     className="filter-accordion-item"
                     style={{ marginLeft: 16, cursor: "pointer" }}
                     onClick={() => {
+                      triggerGlobalLoaders();
                       // ✅ Always trigger even if same region clicked
                       setSelectedRegionName((prev) => {
                         if (prev === region.name) return region.name + " "; // force re-render
@@ -2096,47 +2208,99 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
               <div className="filter-accordion-items">
                 {Array.isArray(filteredSuburbs) &&
                 filteredSuburbs.length === 0 ? (
-                  <p style={{ marginLeft: 20 }}>No suburbs found</p>
+                  // <p style={{ marginLeft: 20 }}>❌ No suburbs available</p>
+                  <p style={{ marginLeft: 20 }}></p>
                 ) : (
-                  Array.from(
-                    new Map(
-                      filteredSuburbs.map((suburb) => [suburb.name, suburb])
-                    ).values()
-                  ).map((suburb, idx) => (
+                  filteredSuburbs.map((suburb, idx) => (
                     <div
-                      key={`${suburb.name}-${suburb.value}-${idx}`}
-                      className={`filter-accordion-item ${
-                        suburb.name === selectedSuburbName ? "selected" : ""
-                      }`}
-                      style={{
-                        marginLeft: "24px",
-                        cursor: "pointer",
-                        padding: "6px 12px",
-                        borderRadius: "4px",
-                        backgroundColor:
-                          suburb.name === selectedSuburbName
-                            ? "#e8f0fe"
-                            : "transparent",
-                      }}
-                      onClick={() => {
+                      key={`${suburb.value}-${idx}`}
+                      className="filter-accordion-item"
+                      style={suburbStyle(suburb.name === selectedSuburbName)}
+                      onClick={async () => {
+                        triggerGlobalLoaders();
+                        const pincode =
+                          suburb.value?.match(/\d{4}$/)?.[0] || null;
+
+                        // fetch suggestion (optional – keeps your existing logic)
+                        let match: LocationSuggestion | null = null;
+                        try {
+                          const res = await fetchLocations(suburb.name);
+                          match = findSuggestionFor(
+                            suburb.name,
+                            selectedRegionName,
+                            selectedStateName,
+                            pincode,
+                            res || []
+                          );
+                        } catch {}
+
+                        // build a fallback suggestion if API doesn't match
+                        if (!match) {
+                          const uSub = slug(suburb.name);
+                          const uReg = slug(selectedRegionName || "");
+                          const uSta = slug(selectedStateName || "");
+                          match = {
+                            key: `${uSub}-${uReg}-${uSta}-${pincode || ""}`,
+                            uri: `${uSub}-suburb/${uReg}-region/${uSta}-state/${
+                              pincode || ""
+                            }`,
+                            address: [
+                              suburb.name,
+                              selectedRegionName || "",
+                              selectedStateName || "",
+                              pincode || "",
+                            ]
+                              .filter(Boolean)
+                              .join(", "),
+                            short_address: `${suburb.name}${
+                              pincode ? ` ${pincode}` : ""
+                            }`,
+                          };
+                        }
+
+                        // ✅ validate region against the selected state
+                        const safeState =
+                          selectedStateName || currentFilters.state || null;
+                        const validRegion = getValidRegionName(
+                          safeState,
+                          selectedRegionName,
+                          states
+                        );
+
+                        // drive UI
+                        setSelectedSuggestion(match);
+                        setLocationInput(match.short_address);
                         setSelectedSuburbName(suburb.name);
-                        setSelectedpincode(suburb.value);
+                        setSelectedpincode(pincode || null);
+                        setSelectedRegionName(validRegion || null); // drop invalid region in UI
+
+                        // close panels
+                        setStateLocationOpen(false);
+                        setStateRegionOpen(false);
                         setStateSuburbOpen(false);
 
-                        const updatedFilters: Filters = {
+                        // ✅ build filters (region only if valid)
+                        const updatedFilters: Filters = hydrateLocation({
                           ...currentFilters,
-                          state: selectedStateName || currentFilters.state,
-                          region: selectedRegionName || currentFilters.region,
-                          suburb: suburb.name,
-                          pincode: suburb.value,
-                        };
+                          state: safeState || undefined,
+                          region: validRegion, // undefined if invalid
+                          suburb: suburb.name.toLowerCase(),
+                          pincode: pincode || undefined,
+                          radius_kms:
+                            typeof radiusKms === "number" && radiusKms !== 50
+                              ? radiusKms
+                              : undefined,
+                        });
 
                         setFilters(updatedFilters);
                         filtersInitialized.current = true;
 
-                        startTransition(() => {
-                          updateAllFiltersAndURL(updatedFilters);
-                        });
+                        // fire API + URL sync
+                        // onFilterChange(updatedFilters);
+                        lastSentFiltersRef.current = updatedFilters;
+                        // startTransition(() =>
+                        //   updateAllFiltersAndURL(updatedFilters)
+                        // );
                       }}
                     >
                       {suburb.name}
@@ -2162,8 +2326,15 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
           {/* ✅ Show selected suburb below input, like a pill with X */}
           {selectedSuburbName && selectedStateName && selectedpincode && (
             <div className="filter-chip">
-              {locationInput}
-              <span className="filter-chip-close" onClick={resetSuburbFilters}>
+              {/* {locationInput} */}
+              {formatLocationInput(locationInput)}
+              <span
+                className="filter-chip-close"
+                onClick={() => {
+                  triggerGlobalLoaders();
+                  resetSuburbFilters();
+                }}
+              >
                 ×
               </span>
             </div>
@@ -2172,99 +2343,177 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
 
         {/* Make Accordion */}
         {/* Make Accordion */}
-        <div className="cs-full_width_section">
-          <div className="filter-accordion" onClick={() => toggle(setMakeOpen)}>
-            <h5 className="cfs-filter-label"> Make</h5>
-            <BiChevronDown
-              style={{
+        <div className="cs-full_width_section"   style={{
                 cursor: "pointer",
-                transform: makeOpen ? "rotate(180deg)" : "",
-              }}
+               }}>
+          <div className="filter-accordion" onClick={() => setIsMakeModalOpen(true)}>
+            <h5 className="cfs-filter-label" > Make</h5>
+            <BiChevronDown
+            
             />
           </div>
           {selectedMakeName && (
             <div className="filter-chip">
               <span>{selectedMakeName}</span>
-              <span className="filter-chip-close" onClick={resetMakeFilters}>
+              <span
+                className="filter-chip-close"
+                onClick={() => {
+                  triggerGlobalLoaders();
+                  resetMakeFilters();
+                }}
+              >
                 ×
               </span>
             </div>
           )}
-          {makeOpen && (
-            <div className="filter-accordion-items">
-              {Array.isArray(makes) &&
-                (makes.length <= 10
-                  ? [...makes].sort((a, b) => a.name.localeCompare(b.name))
-                  : [...makes]
-                      .sort((a, b) => a.name.localeCompare(b.name))
-                      .slice(0, 10)
-                ).map((make) => (
-                  <div
-                    key={make.slug}
-                    className={`filter-accordion-item ${
-                      selectedMake === make.slug ? "selected" : ""
-                    }`}
-                    onClick={() => {
-                      // ✅ Reset model state
-                      setSelectedModel(null);
-                      setSelectedModelName(null);
-
-                      // ✅ Force update make
-                      setSelectedMake(make.slug);
-                      setSelectedMakeName(make.name);
-
-                      // ✅ Immediately open model dropdown
-                      setModelOpen(true);
-
-                      // ✅ Update filters
-                      const updatedFilters: Filters = {
-                        ...currentFilters,
-                        make: make.slug,
-                        model: undefined,
-                      };
-
-                      setFilters(updatedFilters);
-                      filtersInitialized.current = true;
-
-                      // ✅ Update URL
-
-                      setMakeOpen(false);
-                      setModelOpen(true);
-                      startTransition(() => {
-                        updateAllFiltersAndURL(updatedFilters);
-                      });
-                    }}
-                  >
-                    {make.name}
-                  </div>
-                ))}
-
-              {/* Show More / Show Less toggle */}
-              {makes.length > 10 && (
-                <div
-                  className="filter-accordion-subitem"
-                  style={{
-                    cursor: "pointer",
-                    color: "#007BFF",
-                    marginTop: "8px",
-                    fontWeight: 500,
-                  }}
-                  onClick={() => setIsMakeModalOpen(true)} // ✅ open modal
+           {isMakeModalOpen && (
+          <div className="cfs-modal">
+            <div className="cfs-modal-content"  onClick={(e) => e.stopPropagation()}>
+              <div className="cfs-modal-header">
+                <span
+                  onClick={() => setIsMakeModalOpen(false)}
+                  className="cfs-close"
                 >
-                  Search By Manufacturer
+                  ×
+                </span>
+              </div>
+
+              <div className="cfs-modal-body">
+                <div className="cfs-modal-search-section">
+                  <h5 className="cfs-filter-label">Search Manufacturer</h5>
+
+                  {/* 🔍 Search Input */}
+                  <input
+                    type="text"
+                    placeholder="Search make..."
+                    className="filter-dropdown cfs-select-input"
+                    autoComplete="off"
+                    value={searchMake}
+                    onChange={(e) => {
+                      const query = e.target.value.toLowerCase();
+                      setSearchMake(e.target.value);
+                      if (!query.trim()) {
+                        setFilteredMakes([]);
+                        return;
+                      }
+                      setFilteredMakes(
+                        makes.filter((m) =>
+                          m.name.toLowerCase().includes(query)
+                        )
+                      );
+                    }}
+                  />
+
+                  {/* 🔽 Filtered Makes */}
+                  {filteredMakes.length > 0 && (
+                    <ul className="location-suggestions">
+                      {filteredMakes.map((make) => (
+                        <li
+                        key={make.slug}
+                        className={`suggestion-item ${
+                          selectedMakeTemp === make.slug ? "selected" : ""
+                        }`}
+                        onClick={(e) => e.stopPropagation()}
+                        onMouseDown={() => {
+  setSearchMake(make.name);
+  setSelectedMakeTemp(make.slug);
+  // setSelectedMakeName(make.name);
+  setFilteredMakes([]);
+
+  // ✅ BACKGROUND API CALL (popup close illa)
+  const updatedFilters: Filters = {
+    ...currentFilters,
+    make: make.slug,
+    model: undefined,
+    page: 1,
+  };
+
+   
+
+  // onFilterChange?.(updatedFilters);
+   setFilters(updatedFilters);
+ filtersInitialized.current = true;
+
+    // startTransition(() => {
+    //   updateAllFiltersAndURL(updatedFilters);
+    // });
+
+ }}
+
+                        >
+                          {make.name} 
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
-              )}
+              </div>
+
+
+              <div className="cfs-modal-footer">
+               <button
+  type="button"
+  className="cfs-btn btn"
+  onClick={() => {
+    if (!selectedMakeTemp) return;
+
+    const updatedFilters: Filters = {
+      ...currentFilters,
+      make: selectedMakeTemp,
+      model: undefined,
+      page: 1,
+    };
+
+    // 🔥 show skeleton (UX)
+    triggerGlobalLoaders();
+
+    // ✅ IF API NOT already called → call now
+    if (!makeApiCalledRef.current) {
+      setFilters(updatedFilters);
+      filtersInitialized.current = true;
+
+     }
+
+    // ✅ ALWAYS update URL (no API)
+    startTransition(() => {
+      updateAllFiltersAndURL(updatedFilters);
+    });
+
+    // UI sync
+    setSelectedMake(selectedMakeTemp);
+
+    // reset flag
+    makeApiCalledRef.current = false;
+
+    // close popup
+    setIsMakeModalOpen(false);
+    setMakeOpen(false);
+    setModelOpen(true);
+  }}
+>
+  Search56
+</button>
+
+
+              </div>
             </div>
-          )}
+          </div>
+        )}
         </div>
-        {selectedMake && (
+
+        
+        {selectedMake && selectedMakeName && (
           <div className="cs-full_width_section">
             <div
               className="filter-accordion"
               onClick={() => toggle(setModelOpen)}
             >
               <h5 className="cfs-filter-label">Model</h5>
-              <BiChevronDown />
+              <BiChevronDown
+                style={{
+                  cursor: "pointer",
+                }}
+              />
             </div>
             {selectedModelName && (
               <div className="filter-chip">
@@ -2310,22 +2559,38 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
 
             {modelOpen && (
               <div className="filter-accordion-items">
-                {model.map((mod) => (
+                {(showAllModels ? model : model.slice(0, 5)).map((mod) => (
                   <div
                     key={mod.slug}
                     className={`filter-accordion-item ${
                       selectedModel === mod.slug ? "selected" : ""
                     }`}
-                    onClick={() => handleModelSelect(mod)} // ✅ Call here
+                    onClick={() => handleModelSelect(mod)}
                   >
                     {mod.name}
                   </div>
                 ))}
+
+                {model.length > 5 && (
+                  <div
+                    className="show-more-less"
+                    style={{
+                      marginTop: "8px",
+                      cursor: "pointer",
+                      color: "#0070f3",
+                      fontWeight: "500",
+                    }}
+                    onClick={() => setShowAllModels(!showAllModels)}
+                  >
+                    {showAllModels ? "Show Less" : "Show More"}
+                  </div>
+                )}
               </div>
             )}
           </div>
         )}
 
+        {/* ATM Range */}
         {/* ATM Range */}
         {/* ATM Range */}
         <div className="cs-full_width_section">
@@ -2363,11 +2628,13 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                 }}
               >
                 <option value="">Max</option>
-                {atm.map((val) => (
-                  <option key={val} value={val}>
-                    {val.toLocaleString()} kg
-                  </option>
-                ))}
+                {atm
+                  .filter((val) => !atmFrom || val > atmFrom) // ✅ Show only values >= From
+                  .map((val) => (
+                    <option key={val} value={val}>
+                      {val.toLocaleString()} kg
+                    </option>
+                  ))}
               </select>
             </div>
           </div>
@@ -2382,6 +2649,8 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
               <span
                 className="filter-chip-close"
                 onClick={() => {
+                  triggerGlobalLoaders();
+
                   setAtmFrom(null);
                   setAtmTo(null);
 
@@ -2392,11 +2661,9 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                   };
 
                   setFilters(updatedFilters);
-                  // onFilterChange(updatedFilters);
-                  //                 onFilterChange(updatedFilters);
 
                   startTransition(() => {
-                    updateAllFiltersAndURL(updatedFilters); // ✅ pass it here
+                    updateAllFiltersAndURL(updatedFilters);
                   });
                 }}
               >
@@ -2417,6 +2684,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                 value={minPrice?.toString() || ""}
                 onChange={(e) => {
                   const val = e.target.value ? parseInt(e.target.value) : null;
+                  triggerGlobalLoaders();
                   setMinPrice(val);
                   const updated: Filters = {
                     ...currentFilters,
@@ -2434,6 +2702,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                 ))}
               </select>
             </div>
+
             <div className="col-6">
               <h6 className="cfs-filter-label-sub">To</h6>
               <select
@@ -2441,6 +2710,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                 value={maxPrice?.toString() || ""}
                 onChange={(e) => {
                   const val = e.target.value ? parseInt(e.target.value) : null;
+                  triggerGlobalLoaders();
                   setMaxPrice(val);
                   const updated: Filters = {
                     ...currentFilters,
@@ -2451,14 +2721,17 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                 }}
               >
                 <option value="">Max</option>
-                {price.map((value, idx) => (
-                  <option key={idx} value={value}>
-                    ${value.toLocaleString()}{" "}
-                  </option>
-                ))}
+                {price
+                  .filter((val) => !minPrice || val > minPrice)
+                  .map((val) => (
+                    <option key={val} value={val}>
+                      ${val.toLocaleString()}
+                    </option>
+                  ))}
               </select>
             </div>
           </div>
+
           {(minPrice || maxPrice) && (
             <div className="filter-chip">
               <span>
@@ -2468,6 +2741,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
               <span
                 className="filter-chip-close"
                 onClick={() => {
+                  triggerGlobalLoaders();
                   setMinPrice(null);
                   setMaxPrice(null);
                   commit({
@@ -2482,8 +2756,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
             </div>
           )}
         </div>
-        {/* 8883944599
-                       9524163042 */}
+
         {/* Condition Accordion */}
         <div className="cs-full_width_section">
           <div
@@ -2491,7 +2764,11 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
             onClick={() => toggle(setConditionOpen)}
           >
             <h5 className="cfs-filter-label"> Condition</h5>
-            <BiChevronDown />
+            <BiChevronDown
+              style={{
+                cursor: "pointer",
+              }}
+            />
           </div>
           {selectedConditionName && (
             <div className="filter-chip">
@@ -2499,6 +2776,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
               <span
                 className="filter-chip-close"
                 onClick={() => {
+                  triggerGlobalLoaders();
                   setSelectedConditionName(null);
                   commit({ ...currentFilters, condition: undefined });
                 }}
@@ -2516,6 +2794,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                     selectedConditionName === condition ? "selected" : ""
                   }`}
                   onClick={() => {
+                    triggerGlobalLoaders();
                     setSelectedConditionName(condition);
                     setConditionOpen(false);
                     commit({ ...currentFilters, condition });
@@ -2531,7 +2810,6 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
         <div className="cs-full_width_section">
           <h5 className="cfs-filter-label">Sleep</h5>
           <div className="row">
-            {/* FROM SLEEP */}
             <div className="col-6">
               <h6 className="cfs-filter-label-sub">From</h6>
               <select
@@ -2539,8 +2817,8 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                 value={sleepFrom?.toString() || ""}
                 onChange={(e) => {
                   const val = e.target.value ? parseInt(e.target.value) : null;
+                  triggerGlobalLoaders();
                   setSleepFrom(val);
-
                   commit({
                     ...currentFilters,
                     from_sleep: val ?? undefined,
@@ -2557,7 +2835,6 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
               </select>
             </div>
 
-            {/* TO SLEEP */}
             <div className="col-6">
               <h6 className="cfs-filter-label-sub">To</h6>
               <select
@@ -2565,8 +2842,8 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                 value={sleepTo?.toString() || ""}
                 onChange={(e) => {
                   const val = e.target.value ? parseInt(e.target.value) : null;
+                  triggerGlobalLoaders();
                   setSleepTo(val);
-
                   commit({
                     ...currentFilters,
                     from_sleep: sleepFrom ?? currentFilters.from_sleep,
@@ -2575,16 +2852,17 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                 }}
               >
                 <option value="">Max</option>
-                {sleep.map((value) => (
-                  <option key={value} value={value}>
-                    {value}
-                  </option>
-                ))}
+                {sleep
+                  .filter((value) => !sleepFrom || value > sleepFrom)
+                  .map((value) => (
+                    <option key={value} value={value}>
+                      {value}
+                    </option>
+                  ))}
               </select>
             </div>
           </div>
 
-          {/* FILTER CHIP */}
           {(sleepFrom || sleepTo) && (
             <div className="filter-chip">
               <span>
@@ -2594,9 +2872,10 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
               <span
                 className="filter-chip-close"
                 onClick={() => {
+                  triggerGlobalLoaders();
+
                   setSleepFrom(null);
                   setSleepTo(null);
-
                   commit({
                     ...currentFilters,
                     from_sleep: undefined,
@@ -2610,130 +2889,28 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
           )}
         </div>
 
-        {/* Sleeps Accordion */}
-        <div className="cs-full_width_section">
-          <div
-            className="filter-accordion"
-            onClick={() => toggle(setSleepsOpen)}
-          >
-            <h5 className="cfs-filter-label">Sleep</h5>
-            <BiChevronDown />
-          </div>
-          {selectedSleepName && (
-            <div className="filter-chip">
-              <span>{selectedSleepName} People</span>
-              <span
-                className="filter-chip-close"
-                onClick={() => {
-                  setSelectedSleepName("");
-                  commit({ ...currentFilters, sleeps: undefined });
-                }}
-              >
-                ×
-              </span>
-            </div>
-          )}
-
-          {sleepsOpen && (
-            <div className="filter-accordion-items">
-              {sleep.map((sleepValue, index) => (
-                <div
-                  key={index}
-                  className={`filter-accordion-item ${
-                    selectedSleepName === String(sleepValue) ? "selected" : ""
-                  }`}
-                  onClick={() => {
-                    const selectedValue = String(sleepValue);
-                    const already = selectedSleepName === selectedValue;
-                    setSelectedSleepName(already ? null : selectedValue);
-                    setSleepsOpen(false);
-                    commit({
-                      ...currentFilters,
-                      sleeps: already ? undefined : `${selectedValue}-people`,
-                    });
-                  }}
-                >
-                  {sleepValue} People
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
         {/* Year Range */}
+
         <div className="cs-full_width_section">
-          <h5 className="cfs-filter-label">Year</h5>
-          <div className="row">
-            <div className="col-6">
-              <h6 className="cfs-filter-label-sub">From</h6>
-              <select
-                className="cfs-select-input"
-                value={yearFrom?.toString() || ""}
-                onChange={(e) => {
-                  const val = e.target.value ? parseInt(e.target.value) : null;
-                  setYearFrom(val);
-                  commit({
-                    ...currentFilters,
-                    acustom_fromyears: val ?? undefined,
-                    acustom_toyears: yearTo ?? filters.acustom_toyears,
-                  });
-                }}
-              >
-                <option value="">Min</option>
-                {years.map((value) => (
-                  <option key={value} value={value}>
-                    {value}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="col-6">
-              <h6 className="cfs-filter-label-sub">To</h6>
-              <select
-                className="cfs-select-input"
-                value={yearTo?.toString() || ""}
-                onChange={(e) => {
-                  const val = e.target.value ? parseInt(e.target.value) : null;
-                  setYearTo(val);
-                  commit({
-                    ...currentFilters,
-                    acustom_fromyears: yearFrom ?? filters.acustom_fromyears,
-                    acustom_toyears: val ?? undefined,
-                  });
-                }}
-              >
-                <option value="">Max</option>
-                {years.map((value) => (
-                  <option key={value} value={value}>
-                    {value}
-                  </option>
-                ))}
-              </select>
-            </div>
+          {/* Accordion Header */}
+          <div className="filter-accordion" onClick={() => toggle(setYearOpen)}>
+            <h5 className="cfs-filter-label">Year</h5>
+            <BiChevronDown
+              style={{
+                cursor: "pointer",
+              }}
+            />
           </div>
-          {(yearFrom || yearTo) && (
+
+          {/* Selected Year Chip */}
+          {yearFrom && yearTo && (
             <div className="filter-chip">
-              <span>
-                {yearFrom ? yearFrom : "Min"} – {yearTo ? yearTo : "Max"}
-              </span>
+              <span>{yearFrom}</span>
               <span
                 className="filter-chip-close"
-                // onClick={() => {
-                //   setYearFrom(null);
-                //   setYearTo(null);
-
-                //   const updatedFilters: Filters = {
-                //     ...currentFilters,
-                //     acustom_fromyears: undefined,
-                //     acustom_toyears: undefined,
-                //   };
-
-                //   setFilters(updatedFilters);
-
-                //   startTransition(() => {
-                //     updateAllFiltersAndURL(updatedFilters); // ✅ pass it here
-                //   });
-                // }}
                 onClick={() => {
+                  triggerGlobalLoaders();
+
                   setYearFrom(null);
                   setYearTo(null);
                   commit({
@@ -2747,7 +2924,39 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
               </span>
             </div>
           )}
+
+          {/* Dropdown Items */}
+          {yearOpen && (
+            <div className="filter-accordion-items">
+              {years.map((yearValue, index) => (
+                <div
+                  key={index}
+                  className={`filter-accordion-item ${
+                    yearFrom === yearValue ? "selected" : ""
+                  }`}
+                  onClick={() => {
+                    triggerGlobalLoaders();
+                    const already = yearFrom === yearValue;
+                    const selectedValue = already ? null : yearValue;
+
+                    setYearFrom(selectedValue);
+                    setYearTo(selectedValue);
+                    setYearOpen(false);
+
+                    commit({
+                      ...currentFilters,
+                      acustom_fromyears: selectedValue ?? undefined,
+                      acustom_toyears: selectedValue ?? undefined,
+                    });
+                  }}
+                >
+                  {yearValue}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
+
         {/* Length Range */}
         <div className="cs-full_width_section">
           <h5 className="cfs-filter-label">Length</h5>
@@ -2759,6 +2968,8 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                 value={lengthFrom || ""}
                 onChange={(e) => {
                   const val = e.target.value ? parseInt(e.target.value) : null;
+                  triggerGlobalLoaders();
+
                   setLengthFrom(val);
                   commit({
                     ...currentFilters,
@@ -2783,6 +2994,8 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                 value={lengthTo?.toString() || ""}
                 onChange={(e) => {
                   const val = e.target.value ? parseInt(e.target.value) : null;
+                  triggerGlobalLoaders();
+
                   setLengthTo(val);
                   commit({
                     ...currentFilters,
@@ -2792,14 +3005,17 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                 }}
               >
                 <option value="">Max</option>
-                {length.map((value, idx) => (
-                  <option key={idx} value={value}>
-                    {value} ft
-                  </option>
-                ))}
+                {length
+                  .filter((value) => !lengthFrom || value > lengthFrom)
+                  .map((value, idx) => (
+                    <option key={idx} value={value}>
+                      {value} ft
+                    </option>
+                  ))}
               </select>
             </div>
           </div>
+
           {(lengthFrom || lengthTo) && (
             <div className="filter-chip">
               <span>
@@ -2808,32 +3024,9 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
               </span>
               <span
                 className="filter-chip-close"
-                // onClick={() => {
-                //   setLengthFrom(null);
-                //   setLengthTo(null);
-
-                //   const updatedFilters: Filters = {
-                //     ...currentFilters,
-                //     from_length: undefined,
-                //     to_length: undefined,
-                //   };
-                //   setFilters(updatedFilters);
-
-                //   // Remove slug segments related to length
-                //   const segments = pathname.split("/").filter(Boolean);
-                //   const newSegments = segments.filter(
-                //     (s) =>
-                //       !s.match(/^between-\d+-\d+-length-in-feet$/) &&
-                //       !s.match(/^over-\d+-length-in-feet$/) &&
-                //       !s.match(/^under-\d+-length-in-feet$/)
-                //   );
-
-                //   const newPath = `/${newSegments.join("/")}`;
-                //   router.push(
-                //     newPath + (searchParams.toString() ? `?${searchParams}` : "")
-                //   );
-                // }}
                 onClick={() => {
+                  triggerGlobalLoaders();
+
                   setLengthFrom(null);
                   setLengthTo(null);
                   commit({
@@ -2877,6 +3070,8 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                     keyword: undefined,
                     search: undefined,
                   };
+                  triggerGlobalLoaders();
+
                   setKeywordInput("");
                   setFilters(next);
                   updateAllFiltersAndURL(next);
@@ -2888,108 +3083,10 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
           )}
         </div>
         {/* Reset Button */}
-        <button onClick={resetFilters} className="btn cfs-btn fullwidth_btn">
-          Reset Filters
-        </button>
 
         {/* Modal */}
 
-        {isMakeModalOpen && (
-          <div className="cfs-modal">
-            <div className="cfs-modal-content">
-              <div className="cfs-modal-header">
-                <span
-                  onClick={() => setIsMakeModalOpen(false)}
-                  className="cfs-close"
-                >
-                  ×
-                </span>
-              </div>
-
-              <div className="cfs-modal-body">
-                <div className="cfs-modal-search-section">
-                  <h5 className="cfs-filter-label">Search Manufacturer</h5>
-
-                  {/* 🔍 Search Input */}
-                  <input
-                    type="text"
-                    placeholder="Search make..."
-                    className="filter-dropdown cfs-select-input"
-                    autoComplete="off"
-                    value={searchMake}
-                    onChange={(e) => {
-                      const query = e.target.value.toLowerCase();
-                      setSearchMake(e.target.value);
-                      if (!query.trim()) {
-                        setFilteredMakes([]);
-                        return;
-                      }
-                      setFilteredMakes(
-                        makes.filter((m) =>
-                          m.name.toLowerCase().includes(query)
-                        )
-                      );
-                    }}
-                  />
-
-                  {/* 🔽 Filtered Makes */}
-                  {filteredMakes.length > 0 && (
-                    <ul className="location-suggestions">
-                      {filteredMakes.map((make) => (
-                        <li
-                          key={make.slug}
-                          className={`suggestion-item ${
-                            selectedMakeTemp === make.slug ? "selected" : ""
-                          }`}
-                          onMouseDown={() => {
-                            // ✅ Click: fill input and hide suggestions
-                            setSearchMake(make.name);
-                            setSelectedMakeTemp(make.slug);
-                            setSelectedMakeName(make.name);
-                            setFilteredMakes([]); // hide list
-                          }}
-                        >
-                          {make.name}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              </div>
-
-              <div className="cfs-modal-footer">
-                <button
-                  type="button"
-                  className="cfs-btn btn"
-                  onClick={() => {
-                    if (!selectedMakeTemp) return;
-
-                    const updatedFilters: Filters = {
-                      ...currentFilters,
-                      make: selectedMakeTemp,
-                      model: undefined,
-                    };
-
-                    setSelectedMake(selectedMakeTemp);
-                    setFilters(updatedFilters);
-                    filtersInitialized.current = true;
-
-                    // ✅ Close modal & open model dropdown
-                    setIsMakeModalOpen(false);
-                    setMakeOpen(false);
-                    setModelOpen(true);
-
-                    startTransition(() =>
-                      updateAllFiltersAndURL(updatedFilters)
-                    );
-                  }}
-                >
-                  Search
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+       
 
         {isModalOpen && (
           <div className="cfs-modal">
@@ -3014,58 +3111,43 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
                     value={formatted(modalInput)} // 👈 modalInput} // 👈 use modalInput
                     onFocus={() => setShowSuggestions(true)}
                     onChange={(e) => {
+                      // isUserTypingRef.current = true;
                       setShowSuggestions(true);
+
                       const rawValue = e.target.value;
-                      setModalInput(rawValue);
+                      // Format for filtering suggestions only
+                      setModalInput(rawValue); // 👈 Store raw value
+                      // const formattedValue = formatLocationInput(modalInput);
+                      const formattedValue = /^\d+$/.test(rawValue)
+                        ? rawValue // if user types only numbers, don’t format
+                        : formatLocationInput(rawValue);
 
-                      const trimmed = rawValue.trim();
-
-                      // Skip empty input
-                      if (!trimmed) {
+                      // Use the existing locationSuggestions state or fetch new data
+                      // Since you're already fetching locations in useEffect, you can filter the existing suggestions
+                      // OR trigger the same API call logic here
+                      if (formattedValue.length < 1) {
                         setLocationSuggestions([]);
                         return;
                       }
 
-                      // Detect if user typed only digits
-                      const isNumeric = /^\d+$/.test(trimmed);
-
-                      // Format words properly (capitalize suburb etc)
-                      const formattedValue = isNumeric
-                        ? trimmed
-                        : formatLocationInput(trimmed);
-
+                      // Use the same API call logic as in your useEffect
                       const suburb = formattedValue.split(" ")[0];
                       fetchLocations(suburb)
                         .then((data) => {
-                          const searchValue = formattedValue.toLowerCase();
-
+                          // Filter the API results based on the formatted input
                           const filtered = data.filter((item) => {
-                            const addr = item.address?.toLowerCase() || "";
-                            const shortAddr =
-                              item.short_address?.toLowerCase() || "";
-
-                            // 🧠 Extract 4-digit postcode from address if present
-                            const postcodeMatch = addr.match(/\b\d{4}\b/);
-                            const postcode = postcodeMatch
-                              ? postcodeMatch[0]
-                              : "";
-
-                            // ✅ Match logic: if user typed digits → match in postcode or address
-                            // ✅ if user typed words → match suburb/state/address text
-                            if (isNumeric) {
-                              return (
-                                postcode.includes(searchValue) ||
-                                addr.includes(searchValue) ||
-                                shortAddr.includes(searchValue)
-                              );
-                            } else {
-                              return (
-                                addr.includes(searchValue) ||
-                                shortAddr.includes(searchValue)
-                              );
-                            }
+                            const searchValue = formattedValue.toLowerCase();
+                            return (
+                              item.short_address
+                                .toLowerCase()
+                                .includes(searchValue) ||
+                              item.address
+                                .toLowerCase()
+                                .includes(searchValue) ||
+                              (item.postcode &&
+                                item.postcode.toString().includes(searchValue)) // ✅ added
+                            );
                           });
-
                           setLocationSuggestions(filtered);
                         })
                         .catch(console.error);
@@ -3300,28 +3382,6 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
           </div>
         )}
       </div>
-      {/* {navigating && (
-          <div
-            className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
-            style={{
-              background: "rgba(255,255,255,0.6)",
-              backdropFilter: "blur(2px)",
-              zIndex: 9999,
-            }}
-            aria-live="polite"
-          >
-            <div className="text-center">
-              <Image
-                src="/images/loader.gif" // place inside public/images
-                alt="Loading..."
-                width={80}
-                height={80}
-                unoptimized
-              />{" "}
-              <div className="mt-2 fw-semibold">Loading…</div>
-            </div>
-          </div>
-        )} */}
     </>
   );
 };

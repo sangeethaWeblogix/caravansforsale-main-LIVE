@@ -11,7 +11,7 @@ import { useEffect, useRef, useState } from "react";
 import { toSlug } from "@/utils/seo/slug";
 import ImageWithSkeleton from "../ImageWithSkeleton";
 import { useEnquiryForm } from "./enquiryform";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { buildSlugFromFilters } from "../slugBuilter";
 import Image from "next/image";
 
@@ -45,6 +45,7 @@ interface Product {
   manufacturer?: string;
   is_exclusive?: boolean;
   is_premium?: boolean;
+  image_url?: string[];
 }
 
 interface Pagination {
@@ -114,6 +115,10 @@ export default function ListingContent({
   // isNextLoading,
   pageTitle,
 }: Props) {
+  const [swiperActivated, setSwiperActivated] = useState<
+    Record<number, boolean>
+  >({});
+
   const [showInfo, setShowInfo] = useState(false);
   const [showContact, setShowContact] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -122,15 +127,61 @@ export default function ListingContent({
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isOrderbyLoading, setIsOrderbyLoading] = useState(false);
+  const [mergedProducts, setMergedProducts] = useState<Product[]>([]);
+  const [navigating, setNavigating] = useState(false);
+  const [swiperKey, setSwiperKey] = useState(0);
+
+  const pathname = usePathname();
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(
+        "listingsReturnUrl",
+        window.location.pathname + window.location.search,
+      );
+    } catch { }
+  }, []);
+
+  useEffect(() => {
+    // 🔥 Route finished changing → stop loader
+    setNavigating(false);
+  }, [pathname]);
+
   const IMAGE_BASE_URL = "https://caravansforsale.imagestack.net/400x300/";
 
   const IMAGE_EXT = ".avif";
 
-  const [navigating, setNavigating] = useState(false);
+  const goToProduct = (href: string) => {
+    try {
+      sessionStorage.setItem("cameFromListings", "true");
+      sessionStorage.setItem(
+        "listingsReturnUrl",
+        window.location.pathname + window.location.search,
+      );
+    } catch { }
+
+    router.push(href);
+  };
+
+  useEffect(() => {
+    const cameBack = sessionStorage.getItem("cameFromListings");
+
+    if (cameBack) {
+      // 🔁 force swiper remount
+      setSwiperKey((k) => k + 1);
+
+      // optional: reset activation map
+      setSwiperActivated({});
+      setLazyImages({});
+      setLoadedAll({});
+
+      sessionStorage.removeItem("cameFromListings");
+    }
+  }, []);
+
   const handleViewDetails = async (
     e: React.MouseEvent,
     productId: number,
-    href: string
+    href: string,
   ) => {
     e.preventDefault(); // stop <Link> default
     e.stopPropagation(); // stop bubbling to parent
@@ -142,7 +193,7 @@ export default function ListingContent({
     await handleProductClick(productId);
 
     // 🔁 navigate
-    router.push(href);
+    goToProduct(href);
   };
 
   console.log(
@@ -151,7 +202,7 @@ export default function ListingContent({
     isPremiumLoading,
     isFeaturedLoading,
     isMainLoading,
-    onFilterChange
+    onFilterChange,
   );
   // console.log("data-prod", products);
 
@@ -166,15 +217,15 @@ export default function ListingContent({
 
   const enquiryProduct = selectedProduct
     ? {
-        id: selectedProduct.id,
-        slug: selectedProduct.slug,
-        name: selectedProduct.name,
-      }
+      id: selectedProduct.id,
+      slug: selectedProduct.slug,
+      name: selectedProduct.name,
+    }
     : {
-        id: 0,
-        slug: "",
-        name: "",
-      };
+      id: 0,
+      slug: "",
+      name: "",
+    };
 
   const { form, errors, touched, submitting, setField, onBlur, onSubmit } =
     useEnquiryForm(enquiryProduct);
@@ -225,7 +276,7 @@ export default function ListingContent({
   const handleProductClick = async (id) => {
     await postTrackEvent(
       "https://admin.caravansforsale.com.au/wp-json/cfs/v1/update-clicks",
-      id
+      id,
     );
 
     // Allow product page to show "Back to Search"
@@ -236,7 +287,7 @@ export default function ListingContent({
 
   useEffect(() => {
     const nav = performance.getEntriesByType(
-      "navigation"
+      "navigation",
     )[0] as PerformanceNavigationTiming;
 
     if (nav?.type === "reload") {
@@ -267,8 +318,6 @@ export default function ListingContent({
     }
     return copy;
   };
-
-  const [mergedProducts, setMergedProducts] = useState<Product[]>([]);
 
   // const hasShuffledRef = useRef(false);
 
@@ -318,13 +367,13 @@ export default function ListingContent({
     return merged;
   };
 
-  useEffect(() => {
-    mergedProducts.forEach((item) => {
-      if (!loadedAll[item.id]) {
-        loadRemaining(item);
-      }
-    });
-  }, [mergedProducts]);
+  // useEffect(() => {
+  //   mergedProducts.forEach((item) => {
+  //     if (!loadedAll[item.id]) {
+  //       loadRemaining(item);
+  //     }
+  //   });
+  // }, [mergedProducts]);
   useEffect(() => {
     const TAB_KEY = "listings_tab_opened";
 
@@ -343,7 +392,7 @@ export default function ListingContent({
     if (didShuffleRef.current) return;
 
     const premiumIds = new Set(
-      (preminumProducts || []).map((p) => String(p.id))
+      (preminumProducts || []).map((p) => String(p.id)),
     );
 
     let normal = products.filter((p) => !premiumIds.has(String(p.id)));
@@ -372,13 +421,13 @@ export default function ListingContent({
             const id = Number(entry.target.getAttribute("data-product-id"));
             postTrackEvent(
               "https://admin.caravansforsale.com.au/wp-json/cfs/v1/update-impressions",
-              id
+              id,
             );
             observer.unobserve(entry.target);
           }
         });
       },
-      { threshold: 0.5 }
+      { threshold: 0.5 },
     );
 
     document
@@ -402,14 +451,6 @@ export default function ListingContent({
       document.body.style.overflow = "";
     };
   }, [showInfo, showContact]);
-
-  useEffect(() => {
-    mergedProducts.forEach((item) => {
-      if (!loadedAll[item.id]) {
-        loadRemaining(item);
-      }
-    });
-  }, [mergedProducts]);
 
   // Example placeholder function for product links
 
@@ -443,6 +484,17 @@ export default function ListingContent({
 
   const { count, text } = splitCountAndTitle(pageTitle);
 
+  const activateSwiper = (item: Product) => {
+    if (swiperActivated[item.id]) return;
+
+    setSwiperActivated((prev) => ({
+      ...prev,
+      [item.id]: true,
+    }));
+
+    loadRemaining(item);
+  };
+
   return (
     <>
       <Head>
@@ -456,10 +508,10 @@ export default function ListingContent({
         <meta name="twitter:description" content={metaDescription} />
       </Head>
 
-      <div className="col-lg-6 ">
+      <div className="col-lg-9">
         <div className="top-filter mb-10">
           <div className="row align-items-center">
-            <div className="col-lg-8 show_count_wrapper ">
+            <div className="col-lg-8 col-md-8 col-sm-8 col-12 show_count_wrapper ">
               {count && (
                 <span className="show_count mb-2 d-inline">
                   <strong>{count} </strong>
@@ -470,7 +522,7 @@ export default function ListingContent({
               </h1>
             </div>
 
-            <div className="col-4 d-lg-none d-md-none">
+            {/* <div className="col-4 d-lg-none d-md-none">
               <button
                 type="button"
                 className="mobile_fltn navbar-toggler mytogglebutton"
@@ -480,8 +532,8 @@ export default function ListingContent({
               >
                 <i className="bi bi-search" /> &nbsp;Filter
               </button>
-            </div>
-            <div className="col-lg-4 col-8">
+            </div> */}
+            <div className="col-lg-4 col-md-4 col-sm-4 col-12">
               <div className="r-side">
                 <form className="woocommerce-ordering" method="get">
                   <div className="form-group shot-buy">
@@ -495,7 +547,7 @@ export default function ListingContent({
                         setIsOrderbyLoading(true);
 
                         const params = new URLSearchParams(
-                          searchParams.toString()
+                          searchParams.toString(),
                         );
 
                         value === "featured"
@@ -538,23 +590,24 @@ export default function ListingContent({
                     const href = getHref(item);
                     const isPriority = index < 5;
                     // const resizedBase = getResizedBase(item);
-                    const imgs = lazyImages[item.id] ?? [];
+                    // const imgs = lazyImages[item.id] ?? [];
                     const firstImage = getFirstImage(item);
+                    const isActive = swiperActivated[item.id];
+                    const slides = isActive
+                      ? (lazyImages[item.id] ?? [])
+                      : firstImage
+                        ? [firstImage, firstImage]
+                        : [];
 
                     console.log("imgs", firstImage);
                     return (
-                      <div className="col-lg-6 mb-0" key={index}>
-                        <Link
+                      <div className="col-lg-6 col-sm-6 col-md-6 mb-0" key={index}>
+                        <a
                           href={href}
-                          prefetch={false}
                           className="lli_head"
                           onClick={(e) => {
-                            e.preventDefault(); // ❗ important
-                            // setNavigating(true);
-
-                            sessionStorage.setItem("cameFromListings", "true");
-
-                            router.push(href);
+                            e.preventDefault();
+                            goToProduct(href);
                           }}
                         >
                           <div
@@ -567,8 +620,8 @@ export default function ListingContent({
                                   src={firstImage}
                                   priority={isPriority}
                                   alt="Caravan"
-                                  width={300}
-                                  height={200}
+                                  width={400}
+                                  height={300}
                                 />
                               </div>
                               <div
@@ -580,37 +633,66 @@ export default function ListingContent({
                                 )}
 
                                 <Swiper
+                                  key={`${swiperKey}-${item.id}`}
                                   modules={[Navigation, Pagination]}
                                   slidesPerView={1}
                                   navigation
                                   pagination={{ clickable: true }}
-                                  onSlideChange={() => loadRemaining(item)}
-                                  onTouchStart={() => loadRemaining(item)}
+                                  watchOverflow={false} // 🔥 IMPORTANT
+                                  allowTouchMove={true}
+                                  onMouseEnter={() => {
+                                    if (!swiperActivated[item.id]) {
+                                      activateSwiper(item);
+                                    }
+                                  }}
+                                  onTouchStart={() => {
+                                    if (!swiperActivated[item.id]) {
+                                      activateSwiper(item);
+                                    }
+                                  }}
+                                  onNavigationNext={() => {
+                                    if (!swiperActivated[item.id]) {
+                                      activateSwiper(item);
+                                    }
+                                  }}
+                                  onNavigationPrev={() => {
+                                    if (!swiperActivated[item.id]) {
+                                      activateSwiper(item);
+                                    }
+                                  }}
                                   className="main_thumb_swiper"
                                 >
-                                  {(imgs.length ? imgs : [firstImage]).map(
-                                    (img, i) => (
-                                      <SwiperSlide key={i}>
-                                        <div className="thumb_img">
-                                          <ImageWithSkeleton
-                                            src={img}
-                                            alt={`Caravan ${i + 1}`}
-                                            width={300}
-                                            height={200}
-                                            priority={isPriority && i === 0}
-                                          />
-                                        </div>
-                                      </SwiperSlide>
-                                    )
-                                  )}
+                                  {slides.map((img, i) => (
+                                    <SwiperSlide key={i}>
+                                      <div className="thumb_img">
+                                        <ImageWithSkeleton
+                                          src={img}
+                                          alt={`Caravan ${i + 1}`}
+                                          width={400}
+                                          height={300}
+                                        />
+                                      </div>
+                                    </SwiperSlide>
+                                  ))}
                                 </Swiper>
                               </div>
                             </div>
 
                             <div className="product_de">
                               <div className="info">
+
                                 {item.name && (
-                                  <h3 className="title">{item.name}</h3>
+                                  <h3
+                                    className="title cursor-pointer"
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      e.stopPropagation();
+
+                                      goToProduct(href);
+                                    }}
+                                  >
+                                    {item.name}
+                                  </h3>
                                 )}
                               </div>
 
@@ -618,74 +700,74 @@ export default function ListingContent({
                               {(item.regular_price ||
                                 item.sale_price ||
                                 item.price_difference) && (
-                                <div className="price">
-                                  <div className="metc2">
-                                    {(item.regular_price ||
-                                      item.sale_price) && (
-                                      <h5 className="slog">
-                                        {/* ✅ Stable price rendering: precompute safely */}
-                                        {(() => {
-                                          const rawRegular =
-                                            item.regular_price || "";
-                                          const rawSale = item.sale_price || "";
-                                          const cleanRegular =
-                                            rawRegular.replace(/[^0-9.]/g, "");
-                                          const regNum =
-                                            Number(cleanRegular) || 0;
-                                          const cleanSale = rawSale.replace(
-                                            /[^0-9.]/g,
-                                            ""
-                                          );
-                                          const saleNum =
-                                            Number(cleanSale) || 0;
+                                  <div className="price">
+                                    <div className="metc2">
+                                      {(item.regular_price ||
+                                        item.sale_price) && (
+                                          <h5 className="slog">
+                                            {/* ✅ Stable price rendering: precompute safely */}
+                                            {(() => {
+                                              const rawRegular =
+                                                item.regular_price || "";
+                                              const rawSale = item.sale_price || "";
+                                              const cleanRegular =
+                                                rawRegular.replace(/[^0-9.]/g, "");
+                                              const regNum =
+                                                Number(cleanRegular) || 0;
+                                              const cleanSale = rawSale.replace(
+                                                /[^0-9.]/g,
+                                                "",
+                                              );
+                                              const saleNum =
+                                                Number(cleanSale) || 0;
 
-                                          // If regular price is 0 → show POA
-                                          if (regNum === 0) {
-                                            return <>POA</>;
-                                          }
+                                              // If regular price is 0 → show POA
+                                              if (regNum === 0) {
+                                                return <>POA</>;
+                                              }
 
-                                          // If sale price exists → show sale and strike-through
-                                          if (saleNum > 0) {
-                                            return (
-                                              <>
-                                                <del>{rawRegular}</del>{" "}
-                                                {rawSale}
-                                              </>
-                                            );
-                                          }
+                                              // If sale price exists → show sale and strike-through
+                                              if (saleNum > 0) {
+                                                return (
+                                                  <>
+                                                    <del>{rawRegular}</del>{" "}
+                                                    {rawSale}
+                                                  </>
+                                                );
+                                              }
 
-                                          // Otherwise → show regular price
-                                          return <>{rawRegular}</>;
-                                        })()}
-                                      </h5>
-                                    )}
+                                              // Otherwise → show regular price
+                                              return <>{rawRegular}</>;
+                                            })()}
+                                          </h5>
+                                        )}
 
-                                    {/* ✅ Show SAVE only if > $0 */}
-                                    {(() => {
-                                      const cleanDiff = (
-                                        item.price_difference || ""
-                                      ).replace(/[^0-9.]/g, "");
-                                      const diffNum = Number(cleanDiff) || 0;
-                                      return diffNum > 0 ? (
-                                        <p className="card-price">
-                                          <span>SAVE</span>{" "}
-                                          {item.price_difference}
-                                        </p>
-                                      ) : null;
-                                    })()}
-                                    {item.is_premium && (
-                                      <div className="more_info">
-                                        <div className="informat">
-                                          <span className="premium_van">
-                                            <i className="fa fa-star"></i>{" "}
-                                            Premium
-                                          </span>
+                                      {/* ✅ Show SAVE only if > $0 */}
+                                      {(() => {
+                                        const cleanDiff = (
+                                          item.price_difference || ""
+                                        ).replace(/[^0-9.]/g, "");
+                                        const diffNum = Number(cleanDiff) || 0;
+                                        return diffNum > 0 ? (
+                                          <p className="card-price">
+                                            <span>SAVE</span>{" "}
+                                            {item.price_difference}
+                                          </p>
+                                        ) : null;
+                                      })()}
+                                      {item.is_premium && (
+                                        <div className="more_info">
+                                          <div className="informat">
+                                            <span className="premium_van">
+                                              <i className="fa fa-star"></i>{" "}
+                                              Premium
+                                            </span>
+                                          </div>
                                         </div>
-                                      </div>
-                                    )}
+                                      )}
+                                    </div>
                                   </div>
-                                </div>
-                              )}
+                                )}
 
                               {/* --- DETAILS LIST --- */}
                               <ul className="vehicleDetailsWithIcons simple">
@@ -774,7 +856,7 @@ export default function ListingContent({
                               </div>
                             </div>
                           </div>
-                        </Link>
+                        </a>
                       </div>
                     );
                   })}
@@ -814,6 +896,67 @@ export default function ListingContent({
           </nav>
         </div>
       </div>
+      <div className="col-lg-3">
+        <div className="sticky_spot hidden-xs hidden-sm">
+          <div className="related-products">
+            <div className="other_items">
+              <Link href="#" className="lli_head">
+                <div className="product-card">
+                  <div className="img">
+                    <span className="lab">Spotlight Van</span>
+                    <Image
+                          src="https://caravansforsale.imagestack.net/400x300/CFS-N-12800004/2025-newgen-ngb21s-21-luxury-slide-out-2main1.avif"
+                          alt="Caravan"
+                          width={400}
+                          height={300}
+                          className="w-100 h-100 object-fit-cover"
+                        />
+
+                    
+                  </div>
+
+                  {/* Product Details */}
+                  <div className="product_de">
+                    <div className="info">
+                      <h3 className="title cursor-pointer">
+                        2025 NewGen NGB21S 21&apos; Luxury Slideout
+                      </h3>
+                    </div>
+
+                    <div className="price">
+                      <div className="metc2">
+                        <h5 className="slog">$77,125</h5>
+                      </div>
+                    </div>
+
+                    <ul className="vehicleDetailsWithIcons simple">
+                      <li className="attribute3_list">
+                        <span className="attribute3">Luxury</span>
+                      </li>
+                      <li><span className="attribute3">21 ft</span></li>
+                      <li><span className="attribute3">3500 Kg</span></li>
+                      <li><span className="attribute3">NewGen</span></li>
+                    </ul>
+
+                    <div className="bottom_mid">
+                      <span>
+                        <i className="bi bi-check-circle-fill"></i> Condition New
+                      </span>
+                      <span>
+                        <i className="fa fa-map-marker-alt"></i> NSW
+                      </span>
+                    </div>
+
+                    <div className="bottom_button">
+                      <button className="btn btn-primary">View Details</button>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
       {showInfo && selectedProduct && (
         <div className="popup-overlay">
           <div className="popup-box">
@@ -829,7 +972,7 @@ export default function ListingContent({
                   dangerouslySetInnerHTML={{
                     __html: selectedProduct.description.replace(
                       /\\r\\n/g,
-                      "<br/>"
+                      "<br/>",
                     ),
                   }}
                 />
@@ -959,17 +1102,17 @@ export default function ListingContent({
                   <p className="terms_text">
                     By clicking &lsquo;Send Enquiry&lsquo;, you agree to Caravan
                     Marketplace{" "}
-                    <Link href="/privacy-collection-statement" target="_blank">
+                    <a href="/privacy-collection-statement" target="_blank">
                       Collection Statement
-                    </Link>
+                    </a>
                     ,{" "}
-                    <Link href="/privacy-policy" target="_blank">
+                    <a href="/privacy-policy" target="_blank">
                       Privacy Policy
-                    </Link>{" "}
+                    </a>{" "}
                     and{" "}
-                    <Link href="/terms-conditions" target="_blank">
+                    <a href="/terms-conditions" target="_blank">
                       Terms and Conditions
-                    </Link>
+                    </a>
                     .
                   </p>
 

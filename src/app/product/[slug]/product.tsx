@@ -60,6 +60,7 @@ type ProductData = {
   title?: string;
   location_shortcode?: string;
   sku?: string;
+  image_url?: string[];
 };
 
 interface BlogPost extends HomeBlogPost {
@@ -80,6 +81,8 @@ export default function ClientLogger({
   // const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   console.log("datap", data);
   const router = useRouter();
+  const IMAGE_BASE = "https://caravansforsale.imagestack.net/800x600/";
+  const IMAGE_EXT = ".avif";
 
   // const [activeImage, setActiveImage] = useState<string>("");
   const pd: ApiData = data?.data ?? {};
@@ -87,6 +90,9 @@ export default function ClientLogger({
   const productDetails: ProductData = pd.product_details ?? {};
   const blogPosts: BlogPost[] = Array.isArray(data?.data?.latest_blog_posts)
     ? data.data.latest_blog_posts!
+    : [];
+  const apiImages: string[] = Array.isArray(productDetails.image_url)
+    ? productDetails.image_url.filter(Boolean)
     : [];
 
   const relatedProducts: ProductData[] = Array.isArray(data?.data?.related)
@@ -96,11 +102,11 @@ export default function ClientLogger({
   console.log("releated", blogPosts);
   const loadedCount = useRef(0);
 
-  const handleImageLoad = () => {
-    loadedCount.current += 1;
-    if (loadedCount.current >= allSubs.length + 1) {
-    }
-  };
+  // const handleImageLoad = () => {
+  //   loadedCount.current += 1;
+  //   if (loadedCount.current >= allSubs.length + 1) {
+  //   }
+  // };
 
   console.log("datapb", relatedProducts);
 
@@ -157,15 +163,10 @@ export default function ClientLogger({
     setSafeHtml(buildSafeDescription(productDetails.description));
   }, [productDetails.description]);
 
-  const images: string[] = useMemo(
-    () => (Array.isArray(pd.images) ? pd.images.filter(Boolean) : []),
-    [pd.images]
-  );
-
   const [navigating, setNavigating] = useState(false);
 
   const [activeTab, setActiveTab] = useState<"specifications" | "description">(
-    "specifications"
+    "specifications",
   );
   const [showModal, setShowModal] = useState(false);
 
@@ -176,12 +177,12 @@ export default function ClientLogger({
   // ---------- helpers ----------
   const getAttr = (label: string): string =>
     attributes.find(
-      (a) => String(a?.label ?? "").toLowerCase() === label.toLowerCase()
+      (a) => String(a?.label ?? "").toLowerCase() === label.toLowerCase(),
     )?.value ?? "";
 
   const findAttr = (label: string): Attribute | undefined =>
     attributes.find(
-      (a) => String(a?.label ?? "").toLowerCase() === label.toLowerCase()
+      (a) => String(a?.label ?? "").toLowerCase() === label.toLowerCase(),
     );
 
   // build listings link from API-provided url (segment or query)
@@ -197,12 +198,12 @@ export default function ClientLogger({
   const rawCats: Category[] = Array.isArray(productDetails.categories)
     ? productDetails.categories
     : Array.isArray(pd.categories)
-    ? pd.categories
-    : [];
+      ? pd.categories
+      : [];
 
   const categoryNames: string[] = rawCats
     .map((c) =>
-      typeof c === "string" ? c : c?.name ?? c?.label ?? c?.value ?? ""
+      typeof c === "string" ? c : (c?.name ?? c?.label ?? c?.value ?? ""),
     )
     .filter(isNonEmpty);
 
@@ -262,7 +263,7 @@ export default function ClientLogger({
   const linksForSpec = (
     label: string,
     value: string,
-    apiUrl?: string
+    apiUrl?: string,
   ): LinkOut[] | null => {
     const v = (value || "").trim();
     if (!v) return null;
@@ -347,35 +348,36 @@ export default function ClientLogger({
   //     window.history.back();
   //   }
   // };
-  const [cameFromSameSite, setCameFromSameSite] = useState(false);
+  const [returnUrl, setReturnUrl] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
+  const [backReady, setBackReady] = useState(false);
+ useEffect(() => {
+  if (typeof window === "undefined") return;
 
-    const referrer = document.referrer;
-    const origin = window.location.origin;
-    const cameFromFlag = sessionStorage.getItem("cameFromListings");
+  // ✅ Check if user came FROM listings (via referrer OR sessionStorage)
+  const saved = sessionStorage.getItem("listingsReturnUrl");
+  const referrer = document.referrer;
 
-    // ✅ Case 1: User clicked from listings
-    if (cameFromFlag === "true") {
-      setCameFromSameSite(true);
-      sessionStorage.removeItem("cameFromListings");
-      return;
-    }
+  if (saved && saved.includes("/listings")) {
+    setReturnUrl(saved);
+  } else if (referrer && referrer.includes("/listings")) {
+    setReturnUrl(referrer);
+  }
 
-    // ✅ Case 2: Opened directly or via copy-paste (no referrer)
-    if (!referrer) {
-      setCameFromSameSite(false); // Back to Similar Caravans
-      return;
-    }
+  setBackReady(true);
+}, []);
+  // ✅ Improved back button handler
+  const handleBackClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+// setNavigating(true);
+  if (returnUrl) {
+    window.history.back(); // ✅ real back — preserves scroll + filters
+    return;
+  }
 
-    // ✅ Case 3: Came from same domain listings
-    if (referrer.startsWith(origin) && referrer.includes("/listings")) {
-      setCameFromSameSite(true); // Back to Search
-    } else {
-      setCameFromSameSite(false); // Back to Similar Caravans
-    }
-  }, []);
+    router.push(makeHref);
+  };
+ 
 
   const makeHref =
     makeValue && makeValue.trim()
@@ -400,65 +402,60 @@ export default function ClientLogger({
   const base = `https://caravansforsale.imagestack.net/800x600/${sku}/${slug}`;
 
   const main = `${base}main1.avif`;
- 
-  const [allSubs, setAllSubs] = useState<string[]>([]);
 
-function buildImageCandidates(sku?: string, slug?: string) {
-  if (!sku || !slug) return [];
+  // function buildImageCandidates(sku?: string, slug?: string) {
+  //   if (!sku || !slug) return [];
 
-  const base = `https://caravansforsale.imagestack.net/800x600/${sku}/${slug}`;
+  //   const base = `https://caravansforsale.imagestack.net/800x600/${sku}/${slug}`;
 
-  return [
-    `${base}main1.avif`,
-    ...Array.from({ length: 4 }, (_, i) => `${base}sub${i + 2}.avif`),
-  ];
-}
-const [galleryImages, setGalleryImages] = useState<string[]>([]);
+  //   return [
+  //     `${base}main1.avif`,
+  //     ...Array.from({ length: 4 }, (_, i) => `${base}sub${i + 2}.avif`),
+  //   ];
+  // }
+  const [galleryImages, setGalleryImages] = useState<string[]>([]);
   const [activeImage, setActiveImage] = useState<string>(main);
-  
 
-useEffect(() => {
-  let cancelled = false;
+  // useEffect(() => {
+  //   let cancelled = false;
 
-  async function loadGallery() {
-    const candidates = buildImageCandidates(sku, slug);
-    const valid: string[] = [];
+  //   async function loadGallery() {
+  //     const candidates = buildImageCandidates(sku, slug);
+  //     const valid: string[] = [];
 
-    for (const url of candidates) {
-      const ok = await checkImage(url);
-      if (ok) valid.push(url);
-    }
+  //     for (const url of candidates) {
+  //       const ok = await checkImage(url);
+  //       if (ok) valid.push(url);
+  //     }
 
-    if (cancelled) return;
+  //     if (cancelled) return;
 
-    // ✅ Product page thumbnails
-    setGalleryImages(valid.slice(0, 4));
-    setActiveImage(valid[0] || "");
+  //     // ✅ Product page thumbnails
+  //     setGalleryImages(valid.slice(0, 4));
+  //     setActiveImage(valid[0] || "");
 
-    // ✅ Modal logic
-    setPreloadedImages(valid.slice(0, 10));
-    setRemainingImages(valid.slice(10));
-  }
+  //     // ✅ Modal logic
+  //     setPreloadedImages(valid.slice(0, 10));
+  //     setRemainingImages(valid.slice(10));
+  //   }
 
-  loadGallery();
-  return () => {
-    cancelled = true;
-  };
-}, [sku, slug]);
+  //   loadGallery();
+  //   return () => {
+  //     cancelled = true;
+  //   };
+  // }, [sku, slug]);
 
+  // function checkImage(url: string): Promise<boolean> {
+  //   return new Promise((resolve) => {
+  //     if (typeof window === "undefined") return resolve(false);
 
-  function checkImage(url: string): Promise<boolean> {
-    return new Promise((resolve) => {
-      if (typeof window === "undefined") return resolve(false);
+  //     const img = document.createElement("img");
+  //     img.onload = () => resolve(true);
+  //     img.onerror = () => resolve(false);
+  //     img.src = url;
+  //   });
+  // }
 
-      const img = document.createElement("img");
-      img.onload = () => resolve(true);
-      img.onerror = () => resolve(false);
-      img.src = url;
-    });
-  }
-
- 
   const getIP = async () => {
     try {
       const res = await fetch("https://api.ipify.org?format=json");
@@ -489,77 +486,97 @@ useEffect(() => {
 
     postTrackEvent(
       "https://admin.caravansforsale.com.au/wp-json/cfs/v1/update-clicks",
-      Number(productDetails.id)
+      Number(productDetails.id),
     );
   }, [productDetails?.id]);
 
   // ✅ Add these states after allSubs state
-  const [preloadedImages, setPreloadedImages] = useState<string[]>([]); // First 5
-  const [remainingImages, setRemainingImages] = useState<string[]>([]); // Rest
 
   // ✅ Update the useEffect where you load gallery
-  useEffect(() => {
-    let cancelled = false;
+  // useEffect(() => {
+  //   let cancelled = false;
 
-    const loadGallery = async () => {
-      if (!sku || !slug) {
-        const fallback = (images.length ? images : [main]).filter(Boolean);
-        if (!cancelled) {
-          setAllSubs(fallback);
-          setPreloadedImages(fallback.slice(0, 10));
-          setRemainingImages(fallback.slice(10));
-          setActiveImage(fallback[0] || main);
-        }
-        return;
-      }
+  //   const loadGallery = async () => {
+  //     if (!sku || !slug) {
+  //       const fallback = (images.length ? images : [main]).filter(Boolean);
+  //       if (!cancelled) {
+  //         setAllSubs(fallback);
+  //         setPreloadedImages(fallback.slice(0, 10));
+  //         setRemainingImages(fallback.slice(10));
+  //         setActiveImage(fallback[0] || main);
+  //       }
+  //       return;
+  //     }
 
+  //     const base = `https://caravansforsale.imagestack.net/800x600/${sku}/${slug}`;
+  //     const urls: string[] = [];
 
-      const base = `https://caravansforsale.imagestack.net/800x600/${sku}/${slug}`;
-      const urls: string[] = [];
+  //     // 1) MAIN
+  //     const mainUrl = `${base}main1.avif`;
+  //     const hasMain = await checkImage(mainUrl);
+  //     if (hasMain) urls.push(mainUrl);
 
-      // 1) MAIN
-      const mainUrl = `${base}main1.avif`;
-      const hasMain = await checkImage(mainUrl);
-      if (hasMain) urls.push(mainUrl);
+  //     // 2) First 5 subs (sub2 to sub5) - PRELOAD
+  //     for (let i = 2; i <= 10; i++) {
+  //       const url = `${base}sub${i}.avif`;
+  //       const ok = await checkImage(url);
+  //       if (!ok) break;
+  //       urls.push(url);
+  //     }
 
-      // 2) First 5 subs (sub2 to sub5) - PRELOAD
-      for (let i = 2; i <= 10; i++) {
-        const url = `${base}sub${i}.avif`;
-        const ok = await checkImage(url);
-        if (!ok) break;
-        urls.push(url);
-      }
+  //     // ✅ Set preloaded images immediately
+  //     if (!cancelled) {
+  //       setPreloadedImages(urls);
+  //        setActiveImage(urls[0] || main);
+  //     }
 
-      // ✅ Set preloaded images immediately
-      if (!cancelled) {
-        setPreloadedImages(urls);
-         setActiveImage(urls[0] || main);
-      }
+  //     // 3) Remaining subs (sub6 to sub70) - LAZY LOAD
+  //     const remainingUrls: string[] = [];
+  //     for (let i = 11; i <= 80; i++) {
+  //       const url = `${base}sub${i}.avif`;
+  //       const ok = await checkImage(url);
+  //       if (!ok) break;
+  //       remainingUrls.push(url);
+  //     }
 
-      // 3) Remaining subs (sub6 to sub70) - LAZY LOAD
-      const remainingUrls: string[] = [];
-      for (let i = 11; i <= 80; i++) {
-        const url = `${base}sub${i}.avif`;
-        const ok = await checkImage(url);
-        if (!ok) break;
-        remainingUrls.push(url);
-      }
+  //     if (!cancelled) {
+  //       setRemainingImages(remainingUrls);
+  //       setAllSubs([...urls, ...remainingUrls]);
+  //     }
+  //   };
 
-      if (!cancelled) {
-        setRemainingImages(remainingUrls);
-        setAllSubs([...urls, ...remainingUrls]);
-      }
-    };
-
-    loadGallery();
-    return () => {
-      cancelled = true;
-    };
-  }, [sku, slug, images, main]);
+  //   loadGallery();
+  //   return () => {
+  //     cancelled = true;
+  //   };
+  // }, [sku, slug, images, main]);
 
   // const [activeImage, setActiveImage] = useState(main);
 
-  console.log("image", allSubs);
+  // ✅ Build image URLs from API image_url array
+  const productSubImage: string[] = useMemo(() => {
+    const raw = productDetails.image_url;
+
+    console.log("API image_url:", raw); // Debug
+
+    if (Array.isArray(raw) && raw.length > 0) {
+      const urls = raw
+        .filter((v) => typeof v === "string" && v.trim() !== "")
+        .map((key) => `${IMAGE_BASE}${key}${IMAGE_EXT}`);
+
+      console.log("Built image URLs:", urls); // Debug
+      return urls;
+    }
+
+    return [];
+  }, [productDetails.image_url]);
+
+  // ✅ Set active image when productSubImage loads
+  useEffect(() => {
+    if (productSubImage.length > 0) {
+      setActiveImage(productSubImage[0]);
+    }
+  }, [productSubImage]);
 
   return (
     <>
@@ -569,27 +586,26 @@ useEffect(() => {
             <div className="row justify-content-center">
               {/* Left Column */}
               <div className="col-xl-8 col-lg-8 col-md-12">
-                {cameFromSameSite ? (
-                  <Link
-                    href="#"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      window.history.back();
-                    }}
-                    className="back_to_search back_to_search_btn"
-                  >
-                    <i className="bi bi-chevron-left"></i> Back to Search
-                  </Link>
-                ) : (
-                  <Link
-                    href={makeHref}
-                    className="back_to_search back_to_search_btn"
-                    prefetch={false}
-                  >
-                    <i className="bi bi-chevron-left"></i> Back to Similar
-                    Caravans
-                  </Link>
-                )}
+                {backReady &&
+                  (returnUrl ? (
+                    <button
+                      type="button"
+                      onClick={handleBackClick}
+                      className="back_to_search back_to_search_btn"
+                      style={{ background: "none", border: "none", padding: 0 }}
+                    >
+                      <i className="bi bi-chevron-left"></i>
+                    Back to Search 
+                    </button>
+                  ) : (
+                    <a
+                      href={makeHref}
+                      className="back_to_search back_to_search_btn"
+                     >
+                      <i className="bi bi-chevron-left"></i> Back to Similar
+                      Caravans
+                    </a>
+                  ))}
 
                 <div className="product-info left-info">
                   <h1 className="title">{product.name}</h1>
@@ -603,8 +619,8 @@ useEffect(() => {
                               {isPOA || !reg || Number(reg) === 0
                                 ? "POA"
                                 : hasSale && sale
-                                ? fmt(Number(sale))
-                                : fmt(Number(reg))}
+                                  ? fmt(Number(sale))
+                                  : fmt(Number(reg))}
                             </bdi>
                           </div>
 
@@ -646,7 +662,7 @@ useEffect(() => {
                   {/* Thumbnails */}
                   <div className="slider_thumb_vertical image_container">
                     <div className="image_mop">
-                      {galleryImages.map((image, i) => (
+                      {productSubImage.slice(0, 4).map((image, i) => (
                         <div className="image_item" key={`${image}-${i}`}>
                           <div className="background_thumb">
                             <Image
@@ -655,7 +671,6 @@ useEffect(() => {
                               height={96}
                               alt="Thumbnail"
                               unoptimized
-                              onLoad={handleImageLoad}
                             />
                           </div>
 
@@ -670,16 +685,15 @@ useEffect(() => {
                               alt={`Thumb ${i + 1}`}
                               priority={i < 4}
                               unoptimized
-                              onLoad={handleImageLoad}
                             />
                           </div>
                         </div>
                       ))}
-
-                      <span className="caravan__image_count">
-                        {/* <span>{allSubs.length}+</span> */}
-                       +
-                      </span>
+                      <div>
+                        <span className="caravan__image_count">
+                          {productSubImage.length}
+                        </span>
+                      </div>
                     </div>
                   </div>
 
@@ -693,19 +707,16 @@ useEffect(() => {
                         alt="Large"
                         className="img-fluid"
                         unoptimized
-                        onLoad={handleImageLoad}
                       />
                     </div>
-
                     <Link href="#">
                       <Image
-                        src={activeImage || allSubs[0]}
+                        src={activeImage}
                         width={800}
                         height={600}
                         alt="Large"
                         className="img-fluid"
                         unoptimized
-                        onLoad={handleImageLoad}
                       />
                     </Link>
                   </div>
@@ -748,7 +759,7 @@ useEffect(() => {
                                   const links = linksForSpec(
                                     f.label,
                                     String(f.value),
-                                    f.url // ✅ prefer API-provided url
+                                    f.url, // ✅ prefer API-provided url
                                   );
                                   return (
                                     <li key={f.label}>
@@ -757,18 +768,12 @@ useEffect(() => {
                                         {links
                                           ? links.map((lnk, idx) => (
                                               <span key={lnk.href}>
-                                                <Link
+                                                <a
                                                   href={lnk.href}
-                                                  prefetch={false}
-                                                  onClick={(e) => {
-                                                    e.preventDefault(); // ⛔ stop default Link
-
-                                                    setNavigating(true); // ✅ show loader
-                                                    router.push(lnk.href); // ✅ go to listings
-                                                  }}
+                                                   
                                                 >
                                                   {lnk.text}
-                                                </Link>
+                                                </a>
                                                 {idx < links.length - 1
                                                   ? ", "
                                                   : ""}
@@ -853,12 +858,12 @@ useEffect(() => {
                   </button>
                   <p className="terms_text small">
                     By clicking &apos;Send Enquiry&apos;, you agree to our
-                    <Link href="/privacy-collection-statement">
+                    <a href="/privacy-collection-statement">
                       {" "}
                       Collection Statement
-                    </Link>
-                    , <Link href="/privacy-policy">Privacy Policy</Link>, and{" "}
-                    <Link href="/terms-conditions">Terms and Conditions</Link>.
+                    </a>
+                    , <a href="/privacy-policy">Privacy Policy</a>, and{" "}
+                    <a href="/terms-conditions">Terms and Conditions</a>.
                   </p>
                 </div>
               </div>
@@ -944,13 +949,12 @@ useEffect(() => {
                 <CaravanDetailModal
                   isOpen={showModal}
                   onClose={() => setShowModal(false)}
-                  preloadedImages={preloadedImages} // ✅ First 5 images
-                  remainingImages={remainingImages} // ✅ Rest images
+                  images={productSubImage}
                   product={{
                     id: productId,
                     slug: productSlug,
                     name: product.name ?? "",
-                    image: activeImage || allSubs[0],
+                    image: activeImage,
                     price: hasSale ? sale : reg,
                     regularPrice: product.regular_price ?? 0,
                     salePrice: product.sale_price ?? 0,
@@ -964,7 +968,7 @@ useEffect(() => {
         </div>
       </section>
       {/* ✅ Related Products Section */}
-      {relatedProducts.length > 0 && (
+      {/* {relatedProducts.length > 0 && (
         <div
           className="related-products section-padding"
           style={{ position: "relative", zIndex: 0, background: "#ffffffff" }}
@@ -976,8 +980,7 @@ useEffect(() => {
               </div>
             </div>
             <div className="similar-products-three position-relative">
-              {/* ✅ Swiper React Component */}
-              <Swiper
+               <Swiper
                 modules={[Navigation]}
                 navigation
                 spaceBetween={20}
@@ -1053,7 +1056,7 @@ useEffect(() => {
             </div>
           </div>
         </div>
-      )}
+      )} */}
 
       {/* ✅ Latest News */}
       <div
@@ -1090,7 +1093,7 @@ useEffect(() => {
                     const href = getHref(post);
                     return (
                       <SwiperSlide key={post.id}>
-                        <Link href={href}>
+                        <a href={href}>
                           <div className="product-card">
                             <div className="img">
                               <Image
@@ -1108,7 +1111,7 @@ useEffect(() => {
                               </div>
                             </div>
                           </div>
-                        </Link>
+                        </a>
                       </SwiperSlide>
                     );
                   })}

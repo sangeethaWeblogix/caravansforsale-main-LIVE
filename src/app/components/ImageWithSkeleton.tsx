@@ -16,8 +16,8 @@ interface Props {
 export default function ImageWithSkeleton({
   src,
   alt = "",
-  width = 300,
-  height = 200,
+  width = 400,
+  height = 300,
   className,
   priority = false,
 }: Props) {
@@ -34,12 +34,7 @@ export default function ImageWithSkeleton({
     
     <div
       className={className}
-      style={{
-        position: "relative",
-        width,
-        height,
-        overflow: "hidden",
-      }}
+      
     >
       {/* Skeleton */}
       {!loaded && (
@@ -60,10 +55,10 @@ export default function ImageWithSkeleton({
           alt={alt}
           width={width}
           height={height}
-          priority={priority}
-          unoptimized
-          loading="lazy"
-          onLoad={() => setLoaded(true)}
+           unoptimized
+            priority={priority}
+{...(!priority && { loading: "lazy" })}         
+  onLoad={() => setLoaded(true)}
           onError={() => {
             setFailed(true);
             setLoaded(true); // skeleton stop

@@ -1,4 +1,4 @@
- "use client";
+"use client";
 
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination } from "swiper/modules";
@@ -8,18 +8,15 @@ import "swiper/css/navigation";
 import "swiper/css/pagination";
 import "./popup.css";
 import Image from "next/image";
-import { useEffect, useState, useRef, useMemo } from "react";
+import { useEffect, useState, useRef } from "react";
 import { createProductEnquiry } from "@/api/enquiry/api";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-
-
 type CaravanDetailModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  preloadedImages: string[];
-  remainingImages: string[];
+  images: string[];
   product: {
     id?: string | number;
     slug?: string;
@@ -36,70 +33,11 @@ type CaravanDetailModalProps = {
 export default function CaravanDetailModal({
   isOpen,
   onClose,
-  preloadedImages,
-  remainingImages,
+  images,
   product,
 }: CaravanDetailModalProps) {
-  
-  // ✅ All images combined
-const allImages = useMemo(
-  () => [...preloadedImages, ...remainingImages],
-  [preloadedImages, remainingImages]
-);
-  const INITIAL_LOAD_COUNT = 10;
-
- const [visibleCount, setVisibleCount] = useState(INITIAL_LOAD_COUNT);
-const [currentIndex, setCurrentIndex] = useState(0);
-
-
-
-  // ✅ Track which images to show
-  // const [visibleCount, setVisibleCount] = useState(preloadedImages.length);
   const swiperRef = useRef<SwiperType | null>(null);
 
-   useEffect(() => {
-  if (isOpen) {
-    setVisibleCount(
-      Math.min(INITIAL_LOAD_COUNT, allImages.length)
-    );
-    setCurrentIndex(0);
-  }
-}, [isOpen, allImages.length]);
- 
-const handleSlideChange = (swiper: SwiperType) => {
-  const index = swiper.activeIndex;
-  setCurrentIndex(index);
-
-  // 🔥 FIRST arrow click → load everything
-  if (visibleCount < allImages.length && index >= 1) {
-    setVisibleCount(allImages.length);
-  }
-};
-
-
-  // ✅ Debug log
-  console.log("preloadedImages:", preloadedImages.length);
-  console.log("remainingImages:", remainingImages.length);
-  console.log("visibleCount:", visibleCount);
-
-  // ✅ Reset when modal opens/closes
-  
-
-  // ✅ Handle slide change - load more when near end
-
-
- 
-
-  
-
-
-
-
-
-  // ✅ Get currently visible slides
-  const visibleSlides = allImages.slice(0, visibleCount);
-
-  // Form states
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -218,10 +156,6 @@ const handleSlideChange = (swiper: SwiperType) => {
     return "POA";
   };
 
-
-
- 
-
   return (
     <div className="custom-model-main carava_details show">
       <div className="custom-model-inner">
@@ -249,15 +183,14 @@ const handleSlideChange = (swiper: SwiperType) => {
                     <Swiper
                       modules={[Navigation, Pagination]}
                       navigation
-                        watchOverflow={false}
-
+                      watchOverflow={false}
                       pagination={{ clickable: true }}
                       onSwiper={(swiper) => {
                         swiperRef.current = swiper;
                       }}
-                      onSlideChange={handleSlideChange}
+                      loop={images.length > 1}
                     >
-                      {allImages.map((img, idx) => (
+                      {images.map((img, idx) => (
                         <SwiperSlide
                           key={`slide-${idx}-${img}`}
                           className="flex justify-center items-center"
@@ -277,13 +210,6 @@ const handleSlideChange = (swiper: SwiperType) => {
                     </Swiper>
 
                     {/* ✅ Image counter */}
-                    <div className="image-counter" style={{ 
-                      textAlign: 'center', 
-                      marginTop: '10px',
-                      fontSize: '14px',
-                      color: '#666'
-                    }}>
- Showing {currentIndex + 1} of {allImages.length} images                    </div>
                   </div>
                 </div>
 

@@ -56,42 +56,11 @@ img {
   background-color: #333333;
 }
 .navbar.style-4.header-white .navbar-nav .nav-item .nav-link {
-  color: #333333;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-}
-.home_top {
-  background-color: #f2f2f2;
-  border-bottom: solid 1px #e1e1e1;
-  border-top: solid 1px #e1e1e1;
-  padding-top: 55px;
-  padding-bottom: 55px;
+    color: #333;
+    text-transform: capitalize;
+    letter-spacing: .3px;
 }
 
-.home_top h1 {
-  font-weight: 500;
-  color: #ec7200;
-  font-size: 50px;
-  margin-bottom: 5px;
-}
-
-.home_top p {
-  margin-bottom: 30px;
-}
-
-.home_top .btn {
-  display: block;
-  background: transparent;
-  border: 2px solid #333333;
-  text-transform: uppercase;
-  font-size: 18px;
-  color: #333 !important;
-}
-
-.home_top .btn:hover {
-  background: #ec7200;
-  border-color: #ec7200 !important;
-}
 
 .navbar.style-4.header-white .sidenav {
   background-color: #fcfcfc;
@@ -407,7 +376,7 @@ small {
 }
 
 .product-page .product-card .info .title {
-  font-size: 17px;
+  font-size: 18px;
   text-transform: capitalize;
   font-weight: 600;
   margin-bottom: 0;
@@ -443,8 +412,8 @@ small {
 .product-page .related-products .swiper-button-prev {
   background-color: transparent;
   position: absolute;
-  width: 60px;
-  height: 60px;
+  width: 50px;
+  height: 50px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -454,7 +423,7 @@ small {
   -o-box-shadow: 0 2px 10px -5px rgba(0, 0, 0, 0.7);
   box-shadow: 0 2px 10px -5px rgb(0 0 0 / 70%);
   background-color: #fff;
-  z-index: 2;
+  z-index: 1;
   pointer-events: auto;
 }
 
@@ -465,17 +434,17 @@ small {
 
 .product-page .related-products .swiper-button-next,
 .product-page .related-products .swiper-container-rtl .swiper-button-prev {
-  right: -30px;
+  right: -20px;
 }
 
 .product-page .related-products .swiper-button-prev,
 .product-page .related-products .swiper-container-rtl .swiper-button-next {
-  left: -30px;
+  left: -20px;
 }
 
 .product-page .related-products .swiper-button-next:after,
 .product-page .related-products .swiper-button-prev:after {
-  font-size: 30px;
+  font-size: 20px;
   color: #000;
 }
 
