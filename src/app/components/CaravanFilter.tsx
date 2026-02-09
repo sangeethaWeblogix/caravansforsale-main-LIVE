@@ -4574,9 +4574,19 @@ const res = Array.isArray(rawRes) ? rawRes : flattenLocationResponse(rawRes);   
  
                <div className="cfs-modal-body">
                  <div className="cfs-modal-search-section">
-                   <div className="secrch_icon">
-                     <i className="bi bi-search search-icon"></i>
+                   <div className="secrch_icon" style={{ position: "relative" ,}}>
+                     <i className="bi bi-search search-icon" style={{
+      position: "absolute",
+      left: "14px",
+      top: "50%",
+      transform: "translateY(-50%)",
+      color: "#888",
+      fontSize: "18px",
+      pointerEvents: "none",
+    }}></i>
                      <input
+                     style={{ paddingLeft: "40px" }}
+
                        type="text"
                        placeholder="Try caravans with bunks" 
                        className="filter-dropdown cfs-select-input"
