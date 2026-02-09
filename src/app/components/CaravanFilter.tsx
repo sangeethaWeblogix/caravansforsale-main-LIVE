@@ -27,6 +27,8 @@
    uri: string;
    address: string;
    short_address: string;
+     location_type?: "state_only" | "region_state" | "pincode_location_region_state";
+
  };
  
  interface Category {
@@ -317,6 +319,30 @@
      "Australian Capital Territory": "ACT",
    };
  
+   // Helper: flatten the categorized location-search API response
+const flattenLocationResponse = (data: any): LocationSuggestion[] => {
+  const results: LocationSuggestion[] = [];
+
+  if (Array.isArray(data?.state_only)) {
+    for (const item of data.state_only) {
+      results.push({ ...item, location_type: "state_only" as const });
+    }
+  }
+
+  if (Array.isArray(data?.region_state)) {
+    for (const item of data.region_state) {
+      results.push({ ...item, location_type: "region_state" as const });
+    }
+  }
+
+  if (Array.isArray(data?.pincode_location_region_state)) {
+    for (const item of data.pincode_location_region_state) {
+      results.push({ ...item, location_type: "pincode_location_region_state" as const });
+    }
+  }
+
+  return results;
+};
    useEffect(() => {
      if (!selectedMake || makes.length === 0) {
        setModel([]);
@@ -877,8 +903,11 @@ useEffect(() => {
  
      const t = setTimeout(() => {
        const suburb = q.split(" ")[0];
-       fetchLocations(suburb)
-         .then((data) => setLocationSuggestions(data))
+     fetchLocations(suburb)
+  .then((data) => {
+    const flat = Array.isArray(data) ? data : flattenLocationResponse(data);
+    setLocationSuggestions(flat);
+  })
          .catch(console.error);
      }, 300);
      return () => clearTimeout(t);
@@ -1359,87 +1388,162 @@ useEffect(() => {
    };
  
    const handleSearchClick = () => {
-     console.log("🔍 handleSearchClick called");
-     console.log("suburbClickedRef:", suburbClickedRef.current);
-     console.log("selectedSuggestion:", selectedSuggestion);
-     
-     // Remove resetSuburbFilters call here as it clears the selections
-     // resetSuburbFilters();
-     triggerGlobalLoaders();
-     if (!suburbClickedRef.current || !selectedSuggestion) {
-       console.log("❌ Early return - condition failed");
-       return;
-     }
- 
-     console.log("✅ Proceeding with search...");
- 
-     const parts = selectedSuggestion.uri.split("/");
-     const suburbSlug = parts[0] || "";
-     const regionSlug = parts[1] || "";
-     const stateSlug = parts[2] || "";
-     let pincode = parts[3] || "";
- 
-     const suburb = suburbSlug
-       .replace(/-suburb$/, "")
-       .replace(/-/g, " ")
-       .trim();
-     const region = regionSlug
-       .replace(/-region$/, "")
-       .replace(/-/g, " ")
-       .trim();
-     const state = stateSlug
-       .replace(/-state$/, "")
-       .replace(/-/g, " ")
-       .trim();
- 
-     if (!/^\d{4}$/.test(pincode)) {
-       const m = selectedSuggestion.address.match(/\b\d{4}\b/);
-       if (m) pincode = m[0];
-     }
- 
-     const validRegion = getValidRegionName(state, region, states);
- 
-     setSelectedState(stateSlug);
-     setSelectedStateName(AUS_ABBR[state] || state);
-     setSelectedRegionName(validRegion || null);
-     setSelectedSuburbName(suburb);
-     setSelectedpincode(pincode || null);
- 
-     // const radiusForFilters =
-     //   typeof radiusKms === "number" ? radiusKms : RADIUS_OPTIONS[0];
- 
-     const updatedFilters = buildUpdatedFilters(currentFilters, {
-       make: sanitizeMake(selectedMake || filters.make || currentFilters.make),
-       model: selectedModel || filters.model || currentFilters.model,
-       category: selectedCategory || filters.category || currentFilters.category,
-       suburb: suburb.toLowerCase(),
-       pincode: pincode || undefined,
-       state,
-       region: validRegion,
-       radius_kms: radiusKms,
-     });
- 
-     console.log("📦 updatedFilters:", updatedFilters);
- 
-     setFilters(updatedFilters);
-     filtersInitialized.current = true;
- 
-     suburbClickedRef.current = true;
-     setTimeout(() => {
-       console.log("🚀 Calling updateAllFiltersAndURL");
-       updateAllFiltersAndURL(updatedFilters);
-     }, 100);
-     const shortAddr =
-       selectedSuggestion?.short_address ||
-       buildShortAddress(suburb, state, pincode);
-     isUserTypingRef.current = false;
-     setLocationInput(shortAddr);
- 
-     setShowSuggestions(false);
-     setIsModalOpen(false);
-     setLocationSuggestions([]);
-     suburbClickedRef.current = false;
-   };
+  console.log("🔍 handleSearchClick called");
+  console.log("suburbClickedRef:", suburbClickedRef.current);
+  console.log("selectedSuggestion:", selectedSuggestion);
+  
+  triggerGlobalLoaders();
+  if (!suburbClickedRef.current || !selectedSuggestion) {
+    console.log("❌ Early return - condition failed");
+    return;
+  }
+
+  console.log("✅ Proceeding with search...");
+
+  const parts = selectedSuggestion.uri.split("/");
+  const locationType = selectedSuggestion.location_type;
+
+  let state = "";
+  let region: string | undefined = undefined;
+  let suburb = "";
+  let pincode = "";
+
+  if (locationType === "state_only" || parts.length === 1) {
+    // URI: "victoria-state" → only state
+    const stateSlug = parts[0] || "";
+    state = stateSlug.replace(/-state$/, "").replace(/-/g, " ").trim();
+
+    setSelectedState(stateSlug);
+    setSelectedStateName(AUS_ABBR[state] || state);
+    setSelectedRegionName(null);
+    setSelectedSuburbName(null);
+    setSelectedpincode(null);
+
+    const updatedFilters = buildUpdatedFilters(currentFilters, {
+      make: sanitizeMake(selectedMake || filters.make || currentFilters.make),
+      model: selectedModel || filters.model || currentFilters.model,
+      category: selectedCategory || filters.category || currentFilters.category,
+      state,
+      region: undefined,
+      suburb: undefined,
+      pincode: undefined,
+      radius_kms: undefined,
+    });
+
+    console.log("📦 updatedFilters (state_only):", updatedFilters);
+
+    setFilters(updatedFilters);
+    filtersInitialized.current = true;
+    suburbClickedRef.current = true;
+
+    setTimeout(() => {
+      console.log("🚀 Calling updateAllFiltersAndURL (state_only)");
+      updateAllFiltersAndURL(updatedFilters);
+    }, 100);
+
+    const shortAddr = selectedSuggestion?.short_address || (AUS_ABBR[state] || state);
+    isUserTypingRef.current = false;
+    setLocationInput(shortAddr);
+
+  } else if (locationType === "region_state" || parts.length === 2) {
+    // URI: "victoria-state/melbourne-region" → state + region
+    const stateSlug = parts[0] || "";
+    const regionSlug = parts[1] || "";
+    state = stateSlug.replace(/-state$/, "").replace(/-/g, " ").trim();
+    const regionRaw = regionSlug.replace(/-region$/, "").replace(/-/g, " ").trim();
+
+    const validRegion = getValidRegionName(state, regionRaw, states);
+
+    setSelectedState(stateSlug);
+    setSelectedStateName(AUS_ABBR[state] || state);
+    setSelectedRegionName(validRegion || regionRaw);
+    setSelectedSuburbName(null);
+    setSelectedpincode(null);
+
+    const updatedFilters = buildUpdatedFilters(currentFilters, {
+      make: sanitizeMake(selectedMake || filters.make || currentFilters.make),
+      model: selectedModel || filters.model || currentFilters.model,
+      category: selectedCategory || filters.category || currentFilters.category,
+      state,
+      region: validRegion || regionRaw,
+      suburb: undefined,
+      pincode: undefined,
+      radius_kms: undefined,
+    });
+
+    console.log("📦 updatedFilters (region_state):", updatedFilters);
+
+    setFilters(updatedFilters);
+    filtersInitialized.current = true;
+    suburbClickedRef.current = true;
+
+    setTimeout(() => {
+      console.log("🚀 Calling updateAllFiltersAndURL (region_state)");
+      updateAllFiltersAndURL(updatedFilters);
+    }, 100);
+
+    const shortAddr = selectedSuggestion?.short_address || `${regionRaw} ${AUS_ABBR[state] || state}`;
+    isUserTypingRef.current = false;
+    setLocationInput(shortAddr);
+
+  } else {
+    // URI: "state/region/suburb/pincode" → full location
+    const stateSlug = parts[0] || "";
+    const regionSlug = parts[1] || "";
+    const suburbSlug = parts[2] || "";
+    pincode = parts[3] || "";
+
+    suburb = suburbSlug.replace(/-suburb$/, "").replace(/-/g, " ").trim();
+    const regionRaw = regionSlug.replace(/-region$/, "").replace(/-/g, " ").trim();
+    state = stateSlug.replace(/-state$/, "").replace(/-/g, " ").trim();
+
+    if (!/^\d{4}$/.test(pincode)) {
+      const m = selectedSuggestion.address.match(/\b\d{4}\b/);
+      if (m) pincode = m[0];
+    }
+
+    const validRegion = getValidRegionName(state, regionRaw, states);
+
+    setSelectedState(stateSlug);
+    setSelectedStateName(AUS_ABBR[state] || state);
+    setSelectedRegionName(validRegion || null);
+    setSelectedSuburbName(suburb);
+    setSelectedpincode(pincode || null);
+
+    const updatedFilters = buildUpdatedFilters(currentFilters, {
+      make: sanitizeMake(selectedMake || filters.make || currentFilters.make),
+      model: selectedModel || filters.model || currentFilters.model,
+      category: selectedCategory || filters.category || currentFilters.category,
+      suburb: suburb.toLowerCase(),
+      pincode: pincode || undefined,
+      state,
+      region: validRegion,
+      radius_kms: radiusKms,
+    });
+
+    console.log("📦 updatedFilters (full location):", updatedFilters);
+
+    setFilters(updatedFilters);
+    filtersInitialized.current = true;
+    suburbClickedRef.current = true;
+
+    setTimeout(() => {
+      console.log("🚀 Calling updateAllFiltersAndURL (full location)");
+      updateAllFiltersAndURL(updatedFilters);
+    }, 100);
+
+    const shortAddr =
+      selectedSuggestion?.short_address ||
+      buildShortAddress(suburb, state, pincode);
+    isUserTypingRef.current = false;
+    setLocationInput(shortAddr);
+  }
+
+  setShowSuggestions(false);
+  setIsModalOpen(false);
+  setLocationSuggestions([]);
+  suburbClickedRef.current = false;
+};
  
    // const resetFilters = () => {
    //   const reset: Filters = {
@@ -2049,8 +2153,8 @@ useEffect(() => {
  
      (async () => {
        try {
-         const data = await fetchLocations(selectedSuburbName);
-         console.log("🌆 location data sub:", selectedSuburbName);
+const rawData = await fetchLocations(selectedSuburbName);
+const data = Array.isArray(rawData) ? rawData : flattenLocationResponse(rawData);         console.log("🌆 location data sub:", selectedSuburbName);
          console.log("🌆 location data fetched:", data);
  
          // ✅ Normalize input suburb for safe comparison
@@ -2635,8 +2739,8 @@ useEffect(() => {
                          // fetch suggestion (optional – keeps your existing logic)
                          let match: LocationSuggestion | null = null;
                          try {
-                           const res = await fetchLocations(suburb.name);
-                           match = findSuggestionFor(
+const rawRes = await fetchLocations(suburb.name);
+const res = Array.isArray(rawRes) ? rawRes : flattenLocationResponse(rawRes);                           match = findSuggestionFor(
                              suburb.name,
                              selectedRegionName,
                              selectedStateName,
@@ -4090,6 +4194,7 @@ useEffect(() => {
     }}></i>
                      <input
                        type="text"
+                     style={{ paddingLeft: "40px" }}
                        // placeholder="Search make..."
                        className="filter-dropdown cfs-select-input"
                        autoComplete="off"
@@ -4274,7 +4379,7 @@ useEffect(() => {
                    <p className="mb-1 label-text">
                      Search suburb, postcode, state, region
                    </p>
-                   <div className="secrch_icon" style={{ position: "relative" }}>
+                   <div className="secrch_icon" style={{ position: "relative" ,}}>
                      <i className="bi bi-search search-icon" style={{
       position: "absolute",
       left: "14px",
@@ -4285,6 +4390,7 @@ useEffect(() => {
       pointerEvents: "none",
     }}></i>
                      <input
+                     style={{ paddingLeft: "40px" }}
                        type="text"
                        //placeholder="Suburb or postcode..."
                        className="filter-dropdown cfs-select-input"
@@ -4313,10 +4419,10 @@ useEffect(() => {
  
                          // Use the same API call logic as in your useEffect
                          const suburb = formattedValue.split(" ")[0];
-                         fetchLocations(suburb)
-                           .then((data) => {
-                             // Filter the API results based on the formatted input
-                             const filtered = data.filter((item) => {
+                   fetchLocations(suburb)
+  .then((rawData) => {
+    const data = Array.isArray(rawData) ? rawData : flattenLocationResponse(rawData);
+    const filtered = data.filter((item) => {
                                const searchValue = formattedValue.toLowerCase();
                                return (
                                  item.short_address
@@ -4378,10 +4484,14 @@ useEffect(() => {
                      modalInput === selectedSuggestion.short_address && (
                        <div style={{ marginTop: 12 }}>
                          <div style={{ fontWeight: 600, marginBottom: 8 }}>
-                           {selectedSuggestion.address}{" "}
-                           <span>+{radiusKms}km</span>
+                         {selectedSuggestion.address}
+{selectedSuggestion.location_type !== "state_only" &&
+  selectedSuggestion.location_type !== "region_state" && (
+    <span>{" "}+{radiusKms}km</span>
+  )}
                          </div>
- 
+ {selectedSuggestion.location_type !== "state_only" &&
+  selectedSuggestion.location_type !== "region_state" && (
                          <div
                            style={{
                              display: "flex",
@@ -4411,7 +4521,9 @@ useEffect(() => {
                              +{radiusKms}km
                            </div>
                          </div>
+  )}
                        </div>
+                       
                      )}
                  </div>
                </div>
