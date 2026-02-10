@@ -84,8 +84,11 @@ async function generatePageVariant(page, variantNumber, browser) {
     if (!html.includes('</html>')) {
       throw new Error('Invalid HTML response (no closing </html> tag)');
     }
+    // ============================================
+    // IMAGE OPTIMIZATION ONLY (NO SEO TAGS)
+    // ============================================
     
-    // Add performance optimizations for images ONLY
+    // Add performance optimizations for images
     const imageOptimizations = `
     <link rel="dns-prefetch" href="https://caravansforsale.imagestack.net" />
     <link rel="preconnect" href="https://caravansforsale.imagestack.net" crossorigin />`;
@@ -94,6 +97,7 @@ async function generatePageVariant(page, variantNumber, browser) {
     const imageMatches = [...html.matchAll(/src="([^"]+\/(CFS-[^/]+)\/[^"]+\.(jpg|jpeg|png|webp))"/gi)];
     const firstImages = imageMatches.slice(0, 6).map(match => {
       const imgPath = match[1];
+      // If already using your image worker, keep it; otherwise optimize
       if (imgPath.includes('caravansforsale.imagestack.net')) {
         return imgPath;
       }
@@ -105,14 +109,14 @@ async function generatePageVariant(page, variantNumber, browser) {
       .map(url => `<link rel="preload" as="image" href="${url}" fetchpriority="high" />`)
       .join('\n');
     
-    // ⚠️ NO SEO TAGS - Only image optimization
+    // Inject ONLY image optimization tags (NO SEO!)
     const performanceTags = `${imageOptimizations}
     ${preloadLinks}`;
     
     html = html.replace('</head>', `${performanceTags}\n</head>`);
-    // Remove noindex if present
-    html = html.replace(/<meta\s+name="robots"\s+content="noindex[^"]*"\s*\/?>/gi, '');
     
+    // Remove any noindex tags if present (keep this line)
+    html = html.replace(/<meta\s+name="robots"\s+content="noindex[^"]*"\s*\/?>/gi, '');
     const sizeKB = Math.round(html.length / 1024);
     console.log(`   ⬆️  Uploading (${sizeKB}KB)...`);
     
