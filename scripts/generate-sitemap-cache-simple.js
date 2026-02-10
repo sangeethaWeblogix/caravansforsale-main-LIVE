@@ -414,23 +414,54 @@ async function main() {
     }
   }
   
-  // Step 3: Update routes mapping (only if not in batch mode or if it's the last batch)
+  // Step 3: Update routes mapping (only if not in batch mode)
   const shouldUpdateMapping = !BATCH_SIZE || !BATCH_NUMBER;
   
   if (shouldUpdateMapping) {
     console.log('\n' + '='.repeat(70));
-    console.log('📋 UPDATING ROUTES MAPPING');
+    console.log('📋 UPDATING ROUTES MAPPING (Merging with existing)');
     console.log('='.repeat(70));
     
-    const mapping = {};
+    // Load existing mapping first
+    let mapping = {};
+    try {
+      const existingMappingUrl = `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/storage/kv/namespaces/${CF_KV_NAMESPACE_ID}/values/routes-mapping`;
+      const existingResponse = await fetch(existingMappingUrl, {
+        headers: {
+          'Authorization': `Bearer ${CF_API_TOKEN}`
+        }
+      });
+      
+      if (existingResponse.ok) {
+        const existingText = await existingResponse.text();
+        mapping = JSON.parse(existingText);
+        console.log(`   ✅ Loaded existing mapping with ${Object.keys(mapping).length} paths`);
+      } else {
+        console.log(`   ℹ️  No existing mapping found, starting fresh`);
+      }
+    } catch (error) {
+      console.log(`   ⚠️  Could not load existing mapping: ${error.message}`);
+    }
+    
+    // Merge new pages into existing mapping
+    let newPaths = 0;
+    let updatedPaths = 0;
+    
     for (const page of results.pages) {
       if (!mapping[page.path]) {
         mapping[page.path] = [];
+        newPaths++;
+      } else {
+        updatedPaths++;
       }
-      mapping[page.path].push(page.kvKey);
+      
+      // Add variant if not already present
+      if (!mapping[page.path].includes(page.kvKey)) {
+        mapping[page.path].push(page.kvKey);
+      }
     }
     
-    // Sort variants
+    // Sort variants for each path
     for (const path in mapping) {
       mapping[path].sort((a, b) => {
         const variantA = parseInt(a.match(/-v(\d+)$/)?.[1] || '0');
@@ -439,10 +470,11 @@ async function main() {
       });
     }
     
-    console.log(`\n📊 Built mapping for ${Object.keys(mapping).length} paths`);
+    console.log(`   📊 New paths: ${newPaths}, Updated paths: ${updatedPaths}`);
+    console.log(`   📦 Total paths in mapping: ${Object.keys(mapping).length}`);
     
-    // Upload to KV
-    console.log('\n⬆️  Uploading routes mapping to KV...');
+    // Upload merged mapping to KV
+    console.log('\n⬆️  Uploading merged routes mapping to KV...');
     const mappingJson = JSON.stringify(mapping, null, 2);
     const sizeKB = Math.round(mappingJson.length / 1024);
     console.log(`   Size: ${sizeKB}KB`);

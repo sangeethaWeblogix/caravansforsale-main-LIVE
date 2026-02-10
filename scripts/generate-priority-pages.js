@@ -84,7 +84,7 @@ async function generatePageVariant(page, variantNumber, browser) {
     if (!html.includes('</html>')) {
       throw new Error('Invalid HTML response (no closing </html> tag)');
     }
-    // NEW CODE (with image prefetch):
+    
     // Add performance optimizations for images
     const imageOptimizations = `
     <link rel="dns-prefetch" href="https://caravansforsale.imagestack.net" />
@@ -117,6 +117,7 @@ async function generatePageVariant(page, variantNumber, browser) {
     
     html = html.replace('</head>', `${seoTags}\n</head>`);
     html = html.replace(/<meta\s+name="robots"\s+content="noindex[^"]*"\s*\/?>/gi, '');
+    
     const sizeKB = Math.round(html.length / 1024);
     console.log(`   ⬆️  Uploading (${sizeKB}KB)...`);
     
@@ -236,12 +237,35 @@ async function generateStaticPages() {
     console.log('='.repeat(70));
   }
   
-  // Update routes mapping
+  // Update routes mapping (merge with existing)
   console.log('\n' + '='.repeat(70));
-  console.log('📋 Updating routes mapping...');
+  console.log('📋 Updating routes mapping (Merging with existing)...');
   console.log('='.repeat(70));
   
-  const mapping = {};
+  // Load existing mapping first
+  let mapping = {};
+  try {
+    const existingMappingUrl = `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/storage/kv/namespaces/${CF_KV_NAMESPACE_ID}/values/routes-mapping`;
+    const existingResponse = await fetch(existingMappingUrl, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${CF_API_TOKEN}`
+      }
+    });
+    
+    if (existingResponse.ok) {
+      const existingText = await existingResponse.text();
+      mapping = JSON.parse(existingText);
+      console.log(`\n✅ Loaded existing mapping with ${Object.keys(mapping).length} paths`);
+    } else {
+      console.log(`\nℹ️  No existing mapping found, starting fresh`);
+    }
+  } catch (error) {
+    console.log(`\n⚠️  Could not load existing mapping: ${error.message}`);
+    console.log(`   Starting with empty mapping`);
+  }
+  
+  // Update/add priority pages to mapping
   for (const page of pagesToGenerate) {
     if (page.variants === 1) {
       mapping[page.path] = page.slug;
@@ -254,16 +278,26 @@ async function generateStaticPages() {
     }
   }
   
-  console.log('\n📝 Routes mapping:');
-  console.log(JSON.stringify(mapping, null, 2));
+  console.log('\n📝 Updated routes mapping (showing priority pages only):');
+  const priorityMapping = {};
+  for (const page of pagesToGenerate) {
+    priorityMapping[page.path] = mapping[page.path];
+  }
+  console.log(JSON.stringify(priorityMapping, null, 2));
+  
+  console.log(`\n📊 Total paths in mapping: ${Object.keys(mapping).length}`);
   
   const mappingJson = JSON.stringify(mapping, null, 2);
+  const sizeKB = Math.round(mappingJson.length / 1024);
+  console.log(`📦 Mapping size: ${sizeKB}KB`);
+  
+  console.log('\n⬆️  Uploading merged routes mapping...');
   const mappingUploaded = await uploadToKV('routes-mapping', mappingJson);
   
   if (mappingUploaded) {
-    console.log('\n✅ Routes mapping uploaded');
+    console.log('✅ Routes mapping uploaded successfully!');
   } else {
-    console.error('\n❌ Routes mapping upload failed');
+    console.error('❌ Routes mapping upload failed');
   }
   
   const duration = Math.round((Date.now() - startTime) / 1000);
