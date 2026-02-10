@@ -92,7 +92,6 @@ async function uploadToKV(key, value) {
     return false;
   }
 }
-
 function injectSEOTags(html, canonicalUrl, variantNumber) {
   // Add performance optimizations for images ONLY
   const imageOptimizations = `
@@ -103,6 +102,7 @@ function injectSEOTags(html, canonicalUrl, variantNumber) {
   const imageMatches = [...html.matchAll(/src="([^"]+\/(CFS-[^/]+)\/[^"]+\.(jpg|jpeg|png|webp))"/gi)];
   const firstImages = imageMatches.slice(0, 6).map(match => {
     const imgPath = match[1];
+    // If already using your image worker, keep it; otherwise optimize
     if (imgPath.includes('caravansforsale.imagestack.net')) {
       return imgPath;
     }
@@ -114,7 +114,7 @@ function injectSEOTags(html, canonicalUrl, variantNumber) {
     .map(url => `<link rel="preload" as="image" href="${url}" fetchpriority="high" />`)
     .join('\n');
   
-  // ⚠️ NO SEO TAGS - Only image optimization
+  // Inject ONLY image optimization tags (NO SEO!)
   const performanceTags = `${imageOptimizations}
     ${preloadLinks}`;
   
