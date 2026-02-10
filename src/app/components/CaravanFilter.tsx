@@ -4468,7 +4468,7 @@ const res = Array.isArray(rawRes) ? rawRes : flattenLocationResponse(rawRes);   
                                // use onMouseDown to avoid blur race
                                isUserTypingRef.current = false; // programmatic update
                                setSelectedSuggestion(item);
-                               setLocationInput(item.short_address);
+                              //  setLocationInput(item.short_address);
                                setModalInput(item.short_address);
                                setLocationSuggestions([]);
                                setShowSuggestions(false); // ✅ keep closed
@@ -4482,8 +4482,9 @@ const res = Array.isArray(rawRes) ? rawRes : flattenLocationResponse(rawRes);   
                      </ul>
                    )}
  
-                   {selectedSuggestion &&
-                     modalInput === selectedSuggestion.short_address && (
+                {selectedSuggestion &&
+  modalInput === selectedSuggestion.short_address &&
+  selectedSuggestion.uri.split("/").length >= 3 && (
                        <div style={{ marginTop: 12 }}>
                          <div style={{ fontWeight: 600, marginBottom: 8 }}>
                          {selectedSuggestion.address}
