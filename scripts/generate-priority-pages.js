@@ -85,7 +85,7 @@ async function generatePageVariant(page, variantNumber, browser) {
       throw new Error('Invalid HTML response (no closing </html> tag)');
     }
     
-    // Add performance optimizations for images
+    // Add performance optimizations for images ONLY
     const imageOptimizations = `
     <link rel="dns-prefetch" href="https://caravansforsale.imagestack.net" />
     <link rel="preconnect" href="https://caravansforsale.imagestack.net" crossorigin />`;
@@ -94,7 +94,6 @@ async function generatePageVariant(page, variantNumber, browser) {
     const imageMatches = [...html.matchAll(/src="([^"]+\/(CFS-[^/]+)\/[^"]+\.(jpg|jpeg|png|webp))"/gi)];
     const firstImages = imageMatches.slice(0, 6).map(match => {
       const imgPath = match[1];
-      // If already using your image worker, keep it; otherwise optimize
       if (imgPath.includes('caravansforsale.imagestack.net')) {
         return imgPath;
       }
@@ -106,16 +105,12 @@ async function generatePageVariant(page, variantNumber, browser) {
       .map(url => `<link rel="preload" as="image" href="${url}" fetchpriority="high" />`)
       .join('\n');
     
-    const canonicalUrl = `${PRODUCTION_DOMAIN}${page.path}`;
-    const seoTags = `${imageOptimizations}
-    ${preloadLinks}
-    <meta name="robots" content="index, follow">
-    <link rel="canonical" href="${canonicalUrl}">
-    <meta name="generated-at" content="${new Date().toISOString()}">
-    <meta name="static-variant" content="${variantNumber}">
-    <meta name="static-source" content="puppeteer">`;
+    // ⚠️ NO SEO TAGS - Only image optimization
+    const performanceTags = `${imageOptimizations}
+    ${preloadLinks}`;
     
-    html = html.replace('</head>', `${seoTags}\n</head>`);
+    html = html.replace('</head>', `${performanceTags}\n</head>`);
+    // Remove noindex if present
     html = html.replace(/<meta\s+name="robots"\s+content="noindex[^"]*"\s*\/?>/gi, '');
     
     const sizeKB = Math.round(html.length / 1024);
