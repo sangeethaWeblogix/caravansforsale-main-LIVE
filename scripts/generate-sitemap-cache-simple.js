@@ -94,7 +94,7 @@ async function uploadToKV(key, value) {
 }
 
 function injectSEOTags(html, canonicalUrl, variantNumber) {
-  // Add performance optimizations for images
+  // Add performance optimizations for images ONLY
   const imageOptimizations = `
     <link rel="dns-prefetch" href="https://caravansforsale.imagestack.net" />
     <link rel="preconnect" href="https://caravansforsale.imagestack.net" crossorigin />`;
@@ -103,7 +103,6 @@ function injectSEOTags(html, canonicalUrl, variantNumber) {
   const imageMatches = [...html.matchAll(/src="([^"]+\/(CFS-[^/]+)\/[^"]+\.(jpg|jpeg|png|webp))"/gi)];
   const firstImages = imageMatches.slice(0, 6).map(match => {
     const imgPath = match[1];
-    // If already using your image worker, keep it; otherwise optimize
     if (imgPath.includes('caravansforsale.imagestack.net')) {
       return imgPath;
     }
@@ -115,19 +114,15 @@ function injectSEOTags(html, canonicalUrl, variantNumber) {
     .map(url => `<link rel="preload" as="image" href="${url}" fetchpriority="high" />`)
     .join('\n');
   
-  const seoTags = `${imageOptimizations}
-    ${preloadLinks}
-    <meta name="robots" content="index, follow">
-    <link rel="canonical" href="${canonicalUrl}">
-    <meta name="generated-at" content="${new Date().toISOString()}">
-    <meta name="static-variant" content="${variantNumber}">
-    <meta name="static-source" content="http-fetch">`;
+  // ⚠️ NO SEO TAGS - Only image optimization
+  const performanceTags = `${imageOptimizations}
+    ${preloadLinks}`;
   
   // Remove noindex tags
   html = html.replace(/<meta\s+name="robots"\s+content="noindex[^"]*"\s*\/?>/gi, '');
   
-  // Inject SEO tags
-  html = html.replace('</head>', `${seoTags}\n</head>`);
+  // Inject performance tags only (no SEO)
+  html = html.replace('</head>', `${performanceTags}\n</head>`);
   
   return html;
 }
