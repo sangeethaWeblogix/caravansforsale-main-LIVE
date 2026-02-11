@@ -92,9 +92,8 @@ async function uploadToKV(key, value) {
     return false;
   }
 }
-
 function injectSEOTags(html, canonicalUrl, variantNumber) {
-  // Add performance optimizations for images
+  // Add performance optimizations for images ONLY
   const imageOptimizations = `
     <link rel="dns-prefetch" href="https://caravansforsale.imagestack.net" />
     <link rel="preconnect" href="https://caravansforsale.imagestack.net" crossorigin />`;
@@ -115,19 +114,15 @@ function injectSEOTags(html, canonicalUrl, variantNumber) {
     .map(url => `<link rel="preload" as="image" href="${url}" fetchpriority="high" />`)
     .join('\n');
   
-  const seoTags = `${imageOptimizations}
-    ${preloadLinks}
-    <meta name="robots" content="index, follow">
-    <link rel="canonical" href="${canonicalUrl}">
-    <meta name="generated-at" content="${new Date().toISOString()}">
-    <meta name="static-variant" content="${variantNumber}">
-    <meta name="static-source" content="http-fetch">`;
+  // Inject ONLY image optimization tags (NO SEO!)
+  const performanceTags = `${imageOptimizations}
+    ${preloadLinks}`;
   
   // Remove noindex tags
   html = html.replace(/<meta\s+name="robots"\s+content="noindex[^"]*"\s*\/?>/gi, '');
   
-  // Inject SEO tags
-  html = html.replace('</head>', `${seoTags}\n</head>`);
+  // Inject performance tags only (no SEO)
+  html = html.replace('</head>', `${performanceTags}\n</head>`);
   
   return html;
 }

@@ -84,6 +84,9 @@ async function generatePageVariant(page, variantNumber, browser) {
     if (!html.includes('</html>')) {
       throw new Error('Invalid HTML response (no closing </html> tag)');
     }
+    // ============================================
+    // IMAGE OPTIMIZATION ONLY (NO SEO TAGS)
+    // ============================================
     
     // Add performance optimizations for images
     const imageOptimizations = `
@@ -106,18 +109,14 @@ async function generatePageVariant(page, variantNumber, browser) {
       .map(url => `<link rel="preload" as="image" href="${url}" fetchpriority="high" />`)
       .join('\n');
     
-    const canonicalUrl = `${PRODUCTION_DOMAIN}${page.path}`;
-    const seoTags = `${imageOptimizations}
-    ${preloadLinks}
-    <meta name="robots" content="index, follow">
-    <link rel="canonical" href="${canonicalUrl}">
-    <meta name="generated-at" content="${new Date().toISOString()}">
-    <meta name="static-variant" content="${variantNumber}">
-    <meta name="static-source" content="puppeteer">`;
+    // Inject ONLY image optimization tags (NO SEO!)
+    const performanceTags = `${imageOptimizations}
+    ${preloadLinks}`;
     
-    html = html.replace('</head>', `${seoTags}\n</head>`);
+    html = html.replace('</head>', `${performanceTags}\n</head>`);
+    
+    // Remove any noindex tags if present (keep this line)
     html = html.replace(/<meta\s+name="robots"\s+content="noindex[^"]*"\s*\/?>/gi, '');
-    
     const sizeKB = Math.round(html.length / 1024);
     console.log(`   ⬆️  Uploading (${sizeKB}KB)...`);
     
