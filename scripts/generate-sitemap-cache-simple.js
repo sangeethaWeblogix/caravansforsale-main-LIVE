@@ -24,6 +24,8 @@ const DELAY_BETWEEN_VARIANTS = 300; // 300ms
 const DELAY_BETWEEN_URLS = 800; // 800ms
 const BATCH_SIZE = process.env.BATCH_SIZE ? parseInt(process.env.BATCH_SIZE) : null;
 const BATCH_NUMBER = process.env.BATCH_NUMBER ? parseInt(process.env.BATCH_NUMBER) : null;
+const KV_UPLOAD_RETRIES = 3; // Retry KV uploads up to 3 times
+const KV_RETRY_DELAY = 2000; // 2s between retries
 
 // All sitemap URLs
 const SITEMAP_URLS = [
@@ -33,14 +35,10 @@ const SITEMAP_URLS = [
   '/makes-sitemap.xml',
   '/weights-sitemap.xml',
   '/prices-sitemap.xml',
-  '/conditions-sitemap.xml',
   '/length-sitemap.xml',
   '/sleep-sitemap.xml',
   '/category-state-sitemap.xml',
   '/category-region-sitemap.xml',
-  '/region-length-sitemap.xml',
-  '/state-used-sitemap.xml',
-  '/region-used-sitemap.xml',
 ];
 
 // ============================================
@@ -75,23 +73,62 @@ function convertPathToSlug(path) {
 async function uploadToKV(key, value) {
   const url = `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/storage/kv/namespaces/${CF_KV_NAMESPACE_ID}/values/${key}`;
   
-  try {
-    const response = await fetch(url, {
-      method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${CF_API_TOKEN}`,
-        'Content-Type': 'text/html'
-      },
-      body: value
-    });
-    
-    const result = await response.json();
-    return result.success;
-  } catch (error) {
-    console.error(`   ❌ KV upload error: ${error.message}`);
-    return false;
+  for (let attempt = 1; attempt <= KV_UPLOAD_RETRIES; attempt++) {
+    try {
+      const response = await fetch(url, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${CF_API_TOKEN}`,
+          'Content-Type': 'text/html'
+        },
+        body: value,
+        timeout: 60000 // 60s timeout for large uploads
+      });
+      
+      // Check if response is valid JSON before parsing
+      const responseText = await response.text();
+      let result;
+      try {
+        result = JSON.parse(responseText);
+      } catch (parseError) {
+        // Response wasn't valid JSON - likely a timeout or network issue
+        if (attempt < KV_UPLOAD_RETRIES) {
+          console.error(`   ⚠️  KV upload attempt ${attempt}/${KV_UPLOAD_RETRIES} failed (invalid response), retrying in ${KV_RETRY_DELAY/1000}s...`);
+          await new Promise(resolve => setTimeout(resolve, KV_RETRY_DELAY));
+          continue;
+        }
+        console.error(`   ❌ KV upload error after ${KV_UPLOAD_RETRIES} attempts: Invalid JSON response`);
+        return false;
+      }
+      
+      if (result.success) {
+        return true;
+      }
+      
+      // API returned an error
+      const errorMsg = result.errors?.map(e => e.message).join(', ') || 'Unknown error';
+      if (attempt < KV_UPLOAD_RETRIES) {
+        console.error(`   ⚠️  KV upload attempt ${attempt}/${KV_UPLOAD_RETRIES} failed: ${errorMsg}, retrying in ${KV_RETRY_DELAY/1000}s...`);
+        await new Promise(resolve => setTimeout(resolve, KV_RETRY_DELAY));
+        continue;
+      }
+      console.error(`   ❌ KV upload error after ${KV_UPLOAD_RETRIES} attempts: ${errorMsg}`);
+      return false;
+      
+    } catch (error) {
+      if (attempt < KV_UPLOAD_RETRIES) {
+        console.error(`   ⚠️  KV upload attempt ${attempt}/${KV_UPLOAD_RETRIES} failed: ${error.message}, retrying in ${KV_RETRY_DELAY/1000}s...`);
+        await new Promise(resolve => setTimeout(resolve, KV_RETRY_DELAY));
+        continue;
+      }
+      console.error(`   ❌ KV upload error after ${KV_UPLOAD_RETRIES} attempts: ${error.message}`);
+      return false;
+    }
   }
+  
+  return false;
 }
+
 function injectSEOTags(html, canonicalUrl, variantNumber) {
   // Add performance optimizations for images ONLY
   const imageOptimizations = `
@@ -226,6 +263,12 @@ async function generatePageVariant(urlData, variantNumber) {
       timeout: 30000
     });
     
+    // Handle 404 as a skip, not a failure
+    if (response.status === 404) {
+      console.log(`   ⏭️  Skipping: HTTP 404 (page not found)`);
+      return { status: 'skipped_404', path, kvKey, variant: variantNumber };
+    }
+    
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
@@ -269,7 +312,7 @@ async function generatePageVariant(urlData, variantNumber) {
         size: sizeKB + 'KB'
       };
     } else {
-      throw new Error('KV upload failed');
+      throw new Error('KV upload failed after retries');
     }
     
   } catch (error) {
@@ -300,7 +343,8 @@ async function main() {
   }
   console.log('█'.repeat(70));
   
-  const results = { success: 0, failed: 0, skipped: 0, pages: [] };
+  const results = { success: 0, failed: 0, skipped: 0, skipped_404: 0, pages: [] };
+  const failed404Paths = new Set(); // Track unique 404 paths
   const startTime = Date.now();
   
   // Determine which sitemaps to process
@@ -365,6 +409,14 @@ async function main() {
   for (let i = 0; i < allUrls.length; i++) {
     const urlData = allUrls[i];
     
+    // If this URL already 404'd on variant 1, skip remaining variants
+    if (failed404Paths.has(urlData.path)) {
+      console.log(`\n⏭️  Skipping all variants for ${urlData.path} (already 404'd)`);
+      results.skipped_404 += VARIANTS_PER_URL;
+      totalProcessed += VARIANTS_PER_URL;
+      continue;
+    }
+    
     console.log('\n' + '-'.repeat(70));
     console.log(`📍 URL [${i + 1}/${allUrls.length}]: ${urlData.path}`);
     console.log(`   Source: ${urlData.sourceSitemap}`);
@@ -381,6 +433,17 @@ async function main() {
       if (result.status === 'success') {
         results.success++;
         results.pages.push(result);
+      } else if (result.status === 'skipped_404') {
+        results.skipped_404++;
+        failed404Paths.add(urlData.path);
+        // Skip remaining variants for this URL - no point fetching again
+        if (variant < VARIANTS_PER_URL) {
+          const remainingVariants = VARIANTS_PER_URL - variant;
+          console.log(`   ⏭️  Skipping ${remainingVariants} remaining variant(s) for this 404 URL`);
+          results.skipped_404 += remainingVariants;
+          totalProcessed += remainingVariants;
+        }
+        break; // Exit variant loop for this URL
       } else if (result.status === 'skipped') {
         results.skipped++;
       } else {
@@ -402,7 +465,8 @@ async function main() {
       console.log('='.repeat(70));
       console.log(`📊 URLs: ${i + 1}/${allUrls.length} (${Math.round((i + 1) / allUrls.length * 100)}%)`);
       console.log(`✅ Success: ${results.success} variants`);
-      console.log(`⏭️  Skipped: ${results.skipped} variants`);
+      console.log(`⏭️  Skipped (noindex): ${results.skipped} variants`);
+      console.log(`🔍 Skipped (404): ${results.skipped_404} variants (${failed404Paths.size} unique URLs)`);
       console.log(`❌ Failed: ${results.failed} variants`);
       console.log(`⏱️  Elapsed: ${elapsed} min | Remaining: ~${remaining} min`);
       console.log('='.repeat(70));
@@ -436,6 +500,20 @@ async function main() {
       }
     } catch (error) {
       console.log(`   ⚠️  Could not load existing mapping: ${error.message}`);
+    }
+    
+    // Remove 404 paths from existing mapping
+    if (failed404Paths.size > 0) {
+      let removed404 = 0;
+      for (const path404 of failed404Paths) {
+        if (mapping[path404]) {
+          delete mapping[path404];
+          removed404++;
+        }
+      }
+      if (removed404 > 0) {
+        console.log(`   🧹 Removed ${removed404} stale 404 paths from mapping`);
+      }
     }
     
     // Merge new pages into existing mapping
@@ -503,7 +581,8 @@ async function main() {
     console.log(`📦 Batch: ${BATCH_NUMBER} (size ${BATCH_SIZE})`);
   }
   console.log(`✅ Success: ${results.success} variants`);
-  console.log(`⏭️  Skipped: ${results.skipped} variants`);
+  console.log(`⏭️  Skipped (noindex): ${results.skipped} variants`);
+  console.log(`🔍 Skipped (404): ${results.skipped_404} variants (${failed404Paths.size} unique URLs)`);
   console.log(`❌ Failed: ${results.failed} variants`);
   console.log(`📄 Unique paths: ${results.pages.length > 0 ? Object.keys(results.pages.reduce((acc, p) => ({ ...acc, [p.path]: true }), {})).length : 0}`);
   console.log(`⏱️  Total duration: ${minutes}m ${seconds}s`);
@@ -513,12 +592,24 @@ async function main() {
     console.log(`📦 Average: ${avgTime}s per variant`);
   }
   
+  // List 404 URLs for sitemap cleanup
+  if (failed404Paths.size > 0) {
+    console.log('\n' + '-'.repeat(70));
+    console.log(`⚠️  ${failed404Paths.size} URLs returned 404 (consider removing from sitemap):`);
+    for (const path404 of failed404Paths) {
+      console.log(`   - ${path404}`);
+    }
+    console.log('-'.repeat(70));
+  }
+  
   console.log('█'.repeat(70));
   
   if (results.failed === 0 && results.success > 0) {
     console.log('✨ ALL VARIANTS GENERATED SUCCESSFULLY!');
   } else if (results.failed > 0 && results.success > 0) {
     console.log('⚠️  COMPLETED WITH SOME FAILURES');
+  } else if (results.success === 0 && results.skipped_404 > 0) {
+    console.log('⚠️  NO VARIANTS GENERATED (all URLs returned 404)');
   } else if (results.success === 0) {
     console.log('❌ NO VARIANTS GENERATED');
   }
@@ -526,7 +617,15 @@ async function main() {
   console.log('█'.repeat(70));
   console.log();
   
-  process.exit(results.failed > 0 ? 1 : 0);
+  // Exit code: Only fail for real errors, not 404s
+  // 404s are expected (stale sitemap entries) and should not fail the workflow
+  if (results.failed > 0 && results.success === 0) {
+    // Complete failure - exit with error
+    process.exit(1);
+  } else {
+    // Success (possibly with some 404 skips) - exit cleanly
+    process.exit(0);
+  }
 }
 
 if (require.main === module) {

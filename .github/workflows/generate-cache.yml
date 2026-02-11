@@ -22,15 +22,11 @@ on:
           - regions
           - weights
           - prices
-          - conditions
           - length
           - sleep
           - category-state
-          - state-used
-          - region-used
           - makes
           - category-region
-          - region-length
 
 jobs:
   # ==========================================
@@ -91,14 +87,11 @@ jobs:
           - regions
           - weights
           - prices
-          - conditions
           - length
           - sleep
           - category-state
-          - state-used
-          - region-used
       fail-fast: false
-      max-parallel: 11  # Run all small sitemaps in parallel
+      max-parallel: 8
     
     steps:
       - name: 📥 Checkout
@@ -129,7 +122,6 @@ jobs:
 
   # ==========================================
   # LARGE SITEMAPS (Batched) - NO PUPPETEER
-  # Split into 3 batches each to stay under 90min timeout
   # ==========================================
   generate-large-sitemaps:
     runs-on: ubuntu-latest
@@ -142,12 +134,11 @@ jobs:
     strategy:
       matrix:
         sitemap: 
-          - makes              # ~1345 URLs → ~5380 variants → ~3 hours full
-          - category-region    # ~1271 URLs → ~5084 variants → ~2.8 hours full
-          - region-length      # ~1271 URLs → ~5084 variants → ~2.8 hours full
-        batch: [1, 2, 3]       # Split each into 3 batches (~450 URLs each)
+          - makes
+          - category-region
+        batch: [1, 2, 3]
       fail-fast: false
-      max-parallel: 9          # Process all batches in parallel
+      max-parallel: 6
     
     steps:
       - name: 📥 Checkout
@@ -179,6 +170,42 @@ jobs:
         run: echo "::notice::✅ ${{ matrix.sitemap }} batch ${{ matrix.batch }} completed!"
 
   # ==========================================
+  # UPDATE ROUTES MAPPING (After all jobs complete)
+  # ==========================================
+  update-routes-mapping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [generate-priority, generate-small-sitemaps, generate-large-sitemaps]
+    if: |
+      always() &&
+      (github.event_name == 'schedule' ||
+       (github.event_name == 'workflow_dispatch' && 
+        (github.event.inputs.target == 'all' || github.event.inputs.target == 'large-sitemaps')))
+    
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+      
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      
+      - name: 📦 Install dependencies
+        run: npm install node-fetch@2
+      
+      - name: 📋 Regenerate Routes Mapping from KV
+        env:
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+        run: node scripts/regenerate-routes-mapping.js
+      
+      - name: ✅ Routes Mapping Updated
+        if: success()
+        run: echo "::notice::✅ Routes mapping regenerated successfully!"
+
+  # ==========================================
   # INDIVIDUAL MANUAL RUNS (Small Sitemaps)
   # ==========================================
   generate-individual-small:
@@ -191,12 +218,9 @@ jobs:
        github.event.inputs.target == 'regions' ||
        github.event.inputs.target == 'weights' ||
        github.event.inputs.target == 'prices' ||
-       github.event.inputs.target == 'conditions' ||
        github.event.inputs.target == 'length' ||
        github.event.inputs.target == 'sleep' ||
-       github.event.inputs.target == 'category-state' ||
-       github.event.inputs.target == 'state-used' ||
-       github.event.inputs.target == 'region-used')
+       github.event.inputs.target == 'category-state')
     
     steps:
       - name: 📥 Checkout
@@ -234,8 +258,7 @@ jobs:
     if: |
       github.event_name == 'workflow_dispatch' && 
       (github.event.inputs.target == 'makes' ||
-       github.event.inputs.target == 'category-region' ||
-       github.event.inputs.target == 'region-length')
+       github.event.inputs.target == 'category-region')
     
     strategy:
       matrix:
@@ -273,11 +296,47 @@ jobs:
         run: echo "::notice::✅ ${{ github.event.inputs.target }} batch ${{ matrix.batch }} completed!"
 
   # ==========================================
+  # UPDATE ROUTES MAPPING (After individual large sitemap batches)
+  # ==========================================
+  update-routes-mapping-individual:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [generate-individual-large]
+    if: |
+      always() &&
+      github.event_name == 'workflow_dispatch' && 
+      (github.event.inputs.target == 'makes' ||
+       github.event.inputs.target == 'category-region')
+    
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+      
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      
+      - name: 📦 Install dependencies
+        run: npm install node-fetch@2
+      
+      - name: 📋 Regenerate Routes Mapping from KV
+        env:
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+        run: node scripts/regenerate-routes-mapping.js
+      
+      - name: ✅ Routes Mapping Updated
+        if: success()
+        run: echo "::notice::✅ Routes mapping regenerated after individual large sitemap batches!"
+
+  # ==========================================
   # SUMMARY
   # ==========================================
   summary:
     runs-on: ubuntu-latest
-    needs: [generate-priority, generate-small-sitemaps, generate-large-sitemaps]
+    needs: [generate-priority, generate-small-sitemaps, generate-large-sitemaps, update-routes-mapping]
     if: always() && github.event_name == 'schedule'
     
     steps:
@@ -285,7 +344,7 @@ jobs:
         run: |
           echo "::notice::✅ All cache generation jobs completed!"
           echo "::notice::Priority pages: Homepage + Listings (4 variants each)"
-          echo "::notice::Small sitemaps: 11 sitemaps processed"
-          echo "::notice::Large sitemaps: 3 sitemaps × 3 batches = 9 batch jobs"
-          echo "::notice::Total: ~16,630 pages × 4 variants = ~66,520 cached variants"
+          echo "::notice::Small sitemaps: 8 sitemaps processed in parallel"
+          echo "::notice::Large sitemaps: 2 sitemaps × 3 batches = 6 batch jobs"
+          echo "::notice::Routes mapping: Regenerated after all jobs"
           echo "::notice::Check individual job logs for detailed statistics"
