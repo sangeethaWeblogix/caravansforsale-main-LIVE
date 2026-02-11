@@ -2246,7 +2246,14 @@ const formatLinkName = (name: string): string =>
  
 
 
-         {linksData && !linksLoading && (
+      
+        
+      <div className="filter-card mobile-search">
+        {/* ─── Links Section ─── */}
+
+        {/* Category Accordion */}
+        {/* Category Accordion */}
+   {linksData && !linksLoading && (
       <div className="cfs-links-section">
     {(["states", "categories", "makes", "conditions", "regions","models"] as string[]).map((sectionKey) => {
       const items = linksData[sectionKey];
@@ -2290,13 +2297,6 @@ const formatLinkName = (name: string): string =>
   </div>
 
 )}
-
-        
-      <div className="filter-card mobile-search">
-        {/* ─── Links Section ─── */}
-
-        {/* Category Accordion */}
-        {/* Category Accordion */}
 
         <div className="cs-full_width_section">
           <div
