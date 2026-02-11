@@ -324,12 +324,21 @@ const [linksLoading, setLinksLoading] = useState(false);
 
   // ADD AFTER line 360 (after fetchCounts closing brace)
 
-const fetchLinks = async (activeFilters: Filters) => {
+ const fetchLinks = async (activeFilters: Filters) => {
   const params = buildParamsFromFilters(activeFilters);
   const url = `https://admin.caravansforsale.com.au/wp-json/cfs/v1/links?${params.toString()}`;
+  
+  console.log("🔗 LINKS FETCH URL:", url); // DEBUG
+  
   const res = await fetch(url);
   const json = await res.json();
-  return json as LinksData;
+  
+  console.log("🔗 LINKS RAW RESPONSE:", json); // DEBUG
+  console.log("🔗 LINKS KEYS:", Object.keys(json)); // DEBUG
+  
+  // Handle both { state, category, make } and { data: { state, category, make } }
+  const data = json.data ?? json;
+  return data as LinksData;
 };
 
 // ADD AFTER your existing count useEffects
@@ -377,23 +386,26 @@ const formatLinkName = (name: string): string =>
     .replace(/-/g, " ")
     .replace(/\b\w/g, (c) => c.toUpperCase());
 
-const buildLinkUrl = (type: string, item: LinkItem): string => {
+ const buildLinkUrl = (type: string, item: LinkItem): string => {
   const activeFilters: Filters = mergeFilters(currentFilters, filters);
   const linkFilters: Filters = { ...activeFilters };
 
   switch (type) {
-    case "state":
+    case "states":
       linkFilters.state = item.slug.replace(/-/g, " ");
       delete linkFilters.region;
       delete linkFilters.suburb;
       delete linkFilters.pincode;
       break;
-    case "category":
+    case "categories":
       linkFilters.category = item.slug;
       break;
-    case "make":
+    case "makes":
       linkFilters.make = item.slug;
       delete linkFilters.model;
+      break;
+    case "conditions":
+      linkFilters.condition = item.slug;
       break;
     default:
       break;
@@ -2219,55 +2231,55 @@ const buildLinkUrl = (type: string, item: LinkItem): string => {
   return (
     <>
    
-     {linksData && !linksLoading && (
-          <div className="cfs-links-section">
-            {["state", "category", "make"].map((sectionKey) => {
-              const items = linksData[sectionKey];
-              if (!items || items.length === 0) return null;
-
-              const titles: Record<string, string> = {
-                state: "Browse by State",
-                category: "Browse by Category",
-                make: "Browse by Make",
-              };
-
-              return (
-                <div key={sectionKey} className="cfs-links-group">
-                  <h5 className="cfs-filter-label">
-                    {titles[sectionKey] || sectionKey}
-                  </h5>
-                  <ul className="cfs-links-list">
-                    {items.map((item) => (
-                      <li key={item.slug} className="cfs-links-item"><a
-                        
-                          href={buildLinkUrl(sectionKey, item)}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            triggerGlobalLoaders();
-                            const url = buildLinkUrl(sectionKey, item);
-                            router.push(url);
-                          }}
-                          className="cfs-links-link"
-                        >
-                          {formatLinkName(item.name)}
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              );
-            })}
-          </div>
-        )}
+ 
 
 
+         {linksData && !linksLoading && (
+      <div className="cfs-links-section ">
+    {(["states", "categories", "makes", "conditions"] as string[]).map((sectionKey) => {
+      const items = linksData[sectionKey];
+      if (!items || items.length === 0) return null;
+
+      const titles: Record<string, string> = {
+        states: "Browse by State",
+        categories: "Browse by Category",
+        makes: "Browse by Make",
+        conditions: "Browse by Condition",
+      };
+
+      return (
+        <div key={sectionKey} className="cfs-links-group">
+          <h5 className="cfs-filter-label">
+            {titles[sectionKey] || sectionKey}
+          </h5>
+          <ul className="cfs-links-list">
+            {items.map((item) => (
+              <li key={item.slug} className="cfs-links-item">
+                <a
+                  href={buildLinkUrl(sectionKey, item)}
+                  className="cfs-links-link"
+                  onClick={(e: React.MouseEvent) => {
+                    e.preventDefault();
+                    triggerGlobalLoaders();
+                    const url = buildLinkUrl(sectionKey, item);
+                    router.push(url);
+                  }}
+                >
+                  {formatLinkName(item.name)}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      );
+    })}
+  </div>
+
+)}
+
+        
       <div className="filter-card mobile-search">
         {/* ─── Links Section ─── */}
-      
-
-        {linksLoading && (
-          <div className="cfs-links-loading">Loading...</div>
-        )}
 
         {/* Category Accordion */}
         {/* Category Accordion */}

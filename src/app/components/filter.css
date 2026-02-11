@@ -71,12 +71,23 @@
 
 
 .cfs-links-section {
-  padding: 12px 0;
-  margin-top: 8px;
+  display: none;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
 }
+
+ 
 .cfs-links-group {
   margin-bottom: 16px;
 }
+
+.cfs-links-group:last-child {
+  margin-bottom: 0;
+}
+
 .cfs-links-list {
   list-style: none;
   padding: 0;
