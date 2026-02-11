@@ -227,8 +227,17 @@ export default function ListingContent({
         name: "",
       };
 
-  const { form, errors, touched, submitting, setField, onBlur, onSubmit } =
-    useEnquiryForm(enquiryProduct);
+  const {
+    form,
+    errors,
+    touched,
+    submitting,
+    setField,
+    onBlur,
+    onSubmit,
+    isFinanceQuoteChecked,
+    setFinanceQuoteChecked,
+  } = useEnquiryForm(enquiryProduct);
 
   const MAX_SWIPER_IMAGES = 5;
 
@@ -1037,7 +1046,20 @@ export default function ListingContent({
                       ></textarea>
                     </p>
                   </div>
-
+                  {/* finance checkbox */}
+                  <div className="checkbox-wrapper">
+                    <input
+                      type="checkbox"
+                      id="financeQuote"
+                      onChange={() =>
+                        setFinanceQuoteChecked((prevState) => !prevState)
+                      }
+                      checked={isFinanceQuoteChecked}
+                    />
+                    <label htmlFor="financeQuote">
+                      Get a no-obligation finance quote with competitive rates
+                    </label>
+                  </div>
                   <p className="terms_text">
                     By clicking &lsquo;Send Enquiry&lsquo;, you agree to Caravan
                     Marketplace{" "}

@@ -55,6 +55,7 @@ export default function CaravanDetailModal({
   const [errors, setErrors] = useState<Partial<typeof form>>({});
   const [submitting, setSubmitting] = useState(false);
   const [okMsg, setOkMsg] = useState<string | null>(null);
+  const [isFinanceQuoteChecked, setFinanceQuoteChecked] = useState(false);
   const router = useRouter();
 
   // Validation regex
@@ -104,6 +105,11 @@ export default function CaravanDetailModal({
     setSubmitting(true);
     setOkMsg(null);
     try {
+      const navHistory = sessionStorage.getItem("nav_history");
+      const navigation_path = navHistory
+        ? JSON.parse(navHistory).join(", ")
+        : "";
+
       const data = await createProductEnquiry({
         product_id: product.id ?? product.slug ?? product.name,
         email: form.email.trim(),
@@ -111,6 +117,8 @@ export default function CaravanDetailModal({
         phone: form.phone.trim(),
         message: form.message.trim() || "",
         postcode: form.postcode.trim(),
+        page_url: navigation_path,
+        finance: isFinanceQuoteChecked,
       });
 
       if (data?.success && data.data?.redirect_slug) {
@@ -366,6 +374,22 @@ export default function CaravanDetailModal({
                         </div>
 
                         {okMsg && <div className="cfs-success">{okMsg}</div>}
+
+                        {/* finance checkbox */}
+                        <div className="checkbox-wrapper">
+                          <input
+                            type="checkbox"
+                            id="financeQuote"
+                            onChange={() =>
+                              setFinanceQuoteChecked((prevState) => !prevState)
+                            }
+                            checked={isFinanceQuoteChecked}
+                          />
+                          <label htmlFor="financeQuote">
+                            Get a no-obligation finance quote with competitive
+                            rates
+                          </label>
+                        </div>
 
                         <p className="terms_text">
                           By clicking &apos;Send Enquiry&apos;, you agree to
