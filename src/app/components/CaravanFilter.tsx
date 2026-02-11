@@ -2253,8 +2253,9 @@ const formatLinkName = (name: string): string =>
 
         {/* Category Accordion */}
         {/* Category Accordion */}
+        <div className="cfs-links-section">
    {linksData && !linksLoading && (
-      <div className="cfs-links-section">
+    <>
     {(["states", "categories", "makes", "conditions", "regions","models"] as string[]).map((sectionKey) => {
       const items = linksData[sectionKey];
       if (!items || items.length === 0) return null;
@@ -2294,9 +2295,11 @@ const formatLinkName = (name: string): string =>
         </div>
       );
     })}
-  </div>
+    </>
 
 )}
+  </div>
+
 
         <div className="cs-full_width_section">
           <div
