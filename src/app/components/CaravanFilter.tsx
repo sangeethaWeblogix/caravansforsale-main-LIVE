@@ -39,9 +39,12 @@ type LinkItem = {
 };
 
 type LinksData = {
-  state?: LinkItem[];
-  category?: LinkItem[];
-  make?: LinkItem[];
+ states?: LinkItem[];
+  regions?: LinkItem[];
+  categories?: LinkItem[];
+  makes?: LinkItem[];
+  models?: LinkItem[];
+  conditions?: LinkItem[];
   [key: string]: LinkItem[] | undefined;
 };
 
@@ -397,12 +400,21 @@ const formatLinkName = (name: string): string =>
       delete linkFilters.suburb;
       delete linkFilters.pincode;
       break;
+      case "regions":
+      linkFilters.region = item.slug.replace(/-/g, " ");
+       delete linkFilters.suburb;
+      delete linkFilters.pincode;
+      break;
     case "categories":
       linkFilters.category = item.slug;
       break;
     case "makes":
       linkFilters.make = item.slug;
       delete linkFilters.model;
+      break;
+      case "models":
+      // Make already set, just add model
+      linkFilters.model = item.slug;
       break;
     case "conditions":
       linkFilters.condition = item.slug;
@@ -2235,15 +2247,17 @@ const formatLinkName = (name: string): string =>
 
 
          {linksData && !linksLoading && (
-      <div className="cfs-links-section ">
-    {(["states", "categories", "makes", "conditions"] as string[]).map((sectionKey) => {
+      <div className="cfs-links-section">
+    {(["states", "categories", "makes", "conditions", "regions","models"] as string[]).map((sectionKey) => {
       const items = linksData[sectionKey];
       if (!items || items.length === 0) return null;
 
       const titles: Record<string, string> = {
-        states: "Browse by State",
         categories: "Browse by Category",
+        states: "Browse by State",
+        regions: "Browse by Region",
         makes: "Browse by Make",
+        models: "Browse by Model",
         conditions: "Browse by Condition",
       };
 
