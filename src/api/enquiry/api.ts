@@ -9,6 +9,8 @@ export type ProductEnquiryPayload = {
   phone: string;
   postcode: string;
   message: string;
+  page_url: string;
+  finance: boolean;
 };
 
 export type ProductEnquiryData = {

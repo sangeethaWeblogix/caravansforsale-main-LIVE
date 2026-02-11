@@ -12,6 +12,7 @@
   import UTMTracker from "./UTMTracker";
   // import NextTopLoader from "nextjs-toploader";
 import ThemeRegistry from './components/ThemeRegistry';
+import NavigationHistory from "@/components/NavigationHistory";
 
   
   export const metadata: Metadata = {
@@ -96,6 +97,7 @@ const gtmServer = "https://gtm.caravansforsale.com.au";
 
   
           <UTMTracker />
+          <NavigationHistory />
           <Navbar />
                   <Suspense fallback={null}>
 

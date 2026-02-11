@@ -128,8 +128,17 @@ export default function ExculisiveContent({
         name: "",
       };
 
-  const { form, errors, touched, submitting, setField, onBlur, onSubmit } =
-    useEnquiryForm(enquiryProduct);
+  const {
+    form,
+    errors,
+    touched,
+    submitting,
+    setField,
+    onBlur,
+    onSubmit,
+    isFinanceQuoteChecked,
+    setFinanceQuoteChecked,
+  } = useEnquiryForm(enquiryProduct);
 
   // Remove all the lazy loading state and just load all images immediately
 
@@ -765,6 +774,21 @@ console.log("exxx", data)
                         onChange={(e) => setField("message", e.target.value)}
                       ></textarea>
                     </p>
+                  </div>
+
+                  {/* finance checkbox */}
+                  <div className="checkbox-wrapper">
+                    <input
+                      type="checkbox"
+                      id="financeQuote"
+                      onChange={() =>
+                        setFinanceQuoteChecked((prevState) => !prevState)
+                      }
+                      checked={isFinanceQuoteChecked}
+                    />
+                    <label htmlFor="financeQuote">
+                      Get a no-obligation finance quote with competitive rates
+                    </label>
                   </div>
 
                   <p className="terms_text">
