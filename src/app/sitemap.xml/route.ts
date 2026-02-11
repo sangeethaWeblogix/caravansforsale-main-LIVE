@@ -15,25 +15,13 @@ export async function GET() {
     "models-sitemap.xml",
     "weights-sitemap.xml",
     "prices-sitemap.xml",
-    "conditions-sitemap.xml",
     "length-sitemap.xml",
     "sleep-sitemap.xml",
     "state-make-sitemap.xml",
-    "region-make-sitemap.xml",
-    
-    
+    "region-make-sitemap.xml", 
     "category-state-sitemap.xml",
     "category-region-sitemap.xml",
-    "state-atm-sitemap.xml",
-    "region-atm-sitemap.xml",
-    "category-price-sitemap.xml",
-    "state-sleep-sitemap.xml",
-    "region-sleep-sitemap.xml",
     "category-sleep-sitemap.xml",
-    "state-length-sitemap.xml",
-    "region-length-sitemap.xml",
-    "category-atm-sitemap.xml",
-    "category-length-sitemap.xml",
   ];
 
   const lastModified = new Date().toISOString().split("T")[0];
