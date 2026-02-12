@@ -1135,6 +1135,9 @@ const buildClientLinkUrl = (type: string, item: { slug: string }) => {
                       </button>{" "}
                     </span>
                   </div>
+
+                  <div className="smooth_scroll">
+                      {/* ✅ SSR Links — will appear in View Page Source */}
  {clientMounted && clientLinksData && (
     <div className="cfs-links-section" id="client-links">
       {(["states", "categories", "makes", "conditions", "regions", "models"] as string[]).map((sectionKey) => {
@@ -1179,9 +1182,6 @@ const buildClientLinkUrl = (type: string, item: { slug: string }) => {
       })}
     </div>
   )}
-                  <div className="smooth_scroll">
-                      {/* ✅ SSR Links — will appear in View Page Source */}
-
   <Suspense fallback={<div className="filter-placeholder">Loading filters...</div>}>
                       <CaravanFilter
                         categories={categories}
