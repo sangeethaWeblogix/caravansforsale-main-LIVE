@@ -1995,8 +1995,7 @@ const formatLinkName = (name: string): string =>
       lastPushedURLRef.current = finalURL;
       if (mountedRef.current) {
         router.replace(finalURL);
-        // onFilterChange(next);
-      }
+       }
     }
   };
 

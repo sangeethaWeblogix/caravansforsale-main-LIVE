@@ -178,8 +178,7 @@ if (
   // Reject gibberish / pin-code spam
   const hasGibberish = slug.some((part) => {
     // 🔧 FIX #2: Add null/undefined check for part
-    if (!part || typeof part !== 'string') return false;
-    
+     
     const lower = part.toLowerCase();
     const isPureNumber = /^[0-9]{5,}$/.test(lower);
     const isWeirdSymbols = /^[^a-z0-9-]+$/.test(lower);
@@ -223,8 +222,7 @@ if (
   // ← Fixed: removed unused `index`
   for (const part of slug) {
     // 🔧 FIX #3: Add null/undefined check for part
-    if (!part || typeof part !== 'string') continue;
-    
+     
     const lower = part.toLowerCase();
     let detectedType: SegmentType | null = null;
 
