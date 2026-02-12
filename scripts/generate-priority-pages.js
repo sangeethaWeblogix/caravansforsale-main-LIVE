@@ -32,18 +32,51 @@ const STATIC_PAGES = [
   },
 ];
 
-async function uploadToKV(key, value) {
+async function uploadToKV(key, value, metadata = null) {
   const url = `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/storage/kv/namespaces/${CF_KV_NAMESPACE_ID}/values/${key}`;
   
-  const response = await fetch(url, {
-    method: 'PUT',
-    headers: {
-      'Authorization': `Bearer ${CF_API_TOKEN}`,
-      'Content-Type': 'text/html'
-    },
-    body: value
-  });
+  let requestOptions;
   
+  if (metadata) {
+    const boundary = '----CFSFormBoundary' + Date.now();
+    let body = '';
+    
+    // Value part
+    body += `--${boundary}\r\n`;
+    body += `Content-Disposition: form-data; name="value"; filename="blob"\r\n`;
+    body += `Content-Type: text/html\r\n\r\n`;
+    body += value;
+    body += `\r\n`;
+    
+    // Metadata part
+    body += `--${boundary}\r\n`;
+    body += `Content-Disposition: form-data; name="metadata"\r\n`;
+    body += `Content-Type: application/json\r\n\r\n`;
+    body += JSON.stringify(metadata);
+    body += `\r\n`;
+    
+    body += `--${boundary}--\r\n`;
+    
+    requestOptions = {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${CF_API_TOKEN}`,
+        'Content-Type': `multipart/form-data; boundary=${boundary}`
+      },
+      body: body
+    };
+  } else {
+    requestOptions = {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${CF_API_TOKEN}`,
+        'Content-Type': 'text/html'
+      },
+      body: value
+    };
+  }
+  
+  const response = await fetch(url, requestOptions);
   const result = await response.json();
   return result.success;
 }
@@ -97,7 +130,6 @@ async function generatePageVariant(page, variantNumber, browser) {
     const imageMatches = [...html.matchAll(/src="([^"]+\/(CFS-[^/]+)\/[^"]+\.(jpg|jpeg|png|webp))"/gi)];
     const firstImages = imageMatches.slice(0, 6).map(match => {
       const imgPath = match[1];
-      // If already using your image worker, keep it; otherwise optimize
       if (imgPath.includes('caravansforsale.imagestack.net')) {
         return imgPath;
       }
@@ -115,13 +147,14 @@ async function generatePageVariant(page, variantNumber, browser) {
     
     html = html.replace('</head>', `${performanceTags}\n</head>`);
     
-    // Remove any noindex tags if present (keep this line)
+    // Remove any noindex tags if present
     html = html.replace(/<meta\s+name="robots"\s+content="noindex[^"]*"\s*\/?>/gi, '');
     const sizeKB = Math.round(html.length / 1024);
     console.log(`   ⬆️  Uploading (${sizeKB}KB)...`);
     
     const uploadStart = Date.now();
-    const uploaded = await uploadToKV(kvKey, html);
+    const metadata = { path: page.path, source: 'priority-pages' };
+    const uploaded = await uploadToKV(kvKey, html, metadata);
     const uploadDuration = Math.round((Date.now() - uploadStart) / 1000);
     
     if (uploaded) {

@@ -5,8 +5,8 @@
  * Lists all keys in KV and rebuilds the routes-mapping JSON.
  * Run this after all batched cache generation jobs complete.
  * 
- * This script reads all KV keys (e.g., "colorado-v1", "colorado-v2"),
- * groups them by path slug, and uploads a fresh routes-mapping.
+ * This script reads all KV keys and their metadata (which contains the original path),
+ * groups them by path, and uploads a fresh routes-mapping.
  */
 
 const fetch = require('node-fetch');
@@ -22,7 +22,7 @@ async function listAllKVKeys() {
   let cursor = null;
   let page = 1;
   
-  console.log('📥 Listing all KV keys...');
+  console.log('📥 Listing all KV keys (with metadata)...');
   
   while (true) {
     let url = `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/storage/kv/namespaces/${CF_KV_NAMESPACE_ID}/keys?limit=1000`;
@@ -42,13 +42,13 @@ async function listAllKVKeys() {
       throw new Error(`KV list failed: ${JSON.stringify(data.errors)}`);
     }
     
-    const keys = data.result.map(k => k.name);
-    allKeys = allKeys.concat(keys);
+    // Each key object has: { name, metadata }
+    allKeys = allKeys.concat(data.result);
     
-    console.log(`   Page ${page}: ${keys.length} keys (total: ${allKeys.length})`);
+    console.log(`   Page ${page}: ${data.result.length} keys (total: ${allKeys.length})`);
     
     cursor = data.result_info?.cursor;
-    if (!cursor || keys.length === 0) {
+    if (!cursor || data.result.length === 0) {
       break;
     }
     page++;
@@ -57,36 +57,57 @@ async function listAllKVKeys() {
   return allKeys;
 }
 
-function buildMappingFromKeys(keys) {
+function buildMappingFromKeys(keyObjects) {
   const mapping = {};
   
-  // Filter out non-variant keys
-  const variantKeys = keys.filter(key => {
-    if (EXCLUDED_KEYS.includes(key)) return false;
-    // Must match pattern: slug-v1, slug-v2, etc.
-    return /-v\d+$/.test(key);
+  // Special slugs that don't follow /listings/slug/ pattern
+  const SPECIAL_SLUGS = {
+    'homepage': '/',
+    'listings-home': '/listings/'
+  };
+  
+  // Filter to variant keys only
+  const variantKeyObjects = keyObjects.filter(keyObj => {
+    if (EXCLUDED_KEYS.includes(keyObj.name)) return false;
+    return /-v\d+$/.test(keyObj.name);
   });
   
-  console.log(`\n📊 Found ${variantKeys.length} variant keys out of ${keys.length} total keys`);
+  console.log(`\n📊 Found ${variantKeyObjects.length} variant keys out of ${keyObjects.length} total keys`);
   
-  for (const key of variantKeys) {
-    // Extract slug (everything before -vN)
+  let metadataHits = 0;
+  let metadataMisses = 0;
+  
+  for (const keyObj of variantKeyObjects) {
+    const key = keyObj.name;
     const match = key.match(/^(.+)-v(\d+)$/);
     if (!match) continue;
     
     const slug = match[1];
+    let path;
     
-    // Reconstruct path from slug
-    // Reverse of convertPathToSlug: slug → /listings/slug/
-    // For compound slugs with hyphens, we can't perfectly reconstruct
-    // but for the mapping we use the slug as the path key
-    const path = `/listings/${slug.replace(/-/g, '/')}/`;
+    // Priority 1: Use metadata path if available (most accurate)
+    if (keyObj.metadata && keyObj.metadata.path) {
+      path = keyObj.metadata.path;
+      metadataHits++;
+    }
+    // Priority 2: Use special slug mapping for known pages
+    else if (SPECIAL_SLUGS[slug]) {
+      path = SPECIAL_SLUGS[slug];
+      metadataMisses++;
+    }
+    // Priority 3: Fallback - reconstruct from slug (legacy keys without metadata)
+    else {
+      path = `/listings/${slug.replace(/-/g, '/')}/`;
+      metadataMisses++;
+    }
     
     if (!mapping[path]) {
       mapping[path] = [];
     }
     mapping[path].push(key);
   }
+  
+  console.log(`   🏷️  Metadata hits: ${metadataHits}, Fallback: ${metadataMisses}`);
   
   // Sort variants within each path
   for (const path in mapping) {
@@ -163,21 +184,31 @@ async function main() {
   }
   
   try {
-    // Step 1: List all keys
-    const keys = await listAllKVKeys();
+    // Step 1: List all keys (with metadata)
+    const keyObjects = await listAllKVKeys();
     
-    if (keys.length === 0) {
+    if (keyObjects.length === 0) {
       console.log('⚠️  No keys found in KV namespace');
       process.exit(0);
     }
     
-    // Step 2: Build mapping
-    const mapping = buildMappingFromKeys(keys);
+    // Step 2: Build mapping using metadata for accurate paths
+    const mapping = buildMappingFromKeys(keyObjects);
     
     console.log(`\n📊 Mapping summary:`);
     console.log(`   Total paths: ${Object.keys(mapping).length}`);
     const totalVariants = Object.values(mapping).reduce((sum, v) => sum + v.length, 0);
     console.log(`   Total variants: ${totalVariants}`);
+    
+    // Show priority pages
+    const priorityPaths = ['/', '/listings/'];
+    for (const p of priorityPaths) {
+      if (mapping[p]) {
+        console.log(`   ${p} → [${mapping[p].join(', ')}]`);
+      } else {
+        console.log(`   ⚠️  ${p} NOT FOUND in mapping`);
+      }
+    }
     
     // Step 3: Upload
     const success = await uploadMapping(mapping);

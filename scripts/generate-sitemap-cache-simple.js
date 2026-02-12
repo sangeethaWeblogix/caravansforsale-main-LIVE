@@ -27,6 +27,11 @@ const BATCH_NUMBER = process.env.BATCH_NUMBER ? parseInt(process.env.BATCH_NUMBE
 const KV_UPLOAD_RETRIES = 3; // Retry KV uploads up to 3 times
 const KV_RETRY_DELAY = 2000; // 2s between retries
 
+// SKIP_ROUTES_UPDATE: When running in parallel (e.g., matrix strategy),
+// skip routes mapping update to avoid race conditions.
+// The update-routes-mapping job will handle it after all jobs complete.
+const SKIP_ROUTES_UPDATE = process.env.SKIP_ROUTES_UPDATE === 'true';
+
 // All sitemap URLs
 const SITEMAP_URLS = [
   '/categories-sitemap.xml',
@@ -70,20 +75,56 @@ function convertPathToSlug(path) {
   return pathSlug || 'home';
 }
 
-async function uploadToKV(key, value) {
+async function uploadToKV(key, value, metadata = null) {
   const url = `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/storage/kv/namespaces/${CF_KV_NAMESPACE_ID}/values/${key}`;
   
   for (let attempt = 1; attempt <= KV_UPLOAD_RETRIES; attempt++) {
     try {
-      const response = await fetch(url, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${CF_API_TOKEN}`,
-          'Content-Type': 'text/html'
-        },
-        body: value,
-        timeout: 60000 // 60s timeout for large uploads
-      });
+      // Use multipart form data to include metadata
+      let requestOptions;
+      
+      if (metadata) {
+        const boundary = '----CFSFormBoundary' + Date.now();
+        let body = '';
+        
+        // Value part
+        body += `--${boundary}\r\n`;
+        body += `Content-Disposition: form-data; name="value"; filename="blob"\r\n`;
+        body += `Content-Type: text/html\r\n\r\n`;
+        body += value;
+        body += `\r\n`;
+        
+        // Metadata part
+        body += `--${boundary}\r\n`;
+        body += `Content-Disposition: form-data; name="metadata"\r\n`;
+        body += `Content-Type: application/json\r\n\r\n`;
+        body += JSON.stringify(metadata);
+        body += `\r\n`;
+        
+        body += `--${boundary}--\r\n`;
+        
+        requestOptions = {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${CF_API_TOKEN}`,
+            'Content-Type': `multipart/form-data; boundary=${boundary}`
+          },
+          body: body,
+          timeout: 60000
+        };
+      } else {
+        requestOptions = {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${CF_API_TOKEN}`,
+            'Content-Type': 'text/html'
+          },
+          body: value,
+          timeout: 60000
+        };
+      }
+      
+      const response = await fetch(url, requestOptions);
       
       // Check if response is valid JSON before parsing
       const responseText = await response.text();
@@ -91,7 +132,6 @@ async function uploadToKV(key, value) {
       try {
         result = JSON.parse(responseText);
       } catch (parseError) {
-        // Response wasn't valid JSON - likely a timeout or network issue
         if (attempt < KV_UPLOAD_RETRIES) {
           console.error(`   ⚠️  KV upload attempt ${attempt}/${KV_UPLOAD_RETRIES} failed (invalid response), retrying in ${KV_RETRY_DELAY/1000}s...`);
           await new Promise(resolve => setTimeout(resolve, KV_RETRY_DELAY));
@@ -139,7 +179,6 @@ function injectSEOTags(html, canonicalUrl, variantNumber) {
   const imageMatches = [...html.matchAll(/src="([^"]+\/(CFS-[^/]+)\/[^"]+\.(jpg|jpeg|png|webp))"/gi)];
   const firstImages = imageMatches.slice(0, 6).map(match => {
     const imgPath = match[1];
-    // If already using your image worker, keep it; otherwise optimize
     if (imgPath.includes('caravansforsale.imagestack.net')) {
       return imgPath;
     }
@@ -294,12 +333,13 @@ async function generatePageVariant(urlData, variantNumber) {
     // Inject SEO tags
     html = injectSEOTags(html, fullUrl, variantNumber);
     
-    // Upload to KV
+    // Upload to KV with metadata containing the original path
     const sizeKB = Math.round(html.length / 1024);
     console.log(`   ⬆️  Uploading (${sizeKB}KB)...`);
     
     const uploadStart = Date.now();
-    const uploaded = await uploadToKV(kvKey, html);
+    const metadata = { path: path, source: 'sitemap-cache' };
+    const uploaded = await uploadToKV(kvKey, html, metadata);
     const uploadDuration = Math.round((Date.now() - uploadStart) / 1000);
     
     if (uploaded) {
@@ -340,6 +380,9 @@ async function main() {
   console.log(`🎯 Target: ${TARGET_SITEMAP}`);
   if (BATCH_SIZE && BATCH_NUMBER) {
     console.log(`📦 Batch mode: Batch ${BATCH_NUMBER}, Size ${BATCH_SIZE}`);
+  }
+  if (SKIP_ROUTES_UPDATE) {
+    console.log(`⏭️  Routes mapping update: SKIPPED (will be handled by update-routes-mapping job)`);
   }
   console.log('█'.repeat(70));
   
@@ -436,14 +479,13 @@ async function main() {
       } else if (result.status === 'skipped_404') {
         results.skipped_404++;
         failed404Paths.add(urlData.path);
-        // Skip remaining variants for this URL - no point fetching again
         if (variant < VARIANTS_PER_URL) {
           const remainingVariants = VARIANTS_PER_URL - variant;
           console.log(`   ⏭️  Skipping ${remainingVariants} remaining variant(s) for this 404 URL`);
           results.skipped_404 += remainingVariants;
           totalProcessed += remainingVariants;
         }
-        break; // Exit variant loop for this URL
+        break;
       } else if (result.status === 'skipped') {
         results.skipped++;
       } else {
@@ -473,8 +515,10 @@ async function main() {
     }
   }
   
-  // Step 3: Update routes mapping (only if not in batch mode)
-  const shouldUpdateMapping = !BATCH_SIZE || !BATCH_NUMBER;
+  // Step 3: Update routes mapping
+  // Skip if: batch mode, parallel mode (SKIP_ROUTES_UPDATE), 
+  // The update-routes-mapping job will rebuild from KV metadata after all jobs complete.
+  const shouldUpdateMapping = !SKIP_ROUTES_UPDATE && (!BATCH_SIZE || !BATCH_NUMBER);
   
   if (shouldUpdateMapping) {
     console.log('\n' + '='.repeat(70));
@@ -528,7 +572,6 @@ async function main() {
         updatedPaths++;
       }
       
-      // Add variant if not already present
       if (!mapping[page.path].includes(page.kvKey)) {
         mapping[page.path].push(page.kvKey);
       }
@@ -536,11 +579,13 @@ async function main() {
     
     // Sort variants for each path
     for (const path in mapping) {
-      mapping[path].sort((a, b) => {
-        const variantA = parseInt(a.match(/-v(\d+)$/)?.[1] || '0');
-        const variantB = parseInt(b.match(/-v(\d+)$/)?.[1] || '0');
-        return variantA - variantB;
-      });
+      if (Array.isArray(mapping[path])) {
+        mapping[path].sort((a, b) => {
+          const variantA = parseInt(a.match(/-v(\d+)$/)?.[1] || '0');
+          const variantB = parseInt(b.match(/-v(\d+)$/)?.[1] || '0');
+          return variantA - variantB;
+        });
+      }
     }
     
     console.log(`   📊 New paths: ${newPaths}, Updated paths: ${updatedPaths}`);
@@ -563,8 +608,13 @@ async function main() {
     console.log('='.repeat(70));
   } else {
     console.log('\n' + '='.repeat(70));
-    console.log('⏭️  SKIPPING ROUTES MAPPING UPDATE (Batch mode)');
-    console.log('   Note: Routes mapping should be regenerated after all batches complete');
+    if (SKIP_ROUTES_UPDATE) {
+      console.log('⏭️  SKIPPING ROUTES MAPPING UPDATE (Parallel mode - SKIP_ROUTES_UPDATE=true)');
+      console.log('   The update-routes-mapping job will rebuild from KV metadata after all jobs complete.');
+    } else {
+      console.log('⏭️  SKIPPING ROUTES MAPPING UPDATE (Batch mode)');
+      console.log('   Note: Routes mapping should be regenerated after all batches complete');
+    }
     console.log('='.repeat(70));
   }
   
@@ -617,13 +667,9 @@ async function main() {
   console.log('█'.repeat(70));
   console.log();
   
-  // Exit code: Only fail for real errors, not 404s
-  // 404s are expected (stale sitemap entries) and should not fail the workflow
   if (results.failed > 0 && results.success === 0) {
-    // Complete failure - exit with error
     process.exit(1);
   } else {
-    // Success (possibly with some 404 skips) - exit cleanly
     process.exit(0);
   }
 }
