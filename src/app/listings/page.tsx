@@ -6,6 +6,7 @@ import type { Metadata } from "next";
 import { ensureValidPage } from "@/utils/seo/validatePage";
 import { notFound } from "next/navigation";
 import ApiErrorFallback from "../components/ApiErrorFallback";
+ 
 export const revalidate = 0;
 
 export const metadata: Metadata = {

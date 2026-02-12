@@ -11,6 +11,7 @@ import { v4 as uuidv4 } from "uuid";
 import "./newList.css";
 import dynamic from "next/dynamic";
 
+import "../filter.css";
 const ListingSkeleton = dynamic(() => import("../skelton"), { ssr: false });
 
 import {
@@ -117,6 +118,7 @@ export interface Filters {
 interface Props extends Filters {
   page?: string | number;
   initialData?: ApiResponse;
+  linksData?: any;
 }
 
 /** ------------ Helper Functions ------------ */
@@ -157,6 +159,7 @@ function transformApiItemsToProducts(items: Item[]): Product[] {
 
 export default function ListingsPage({
   initialData,
+  linksData: serverLinksData, 
   ...incomingFilters
 }: Props) {
   const DEFAULT_RADIUS = 50 as const;
@@ -999,6 +1002,88 @@ export default function ListingsPage({
     import("bootstrap/js/dist/offcanvas").catch(() => {});
   }, []);
 
+
+  // 1. Add state for client-side links
+const [clientLinksData, setClientLinksData] = useState<any>(null);
+const [clientMounted, setClientMounted] = useState(false);
+
+// 2. Add useEffect to fetch links when filters change
+useEffect(() => {
+  setClientMounted(true);
+  
+  const fetchLinks = async () => {
+    try {
+      const params = new URLSearchParams();
+      Object.entries(filtersRef.current).forEach(([k, v]) => {
+        if (v !== undefined && v !== null && v !== "" && k !== "page") {
+          params.set(k, String(v));
+        }
+      });
+      const res = await fetch(
+        `https://admin.caravansforsale.com.au/wp-json/cfs/v1/links?${params.toString()}`
+      );
+      const json = await res.json();
+      setClientLinksData(json.data ?? json);
+    } catch (e) {
+      console.error("Links fetch error:", e);
+    }
+  };
+
+  fetchLinks();
+}, [
+  filters.category,
+  filters.make,
+  filters.model,
+  filters.state,
+  filters.region,
+  filters.suburb,
+  filters.condition,
+  filters.from_price,
+  filters.to_price,
+  filters.minKg,
+  filters.maxKg,
+  filters.acustom_fromyears,
+  filters.acustom_toyears,
+  filters.from_length,
+  filters.to_length,
+  filters.keyword,
+  filters.search,
+]);
+
+// 4. Add buildClientLinkUrl helper in Listings.tsx (simplified version of filter's buildLinkUrl)
+const buildClientLinkUrl = (type: string, item: { slug: string }) => {
+  const linkFilters: Filters = { ...filtersRef.current };
+
+  switch (type) {
+    case "states":
+      linkFilters.state = item.slug.replace(/-/g, " ");
+      delete linkFilters.region;
+      delete linkFilters.suburb;
+      delete linkFilters.pincode;
+      break;
+    case "regions":
+      linkFilters.region = item.slug.replace(/-/g, " ");
+      delete linkFilters.suburb;
+      delete linkFilters.pincode;
+      break;
+    case "categories":
+      linkFilters.category = item.slug;
+      break;
+    case "makes":
+      linkFilters.make = item.slug;
+      delete linkFilters.model;
+      break;
+    case "models":
+      linkFilters.model = item.slug;
+      break;
+    case "conditions":
+      linkFilters.condition = item.slug;
+      break;
+  }
+
+  const slugPath = buildSlugFromFilters(linkFilters);
+  return slugPath.endsWith("/") ? slugPath : `${slugPath}/`;
+};
   return (
     <>
       <Head>
@@ -1050,8 +1135,54 @@ export default function ListingsPage({
                       </button>{" "}
                     </span>
                   </div>
+ {clientMounted && clientLinksData && (
+    <div className="cfs-links-section" id="client-links">
+      {(["states", "categories", "makes", "conditions", "regions", "models"] as string[]).map((sectionKey) => {
+        const items = clientLinksData[sectionKey];
+        if (!items || items.length === 0) return null;
+
+        const titles: Record<string, string> = {
+          categories: "Browse by Category",
+          states: "Browse by State",
+          regions: "Browse by Region",
+          makes: "Browse by Make",
+          models: "Browse by Model",
+          conditions: "Browse by Condition",
+        };
+
+        return (
+          <div key={sectionKey} className="cfs-links-group">
+            <h5 className="cfs-filter-label">{titles[sectionKey] || sectionKey}</h5>
+            <ul className="cfs-links-list">
+              {items.map((item: any) => {
+                const linkUrl = buildClientLinkUrl(sectionKey, item);
+                return (
+                  <li key={item.slug} className="cfs-links-item">
+                    <a
+                      href={linkUrl}
+                      className="cfs-links-link"
+                      onClick={(e: React.MouseEvent) => {
+                        e.preventDefault();
+                        router.push(linkUrl);
+                      }}
+                    >
+                      {item.name.replace(/-/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase())}
+                    </a>
+                    
+                  </li>
+                  
+                );
+              })}
+            </ul>
+          </div>
+        );
+      })}
+    </div>
+  )}
                   <div className="smooth_scroll">
-                    <Suspense>
+                      {/* ✅ SSR Links — will appear in View Page Source */}
+
+  <Suspense fallback={<div className="filter-placeholder">Loading filters...</div>}>
                       <CaravanFilter
                         categories={categories}
                         makes={makes}
@@ -1064,6 +1195,7 @@ export default function ListingsPage({
                         setIsFeaturedLoading={setIsFeaturedLoading}
                         setIsPremiumLoading={setIsPremiumLoading}
                         setIsMainLoading={setIsMainLoading}
+                        hideSSRLinks={true}
                       />
                     </Suspense>
                   </div>

@@ -124,6 +124,7 @@ export interface Filters {
 }
 
 interface CaravanFilterProps {
+  hideSSRLinks?: boolean; 
   categories: Category[];
   makes: Make[];
   models: Model[];
@@ -167,6 +168,8 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
   setIsPremiumLoading,
   setIsMainLoading,
   setIsLoading,
+    hideSSRLinks,
+
 }) => {
   const router = useRouter();
   const pathname = usePathname();
@@ -2253,6 +2256,8 @@ const formatLinkName = (name: string): string =>
 
         {/* Category Accordion */}
         {/* Category Accordion */}
+        {/* {!hideSSRLinks && (
+
         <div className="cfs-links-section">
    {linksData && !linksLoading && (
     <>
@@ -2289,6 +2294,7 @@ const formatLinkName = (name: string): string =>
                 >
                   {formatLinkName(item.name)}
                 </a>
+                <h1>filter</h1>
               </li>
             ))}
           </ul>
@@ -2299,7 +2305,7 @@ const formatLinkName = (name: string): string =>
 
 )}
   </div>
-
+        )} */}
 
         <div className="cs-full_width_section">
           <div

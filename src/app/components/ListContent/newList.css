@@ -301,7 +301,10 @@ h1.page-title {
        top: 23px;
     left: 12px;
 } */
-
+/* When client links exist, hide SSR links */
+.smooth_scroll:has(.filter-card .cfs-links-section) > .ssr-links-only {
+  display: none;
+}
 .secrch_icon .cfs-select-input {
   padding-left: 40px;
 }

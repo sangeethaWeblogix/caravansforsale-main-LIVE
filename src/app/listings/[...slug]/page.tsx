@@ -18,6 +18,10 @@ import { redirect } from "next/navigation";
 import "../../components/ListContent/newList.css";
   import "../listings.css"
 import { fetchMakeDetails } from "@/api/make-new/api";
+import { fetchLinksData } from "@/api/link/api";
+import { buildSlugFromFilters } from "@/app/components/slugBuilter";
+
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
 // ─────────────────────────────────────────────────────────────────────────────
@@ -278,7 +282,103 @@ if (
 
   // ───── Fetch listings ─────
   const response = await fetchListings({ ...filters, page });
+const linksData = await fetchLinksData(filters);
 
+function buildSSRLinkUrl(
+  type: string,
+  item: { slug: string },
+  currentFilters: Record<string, any>
+): string {
+  const linkFilters = { ...currentFilters };
+
+  // Remove page from filters
+  delete linkFilters.page;
+
+  switch (type) {
+    case "states":
+      linkFilters.state = item.slug.replace(/-/g, " ");
+      delete linkFilters.region;
+      delete linkFilters.suburb;
+      delete linkFilters.pincode;
+      break;
+    case "regions":
+      linkFilters.region = item.slug.replace(/-/g, " ");
+      delete linkFilters.suburb;
+      delete linkFilters.pincode;
+      break;
+    case "categories":
+      linkFilters.category = item.slug;
+      break;
+    case "makes":
+      linkFilters.make = item.slug;
+      delete linkFilters.model;
+      break;
+    case "models":
+      linkFilters.model = item.slug;
+      break;
+    case "conditions":
+      linkFilters.condition = item.slug;
+      break;
+  }
+
+  const slugPath = buildSlugFromFilters(linkFilters);
+  return slugPath.endsWith("/") ? slugPath : `${slugPath}/`;
+}
   // ───── Render ─────
-  return <ListingsPage {...filters} initialData={response} />;
+return (
+  <>
+    {/* ✅ SSR Links — server component = appears in View Page Source */}
+    {linksData && (
+      <div
+        className="cfs-ssr-links-wrapper"
+        id="ssr-links"
+        aria-hidden="true"
+        style={{
+          position: "absolute",
+          left: "-9999px",
+          width: "1px",
+          height: "1px",
+          overflow: "hidden",
+        }}
+      >
+        {(["states", "categories", "makes", "conditions", "regions", "models"] as const).map((sectionKey) => {
+          const items = linksData[sectionKey];
+          if (!items || items.length === 0) return null;
+
+          const titles: Record<string, string> = {
+            categories: "Browse by Category",
+            states: "Browse by State",
+            regions: "Browse by Region",
+            makes: "Browse by Make",
+            models: "Browse by Model",
+            conditions: "Browse by Condition",
+          };
+
+          return (
+            <div key={sectionKey}>
+              <h5>{titles[sectionKey] || sectionKey}</h5>
+              <ul>
+                {items.map((item: any) => {
+                  const linkUrl = buildSSRLinkUrl(sectionKey, item, filters);
+                  return (
+                    <li key={item.slug}>
+                      <a href={linkUrl}>
+                        {item.name
+                          .replace(/-/g, " ")
+                          .replace(/\b\w/g, (c: string) => c.toUpperCase())}
+                      </a>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          );
+        })}
+      </div>
+    )}
+    
+
+    <ListingsPage {...filters} initialData={response} linksData={linksData} />
+  </>
+);
 }
