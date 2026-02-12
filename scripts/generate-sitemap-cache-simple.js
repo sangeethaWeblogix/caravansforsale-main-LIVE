@@ -27,6 +27,11 @@ const BATCH_NUMBER = process.env.BATCH_NUMBER ? parseInt(process.env.BATCH_NUMBE
 const KV_UPLOAD_RETRIES = 3; // Retry KV uploads up to 3 times
 const KV_RETRY_DELAY = 2000; // 2s between retries
 
+// SKIP_ROUTES_UPDATE: When running in parallel (e.g., matrix strategy),
+// skip routes mapping update to avoid race conditions.
+// The update-routes-mapping job will handle it after all jobs complete.
+const SKIP_ROUTES_UPDATE = process.env.SKIP_ROUTES_UPDATE === 'true';
+
 // All sitemap URLs
 const SITEMAP_URLS = [
   '/categories-sitemap.xml',
@@ -376,6 +381,9 @@ async function main() {
   if (BATCH_SIZE && BATCH_NUMBER) {
     console.log(`📦 Batch mode: Batch ${BATCH_NUMBER}, Size ${BATCH_SIZE}`);
   }
+  if (SKIP_ROUTES_UPDATE) {
+    console.log(`⏭️  Routes mapping update: SKIPPED (will be handled by update-routes-mapping job)`);
+  }
   console.log('█'.repeat(70));
   
   const results = { success: 0, failed: 0, skipped: 0, skipped_404: 0, pages: [] };
@@ -507,8 +515,10 @@ async function main() {
     }
   }
   
-  // Step 3: Update routes mapping (only if not in batch mode)
-  const shouldUpdateMapping = !BATCH_SIZE || !BATCH_NUMBER;
+  // Step 3: Update routes mapping
+  // Skip if: batch mode, parallel mode (SKIP_ROUTES_UPDATE), 
+  // The update-routes-mapping job will rebuild from KV metadata after all jobs complete.
+  const shouldUpdateMapping = !SKIP_ROUTES_UPDATE && (!BATCH_SIZE || !BATCH_NUMBER);
   
   if (shouldUpdateMapping) {
     console.log('\n' + '='.repeat(70));
@@ -598,8 +608,13 @@ async function main() {
     console.log('='.repeat(70));
   } else {
     console.log('\n' + '='.repeat(70));
-    console.log('⏭️  SKIPPING ROUTES MAPPING UPDATE (Batch mode)');
-    console.log('   Note: Routes mapping should be regenerated after all batches complete');
+    if (SKIP_ROUTES_UPDATE) {
+      console.log('⏭️  SKIPPING ROUTES MAPPING UPDATE (Parallel mode - SKIP_ROUTES_UPDATE=true)');
+      console.log('   The update-routes-mapping job will rebuild from KV metadata after all jobs complete.');
+    } else {
+      console.log('⏭️  SKIPPING ROUTES MAPPING UPDATE (Batch mode)');
+      console.log('   Note: Routes mapping should be regenerated after all batches complete');
+    }
     console.log('='.repeat(70));
   }
   
