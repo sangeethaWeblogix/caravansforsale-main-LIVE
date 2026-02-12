@@ -1163,6 +1163,7 @@ const buildClientLinkUrl = (type: string, item: { slug: string }) => {
                   <li key={item.slug} className="cfs-links-item">
                     <a
                       href={linkUrl}
+                      target=""
                       className="cfs-links-link"
                       onClick={(e: React.MouseEvent) => {
                         e.preventDefault();

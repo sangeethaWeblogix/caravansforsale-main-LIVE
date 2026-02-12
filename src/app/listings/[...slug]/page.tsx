@@ -360,7 +360,7 @@ return (
                   const linkUrl = buildSSRLinkUrl(sectionKey, item, filters);
                   return (
                     <li key={item.slug}>
-                      <a href={linkUrl}>
+                      <a href={linkUrl} target=" " >
                         {item.name
                           .replace(/-/g, " ")
                           .replace(/\b\w/g, (c: string) => c.toUpperCase())}
