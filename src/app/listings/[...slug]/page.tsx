@@ -113,8 +113,7 @@ export default async function Listings({
  // helper: check if slug is a typed value (category, state, year, price, etc)
 function isTypedFilter(slug: string) {
   // 🔧 FIX: Add null/undefined check
-  if (!slug || typeof slug !== 'string') return false;
-  
+   
   return (
     slug.endsWith("-category") ||
     slug.endsWith("-condition") ||
@@ -164,7 +163,7 @@ if (slug.length >= 1 && !isTypedFilter(slug[0])) {
 const forbiddenPattern = /(page|feed)/i;
 
 if (
-  slug.some((s) => s && typeof s === 'string' && forbiddenPattern.test(s)) ||  // 🔧 FIX #1: Add null check for s
+  slug.some((s) => forbiddenPattern.test(s)) ||
   Object.keys(resolvedSearchParams).some((k) => forbiddenPattern.test(k)) ||
   Object.values(resolvedSearchParams).some((v) =>
     forbiddenPattern.test(String(v))
