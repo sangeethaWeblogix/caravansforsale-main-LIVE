@@ -11,7 +11,7 @@ export default function NavigationHistory() {
 
     const existing = sessionStorage.getItem("nav_history");
 
-    let history: string[] = existing ? JSON.parse(existing) : [];
+    const history: string[] = existing ? JSON.parse(existing) : [];
 
     if (history[history.length - 1] !== pathname) {
       history.push(pathname);

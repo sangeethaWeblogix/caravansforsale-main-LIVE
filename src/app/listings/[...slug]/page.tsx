@@ -87,22 +87,7 @@ export default async function Listings({
   ]);
 
   const slug = resolvedParams.slug || [];
-  // const slugString = slug.join("/");
-
-  // ───── Basic security & sanity checks ─────
-  // if (
-  //   slug.length > 0 &&
-  //   (/[^\w/-]/.test(slugString) ||
-  //     slugString.includes("..") ||
-  //     slugString.includes("//") ||
-  //     slugString.includes("&") ||
-  //     slugString.includes("?") ||
-  //     slugString.includes("="))
-  // ) {
-  //   redirect("/404");
-  // }
-   
-
+ 
   
 
 // ───── Block any "acustom" usage ─────
@@ -155,8 +140,6 @@ if (slug.length >= 1 && !isTypedFilter(slug[0])) {
 }
 
 
-
-
   
   // Block page/feed keywords
  // 🚫 Fully block "page" or "feed" in URL
@@ -171,7 +154,6 @@ if (
 ) {
   redirect("/404");
 }
-
 
  
   // Reject gibberish / pin-code spam
@@ -327,6 +309,7 @@ return (
     {/* ✅ SSR Links — server component = appears in View Page Source */}
     {linksData && (
       <div
+
         className="cfs-ssr-links-wrapper"
         id="ssr-links"
         aria-hidden="true"
