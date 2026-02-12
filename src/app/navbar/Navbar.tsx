@@ -239,15 +239,6 @@ const PRICES = [
                 </a>
               </li>
             </ul>
-            <div className="mobile_cta hidden-lg hidden-md">
-              <span>Find Your Ideal Caravan</span>
-              <a className="btn btn-primary" href="/caravan-enquiry-form/" onClick={() => {
-                setNavigating(true); // start loader immediately
-                closeNav();
-              }}>
-                Enquire Now
-              </a>
-            </div>
           </div>
         </div>
       )}
