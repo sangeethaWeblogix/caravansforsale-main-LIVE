@@ -369,11 +369,15 @@ export default function ClientLogger({
   // ✅ Improved back button handler
   const handleBackClick = (e: React.MouseEvent) => {
     e.preventDefault();
-// setNavigating(true);
-  if (returnUrl) {
-    window.history.back(); // ✅ real back — preserves scroll + filters
-    return;
-  }
+    // setNavigating(true);
+    if (returnUrl) {
+      if (window.history.length > 1) {
+        window.history.back(); // ✅ real back — preserves scroll + filters
+      } else {
+        router.push(returnUrl);
+      }
+      return;
+    }
 
     router.push(makeHref);
   };
