@@ -1,4 +1,5 @@
-  "use client";
+
+"use client";
 
 import "./navbar.css";
 import { useEffect, useState, useRef } from "react";
@@ -7,7 +8,7 @@ import Image from "next/image";
 import { usePathname, useSearchParams } from "next/navigation";
 
 
-type DropdownType = "state" | "category" | "price" | null;
+type DropdownType = "state" | "category" | "price" | "condition" | "manufacturers" | "weight" | "length" | "sleep" | null;
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -17,30 +18,30 @@ export default function Navbar() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [open, setOpen] = useState(false);
-const dropdownRef = useRef<HTMLDivElement | null>(null);
-const STATES = [
-  "New South Wales",
-  "Queensland",
-  "Western Australia",
-  "Victoria",
-  "South Australia",
-  "Australian Capital Territory",
-  "Tasmania",
-];
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
+  const STATES = [
+    "New South Wales",
+    "Queensland",
+    "Western Australia",
+    "Victoria",
+    "South Australia",
+    "Australian Capital Territory",
+    "Tasmania",
+  ];
 
-const CATEGORIES = [
-  "off-road",
-  "hybrid",
-  "pop-top",
-  "luxury",
-  "family",
-  "touring",
-];
+  const CATEGORIES = [
+    "off-road",
+    "hybrid",
+    "pop-top",
+    "luxury",
+    "family",
+    "touring",
+  ];
 
-const PRICES = [
-  50000, 60000, 70000, 80000, 90000, 100000, 120000, 140000, 160000, 180000,
-  200000,
-];
+  const PRICES = [
+    50000, 60000, 70000, 80000, 90000, 100000, 120000, 140000, 160000, 180000,
+    200000,
+  ];
   // Close dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -80,14 +81,14 @@ const PRICES = [
       <nav className="navbar navbar-expand-lg navbar-light style-4 header-white">
         <div className="container">
           <div className="logo_left">
-            <Link className="navbar-brand" href="/">
+            <a className="navbar-brand" href="/">
               <Image
                 src="/images/cfs-logo-black.svg?=1"
                 alt="Caravans For Sale"
                 width={150}
                 height={50}
               />
-            </Link>
+            </a>
           </div>
 
           <div className="header_right_info">
@@ -104,25 +105,25 @@ const PRICES = [
               <span className="navbar-toggler-icon"></span>
             </button>
 
-          {/* <div
+            {/* <div
               className="collapse navbar-collapse justify-content-end"
               id="navbarSupportedContent"
             >
               <ul className="navbar-nav mb-2 mb-lg-0">
                 <li className="nav-item">
-                  <Link className="nav-link" href="/sell-my-caravan/">
+                  <a className="nav-link" href="/sell-my-caravan/">
                     Sell My Caravan
-                  </Link>
+                  </a>
                 </li>
                 <li className="nav-item">
-                  <Link className="nav-link" href="/dealer-advertising/">
+                  <a className="nav-link" href="/dealer-advertising/">
                     Dealer Advertising
-                  </Link>
+                  </a>
                 </li>
                 <li className="nav-item login">
-                  <Link className="nav-link" href="/login/">
+                  <a className="nav-link" href="/login/">
                     <i className="bi bi-person-fill"></i> Login
-                  </Link>
+                  </a>
                 </li>
               </ul>
             </div> */}
@@ -173,38 +174,362 @@ const PRICES = [
             <ul>
 
               {/* <li>
-                <Link href="/sell-my-caravan/"
+                <a href="/sell-my-caravan/"
                   onClick={() => {
                     setNavigating(true); // start loader immediately
                     closeNav();
                   }}
                 >
                   Sell My Caravan
-                </Link>
+                </a>
               </li> */}
 
               {/* <li>
-                <Link href="/dealer-advertising/"
+                <a href="/dealer-advertising/"
                   onClick={() => {
                     setNavigating(true); // start loader immediately
                     closeNav();
                   }}
                 >
                   Dealer Advertising
-                </Link>
+                </a>
               </li> */}
-              
+
               <li>
                 <a href="/listings/"
                   onClick={() => {
-                     
+                    setNavigating(true); // start loader immediately
                     closeNav();
                   }}
                 >
                   All Listings
                 </a>
               </li>
-             {/* <li>
+              <li className={openDropdown === "state" ? "selected" : ""}>
+                {" "}
+                <div
+                  className="drop_down"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    toggleDropdown("state");
+                  }}
+                >
+                  By State
+                </div>
+                <ul
+                  className={
+                    openDropdown === "state" ? "submenu open" : "submenu"
+                  }
+                >
+
+                  <li>
+                    <a className="dropdown-item" href={`/listings/australian-capital-territory-state/`} onClick={closeNav}>Australian Capital Territory</a>
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href={`/listings/new-south-wales-state/`} onClick={closeNav}>New South Wales</a>
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href={`/listings/northern-territory-state/`} onClick={closeNav}>Northern Territory</a>
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href={`/listings/queensland-state/`} onClick={closeNav}>Queensland</a>
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href={`/listings/south-australia-state/`} onClick={closeNav}>South Australia</a>
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href={`/listings/tasmania-state/`} onClick={closeNav}>Tasmania</a>
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href={`/listings/victoria-state/`} onClick={closeNav}>Victoria</a>
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href={`/listings/western-australia-state/`} onClick={closeNav}>Western Australia</a>
+                  </li>
+
+                </ul>
+              </li>
+
+              <li className={openDropdown === "category" ? "selected" : ""}>
+                {" "}
+                <div
+                  className="drop_down"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    toggleDropdown("category");
+                  }}
+                >
+                  By Type
+                </div>
+                <ul
+                  className={
+                    openDropdown === "category" ? "submenu open" : "submenu"
+                  }
+                >
+
+                  <li>
+                    <a className="dropdown-item" href={`/listings/off-road-category/`} onClick={closeNav}>Off Road</a>
+                    
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href={`/listings/family-category/`} onClick={closeNav}>Family</a>
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href={`/listings/touring-category/`} onClick={closeNav}>Touring</a>
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href={`/listings/luxury-category/`} onClick={closeNav}>Luxury</a>
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href={`/listings/pop-top-category/`} onClick={closeNav}>Pop Top</a>
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href={`/listings/hybrid-category/`} onClick={closeNav}>Hybrid</a>
+                  </li>
+
+
+                </ul>
+              </li>
+
+              <li className={openDropdown === "price" ? "selected" : ""}>
+                {" "}
+                <div
+                  className="drop_down"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    toggleDropdown("price");
+                  }}
+                >
+                  By Price
+                </div>
+                <ul
+                  className={
+                    openDropdown === "price" ? "submenu open" : "submenu"
+                  }
+                >
+
+                  <li>
+                    <a className="dropdown-item" href={`/listings/under-20000/`} onClick={closeNav}>Under $20k</a>
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href={`/listings/between-20000-30000/`} onClick={closeNav}>Under $30k</a>
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href={`/listings/between-30000-40000/`} onClick={closeNav}>Under $40k</a>
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href={`/listings/between-40000-50000/`} onClick={closeNav}>Under $50k</a>
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href={`/listings/between-50000-75000/`} onClick={closeNav}>Under $75k</a>
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href={`/listings/between-75000-100000/`} onClick={closeNav}>Under $100k</a>
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href={`/listings/between-100000-150000/`} onClick={closeNav}>Under $150k</a>
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href={`/listings/between-150000-200000/`} onClick={closeNav}>Under $200k</a>
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href={`/listings/over-200000/`} onClick={closeNav}>Over $200k</a>
+                  </li>
+                  
+
+
+                </ul>
+              </li>
+
+              <li className={openDropdown === "weight" ? "selected" : ""}>
+                {" "}
+                <div
+                  className="drop_down"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    toggleDropdown("weight");
+                  }}
+                >
+                  By Weight
+                </div>
+                <ul
+                  className={
+                    openDropdown === "weight" ? "submenu open" : "submenu"
+                  }
+                >
+
+                  <li>
+                    <a className="dropdown-item" href={`/listings/under-1500-kg-atm/`} onClick={closeNav}>Under 1500 Kgs</a>
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href={`/listings/between-1500-kg-to-2500-kg-atm/`} onClick={closeNav}>Under 2500 Kgs</a>
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href={`/listings/between-2500-kg-to-3500-kg-atm/`} onClick={closeNav}>Under 3500 Kgs</a>
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href={`/listings/between-3500-kg-to-4500-kg-atm/`} onClick={closeNav}>Under 4500 Kgs</a>
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href={`/listings/over-4500-kg-atm/`} onClick={closeNav}>Over 4500 Kgs</a>
+                  </li>
+                  
+                </ul>
+              </li>
+
+              <li className={openDropdown === "sleep" ? "selected" : ""}>
+                {" "}
+                <div
+                  className="drop_down"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    toggleDropdown("sleep");
+                  }}
+                >
+                  By Sleep
+                </div>
+                <ul
+                  className={
+                    openDropdown === "sleep" ? "submenu open" : "submenu"
+                  }
+                >
+
+                  <li>
+                    <a className="dropdown-item" href={`/listings/between-1-2-people-sleeping-capacity/`} onClick={closeNav}>Under 2 People</a>
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href={`/listings/between-3-4-people-sleeping-capacity/`} onClick={closeNav}>Under 4 People</a>
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href={`/listings/between-4-6-people-sleeping-capacity/`} onClick={closeNav}>Under 6 People</a>
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href={`/listings/over-6-people-sleeping-capacity/`} onClick={closeNav}>Over 6 People</a>
+                  </li>
+                                    
+                </ul>
+              </li>
+
+              <li className={openDropdown === "length" ? "selected" : ""}>
+                {" "}
+                <div
+                  className="drop_down"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    toggleDropdown("length");
+                  }}
+                >
+                  By Length
+                </div>
+                <ul
+                  className={
+                    openDropdown === "length" ? "submenu open" : "submenu"
+                  }
+                >
+
+                  <li>
+                    <a className="dropdown-item" href={`/listings/under-12-length-in-feet/`} onClick={closeNav}>Under 12ft Length</a>
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href={`/listings/between-12-14-length-in-feet/`} onClick={closeNav}>Under 14ft Length</a>
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href={`/listings/between-15-17-length-in-feet/`} onClick={closeNav}>Under 17ft Length</a>
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href={`/listings/between-18-20-length-in-feet/`} onClick={closeNav}>Under 20ft Length</a>
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href={`/listings/between-21-23-length-in-feet/`} onClick={closeNav}>Under 23ft Length</a>
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href={`/listings/over-24-length-in-feet/`} onClick={closeNav}>Over 24ft Length</a>
+                  </li>
+                  
+                </ul>
+              </li>
+
+              <li className={openDropdown === "condition" ? "selected" : ""}>
+                {" "}
+                <div
+                  className="drop_down"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    toggleDropdown("condition");
+                  }}
+                >
+                  By Condition
+                </div>
+                <ul
+                  className={
+                    openDropdown === "condition" ? "submenu open" : "submenu"
+                  }
+                >
+
+                  <li>
+                    <a className="dropdown-item" href={`/listings/new-condition/`} onClick={closeNav}>New</a>
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href={`/listings/used-condition/`} onClick={closeNav}>Used</a>
+                  </li>
+
+
+                </ul>
+              </li>
+
+              <li className={openDropdown === "manufacturers" ? "selected" : ""}>
+                {" "}
+                <div
+                  className="drop_down"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    toggleDropdown("manufacturers");
+                  }}
+                >
+                  Popular Manufacturers
+                </div>
+                <ul
+                  className={
+                    openDropdown === "manufacturers" ? "submenu open" : "submenu"
+                  }
+                >
+
+                  <li>
+                    <a className="dropdown-item" href={`/listings/jb/`} onClick={closeNav}>JB</a>
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href={`/listings/lotusy/`} onClick={closeNav}>Lotus</a>
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href={`/listings/new-age/`} onClick={closeNav}>New Age</a>
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href={`/listings/snowy-river/`} onClick={closeNav}>Snowy River</a>
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href={`/listings/jayco/`} onClick={closeNav}>Jayco</a>
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href={`/listings/supreme/`} onClick={closeNav}>Supreme</a>
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href={`/listings/crusader/`} onClick={closeNav}>Crusader</a>
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href={`/listings/titanium/`} onClick={closeNav}>Titanium</a>
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href={`/listings/mdc/`} onClick={closeNav}>MDC</a>
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href={`/listings/design-rv/`} onClick={closeNav}>Design RV</a>
+                  </li>
+                </ul>
+              </li>
+
+
+
+              {/* <li>
                 <a href="/used-all/"
                   onClick={() => {
                     setNavigating(true); // start loader immediately
@@ -239,6 +564,15 @@ const PRICES = [
                 </a>
               </li>
             </ul>
+            {/* <div className="mobile_cta hidden-lg hidden-md">
+              <span>Find Your Ideal Caravan</span>
+              <a className="btn btn-primary" href="/caravan-enquiry-form/" onClick={() => {
+                setNavigating(true); // start loader immediately
+                closeNav();
+              }}>
+                Enquire Now
+              </a>
+            </div> */}
           </div>
         </div>
       )}
@@ -280,6 +614,7 @@ const PRICES = [
             <div className="mt-2 fw-semibold">Loading…</div>
           </div>
         </div>
+
 
       )}
     </>

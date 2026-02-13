@@ -1,4 +1,4 @@
-.navbar.style-4 {
+ .navbar.style-4 {
   position: inherit;
   z-index: 1;
   padding: 0;
@@ -297,7 +297,7 @@ input[type="checkbox"]:checked ~ .menuIconToggle > .dia.p-2 {
   font-size: 15px;
 }
 
-.sidebar-navigation ul li ul li a:before,
+/* .sidebar-navigation ul li ul li a:before,
 .sidebar-navigation ul li ul li div:before {
   content: "";
   width: 10px;
@@ -310,13 +310,13 @@ input[type="checkbox"]:checked ~ .menuIconToggle > .dia.p-2 {
   -moz-transition: all 0.2s linear;
   -o-transition: all 0.2s linear;
   transition: all 0.2s linear;
-}
+} */
 
 .sidebar-navigation ul li ul li:hover > a,
 .sidebar-navigation ul li ul li.selected > a,
 .sidebar-navigation ul li ul li:hover > div,
 .sidebar-navigation ul li ul li.selected > div {
-  background-color: #e6ebed;
+  background-color: #f9f9f9;
 }
 
 .sidebar-navigation ul li ul li:hover > a:before,
