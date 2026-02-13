@@ -15,7 +15,7 @@ import {
   fetchHomeSearchList, // GET /home_search (base list)
   fetchKeywordSuggestions, // GET /home_search/?keyword=<q> (typed list)
 } from "@/api/homeSearch/api";
-import '../app/home/main.css'
+import "../app/home/main.css";
 import { fetchSleepBands } from "@/api/homeApi/sleep/api";
 import { fetchRegion } from "@/api/homeApi/region/api";
 import { fetchManufactures } from "@/api/homeApi/manufacture/api";
@@ -44,7 +44,6 @@ type TabCard = {
   url: string;
 };
 
-
 type Item = {
   title?: string;
   name?: string;
@@ -57,7 +56,6 @@ type Item = {
   id?: string | number;
   label?: string;
 } & Record<string, unknown>;
-
 
 export default function SearchSection() {
   const router = useRouter();
@@ -77,14 +75,13 @@ export default function SearchSection() {
   const [activeIndex, setActiveIndex] = useState(0);
 
   const stateMeta = {
-    "victoria": { code: "VIC", image: "/images/vic_map.svg?=1" },
+    victoria: { code: "VIC", image: "/images/vic_map.svg?=1" },
     "new-south-wales": { code: "NSW", image: "/images/nsw_map.svg?=1" },
-    "queensland": { code: "QLD", image: "/images/qld_map.svg?=1" },
+    queensland: { code: "QLD", image: "/images/qld_map.svg?=1" },
     "south-australia": { code: "SA", image: "/images/sa_map.svg?=1" },
     "western-australia": { code: "WA", image: "/images/wa_map.svg?=1" },
-    "tasmania": { code: "TAS", image: "/images/tas_map.svg?=1" }
+    tasmania: { code: "TAS", image: "/images/tas_map.svg?=1" },
   };
-
 
   const [sleepBands, setSleepBands] = useState<TabsItem[]>([]);
   const [regionBands, setRegionBands] = useState<TabsItem[]>([]);
@@ -100,18 +97,26 @@ export default function SearchSection() {
   useEffect(() => {
     async function loadAll() {
       // const [sleep, region, weight, length] = await Promise.all([
-      const [sleep, region, manufactures, weight, length, price, usedData, state] =
-        await Promise.all([
-          fetchSleepBands(),
-          fetchRegion(),
-          fetchManufactures(),
-          fetchAtmBasedCaravans(),
-          fetchLengthBasedCaravans(),
-          fetchPriceBasedCaravans(),
-          fetchUsedCaravansList(),
-          fetchStateBasedCaravans(),
-          ,
-        ]);
+      const [
+        sleep,
+        region,
+        manufactures,
+        weight,
+        length,
+        price,
+        usedData,
+        state,
+      ] = await Promise.all([
+        fetchSleepBands(),
+        fetchRegion(),
+        fetchManufactures(),
+        fetchAtmBasedCaravans(),
+        fetchLengthBasedCaravans(),
+        fetchPriceBasedCaravans(),
+        fetchUsedCaravansList(),
+        fetchStateBasedCaravans(),
+        ,
+      ]);
 
       setSleepBands(sleep);
       setRegionBands(region);
@@ -123,7 +128,6 @@ export default function SearchSection() {
       setUsedState(usedData.by_state);
       setUsedRegion(usedData.by_region);
       setStateBands(state);
-
     }
 
     loadAll();
@@ -134,101 +138,99 @@ export default function SearchSection() {
     label: string;
     cards: TabCard[];
   }[] = [
-
-      {
-        key: "Region",
-        label: "Location",
-        cards: regionBands.map((item) => ({
-          title: "Caravans for Sale in " + item.region,
-          sub: `${item.caravan_count ?? 0}`,
-          url: `/listings/${item.permalink}`,
-        })),
-      },
-      {
-        key: "price",
-        label: "Price",
-        cards: priceBands.map((item) => ({
-          title: "Caravans for Sale " + item.short_label,
-          sub: `${item.caravan_count ?? 0}`,
-          url: `/listings/${item.permalink}`,
-        })),
-      },
-      {
-        key: "Weight",
-        label: "Weight",
-        cards: atmBands.map((item) => ({
-          title: "Caravans for Sale " + item.short_label,
-          sub: `${item.caravan_count ?? 0}`,
-          url: `/listings/${item.permalink}`,
-        })),
-      },
-      {
-        key: "Sleep",
-        label: "Sleep",
-        cards: sleepBands.map((item) => ({
-          title: "Caravans for Sale " + item.short_label,
-          sub: `${item.caravan_count ?? 0}`,
-          url: `/listings/${item.permalink}`,
-        })),
-      },
-      {
-        key: "Length",
-        label: "Length",
-        cards: lengthBands.map((item) => ({
-          title: "Caravans for Sale " + item.short_label,
-          sub: `${item.caravan_count ?? 0}`,
-          url: `/listings/${item.permalink}`,
-        })),
-      },
-      // {
-      //   key: "Used",
-      //   label: "Used",
-      //   cards: usedCategoryList.map((item) => ({
-      //     title: item.short_label,
-      //     sub: item.short_count,
-      //     url: `/listings/${item.permalink}`,
-      //   })),
-      // },
-      {
-        key: "Manufacturer",
-        label: "Manufacturer",
-        cards: manufactureBands.map((item) => ({
-          title: item.short_label + " Caravans for Sale",
-          sub: `${item.caravan_count ?? 0}`,
-          url: `/listings/${item.permalink}`,
-        })),
-      },
-    ];
+    {
+      key: "Region",
+      label: "Location",
+      cards: regionBands.map((item) => ({
+        title: "Caravans for Sale in " + item.region,
+        sub: `${item.caravan_count ?? 0}`,
+        url: `/listings/${item.permalink}`,
+      })),
+    },
+    {
+      key: "price",
+      label: "Price",
+      cards: priceBands.map((item) => ({
+        title: "Caravans for Sale " + item.short_label,
+        sub: `${item.caravan_count ?? 0}`,
+        url: `/listings/${item.permalink}`,
+      })),
+    },
+    {
+      key: "Weight",
+      label: "Weight",
+      cards: atmBands.map((item) => ({
+        title: "Caravans for Sale " + item.short_label,
+        sub: `${item.caravan_count ?? 0}`,
+        url: `/listings/${item.permalink}`,
+      })),
+    },
+    {
+      key: "Sleep",
+      label: "Sleep",
+      cards: sleepBands.map((item) => ({
+        title: "Caravans for Sale " + item.short_label,
+        sub: `${item.caravan_count ?? 0}`,
+        url: `/listings/${item.permalink}`,
+      })),
+    },
+    {
+      key: "Length",
+      label: "Length",
+      cards: lengthBands.map((item) => ({
+        title: "Caravans for Sale " + item.short_label,
+        sub: `${item.caravan_count ?? 0}`,
+        url: `/listings/${item.permalink}`,
+      })),
+    },
+    // {
+    //   key: "Used",
+    //   label: "Used",
+    //   cards: usedCategoryList.map((item) => ({
+    //     title: item.short_label,
+    //     sub: item.short_count,
+    //     url: `/listings/${item.permalink}`,
+    //   })),
+    // },
+    {
+      key: "Manufacturer",
+      label: "Manufacturer",
+      cards: manufactureBands.map((item) => ({
+        title: item.short_label + " Caravans for Sale",
+        sub: `${item.caravan_count ?? 0}`,
+        url: `/listings/${item.permalink}`,
+      })),
+    },
+  ];
 
   const [activeTab, setActiveTab] = useState(tabsData[0].key);
   const currentTab = tabsData.find((t) => t.key === activeTab);
 
-
   const flips = [
     {
-      type: 'Off Road',
-      budget: '$90,000',
-      msg: 'Queen, ensuite, ample power, ample water and grey water, 19 foot, rear door, 600 kg plus payload, tare <2800, atm 3500',
+      type: "Off Road",
+      budget: "$90,000",
+      msg: "Queen, ensuite, ample power, ample water and grey water, 19 foot, rear door, 600 kg plus payload, tare <2800, atm 3500",
     },
     {
-      type: 'Off Road',
-      budget: '$85,000',
-      msg: 'Couples van, approx 19ft tandem axel, tare approx 2200kg. Atm up to 3300kg. Full time touring, off grid essentials.',
+      type: "Off Road",
+      budget: "$85,000",
+      msg: "Couples van, approx 19ft tandem axel, tare approx 2200kg. Atm up to 3300kg. Full time touring, off grid essentials.",
     },
     {
-      type: 'Hybrid',
-      budget: '$50,000',
-      msg: 'Island Bed, Compressor fridge, ensuite, Hot Water heater, Solar, 2 x freshwater tanks, 1 x grey, awning.',
+      type: "Hybrid",
+      budget: "$50,000",
+      msg: "Island Bed, Compressor fridge, ensuite, Hot Water heater, Solar, 2 x freshwater tanks, 1 x grey, awning.",
     },
     {
-      type: 'Family',
-      budget: '$75,000',
-      msg: 'Tare weight 2200 or less, bunks, semi off road, off grid. Max solar, 3000w inverter, lithium batteries.',
+      type: "Family",
+      budget: "$75,000",
+      msg: "Tare weight 2200 or less, bunks, semi off road, off grid. Max solar, 3000w inverter, lithium batteries.",
     },
     {
-      type: 'Luxury',
-      budget: '$100,000',
-      msg: 'Slide out van under 3500kg. Suitable for Ford Ranger Next Gen. 2–3 beds preferred.',
+      type: "Luxury",
+      budget: "$100,000",
+      msg: "Slide out van under 3500kg. Suitable for Ford Ranger Next Gen. 2–3 beds preferred.",
     },
   ];
 
@@ -239,9 +241,6 @@ export default function SearchSection() {
 
     return () => clearInterval(interval);
   }, []);
-
-
-
 
   const handleSearch = () => {
     if (!category && !location && !conditionValue) {
@@ -263,23 +262,19 @@ export default function SearchSection() {
     }
     // 2️⃣ Category always second
     if (category) {
-      const catSlug =
-        category.toLowerCase().replace(/\s+/g, "-") + "-category";
+      const catSlug = category.toLowerCase().replace(/\s+/g, "-") + "-category";
       parts.push(catSlug);
     }
 
     // 3️⃣ State always last
     if (location) {
-      const stateSlug =
-        location.toLowerCase().replace(/\s+/g, "-") + "-state";
+      const stateSlug = location.toLowerCase().replace(/\s+/g, "-") + "-state";
       parts.push(stateSlug);
     }
 
     const finalUrl = `/listings/${parts.join("/")}`;
     router.push(finalUrl);
   };
-
-
 
   const navigateBySelect = (value: string, suffix: string) => {
     if (!value) return;
@@ -293,7 +288,7 @@ export default function SearchSection() {
     }, 50);
   };
 
-  console.log("navigating ", navigateBySelect)
+  console.log("navigating ", navigateBySelect);
 
   // ------------- base list (first click) -------------
   const loadBaseOnce = async () => {
@@ -350,8 +345,8 @@ export default function SearchSection() {
                   label: (x.keyword || "").toString().trim(), // ✅ always set label
                   url: (x.url || "").toString(),
                 },
-              ])
-            ).values()
+              ]),
+            ).values(),
           );
 
           setSuggestions(uniq);
@@ -379,12 +374,11 @@ export default function SearchSection() {
     if (!isSuggestionBoxOpen) setIsSuggestionBoxOpen(true);
   };
 
-
   useEffect(() => {
     // dynamically import bootstrap JS only in the browser
     if (typeof window === "undefined") return;
     import("bootstrap/dist/js/bootstrap.bundle.min.js").catch((err) =>
-      console.error("Failed to load bootstrap JS", err)
+      console.error("Failed to load bootstrap JS", err),
     );
   }, []);
   //   const navigateWithKeyword = (kwRaw: string) => {
@@ -423,7 +417,6 @@ export default function SearchSection() {
     }, 50);
   };
 
-
   const handleKeyDown: React.KeyboardEventHandler<HTMLInputElement> = (e) => {
     if (e.key === "Enter") {
       const kw = (e.currentTarget as HTMLInputElement).value.trim();
@@ -439,10 +432,8 @@ export default function SearchSection() {
 
   return (
     <div>
-      
       <div className="ad_banner">
         <a href="https://www.caravansforsale.com.au/listings/">
-
           <div className="item-image">
             <Image
               src="/images/banner_top_dk.jpg?=1"
@@ -463,15 +454,20 @@ export default function SearchSection() {
               unoptimized
             />
           </div>
-
         </a>
       </div>
       <div className="container">
         <div className="row align-items-center justify-content-center">
           <div className="col-lg-12">
             <div className="section-head text-center">
-              <h1 className="divide-orange">Browse New &amp; Used Caravans For Sale</h1>
-              <p>Find your ideal caravan from thousands of new and used listings across Australia’s top brands, dealers, and private sellers. Search by type, condition, location, and budget.</p>
+              <h1 className="divide-orange">
+                Browse New &amp; Used Caravans For Sale
+              </h1>
+              <p>
+                Find your ideal caravan from thousands of new and used listings
+                across Australia’s top brands, dealers, and private sellers.
+                Search by type, condition, location, and budget.
+              </p>
             </div>
           </div>
         </div>
@@ -479,11 +475,8 @@ export default function SearchSection() {
       <div className="search_requirement_area">
         <div className="container">
           <div className="row align-items-center justify-content-start">
-            
             <div className="col-lg-12">
               <div className="section-head search_home text-center">
-
-
                 {/* Bootstrap Pills Navigation */}
                 <ul className="nav nav-pills" id="pills-tab" role="tablist">
                   <li className="nav-item" role="presentation">
@@ -616,7 +609,6 @@ export default function SearchSection() {
                             <span>Touring</span>
                           </a>
                         </li>
-
                       </ul>
                     </div>
                   </div>
@@ -632,7 +624,9 @@ export default function SearchSection() {
                       {/* overlay to close */}
                       <div
                         className="overlay_search"
-                        style={{ display: isSuggestionBoxOpen ? "block" : "none" }}
+                        style={{
+                          display: isSuggestionBoxOpen ? "block" : "none",
+                        }}
                         onClick={closeSuggestions}
                       />
 
@@ -657,7 +651,9 @@ export default function SearchSection() {
                           />
                           <div
                             className="close-btn"
-                            style={{ display: isSuggestionBoxOpen ? "block" : "none" }}
+                            style={{
+                              display: isSuggestionBoxOpen ? "block" : "none",
+                            }}
                             onClick={closeSuggestions}
                             role="button"
                             aria-label="Close suggestions"
@@ -671,12 +667,11 @@ export default function SearchSection() {
                           className="suggestions"
                           style={{
                             display: isSuggestionBoxOpen ? "block" : "none",
-                            maxHeight: "300px",        // ← scroll height limit
-                            overflowY: "auto",         // ← enables scrolling
+                            maxHeight: "300px", // ← scroll height limit
+                            overflowY: "auto", // ← enables scrolling
                           }}
                           role="listbox"
                         >
-
                           <h4>
                             {showingFromKeywordApi
                               ? "Suggested searches"
@@ -711,12 +706,9 @@ export default function SearchSection() {
                           )}
                         </div>
                       </div>
-
-
                     </div>
                   </div>
                 </div>
-
               </div>
             </div>
           </div>
@@ -750,7 +742,6 @@ export default function SearchSection() {
                   1280: { slidesPerView: 4 },
                 }}
               >
-
                 {stateBands.map((item, index) => {
                   const key = item.state.toLowerCase().replace(/\s+/g, "-");
 
@@ -760,9 +751,8 @@ export default function SearchSection() {
 
                   return (
                     <SwiperSlide key={index}>
-
                       <div className="service-box">
-                      <div className="sec_right">
+                        <div className="sec_right">
                           <span>
                             <Image
                               src={mapImage}
@@ -773,29 +763,26 @@ export default function SearchSection() {
                           </span>
                         </div>
                         <div className="sec_left">
-                          <h3>
-                            {item.state}
-                          </h3>
+                          <h3>{item.state}</h3>
                           <div className="info">
                             <div className="quick_linkss">
                               {/* ✔ API BASED DISPLAY TEXT */}
                               <p>{item.display_text}</p>
 
-                              <a className="view_all" href={`/listings${item.permalink}`}>
-                                View All Caravans for Sale in {stateCode} <i className="bi bi-chevron-right"></i>
-
+                              <a
+                                className="view_all"
+                                href={`/listings${item.permalink}`}
+                              >
+                                View All Caravans for Sale in {stateCode}{" "}
+                                <i className="bi bi-chevron-right"></i>
                               </a>
                             </div>
                           </div>
                         </div>
-
-                        
                       </div>
-
                     </SwiperSlide>
                   );
                 })}
-
               </Swiper>
 
               {/* Arrows */}
@@ -817,28 +804,50 @@ export default function SearchSection() {
                 {tabsData.map((tab) => (
                   <button
                     key={tab.key}
-                    className={`custom-tab-btn ${activeTab === tab.key ? "active" : ""
-                      }`}
+                    className={`custom-tab-btn ${
+                      activeTab === tab.key ? "active" : ""
+                    }`}
                     onClick={() => setActiveTab(tab.key)}
                     type="button"
                   >
                     {tab.label}
-                    {tab.label === "More" && <span className="tab-arrow">⌄</span>}
+                    {tab.label === "More" && (
+                      <span className="tab-arrow">⌄</span>
+                    )}
                   </button>
                 ))}
               </div>
             </div>
 
             {/* Cards */}
-            <div className="custom-tabs-content">
+            {/* <div className="custom-tabs-content">
               <div className="custom-card-grid">
                 {currentTab?.cards?.map((item, index) => (
                   <a href={item.url} className="custom-card" key={index}>
                     <h4 className="custom-card-title"><span className="count">{item.sub}</span> {item.title}</h4>
-                    {/* <p className="custom-card-sub">{item.sub}</p> */}
-                  </a>
+                   </a>
                 ))}
               </div>
+            </div> */}
+            {/* Cards - All tabs rendered in DOM, only active visible (SEO-friendly) */}
+            <div className="custom-tabs-content">
+              {tabsData.map((tab) => (
+                <div
+                  key={tab.key}
+                  className="custom-card-grid"
+                  style={{ display: activeTab === tab.key ? "grid" : "none" }}
+                >
+                  {tab.cards?.map((item, index) => (
+                    
+                    <a href={item.url} className="custom-card" key={index}>
+                      <h4 className="custom-card-title">
+                        <span className="count">{item.sub}</span> {item.title}
+                      </h4>
+                    </a>
+
+                  ))}
+                </div>
+              ))}
             </div>
           </div>
         </div>
