@@ -1,4 +1,4 @@
- "use client";
+"use client";
 import Link from "next/link";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
@@ -138,7 +138,7 @@ export default function ListingContent({
         "listingsReturnUrl",
         window.location.pathname + window.location.search,
       );
-    } catch { }
+    } catch {}
   }, []);
 
   useEffect(() => {
@@ -146,7 +146,7 @@ export default function ListingContent({
     setNavigating(false);
   }, [pathname]);
 
-  const IMAGE_BASE_URL = "https://caravansforsale.imagestack.net/800x600/";
+  const IMAGE_BASE_URL = "https://caravansforsale.imagestack.net/400x300/";
 
   const IMAGE_EXT = ".avif";
 
@@ -157,7 +157,7 @@ export default function ListingContent({
         "listingsReturnUrl",
         window.location.pathname + window.location.search,
       );
-    } catch { }
+    } catch {}
 
     router.push(href);
   };
@@ -217,18 +217,27 @@ export default function ListingContent({
 
   const enquiryProduct = selectedProduct
     ? {
-      id: selectedProduct.id,
-      slug: selectedProduct.slug,
-      name: selectedProduct.name,
-    }
+        id: selectedProduct.id,
+        slug: selectedProduct.slug,
+        name: selectedProduct.name,
+      }
     : {
-      id: 0,
-      slug: "",
-      name: "",
-    };
+        id: 0,
+        slug: "",
+        name: "",
+      };
 
-  const { form, errors, touched, submitting, setField, onBlur, onSubmit } =
-    useEnquiryForm(enquiryProduct);
+  const {
+    form,
+    errors,
+    touched,
+    submitting,
+    setField,
+    onBlur,
+    onSubmit,
+    isFinanceQuoteChecked,
+    setFinanceQuoteChecked,
+  } = useEnquiryForm(enquiryProduct);
 
   const MAX_SWIPER_IMAGES = 5;
 
@@ -508,10 +517,10 @@ export default function ListingContent({
         <meta name="twitter:description" content={metaDescription} />
       </Head>
 
-      <div className="col-lg-9">
+      <div className="col-lg-6">
         <div className="top-filter mb-10">
           <div className="row align-items-center">
-            <div className="col-lg-8 col-md-8 col-sm-8 col-12 show_count_wrapper ">
+            <div className="col-lg-8 show_count_wrapper ">
               {count && (
                 <span className="show_count mb-2 d-inline">
                   <strong>{count} </strong>
@@ -522,7 +531,7 @@ export default function ListingContent({
               </h1>
             </div>
 
-            {/* <div className="col-4 d-lg-none d-md-none">
+            <div className="col-4 d-lg-none d-md-none">
               <button
                 type="button"
                 className="mobile_fltn navbar-toggler mytogglebutton"
@@ -532,8 +541,8 @@ export default function ListingContent({
               >
                 <i className="bi bi-search" /> &nbsp;Filter
               </button>
-            </div> */}
-            <div className="col-lg-4 col-md-4 col-sm-4 col-12">
+            </div>
+            <div className="col-lg-4 col-8">
               <div className="r-side">
                 <form className="woocommerce-ordering" method="get">
                   <div className="form-group shot-buy">
@@ -601,10 +610,10 @@ export default function ListingContent({
 
                     console.log("imgs", firstImage);
                     return (
-                      <div className="col-lg-6 col-sm-6 col-md-6 mb-0" key={index}>
+                      <div className="col-lg-6 mb-0" key={index}>
                         <a
                           href={href}
-                          className="lli_head"
+                           className="lli_head"
                           onClick={(e) => {
                             e.preventDefault();
                             goToProduct(href);
@@ -620,8 +629,8 @@ export default function ListingContent({
                                   src={firstImage}
                                   priority={isPriority}
                                   alt="Caravan"
-                                  width={800}
-                                  height={600}
+                                  width={400}
+                                  height={300}
                                 />
                               </div>
                               <div
@@ -668,19 +677,19 @@ export default function ListingContent({
                                         <ImageWithSkeleton
                                           src={img}
                                           alt={`Caravan ${i + 1}`}
-                                          width={800}
-                                          height={600}
+                                          width={400}
+                                          height={300}
                                         />
                                       </div>
                                     </SwiperSlide>
-                                  ))}thu
+                                  ))}
                                 </Swiper>
                               </div>
                             </div>
 
                             <div className="product_de">
-                              <div className="info">
-
+                               <div className="info">
+                                
                                 {item.name && (
                                   <h3
                                     className="title cursor-pointer"
@@ -700,74 +709,74 @@ export default function ListingContent({
                               {(item.regular_price ||
                                 item.sale_price ||
                                 item.price_difference) && (
-                                  <div className="price">
-                                    <div className="metc2">
-                                      {(item.regular_price ||
-                                        item.sale_price) && (
-                                          <h5 className="slog">
-                                            {/* ✅ Stable price rendering: precompute safely */}
-                                            {(() => {
-                                              const rawRegular =
-                                                item.regular_price || "";
-                                              const rawSale = item.sale_price || "";
-                                              const cleanRegular =
-                                                rawRegular.replace(/[^0-9.]/g, "");
-                                              const regNum =
-                                                Number(cleanRegular) || 0;
-                                              const cleanSale = rawSale.replace(
-                                                /[^0-9.]/g,
-                                                "",
-                                              );
-                                              const saleNum =
-                                                Number(cleanSale) || 0;
+                                <div className="price">
+                                  <div className="metc2">
+                                    {(item.regular_price ||
+                                      item.sale_price) && (
+                                      <h5 className="slog">
+                                        {/* ✅ Stable price rendering: precompute safely */}
+                                        {(() => {
+                                          const rawRegular =
+                                            item.regular_price || "";
+                                          const rawSale = item.sale_price || "";
+                                          const cleanRegular =
+                                            rawRegular.replace(/[^0-9.]/g, "");
+                                          const regNum =
+                                            Number(cleanRegular) || 0;
+                                          const cleanSale = rawSale.replace(
+                                            /[^0-9.]/g,
+                                            "",
+                                          );
+                                          const saleNum =
+                                            Number(cleanSale) || 0;
 
-                                              // If regular price is 0 → show POA
-                                              if (regNum === 0) {
-                                                return <>POA</>;
-                                              }
+                                          // If regular price is 0 → show POA
+                                          if (regNum === 0) {
+                                            return <>POA</>;
+                                          }
 
-                                              // If sale price exists → show sale and strike-through
-                                              if (saleNum > 0) {
-                                                return (
-                                                  <>
-                                                    <del>{rawRegular}</del>{" "}
-                                                    {rawSale}
-                                                  </>
-                                                );
-                                              }
+                                          // If sale price exists → show sale and strike-through
+                                          if (saleNum > 0) {
+                                            return (
+                                              <>
+                                                <del>{rawRegular}</del>{" "}
+                                                {rawSale}
+                                              </>
+                                            );
+                                          }
 
-                                              // Otherwise → show regular price
-                                              return <>{rawRegular}</>;
-                                            })()}
-                                          </h5>
-                                        )}
+                                          // Otherwise → show regular price
+                                          return <>{rawRegular}</>;
+                                        })()}
+                                      </h5>
+                                    )}
 
-                                      {/* ✅ Show SAVE only if > $0 */}
-                                      {(() => {
-                                        const cleanDiff = (
-                                          item.price_difference || ""
-                                        ).replace(/[^0-9.]/g, "");
-                                        const diffNum = Number(cleanDiff) || 0;
-                                        return diffNum > 0 ? (
-                                          <p className="card-price">
-                                            <span>SAVE</span>{" "}
-                                            {item.price_difference}
-                                          </p>
-                                        ) : null;
-                                      })()}
-                                      {item.is_premium && (
-                                        <div className="more_info">
-                                          <div className="informat">
-                                            <span className="premium_van">
-                                              <i className="fa fa-star"></i>{" "}
-                                              Premium
-                                            </span>
-                                          </div>
+                                    {/* ✅ Show SAVE only if > $0 */}
+                                    {(() => {
+                                      const cleanDiff = (
+                                        item.price_difference || ""
+                                      ).replace(/[^0-9.]/g, "");
+                                      const diffNum = Number(cleanDiff) || 0;
+                                      return diffNum > 0 ? (
+                                        <p className="card-price">
+                                          <span>SAVE</span>{" "}
+                                          {item.price_difference}
+                                        </p>
+                                      ) : null;
+                                    })()}
+                                    {item.is_premium && (
+                                      <div className="more_info">
+                                        <div className="informat">
+                                          <span className="premium_van">
+                                            <i className="fa fa-star"></i>{" "}
+                                            Premium
+                                          </span>
                                         </div>
-                                      )}
-                                    </div>
+                                      </div>
+                                    )}
                                   </div>
-                                )}
+                                </div>
+                              )}
 
                               {/* --- DETAILS LIST --- */}
                               <ul className="vehicleDetailsWithIcons simple">
@@ -894,67 +903,6 @@ export default function ListingContent({
               </li>
             </ul>
           </nav>
-        </div>
-      </div>
-      <div className="col-lg-3">
-        <div className="sticky_spot hidden-xs hidden-sm">
-          <div className="related-products">
-            <div className="other_items">
-              <Link href="#" className="lli_head">
-                <div className="product-card">
-                  <div className="img">
-                    <span className="lab">Spotlight Van</span>
-                    <Image
-                          src="https://caravansforsale.imagestack.net/800x600/CFS-N-12800004/2025-newgen-ngb21s-21-luxury-slide-out-2main1.avif"
-                          alt="Caravan"
-                          width={400}
-                          height={300}
-                          className="w-100 h-100 object-fit-cover"
-                        />
-
-                    
-                  </div>
-
-                  {/* Product Details */}
-                  <div className="product_de">
-                    <div className="info">
-                      <h3 className="title cursor-pointer">
-                        2025 NewGen NGB21S 21&apos; Luxury Slideout
-                      </h3>
-                    </div>
-
-                    <div className="price">
-                      <div className="metc2">
-                        <h5 className="slog">$77,125</h5>
-                      </div>
-                    </div>
-
-                    <ul className="vehicleDetailsWithIcons simple">
-                      <li className="attribute3_list">
-                        <span className="attribute3">Luxury</span>
-                      </li>
-                      <li><span className="attribute3">21 ft</span></li>
-                      <li><span className="attribute3">3500 Kg</span></li>
-                      <li><span className="attribute3">NewGen</span></li>
-                    </ul>
-
-                    <div className="bottom_mid">
-                      <span>
-                        <i className="bi bi-check-circle-fill"></i> Condition New
-                      </span>
-                      <span>
-                        <i className="fa fa-map-marker-alt"></i> NSW
-                      </span>
-                    </div>
-
-                    <div className="bottom_button">
-                      <button className="btn btn-primary">View Details</button>
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            </div>
-          </div>
         </div>
       </div>
       {showInfo && selectedProduct && (
@@ -1098,7 +1046,20 @@ export default function ListingContent({
                       ></textarea>
                     </p>
                   </div>
-
+                  {/* finance checkbox */}
+                  <div className="checkbox-wrapper">
+                    <input
+                      type="checkbox"
+                      id="financeQuote"
+                      onChange={() =>
+                        setFinanceQuoteChecked((prevState) => !prevState)
+                      }
+                      checked={isFinanceQuoteChecked}
+                    />
+                    <label htmlFor="financeQuote">
+                      Get a no-obligation finance quote with competitive rates
+                    </label>
+                  </div>
                   <p className="terms_text">
                     By clicking &lsquo;Send Enquiry&lsquo;, you agree to Caravan
                     Marketplace{" "}

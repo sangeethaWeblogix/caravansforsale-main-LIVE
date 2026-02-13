@@ -1,17 +1,17 @@
- "use client";
+
+"use client";
 
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { fetchListings, ApiResponse, Item } from "../../../api/listings/api";
 import Listing from "./LisitingContent";
 import ExculsiveContent from "./exculsiveContent";
 import CaravanFilter from "../CaravanFilter";
-import FilterModal from './FilterModal';
 import { flushSync } from "react-dom";
 import { v4 as uuidv4 } from "uuid";
-import "./newList.css?=17";
-import './top-filters.css?=36';
+import "./newList.css";
 import dynamic from "next/dynamic";
 
+import "../filter.css";
 const ListingSkeleton = dynamic(() => import("../skelton"), { ssr: false });
 
 import {
@@ -118,6 +118,7 @@ export interface Filters {
 interface Props extends Filters {
   page?: string | number;
   initialData?: ApiResponse;
+  linksData?: any;
 }
 
 /** ------------ Helper Functions ------------ */
@@ -158,6 +159,7 @@ function transformApiItemsToProducts(items: Item[]): Product[] {
 
 export default function ListingsPage({
   initialData,
+  linksData: serverLinksData, 
   ...incomingFilters
 }: Props) {
   const DEFAULT_RADIUS = 50 as const;
@@ -168,7 +170,7 @@ export default function ListingsPage({
   const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const [openModal, setOpenModal] = useState(null);
+
   const [isMainLoading, setIsMainLoading] = useState(false);
   const [isFeaturedLoading, setIsFeaturedLoading] = useState(false);
   const [isPremiumLoading, setIsPremiumLoading] = useState(false);
@@ -185,7 +187,7 @@ export default function ListingsPage({
   const savePage = (id: string, page: number) => {
     try {
       localStorage.setItem(PAGE_KEY(id), String(page));
-    } catch { }
+    } catch {}
   };
   const readPage = (id: string): number | null => {
     try {
@@ -320,9 +322,9 @@ export default function ListingsPage({
     const fromURL =
       typeof window !== "undefined"
         ? parseInt(
-          new URLSearchParams(window.location.search).get("page") || "1",
-          10,
-        )
+            new URLSearchParams(window.location.search).get("page") || "1",
+            10,
+          )
         : 1;
     return {
       current_page: fromURL,
@@ -997,9 +999,91 @@ export default function ListingsPage({
   // Mobile offcanvas filter state
   const mobileFiltersRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    import("bootstrap/js/dist/offcanvas").catch(() => { });
+    import("bootstrap/js/dist/offcanvas").catch(() => {});
   }, []);
 
+
+  // 1. Add state for client-side links
+const [clientLinksData, setClientLinksData] = useState<any>(null);
+const [clientMounted, setClientMounted] = useState(false);
+
+// 2. Add useEffect to fetch links when filters change
+useEffect(() => {
+  setClientMounted(true);
+  
+  const fetchLinks = async () => {
+    try {
+      const params = new URLSearchParams();
+      Object.entries(filtersRef.current).forEach(([k, v]) => {
+        if (v !== undefined && v !== null && v !== "" && k !== "page") {
+          params.set(k, String(v));
+        }
+      });
+      const res = await fetch(
+        `https://admin.caravansforsale.com.au/wp-json/cfs/v1/links?${params.toString()}`
+      );
+      const json = await res.json();
+      setClientLinksData(json.data ?? json);
+    } catch (e) {
+      console.error("Links fetch error:", e);
+    }
+  };
+
+  fetchLinks();
+}, [
+  filters.category,
+  filters.make,
+  filters.model,
+  filters.state,
+  filters.region,
+  filters.suburb,
+  filters.condition,
+  filters.from_price,
+  filters.to_price,
+  filters.minKg,
+  filters.maxKg,
+  filters.acustom_fromyears,
+  filters.acustom_toyears,
+  filters.from_length,
+  filters.to_length,
+  filters.keyword,
+  filters.search,
+]);
+
+// 4. Add buildClientLinkUrl helper in Listings.tsx (simplified version of filter's buildLinkUrl)
+const buildClientLinkUrl = (type: string, item: { slug: string }) => {
+  const linkFilters: Filters = { ...filtersRef.current };
+
+  switch (type) {
+    case "states":
+      linkFilters.state = item.slug.replace(/-/g, " ");
+      delete linkFilters.region;
+      delete linkFilters.suburb;
+      delete linkFilters.pincode;
+      break;
+    case "regions":
+      linkFilters.region = item.slug.replace(/-/g, " ");
+      delete linkFilters.suburb;
+      delete linkFilters.pincode;
+      break;
+    case "categories":
+      linkFilters.category = item.slug;
+      break;
+    case "makes":
+      linkFilters.make = item.slug;
+      delete linkFilters.model;
+      break;
+    case "models":
+      linkFilters.model = item.slug;
+      break;
+    case "conditions":
+      linkFilters.condition = item.slug;
+      break;
+  }
+
+  const slugPath = buildSlugFromFilters(linkFilters);
+  return slugPath.endsWith("/") ? slugPath : `${slugPath}/`;
+};
   return (
     <>
       <Head>
@@ -1020,50 +1104,8 @@ export default function ListingsPage({
         />
       </Head>
 
-      <div className="search-bar">
-        <div className="container">
-          <div className="search_flex">
-            <div className="quick_search_top" onClick={() => setOpenModal('smartSearch')}>
-              <i className="bi bi-search search-icon"></i>
-              <input
-                type="text"
-                placeholder="Try 'caravans with bunks'"
-              />
-
-            </div>
-            <div className="filter_btn_top">
-              <button className="hidden-xs" onClick={() => setOpenModal('caravanType')}>
-                Caravan type
-              </button>
-
-              <button className="hidden-xs" onClick={() => setOpenModal('location')}>
-                Location
-              </button>
-
-              <button className="hidden-xs" onClick={() => setOpenModal('price')}>
-                Price
-              </button>
-
-              <button
-                className="filter-btn"
-                onClick={() => setOpenModal('all')}
-              >
-                <span><i className="bi bi-filter"></i></span> Filters
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {openModal && (
-  <FilterModal
-    type={openModal}
-    onClose={() => setOpenModal(null)}
-  />
-)}
-
       <section className="services product_listing new_listing bg-gray-100 section-padding pb-30 style-1">
-        <div className="container">
+        <div className="container container-xxl">
           <div className="content mb-4">
             {/*<div className="text-sm text-gray-600 header">
                 <Link href="/" className="hover:underline">
@@ -1076,16 +1118,99 @@ export default function ListingsPage({
             <div ref={sentinelRef} style={{ height: "1px" }} />
             <div className="row">
               {/* Desktop sidebar */}
+              <div className="col-lg-3">
+                <div className="filter filter_sticky hidden-xs hidden-sm">
+                  <div className="card-title align-items-center d-flex justify-content-between hidden-xs">
+                    <h3 className="filter_title">Filters</h3>
+                    <span className="text-uppercase clear_btn">
+                      <button
+                        onClick={resetAllFilters}
+                        disabled={!hasActiveFilters}
+                        className={`clear_btn ${
+                          !hasActiveFilters ? "disabled" : ""
+                        }`}
+                        style={{ border: "none", backgroundColor: "white" }}
+                      >
+                        <i className="bi bi-arrow-repeat me-1"></i> Clear All
+                      </button>{" "}
+                    </span>
+                  </div>
 
+                  <div className="smooth_scroll">
+                      {/* ✅ SSR Links — will appear in View Page Source */}
+ {clientMounted && clientLinksData && (
+    <div className="cfs-links-section" id="client-links">
+      {(["states", "categories", "makes", "conditions", "regions", "models"] as string[]).map((sectionKey) => {
+        const items = clientLinksData[sectionKey];
+        if (!items || items.length === 0) return null;
+
+        const titles: Record<string, string> = {
+          categories: "Browse by Category",
+          states: "Browse by State",
+          regions: "Browse by Region",
+          makes: "Browse by Make",
+          models: "Browse by Model",
+          conditions: "Browse by Condition",
+        };
+
+        return (
+          <div key={sectionKey} className="cfs-links-group">
+            <h5 className="cfs-filter-label">{titles[sectionKey] || sectionKey}</h5>
+            <ul className="cfs-links-list">
+              {items.map((item: any) => {
+                const linkUrl = buildClientLinkUrl(sectionKey, item);
+                return (
+                  <li key={item.slug} className="cfs-links-item">
+                    <a
+                      href={linkUrl}
+                      target=""
+                      className="cfs-links-link"
+                      onClick={(e: React.MouseEvent) => {
+                        e.preventDefault();
+                        router.push(linkUrl);
+                      }}
+                    >
+                      {item.name.replace(/-/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase())}
+                    </a>
+                    
+                  </li>
+                  
+                );
+              })}
+            </ul>
+          </div>
+        );
+      })}
+    </div>
+  )}
+  <Suspense fallback={<div className="filter-placeholder">Loading filters...</div>}>
+                      <CaravanFilter
+                        categories={categories}
+                        makes={makes}
+                        models={models}
+                        states={stateOptions}
+                        onFilterChange={(partial) => {
+                          handleFilterChange(partial);
+                        }}
+                        currentFilters={filters}
+                        setIsFeaturedLoading={setIsFeaturedLoading}
+                        setIsPremiumLoading={setIsPremiumLoading}
+                        setIsMainLoading={setIsMainLoading}
+                        hideSSRLinks={true}
+                      />
+                    </Suspense>
+                  </div>
+                </div>
+              </div>
 
               {/* Listings */}
               {/* Listings */}
 
               {isLoading ||
-                isMainLoading ||
-                isFeaturedLoading ||
-                isPremiumLoading ? (
-                <div className="col-lg-8">
+              isMainLoading ||
+              isFeaturedLoading ||
+              isPremiumLoading ? (
+                <div className="col-lg-6">
                   <ListingSkeleton count={8} />
                 </div>
               ) : (
@@ -1094,26 +1219,26 @@ export default function ListingsPage({
                   {(products.length > 0 ||
                     fetauredProducts.length > 0 ||
                     preminumProducts.length > 0) && (
-                      <Listing
-                        pageTitle={pageTitle}
-                        products={products}
-                        data={products}
-                        pagination={pagination}
-                        onNext={handleNextPage}
-                        onPrev={handlePrevPage}
-                        metaDescription={metaDescription}
-                        metaTitle={metaTitle}
-                        onFilterChange={handleFilterChange}
-                        currentFilters={filters}
-                        preminumProducts={preminumProducts}
-                        fetauredProducts={fetauredProducts}
-                        exculisiveProducts={exculisiveProducts}
-                        isMainLoading={isMainLoading}
-                        isFeaturedLoading={isFeaturedLoading}
-                        isPremiumLoading={isPremiumLoading}
+                    <Listing
+                      pageTitle={pageTitle}
+                      products={products}
+                      data={products}
+                      pagination={pagination}
+                      onNext={handleNextPage}
+                      onPrev={handlePrevPage}
+                      metaDescription={metaDescription}
+                      metaTitle={metaTitle}
+                      onFilterChange={handleFilterChange}
+                      currentFilters={filters}
+                      preminumProducts={preminumProducts}
+                      fetauredProducts={fetauredProducts}
+                      exculisiveProducts={exculisiveProducts}
+                      isMainLoading={isMainLoading}
+                      isFeaturedLoading={isFeaturedLoading}
+                      isPremiumLoading={isPremiumLoading}
                       // isNextLoading={isNextLoading}
-                      />
-                    )}
+                    />
+                  )}
 
                   {/** CASE 2: SHOW EXCLUSIVE PAGE */}
                   {products.length === 0 &&
