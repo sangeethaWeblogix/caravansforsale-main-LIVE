@@ -297,12 +297,22 @@ function buildSSRLinkUrl(
       break;
     case "conditions":
       linkFilters.condition = item.slug;
-      break;
+           break;
+    case "prices":
+    case "atm_ranges":
+    case "length_ranges":
+    case "sleep_ranges": {
+      // Range types — append slug directly to current path
+      const basePath = buildSlugFromFilters(linkFilters);
+      const base = basePath.endsWith("/") ? basePath.slice(0, -1) : basePath;
+      return `${base}/${item.slug}/`;
+    }
   }
 
   const slugPath = buildSlugFromFilters(linkFilters);
   return slugPath.endsWith("/") ? slugPath : `${slugPath}/`;
 }
+
   // ───── Render ─────
 return (
   <>
@@ -332,6 +342,10 @@ return (
             makes: "Browse by Make",
             models: "Browse by Model",
             conditions: "Browse by Condition",
+            prices: "Browse by Price",
+            atm_ranges: "Browse by ATM",
+            length_ranges: "Browse by Length",
+            sleep_ranges: "Browse by Sleep",
           };
 
           return (
@@ -343,9 +357,10 @@ return (
                   return (
                     <li key={item.slug}>
                       <a href={linkUrl} target=" " >
-                        {item.name
-                          .replace(/-/g, " ")
-                          .replace(/\b\w/g, (c: string) => c.toUpperCase())}
+                        {item.name.includes(" ") 
+  ? item.name.replace(/\b\w/g, (c: string) => c.toUpperCase())
+  : item.name.replace(/-/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase())
+}
                       </a>
                     </li>
                   );

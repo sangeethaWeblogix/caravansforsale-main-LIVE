@@ -1079,10 +1079,21 @@ const buildClientLinkUrl = (type: string, item: { slug: string }) => {
     case "conditions":
       linkFilters.condition = item.slug;
       break;
+       case "prices":
+    case "atm_ranges":
+    case "length_ranges":
+    case "sleep_ranges":
+        break;
   }
 
   const slugPath = buildSlugFromFilters(linkFilters);
-  return slugPath.endsWith("/") ? slugPath : `${slugPath}/`;
+ const base = slugPath.endsWith("/") ? slugPath.slice(0, -1) : slugPath;
+
+  if (["prices", "atm_ranges", "length_ranges", "sleep_ranges"].includes(type)) {
+    return `${base}/${item.slug}/`;
+  }
+
+  return `${base}/` || "/listings/";
 };
   return (
     <>
@@ -1140,7 +1151,7 @@ const buildClientLinkUrl = (type: string, item: { slug: string }) => {
                       {/* ✅ SSR Links — will appear in View Page Source */}
  {clientMounted && clientLinksData && (
     <div className="cfs-links-section" id="client-links">
-      {(["states", "categories", "makes", "conditions", "regions", "models"] as string[]).map((sectionKey) => {
+      {(["states", "categories", "makes", "conditions", "regions", "models",  "prices", "atm_ranges", "length_ranges", "sleep_ranges"] as string[]).map((sectionKey) => {
         const items = clientLinksData[sectionKey];
         if (!items || items.length === 0) return null;
 
@@ -1151,6 +1162,10 @@ const buildClientLinkUrl = (type: string, item: { slug: string }) => {
           makes: "Browse by Make",
           models: "Browse by Model",
           conditions: "Browse by Condition",
+           prices: "Browse by Price",
+  atm_ranges: "Browse by ATM",
+  length_ranges: "Browse by Length",
+  sleep_ranges: "Browse by Sleep",
         };
 
         return (
@@ -1170,8 +1185,10 @@ const buildClientLinkUrl = (type: string, item: { slug: string }) => {
                         router.push(linkUrl);
                       }}
                     >
-                      {item.name.replace(/-/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase())}
-                    </a>
+{item.name.includes(" ") 
+  ? item.name.replace(/\b\w/g, (c: string) => c.toUpperCase())
+  : item.name.replace(/-/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase())
+}                    </a>
                     
                   </li>
                   
