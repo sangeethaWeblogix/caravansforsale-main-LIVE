@@ -258,7 +258,7 @@ if (
     const n = parseInt(val as string, 10);
     if (!isNaN(n) && n > 0) page = n;
   }
-
+ 
   // ───── Fetch listings ─────
   const response = await fetchListings({ ...filters, page });
 const linksData = await fetchLinksData(filters);
@@ -304,7 +304,7 @@ function buildSSRLinkUrl(
     case "sleep_ranges": {
       // Range types — append slug directly to current path
       const basePath = buildSlugFromFilters(linkFilters);
-      const base = basePath.endsWith("/") ? basePath.slice(0, -1) : basePath;
+      const base = basePath.endsWith("/") ? basePath.slice(0, -1) : `${basePath}/`;
       return `${base}/${item.slug}/`;
     }
   }

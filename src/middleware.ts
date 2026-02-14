@@ -50,13 +50,21 @@ export async function middleware(request: NextRequest) {
     
     return response;
   }
-
+ if (
+    !url.pathname.endsWith('/') &&
+    !url.pathname.includes('.') &&
+    !url.pathname.startsWith('/api') &&
+    !url.pathname.startsWith('/_next')
+  ) {
+    url.pathname = `${url.pathname}/`;
+    return NextResponse.redirect(url, 308);
+  }
   /* 1️⃣ Block /feed URLs */
   if (/feed/i.test(fullPath)) {
     return new NextResponse(null, { status: 410 });
   }
-
   /* 2️⃣ Remove add-to-cart param */
+
   if (url.searchParams.has("add-to-cart")) {
     url.searchParams.delete("add-to-cart");
     return NextResponse.redirect(url, { status: 301 });
