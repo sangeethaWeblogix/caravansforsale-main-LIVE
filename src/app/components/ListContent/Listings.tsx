@@ -192,14 +192,21 @@
    };
 
  // Update readPage to fallback to extracting page from clickid
-   const readPage = (id: string): number | null => {
-     try {
-       const v = localStorage.getItem(PAGE_KEY(id));
-       return v ? parseInt(v, 10) : null;
-     } catch {
-       return null;
-     }
-   };
+    const readPage = (id: string): number | null => {
+  try {
+    const v = localStorage.getItem(PAGE_KEY(id));
+    if (v) return parseInt(v, 10);
+
+    const match = id.match(/p(\d+)$/);
+    if (match) return parseInt(match[1], 10);
+
+    return null;
+  } catch {
+    const match = id.match(/p(\d+)$/);
+    if (match) return parseInt(match[1], 10);
+    return null;
+  }
+};
  
    if (searchParams.has("page")) {
      redirect("/404");
@@ -425,7 +432,8 @@
    // Add this useEffect near your other effects
  
    const updateURLWithFilters = useCallback(
-     (nextFilters: Filters, pageNum: number) => {
+    (nextFilters: Filters, pageNum: number, clickidParam?: string) => {
+
        console.log(pageNum);
        const slug = buildSlugFromFilters(nextFilters); // your slug builder
        const query = new URLSearchParams();
@@ -436,8 +444,10 @@
        if (!Number.isNaN(r) && r !== DEFAULT_RADIUS) {
          query.set("radius_kms", String(r));
        }
-       if (clickid) query.set("clickid", clickid);
- 
+      //  if (clickid) query.set("clickid", clickid);
+ const cid = clickidParam !== undefined ? clickidParam : new URLSearchParams(window.location.search).get("clickid");
+    if (cid && cid !== "") query.set("clickid", cid);
+
        // Use current pathname (do not force a route push)
        const path = window.location.pathname;
        const safeSlug = slug ? (slug.endsWith("/") ? slug : `${slug}/`) : path;
@@ -471,21 +481,31 @@
    // tiny util
   // Replace the existing ensureclickid function with this:
  // Replace the existing ensureclickid function with this:
-const generateClickidForPage = (pageNum: number): string => {
-  // Page 1 = no clickid
+ const generateClickidForPage = (pageNum: number): string => {
   if (pageNum <= 1) return "";
-  
-  // Create a deterministic ID based on filters + page number
+
   const filterString = JSON.stringify(filtersRef.current);
-  // Simple hash function
-  let hash = 0;
   const str = `${filterString}_page_${pageNum}`;
+  let h1 = pageNum * 2654435761;
+  let h2 = pageNum * 2246822519;
+  let h3 = pageNum * 3266489917;
+  let h4 = pageNum * 668265263;
+  // let h1 = 0, h2 = 0, h3 = 0, h4 = 0;
   for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash |= 0; // Convert to 32bit integer
+    const c = str.charCodeAt(i);
+    h1 = ((h1 << 5) - h1 + c) | 0;
+    h2 = ((h2 << 7) - h2 + c * 31) | 0;
+    h3 = ((h3 << 3) - h3 + c * 127) | 0;
+    h4 = ((h4 << 11) - h4 + c * 17) | 0;
   }
-  return `p${pageNum}_${Math.abs(hash).toString(36)}`;
+ const part1 = Math.abs(h1 ^ 0x5f3759df).toString(36);
+  const part2 = Math.abs(h2 ^ 0x1b873593).toString(36);
+  const part3 = Math.abs(h3 ^ 0xe6546b64).toString(36);
+  const part4 = Math.abs(h4 ^ 0x85ebca6b).toString(36);
+
+  const suffix = `p${pageNum}`;
+  const hash = `${part1}${part2}${part3}${part4}`;
+  return `${hash.slice(0, 25 - suffix.length)}${suffix}`;
 };
 
 const ensureclickid = (pageNum: number): string => {
@@ -496,9 +516,9 @@ const ensureclickid = (pageNum: number): string => {
   }
   setclickid(id);
 
-  const url = new URL(window.location.href);
-  url.searchParams.set("clickid", id);
-  window.history.replaceState({}, "", url.toString());
+  // const url = new URL(window.location.href);
+  // url.searchParams.set("clickid", id);
+  // window.history.replaceState({}, "", url.toString());
 
   return id;
 };
@@ -703,7 +723,7 @@ const ensureclickid = (pageNum: number): string => {
    const handleNextPage = useCallback(async () => {
      if (pagination.current_page >= pagination.total_pages) return;
  
-    //  scrollToTop();
+      // scrollToTop();
  
      flushSync(() => {
        setIsMainLoading(true);
@@ -779,13 +799,21 @@ const ensureclickid = (pageNum: number): string => {
          // ✅ ALWAYS generate NEW clickid
         const id = ensureclickid(prevPage);
       if (id) savePage(id, prevPage);
+      await loadListings(prevPage, filtersRef.current, true);
+  updateURLWithFilters(filtersRef.current, prevPage, id);
     } else {
       // ✅ first page → remove clickid
       setclickid(null);
-      setUrlParams({ clickid: undefined });
+       await loadListings(1, filtersRef.current, true);
+  updateURLWithFilters(filtersRef.current, 1, ""); 
+      const url = new URL(window.location.href);
+      url.searchParams.delete("clickid");
+      window.history.pushState({}, "", url.toString());
     }
  
        await loadListings(prevPage, filtersRef.current, true);
+   
+    
      } catch (err) {
        console.error(err);
      } finally {
@@ -941,51 +969,58 @@ const ensureclickid = (pageNum: number): string => {
  const isPopStateRef = useRef(false);
  
  // ✅ Full popstate handler
- useEffect(() => {
-   const handlePopState = () => {
-     isPopStateRef.current = true; // ✅ prevent clickid restore effect
- 
-     const path = window.location.pathname;
-     const slugParts = path.split("/listings/")[1]?.split("/") || [];
-     const parsed = parseSlugToFilters(slugParts);
- 
-     const sp = new URLSearchParams(window.location.search);
-     const orderby = sp.get("orderby") ?? undefined;
-     const urlClickid = sp.get("clickid") || null;
- 
-     const merged: Filters = {
-       ...parsed,
-       ...(orderby ? { orderby } : {}),
-     };
- 
-     filtersRef.current = merged;
-     setFilters(merged);
- 
-     // ✅ Only use clickid from URL - NEVER generate new one
-     setclickid(urlClickid);
- 
-     setIsMainLoading(true);
-     setIsFeaturedLoading(true);
-     setIsPremiumLoading(true);
- 
-     // ✅ Use saved page from URL's clickid, or default to 1
-     const savedPage = urlClickid ? readPage(urlClickid) : null;
-     const pageToLoad = savedPage && savedPage > 0 ? savedPage : 1;
- 
-     // ✅ Reset pagination to correct page
-     setPagination((p) => ({ ...p, current_page: pageToLoad }));
- 
-     loadListings(pageToLoad, merged, true).finally(() => {
-       setIsMainLoading(false);
-       setIsFeaturedLoading(false);
-       setIsPremiumLoading(false);
-     });
-   };
- 
-   window.addEventListener("popstate", handlePopState);
-   return () => window.removeEventListener("popstate", handlePopState);
- }, [loadListings]);
- 
+useEffect(() => {
+  const handlePopState = () => {
+    isPopStateRef.current = true;
+
+    const path = window.location.pathname;
+    const slugParts = path.split("/listings/")[1]?.split("/") || [];
+    const parsed = parseSlugToFilters(slugParts);
+
+    const sp = new URLSearchParams(window.location.search);
+    const orderby = sp.get("orderby") ?? undefined;
+    const urlClickid = sp.get("clickid") || null;
+
+    const merged: Filters = {
+      ...parsed,
+      ...(orderby ? { orderby } : {}),
+    };
+
+    filtersRef.current = merged;
+    setFilters(merged);
+    setclickid(urlClickid);
+
+    const savedPage = urlClickid ? readPage(urlClickid) : null;
+    const pageToLoad = savedPage && savedPage > 0 ? savedPage : 1;
+
+    // ✅ Prevent URL-watcher effect from double-fetching
+    prevFiltersRef.current = { ...merged };
+    prevPageRef.current = pageToLoad;
+    restoredOnceRef.current = true;
+
+    setIsMainLoading(true);
+    setIsFeaturedLoading(true);
+    setIsPremiumLoading(true);
+
+    setPagination((p) => ({ ...p, current_page: pageToLoad }));
+
+    loadListings(pageToLoad, merged, true).finally(() => {
+      setIsMainLoading(false);
+      setIsFeaturedLoading(false);
+      setIsPremiumLoading(false);
+    });
+  };
+
+  window.addEventListener("popstate", handlePopState);
+  return () => window.removeEventListener("popstate", handlePopState);
+}, [loadListings]);
+ // ✅ Ensure page 1 has a history entry
+useEffect(() => {
+  if (!searchParams.has("clickid")) {
+    // Page 1 - make sure current URL is in history
+    window.history.replaceState({ page: 1 }, "", window.location.href);
+  }
+}, []);
  // ✅ Update your existing clickid restore useEffect
   // ✅ KEEP ONLY THIS ONE
  useEffect(() => {
