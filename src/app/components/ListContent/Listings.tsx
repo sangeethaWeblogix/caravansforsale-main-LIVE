@@ -176,7 +176,7 @@
    const [isFeaturedLoading, setIsFeaturedLoading] = useState(false);
    const [isPremiumLoading, setIsPremiumLoading] = useState(false);
    const [isUsingInitialData, setIsUsingInitialData] = useState(!!initialData);
-   const [scrollStarted, setScrollStarted] = useState(false);
+  //  const [scrollStarted, setScrollStarted] = useState(false);
    const [isNextLoading, setIsNextLoading] = useState(false);
    const [nextPageData, setNextPageData] = useState<ApiResponse | null>(null);
  
@@ -192,22 +192,14 @@
    };
 
  // Update readPage to fallback to extracting page from clickid
-  const readPage = (id: string): number | null => {
-  try {
-    const v = localStorage.getItem(PAGE_KEY(id));
-    if (v) return parseInt(v, 10);
-    
-    // ✅ Extract page number from END (e.g., "0a3f7k2m9x1b4n8q5r0p2")
-    const match = id.match(/p(\d+)$/);
-    if (match) return parseInt(match[1], 10);
-    
-    return null;
-  } catch {
-    const match = id.match(/p(\d+)$/);
-    if (match) return parseInt(match[1], 10);
-    return null;
-  }
-};
+   const readPage = (id: string): number | null => {
+     try {
+       const v = localStorage.getItem(PAGE_KEY(id));
+       return v ? parseInt(v, 10) : null;
+     } catch {
+       return null;
+     }
+   };
  
    if (searchParams.has("page")) {
      redirect("/404");
@@ -455,7 +447,7 @@
        window.history.pushState({}, "", finalURL);
  
        // then fetch data client-side
-       setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 150);
+      //  setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 150);
      },
      [DEFAULT_RADIUS, clickid],
    );
@@ -478,31 +470,24 @@
  
    // tiny util
   // Replace the existing ensureclickid function with this:
-  const generateClickidForPage = (pageNum: number): string => {
+ // Replace the existing ensureclickid function with this:
+const generateClickidForPage = (pageNum: number): string => {
+  // Page 1 = no clickid
   if (pageNum <= 1) return "";
-
-  const filterString = JSON.stringify(filtersRef.current);
-  const str = `${filterString}_page_${pageNum}`;
   
-  let h1 = 0, h2 = 0, h3 = 0, h4 = 0;
+  // Create a deterministic ID based on filters + page number
+  const filterString = JSON.stringify(filtersRef.current);
+  // Simple hash function
+  let hash = 0;
+  const str = `${filterString}_page_${pageNum}`;
   for (let i = 0; i < str.length; i++) {
-    const c = str.charCodeAt(i);
-    h1 = ((h1 << 5) - h1 + c) | 0;
-    h2 = ((h2 << 7) - h2 + c * 31) | 0;
-    h3 = ((h3 << 3) - h3 + c * 127) | 0;
-    h4 = ((h4 << 11) - h4 + c * 17) | 0;
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash |= 0; // Convert to 32bit integer
   }
-
-  const part1 = Math.abs(h1).toString(36).padStart(7, "0");
-  const part2 = Math.abs(h2).toString(36).padStart(7, "0");
-  const part3 = Math.abs(h3).toString(36).padStart(5, "0");
-  const part4 = Math.abs(h4).toString(36).padStart(4, "0");
-
-  // ✅ page number at the END
-  const hash = `${part1}${part2}${part3}${part4}`;
-  const suffix = `p${pageNum}`;
-  return `${hash.slice(0, 25 - suffix.length)}${suffix}`;
+  return `p${pageNum}_${Math.abs(hash).toString(36)}`;
 };
+
 const ensureclickid = (pageNum: number): string => {
   const id = generateClickidForPage(pageNum);
   if (!id) {
@@ -517,6 +502,7 @@ const ensureclickid = (pageNum: number): string => {
 
   return id;
 };
+ 
    useEffect(() => {
      if (initialData?.data?.products) {
        const transformed = transformApiItemsToProducts(
@@ -541,8 +527,8 @@ const ensureclickid = (pageNum: number): string => {
      const observer = new IntersectionObserver(
        async (entries) => {
          const entry = entries[0];
-         if (entry.isIntersecting && !scrollStarted && !isNextLoading) {
-           setScrollStarted(true);
+         if (entry.isIntersecting  && !isNextLoading) {
+          //  setScrollStarted(true);
            try {
              const response = await preFetchListings(
                pagination.current_page + 1,
@@ -570,7 +556,7 @@ const ensureclickid = (pageNum: number): string => {
  
      observer.observe(sentinelRef.current);
      return () => observer.disconnect();
-   }, [pagination.current_page, scrollStarted, isNextLoading]);
+   }, [pagination.current_page, isNextLoading]);
  
    const preFetchListings = async (
      pageNum: number,
@@ -631,7 +617,7 @@ const ensureclickid = (pageNum: number): string => {
        }
  
        try {
-         window.scrollTo({ top: 0, behavior: "smooth" });
+        //  window.scrollTo({ top: 0, behavior: "smooth" });
  
          const safeFilters = normalizeSearchFromMake(appliedFilters);
          console.log("appp1", appliedFilters);
@@ -714,16 +700,10 @@ const ensureclickid = (pageNum: number): string => {
      [DEFAULT_RADIUS, router, initialData, isUsingInitialData],
    );
  
-   const scrollToTop = () => {
-     setTimeout(() => {
-       document.documentElement.scrollTo({ top: 0, behavior: "smooth" });
-       document.body.scrollTo({ top: 0, behavior: "smooth" });
-     }, 0);
-   };
    const handleNextPage = useCallback(async () => {
      if (pagination.current_page >= pagination.total_pages) return;
  
-     scrollToTop();
+    //  scrollToTop();
  
      flushSync(() => {
        setIsMainLoading(true);
@@ -772,7 +752,7 @@ const ensureclickid = (pageNum: number): string => {
        setIsFeaturedLoading(false);
        setIsPremiumLoading(false);
  
-       setScrollStarted(false);
+      //  setScrollStarted(false);
        setNextPageData(null);
        setIsNextLoading(false);
      }
