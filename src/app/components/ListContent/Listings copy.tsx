@@ -12,6 +12,7 @@ import "./newList.css";
 import dynamic from "next/dynamic";
 
 import "../filter.css";
+
 const ListingSkeleton = dynamic(() => import("../skelton"), { ssr: false });
 
 import {
