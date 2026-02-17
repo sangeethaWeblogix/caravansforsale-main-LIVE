@@ -32,6 +32,12 @@ on:
 # UNIVERSAL BATCH SIZE: 50 URLs per batch
 # When sitemaps grow, just add more batch numbers.
 # Empty batches exit cleanly in <1s (no harm).
+#
+# CURRENT URL COUNTS (update when sitemaps grow):
+# regions: ~62 URLs → 2 batches
+# category-state: ~48 URLs → 1 runner (no batching)
+# makes: ~267 URLs → 6 batches
+# category-region: ~378 URLs → 8 batches
 # ==========================================
 
 jobs:
@@ -175,8 +181,7 @@ jobs:
         run: echo "::notice::✅ regions batch ${{ matrix.batch }} completed!"
 
   # ==========================================
-  # CATEGORY-STATE (~48 URLs) - 1 batch × 50
-  # Single runner, no matrix needed
+  # CATEGORY-STATE (~48 URLs) - single runner
   # ==========================================
   generate-category-state:
     runs-on: ubuntu-latest
@@ -262,8 +267,7 @@ jobs:
         run: echo "::notice::✅ makes batch ${{ matrix.batch }} completed!"
 
   # ==========================================
-  # CATEGORY-REGION (~1200 URLs) - 20 batches × 50
-  # Last few batches may be empty if <1000 URLs, exits in <1s
+  # CATEGORY-REGION (~378 URLs) - 8 batches × 50
   # ==========================================
   generate-category-region:
     runs-on: ubuntu-latest
@@ -275,9 +279,9 @@ jobs:
     
     strategy:
       matrix:
-        batch: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+        batch: [1, 2, 3, 4, 5, 6, 7, 8]
       fail-fast: false
-      max-parallel: 20
+      max-parallel: 8
     
     steps:
       - name: 📥 Checkout
@@ -293,7 +297,7 @@ jobs:
           npm install node-fetch@2
           npm install xml2js
       
-      - name: 🗺️ Generate category-region (Batch ${{ matrix.batch }}/20)
+      - name: 🗺️ Generate category-region (Batch ${{ matrix.batch }}/8)
         env:
           PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
@@ -311,7 +315,6 @@ jobs:
 
   # ==========================================
   # UPDATE ROUTES MAPPING (After all jobs complete)
-  # Single source of truth - rebuilds from KV key metadata.
   # ==========================================
   update-routes-mapping:
     runs-on: ubuntu-latest
@@ -347,7 +350,6 @@ jobs:
 
   # ==========================================
   # INDIVIDUAL MANUAL RUNS
-  # Single job, no parallelism, safe to update routes mapping.
   # ==========================================
   generate-individual:
     runs-on: ubuntu-latest
@@ -405,8 +407,8 @@ jobs:
           echo "::notice::Batch size: 50 URLs (universal)"
           echo "::notice::Priority: Homepage + Listings (4 variants each)"
           echo "::notice::Small sitemaps: 6 in parallel"
-          echo "::notice::Regions: 2 batches"
-          echo "::notice::Category-State: 1 runner"
-          echo "::notice::Makes: 6 batches"
-          echo "::notice::Category-Region: 20 batches"
+          echo "::notice::Regions: 2 batches (~62 URLs)"
+          echo "::notice::Category-State: 1 runner (~48 URLs)"
+          echo "::notice::Makes: 6 batches (~267 URLs)"
+          echo "::notice::Category-Region: 8 batches (~378 URLs)"
           echo "::notice::Routes mapping: Regenerated after all jobs"
