@@ -28,12 +28,15 @@ on:
           - makes
           - category-region
 
+# ==========================================
+# UNIVERSAL BATCH SIZE: 50 URLs per batch
+# When sitemaps grow, just add more batch numbers.
+# Empty batches exit cleanly in <1s (no harm).
+# ==========================================
+
 jobs:
   # ==========================================
   # PRIORITY PAGES (Homepage + Listings) - WITH PUPPETEER
-  # Routes mapping update is SKIPPED to avoid race conditions
-  # with parallel sitemap jobs. The update-routes-mapping job
-  # will rebuild from KV metadata after all jobs complete.
   # ==========================================
   generate-priority:
     runs-on: ubuntu-latest
@@ -73,9 +76,8 @@ jobs:
         run: echo "::notice::✅ Priority pages generated successfully!"
 
   # ==========================================
-  # SMALL SITEMAPS (Parallel) - NO PUPPETEER
-  # Only truly small sitemaps here (~10-20 URLs each, ~5 min)
-  # Larger ones (regions, category-state) have own batched jobs below.
+  # SMALL SITEMAPS (Parallel, no batching needed)
+  # Each has ~8-20 URLs, finishes in ~3-5 min
   # ==========================================
   generate-small-sitemaps:
     runs-on: ubuntu-latest
@@ -126,8 +128,7 @@ jobs:
         run: echo "::notice::✅ ${{ matrix.sitemap }} completed!"
 
   # ==========================================
-  # REGIONS (Batched) - was in small-sitemaps but has ~62 URLs
-  # 3 batches × 25 URLs = ~75 URL capacity (~7 min each)
+  # REGIONS (~62 URLs) - 2 batches × 50
   # ==========================================
   generate-regions:
     runs-on: ubuntu-latest
@@ -139,9 +140,9 @@ jobs:
     
     strategy:
       matrix:
-        batch: [1, 2, 3]
+        batch: [1, 2]
       fail-fast: false
-      max-parallel: 3
+      max-parallel: 2
     
     steps:
       - name: 📥 Checkout
@@ -157,14 +158,14 @@ jobs:
           npm install node-fetch@2
           npm install xml2js
       
-      - name: 🗺️ Generate regions (Batch ${{ matrix.batch }}/3)
+      - name: 🗺️ Generate regions (Batch ${{ matrix.batch }}/2)
         env:
           PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           TARGET_SITEMAP: regions
-          BATCH_SIZE: 25
+          BATCH_SIZE: 50
           BATCH_NUMBER: ${{ matrix.batch }}
           SKIP_ROUTES_UPDATE: 'true'
         run: node scripts/generate-sitemap-cache-simple.js
@@ -174,8 +175,8 @@ jobs:
         run: echo "::notice::✅ regions batch ${{ matrix.batch }} completed!"
 
   # ==========================================
-  # CATEGORY-STATE (Batched) - was in small-sitemaps but has ~100+ URLs
-  # 4 batches × 50 URLs = ~200 URL capacity (~7 min each)
+  # CATEGORY-STATE (~48 URLs) - 1 batch × 50
+  # Single runner, no matrix needed
   # ==========================================
   generate-category-state:
     runs-on: ubuntu-latest
@@ -184,12 +185,6 @@ jobs:
       (github.event_name == 'schedule') ||
       (github.event_name == 'workflow_dispatch' && 
        (github.event.inputs.target == 'all' || github.event.inputs.target == 'small-sitemaps' || github.event.inputs.target == 'category-state'))
-    
-    strategy:
-      matrix:
-        batch: [1, 2, 3, 4]
-      fail-fast: false
-      max-parallel: 4
     
     steps:
       - name: 📥 Checkout
@@ -205,29 +200,26 @@ jobs:
           npm install node-fetch@2
           npm install xml2js
       
-      - name: 🗺️ Generate category-state (Batch ${{ matrix.batch }}/4)
+      - name: 🗺️ Generate category-state
         env:
           PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           TARGET_SITEMAP: category-state
-          BATCH_SIZE: 50
-          BATCH_NUMBER: ${{ matrix.batch }}
           SKIP_ROUTES_UPDATE: 'true'
         run: node scripts/generate-sitemap-cache-simple.js
       
-      - name: ✅ category-state Batch ${{ matrix.batch }} Complete
+      - name: ✅ category-state Complete
         if: success()
-        run: echo "::notice::✅ category-state batch ${{ matrix.batch }} completed!"
+        run: echo "::notice::✅ category-state completed!"
 
   # ==========================================
-  # MAKES (Batched) - NO PUPPETEER
-  # 6 batches × 150 URLs = up to 900 URLs
+  # MAKES (~267 URLs) - 6 batches × 50
   # ==========================================
   generate-makes:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 30
     if: |
       (github.event_name == 'schedule') ||
       (github.event_name == 'workflow_dispatch' && 
@@ -260,8 +252,9 @@ jobs:
           CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           TARGET_SITEMAP: makes
-          BATCH_SIZE: 150
+          BATCH_SIZE: 50
           BATCH_NUMBER: ${{ matrix.batch }}
+          SKIP_ROUTES_UPDATE: 'true'
         run: node scripts/generate-sitemap-cache-simple.js
       
       - name: ✅ makes Batch ${{ matrix.batch }} Complete
@@ -269,12 +262,12 @@ jobs:
         run: echo "::notice::✅ makes batch ${{ matrix.batch }} completed!"
 
   # ==========================================
-  # CATEGORY-REGION (Batched) - NO PUPPETEER
-  # 10 batches × 120 URLs = up to 1200 URLs (more even distribution)
+  # CATEGORY-REGION (~1200 URLs) - 20 batches × 50
+  # Last few batches may be empty if <1000 URLs, exits in <1s
   # ==========================================
   generate-category-region:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 30
     if: |
       (github.event_name == 'schedule') ||
       (github.event_name == 'workflow_dispatch' && 
@@ -282,9 +275,9 @@ jobs:
     
     strategy:
       matrix:
-        batch: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+        batch: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
       fail-fast: false
-      max-parallel: 10
+      max-parallel: 20
     
     steps:
       - name: 📥 Checkout
@@ -300,15 +293,16 @@ jobs:
           npm install node-fetch@2
           npm install xml2js
       
-      - name: 🗺️ Generate category-region (Batch ${{ matrix.batch }}/10)
+      - name: 🗺️ Generate category-region (Batch ${{ matrix.batch }}/20)
         env:
           PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           TARGET_SITEMAP: category-region
-          BATCH_SIZE: 120
+          BATCH_SIZE: 50
           BATCH_NUMBER: ${{ matrix.batch }}
+          SKIP_ROUTES_UPDATE: 'true'
         run: node scripts/generate-sitemap-cache-simple.js
       
       - name: ✅ category-region Batch ${{ matrix.batch }} Complete
@@ -318,9 +312,6 @@ jobs:
   # ==========================================
   # UPDATE ROUTES MAPPING (After all jobs complete)
   # Single source of truth - rebuilds from KV key metadata.
-  # This is the ONLY job that writes the final routes-mapping.
-  # All generation jobs SKIP their own mapping updates to
-  # prevent race conditions and stale overwrites.
   # ==========================================
   update-routes-mapping:
     runs-on: ubuntu-latest
@@ -411,11 +402,11 @@ jobs:
       - name: 📊 Summary
         run: |
           echo "::notice::✅ All cache generation jobs completed!"
-          echo "::notice::Priority pages: Homepage + Listings (4 variants each)"
-          echo "::notice::Small sitemaps: 6 sitemaps in parallel (categories, states, weights, prices, length, sleep)"
-          echo "::notice::Regions: 3 batches × 25 URLs in parallel"
-          echo "::notice::Category-State: 4 batches × 50 URLs in parallel"
-          echo "::notice::Makes: 6 batches × 150 URLs in parallel"
-          echo "::notice::Category-Region: 10 batches × 120 URLs in parallel"
+          echo "::notice::Batch size: 50 URLs (universal)"
+          echo "::notice::Priority: Homepage + Listings (4 variants each)"
+          echo "::notice::Small sitemaps: 6 in parallel"
+          echo "::notice::Regions: 2 batches"
+          echo "::notice::Category-State: 1 runner"
+          echo "::notice::Makes: 6 batches"
+          echo "::notice::Category-Region: 20 batches"
           echo "::notice::Routes mapping: Regenerated after all jobs"
-          echo "::notice::Check individual job logs for detailed statistics"
