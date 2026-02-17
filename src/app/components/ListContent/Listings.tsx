@@ -1267,13 +1267,13 @@
                         {/* ✅ SSR Links — will appear in View Page Source */}
    {clientMounted && clientLinksData && (
       <div className="cfs-links-section" id="client-links">
-        {(["states", "categories", "regions", "models",] as string[]).map((sectionKey) => {
+        {(["states", "categories", "regions", ] as string[]).map((sectionKey) => {
           const items = clientLinksData[sectionKey];
           if (!items || items.length === 0) return null;
   
           const titles: Record<string, string> = {
-            categories: "Browse by Category",
             states: "Browse by State",
+            categories: "Browse by Category",
             regions: "Browse by Region",
     //         makes: "Browse by Make",
     //         models: "Browse by Model",

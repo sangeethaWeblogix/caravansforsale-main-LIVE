@@ -325,9 +325,9 @@ export default function HomePage() {
                       <p>
                         Browse the latest new caravans from top dealerships in Australia.
                       </p>
-                      <Link href="/listings/new-condition/" className="btn btn-primary">
+                      <a href="/listings/new-condition/" className="btn btn-primary">
                         Browse New Listings
-                      </Link>
+                      </a>
                       <div className="illustration left" />
                     </div>
 
@@ -338,9 +338,9 @@ export default function HomePage() {
                         Find great deals on quality used caravans for sale by dealers and
                         private sellers.
                       </p>
-                      <Link href="/listings/used-condition/" className="btn btn-primary">
+                      <a href="/listings/used-condition/" className="btn btn-primary">
                         Search Used Listings
-                      </Link>
+                      </a>
                       <div className="illustration center" />
                     </div>
 
@@ -350,9 +350,9 @@ export default function HomePage() {
                       <p>
                         Explore the full range of new and used caravans across Australia.
                       </p>
-                      <Link href="/listings/" className="btn btn-primary">
+                      <a href="/listings/" className="btn btn-primary">
                         Start Searching
-                      </Link>
+                      </a>
                       <div className="illustration right" />
                     </div>
                   </div>
