@@ -3,6 +3,14 @@
  * Priority Pages Generation Script
  * Generates HTML cache for homepage and listings home using Puppeteer
  * REQUIRES PUPPETEER
+ * 
+ * IMPORTANT - SLUG FORMAT (DO NOT CHANGE):
+ * Homepage:  homepage-v1, homepage-v2, homepage-v3, homepage-v4
+ * Listings:  listings-home-v1, listings-home-v2, listings-home-v3, listings-home-v4
+ * 
+ * Routes-mapping format (DO NOT CHANGE):
+ * { "/": ["homepage-v1", "homepage-v2", ...], "/listings/": ["listings-home-v1", ...] }
+ * Values are ALWAYS arrays, never strings.
  */
 
 const puppeteer = require('puppeteer');
@@ -15,7 +23,14 @@ const CF_KV_NAMESPACE_ID = process.env.CF_KV_NAMESPACE_ID;
 const CF_API_TOKEN = process.env.CF_API_TOKEN;
 const TARGET_PAGE = process.env.TARGET_PAGE || 'all';
 
+// SKIP_ROUTES_UPDATE: When running in parallel with other generation jobs,
+// skip routes mapping update to avoid race conditions.
+// The update-routes-mapping job will handle it after all jobs complete.
+const SKIP_ROUTES_UPDATE = process.env.SKIP_ROUTES_UPDATE === 'true';
+
 const LISTINGS_VARIANTS = 4;
+const KV_UPLOAD_RETRIES = 3;
+const KV_RETRY_DELAY = 2000;
 
 const STATIC_PAGES = [
   { 
@@ -35,50 +50,92 @@ const STATIC_PAGES = [
 async function uploadToKV(key, value, metadata = null) {
   const url = `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/storage/kv/namespaces/${CF_KV_NAMESPACE_ID}/values/${key}`;
   
-  let requestOptions;
-  
-  if (metadata) {
-    const boundary = '----CFSFormBoundary' + Date.now();
-    let body = '';
-    
-    // Value part
-    body += `--${boundary}\r\n`;
-    body += `Content-Disposition: form-data; name="value"; filename="blob"\r\n`;
-    body += `Content-Type: text/html\r\n\r\n`;
-    body += value;
-    body += `\r\n`;
-    
-    // Metadata part
-    body += `--${boundary}\r\n`;
-    body += `Content-Disposition: form-data; name="metadata"\r\n`;
-    body += `Content-Type: application/json\r\n\r\n`;
-    body += JSON.stringify(metadata);
-    body += `\r\n`;
-    
-    body += `--${boundary}--\r\n`;
-    
-    requestOptions = {
-      method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${CF_API_TOKEN}`,
-        'Content-Type': `multipart/form-data; boundary=${boundary}`
-      },
-      body: body
-    };
-  } else {
-    requestOptions = {
-      method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${CF_API_TOKEN}`,
-        'Content-Type': 'text/html'
-      },
-      body: value
-    };
+  for (let attempt = 1; attempt <= KV_UPLOAD_RETRIES; attempt++) {
+    try {
+      let requestOptions;
+      
+      if (metadata) {
+        const boundary = '----CFSFormBoundary' + Date.now();
+        let body = '';
+        
+        // Value part
+        body += `--${boundary}\r\n`;
+        body += `Content-Disposition: form-data; name="value"; filename="blob"\r\n`;
+        body += `Content-Type: text/html\r\n\r\n`;
+        body += value;
+        body += `\r\n`;
+        
+        // Metadata part
+        body += `--${boundary}\r\n`;
+        body += `Content-Disposition: form-data; name="metadata"\r\n`;
+        body += `Content-Type: application/json\r\n\r\n`;
+        body += JSON.stringify(metadata);
+        body += `\r\n`;
+        
+        body += `--${boundary}--\r\n`;
+        
+        requestOptions = {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${CF_API_TOKEN}`,
+            'Content-Type': `multipart/form-data; boundary=${boundary}`
+          },
+          body: body,
+          timeout: 60000
+        };
+      } else {
+        requestOptions = {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${CF_API_TOKEN}`,
+            'Content-Type': 'text/html'
+          },
+          body: value,
+          timeout: 60000
+        };
+      }
+      
+      const response = await fetch(url, requestOptions);
+      
+      const responseText = await response.text();
+      let result;
+      try {
+        result = JSON.parse(responseText);
+      } catch (parseError) {
+        if (attempt < KV_UPLOAD_RETRIES) {
+          console.error(`   ⚠️  KV upload attempt ${attempt}/${KV_UPLOAD_RETRIES} failed (invalid response), retrying in ${KV_RETRY_DELAY/1000}s...`);
+          await new Promise(resolve => setTimeout(resolve, KV_RETRY_DELAY));
+          continue;
+        }
+        console.error(`   ❌ KV upload error after ${KV_UPLOAD_RETRIES} attempts: Invalid JSON response`);
+        return false;
+      }
+      
+      if (result.success) {
+        return true;
+      }
+      
+      const errorMsg = result.errors?.map(e => e.message).join(', ') || 'Unknown error';
+      if (attempt < KV_UPLOAD_RETRIES) {
+        console.error(`   ⚠️  KV upload attempt ${attempt}/${KV_UPLOAD_RETRIES} failed: ${errorMsg}, retrying in ${KV_RETRY_DELAY/1000}s...`);
+        await new Promise(resolve => setTimeout(resolve, KV_RETRY_DELAY));
+        continue;
+      }
+      console.error(`   ❌ KV upload error after ${KV_UPLOAD_RETRIES} attempts: ${errorMsg}`);
+      return false;
+      
+    } catch (error) {
+      if (attempt < KV_UPLOAD_RETRIES) {
+        console.error(`   ⚠️  KV upload attempt ${attempt}/${KV_UPLOAD_RETRIES} failed: ${error.message}, retrying in ${KV_RETRY_DELAY/1000}s...`);
+        await new Promise(resolve => setTimeout(resolve, KV_RETRY_DELAY));
+        continue;
+      }
+      console.error(`   ❌ KV upload error after ${KV_UPLOAD_RETRIES} attempts: ${error.message}`);
+      return false;
+    }
   }
   
-  const response = await fetch(url, requestOptions);
-  const result = await response.json();
-  return result.success;
+  return false;
 }
 
 async function generatePageVariant(page, variantNumber, browser) {
@@ -87,9 +144,10 @@ async function generatePageVariant(page, variantNumber, browser) {
     url += `?shuffle_seed=${variantNumber}`;
   }
   
+  // KV key format: {slug}-v{number}  (e.g., homepage-v1, listings-home-v2)
   const kvKey = page.variants > 1 ? `${page.slug}-v${variantNumber}` : page.slug;
   
-  console.log(`\n📄 Generating: ${page.path} (variant ${variantNumber})`);
+  console.log(`\n🔄 Generating: ${page.path} (variant ${variantNumber})`);
   console.log(`   Slug: ${kvKey}`);
   console.log(`   URL: ***?shuffle_seed=${variantNumber}`);
   
@@ -117,6 +175,7 @@ async function generatePageVariant(page, variantNumber, browser) {
     if (!html.includes('</html>')) {
       throw new Error('Invalid HTML response (no closing </html> tag)');
     }
+    
     // ============================================
     // IMAGE OPTIMIZATION ONLY (NO SEO TAGS)
     // ============================================
@@ -149,6 +208,7 @@ async function generatePageVariant(page, variantNumber, browser) {
     
     // Remove any noindex tags if present
     html = html.replace(/<meta\s+name="robots"\s+content="noindex[^"]*"\s*\/?>/gi, '');
+    
     const sizeKB = Math.round(html.length / 1024);
     console.log(`   ⬆️  Uploading (${sizeKB}KB)...`);
     
@@ -190,6 +250,9 @@ async function generateStaticPages() {
   console.log(`📍 Production: ${PRODUCTION_DOMAIN}`);
   console.log(`🎯 Target: ${TARGET_PAGE || 'all'}`);
   console.log(`🔢 Variants: ${LISTINGS_VARIANTS}`);
+  if (SKIP_ROUTES_UPDATE) {
+    console.log(`⏭️  Routes mapping update: SKIPPED (parallel mode)`);
+  }
   console.log('█'.repeat(70));
   
   // Filter pages based on target
@@ -270,66 +333,78 @@ async function generateStaticPages() {
   }
   
   // Update routes mapping (merge with existing)
-  console.log('\n' + '='.repeat(70));
-  console.log('📋 Updating routes mapping (Merging with existing)...');
-  console.log('='.repeat(70));
-  
-  // Load existing mapping first
-  let mapping = {};
-  try {
-    const existingMappingUrl = `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/storage/kv/namespaces/${CF_KV_NAMESPACE_ID}/values/routes-mapping`;
-    const existingResponse = await fetch(existingMappingUrl, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${CF_API_TOKEN}`
-      }
-    });
+  // Skip if SKIP_ROUTES_UPDATE is set (parallel mode)
+  if (SKIP_ROUTES_UPDATE) {
+    console.log('\n' + '='.repeat(70));
+    console.log('⏭️  SKIPPING ROUTES MAPPING UPDATE (Parallel mode - SKIP_ROUTES_UPDATE=true)');
+    console.log('   The update-routes-mapping job will rebuild from KV metadata after all jobs complete.');
+    console.log('='.repeat(70));
+  } else {
+    console.log('\n' + '='.repeat(70));
+    console.log('📋 Updating routes mapping (Merging with existing)...');
+    console.log('='.repeat(70));
     
-    if (existingResponse.ok) {
-      const existingText = await existingResponse.text();
-      mapping = JSON.parse(existingText);
-      console.log(`\n✅ Loaded existing mapping with ${Object.keys(mapping).length} paths`);
-    } else {
-      console.log(`\nℹ️  No existing mapping found, starting fresh`);
+    // Load existing mapping first
+    let mapping = {};
+    try {
+      const existingMappingUrl = `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/storage/kv/namespaces/${CF_KV_NAMESPACE_ID}/values/routes-mapping`;
+      const existingResponse = await fetch(existingMappingUrl, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${CF_API_TOKEN}`
+        }
+      });
+      
+      if (existingResponse.ok) {
+        const existingText = await existingResponse.text();
+        mapping = JSON.parse(existingText);
+        console.log(`\n✅ Loaded existing mapping with ${Object.keys(mapping).length} paths`);
+      } else {
+        console.log(`\nℹ️  No existing mapping found, starting fresh`);
+      }
+    } catch (error) {
+      console.log(`\n⚠️  Could not load existing mapping: ${error.message}`);
+      console.log(`   Starting with empty mapping`);
     }
-  } catch (error) {
-    console.log(`\n⚠️  Could not load existing mapping: ${error.message}`);
-    console.log(`   Starting with empty mapping`);
-  }
-  
-  // Update/add priority pages to mapping
-  for (const page of pagesToGenerate) {
-    if (page.variants === 1) {
-      mapping[page.path] = page.slug;
-    } else {
+    
+    // Normalize any legacy string values to arrays
+    for (const path in mapping) {
+      if (typeof mapping[path] === 'string') {
+        mapping[path] = [mapping[path]];
+      }
+    }
+    
+    // Update/add priority pages to mapping
+    // ALWAYS use arrays for consistency with worker and regenerate-routes-mapping
+    for (const page of pagesToGenerate) {
       const variants = [];
       for (let i = 1; i <= page.variants; i++) {
         variants.push(`${page.slug}-v${i}`);
       }
       mapping[page.path] = variants;
     }
-  }
-  
-  console.log('\n📝 Updated routes mapping (showing priority pages only):');
-  const priorityMapping = {};
-  for (const page of pagesToGenerate) {
-    priorityMapping[page.path] = mapping[page.path];
-  }
-  console.log(JSON.stringify(priorityMapping, null, 2));
-  
-  console.log(`\n📊 Total paths in mapping: ${Object.keys(mapping).length}`);
-  
-  const mappingJson = JSON.stringify(mapping, null, 2);
-  const sizeKB = Math.round(mappingJson.length / 1024);
-  console.log(`📦 Mapping size: ${sizeKB}KB`);
-  
-  console.log('\n⬆️  Uploading merged routes mapping...');
-  const mappingUploaded = await uploadToKV('routes-mapping', mappingJson);
-  
-  if (mappingUploaded) {
-    console.log('✅ Routes mapping uploaded successfully!');
-  } else {
-    console.error('❌ Routes mapping upload failed');
+    
+    console.log('\n📍 Updated routes mapping (showing priority pages only):');
+    const priorityMapping = {};
+    for (const page of pagesToGenerate) {
+      priorityMapping[page.path] = mapping[page.path];
+    }
+    console.log(JSON.stringify(priorityMapping, null, 2));
+    
+    console.log(`\n📊 Total paths in mapping: ${Object.keys(mapping).length}`);
+    
+    const mappingJson = JSON.stringify(mapping, null, 2);
+    const sizeKB = Math.round(mappingJson.length / 1024);
+    console.log(`📦 Mapping size: ${sizeKB}KB`);
+    
+    console.log('\n⬆️  Uploading merged routes mapping...');
+    const mappingUploaded = await uploadToKV('routes-mapping', mappingJson);
+    
+    if (mappingUploaded) {
+      console.log('✅ Routes mapping uploaded successfully!');
+    } else {
+      console.error('❌ Routes mapping upload failed');
+    }
   }
   
   const duration = Math.round((Date.now() - startTime) / 1000);
@@ -343,7 +418,7 @@ async function generateStaticPages() {
   console.log(`🎯 Target: ${TARGET_PAGE || 'all'}`);
   console.log(`✅ Success: ${results.success} variants`);
   console.log(`❌ Failed: ${results.failed} variants`);
-  console.log(`📄 Total variants generated: ${totalVariants}`);
+  console.log(`🔄 Total variants generated: ${totalVariants}`);
   console.log(`⏱️  Duration: ${minutes}m ${seconds}s`);
   console.log(`📦 Average: ${Math.round(duration / totalVariants * 10) / 10}s per variant`);
   
