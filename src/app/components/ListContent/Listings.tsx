@@ -1267,7 +1267,7 @@
                         {/* ✅ SSR Links — will appear in View Page Source */}
    {clientMounted && clientLinksData && (
       <div className="cfs-links-section" id="client-links">
-        {(["states", "categories", "makes", "conditions", "regions", "models",  "prices", "atm_ranges", "length_ranges", "sleep_ranges"] as string[]).map((sectionKey) => {
+        {(["states", "categories", "regions", "models",] as string[]).map((sectionKey) => {
           const items = clientLinksData[sectionKey];
           if (!items || items.length === 0) return null;
   
@@ -1275,13 +1275,13 @@
             categories: "Browse by Category",
             states: "Browse by State",
             regions: "Browse by Region",
-            makes: "Browse by Make",
-            models: "Browse by Model",
-            conditions: "Browse by Condition",
-             prices: "Browse by Price",
-    atm_ranges: "Browse by ATM",
-    length_ranges: "Browse by Length",
-    sleep_ranges: "Browse by Sleep",
+    //         makes: "Browse by Make",
+    //         models: "Browse by Model",
+    //         conditions: "Browse by Condition",
+    //          prices: "Browse by Price",
+    // atm_ranges: "Browse by ATM",
+    // length_ranges: "Browse by Length",
+    // sleep_ranges: "Browse by Sleep",
           };
   
           return (
@@ -1429,7 +1429,7 @@
             </Suspense>
           </div>
         </div>
-        
+
       </>
     );
   }

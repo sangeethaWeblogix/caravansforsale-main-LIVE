@@ -331,7 +331,7 @@ return (
           overflow: "hidden",
         }}
       >
-        {(["states", "categories", "makes", "conditions", "regions", "models"] as const).map((sectionKey) => {
+        {(["states", "categories", "regions",] as const).map((sectionKey) => {
           const items = linksData[sectionKey];
           if (!items || items.length === 0) return null;
 
@@ -339,13 +339,13 @@ return (
             categories: "Browse by Category",
             states: "Browse by State",
             regions: "Browse by Region",
-            makes: "Browse by Make",
-            models: "Browse by Model",
-            conditions: "Browse by Condition",
-            prices: "Browse by Price",
-            atm_ranges: "Browse by ATM",
-            length_ranges: "Browse by Length",
-            sleep_ranges: "Browse by Sleep",
+            // makes: "Browse by Make",
+            // models: "Browse by Model",
+            // conditions: "Browse by Condition",
+            // prices: "Browse by Price",
+            // atm_ranges: "Browse by ATM",
+            // length_ranges: "Browse by Length",
+            // sleep_ranges: "Browse by Sleep",
           };
 
           return (
