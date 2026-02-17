@@ -46,27 +46,27 @@ Marketplace Network makes no representations or warranties regarding the accurac
                 <h6 className="foot-title foot_xs">Company</h6>
                 <ul className="menu footer_xs">
                   <li>
-                    <Link href="/listings/">For Sale</Link>
+                    <a href="/listings/">For Sale</a>
                   </li>
                   <li>
-                    <Link href="/blog/">Blog</Link>
+                    <a href="/blog/">Blog</a>
                   </li>
                   <li>
-                    <Link href="/terms-conditions/">Terms & Conditions</Link>
+                    <a href="/terms-conditions/">Terms & Conditions</a>
                   </li>
                   <li>
-                    <Link href="/privacy-policy/">Privacy Policy</Link>
+                    <a href="/privacy-policy/">Privacy Policy</a>
                   </li>
                   <li>
-                    <Link href="/privacy-collection-statement/">
+                    <a href="/privacy-collection-statement/">
                       Privacy Collection Statement
-                    </Link>
+                    </a>
                   </li>
                   <li>
-                    <Link href="/about-us/">About</Link>
+                    <a href="/about-us/">About</a>
                   </li>
                   <li>
-                    <Link href="/contact/">Contact Us</Link>
+                    <a href="/contact/">Contact Us</a>
                   </li>
                 </ul>
               </div>

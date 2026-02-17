@@ -394,20 +394,20 @@ export default function CaravanDetailModal({
                         <p className="terms_text">
                           By clicking &apos;Send Enquiry&apos;, you agree to
                           Caravan Marketplace{" "}
-                          <Link
+                          <a
                             href="/privacy-collection-statement"
                             target="_blank"
                           >
                             Collection Statement
-                          </Link>
+                          </a>
                           ,{" "}
-                          <Link href="/privacy-policy" target="_blank">
+                          <a href="/privacy-policy" target="_blank">
                             Privacy Policy
-                          </Link>{" "}
+                          </a>{" "}
                           and{" "}
-                          <Link href="/terms-conditions" target="_blank">
+                          <a href="/terms-conditions" target="_blank">
                             Terms and Conditions
-                          </Link>
+                          </a>
                           .
                         </p>
 
