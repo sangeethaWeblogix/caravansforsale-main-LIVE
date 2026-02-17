@@ -7,6 +7,16 @@
  * 
  * This script reads all KV keys and their metadata (which contains the original path),
  * groups them by path, and uploads a fresh routes-mapping.
+ * 
+ * IMPORTANT - OUTPUT FORMAT (DO NOT CHANGE):
+ * {
+ *   "/": ["homepage-v1", "homepage-v2", "homepage-v3", "homepage-v4"],
+ *   "/listings/": ["listings-home-v1", "listings-home-v2", ...],
+ *   "/listings/caravans/nsw/": ["caravans-nsw-v1", "caravans-nsw-v2", ...]
+ * }
+ * 
+ * Values are ALWAYS arrays, never strings.
+ * The worker depends on this format for variant selection.
  */
 
 const fetch = require('node-fetch');
@@ -61,12 +71,13 @@ function buildMappingFromKeys(keyObjects) {
   const mapping = {};
   
   // Special slugs that don't follow /listings/slug/ pattern
+  // These MUST match the slugs in generate-priority-pages.js
   const SPECIAL_SLUGS = {
     'homepage': '/',
     'listings-home': '/listings/'
   };
   
-  // Filter to variant keys only
+  // Filter to variant keys only (must end with -v{number})
   const variantKeyObjects = keyObjects.filter(keyObj => {
     if (EXCLUDED_KEYS.includes(keyObj.name)) return false;
     return /-v\d+$/.test(keyObj.name);
@@ -109,7 +120,7 @@ function buildMappingFromKeys(keyObjects) {
   
   console.log(`   🏷️  Metadata hits: ${metadataHits}, Fallback: ${metadataMisses}`);
   
-  // Sort variants within each path
+  // Sort variants within each path (v1, v2, v3, v4)
   for (const path in mapping) {
     mapping[path].sort((a, b) => {
       const variantA = parseInt(a.match(/-v(\d+)$/)?.[1] || '0');
@@ -199,6 +210,19 @@ async function main() {
     console.log(`   Total paths: ${Object.keys(mapping).length}`);
     const totalVariants = Object.values(mapping).reduce((sum, v) => sum + v.length, 0);
     console.log(`   Total variants: ${totalVariants}`);
+    
+    // Validate: all values must be arrays
+    let formatIssues = 0;
+    for (const path in mapping) {
+      if (!Array.isArray(mapping[path])) {
+        console.error(`   ⚠️  Non-array value for path: ${path}`);
+        mapping[path] = [mapping[path]]; // Auto-fix
+        formatIssues++;
+      }
+    }
+    if (formatIssues > 0) {
+      console.log(`   🔧 Auto-fixed ${formatIssues} non-array values`);
+    }
     
     // Show priority pages
     const priorityPaths = ['/', '/listings/'];

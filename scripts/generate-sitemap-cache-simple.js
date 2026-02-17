@@ -3,6 +3,19 @@
  * Sitemap Cache Generation Script
  * Generates HTML cache for all sitemap pages using HTTP fetch only
  * NO PUPPETEER REQUIRED
+ * 
+ * IMPORTANT - SLUG FORMAT (DO NOT CHANGE):
+ * Path: /listings/caravans/nsw/ → Slug: caravans-nsw → KV keys: caravans-nsw-v1, caravans-nsw-v2, ...
+ * Path: /listings/motorhomes/    → Slug: motorhomes   → KV keys: motorhomes-v1, motorhomes-v2, ...
+ * 
+ * Routes-mapping format (DO NOT CHANGE):
+ * { "/listings/caravans/nsw/": ["caravans-nsw-v1", "caravans-nsw-v2", "caravans-nsw-v3", "caravans-nsw-v4"] }
+ * Values are ALWAYS arrays, never strings.
+ * 
+ * VARIANT SHUFFLE:
+ * Each variant uses a unique shuffle_seed to get different listing orders.
+ * Seeds are: 1, 2, 3, 4 (matching variant numbers).
+ * The worker randomly picks one variant per request → different order each visit.
  */
 
 const fetch = require('node-fetch');
@@ -50,6 +63,18 @@ const SITEMAP_URLS = [
 // UTILITY FUNCTIONS
 // ============================================
 
+/**
+ * Convert a URL path to a KV slug.
+ * 
+ * CRITICAL: Do NOT change this function. The slug format must remain stable
+ * because the routes-mapping and regenerate-routes-mapping.js both depend on it.
+ * Changing this will cause BYPASS-NO-CACHE for all pages until mapping is rebuilt.
+ * 
+ * Examples:
+ *   /listings/caravans/nsw/       → caravans-nsw
+ *   /listings/motorhomes/         → motorhomes
+ *   /listings/caravans/victoria/  → caravans-victoria
+ */
 function convertPathToSlug(path) {
   let pathSlug = path;
   
@@ -64,7 +89,7 @@ function convertPathToSlug(path) {
   // Replace slashes with hyphens
   pathSlug = pathSlug.replace(/\//g, '-');
   
-  // Remove special characters
+  // Remove special characters (keep lowercase alphanumeric and hyphens only)
   pathSlug = pathSlug.replace(/[^a-z0-9-]/g, '');
   
   // Truncate to 150 chars
@@ -169,7 +194,7 @@ async function uploadToKV(key, value, metadata = null) {
   return false;
 }
 
-function injectSEOTags(html, canonicalUrl, variantNumber) {
+function injectPerformanceTags(html) {
   // Add performance optimizations for images ONLY
   const imageOptimizations = `
     <link rel="dns-prefetch" href="https://caravansforsale.imagestack.net" />
@@ -277,15 +302,18 @@ async function generatePageVariant(urlData, variantNumber) {
   const { path, fullUrl } = urlData;
   const slug = convertPathToSlug(path);
   
+  // Build fetch URL with shuffle_seed for variant diversity
+  // Each variant number (1, 2, 3, 4) produces a different shuffle order
   let fetchUrl = `${PRODUCTION_DOMAIN}${path}`;
   if (VARIANTS_PER_URL > 1) {
     fetchUrl += fetchUrl.includes('?') ? '&' : '?';
     fetchUrl += `shuffle_seed=${variantNumber}`;
   }
   
+  // KV key format: {slug}-v{number}  (e.g., caravans-nsw-v1)
   const kvKey = `${slug}-v${variantNumber}`;
   
-  console.log(`\n📄 Generating: ${path} (variant ${variantNumber})`);
+  console.log(`\n🔄 Generating: ${path} (variant ${variantNumber})`);
   console.log(`   Slug: ${kvKey}`);
   console.log(`   URL: ***?shuffle_seed=${variantNumber}`);
   
@@ -330,8 +358,8 @@ async function generatePageVariant(urlData, variantNumber) {
       return { status: 'skipped', path, kvKey };
     }
     
-    // Inject SEO tags
-    html = injectSEOTags(html, fullUrl, variantNumber);
+    // Inject performance tags (image preloads, etc.)
+    html = injectPerformanceTags(html);
     
     // Upload to KV with metadata containing the original path
     const sizeKB = Math.round(html.length / 1024);
@@ -403,7 +431,7 @@ async function main() {
       process.exit(1);
     }
   } else {
-    console.log(`\n📑 Processing all ${sitemapsToProcess.length} sitemaps\n`);
+    console.log(`\n🔑 Processing all ${sitemapsToProcess.length} sitemaps\n`);
   }
   
   // Step 1: Fetch URLs from sitemaps
@@ -431,14 +459,14 @@ async function main() {
     console.log('='.repeat(70));
     console.log(`📊 Total URLs in sitemap: ${totalUrlsBeforeBatch}`);
     console.log(`📦 Batch ${BATCH_NUMBER}: Processing URLs ${start + 1} to ${Math.min(end, totalUrlsBeforeBatch)}`);
-    console.log(`📄 URLs in this batch: ${allUrls.length}`);
+    console.log(`🔄 URLs in this batch: ${allUrls.length}`);
     console.log('='.repeat(70));
   }
   
   console.log('\n' + '='.repeat(70));
   console.log('📊 SITEMAP FETCH COMPLETE');
   console.log('='.repeat(70));
-  console.log(`📄 Total URLs to process: ${allUrls.length}`);
+  console.log(`🔄 Total URLs to process: ${allUrls.length}`);
   console.log(`📦 Total variants to generate: ${allUrls.length * VARIANTS_PER_URL}`);
   const estimatedMinutes = Math.round(allUrls.length * VARIANTS_PER_URL * 2 / 60);
   console.log(`⏱️  Estimated time: ~${estimatedMinutes} minutes`);
@@ -546,6 +574,13 @@ async function main() {
       console.log(`   ⚠️  Could not load existing mapping: ${error.message}`);
     }
     
+    // Normalize any legacy string values to arrays
+    for (const path in mapping) {
+      if (typeof mapping[path] === 'string') {
+        mapping[path] = [mapping[path]];
+      }
+    }
+    
     // Remove 404 paths from existing mapping
     if (failed404Paths.size > 0) {
       let removed404 = 0;
@@ -569,6 +604,10 @@ async function main() {
         mapping[page.path] = [];
         newPaths++;
       } else {
+        // Ensure it's an array (safety check)
+        if (!Array.isArray(mapping[page.path])) {
+          mapping[page.path] = [mapping[page.path]];
+        }
         updatedPaths++;
       }
       
@@ -634,7 +673,7 @@ async function main() {
   console.log(`⏭️  Skipped (noindex): ${results.skipped} variants`);
   console.log(`🔍 Skipped (404): ${results.skipped_404} variants (${failed404Paths.size} unique URLs)`);
   console.log(`❌ Failed: ${results.failed} variants`);
-  console.log(`📄 Unique paths: ${results.pages.length > 0 ? Object.keys(results.pages.reduce((acc, p) => ({ ...acc, [p.path]: true }), {})).length : 0}`);
+  console.log(`🔄 Unique paths: ${results.pages.length > 0 ? Object.keys(results.pages.reduce((acc, p) => ({ ...acc, [p.path]: true }), {})).length : 0}`);
   console.log(`⏱️  Total duration: ${minutes}m ${seconds}s`);
   
   if (results.pages.length > 0) {
