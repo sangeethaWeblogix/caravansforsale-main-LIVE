@@ -616,7 +616,7 @@ console.log("exxx", data)
                                   setShowContact(true);
                                 }}
                               >
-                                Contact Dealer
+                                Contact Seller
                               </button>
                               <button className="btn btn-primary">
                                 View Details
@@ -660,7 +660,7 @@ console.log("exxx", data)
         </div>
       )}
 
-      {/* === Contact Dealer Popup === */}
+      {/* === Contact Seller Popup === */}
       {showContact && (
         <div className="popup-overlay">
           <div className="popup-box">
@@ -675,7 +675,7 @@ console.log("exxx", data)
               ×
             </button>
 
-            <h4>Contact Dealer</h4>
+            <h4>Contact Seller</h4>
 
             <div className="sidebar-enquiry">
               <form className="wpcf7-form" noValidate onSubmit={onSubmit}>

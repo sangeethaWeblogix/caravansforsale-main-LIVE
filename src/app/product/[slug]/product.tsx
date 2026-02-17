@@ -847,7 +847,7 @@ export default function ClientLogger({
                         onClick={() => setShowModal(true)}
                       >
                         {/* bottom */}
-                        Contact Dealer
+                        Contact Seller
                       </button>
                     </div>
                   </div>
@@ -940,7 +940,7 @@ export default function ClientLogger({
                           className="btn btn-primary "
                           onClick={() => setShowModal(true)}
                         >
-                          Contact Dealer{" "}
+                          Contact Seller{" "}
                         </button>
                       </div>
                     </div>

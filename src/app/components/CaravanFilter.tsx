@@ -2311,7 +2311,7 @@ const formatLinkName = (name: string): string =>
             className="filter-accordion"
             onClick={() => setIsCategoryModalOpen(true)}
           >
-            <h5 className="cfs-filter-label">Category</h5>
+            <h5 className="cfs-filter-label">Type</h5>
             <BiChevronDown />
           </div>
 
@@ -2347,7 +2347,7 @@ const formatLinkName = (name: string): string =>
             >
               {/* Header */}
               <div className="cfs-modal-header">
-                <h5 className="cfs-filter-label">Search by Category</h5>
+                <h5 className="cfs-filter-label">Search by Type</h5>
                 <span
                   className="cfs-close"
                   onClick={() => setIsCategoryModalOpen(false)}

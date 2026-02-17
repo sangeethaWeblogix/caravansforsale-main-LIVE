@@ -313,7 +313,7 @@ console.log("navigating ", navigateBySelect)
       setCategory(e.target.value);
     }}
   >
-     <option value="">Select Category</option>
+     <option value="">Select Type</option>
      <option value="Off Road">Off Road</option>
      <option value="Hybrid">Hybrid</option>
      <option value="Pop Top">Pop Top</option>

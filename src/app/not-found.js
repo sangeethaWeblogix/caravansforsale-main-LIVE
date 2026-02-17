@@ -54,11 +54,11 @@ export default function NotFoundPage() {
           </Link>
         </div>
 
-        {/* ✅ Browse by Category & State Side by Side */}
+        {/* ✅ Browse by Type & State Side by Side */}
         <div className="browse-grid">
           {/* Left: Category */}
           <div className="browse-column">
-            <h4>Browse by Category:</h4>
+            <h4>Browse by Type:</h4>
             <ul>
               {categories.map((cat) => (
                 <li key={cat.slug}>
