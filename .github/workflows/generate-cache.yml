@@ -31,6 +31,9 @@ on:
 jobs:
   # ==========================================
   # PRIORITY PAGES (Homepage + Listings) - WITH PUPPETEER
+  # Routes mapping update is SKIPPED to avoid race conditions
+  # with parallel sitemap jobs. The update-routes-mapping job
+  # will rebuild from KV metadata after all jobs complete.
   # ==========================================
   generate-priority:
     runs-on: ubuntu-latest
@@ -62,6 +65,7 @@ jobs:
           CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           TARGET_PAGE: 'all'
+          SKIP_ROUTES_UPDATE: 'true'
         run: node scripts/generate-priority-pages.js
       
       - name: ✅ Complete
@@ -71,6 +75,7 @@ jobs:
   # ==========================================
   # SMALL SITEMAPS (Parallel) - NO PUPPETEER
   # Routes mapping update is SKIPPED to avoid race conditions.
+  # The update-routes-mapping job will handle it after all jobs complete.
   # ==========================================
   generate-small-sitemaps:
     runs-on: ubuntu-latest
@@ -216,6 +221,9 @@ jobs:
   # ==========================================
   # UPDATE ROUTES MAPPING (After all jobs complete)
   # Single source of truth - rebuilds from KV key metadata.
+  # This is the ONLY job that writes the final routes-mapping.
+  # All generation jobs SKIP their own mapping updates to
+  # prevent race conditions and stale overwrites.
   # ==========================================
   update-routes-mapping:
     runs-on: ubuntu-latest
