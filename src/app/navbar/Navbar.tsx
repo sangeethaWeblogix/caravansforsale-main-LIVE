@@ -205,7 +205,7 @@ export default function Navbar() {
                   All Listings
                 </a>
               </li>
-              <li className={openDropdown === "state" ? "selected" : ""}>
+              {/* <li className={openDropdown === "state" ? "selected" : ""}>
                 {" "}
                 <div
                   className="drop_down"
@@ -248,9 +248,9 @@ export default function Navbar() {
                   </li>
 
                 </ul>
-              </li>
+              </li> */}
 
-              <li className={openDropdown === "category" ? "selected" : ""}>
+              {/* <li className={openDropdown === "category" ? "selected" : ""}>
                 {" "}
                 <div
                   className="drop_down"
@@ -289,9 +289,9 @@ export default function Navbar() {
 
 
                 </ul>
-              </li>
+              </li> */}
 
-              <li className={openDropdown === "price" ? "selected" : ""}>
+              {/* <li className={openDropdown === "price" ? "selected" : ""}>
                 {" "}
                 <div
                   className="drop_down"
@@ -339,9 +339,9 @@ export default function Navbar() {
 
 
                 </ul>
-              </li>
+              </li> */}
 
-              <li className={openDropdown === "weight" ? "selected" : ""}>
+              {/* <li className={openDropdown === "weight" ? "selected" : ""}>
                 {" "}
                 <div
                   className="drop_down"
@@ -375,9 +375,9 @@ export default function Navbar() {
                   </li>
                   
                 </ul>
-              </li>
+              </li> */}
 
-              <li className={openDropdown === "sleep" ? "selected" : ""}>
+              {/* <li className={openDropdown === "sleep" ? "selected" : ""}>
                 {" "}
                 <div
                   className="drop_down"
@@ -408,9 +408,9 @@ export default function Navbar() {
                   </li>
                                     
                 </ul>
-              </li>
+              </li> */}
 
-              <li className={openDropdown === "length" ? "selected" : ""}>
+              {/* <li className={openDropdown === "length" ? "selected" : ""}>
                 {" "}
                 <div
                   className="drop_down"
@@ -447,9 +447,9 @@ export default function Navbar() {
                   </li>
                   
                 </ul>
-              </li>
+              </li> */}
 
-              <li className={openDropdown === "condition" ? "selected" : ""}>
+              {/* <li className={openDropdown === "condition" ? "selected" : ""}>
                 {" "}
                 <div
                   className="drop_down"
@@ -475,9 +475,9 @@ export default function Navbar() {
 
 
                 </ul>
-              </li>
+              </li> */}
 
-              <li className={openDropdown === "manufacturers" ? "selected" : ""}>
+              {/* <li className={openDropdown === "manufacturers" ? "selected" : ""}>
                 {" "}
                 <div
                   className="drop_down"
@@ -525,7 +525,7 @@ export default function Navbar() {
                     <a className="dropdown-item" href={`/listings/design-rv/`} onClick={closeNav}>Design RV</a>
                   </li>
                 </ul>
-              </li>
+              </li> */}
 
 
 
