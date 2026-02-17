@@ -1060,7 +1060,7 @@ export default function OffRoadCaravanMiddle() {
               <div className="key_features">
                 <h4>
                   Key Reasons Why Titanium Caravans is a Market Leader in
-                  Off-Road Category
+                  Off-Road Type
                 </h4>
                 <ul>
                   <li>

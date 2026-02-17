@@ -33,7 +33,7 @@ export default function CaravanManufacturers() {
               </div>
 
               <h2 className="divide-orange pb-20">
-                Top Caravan Manufacturers in Each Category
+                Top Caravan Manufacturers in Each Type
               </h2>
 
               <p>
@@ -74,7 +74,7 @@ export default function CaravanManufacturers() {
               <div className="key_features">
                 <h4>
                   Key Reasons Why Everest Caravans is the Best Caravan
-                  Manufacturer in any Off Road Category
+                  Manufacturer in any Off Road Type
                 </h4>
                 <ul>
                   <li>
@@ -291,7 +291,7 @@ export default function CaravanManufacturers() {
               <div className="key_features">
                 <h4 className="font-semibold mb-2">
                   Key Reasons Why Grand City Caravans is the Best Caravan
-                  Manufacturer in the Luxury Off Road Category
+                  Manufacturer in the Luxury Off Road Type
                 </h4>
                 <ul className="list-disc pl-6 space-y-1">
                   <li>
@@ -728,7 +728,7 @@ export default function CaravanManufacturers() {
               <div className="key_features">
                 <h4>
                   Key Reasons Why Villa Caravans is the Best Caravan
-                  Manufacturer in the Semi Off Road Category
+                  Manufacturer in the Semi Off Road Type
                 </h4>
                 <ul>
                   <li>
@@ -894,7 +894,7 @@ export default function CaravanManufacturers() {
               <div className="key_features">
                 <h4>
                   Key Reasons Why Apache Caravans is a Standout Australian
-                  Caravan Manufacturer in the Hybrid Off Road Category
+                  Caravan Manufacturer in the Hybrid Off Road Type
                 </h4>
                 <ul>
                   <li>

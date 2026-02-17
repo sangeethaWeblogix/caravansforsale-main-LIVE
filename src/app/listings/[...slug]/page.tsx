@@ -336,7 +336,7 @@ return (
           if (!items || items.length === 0) return null;
 
           const titles: Record<string, string> = {
-            categories: "Browse by Category",
+            categories: "Browse by Type",
             states: "Browse by State",
             regions: "Browse by Region",
             // makes: "Browse by Make",

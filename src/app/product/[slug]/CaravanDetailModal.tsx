@@ -226,7 +226,7 @@ export default function CaravanDetailModal({
                   <div className="sidebar-enquiry">
                     <form className="wpcf7-form" noValidate onSubmit={onSubmit}>
                       <div className="form">
-                        <h4>Contact Dealer</h4>
+                        <h4>Contact Seller</h4>
 
                         {/* Name */}
                         <div className="form-item">

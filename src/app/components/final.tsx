@@ -1877,7 +1877,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
             className="filter-accordion"
             onClick={() => toggle(setCategoryOpen)}
           >
-            <h5 className="cfs-filter-label">Category</h5>
+            <h5 className="cfs-filter-label">Type</h5>
             <BiChevronDown />
           </div>
 
