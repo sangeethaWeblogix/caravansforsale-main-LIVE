@@ -4289,6 +4289,7 @@ useEffect(() => {
                        //placeholder="Suburb or postcode..."
                        className="filter-dropdown cfs-select-input"
                        autoComplete="off"
+                        placeholder="Search suburb, postcode, state, region"
                        value={formatted(modalInput)} // 👈 modalInput} // 👈 use modalInput
                        onFocus={() => setShowSuggestions(true)}
                        onChange={(e) => {
