@@ -7,7 +7,8 @@ function normalizeSlug(v: string = "") {
 }
 
  
-export const dynamic = "force-dynamic";
+// export const dynamic = "force-dynamic"
+;
 
 import ListingsPage from "@/app/components/ListContent/Listings";
 import { parseSlugToFilters } from "../../components/urlBuilder";

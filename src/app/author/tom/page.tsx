@@ -1,4 +1,5 @@
-export const dynamic = "force-dynamic";
+// export const dynamic = "force-dynamic"
+;
 
 import Author from "./author";
 import "./author.css";

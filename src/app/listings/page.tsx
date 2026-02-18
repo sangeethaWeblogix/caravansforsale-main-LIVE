@@ -7,7 +7,7 @@ import { ensureValidPage } from "@/utils/seo/validatePage";
 import { notFound } from "next/navigation";
 import ApiErrorFallback from "../components/ApiErrorFallback";
  
-export const revalidate = 0;
+ export const revalidate = 3600
 
 export const metadata: Metadata = {
   title: "Caravans For Sale in Australia - Find Exclusive Deals",

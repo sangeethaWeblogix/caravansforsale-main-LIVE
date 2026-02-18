@@ -167,7 +167,7 @@ export const fetchListings = async (
   if (s) params.append("search", s);
 
   const url = `${API_BASE}/new_optimize_code?${params.toString()}`;
-  const res = await fetch(url, { cache: "no-store" });
+  const res = await fetch(url);
   console.log("[list API] GET", res.url);
 
   if (!res.ok) {

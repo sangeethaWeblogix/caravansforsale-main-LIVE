@@ -1316,7 +1316,7 @@
         })}
       </div>
     )}
-    <Suspense fallback={<div className="filter-placeholder">Loading filters...</div>}>
+    <Suspense >
                         <CaravanFilter
                           categories={categories}
                           makes={makes}
