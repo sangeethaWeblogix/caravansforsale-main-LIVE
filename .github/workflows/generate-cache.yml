@@ -87,7 +87,7 @@ jobs:
   # ==========================================
   generate-small-sitemaps:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     if: |
       (github.event_name == 'schedule') ||
       (github.event_name == 'workflow_dispatch' && 
@@ -138,7 +138,7 @@ jobs:
   # ==========================================
   generate-regions:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     if: |
       (github.event_name == 'schedule') ||
       (github.event_name == 'workflow_dispatch' && 
@@ -185,7 +185,7 @@ jobs:
   # ==========================================
   generate-category-state:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     if: |
       (github.event_name == 'schedule') ||
       (github.event_name == 'workflow_dispatch' && 
@@ -224,7 +224,7 @@ jobs:
   # ==========================================
   generate-makes:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     if: |
       (github.event_name == 'schedule') ||
       (github.event_name == 'workflow_dispatch' && 
@@ -271,7 +271,7 @@ jobs:
   # ==========================================
   generate-category-region:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     if: |
       (github.event_name == 'schedule') ||
       (github.event_name == 'workflow_dispatch' && 
@@ -318,7 +318,7 @@ jobs:
   # ==========================================
   update-routes-mapping:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     needs: [generate-priority, generate-small-sitemaps, generate-regions, generate-category-state, generate-makes, generate-category-region]
     if: |
       always() &&
