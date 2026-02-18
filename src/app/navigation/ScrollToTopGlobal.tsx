@@ -12,9 +12,9 @@ export default function ScrollToTopGlobal() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    if (window.scrollY > 0) {
-      window.scrollTo(0, 0);
-    }
+    history.scrollRestoration = "manual";
+    document.documentElement.style.scrollBehavior = "auto";
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
   }, [pathname, searchParams.toString()]);
 
   return null;
