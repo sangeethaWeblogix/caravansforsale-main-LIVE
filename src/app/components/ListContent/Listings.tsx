@@ -1329,8 +1329,7 @@
                           setIsFeaturedLoading={setIsFeaturedLoading}
                           setIsPremiumLoading={setIsPremiumLoading}
                           setIsMainLoading={setIsMainLoading}
-                          hideSSRLinks={true}
-                        />
+                         />
                       </Suspense>
                     </div>
                   </div>
