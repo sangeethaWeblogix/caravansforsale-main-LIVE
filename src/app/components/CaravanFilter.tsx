@@ -3104,8 +3104,8 @@ useEffect(() => {
                    }}
                  >
                    <option value="">Any</option>
-                   {atm.map((i,v) => (
-                     <option key={i} value={v}>
+                   {atm.map((v,index) => (
+                     <option key={index} value={v}>
                        {v} kg
                      </option>
                    ))}
@@ -3124,8 +3124,8 @@ useEffect(() => {
                    <option value="">Any</option>
                    {atm
                      .filter((v) => !tempAtmFrom || v > tempAtmFrom)
-                     .map((i,v) => (
-                       <option key={i} value={v}>
+                     .map((v,index) => (
+                       <option key={index} value={v}>
                          {v} kg
                        </option>
                      ))}
@@ -3352,8 +3352,8 @@ useEffect(() => {
                    }}
                  >
                    <option value="">Any</option>
-                   {price.map((i,v) => (
-                     <option key={i} value={v}>
+                   {price.map((v,index) => (
+                     <option key={index} value={v}>
                        ${v.toLocaleString()}
                      </option>
                    ))}
@@ -3372,8 +3372,8 @@ useEffect(() => {
                    <option value="">Any</option>
                    {price
                      .filter((v) => !tempPriceFrom || v > tempPriceFrom)
-                     .map((i,v) => (
-                       <option key={v} value={v}>
+                     .map((v,index) => (
+                       <option key={index} value={v}>
                          ${v.toLocaleString()}
                        </option>
                      ))}
@@ -3649,8 +3649,8 @@ useEffect(() => {
                    }}
                  >
                    <option value="">Any</option>
-                   {sleep.map((i,v) => (
-                     <option key={i} value={v}>
+                   {sleep.map((v,index) => (
+                     <option key={index} value={v}>
                        {v}
                      </option>
                    ))}
@@ -3669,8 +3669,8 @@ useEffect(() => {
                    <option value="">Any</option>
                    {sleep
                      .filter((v) => !tempSleepFrom || v > tempSleepFrom)
-                     .map((i,v) => (
-                       <option key={i} value={v}>
+                     .map((v,index) => (
+                       <option key={index} value={v}>
                          {v}
                        </option>
                      ))}
@@ -3799,8 +3799,8 @@ useEffect(() => {
                  >
                    <option value="">Any</option>
  
-                   {years.map((i,y) => (
-                     <option key={i} value={y}>
+                   {years.map((index,y) => (
+                     <option key={index} value={y}>
                        {y}
                      </option>
                    ))}
@@ -3934,8 +3934,8 @@ useEffect(() => {
                    }}
                  >
                    <option value="">Any</option>
-                   {length.map((i,v) => (
-                     <option key={i} value={v}>
+                   {length.map((v,index) => (
+                     <option key={index} value={v}>
                        {v} ft
                      </option>
                    ))}
@@ -3954,8 +3954,8 @@ useEffect(() => {
                    <option value="">Any</option>
                    {length
                      .filter((v) => !tempLengthFrom || v > tempLengthFrom)
-                     .map((i,v) => (
-                       <option key={i} value={v}>
+                     .map((v,index) => (
+                       <option key={index} value={v}>
                          {v} ft
                        </option>
                      ))}
@@ -4345,13 +4345,13 @@ useEffect(() => {
                    {/* 🔽 Styled suggestion list */}
                    {showSuggestions && locationSuggestions.length > 0 && (
                      <ul className="location-suggestions">
-                       {locationSuggestions.map((item, i) => {
+                       {locationSuggestions.map((item, index) => {
                          const isSelected =
                            selectedSuggestion?.short_address ===
                            item.short_address;
                          return (
                            <li
-                             key={i}
+                             key={index}
                              className={`suggestion-item ${
                                isSelected ? "selected" : ""
                              }`}
