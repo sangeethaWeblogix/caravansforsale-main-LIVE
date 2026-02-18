@@ -3104,8 +3104,8 @@ useEffect(() => {
                    }}
                  >
                    <option value="">Any</option>
-                   {atm.map((v) => (
-                     <option key={v} value={v}>
+                   {atm.map((i,v) => (
+                     <option key={i} value={v}>
                        {v} kg
                      </option>
                    ))}
@@ -3124,8 +3124,8 @@ useEffect(() => {
                    <option value="">Any</option>
                    {atm
                      .filter((v) => !tempAtmFrom || v > tempAtmFrom)
-                     .map((v) => (
-                       <option key={v} value={v}>
+                     .map((i,v) => (
+                       <option key={i} value={v}>
                          {v} kg
                        </option>
                      ))}
@@ -3352,8 +3352,8 @@ useEffect(() => {
                    }}
                  >
                    <option value="">Any</option>
-                   {price.map((v) => (
-                     <option key={v} value={v}>
+                   {price.map((i,v) => (
+                     <option key={i} value={v}>
                        ${v.toLocaleString()}
                      </option>
                    ))}
@@ -3372,7 +3372,7 @@ useEffect(() => {
                    <option value="">Any</option>
                    {price
                      .filter((v) => !tempPriceFrom || v > tempPriceFrom)
-                     .map((v) => (
+                     .map((i,v) => (
                        <option key={v} value={v}>
                          ${v.toLocaleString()}
                        </option>
@@ -3649,8 +3649,8 @@ useEffect(() => {
                    }}
                  >
                    <option value="">Any</option>
-                   {sleep.map((v) => (
-                     <option key={v} value={v}>
+                   {sleep.map((i,v) => (
+                     <option key={i} value={v}>
                        {v}
                      </option>
                    ))}
@@ -3669,8 +3669,8 @@ useEffect(() => {
                    <option value="">Any</option>
                    {sleep
                      .filter((v) => !tempSleepFrom || v > tempSleepFrom)
-                     .map((v) => (
-                       <option key={v} value={v}>
+                     .map((i,v) => (
+                       <option key={i} value={v}>
                          {v}
                        </option>
                      ))}
@@ -3799,8 +3799,8 @@ useEffect(() => {
                  >
                    <option value="">Any</option>
  
-                   {years.map((y) => (
-                     <option key={y} value={y}>
+                   {years.map((i,y) => (
+                     <option key={i} value={y}>
                        {y}
                      </option>
                    ))}
@@ -3934,8 +3934,8 @@ useEffect(() => {
                    }}
                  >
                    <option value="">Any</option>
-                   {length.map((v) => (
-                     <option key={v} value={v}>
+                   {length.map((i,v) => (
+                     <option key={i} value={v}>
                        {v} ft
                      </option>
                    ))}
@@ -3954,8 +3954,8 @@ useEffect(() => {
                    <option value="">Any</option>
                    {length
                      .filter((v) => !tempLengthFrom || v > tempLengthFrom)
-                     .map((v) => (
-                       <option key={v} value={v}>
+                     .map((i,v) => (
+                       <option key={i} value={v}>
                          {v} ft
                        </option>
                      ))}
