@@ -1479,11 +1479,9 @@ const formatLinkName = (name: string): string =>
       setFilters(updatedFilters);
       filtersInitialized.current = true;
       suburbClickedRef.current = true;
-
-      setTimeout(() => {
-        console.log("🚀 Calling updateAllFiltersAndURL (state_only)");
         updateAllFiltersAndURL(updatedFilters);
-      }, 100);
+
+      
 
       const shortAddr =
         selectedSuggestion?.short_address || AUS_ABBR[state] || state;
@@ -1528,11 +1526,9 @@ const formatLinkName = (name: string): string =>
       filtersInitialized.current = true;
       suburbClickedRef.current = true;
 
-      setTimeout(() => {
-        console.log("🚀 Calling updateAllFiltersAndURL (region_state)");
+   
         updateAllFiltersAndURL(updatedFilters);
-      }, 100);
-
+     
       const shortAddr =
         selectedSuggestion?.short_address ||
         `${regionRaw} ${AUS_ABBR[state] || state}`;
@@ -1994,7 +1990,8 @@ const formatLinkName = (name: string): string =>
     if (lastPushedURLRef.current !== finalURL) {
       lastPushedURLRef.current = finalURL;
       if (mountedRef.current) {
-        router.replace(finalURL);
+        window.history.replaceState(null, "", finalURL);
+        // router.replace(finalURL);
        }
     }
   };
@@ -2668,10 +2665,9 @@ const formatLinkName = (name: string): string =>
                     startTransition(() => {
                       updateAllFiltersAndURL(updatedFilters);
                       // keep Region open after router.push
-                      setTimeout(() => {
-                        setStateRegionOpen(true);
+                         setStateRegionOpen(true);
                         setStateSuburbOpen(false);
-                      }, 0);
+                     
                     });
                   }}
                 >
@@ -2741,11 +2737,9 @@ const formatLinkName = (name: string): string =>
                       updateAllFiltersAndURL(updatedFilters);
 
                       // 🧩 Reopen suburb panel *after* navigation completes
-                      setTimeout(() => {
-                        setStateRegionOpen(false);
+                         setStateRegionOpen(false);
                         setStateSuburbOpen(true);
-                      }, 400);
-                    }}
+                     }}
                   >
                     {region.name}
                   </div>
