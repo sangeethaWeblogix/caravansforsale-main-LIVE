@@ -97,9 +97,15 @@ const gtmServer = "https://gtm.caravansforsale.com.au";
 </noscript>
 
   
-          <UTMTracker />
-          <NavigationHistory />
-          <Navbar />
+         <Suspense fallback={null}>
+  <UTMTracker />
+</Suspense>
+<Suspense fallback={null}>
+  <NavigationHistory />
+</Suspense>
+<Suspense fallback={null}>
+  <Navbar />
+</Suspense>
                   <Suspense fallback={null}>
 
           <ScrollToTop />
@@ -115,8 +121,11 @@ const gtmServer = "https://gtm.caravansforsale.com.au";
         </ThemeRegistry>
                     </main>
           
+                  <Suspense fallback={null}>
 
           <Footer />
+                    </Suspense>
+
         </body>
       </html>
       
