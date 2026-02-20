@@ -661,8 +661,7 @@ const [tempRegionName, setTempRegionName] = useState<string | null>(null);
      }, [currentFilters.from_sleep, currentFilters.to_sleep]);
    
      useEffect(() => {
-       if (!isKeywordModalOpen) return;
-       setBaseLoading(true);
+        setBaseLoading(true);
        fetchHomeSearchList()
          .then((list) => {
            const items: KeywordItem[] = (
@@ -693,8 +692,7 @@ const [tempRegionName, setTempRegionName] = useState<string | null>(null);
          .finally(() => setBaseLoading(false));
      }, [isKeywordModalOpen]);
      useEffect(() => {
-       if (!isKeywordModalOpen) return;
-   
+    
        const q = modalKeyword.trim();
        if (q.length < 2) {
          setKeywordSuggestions([]);
@@ -730,7 +728,7 @@ const [tempRegionName, setTempRegionName] = useState<string | null>(null);
          ctrl.abort();
          clearTimeout(t);
        };
-     }, [isKeywordModalOpen, modalKeyword]);
+     }, [ modalKeyword]);
      // useEffect(() => {
      //   if (!isKeywordModalOpen) return;
    
@@ -829,38 +827,38 @@ const [tempRegionName, setTempRegionName] = useState<string | null>(null);
      });
    
      // Modal primary button -> always search=<plus joined>
-     const applyKeywordFromModal = () => {
-       const raw = modalKeyword.trim();
-       if (!raw) return;
-       triggerGlobalLoaders();
-   
-       const allItems = [...baseKeywords, ...keywordSuggestions];
-       const match = allItems.find(
-         (x) => x.label.toLowerCase() === raw.toLowerCase(),
-       );
-   
-       if (match?.url && match.url.trim().length > 0) {
-         router.push(match.url);
-         setIsKeywordModalOpen(false);
-         setModalKeyword("");
-         return;
-       }
-   
-       const next: Filters = {
-         ...currentFilters,
-         ...keepCategory(),
-         search: toQueryPlus(raw),
-         keyword: undefined,
-       };
-   
-       setIsKeywordModalOpen(false);
-       setModalKeyword("");
-       setFilters(next);
-       filtersInitialized.current = true;
-       startTransition(() => {
-         updateAllFiltersAndURL(next);
-       });
-     };
+    const applyKeywordFromModal = () => {
+  const raw = modalKeyword.trim();
+  if (!raw) return;
+  triggerGlobalLoaders();
+
+  const allItems = [...baseKeywords, ...keywordSuggestions];
+  const match = allItems.find(
+    (x) => x.label.toLowerCase() === raw.toLowerCase(),
+  );
+
+  if (match?.url && match.url.trim().length > 0) {
+    router.push(match.url);
+    setIsKeywordModalOpen(false);
+    setModalKeyword("");
+    return;
+  }
+
+  const next: Filters = {
+    ...currentFilters,
+    ...keepCategory(),
+    search: toQueryPlus(raw),
+    keyword: undefined,
+  };
+
+  setIsKeywordModalOpen(false);
+  setModalKeyword("");
+  setFilters(next);
+  filtersInitialized.current = true;
+  startTransition(() => {
+    updateAllFiltersAndURL(next);
+  });
+};
    
      const buildShortAddress = (
        suburb?: string | null,
@@ -1779,21 +1777,36 @@ const [tempRegionName, setTempRegionName] = useState<string | null>(null);
  
          // ✅ MASTER SEARCH HANDLER - commits ALL temp values at once
          // ============================================================
-  const handleMasterSearch = () => {
+   const handleMasterSearch = () => {
   triggerGlobalLoaders();
+// ✅ Keyword logic - old code போல
+  if (modalKeyword.trim()) {
+    const raw = modalKeyword.trim();
+    const allItems = [...baseKeywords, ...keywordSuggestions];
+    const match = allItems.find(
+      (x) => x.label.toLowerCase() === raw.toLowerCase(),
+    );
 
+    if (match?.url && match.url.trim().length > 0) {
+      router.push(match.url);
+      if (onClose) onClose();
+      return;
+    }
+  }
   let suburbFilters: Partial<Filters> = {};
 
   if (suburbClickedRef.current && selectedSuggestion) {
-    const uriParts = selectedSuggestion.uri.split("/");
-    const suburbSlug = uriParts[0] || "";
-    const regionSlug = uriParts[1] || "";
-    const stateSlug  = uriParts[2] || "";
-    let   pincode    = uriParts[3] || "";
+   const uriParts = selectedSuggestion.uri.split("/");
+  const stateSlug  = uriParts[0] || "";  // ← state first
+  const regionSlug = uriParts[1] || "";  // ← region second
+  const suburbSlug = uriParts[2] || "";  // ← suburb third
+  let   pincode    = uriParts[3] || "";  // ← pincode fourth
 
-    const suburb = suburbSlug.replace(/-suburb$/, "").replace(/-/g, " ").trim();
-    const region = regionSlug.replace(/-region$/, "").replace(/-/g, " ").trim();
-    const state  = stateSlug.replace(/-state$/, "").replace(/-/g, " ").trim();
+   
+  const state  = stateSlug.replace(/-state$/, "").replace(/-/g, " ").trim();
+  const region = regionSlug.replace(/-region$/, "").replace(/-/g, " ").trim();
+  const suburb = suburbSlug.replace(/-suburb$/, "").replace(/-/g, " ").trim();
+
 
     if (!/^\d{4}$/.test(pincode)) {
       const m = selectedSuggestion.address.match(/\b\d{4}\b/);
@@ -1830,11 +1843,15 @@ const [tempRegionName, setTempRegionName] = useState<string | null>(null);
     to_sleep: tempSleepTo ?? undefined,
     from_length: tempLengthFrom ?? undefined,
     to_length: tempLengthTo ?? undefined,
+        search: modalKeyword.trim() ? toQueryPlus(modalKeyword.trim()) : currentFilters.search,
+      acustom_fromyears: tempYear !== null ? tempYear : undefined,
+  acustom_toyears: tempYear !== null ? tempYear : undefined,
+
     page: 1,
   };
 
   console.log("🔑 updatedFilters:", {
-    state: updatedFilters.state,
+    sSSSState: updatedFilters.state,
     region: updatedFilters.region,
     suburb: updatedFilters.suburb,
     pincode: updatedFilters.pincode,
@@ -2215,7 +2232,34 @@ const [tempRegionName, setTempRegionName] = useState<string | null>(null);
            !suburbClickedRef.current,
        });
      }, [selectedSuburbName, selectedStateName, selectedRegionName, states]);
-     useEffect(() => {
+
+     // ✅ Modal open ஆகும்போது suburb/location input sync
+ // ✅ Modal open ஆகும்போது suburb இருந்தா மட்டும் location input sync
+ useEffect(() => {
+  if (currentFilters.suburb && currentFilters.state) {
+    const capitalizedSuburb = currentFilters.suburb
+      .replace(/\b\w/g, (c) => c.toUpperCase());
+
+    // ✅ case-insensitive AUS_ABBR lookup
+    const stateAbbr = Object.entries(AUS_ABBR).find(
+      ([key]) => key.toLowerCase() === currentFilters.state?.toLowerCase()
+    )?.[1] || currentFilters.state;
+
+    const shortAddr = [capitalizedSuburb, stateAbbr, currentFilters.pincode]
+      .filter(Boolean)
+      .join(" ");
+
+    setModalInput(shortAddr);
+    setLocationInput(shortAddr);
+  }
+}, [
+  currentFilters.suburb,
+  currentFilters.state,
+  currentFilters.pincode,
+]);
+
+ 
+      useEffect(() => {
        setVisibleCount(10);
      }, [selectedStateName]);
      categoryApiCalledRef.current = true;
@@ -2276,6 +2320,18 @@ setTempCondition(currentFilters.condition || null);
   setTempLengthTo(currentFilters.to_length ? Number(currentFilters.to_length) : null);
    setTempAtmFrom(currentFilters.minKg ? Number(currentFilters.minKg) : null);
   setTempAtmTo(currentFilters.maxKg ? Number(currentFilters.maxKg) : null);
+    setTempYear(
+  currentFilters.acustom_fromyears 
+    ? Number(currentFilters.acustom_fromyears) 
+    : null
+);
+const existingKeyword = currentFilters.search 
+    ? toHumanFromQuery(currentFilters.search) 
+    : currentFilters.keyword 
+    ? toHumanFromQuery(currentFilters.keyword) 
+    : "";
+  setModalKeyword(existingKeyword);
+
 }, [
   states, // ✅ states load ஆன பிறகு run ஆகணும்
   currentFilters.category,
@@ -2291,7 +2347,24 @@ setTempCondition(currentFilters.condition || null);
   currentFilters.to_sleep,
   currentFilters.from_length,
   currentFilters.to_length,
+    currentFilters.acustom_fromyears,
+  currentFilters.acustom_toyears,
+currentFilters.condition,
+ currentFilters.search,   // ✅ இது add பண்ணு
+  currentFilters.keyword,
  ]);
+
+ useEffect(() => {
+  const existingKeyword = currentFilters.search 
+    ? toHumanFromQuery(currentFilters.search) 
+    : currentFilters.keyword 
+    ? toHumanFromQuery(currentFilters.keyword) 
+    : "";
+  setModalKeyword(existingKeyword);
+}, [
+  currentFilters.search,
+  currentFilters.keyword,
+]);
      // ✅ categoryCounts load ஆன பிறகு run ஆகும்
     return (
 <>
@@ -2497,7 +2570,7 @@ setTempCondition(currentFilters.condition || null);
                                        className={`suggestion-item ${
                                          isSelected ? "selected" : ""
                                        }`}
-                                        onMouseDown={(e) => {
+   onMouseDown={(e) => {
   e.preventDefault();
 
   isUserTypingRef.current = false;
@@ -2508,17 +2581,15 @@ setTempCondition(currentFilters.condition || null);
   setShowSuggestions(false);
   suburbClickedRef.current = true;
 
-  // ✅ URI parse பண்ணி state/region auto-set பண்ணு
+  // ✅ Old code URI format: state/region/suburb/pincode
   const uriParts = item.uri.split("/");
-  const suburbSlug = uriParts[0] || "";
-  const regionSlug = uriParts[1] || "";
-  const stateSlug  = uriParts[2] || "";
+  const stateSlug  = uriParts[0] || "";  // ← state first
+  const regionSlug = uriParts[1] || "";  // ← region second  
+  const suburbSlug = uriParts[2] || "";  // ← suburb third
 
-  const suburbName = suburbSlug.replace(/-suburb$/, "").replace(/-/g, " ").trim();
-  const regionName = regionSlug.replace(/-region$/, "").replace(/-/g, " ").trim();
   const stateName  = stateSlug.replace(/-state$/, "").replace(/-/g, " ").trim();
+  const regionName = regionSlug.replace(/-region$/, "").replace(/-/g, " ").trim();
 
-  // ✅ states list-ல் match பண்ணி canonical name எடு
   const matchedState = states.find(
     (s) => s.name.toLowerCase() === stateName.toLowerCase()
   );
@@ -2527,7 +2598,6 @@ setTempCondition(currentFilters.condition || null);
   const validRegion = getValidRegionName(stateName, regionName, states);
   const canonicalRegionName = validRegion || regionName;
 
-  // ✅ State dropdown-ல் reflect ஆக temp values set பண்ணு
   setTempStateName(canonicalStateName || null);
   setTempRegionName(canonicalRegionName || null);
 }}
@@ -2544,9 +2614,12 @@ setTempCondition(currentFilters.condition || null);
                                  <div style={{ marginTop: 12 }}>
                                    <div style={{ fontWeight: 600, marginBottom: 8 }}>
                                      {selectedSuggestion.address}{" "}
+                                      {selectedSuggestion.uri.split("/").length >= 3 && (
                                      <span>+{radiusKms}km</span>
+                                     )}
                                    </div>
-           
+      {selectedSuggestion.uri.split("/").length >= 3 && (
+
                                    <div
                                      style={{
                                        display: "flex",
@@ -2576,6 +2649,7 @@ setTempCondition(currentFilters.condition || null);
                                        +{radiusKms}km
                                      </div>
                                    </div>
+                                   )}
                                  </div>
                                )}
                          </div>
@@ -2849,8 +2923,7 @@ setTempCondition(currentFilters.condition || null);
                          <div className="row">
                            <div className="col-lg-6">
                              <div className="location-item">
-                               <label>From</label>
-                                 <select
+                                  <select
                    className="cfs-select-input form-select"
                    value={tempYear ?? ""}
                    onChange={(e) => {
