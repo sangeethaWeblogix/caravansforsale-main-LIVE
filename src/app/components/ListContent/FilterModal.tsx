@@ -9,8 +9,7 @@
      useTransition,
      useMemo,
    } from "react";
-   import { BiChevronDown } from "react-icons/bi";
-   import { usePathname, useRouter } from "next/navigation";
+    import { usePathname, useRouter } from "next/navigation";
    // import { useSearchParams } from "next/navigation";
    import { fetchProductList } from "@/api/productList/api";
     import { buildSlugFromFilters } from "../slugBuilter";
@@ -352,19 +351,7 @@ const [tempRegionName, setTempRegionName] = useState<string | null>(null);
        return params;
      };
    
-     const fetchCounts = async (
-       groupBy: "category" | "make" | "model",
-       filters: Filters,
-     ) => {
-       const params = buildParamsFromFilters(filters);
-       params.set("group_by", groupBy);
-   
-       const url = `https://admin.caravansforsale.com.au/wp-json/cfs/v1/params_count?${params.toString()}`;
-   
-       const res = await fetch(url);
-       const json = await res.json();
-       return json.data || [];
-     };
+    
    // ✅ Smart merge: local filters win, but only if they have a real value
    // ✅ Smart merge: local filters win ONLY if they have a real value
    
@@ -529,71 +516,9 @@ const [tempRegionName, setTempRegionName] = useState<string | null>(null);
     filters.search,
     filters.keyword,
    ]);
-      const handleMakeSelect = (make) => {
-       // SAME make click again → unselect
-       if (selectedMakeTemp === make.slug) {
-         setSelectedMakeTemp(null);
-         setSearchMake("");
-         return;
-       }
+      
    
-       // New selection
-       setSelectedMakeTemp(make.slug);
-   
-       // old UI behaviour
-       triggerOptimizeApi("make", make.slug);
-     };
-  
-   
-     const handleMakeTempSelect = (make: {
-       slug: string;
-       name: string;
-     }) => {
-       setSelectedMakeTemp(make.slug);
-       setSearchMake(make.name);
-   
-       // ⚡ OLD UI behaviour preserved
-       triggerOptimizeApi("make", make.slug);
-     };
-   
-     const buildCountParams = (filters: Filters, excludeField?: string) => {
-       const params = new URLSearchParams();
-   
-       const filterMap: Record<string, string | number | undefined | null> = {
-         category: filters.category,
-         make: filters.make,
-         model: filters.model,
-         condition: filters.condition,
-          state: filters.state?.toLowerCase(),
-         region: filters.region,
-         suburb: filters.suburb,
-         pincode: filters.pincode,
-         from_price: filters.from_price,
-         to_price: filters.to_price,
-         minKg: filters.minKg,
-         maxKg: filters.maxKg,
-         acustom_fromyears: filters.acustom_fromyears,
-         acustom_toyears: filters.acustom_toyears,
-         from_length: filters.from_length,
-         to_length: filters.to_length,
-         from_sleep: filters.from_sleep,
-         to_sleep: filters.to_sleep,
-         search: filters.search,
-         keyword: filters.keyword,
-       };
-   
-       Object.entries(filterMap).forEach(([key, value]) => {
-         // Skip the field we're grouping by (so category count doesn't filter by category)
-         if (key === excludeField) return;
-   
-         if (value !== undefined && value !== null && value !== "") {
-           params.set(key, String(value));
-         }
-       });
-   
-       return params;
-     };
-   
+    
      const isSearching = searchText.trim().length > 0;
    
      const filteredMakes = useMemo(() => {
@@ -604,27 +529,6 @@ const [tempRegionName, setTempRegionName] = useState<string | null>(null);
        );
      }, [makeCounts, searchMake]);
    
-     // 🔥 dependency
-   
-     // const isNonEmpty = (s: string | undefined | null): s is string =>
-     //   typeof s === "string" && s.trim().length > 0;
-     // 🔽 put this inside the component, under updateAllFiltersAndURL
-     const commit = (next: Filters) => {
-       // Preserve existing filters that aren't being explicitly updated
-       const mergedFilters = {
-         ...currentFilters,
-         ...filters, // Include any pending local filter changes
-         ...next, // Apply the new changes
-       };
-   
-       setFilters(mergedFilters);
-       filtersInitialized.current = true;
-       lastSentFiltersRef.current = mergedFilters;
-   
-       startTransition(() => {
-         updateAllFiltersAndURL(mergedFilters);
-       });
-     };
    
      const triggerGlobalLoaders = () => {
        flushSync(() => {
@@ -731,59 +635,7 @@ const [tempRegionName, setTempRegionName] = useState<string | null>(null);
          clearTimeout(t);
        };
      }, [ modalKeyword]);
-     // useEffect(() => {
-     //   if (!isKeywordModalOpen) return;
-   
-     //   const q = modalKeyword.trim();
-     //   if (q.length < 2) {
-     //     setKeywordSuggestions([]);
-     //     setKeywordLoading(false);
-     //     return;
-     //   }
-   
-     //   const ctrl = new AbortController();
-     //   setKeywordLoading(true);
-   
-     //   const t = setTimeout(async () => {
-     //     try {
-     //       const list = await fetchKeywordSuggestions(q, ctrl.signal);
-     //       // const items: KeywordItem[] = list.map((x) => ({
-     //       //   label: (x.keyword || "").trim(),
-     //       //   url: (x.url || "").trim(),
-     //       // }));
-     //       const items: KeywordItem[] = Array.from(
-     //         new Map(
-     //           list.map((x, idx: number) => [
-     //             (x.keyword || "").toString().trim(),
-     //             {
-     //               id: x.id ?? idx, // fallback id
-     //               label: (x.keyword || "").toString().trim(), // ✅ always set label
-     //               url: (x.url || "").toString(),
-     //             },
-     //           ])
-     //         ).values()
-     //       );
-     //       setKeywordSuggestions(
-     //         sortKeywords(
-     //           Array.from(new Set(items.map((i) => i.label.toLowerCase()))).map(
-     //             (label) => items.find((i) => i.label.toLowerCase() === label)!
-     //           )
-     //         )
-     //       );
-     //     } catch (e: unknown) {
-     //       if (e instanceof DOMException && e.name === "AbortError") return;
-     //       console.warn("[keyword] fetch failed:", e);
-     //     } finally {
-     //       setKeywordLoading(false);
-     //     }
-     //   }, 300);
-   
-     //   return () => {
-     //     ctrl.abort();
-     //     clearTimeout(t);
-     //   };
-     // }, [isKeywordModalOpen, modalKeyword]);
-   
+    
      // ✅ Base list apply → search=<raw>
    
      // add near other useMemos
@@ -914,21 +766,7 @@ const [tempRegionName, setTempRegionName] = useState<string | null>(null);
        return out;
      };
    
-     // const clearKeyword = () => {
-     //   const next: Filters = {
-     //     ...currentFilters,
-     //     keyword: undefined,
-     //     search: undefined,
-     //   };
-   
-     //   setKeywordInput(""); // ← clear the field instantly
-     //   setFilters(next); // update local first (wins in effect)
-     //   filtersInitialized.current = true;
-     //   lastSentFiltersRef.current = next; // avoid re-send flicker
-     //   // onFilterChange(next); // if your parent needs it
-     //   updateAllFiltersAndURL(next);
-     // };
-     const didFetchRef = useRef(false);
+      const didFetchRef = useRef(false);
      useEffect(() => {
        if (didFetchRef.current) return;
        didFetchRef.current = true;
@@ -1008,23 +846,6 @@ const [tempRegionName, setTempRegionName] = useState<string | null>(null);
        );
      }, [makeCounts, searchText, isSearching]);
    
-     const handleATMChange = (newFrom: number | null, newTo: number | null) => {
-       triggerGlobalLoaders();
-       setAtmFrom(newFrom);
-       setAtmTo(newTo);
-   
-       const updatedFilters = buildUpdatedFilters(currentFilters, {
-         minKg: newFrom ?? undefined,
-         maxKg: newTo ?? undefined,
-       });
-   
-       setFilters(updatedFilters);
-       filtersInitialized.current = true;
-   
-       startTransition(() => {
-         updateAllFiltersAndURL(updatedFilters);
-       });
-     };
      // ✅ validate region only if it exists under the given state
      const getValidRegionName = (
        stateName: string | null | undefined,
@@ -1047,23 +868,7 @@ const [tempRegionName, setTempRegionName] = useState<string | null>(null);
      };
      // neww
    
-     // keywordSuggestions sort செய்யும் helper
-     // const sortKeywords = (items: KeywordItem[]): KeywordItem[] => {
-     //   return [...items].sort((a, b) => {
-     //     const al = a.label.toLowerCase();
-     //     const bl = b.label.toLowerCase();
-   
-     //     const isNumA = /^\d/.test(al);
-     //     const isNumB = /^\d/.test(bl);
-   
-     //     // numbers last
-     //     if (!isNumA && isNumB) return -1;
-     //     if (isNumA && !isNumB) return 1;
-   
-     //     return al.localeCompare(bl); // normal alphabetical
-     //   });
-     // };
-   
+    
      useEffect(() => {
        if (!filtersInitialized.current) {
          setAtmFrom(
@@ -1145,82 +950,10 @@ const [tempRegionName, setTempRegionName] = useState<string | null>(null);
      const [isPending, startTransition] = useTransition();
      console.log(isPending);
    
-     const accordionStyle = (highlight: boolean) => ({
-       display: "flex",
-       justifyContent: "space-between",
-       alignItems: "center",
-       borderRadius: "4px",
-       padding: "6px 12px",
-       cursor: "pointer",
-       background: highlight ? "#f7f7f7" : "transparent",
-     });
-     const accordionSubStyle = (highlight: boolean) => ({
-       display: "flex",
-       justifyContent: "space-between",
-       alignItems: "center",
-       borderRadius: "4px",
-       padding: "6px 30px",
-       cursor: "pointer",
-       background: highlight ? "#f7f7f7" : "transparent",
-     });
-     const accordionRegionStyle = (highlight: boolean) => ({
-       display: "flex",
-       justifyContent: "space-between",
-       alignItems: "center",
-       borderRadius: "4px",
-       padding: "6px 23px",
-       cursor: "pointer",
-       background: highlight ? "#f7f7f7" : "transparent",
-     });
-     const suburbStyle = (isSelected: boolean) => ({
-       marginLeft: "24px",
-       cursor: "pointer",
-       padding: "6px 12px",
-       borderRadius: "4px",
-       backgroundColor: isSelected ? "#e8f0fe" : "transparent",
-     });
-     const iconRowStyle = {
-       display: "flex",
-       alignItems: "center",
-       gap: "8px",
-     };
+     
    
-     const arrowStyle = (isOpen: boolean) => ({
-       transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
-       transition: "0.3s",
-       marginLeft: "8px",
-       cursor: "pointer",
-     });
-   
-     // const suburbStyle = (isSelected: boolean) => ({
-     //   marginLeft: "24px",
-     //   cursor: "pointer",
-     //   padding: "6px 12px",
-     //   borderRadius: "4px",
-     //   backgroundColor: isSelected ? "#e8f0fe" : "transparent",
-     // });
-     const resetMakeFilters = () => {
-       setSelectedMake(null);
-       setSelectedMakeName(null);
-       setSelectedModel(null);
-       setSelectedModelName(null);
-       setModel([]);
-       setModelOpen(false);
-   
-       const updatedFilters: Filters = {
-         ...currentFilters,
-         make: undefined,
-         model: undefined,
-       };
-   
-       filtersInitialized.current = true;
-       setFilters(updatedFilters);
-   
-       startTransition(() => {
-         updateAllFiltersAndURL(updatedFilters);
-       });
-       // Allow React to flush UI state
-     };
+     
+    
    
      useEffect(() => {
        if (currentFilters.keyword || currentFilters.search) return;
@@ -1272,34 +1005,7 @@ const [tempRegionName, setTempRegionName] = useState<string | null>(null);
        currentFilters.search,
      ]);
    
-     const resetStateFilters = () => {
-       // UI
-       setSelectedState(null);
-       setSelectedStateName(null);
-       setSelectedRegion("");
-       setSelectedRegionName(null);
-       setSelectedSuburbName(null);
-       setSelectedpincode(null);
-       setFilteredSuburbs([]);
-       setLocationInput("");
-   
-       // Filters
-       const updatedFilters: Filters = {
-         ...currentFilters,
-         state: undefined,
-         region: undefined,
-         suburb: undefined,
-         pincode: undefined,
-         location: null,
-       };
-   
-       setFilters(updatedFilters);
-       filtersInitialized.current = true;
-   
-       startTransition(() => {
-         updateAllFiltersAndURL(updatedFilters);
-       });
-     };
+     
      const regionManuallyClearedRef = useRef(false);
      const resetRegionFilters = () => {
        regionManuallyClearedRef.current = true; // 👈 IMPORTANT
@@ -1341,179 +1047,11 @@ const [tempRegionName, setTempRegionName] = useState<string | null>(null);
          .replace(/\b\w/g, (char) => char.toUpperCase());
      const suburbManuallyClearedRef = useRef(false);
    
-     const resetSuburbFilters = () => {
-       suburbManuallyClearedRef.current = true; // 👈 VERY IMPORTANT
+    
    
-       setSelectedSuburbName(null);
-       setSelectedpincode(null);
-       setLocationInput("");
+    
    
-       const updatedFilters: Filters = {
-         ...currentFilters,
-       };
-   
-       delete updatedFilters.suburb;
-       delete updatedFilters.pincode;
-   
-       setFilters(updatedFilters);
-       filtersInitialized.current = true;
-   
-       startTransition(() => {
-         updateAllFiltersAndURL(updatedFilters);
-       });
-     };
-   
-     const handleSearchClick = () => {
-       console.log("🔍 handleSearchClick called");
-       console.log("suburbClickedRef:", suburbClickedRef.current);
-       console.log("selectedSuggestion:", selectedSuggestion);
-       
-       // Remove resetSuburbFilters call here as it clears the selections
-       // resetSuburbFilters();
-       triggerGlobalLoaders();
-       if (!suburbClickedRef.current || !selectedSuggestion) {
-         console.log("❌ Early return - condition failed");
-         return;
-       }
-   
-       console.log("✅ Proceeding with search...");
-   
-       const parts = selectedSuggestion.uri.split("/");
-       const suburbSlug = parts[0] || "";
-       const regionSlug = parts[1] || "";
-       const stateSlug = parts[2] || "";
-       let pincode = parts[3] || "";
-   
-       const suburb = suburbSlug
-         .replace(/-suburb$/, "")
-         .replace(/-/g, " ")
-         .trim();
-       const region = regionSlug
-         .replace(/-region$/, "")
-         .replace(/-/g, " ")
-         .trim();
-       const state = stateSlug
-         .replace(/-state$/, "")
-         .replace(/-/g, " ")
-         .trim();
-   
-       if (!/^\d{4}$/.test(pincode)) {
-         const m = selectedSuggestion.address.match(/\b\d{4}\b/);
-         if (m) pincode = m[0];
-       }
-   
-       const validRegion = getValidRegionName(state, region, states);
-   
-       setSelectedState(stateSlug);
-       setSelectedStateName(AUS_ABBR[state] || state);
-       setSelectedRegionName(validRegion || null);
-       setSelectedSuburbName(suburb);
-       setSelectedpincode(pincode || null);
-   
-       // const radiusForFilters =
-       //   typeof radiusKms === "number" ? radiusKms : RADIUS_OPTIONS[0];
-   
-       const updatedFilters = buildUpdatedFilters(currentFilters, {
-         make: sanitizeMake(selectedMake || filters.make || currentFilters.make),
-         model: selectedModel || filters.model || currentFilters.model,
-         category: selectedCategory || filters.category || currentFilters.category,
-         suburb: suburb.toLowerCase(),
-         pincode: pincode || undefined,
-         state,
-         region: validRegion,
-         radius_kms: radiusKms,
-       });
-   
-       console.log("📦 updatedFilters:", updatedFilters);
-   
-       setFilters(updatedFilters);
-       filtersInitialized.current = true;
-   
-       suburbClickedRef.current = true;
-       setTimeout(() => {
-         console.log("🚀 Calling updateAllFiltersAndURL");
-         updateAllFiltersAndURL(updatedFilters);
-       }, 100);
-       const shortAddr =
-         selectedSuggestion?.short_address ||
-         buildShortAddress(suburb, state, pincode);
-       isUserTypingRef.current = false;
-       setLocationInput(shortAddr);
-   
-       setShowSuggestions(false);
-       setIsModalOpen(false);
-       setLocationSuggestions([]);
-       suburbClickedRef.current = false;
-     };
-   
-     // const resetFilters = () => {
-     //   const reset: Filters = {
-     //     make: undefined,
-     //     model: undefined,
-     //     category: undefined,
-     //     condition: undefined,
-     //     state: undefined,
-     //     region: undefined,
-     //     suburb: undefined,
-     //     pincode: undefined,
-     //     from_price: undefined,
-     //     to_price: undefined,
-     //     from_sleep: undefined,
-     //     to_sleep: undefined,
-     //     minKg: undefined,
-     //     maxKg: undefined,
-     //     sleeps: undefined,
-     //     from_length: undefined,
-     //     to_length: undefined,
-     //     acustom_fromyears: undefined,
-     //     acustom_toyears: undefined,
-     //     location: null,
-     //     radius_kms: RADIUS_OPTIONS[0], // ✅ 50 in payload
-     //   };
-   
-     //   // Clear UI states
-     //   setSelectedCategory(null);
-     //   setSelectedCategoryName(null);
-     //   setSelectedMake(null);
-     //   setSelectedMakeName(null);
-     //   setSelectedModel(null);
-     //   setSelectedModelName(null);
-     //   setSelectedConditionName(null);
-     //   setModel([]);
-     //   // setFilteredRegions([]);
-     //   setFilteredSuburbs([]);
-     //   setLocationInput("");
-     //   setSelectedState(null);
-     //   setSelectedStateName(null);
-     //   setSelectedRegionName(null);
-     //   setSelectedSuburbName(null);
-     //   setSelectedpincode(null);
-     //   setMinPrice(null);
-     //   setMaxPrice(null);
-     //   setAtmFrom(null);
-     //   setAtmTo(null);
-     //   setYearFrom(null);
-     //   setYearTo(null);
-     //   setSleepFrom(null);
-     //   setSleepTo(null);
-     //   setLengthFrom(null);
-     //   setLengthTo(null);
-     //   setRadiusKms(RADIUS_OPTIONS[0]);
-   
-     //   filtersInitialized.current = true;
-     //   makeInitializedRef.current = false;
-     //   regionSetAfterSuburbRef.current = false;
-     //   suburbClickedRef.current = false;
-     //   clearKeyword();
-     //   // ✅ Fix: Call parent state update
-     //   onFilterChange(reset);
-   
-     //   setFilters(reset);
-   
-     //   startTransition(() => {
-     //     updateAllFiltersAndURL({ ...reset });
-     //   });
-     // };
+ 
      const isKnownMake = (slug?: string | null) =>
        !!slug && makes.some((m) => m.slug === slug);
    
@@ -1948,19 +1486,7 @@ const [tempRegionName, setTempRegionName] = useState<string | null>(null);
          setSelectedModelName(modelMatch.name);
        }
      }, [model, selectedModel]);
-   
-     // useEffect(() => {
-     //   if (!selectedCategory && !selectedMake && !selectedStateName) {
-     //     console.warn("🚨 Important filters are null!", {
-     //       pathname,
-     //       filters,
-     //       selectedCategory,
-     //       selectedMake,
-     //       selectedStateName,
-     //     });
-     //   }
-     // }, [filters, selectedCategory, selectedMake, selectedStateName]);
-   
+    
      const isValidMakeSlug = (slug: string | null | undefined): slug is string =>
        !!slug && makes.some((m) => m.slug === slug);
      const isValidModelSlug = (slug: string | null | undefined): slug is string =>
@@ -2053,40 +1579,9 @@ const [tempRegionName, setTempRegionName] = useState<string | null>(null);
          updateAllFiltersAndURL(updatedFilters); // Trigger API + URL sync
        });
      };
-     // const buildAddress = (
-     //   suburb?: string | null,
-     //   state?: string | null,
-     //   pincode?: string | null
-     // ) => {
-     //   const abbr = state && AUS_ABBR[state] ? AUS_ABBR[state] : state || "";
-     //   return [suburb, abbr, pincode].filter(Boolean).join(" - ");
-     // };
+     
    
-     // const [mounted, setMounted] = useState(false);
-     // useEffect(() => setMounted(true), []);
    
-     const resetCategoryFilter = () => {
-       setSelectedCategory(null);
-       setSelectedCategoryName(null);
-   
-       const updatedFilters: Filters = {
-         ...currentFilters,
-         category: undefined,
-       };
-   
-       setFilters(updatedFilters);
-       filtersInitialized.current = true;
-   
-       startTransition(() => {
-         updateAllFiltersAndURL(updatedFilters); // Trigger API + URL sync
-       });
-     };
-   
-     const openOnly = (which: "state" | "region" | "suburb" | null) => {
-       setStateLocationOpen(which === "state");
-       setStateRegionOpen(which === "region");
-       setStateSuburbOpen(which === "suburb");
-     };
    
      useEffect(() => {
        // If we have a region selected but no suburb, keep suburb panel open
