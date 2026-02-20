@@ -1202,6 +1202,7 @@ export default function ListingsPage({
       {openModal && (
   <FilterModal
   onClose={() => setOpenModal(false)}
+   onClearAll={resetAllFilters} 
        categories={categories}
                           makes={makes}
                           models={models}

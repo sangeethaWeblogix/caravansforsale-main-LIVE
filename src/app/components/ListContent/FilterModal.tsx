@@ -107,6 +107,7 @@
    interface CaravanFilterProps {
        onClose?: () => void;
      categories: Category[];
+     onClearAll?: () => void;
      makes: Make[];
      models: Model[];
      setIsLoading?: (val: boolean) => void;
@@ -146,6 +147,7 @@
   
    const FilterModal: React.FC<CaravanFilterProps> = ({
   onClose,
+  onClearAll,
      onFilterChange,
  currentFilters = {}, 
       setIsFeaturedLoading,
@@ -2365,6 +2367,57 @@ currentFilters.condition,
   currentFilters.search,
   currentFilters.keyword,
 ]);
+
+
+const hasAnyTempFilter = useMemo(() => {
+  return !!(
+    tempCategory ||
+    selectedMakeTemp ||
+    tempModel ||
+    tempCondition ||
+    tempAtmFrom ||
+    tempAtmTo ||
+    tempPriceFrom ||
+    tempPriceTo ||
+    tempSleepFrom ||
+    tempSleepTo ||
+    tempYear ||
+    tempLengthFrom ||
+    tempLengthTo ||
+    tempStateName ||
+    tempRegionName ||
+    modalInput ||
+    modalKeyword ||
+    // ✅ currentFilters-லயும் check பண்ணு (already applied filters)
+    currentFilters.category ||
+    currentFilters.make ||
+    currentFilters.model ||
+    currentFilters.condition ||
+    currentFilters.state ||
+    currentFilters.from_price ||
+    currentFilters.to_price ||
+    currentFilters.minKg ||
+    currentFilters.maxKg ||
+    currentFilters.acustom_fromyears ||
+    currentFilters.from_length ||
+    currentFilters.to_length ||
+    currentFilters.from_sleep ||
+    currentFilters.to_sleep ||
+    currentFilters.search ||
+    currentFilters.keyword
+  );
+}, [
+  tempCategory, selectedMakeTemp, tempModel, tempCondition,
+  tempAtmFrom, tempAtmTo, tempPriceFrom, tempPriceTo,
+  tempSleepFrom, tempSleepTo, tempYear, tempLengthFrom, tempLengthTo,
+  tempStateName, tempRegionName, modalInput, modalKeyword,
+  currentFilters.category, currentFilters.make, currentFilters.model,
+  currentFilters.condition, currentFilters.state, currentFilters.from_price,
+  currentFilters.to_price, currentFilters.minKg, currentFilters.maxKg,
+  currentFilters.acustom_fromyears, currentFilters.from_length,
+  currentFilters.to_length, currentFilters.from_sleep, currentFilters.to_sleep,
+  currentFilters.search, currentFilters.keyword,
+]);
      // ✅ categoryCounts load ஆன பிறகு run ஆகும்
     return (
 <>
@@ -3107,8 +3160,49 @@ currentFilters.condition,
  
          {/* Footer */}
          <div className="filter-footer">
-           <button className="clear">Clear filters</button>
-           <button className="search"onClick={handleMasterSearch}>Search</button>
+           <button    
+
+            className="clear"
+    disabled={!hasAnyTempFilter}
+    style={{
+      opacity: hasAnyTempFilter ? 1 : 0.4,
+      cursor: hasAnyTempFilter ? "pointer" : "not-allowed",
+      color: hasAnyTempFilter ? "#ff6b00" : "#555",  // ✅ orange
+    }}
+
+     onClick={() => {
+      // ✅ Local temp states reset
+      setTempCategory(null);
+      setSelectedMakeTemp(null);
+      setTempModel(null);
+      setTempCondition(null);
+      setTempAtmFrom(null);
+      setTempAtmTo(null);
+      setTempPriceFrom(null);
+      setTempPriceTo(null);
+      setTempSleepFrom(null);
+      setTempSleepTo(null);
+      setTempYear(null);
+      setTempLengthFrom(null);
+      setTempLengthTo(null);
+      setTempStateName(null);
+      setTempRegionName(null);
+      setModalInput("");
+      setLocationInput("");
+      setSelectedSuggestion(null);
+      setModalKeyword("");
+      suburbClickedRef.current = false;
+
+      // ✅ Parent-ல் உள்ள resetAllFilters call பண்ணு
+      if (onClearAll) onClearAll();
+
+      // ✅ Modal close பண்ணு
+      if (onClose) onClose();
+    }}
+>Clear filters</button>
+           <button  className={`search ${hasAnyTempFilter ? "active" : "disabled"}`}
+    disabled={!hasAnyTempFilter}
+    onClick={handleMasterSearch}>Search</button>
          </div>
        </div>
      </div>
