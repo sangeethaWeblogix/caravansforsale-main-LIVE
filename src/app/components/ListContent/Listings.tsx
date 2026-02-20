@@ -24,6 +24,7 @@ import { buildSlugFromFilters } from "../slugBuilter";
 import { parseSlugToFilters } from "../../components/urlBuilder";
 import Head from "next/head";
 import "./loader.css";
+import FilterSlider from "./FilterSlider";
 // import Link from "next/link";
 
 /* --------- GLOBAL de-dupe across StrictMode remounts --------- */
@@ -176,7 +177,7 @@ export default function ListingsPage({
    const [scrollStarted, setScrollStarted] = useState(false);
    const [isNextLoading, setIsNextLoading] = useState(false);
    const [nextPageData, setNextPageData] = useState<ApiResponse | null>(null);
-   const [openModal, setOpenModal] = useState(null);
+   const [openModal, setOpenModal] = useState(false);
 
    const [clickid, setclickid] = useState<string | null>(null);
    const [isRestored, setIsRestored] = useState(false);
@@ -201,7 +202,28 @@ export default function ListingsPage({
      redirect("/404");
    }
    // ✅ If page is missing → default to 1
- 
+  const data = [
+    "NSW",
+    "QLD",
+    "SA",
+    "TAS",
+    "VIC",
+    "WA",
+    "ACT",
+    "NT",
+    "Off Road",
+    "Family",
+    "Touring",
+    "Luxury",
+    "Pop Top",
+    "Hybrid",
+    "New",
+    "Used",
+    "Under $50k",
+    "Under $100k",
+    "Under $150k",
+    "Under $200k",
+  ];
    const fromYears = searchParams.get("acustom_fromyears");
    const toYears = searchParams.get("acustom_toyears");
  
@@ -1103,7 +1125,7 @@ export default function ListingsPage({
         />
       </Head>
 <div>
-   {clientMounted && clientLinksData && (
+   {/* {clientMounted && clientLinksData && (
     <div className="cfs-links-section" id="client-links">
       {(["states", "categories", "makes", "conditions", "regions", "models"] as string[]).map((sectionKey) => {
         const items = clientLinksData[sectionKey];
@@ -1147,48 +1169,53 @@ export default function ListingsPage({
         );
       })}
     </div>
-  )}
+  )} */}
 </div>
-      <div className="search-bar">
-        <div className="container">
-          <div className="search_flex">
-            <div className="quick_search_top" onClick={() => setOpenModal('smartSearch')}>
-              <i className="bi bi-search search-icon"></i>
-              <input
-                type="text"
-                placeholder="Try 'caravans with bunks'"
-              />
-
-            </div>
-            <div className="filter_btn_top">
-              <button className="hidden-xs" onClick={() => setOpenModal('caravanType')}>
-                Caravan type
-              </button>
-
-              <button className="hidden-xs" onClick={() => setOpenModal('location')}>
-                Location
-              </button>
-
-              <button className="hidden-xs" onClick={() => setOpenModal('price')}>
-                Price
-              </button>
-
-              <button
-                className="filter-btn"
-                onClick={() => setOpenModal('all')}
-              >
-                <span><i className="bi bi-filter"></i></span> Filters
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+        
+              <div className="search-bar">
+                <div className="container">
+        
+                  <div className="row align-items-end">
+                    
+                    <div className="col-lg-12">
+                      <div className="filter_left">
+                        <div className="filter_btn_top">
+                          <button
+                            className="filter-btn"
+                         onClick={() => setOpenModal(true)}
+                          >
+                            <span><i className="bi bi-filter"></i></span> Filters
+                          </button>
+                        </div>
+                        <div>
+                          <FilterSlider label="Top Links" items={data} />
+                          
+                        </div>
+                        
+                      </div>
+                    </div>
+                    
+                  </div>
+                </div>
+              </div>
 
       {openModal && (
   <FilterModal
-    type={openModal}
-    onClose={() => setOpenModal(null)}
-  />
+  onClose={() => setOpenModal(false)}
+       categories={categories}
+                          makes={makes}
+                          models={models}
+                          states={stateOptions}
+                          onFilterChange={(partial) => {
+
+                            handleFilterChange(partial);
+                          }}
+                          currentFilters={filters}
+                          setIsFeaturedLoading={setIsFeaturedLoading}
+                          setIsPremiumLoading={setIsPremiumLoading}
+                          setIsMainLoading={setIsMainLoading}
+                         />
+  
   //  <CaravanFilter
   //                         categories={categories}
   //                         makes={makes}

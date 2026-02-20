@@ -1915,6 +1915,8 @@ useEffect(() => {
      }
    }, [model, filters]);
  
+
+   
    // ✅ Update handleModelSelect with valid check
    const handleModelSelect = (mod: Model) => {
      keepModelOpenRef.current = false;

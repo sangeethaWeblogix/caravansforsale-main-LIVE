@@ -1,4 +1,4 @@
-  
+ "use client";
       import { fetchLocations } from "@/api/location/api";
    import React, {
      useState,
@@ -105,6 +105,7 @@
    }
    
    interface CaravanFilterProps {
+       onClose?: () => void;
      categories: Category[];
      makes: Make[];
      models: Model[];
@@ -143,9 +144,8 @@
    
    type KeywordItem = { label: string; url?: string };
   
-   const CaravanFilter: React.FC<CaravanFilterProps> = ({
-    type, onClose ,
-        
+   const FilterModal: React.FC<CaravanFilterProps> = ({
+  onClose,
      onFilterChange,
  currentFilters = {}, 
       setIsFeaturedLoading,
@@ -162,7 +162,9 @@
      const [categories, setCategories] = useState<Option[]>([]);
      const [visibleCount, setVisibleCount] = useState(10);
      const [modelCounts, setModelCounts] = useState<ModelCount[]>([]);
-   
+   // இந்த state variables add பண்ணு (top-ல்)
+const [tempStateName, setTempStateName] = useState<string | null>(null);
+const [tempRegionName, setTempRegionName] = useState<string | null>(null);
      const [makes, setMakes] = useState<Make[]>([]);
      const [model, setModel] = useState<Model[]>([]);
      const [states, setStates] = useState<StateOption[]>([]);
@@ -207,7 +209,7 @@
    
      const [tempAtmFrom, setTempAtmFrom] = useState<number | null>(null);
      const [tempAtmTo, setTempAtmTo] = useState<number | null>(null);
-   
+   const [tempCondition, setTempCondition] = useState<string | null>(null);
      // top (other states kula)
      const [modalKeyword, setModalKeyword] = useState("");
      const [showAllModels, setShowAllModels] = useState(false);
@@ -524,7 +526,7 @@
     filters.to_sleep,
     filters.search,
     filters.keyword,
-  ]);
+   ]);
       const handleMakeSelect = (make) => {
        // SAME make click again → unselect
        if (selectedMakeTemp === make.slug) {
@@ -1777,175 +1779,94 @@
  
          // ✅ MASTER SEARCH HANDLER - commits ALL temp values at once
          // ============================================================
-         const handleMasterSearch = () => {
-           triggerGlobalLoaders();
-     
-           const updatedFilters: Filters = {
-             ...currentFilters,
-             category: tempCategory || undefined,
-             make: selectedMakeTemp || undefined,
-             model: tempModel || undefined,
-            //  condition: tempCondition || undefined,
-             minKg: tempAtmFrom ?? undefined,
-             maxKg: tempAtmTo ?? undefined,
-             from_price: tempPriceFrom ?? undefined,
-             to_price: tempPriceTo ?? undefined,
-             from_sleep: tempSleepFrom ?? undefined,
-             to_sleep: tempSleepTo ?? undefined,
-            //  acustom_fromyears: tempYearFrom ?? undefined,
-            //  acustom_toyears: tempYearTo ?? undefined,
-             from_length: tempLengthFrom ?? undefined,
-             to_length: tempLengthTo ?? undefined,
-             page: 1,
-           };
-     
-           // Location from suburb search
-           if (tempSuggestion && suburbClickedRef.current) {
-             const parts = tempSuggestion.uri.split("/");
-             const suburbSlug = parts[0] || "";
-             const regionSlug = parts[1] || "";
-             const stateSlug = parts[2] || "";
-             let pincode = parts[3] || "";
-     
-             const suburb = suburbSlug.replace(/-suburb$/, "").replace(/-/g, " ").trim();
-             const region = regionSlug.replace(/-region$/, "").replace(/-/g, " ").trim();
-             const state = stateSlug.replace(/-state$/, "").replace(/-/g, " ").trim();
-     
-             if (!/^\d{4}$/.test(pincode)) {
-               const m = tempSuggestion.address.match(/\b\d{4}\b/);
-               if (m) pincode = m[0];
-             }
-     
-             const validRegion = getValidRegionName(state, region, states);
-     
-             updatedFilters.state = state;
-             updatedFilters.region = validRegion;
-             updatedFilters.suburb = suburb.toLowerCase();
-             updatedFilters.pincode = pincode || undefined;
-             updatedFilters.radius_kms = tempRadiusKms;
-     
-             // Sync committed location UI state
-             setSelectedState(stateSlug);
-             setSelectedStateName(AUS_ABBR[state] || state);
-             setSelectedRegionName(validRegion || null);
-             setSelectedSuburbName(suburb);
-             setSelectedpincode(pincode || null);
-             setSelectedSuggestion(tempSuggestion);
-             setLocationInput(tempSuggestion.short_address || buildShortAddress(suburb, state, pincode));
-           } else if (tempStateName) {
-             // Location from state/region dropdown selection
-             updatedFilters.state = tempStateName;
-             updatedFilters.region = tempRegionName || undefined;
-             updatedFilters.suburb = tempSuburbName?.toLowerCase() || undefined;
-             updatedFilters.pincode = tempPincode || undefined;
-     
-             setSelectedStateName(tempStateName);
-             setSelectedRegionName(tempRegionName);
-             setSelectedSuburbName(tempSuburbName);
-             setSelectedpincode(tempPincode);
-           }
-     
-           // Sync all committed UI states
-           setSelectedCategory(tempCategory);
-           setSelectedCategoryName(categoryCounts.find((c) => c.slug === tempCategory)?.name || null);
-           setSelectedMake(selectedMakeTemp);
-           setSelectedMakeName(makeCounts.find((m) => m.slug === selectedMakeTemp)?.name || null);
-           setSelectedModel(tempModel);
-           setSelectedModelName(modelCounts.find((m) => m.slug === tempModel)?.slug || null);
-           setSelectedConditionName(tempCondition);
-           setAtmFrom(tempAtmFrom);
-           setAtmTo(tempAtmTo);
-           setMinPrice(tempPriceFrom);
-           setMaxPrice(tempPriceTo);
-           setSleepFrom(tempSleepFrom);
-           setSleepTo(tempSleepTo);
-           setYearFrom(tempYearFrom);
-           setYearTo(tempYearTo);
-           setLengthFrom(tempLengthFrom);
-           setLengthTo(tempLengthTo);
-           setRadiusKms(tempRadiusKms);
-     
-           // COMMIT
-           setFilters(updatedFilters);
-           filtersInitialized.current = true;
-     
-           startTransition(() => {
-             updateAllFiltersAndURL(updatedFilters);
-           });
-         };
-     
+  const handleMasterSearch = () => {
+  triggerGlobalLoaders();
+
+  let suburbFilters: Partial<Filters> = {};
+
+  if (suburbClickedRef.current && selectedSuggestion) {
+    const uriParts = selectedSuggestion.uri.split("/");
+    const suburbSlug = uriParts[0] || "";
+    const regionSlug = uriParts[1] || "";
+    const stateSlug  = uriParts[2] || "";
+    let   pincode    = uriParts[3] || "";
+
+    const suburb = suburbSlug.replace(/-suburb$/, "").replace(/-/g, " ").trim();
+    const region = regionSlug.replace(/-region$/, "").replace(/-/g, " ").trim();
+    const state  = stateSlug.replace(/-state$/, "").replace(/-/g, " ").trim();
+
+    if (!/^\d{4}$/.test(pincode)) {
+      const m = selectedSuggestion.address.match(/\b\d{4}\b/);
+      if (m) pincode = m[0];
+    }
+
+    const validRegion = getValidRegionName(state, region, states);
+
+    suburbFilters = {
+      suburb: suburb.toLowerCase(),
+      pincode: pincode || undefined,
+      state: state,
+      region: validRegion || region,  // ✅ fallback to raw region
+      radius_kms: radiusKms,
+    };
+  }
+
+  const updatedFilters: Filters = {
+    ...currentFilters,
+    category: tempCategory || undefined,
+    make: selectedMakeTemp || undefined,
+    model: tempModel || undefined,
+    condition: tempCondition || undefined,
+    state: suburbFilters.state || tempStateName?.toLowerCase() || undefined,
+    region: suburbFilters.region || tempRegionName || undefined,
+    suburb: suburbFilters.suburb || undefined,
+    pincode: suburbFilters.pincode || undefined,
+    radius_kms: suburbFilters.radius_kms || undefined,
+    minKg: tempAtmFrom ?? undefined,
+    maxKg: tempAtmTo ?? undefined,
+    from_price: tempPriceFrom ?? undefined,
+    to_price: tempPriceTo ?? undefined,
+    from_sleep: tempSleepFrom ?? undefined,
+    to_sleep: tempSleepTo ?? undefined,
+    from_length: tempLengthFrom ?? undefined,
+    to_length: tempLengthTo ?? undefined,
+    page: 1,
+  };
+
+  console.log("🔑 updatedFilters:", {
+    state: updatedFilters.state,
+    region: updatedFilters.region,
+    suburb: updatedFilters.suburb,
+    pincode: updatedFilters.pincode,
+  });
+
+  // ✅ regionManuallyClearedRef reset பண்ணு - இல்லன்னா hydrateLocation region drop பண்ணும்
+  regionManuallyClearedRef.current = false;
+  suburbManuallyClearedRef.current = false;
+
+  setFilters(updatedFilters);
+  filtersInitialized.current = true;
+  suburbClickedRef.current = false;
+
+  if (selectedSuggestion) {
+    setLocationInput(selectedSuggestion.short_address || "");
+    setModalInput(selectedSuggestion.short_address || "");
+  }
+
+  setShowSuggestions(false);
+  setLocationSuggestions([]);
+
+  // ✅ setTimeout - state updates flush ஆன பிறகு URL update
+  setTimeout(() => {
+    updateAllFiltersAndURL(updatedFilters);
+  }, 100);
+
+  if (onClose) onClose();
+};
          // ============================================================
          // ✅ CLEAR ALL FILTERS
          // ============================================================
-         const handleClearAll = () => {
-           triggerGlobalLoaders();
      
-           // Reset all temp states
-           setTempCategory(null);
-           setSelectedMakeTemp(null);
-           setTempModel(null);
-           setTempCondition(null);
-           setTempAtmFrom(null);
-           setTempAtmTo(null);
-           setTempPriceFrom(null);
-           setTempPriceTo(null);
-           setTempSleepFrom(null);
-           setTempSleepTo(null);
-           setTempYearFrom(null);
-           setTempYearTo(null);
-           setTempLengthFrom(null);
-           setTempLengthTo(null);
-           setTempStateName(null);
-           setTempRegionName(null);
-           setTempSuburbName(null);
-           setTempPincode(null);
-           setTempSuggestion(null);
-           setTempRadiusKms(RADIUS_OPTIONS[0]);
-           setSearchText("");
-           setModalInput("");
-     
-           // Reset committed states
-           setSelectedCategory(null);
-           setSelectedCategoryName(null);
-           setSelectedMake(null);
-           setSelectedMakeName(null);
-           setSelectedModel(null);
-           setSelectedModelName(null);
-           setSelectedConditionName(null);
-           setModel([]);
-           setFilteredSuburbs([]);
-           setLocationInput("");
-           setSelectedState(null);
-           setSelectedStateName(null);
-           setSelectedRegionName(null);
-           setSelectedSuburbName(null);
-           setSelectedpincode(null);
-           setSelectedSuggestion(null);
-           setMinPrice(null);
-           setMaxPrice(null);
-           setAtmFrom(null);
-           setAtmTo(null);
-           setYearFrom(null);
-           setYearTo(null);
-           setSleepFrom(null);
-           setSleepTo(null);
-           setLengthFrom(null);
-           setLengthTo(null);
-           setRadiusKms(RADIUS_OPTIONS[0]);
-     
-           const reset: Filters = {
-             page: 1,
-           };
-     
-           filtersInitialized.current = true;
-           makeInitializedRef.current = false;
-           suburbClickedRef.current = false;
-     
-           setFilters(reset);
-           startTransition(() => {
-             updateAllFiltersAndURL(reset);
-           });
-         };
      // --- helpers ---
      // List only the keys you actually care about for equality + URL
      const FILTER_KEYS: (keyof Filters)[] = [
@@ -2328,734 +2249,800 @@
          keepalive: true,
        }).catch(() => {});
      };
+// Modal open ஆகும்போது currentFilters sync பண்ணு
+ useEffect(() => {
+  // ✅ state case-insensitive match
+  const matchedState = states.find(
+    (s) => s.name.toLowerCase() === (currentFilters.state || "").toLowerCase()
+  );
+  setTempStateName(matchedState?.name || null);
+
+  // ✅ region match
+  const matchedRegion = matchedState?.regions?.find(
+    (r) => r.name.toLowerCase() === (currentFilters.region || "").toLowerCase()
+  );
+  setTempRegionName(matchedRegion?.name || null);
+setTempCondition(currentFilters.condition || null);
+  setTempCategory(currentFilters.category || null);
+  setSelectedMakeTemp(currentFilters.make || null);
+  setTempModel(currentFilters.model || null);
+  setTempAtmFrom(currentFilters.minKg ? Number(currentFilters.minKg) : null);
+  setTempAtmTo(currentFilters.maxKg ? Number(currentFilters.maxKg) : null);
+  setTempPriceFrom(currentFilters.from_price ? Number(currentFilters.from_price) : null);
+  setTempPriceTo(currentFilters.to_price ? Number(currentFilters.to_price) : null);
+  setTempSleepFrom(currentFilters.from_sleep ? Number(currentFilters.from_sleep) : null);
+  setTempSleepTo(currentFilters.to_sleep ? Number(currentFilters.to_sleep) : null);
+  setTempLengthFrom(currentFilters.from_length ? Number(currentFilters.from_length) : null);
+  setTempLengthTo(currentFilters.to_length ? Number(currentFilters.to_length) : null);
+   setTempAtmFrom(currentFilters.minKg ? Number(currentFilters.minKg) : null);
+  setTempAtmTo(currentFilters.maxKg ? Number(currentFilters.maxKg) : null);
+}, [
+  states, // ✅ states load ஆன பிறகு run ஆகணும்
+  currentFilters.category,
+  currentFilters.make,
+  currentFilters.model,
+  currentFilters.state,
+  currentFilters.region,
+  currentFilters.minKg,
+  currentFilters.maxKg,
+  currentFilters.from_price,
+  currentFilters.to_price,
+  currentFilters.from_sleep,
+  currentFilters.to_sleep,
+  currentFilters.from_length,
+  currentFilters.to_length,
+ ]);
+     // ✅ categoryCounts load ஆன பிறகு run ஆகும்
     return (
-      <>
-      
-            <div className="filter-item pt-0">
-              <h4>Caravan Type</h4>
-              <ul className="category-list">
-                                    {categoryCounts.map((cat) => (
- 
-                <li key={cat.slug} className="category-item">
-                  <label className="category-checkbox-row checkbox">
-                    <div className="d-flex align-items-center">
-                      <input
-                        className="checkbox__trigger visuallyhidden"
-                        type="checkbox"
-                         checked={tempCategory === cat.slug}
-                                onChange={() => {
-                                  setTempCategory(cat.slug);
-                                  triggerOptimizeApi(
-                                    "category",
-                                    cat.slug,
-                                  ); // ✅
-                                }}
-                      />
-                      <span className="checkbox__symbol">
-                        <svg
-                          aria-hidden="true"
-                          className="icon-checkbox"
-                          width="28px"
-                          height="28px"
-                          viewBox="0 0 28 28"
-                          version="1"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path d="M4 14l8 7L24 7"></path>
-                        </svg>
-                      </span>
-                      <span className="category-name"> {cat.name}</span>
-                    </div>
-                    <div>
-                      <span className="category-count"> ({cat.count})</span>
-                    </div>
-                  </label>
-                </li>
-               
-               
-               
-                 ))}
-                
-              </ul>
-            </div>
-            <div className="filter-item">
-              <h4>Location</h4>
-              <div className="location-list">
-                <div className="row">
-                  <div className="col-lg-6">
-                    <div className="location-item">
-                      <label>State</label>
-                        {states.map((state) => (
-                      <select className="cfs-select-input form-select">
-                        <option   onClick={() => {
-                                             triggerGlobalLoaders();
-                                             setSelectedState(state.value);
-                                             setSelectedStateName(state.name);
-                                             setSelectedRegionName(null);
-                                             setSelectedSuburbName(null);
-                         
-                                             // setFilteredRegions(state.regions || []);
-                                             setFilteredSuburbs([]);
-                         
-                                             // Open Region immediately
-                                             setStateLocationOpen(false);
-                                             setStateRegionOpen(true);
-                                             setStateSuburbOpen(false);
-                         
-                                             const updatedFilters: Filters = {
-                                               ...currentFilters,
-                                               state: state.name,
-                                               region: undefined,
-                                               suburb: undefined,
-                                               pincode: undefined,
-                                             };
-                                             setFilters(updatedFilters);
-                                             filtersInitialized.current = true;
-                         
-                                             startTransition(() => {
-                                               updateAllFiltersAndURL(updatedFilters);
-                                               // keep Region open after router.push
-                                               setTimeout(() => {
-                                                 setStateRegionOpen(true);
-                                                 setStateSuburbOpen(false);
-                                               }, 0);
-                                             });
-                                           }}>  {state.name}</option>
-                       
-                      </select>
-                         ))}
-                    </div>
-                  </div>
-                    {stateRegionOpen && !!selectedStateName && !selectedSuburbName && (
-                  <div className="col-lg-6">
-                    <div className="location-item">
-                      <label>Region</label>
-                      {/* <select className="cfs-select-input form-select" disabled> */}
-                         {(
-                  states.find(
-                    (s) =>
-                      s.name.toLowerCase().trim() ===
-                      selectedStateName?.toLowerCase().trim(),
-                  )?.regions || []
-                )
-                  .slice(0, visibleCount)
-                  .map((region, idx) => (
-                       <select className="cfs-select-input form-select">
-                        <option   onClick={() => {
-                                               triggerGlobalLoaders();
-                                               // ✅ Always trigger even if same region clicked
-                                               setSelectedRegionName((prev) => {
-                                                 if (prev === region.name) return region.name + " "; // force re-render
-                                                 return region.name;
-                                               });
-                         
-                                               setSelectedRegion(region.value);
-                                               const suburbs = region.suburbs || [];
-                                               setFilteredSuburbs(suburbs);
-                                               setSelectedSuburbName(null);
-                         
-                                               setStateRegionOpen(false);
-                                               setStateSuburbOpen(true);
-                         
-                                               const updatedFilters: Filters = {
-                                                 ...currentFilters,
-                                                 state: selectedStateName || currentFilters.state,
-                                                 region: region.name,
-                                                 suburb: undefined,
-                                                 pincode: undefined,
-                                               };
-                                               setFilters(updatedFilters);
-                                               filtersInitialized.current = true;
-                         
-                                               // 🚀 Update URL + Reopen suburb after navigation
-                                               updateAllFiltersAndURL(updatedFilters);
-                         
-                                               // 🧩 Reopen suburb panel *after* navigation completes
-                                               setTimeout(() => {
-                                                 setStateRegionOpen(false);
-                                                 setStateSuburbOpen(true);
-                                               }, 400);
-                                             }}>   {region.name}</option>
-                     
-                      </select>
-                        ))}
-                    </div>
-                  </div>
-                    )}
-                </div>
-              </div>
-            </div>
-            <div className="filter-item search-filter">
-              <h4>Suburb/Postcode</h4>
-              <div className="search-box">
-                <div className="secrch_icon">
-                  <i className="bi bi-search search-icon"></i>
-                    <input
-                                         type="text"
-                                         //placeholder="Suburb or postcode..."
-                                         className="filter-dropdown cfs-select-input"
-                                         autoComplete="off"
-                                          placeholder="Search suburb, postcode, state, region"
-                                         value={formatted(modalInput)} // 👈 modalInput} // 👈 use modalInput
-                                         onFocus={() => setShowSuggestions(true)}
-                                         onChange={(e) => {
-                                           // isUserTypingRef.current = true;
-                                           setShowSuggestions(true);
-                   
-                                           const rawValue = e.target.value;
-                                           // Format for filtering suggestions only
-                                           setModalInput(rawValue); // 👈 Store raw value
-                                           // const formattedValue = formatLocationInput(modalInput);
-                                           const formattedValue = /^\d+$/.test(rawValue)
-                                             ? rawValue // if user types only numbers, don’t format
-                                             : formatLocationInput(rawValue);
-                   
-                                           // Use the existing locationSuggestions state or fetch new data
-                                           // Since you're already fetching locations in useEffect, you can filter the existing suggestions
-                                           // OR trigger the same API call logic here
-                                           if (formattedValue.length < 1) {
-                                             setLocationSuggestions([]);
-                                             return;
-                                           }
-                   
-                                           // Use the same API call logic as in your useEffect
-                                           const suburb = formattedValue.split(" ")[0];
-                                           fetchLocations(suburb)
-                                             .then((data) => {
-                                               // Filter the API results based on the formatted input
-                                               const filtered = data.filter((item) => {
-                                                 const searchValue = formattedValue.toLowerCase();
-                                                 return (
-                                                   item.short_address
-                                                     .toLowerCase()
-                                                     .includes(searchValue) ||
-                                                   item.address
-                                                     .toLowerCase()
-                                                     .includes(searchValue) ||
-                                                   (item.postcode &&
-                                                     item.postcode
-                                                       .toString()
-                                                       .includes(searchValue)) // ✅ added
-                                                 );
-                                               });
-                                               setLocationSuggestions(filtered);
-                                             })
-                                             .catch(console.error);
-                                         }}
-                                         onBlur={() =>
-                                           setTimeout(() => setShowSuggestions(false), 150)
-                                         }
-                                       />
-                                          {showSuggestions && locationSuggestions.length > 0 && (
-                      <ul className="location-suggestions">
-                        {locationSuggestions.map((item, i) => {
-                          const isSelected =
-                            selectedSuggestion?.short_address ===
-                            item.short_address;
-                          return (
-                            <li
-                              key={i}
-                              className={`suggestion-item ${
-                                isSelected ? "selected" : ""
-                              }`}
-                              onMouseDown={(e) => {
-                                e.preventDefault();
-  
-                                // use onMouseDown to avoid blur race
-                                isUserTypingRef.current = false; // programmatic update
-                                setSelectedSuggestion(item);
-                                setLocationInput(item.short_address);
-                                setModalInput(item.short_address);
-                                setLocationSuggestions([]);
-                                setShowSuggestions(false); // ✅ keep closed
-                                suburbClickedRef.current = true;
-                              }}
-                            >
-                              {item.address}
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    )}
-  
-                    {selectedSuggestion &&
-                      modalInput === selectedSuggestion.short_address && (
-                        <div style={{ marginTop: 12 }}>
-                          <div style={{ fontWeight: 600, marginBottom: 8 }}>
-                            {selectedSuggestion.address}{" "}
-                            <span>+{radiusKms}km</span>
-                          </div>
-  
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 12,
-                            }}
-                          >
-                            <input
-                              type="range"
-                              min={0}
-                              max={RADIUS_OPTIONS.length - 1}
-                              step={1}
-                              value={Math.max(
-                                0,
-                                RADIUS_OPTIONS.indexOf(
-                                  radiusKms as (typeof RADIUS_OPTIONS)[number],
-                                ),
-                              )}
-                              onChange={(e) => {
-                                const idx = parseInt(e.target.value, 10);
-                                setRadiusKms(RADIUS_OPTIONS[idx]);
-                              }}
-                              style={{ flex: 1 }}
-                              aria-label="Search radius in kilometers"
-                            />
-                            <div style={{ minWidth: 60, textAlign: "right" }}>
-                              +{radiusKms}km
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                </div>
-              </div>
-            </div>
-            <div className="filter-item">
-              <h4>Make & Model</h4>
-              <div className="location-list">
-                <div className="row">
-                  <div className="col-lg-6">
-                    <div className="location-item">
-                      <label>Make</label>
-                         {displayedMakes.map((make) => (
-                      <select className="cfs-select-input form-select">
-                        <option   onChange={() => handleMakeSelect(make)}>  {make.slug} ({make.count})</option>
-                       
-                      </select>
-                           ))}
-                    </div>
-                  </div>
-                           {selectedMake && selectedMakeName && (
- 
-                  <div className="col-lg-6">
-                    <div className="location-item">
-                      <label>Model</label>
-                        {modelCounts.map((mod) => (
-                      <select className="cfs-select-input form-select"  >
-                        <option  onChange={() => {
-                                      setTempModel(mod.slug);
-                                      triggerOptimizeApi("model", mod.slug); // ✅
-                                    }}>   {mod.slug}     ({mod.count})</option>
-                        
-                      </select>
-                       ))}
-                    </div>
-                  </div>
-                           )}
-                </div>
-              </div>
-            </div>
-            <div className="filter-item">
-              <h4>ATM</h4>
-              <div className="location-list">
-                <div className="row">
-                  <div className="col-lg-6">
-                    <div className="location-item">
-                      <label>Min</label>
-                      <select
-                    className="cfs-select-input form-select"
-                    value={tempAtmFrom ?? ""}
-                    onChange={(e) => {
-                      const val = e.target.value ? Number(e.target.value) : null;
-                      setTempAtmFrom(val);
-  
-                      // 🔥 OPTIMIZE ONLY
-                      triggerOptimizeApi("atm", String(val));
-                    }}
-                  >
-                    <option value="">Any</option>
-                    {atm.map((v) => (
-                      <option key={v} value={v}>
-                        {v} kg
-                      </option>
-                    ))}
-                  </select>
-                    </div>
-                  </div>
-                  <div className="col-lg-6">
-                    <div className="location-item">
-                      <label>Max</label>
-                       <select
-                    className="cfs-select-input form-select"
-                    value={tempAtmTo ?? ""}
-                    onChange={(e) => {
-                      const val = e.target.value ? Number(e.target.value) : null;
-                      setTempAtmTo(val);
-                    }}
-                  >
-                    <option value="">Any</option>
-                    {atm
-                      .filter((v) => !tempAtmFrom || v > tempAtmFrom)
-                      .map((v) => (
-                        <option key={v} value={v}>
-                          {v} kg
-                        </option>
-                      ))}
-                  </select>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="filter-item">
-              <h4>Price</h4>
-              <div className="location-list">
-                <div className="row">
-                  <div className="col-lg-6">
-                    <div className="location-item">
-                      <label>Min</label>
-                       <select
-                    className="cfs-select-input form-select mb-3"
-                    value={tempPriceFrom ?? ""}
-                    onChange={(e) => {
-                      const val = e.target.value ? Number(e.target.value) : null;
-                      setTempPriceFrom(val);
-  
-                      // ✅ background optimize ONLY (no URL, no data)
-                      triggerOptimizeApi("keyword", String(val));
-                    }}
-                  >
-                    <option value="">Any</option>
-                    {price.map((v) => (
-                      <option key={v} value={v}>
-                        ${v.toLocaleString()}
-                      </option>
-                    ))}
-                  </select>
-                  
-                    </div>
-                  </div>
-                  <div className="col-lg-6">
-                    <div className="location-item">
-                      <label>Max</label>
-                      <select
-                    className="cfs-select-input form-select"
-                    value={tempPriceTo ?? ""}
-                    onChange={(e) => {
-                      const val = e.target.value ? Number(e.target.value) : null;
-                      setTempPriceTo(val);
-                    }}
-                  >
-                    <option value="">Any</option>
-                    {price
-                      .filter((v) => !tempPriceFrom || v > tempPriceFrom)
-                      .map((v) => (
-                        <option key={v} value={v}>
-                          ${v.toLocaleString()}
-                        </option>
-                      ))}
-                  </select>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="filter-item condition-field">
-              <h4>Condition</h4>
-              <ul className="category-list">
-                <li className="category-item">
-                  <label className="category-checkbox-row checkbox">
-                    <div className="d-flex align-items-center">
-                      <input
-                        className="checkbox__trigger visuallyhidden"
-                        type="checkbox"
-                      />
-                      <span className="checkbox__symbol">
-                        <svg
-                          aria-hidden="true"
-                          className="icon-checkbox"
-                          width="28px"
-                          height="28px"
-                          viewBox="0 0 28 28"
-                          version="1"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path d="M4 14l8 7L24 7"></path>
-                        </svg>
-                      </span>
-                      <span className="category-name">New</span>
-                    </div>
-                  </label>
-                </li>
-                <li className="category-item">
-                  <label className="category-checkbox-row checkbox">
-                    <div className="d-flex align-items-center">
-                      <input
-                        className="checkbox__trigger visuallyhidden"
-                        type="checkbox"
-                      />
-                      <span className="checkbox__symbol">
-                        <svg
-                          aria-hidden="true"
-                          className="icon-checkbox"
-                          width="28px"
-                          height="28px"
-                          viewBox="0 0 28 28"
-                          version="1"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path d="M4 14l8 7L24 7"></path>
-                        </svg>
-                      </span>
-                      <span className="category-name">Used</span>
-                    </div>
-                  </label>
-                </li>
-              </ul>
-            </div>
-            <div className="filter-item">
-              <h4>Sleep</h4>
-              <div className="location-list">
-                <div className="row">
-                  <div className="col-lg-6">
-                    <div className="location-item">
-                      <label>Min</label>
-                   <select
-                    className="cfs-select-input form-select mb-3"
-                    value={tempSleepFrom ?? ""}
-                    onChange={(e) => {
-                      const val = e.target.value ? Number(e.target.value) : null;
-                      setTempSleepFrom(val);
-                      // 🔥 background only (no commit)
-                    }}
-                  >
-                    <option value="">Any</option>
-                    {sleep.map((v) => (
-                      <option key={v} value={v}>
-                        {v}
-                      </option>
-                    ))}
-                  </select>
-                    </div>
-                  </div>
-                  <div className="col-lg-6">
-                    <div className="location-item">
-                      <label>Max</label>
-                        <select
-                    className="cfs-select-input form-select"
-                    value={tempSleepTo ?? ""}
-                    onChange={(e) => {
-                      const val = e.target.value ? Number(e.target.value) : null;
-                      setTempSleepTo(val);
-                    }}
-                  >
-                    <option value="">Any</option>
-                    {sleep
-                      .filter((v) => !tempSleepFrom || v > tempSleepFrom)
-                      .map((v) => (
-                        <option key={v} value={v}>
-                          {v}
-                        </option>
-                      ))}
-                  </select>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="filter-item">
-              <h4>Year</h4>
-              <div className="location-list">
-                <div className="row">
-                  <div className="col-lg-6">
-                    <div className="location-item">
-                      <label>From</label>
-                      <select className="cfs-select-input form-select">
-                        {years.map((y) => (
-                      <option key={y} value={y}>
-                        {y}
-                      </option>
-                    ))}
-                      </select>
-                    </div>
-                  </div>
-                  <div className="col-lg-6">
-                    <div className="location-item">
-                      <label>To</label>
-                      <select className="cfs-select-input form-select">
-                         {years.map((y) => (
-                      <option key={y} value={y}>
-                        {y}
-                      </option>
-                    ))}
-                      </select>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="filter-item">
-              <h4>Length</h4>
-              <div className="location-list">
-                <div className="row">
-                  <div className="col-lg-6">
-                    <div className="location-item">
-                      <label>Min</label>
-                          <select
-                    className="cfs-select-input form-select mb-3"
-                    value={tempLengthFrom ?? ""}
-                    onChange={(e) => {
-                      const val = e.target.value ? Number(e.target.value) : null;
-                      setTempLengthFrom(val);
-                    }}
-                  >
-                    <option value="">Any</option>
-                    {length.map((v) => (
-                      <option key={v} value={v}>
-                        {v} ft
-                      </option>
-                    ))}
-                  </select>
-                    </div>
-                  </div>
-                  <div className="col-lg-6">
-                    <div className="location-item">
-                      <label>Max</label>
-                      <select
-                    className="cfs-select-input form-select"
-                    value={tempLengthTo ?? ""}
-                    onChange={(e) => {
-                      const val = e.target.value ? Number(e.target.value) : null;
-                      setTempLengthTo(val);
-                    }}
-                  >
-                    <option value="">Any</option>
-                    {length
-                      .filter((v) => !tempLengthFrom || v > tempLengthFrom)
-                      .map((v) => (
-                        <option key={v} value={v}>
-                          {v} ft
-                        </option>
-                      ))}
-                  </select>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-              <div className="filter-item search-filter">
-             <h4>Search by Keyword</h4>
-             <div className="search-box">
-               <div className="secrch_icon">
-                 <i className="bi bi-search search-icon"></i>
-                   <input
-                        type="text"
-                        placeholder="Try caravans with bunks" 
-                        className="filter-dropdown cfs-select-input"
-                        autoComplete="off"
-                        value={modalKeyword}
-                        onFocus={() => setShowSuggestions(true)} // ✅ only show when focusing
-                        onChange={(e) => {
-                          pickedSourceRef.current = "typed";
-                          setModalKeyword(e.target.value);
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") applyKeywordFromModal();
-                        }}
-                      />
-               </div>
-                {showSuggestions && (
-                      <>
-                        {/* Show base list when field is empty (<2 chars) */}
-                        {modalKeyword.trim().length < 2 &&
-                          (baseLoading ? (
-                            <div style={{ marginTop: 8 }}>Loading…</div>
-                          ) : (
-                            <div style={{ marginTop: 8 }}>
-                              {/* 🏷 Title for base list */}
-                              <h6 className="cfs-suggestion-title">
-                                Popular searches
-                              </h6>
-                              <ul
-                                className="location-suggestions"
-                                style={{ marginTop: 8 }}
-                              >
-                                {baseKeywords.length ? (
-                                  baseKeywords.map((k, i) => (
-                                    <li
-                                      key={`${k.label}-${i}`}
-                                      className="suggestion-item lowercase"
-                                      onMouseDown={(e) => {
-                                        e.preventDefault();
-                                        pickedSourceRef.current = "base";
-                                        setModalKeyword(k.label);
-                                      }}
-                                    >
-                                      {k.label}
-                                    </li>
-                                  ))
-                                ) : (
-                                  <li className="suggestion-item">
-                                    No popular items
-                                  </li>
-                                )}
-                              </ul>
-                            </div>
-                          ))}
-  
-                        {/* Show typed suggestions when >=2 chars */}
-                        {modalKeyword.trim().length >= 2 &&
-                          (keywordLoading ? (
-                            <div style={{ marginTop: 8 }}>Loading…</div>
-                          ) : (
-                            <div style={{ marginTop: 8 }}>
-                              {/* 🏷 Title for typed suggestions */}
-                              <h6 className="cfs-suggestion-title">
-                                Suggested searches
-                              </h6>
-                              <ul
-                                className="location-suggestions"
-                                style={{ marginTop: 8 }}
-                              >
-                                {keywordSuggestions.length ? (
-                                  keywordSuggestions.map((k, i) => (
-                                    <li
-                                      key={`${k.label}-${i}`}
-                                      className="suggestion-item"
-                                      onMouseDown={() => {
-                                        pickedSourceRef.current = "typed";
-                                        setModalKeyword(k.label);
-                                        setKeywordSuggestions([]);
-                                        setBaseKeywords([]);
-                                        setShowSuggestions(false);
-  
-                                        // ✅ Prevent re-trigger of fetch
-                                        setKeywordLoading(false);
-                                      }}
-                                    >
-                                      {k.label}
-                                    </li>
-                                  ))
-                                ) : (
-                                  <li className="suggestion-item">No matches</li>
-                                )}
-                              </ul>
-                            </div>
-                          ))}
-                      </>
-                    )}
-             </div>
+<>
 
- 
-           </div>
-            <div className="filter-footer">
-            <button className="clear">Clear filters</button>
-            <button className="search" onClick={handleMasterSearch}>Search</button>
-          </div>
 
+
+     <div className="filter-overlay">
+       <div className="filter-modal">
+         <div className="filter-header">
+           <h3>
+                        Filters
+           </h3>
+           <button className="filter-close" onClick={onClose}>
+             <svg
+               xmlns="http://www.w3.org/2000/svg"
+               x="0px"
+               y="0px"
+               width="100"
+               height="100"
+               viewBox="0 0 64 64"
+             >
+               <path d="M 16 14 C 15.488 14 14.976938 14.194937 14.585938 14.585938 C 13.804937 15.366937 13.804937 16.633063 14.585938 17.414062 L 29.171875 32 L 14.585938 46.585938 C 13.804938 47.366938 13.804937 48.633063 14.585938 49.414062 C 14.976937 49.805062 15.488 50 16 50 C 16.512 50 17.023062 49.805062 17.414062 49.414062 L 32 34.828125 L 46.585938 49.414062 C 47.366938 50.195063 48.633063 50.195062 49.414062 49.414062 C 50.195063 48.633062 50.195062 47.366937 49.414062 46.585938 L 34.828125 32 L 49.414062 17.414062 C 50.195063 16.633063 50.195062 15.366938 49.414062 14.585938 C 48.633062 13.804938 47.366937 13.804938 46.585938 14.585938 L 32 29.171875 L 17.414062 14.585938 C 17.023062 14.194938 16.512 14 16 14 z"></path>
+             </svg>
+           </button>
+         </div>
+ 
+         {/* Filters */}
+         <div className="filter-body">
+           
+          <>
+               
+                     <div className="filter-item pt-0">
+                       <h4>Caravan Type</h4>
+                       <ul className="category-list">
+                                             {categoryCounts.map((cat) => (
           
-      </>
-    );
-  }
-   export default CaravanFilter;
-  
+                         <li key={cat.slug} className="category-item">
+                           <label className="category-checkbox-row checkbox">
+                             <div className="d-flex align-items-center">
+                               <input
+                                 className="checkbox__trigger visuallyhidden"
+                                 type="checkbox"
+                                  checked={tempCategory === cat.slug}
+                                         onChange={() => {
+                                           setTempCategory(cat.slug);
+                                           triggerOptimizeApi(
+                                             "category",
+                                             cat.slug,
+                                           ); // ✅
+                                         }}
+                               />
+                               <span className="checkbox__symbol">
+                                 <svg
+                                   aria-hidden="true"
+                                   className="icon-checkbox"
+                                   width="28px"
+                                   height="28px"
+                                   viewBox="0 0 28 28"
+                                   version="1"
+                                   xmlns="http://www.w3.org/2000/svg"
+                                 >
+                                   <path d="M4 14l8 7L24 7"></path>
+                                 </svg>
+                               </span>
+                               <span className="category-name"> {cat.name}</span>
+                             </div>
+                             <div>
+                               <span className="category-count"> ({cat.count})</span>
+                             </div>
+                           </label>
+                         </li>
+                        
+                        
+                        
+                          ))}
+                         
+                       </ul>
+                     </div>
+                     <div className="filter-item">
+                       <h4>Location</h4>
+                       <div className="location-list">
+                         <div className="row">
+                           <div className="col-lg-6">
+                             <div className="location-item">
+                               <label>State</label>
+                               <select 
+  className="cfs-select-input form-select"
+  value={tempStateName || ""}
+  onChange={(e) => {
+    const stateName = e.target.value;
+    // ✅ temp-ல மட்டும் store பண்ணு, API call இல்ல
+    setTempStateName(stateName || null);
+    setTempRegionName(null); // region reset
+  }}
+>
+  <option value="">Any</option>
+  {states.map((state, index) => (
+    <option key={index} value={state.name}>
+      {state.name}
+    </option>
+  ))}
+</select>
+                             </div>
+                           </div>
+{!!tempStateName && (
+  <div className="col-lg-6">
+    <div className="location-item">
+      <label>Region</label>
+      <select
+        className="cfs-select-input form-select"
+       value={tempRegionName || ""}
+        onChange={(e) => {
+          // ✅ temp-ல மட்டும் store பண்ணு, API call இல்ல
+          setTempRegionName(e.target.value || null);
+        }}
+      >
+        <option value="">Any</option>
+        {(states.find(
+          (s) => s.name.toLowerCase() === tempStateName?.toLowerCase()
+        )?.regions || []).map((region, idx) => (
+          <option key={idx} value={region.name}>
+            {region.name}
+          </option>
+        ))}
+      </select>
+    </div>
+  </div>
+
+)}
+                         </div>
+                       </div>
+                     </div>
+                     <div className="filter-item search-filter">
+                       <h4>Suburb/Postcode</h4>
+                       <div className="search-box">
+                         <div className="secrch_icon">
+                           <i className="bi bi-search search-icon"></i>
+                             <input
+                                                  type="text"
+                                                  //placeholder="Suburb or postcode..."
+                                                  className="filter-dropdown cfs-select-input"
+                                                  autoComplete="off"
+                                                   placeholder="Search suburb, postcode, state, region"
+                                                  value={formatted(modalInput)} // 👈 modalInput} // 👈 use modalInput
+                                                  onFocus={() => setShowSuggestions(true)}
+                                                  onChange={(e) => {
+                                                    // isUserTypingRef.current = true;
+                                                    setShowSuggestions(true);
+                            
+                                                    const rawValue = e.target.value;
+                                                    // Format for filtering suggestions only
+                                                    setModalInput(rawValue); // 👈 Store raw value
+                                                    // const formattedValue = formatLocationInput(modalInput);
+                                                    const formattedValue = /^\d+$/.test(rawValue)
+                                                      ? rawValue // if user types only numbers, don’t format
+                                                      : formatLocationInput(rawValue);
+                            
+                                                    // Use the existing locationSuggestions state or fetch new data
+                                                    // Since you're already fetching locations in useEffect, you can filter the existing suggestions
+                                                    // OR trigger the same API call logic here
+                                                    if (formattedValue.length < 1) {
+                                                      setLocationSuggestions([]);
+                                                      return;
+                                                    }
+                            
+                                                    // Use the same API call logic as in your useEffect
+                                                    const suburb = formattedValue.split(" ")[0];
+                                                    fetchLocations(suburb)
+                                                      .then((data) => {
+                                                        // Filter the API results based on the formatted input
+                                                        const filtered = data.filter((item) => {
+                                                          const searchValue = formattedValue.toLowerCase();
+                                                          return (
+                                                            item.short_address
+                                                              .toLowerCase()
+                                                              .includes(searchValue) ||
+                                                            item.address
+                                                              .toLowerCase()
+                                                              .includes(searchValue) ||
+                                                            (item.postcode &&
+                                                              item.postcode
+                                                                .toString()
+                                                                .includes(searchValue)) // ✅ added
+                                                          );
+                                                        });
+                                                        setLocationSuggestions(filtered);
+                                                      })
+                                                      .catch(console.error);
+                                                  }}
+                                                  onBlur={() =>
+                                                    setTimeout(() => setShowSuggestions(false), 150)
+                                                  }
+                                                />
+                                                   {showSuggestions && locationSuggestions.length > 0 && (
+                               <ul className="location-suggestions">
+                                 {locationSuggestions.map((item, i) => {
+                                   const isSelected =
+                                     selectedSuggestion?.short_address ===
+                                     item.short_address;
+                                   return (
+                                     <li
+                                       key={i}
+                                       className={`suggestion-item ${
+                                         isSelected ? "selected" : ""
+                                       }`}
+                                        onMouseDown={(e) => {
+  e.preventDefault();
+
+  isUserTypingRef.current = false;
+  setSelectedSuggestion(item);
+  setLocationInput(item.short_address);
+  setModalInput(item.short_address);
+  setLocationSuggestions([]);
+  setShowSuggestions(false);
+  suburbClickedRef.current = true;
+
+  // ✅ URI parse பண்ணி state/region auto-set பண்ணு
+  const uriParts = item.uri.split("/");
+  const suburbSlug = uriParts[0] || "";
+  const regionSlug = uriParts[1] || "";
+  const stateSlug  = uriParts[2] || "";
+
+  const suburbName = suburbSlug.replace(/-suburb$/, "").replace(/-/g, " ").trim();
+  const regionName = regionSlug.replace(/-region$/, "").replace(/-/g, " ").trim();
+  const stateName  = stateSlug.replace(/-state$/, "").replace(/-/g, " ").trim();
+
+  // ✅ states list-ல் match பண்ணி canonical name எடு
+  const matchedState = states.find(
+    (s) => s.name.toLowerCase() === stateName.toLowerCase()
+  );
+  const canonicalStateName = matchedState?.name || stateName;
+
+  const validRegion = getValidRegionName(stateName, regionName, states);
+  const canonicalRegionName = validRegion || regionName;
+
+  // ✅ State dropdown-ல் reflect ஆக temp values set பண்ணு
+  setTempStateName(canonicalStateName || null);
+  setTempRegionName(canonicalRegionName || null);
+}}
+                                     >
+                                       {item.address}
+                                     </li>
+                                   );
+                                 })}
+                               </ul>
+                             )}
+           
+                             {selectedSuggestion &&
+                               modalInput === selectedSuggestion.short_address && (
+                                 <div style={{ marginTop: 12 }}>
+                                   <div style={{ fontWeight: 600, marginBottom: 8 }}>
+                                     {selectedSuggestion.address}{" "}
+                                     <span>+{radiusKms}km</span>
+                                   </div>
+           
+                                   <div
+                                     style={{
+                                       display: "flex",
+                                       alignItems: "center",
+                                       gap: 12,
+                                     }}
+                                   >
+                                     <input
+                                       type="range"
+                                       min={0}
+                                       max={RADIUS_OPTIONS.length - 1}
+                                       step={1}
+                                       value={Math.max(
+                                         0,
+                                         RADIUS_OPTIONS.indexOf(
+                                           radiusKms as (typeof RADIUS_OPTIONS)[number],
+                                         ),
+                                       )}
+                                       onChange={(e) => {
+                                         const idx = parseInt(e.target.value, 10);
+                                         setRadiusKms(RADIUS_OPTIONS[idx]);
+                                       }}
+                                       style={{ flex: 1 }}
+                                       aria-label="Search radius in kilometers"
+                                     />
+                                     <div style={{ minWidth: 60, textAlign: "right" }}>
+                                       +{radiusKms}km
+                                     </div>
+                                   </div>
+                                 </div>
+                               )}
+                         </div>
+                       </div>
+                     </div>
+                     <div className="filter-item">
+                       <h4>Make & Model</h4>
+                       <div className="location-list">
+                         <div className="row">
+                           <div className="col-lg-6">
+                             <div className="location-item">
+                               <label>Make</label>
+                               <select
+  className="cfs-select-input form-select"
+  value={selectedMakeTemp || ""}
+  onChange={(e) => {
+    const slug = e.target.value || null;
+    setSelectedMakeTemp(slug);
+    if (slug) triggerOptimizeApi("make", slug);
+  }}
+>
+  <option value="">Any</option>
+  {displayedMakes.map((make, index) => (
+    <option key={index} value={make.slug}>
+      {make.name} ({make.count})
+    </option>
+  ))}
+</select>
+                             </div>
+                           </div>
+ {selectedMakeTemp && (
+  <div className="col-lg-6">
+    <div className="location-item">
+      <label>Model</label>
+      <select
+        className="cfs-select-input form-select"
+        value={tempModel || ""}
+        onChange={(e) => {
+          const slug = e.target.value || null;
+          setTempModel(slug);
+          if (slug) triggerOptimizeApi("model", slug);
+        }}
+      >
+        <option value="">Any</option>
+        {modelCounts.map((mod, index) => (
+          <option key={index} value={mod.slug}>
+            {mod.name || mod.slug} ({mod.count})
+          </option>
+        ))}
+      </select>
+    </div>
+  </div>
+)}
+                         </div>
+                       </div>
+                     </div>
+                     <div className="filter-item">
+                       <h4>ATM</h4>
+                       <div className="location-list">
+                         <div className="row">
+                           <div className="col-lg-6">
+                             <div className="location-item">
+                               <label>Min</label>
+                               <select
+                             className="cfs-select-input form-select"
+                            value={tempAtmFrom ?? ""}
+  onChange={(e) => {
+    const val = e.target.value ? Number(e.target.value) : null;
+    setTempAtmFrom(val);
+    if (val) triggerOptimizeApi("atm", String(val));
+  }}
+                           >
+                             <option value="">Any</option>
+                             {atm.map((v, index) => (
+                               <option key={index} value={v}>
+                                 {v} kg
+                               </option>
+                             ))}
+                           </select>
+                             </div>
+                           </div>
+                           <div className="col-lg-6">
+                             <div className="location-item">
+                               <label>Max</label>
+                                <select
+                             className="cfs-select-input form-select"
+                            value={tempAtmTo ?? ""}
+  onChange={(e) => {
+    const val = e.target.value ? Number(e.target.value) : null;
+    setTempAtmTo(val);
+  }}
+                           >
+                             <option value="">Any</option>
+                             {atm
+                               .filter((v) => !tempAtmFrom || v > tempAtmFrom)
+                               .map((v, index) => (
+                                 <option key={index} value={v}>
+                                   {v} kg
+                                 </option>
+                               ))}
+                           </select>
+                             </div>
+                           </div>
+                         </div>
+                       </div>
+                     </div>
+                     <div className="filter-item">
+                       <h4>Price</h4>
+                       <div className="location-list">
+                         <div className="row">
+                           <div className="col-lg-6">
+                             <div className="location-item">
+                               <label>Min</label>
+                                <select
+                             className="cfs-select-input form-select mb-3"
+                             value={tempPriceFrom ?? ""}
+                             onChange={(e) => {
+                               const val = e.target.value ? Number(e.target.value) : null;
+                               setTempPriceFrom(val);
+           
+                               // ✅ background optimize ONLY (no URL, no data)
+                               triggerOptimizeApi("keyword", String(val));
+                             }}
+                           >
+                             <option value="">Any</option>
+                             {price.map((v, index) => (
+                               <option key={index} value={v}>
+                                 ${v.toLocaleString()}
+                               </option>
+                             ))}
+                           </select>
+                           
+                             </div>
+                           </div>
+                           <div className="col-lg-6">
+                             <div className="location-item">
+                               <label>Max</label>
+                               <select
+                             className="cfs-select-input form-select"
+                             value={tempPriceTo ?? ""}
+                             onChange={(e) => {
+                               const val = e.target.value ? Number(e.target.value) : null;
+                               setTempPriceTo(val);
+                             }}
+                           >
+                             <option value="">Any</option>
+                             {price
+                               .filter((v) => !tempPriceFrom || v > tempPriceFrom)
+                               .map((v,index) => (
+                                 <option key={index} value={v}>
+                                   ${v.toLocaleString()}
+                                 </option>
+                               ))}
+                           </select>
+                             </div>
+                           </div>
+                         </div>
+                       </div>
+                     </div>
+                     <div className="filter-item condition-field">
+                       <h4>Condition</h4>
+                       <ul className="category-list">
+                          <li className="category-item">
+  <label className="category-checkbox-row checkbox">
+    <div className="d-flex align-items-center">
+      <input
+        className="checkbox__trigger visuallyhidden"
+        type="checkbox"
+        checked={tempCondition === "new"}
+        onChange={() => setTempCondition(tempCondition === "new" ? null : "new")}
+      />
+      <span className="checkbox__symbol">
+         <svg
+                                   aria-hidden="true"
+                                   className="icon-checkbox"
+                                   width="28px"
+                                   height="28px"
+                                   viewBox="0 0 28 28"
+                                   version="1"
+                                   xmlns="http://www.w3.org/2000/svg"
+                                 >
+                                   <path d="M4 14l8 7L24 7"></path>
+                                 </svg>
+      </span>
+      <span className="category-name">New</span>
+    </div>
+  </label>
+</li>
+
+<li className="category-item">
+  <label className="category-checkbox-row checkbox">
+    <div className="d-flex align-items-center">
+      <input
+        className="checkbox__trigger visuallyhidden"
+        type="checkbox"
+        checked={tempCondition === "used"}
+        onChange={() => setTempCondition(tempCondition === "used" ? null : "used")}
+      />
+      <span className="checkbox__symbol">
+          <svg
+                                   aria-hidden="true"
+                                   className="icon-checkbox"
+                                   width="28px"
+                                   height="28px"
+                                   viewBox="0 0 28 28"
+                                   version="1"
+                                   xmlns="http://www.w3.org/2000/svg"
+                                 >
+                                   <path d="M4 14l8 7L24 7"></path>
+                                 </svg>
+      </span>
+      <span className="category-name">Used</span>
+    </div>
+  </label>
+</li>
+                       </ul>
+                     </div>
+                     <div className="filter-item">
+                       <h4>Sleep</h4>
+                       <div className="location-list">
+                         <div className="row">
+                           <div className="col-lg-6">
+                             <div className="location-item">
+                               <label>Min</label>
+                            <select
+                             className="cfs-select-input form-select mb-3"
+                             value={tempSleepFrom ?? ""}
+                             onChange={(e) => {
+                               const val = e.target.value ? Number(e.target.value) : null;
+                               setTempSleepFrom(val);
+                               // 🔥 background only (no commit)
+                             }}
+                           >
+                             <option value="">Any</option>
+                             {sleep.map((v, i) => (
+                               <option key={i} value={v}>
+                                 {v}
+                               </option>
+                             ))}
+                           </select>
+                             </div>
+                           </div>
+                           <div className="col-lg-6">
+                             <div className="location-item">
+                               <label>Max</label>
+                                 <select
+                             className="cfs-select-input form-select"
+                             value={tempSleepTo ?? ""}
+                             onChange={(e) => {
+                               const val = e.target.value ? Number(e.target.value) : null;
+                               setTempSleepTo(val);
+                             }}
+                           >
+                             <option value="">Any</option>
+                             {sleep
+                               .filter((v) => !tempSleepFrom || v > tempSleepFrom)
+                               .map((v,i) => (
+                                 <option key={i} value={v}>
+                                   {v}
+                                 </option>
+                               ))}
+                           </select>
+                             </div>
+                           </div>
+                         </div>
+                       </div>
+                     </div>
+                     <div className="filter-item">
+                       <h4>Year</h4>
+                       <div className="location-list">
+                         <div className="row">
+                           <div className="col-lg-6">
+                             <div className="location-item">
+                               <label>From</label>
+                                 <select
+                   className="cfs-select-input form-select"
+                   value={tempYear ?? ""}
+                   onChange={(e) => {
+                     const val = e.target.value ? Number(e.target.value) : null;
+                     setTempYear(val);
+                     // 🔥 background only – no commit
+                   }}
+                 >
+                   <option value="">Any</option>
+ 
+                   {years.map((y) => (
+                     <option key={y} value={y}>
+                       {y}
+                     </option>
+                   ))}
+                 </select>
+                             </div>
+                           </div>
+                           
+                         </div>
+                       </div>
+                     </div>
+                     <div className="filter-item">
+                       <h4>Length</h4>
+                       <div className="location-list">
+                         <div className="row">
+                           <div className="col-lg-6">
+                             <div className="location-item">
+                               <label>Min</label>
+                                   <select
+                             className="cfs-select-input form-select mb-3"
+                             value={tempLengthFrom ?? ""}
+                             onChange={(e) => {
+                               const val = e.target.value ? Number(e.target.value) : null;
+                               setTempLengthFrom(val);
+                             }}
+                           >
+                             <option value="">Any</option>
+                             {length.map((v, index) => (
+                               <option key={index} value={v}>
+                                 {v} ft
+                               </option>
+                             ))}
+                           </select>
+                             </div>
+                           </div>
+                           <div className="col-lg-6">
+                             <div className="location-item">
+                               <label>Max</label>
+                               <select
+                             className="cfs-select-input form-select"
+                             value={tempLengthTo ?? ""}
+                             onChange={(e) => {
+                               const val = e.target.value ? Number(e.target.value) : null;
+                               setTempLengthTo(val);
+                             }}
+                           >
+                             <option value="">Any</option>
+                             {length
+                               .filter((v) => !tempLengthFrom || v > tempLengthFrom)
+                               .map((v, index) => (
+                                 <option key={index} value={v}>
+                                   {v} ft
+                                 </option>
+                               ))}
+                           </select>
+                             </div>
+                           </div>
+                         </div>
+                       </div>
+                     </div>
+                       <div className="filter-item search-filter">
+                      <h4>Search by Keyword</h4>
+                      <div className="search-box">
+                        <div className="secrch_icon">
+                          <i className="bi bi-search search-icon"></i>
+                            <input
+                                 type="text"
+                                 placeholder="Try caravans with bunks" 
+                                 className="filter-dropdown cfs-select-input"
+                                 autoComplete="off"
+                                 value={modalKeyword}
+                                 onFocus={() => setShowSuggestions(true)} // ✅ only show when focusing
+                                 onChange={(e) => {
+                                   pickedSourceRef.current = "typed";
+                                   setModalKeyword(e.target.value);
+                                 }}
+                                 onKeyDown={(e) => {
+                                   if (e.key === "Enter") applyKeywordFromModal();
+                                 }}
+                               />
+                        </div>
+                         {showSuggestions && (
+                               <>
+                                 {/* Show base list when field is empty (<2 chars) */}
+                                 {modalKeyword.trim().length < 2 &&
+                                   (baseLoading ? (
+                                     <div style={{ marginTop: 8 }}>Loading…</div>
+                                   ) : (
+                                     <div style={{ marginTop: 8 }}>
+                                       {/* 🏷 Title for base list */}
+                                       <h6 className="cfs-suggestion-title">
+                                         Popular searches
+                                       </h6>
+                                       <ul
+                                         className="location-suggestions"
+                                         style={{ marginTop: 8 }}
+                                       >
+                                         {baseKeywords.length ? (
+                                           baseKeywords.map((k, i) => (
+                                             <li
+                                               key={`${k.label}-${i}`}
+                                               className="suggestion-item lowercase"
+                                               onMouseDown={(e) => {
+                                                 e.preventDefault();
+                                                 pickedSourceRef.current = "base";
+                                                 setModalKeyword(k.label);
+                                               }}
+                                             >
+                                               {k.label}
+                                             </li>
+                                           ))
+                                         ) : (
+                                           <li className="suggestion-item">
+                                             No popular items
+                                           </li>
+                                         )}
+                                       </ul>
+                                     </div>
+                                   ))}
+           
+                                 {/* Show typed suggestions when >=2 chars */}
+                                 {modalKeyword.trim().length >= 2 &&
+                                   (keywordLoading ? (
+                                     <div style={{ marginTop: 8 }}>Loading…</div>
+                                   ) : (
+                                     <div style={{ marginTop: 8 }}>
+                                       {/* 🏷 Title for typed suggestions */}
+                                       <h6 className="cfs-suggestion-title">
+                                         Suggested searches
+                                       </h6>
+                                       <ul
+                                         className="location-suggestions"
+                                         style={{ marginTop: 8 }}
+                                       >
+                                         {keywordSuggestions.length ? (
+                                           keywordSuggestions.map((k, i) => (
+                                             <li
+                                               key={`${k.label}-${i}`}
+                                               className="suggestion-item"
+                                               onMouseDown={() => {
+                                                 pickedSourceRef.current = "typed";
+                                                 setModalKeyword(k.label);
+                                                 setKeywordSuggestions([]);
+                                                 setBaseKeywords([]);
+                                                 setShowSuggestions(false);
+           
+                                                 // ✅ Prevent re-trigger of fetch
+                                                 setKeywordLoading(false);
+                                               }}
+                                             >
+                                               {k.label}
+                                             </li>
+                                           ))
+                                         ) : (
+                                           <li className="suggestion-item">No matches</li>
+                                         )}
+                                       </ul>
+                                     </div>
+                                   ))}
+                               </>
+                             )}
+                      </div>
+         
+          
+                    </div>
+                    
+                   
+               </>
+         </div>
+ 
+         {/* Footer */}
+         <div className="filter-footer">
+           <button className="clear">Clear filters</button>
+           <button className="search"onClick={handleMasterSearch}>Search</button>
+         </div>
+       </div>
+     </div>
+</>
+   );
+ }
+
+  export default FilterModal;
+ 
+ 
