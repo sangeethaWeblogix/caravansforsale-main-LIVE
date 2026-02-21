@@ -189,11 +189,11 @@ export default function ListingContent({
     // 🔁 show loader
     setNavigating(true);
 
-    // 🔁 navigate
-    goToProduct(href);
-
     // 🔁 tracking + session flag
     handleProductClick(productId);
+
+    // 🔁 navigate
+    goToProduct(href);
   };
 
   console.log(
