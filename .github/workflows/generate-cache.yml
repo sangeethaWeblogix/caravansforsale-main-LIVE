@@ -37,30 +37,42 @@ on:
 # URLs fetched from:
 #   https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap/{type}
 #
-# OPTIMISATIONS (v2):
-#  1. min_count=1 passed to API — zero-product pages never fetched
-#  2. HTTP 500/502/503 treated as immediate skip (no retries)
-#  3. API noindex flag respected — noindex pages skipped before HTML fetch
-#  4. Delays: 100ms between variants, 300ms between URLs (was 300/800ms)
-#  5. timeout-minutes bumped: 90 for large jobs, 30 for routes mapping
+# OPTIMISATIONS (v3):
+#  1. HTTP 500/502/503 treated as immediate skip (no retries)
+#  2. Delays: 100ms between variants, 300ms between URLs
+#  3. Reduced BATCH_SIZE: 25 URLs for slow/deep-URL types (region-make, cat-region)
+#  4. More parallel batches: region-make 8→16, cat-region 8→16
+#  5. cat-state moved out of small-types into its own job with 120-min timeout
+#  6. Timeout guide:
+#       priority       → 60  min (Puppeteer, 8 total variants)
+#       small-types    → 60  min (<50 URLs, fast pages)
+#       regions        → 90  min (~62 URLs, 2 batches of 50)
+#       state-make     → 90  min (2 batches of 50)
+#       makes          → 90  min (6 batches of 50, ~267 URLs)
+#       models         → 90  min (6 batches of 50)
+#       cat-state      → 120 min (48 URLs, single runner, can be slow)
+#       region-make    → 90  min (16 batches of 25 — was 8×50, too slow)
+#       cat-region     → 90  min (16 batches of 25 — was 8×50, too slow)
 #
-# UNIVERSAL BATCH SIZE: 50 URLs per batch
-# Empty batches exit cleanly in <1s.
+# BATCH SIZE GUIDE:
+#   Fast pages  (<5s fetch):  50 URLs/batch → ~10 min/batch
+#   Medium pages (~10s fetch): 25 URLs/batch → ~17 min/batch
+#   Slow pages  (~26s fetch): 25 URLs/batch → ~45 min/batch ← region-make observed
 #
-# CURRENT ESTIMATED URL COUNTS (update as needed):
+# CURRENT ESTIMATED URL COUNTS:
 #   categories:  ~6    → no batching
 #   states:      ~8    → no batching
-#   regions:     ~62   → 2 batches
-#   makes:       ~267  → 6 batches
-#   models:      ~TBD  → 6 batches (adjust)
+#   regions:     ~62   → 2 batches × 50
+#   makes:       ~267  → 6 batches × 50
+#   models:      ~TBD  → 6 batches × 50 (adjust if needed)
 #   price:       ~TBD  → no batching
 #   atm:         ~TBD  → no batching
 #   sleep:       ~TBD  → no batching
 #   length:      ~TBD  → no batching
-#   state-make:  ~TBD  → 2 batches (adjust)
-#   region-make: ~TBD  → 8 batches (adjust)
-#   cat-state:   ~48   → 1 runner (no batching)
-#   cat-region:  ~378  → 8 batches
+#   state-make:  ~TBD  → 2 batches × 50
+#   region-make: ~TBD  → 16 batches × 25  ← CHANGED (was 8×50)
+#   cat-state:   ~48   → own job, no batching
+#   cat-region:  ~378  → 16 batches × 25  ← CHANGED (was 8×50)
 # ==========================================
 
 jobs:
@@ -70,7 +82,7 @@ jobs:
   # ==========================================
   generate-priority:
     runs-on: ubuntu-latest
-    timeout-minutes: 60     # Puppeteer is slower — keep at 60
+    timeout-minutes: 60     # Puppeteer: 2 pages × 4 variants = 8 total, generous
     if: |
       (github.event_name == 'schedule') ||
       (github.event_name == 'workflow_dispatch' &&
@@ -106,12 +118,13 @@ jobs:
         run: echo "::notice::✅ Priority pages generated successfully!"
 
   # ==========================================
-  # SMALL TYPES (no batching needed, <50 URLs each)
-  # Runs all in parallel
+  # SMALL TYPES (no batching, <50 URLs, fast pages)
+  # categories, states, price, atm, sleep, length only
+  # NOTE: cat-state moved to its own job (can be slow at 48 URLs)
   # ==========================================
   generate-small-types:
     runs-on: ubuntu-latest
-    timeout-minutes: 60     # ~6 URLs × 4 variants × ~2s = <1 min; 60 is generous
+    timeout-minutes: 60     # <50 URLs × 4 variants × ~5s = <20 min max
     if: |
       (github.event_name == 'schedule') ||
       (github.event_name == 'workflow_dispatch' &&
@@ -126,9 +139,8 @@ jobs:
           - atm
           - sleep
           - length
-          - cat-state
       fail-fast: false
-      max-parallel: 7
+      max-parallel: 6
 
     steps:
       - name: 📥 Checkout
@@ -158,11 +170,50 @@ jobs:
         run: echo "::notice::✅ ${{ matrix.type }} completed!"
 
   # ==========================================
+  # CAT-STATE (~48 URLs) - own job, no batching
+  # Moved out of small-types: 48 URLs × 4 variants can exceed 60 min
+  # ==========================================
+  generate-cat-state:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120    # 48 URLs × 4 variants × ~26s worst case = ~83 min
+    if: |
+      (github.event_name == 'schedule') ||
+      (github.event_name == 'workflow_dispatch' &&
+       (github.event.inputs.target == 'all' || github.event.inputs.target == 'small-types' || github.event.inputs.target == 'cat-state'))
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: 📦 Install dependencies
+        run: npm install node-fetch@2
+
+      - name: 🗺️ Generate cat-state
+        env:
+          PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
+          WP_API_BASE: 'https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap'
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          TARGET_SITEMAP: cat-state
+          SKIP_ROUTES_UPDATE: 'true'
+        run: node scripts/generate-sitemap-cache-simple.js
+
+      - name: ✅ cat-state Complete
+        if: success()
+        run: echo "::notice::✅ cat-state completed!"
+
+  # ==========================================
   # REGIONS (~62 URLs) - 2 batches × 50
   # ==========================================
   generate-regions:
     runs-on: ubuntu-latest
-    timeout-minutes: 90     # ⬆ OPTIMISATION #5 (was 60)
+    timeout-minutes: 90     # 50 URLs × 4 variants × ~10s = ~33 min, 90 is safe
     if: |
       (github.event_name == 'schedule') ||
       (github.event_name == 'workflow_dispatch' &&
@@ -208,7 +259,7 @@ jobs:
   # ==========================================
   generate-state-make:
     runs-on: ubuntu-latest
-    timeout-minutes: 90     # ⬆ OPTIMISATION #5 (was 60)
+    timeout-minutes: 90
     if: |
       (github.event_name == 'schedule') ||
       (github.event_name == 'workflow_dispatch' &&
@@ -254,7 +305,7 @@ jobs:
   # ==========================================
   generate-makes:
     runs-on: ubuntu-latest
-    timeout-minutes: 90     # ⬆ OPTIMISATION #5 (was 60)
+    timeout-minutes: 90
     if: |
       (github.event_name == 'schedule') ||
       (github.event_name == 'workflow_dispatch' &&
@@ -300,7 +351,7 @@ jobs:
   # ==========================================
   generate-models:
     runs-on: ubuntu-latest
-    timeout-minutes: 90     # ⬆ OPTIMISATION #5 (was 60)
+    timeout-minutes: 90
     if: |
       (github.event_name == 'schedule') ||
       (github.event_name == 'workflow_dispatch' &&
@@ -342,11 +393,15 @@ jobs:
         run: echo "::notice::✅ models batch ${{ matrix.batch }} completed!"
 
   # ==========================================
-  # REGION-MAKE (~TBD URLs) - 8 batches × 50
+  # REGION-MAKE - 16 batches × 25 URLs
+  # CHANGED: was 8 batches × 50. These are deep combination URLs
+  # (e.g. /listings/nsw-state/sydney-region/jayco/) that take ~26s each to fetch.
+  # Old: 50 URLs × 4 variants × 26s = ~87 min → TIMEOUT
+  # New: 25 URLs × 4 variants × 26s = ~43 min → safe within 90 min
   # ==========================================
   generate-region-make:
     runs-on: ubuntu-latest
-    timeout-minutes: 90     # ⬆ OPTIMISATION #5 (was 60)
+    timeout-minutes: 90     # 25 URLs × 4 variants × ~26s = ~43 min, 90 is safe
     if: |
       (github.event_name == 'schedule') ||
       (github.event_name == 'workflow_dispatch' &&
@@ -354,9 +409,9 @@ jobs:
 
     strategy:
       matrix:
-        batch: [1, 2, 3, 4, 5, 6, 7, 8]
+        batch: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
       fail-fast: false
-      max-parallel: 8
+      max-parallel: 16
 
     steps:
       - name: 📥 Checkout
@@ -370,7 +425,7 @@ jobs:
       - name: 📦 Install dependencies
         run: npm install node-fetch@2
 
-      - name: 🗺️ Generate region-make (Batch ${{ matrix.batch }}/8)
+      - name: 🗺️ Generate region-make (Batch ${{ matrix.batch }}/16)
         env:
           PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
           WP_API_BASE: 'https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap'
@@ -378,7 +433,7 @@ jobs:
           CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           TARGET_SITEMAP: region-make
-          BATCH_SIZE: 50
+          BATCH_SIZE: 25
           BATCH_NUMBER: ${{ matrix.batch }}
           SKIP_ROUTES_UPDATE: 'true'
         run: node scripts/generate-sitemap-cache-simple.js
@@ -388,11 +443,15 @@ jobs:
         run: echo "::notice::✅ region-make batch ${{ matrix.batch }} completed!"
 
   # ==========================================
-  # CAT-REGION (~378 URLs) - 8 batches × 50
+  # CAT-REGION (~378 URLs) - 16 batches × 25 URLs
+  # CHANGED: was 8 batches × 50. Same reasoning as region-make:
+  # these are deep combination URLs that can be slow to fetch.
+  # Old: 50 × 4 × ~26s = ~87 min → TIMEOUT
+  # New: 25 × 4 × ~26s = ~43 min → safe within 90 min
   # ==========================================
   generate-cat-region:
     runs-on: ubuntu-latest
-    timeout-minutes: 90     # ⬆ OPTIMISATION #5 (was 60)
+    timeout-minutes: 90     # 25 URLs × 4 variants × ~26s = ~43 min, 90 is safe
     if: |
       (github.event_name == 'schedule') ||
       (github.event_name == 'workflow_dispatch' &&
@@ -400,9 +459,9 @@ jobs:
 
     strategy:
       matrix:
-        batch: [1, 2, 3, 4, 5, 6, 7, 8]
+        batch: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
       fail-fast: false
-      max-parallel: 8
+      max-parallel: 16
 
     steps:
       - name: 📥 Checkout
@@ -416,7 +475,7 @@ jobs:
       - name: 📦 Install dependencies
         run: npm install node-fetch@2
 
-      - name: 🗺️ Generate cat-region (Batch ${{ matrix.batch }}/8)
+      - name: 🗺️ Generate cat-region (Batch ${{ matrix.batch }}/16)
         env:
           PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
           WP_API_BASE: 'https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap'
@@ -424,7 +483,7 @@ jobs:
           CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           TARGET_SITEMAP: cat-region
-          BATCH_SIZE: 50
+          BATCH_SIZE: 25
           BATCH_NUMBER: ${{ matrix.batch }}
           SKIP_ROUTES_UPDATE: 'true'
         run: node scripts/generate-sitemap-cache-simple.js
@@ -438,10 +497,11 @@ jobs:
   # ==========================================
   update-routes-mapping:
     runs-on: ubuntu-latest
-    timeout-minutes: 30     # ⬆ OPTIMISATION #5 — was 25, bumped for large KV namespaces
+    timeout-minutes: 30
     needs:
       - generate-priority
       - generate-small-types
+      - generate-cat-state
       - generate-regions
       - generate-state-make
       - generate-makes
@@ -481,7 +541,7 @@ jobs:
   # ==========================================
   generate-individual:
     runs-on: ubuntu-latest
-    timeout-minutes: 90     # ⬆ OPTIMISATION #5 (was 90, keep for safety)
+    timeout-minutes: 120    # Single runner, no batching — needs generous timeout
     if: |
       github.event_name == 'workflow_dispatch' &&
       (github.event.inputs.target == 'categories' ||
@@ -527,6 +587,7 @@ jobs:
     needs:
       - generate-priority
       - generate-small-types
+      - generate-cat-state
       - generate-regions
       - generate-state-make
       - generate-makes
@@ -541,14 +602,13 @@ jobs:
         run: |
           echo "::notice::✅ All cache generation jobs completed!"
           echo "::notice::Source: WordPress API (no XML sitemaps)"
-          echo "::notice::Optimisations: min_count filter, skip-500, API noindex, reduced delays, bumped timeouts"
-          echo "::notice::Batch size: 50 URLs (universal)"
           echo "::notice::Priority: Homepage + Listings (4 variants each)"
-          echo "::notice::Small types (7 in parallel): categories, states, price, atm, sleep, length, cat-state"
-          echo "::notice::Regions: 2 batches"
-          echo "::notice::State-make: 2 batches"
-          echo "::notice::Makes: 6 batches"
-          echo "::notice::Models: 6 batches"
-          echo "::notice::Region-make: 8 batches"
-          echo "::notice::Cat-region: 8 batches"
+          echo "::notice::Small types (6 in parallel): categories, states, price, atm, sleep, length"
+          echo "::notice::Cat-state: own job (120-min timeout)"
+          echo "::notice::Regions: 2 batches × 50"
+          echo "::notice::State-make: 2 batches × 50"
+          echo "::notice::Makes: 6 batches × 50"
+          echo "::notice::Models: 6 batches × 50"
+          echo "::notice::Region-make: 16 batches × 25 (reduced from 8×50 — slow pages)"
+          echo "::notice::Cat-region: 16 batches × 25 (reduced from 8×50 — slow pages)"
           echo "::notice::Routes mapping: Regenerated after all jobs"
