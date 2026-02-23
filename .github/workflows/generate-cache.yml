@@ -34,26 +34,31 @@ on:
 # ==========================================
 # API TYPES & BATCH STRATEGY
 #
-# URLs are now fetched from:
+# URLs fetched from:
 #   https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap/{type}
-# instead of XML sitemaps.
+#
+# OPTIMISATIONS (v2):
+#  1. min_count=1 passed to API — zero-product pages never fetched
+#  2. HTTP 500/502/503 treated as immediate skip (no retries)
+#  3. API noindex flag respected — noindex pages skipped before HTML fetch
+#  4. Delays: 100ms between variants, 300ms between URLs (was 300/800ms)
+#  5. timeout-minutes bumped: 90 for large jobs, 30 for routes mapping
 #
 # UNIVERSAL BATCH SIZE: 50 URLs per batch
-# When a type grows, just add more batch numbers below.
-# Empty batches exit cleanly in <1s (no harm).
+# Empty batches exit cleanly in <1s.
 #
 # CURRENT ESTIMATED URL COUNTS (update as needed):
 #   categories:  ~6    → no batching
 #   states:      ~8    → no batching
 #   regions:     ~62   → 2 batches
 #   makes:       ~267  → 6 batches
-#   models:      ~TBD  → adjust batches
-#   price:       ~TBD  → adjust batches
-#   atm:         ~TBD  → adjust batches
-#   sleep:       ~TBD  → adjust batches
-#   length:      ~TBD  → adjust batches
-#   state-make:  ~TBD  → adjust batches
-#   region-make: ~TBD  → adjust batches
+#   models:      ~TBD  → 6 batches (adjust)
+#   price:       ~TBD  → no batching
+#   atm:         ~TBD  → no batching
+#   sleep:       ~TBD  → no batching
+#   length:      ~TBD  → no batching
+#   state-make:  ~TBD  → 2 batches (adjust)
+#   region-make: ~TBD  → 8 batches (adjust)
 #   cat-state:   ~48   → 1 runner (no batching)
 #   cat-region:  ~378  → 8 batches
 # ==========================================
@@ -65,7 +70,7 @@ jobs:
   # ==========================================
   generate-priority:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 60     # Puppeteer is slower — keep at 60
     if: |
       (github.event_name == 'schedule') ||
       (github.event_name == 'workflow_dispatch' &&
@@ -106,7 +111,7 @@ jobs:
   # ==========================================
   generate-small-types:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 60     # ~6 URLs × 4 variants × ~2s = <1 min; 60 is generous
     if: |
       (github.event_name == 'schedule') ||
       (github.event_name == 'workflow_dispatch' &&
@@ -157,7 +162,7 @@ jobs:
   # ==========================================
   generate-regions:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 90     # ⬆ OPTIMISATION #5 (was 60)
     if: |
       (github.event_name == 'schedule') ||
       (github.event_name == 'workflow_dispatch' &&
@@ -200,11 +205,10 @@ jobs:
 
   # ==========================================
   # STATE-MAKE (~TBD URLs) - 2 batches × 50
-  # Adjust batch count if URL count changes
   # ==========================================
   generate-state-make:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 90     # ⬆ OPTIMISATION #5 (was 60)
     if: |
       (github.event_name == 'schedule') ||
       (github.event_name == 'workflow_dispatch' &&
@@ -250,7 +254,7 @@ jobs:
   # ==========================================
   generate-makes:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 90     # ⬆ OPTIMISATION #5 (was 60)
     if: |
       (github.event_name == 'schedule') ||
       (github.event_name == 'workflow_dispatch' &&
@@ -292,12 +296,11 @@ jobs:
         run: echo "::notice::✅ makes batch ${{ matrix.batch }} completed!"
 
   # ==========================================
-  # MODELS (~TBD URLs) - adjust batches as needed
-  # Starting with 6 batches × 50; empty batches exit cleanly
+  # MODELS (~TBD URLs) - 6 batches × 50
   # ==========================================
   generate-models:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 90     # ⬆ OPTIMISATION #5 (was 60)
     if: |
       (github.event_name == 'schedule') ||
       (github.event_name == 'workflow_dispatch' &&
@@ -343,7 +346,7 @@ jobs:
   # ==========================================
   generate-region-make:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 90     # ⬆ OPTIMISATION #5 (was 60)
     if: |
       (github.event_name == 'schedule') ||
       (github.event_name == 'workflow_dispatch' &&
@@ -389,7 +392,7 @@ jobs:
   # ==========================================
   generate-cat-region:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 90     # ⬆ OPTIMISATION #5 (was 60)
     if: |
       (github.event_name == 'schedule') ||
       (github.event_name == 'workflow_dispatch' &&
@@ -435,7 +438,7 @@ jobs:
   # ==========================================
   update-routes-mapping:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 30     # ⬆ OPTIMISATION #5 — was 25, bumped for large KV namespaces
     needs:
       - generate-priority
       - generate-small-types
@@ -475,11 +478,10 @@ jobs:
 
   # ==========================================
   # INDIVIDUAL MANUAL RUNS (single type, no batching)
-  # Handles any individual type that doesn't need batching
   # ==========================================
   generate-individual:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 90     # ⬆ OPTIMISATION #5 (was 90, keep for safety)
     if: |
       github.event_name == 'workflow_dispatch' &&
       (github.event.inputs.target == 'categories' ||
@@ -539,6 +541,7 @@ jobs:
         run: |
           echo "::notice::✅ All cache generation jobs completed!"
           echo "::notice::Source: WordPress API (no XML sitemaps)"
+          echo "::notice::Optimisations: min_count filter, skip-500, API noindex, reduced delays, bumped timeouts"
           echo "::notice::Batch size: 50 URLs (universal)"
           echo "::notice::Priority: Homepage + Listings (4 variants each)"
           echo "::notice::Small types (7 in parallel): categories, states, price, atm, sleep, length, cat-state"
