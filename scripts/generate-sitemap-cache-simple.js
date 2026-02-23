@@ -221,19 +221,27 @@ function injectPerformanceTags(html) {
 }
 
 function shouldCachePage(html) {
-  const hasJsonIndexFollow = html.includes('"index":"index"') && html.includes('"follow":"follow"');
+  // Use regex to handle JSON with or without spaces after colons:
+  // matches: "index":"index"  OR  "index": "index"
+  const hasJsonIndexFollow =
+    /["']index["']\s*:\s*["']index["']/.test(html) &&
+    /["']follow["']\s*:\s*["']follow["']/.test(html);
+
   const hasMetaIndexFollow =
     html.includes('content="index, follow"') ||
     html.includes("content='index, follow'") ||
-    html.includes('content="index,follow"');
+    html.includes('content="index,follow"') ||
+    html.includes("content='index,follow'");
 
+  // Match noindex in JSON (with/without spaces) or meta tag
   const hasNoIndex =
-    html.includes('noindex') ||
-    html.includes('"index":"noindex"');
+    /["']index["']\s*:\s*["']noindex["']/.test(html) ||
+    html.includes('content="noindex') ||
+    html.includes("content='noindex");
 
   const hasNoRobotsTag =
-    !html.match(/<meta[^>]*name=["']robots["'][^>]*>/i) &&
-    !html.includes('"index"');
+    !html.match(/<meta[^>]*name=["'"]robots["'""][^>]*>/i) &&
+    !/["']index["']\s*:/.test(html);
 
   return (hasJsonIndexFollow || hasMetaIndexFollow || hasNoRobotsTag) && !hasNoIndex;
 }
