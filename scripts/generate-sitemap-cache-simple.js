@@ -220,6 +220,33 @@ function injectPerformanceTags(html) {
   return html;
 }
 
+// ============================================
+// ERROR PAGE DETECTION
+// If your app shows a new error UI, add its unique text here.
+// These pages will be skipped and never written to KV.
+// ============================================
+function isErrorPage(html) {
+  const errorSignatures = [
+    // Image 1: API/listing load failure
+    "Sorry, something went wrong",
+    "We couldn't load the listings at this moment",
+    // Image 2: Service error
+    "Service error",
+    "Our listing service encountered an error",
+    // Next.js unhandled exception
+    "Application error: a client-side exception has occurred",
+    // Generic fallback
+    "This page could not be found",
+  ];
+
+  for (const sig of errorSignatures) {
+    if (html.includes(sig)) {
+      return sig; // returns the matched string for logging
+    }
+  }
+  return false; // not an error page
+}
+
 function shouldCachePage(html) {
   // Use regex to handle JSON with or without spaces after colons:
   // matches: "index":"index"  OR  "index": "index"
@@ -361,6 +388,13 @@ async function generatePageVariant(urlData, variantNumber) {
       throw new Error('Invalid HTML (no closing </html> tag)');
     }
 
+    // Check for error pages BEFORE index/follow — error pages must NEVER be cached
+    const errorMatch = isErrorPage(html);
+    if (errorMatch) {
+      console.log(`   🚫 Skipping: Error page detected ("${errorMatch}")`);
+      return { status: 'skipped_error', path, kvKey, variant: variantNumber };
+    }
+
     const shouldCache = shouldCachePage(html);
     console.log(`   🔍 Index/Follow check: ${shouldCache ? '✅' : '❌'}`);
 
@@ -412,7 +446,7 @@ async function main() {
   }
   console.log('█'.repeat(70));
 
-  const results = { success: 0, failed: 0, skipped: 0, skipped_404: 0, pages: [] };
+  const results = { success: 0, failed: 0, skipped: 0, skipped_error: 0, skipped_404: 0, pages: [] };
   const failed404Paths = new Set();
   const startTime = Date.now();
 
@@ -522,6 +556,8 @@ async function main() {
           totalProcessed += remainingVariants;
         }
         break;
+      } else if (result.status === 'skipped_error') {
+        results.skipped_error++;
       } else if (result.status === 'skipped') {
         results.skipped++;
       } else {
@@ -543,6 +579,7 @@ async function main() {
       console.log('='.repeat(70));
       console.log(`📊 URLs: ${i + 1}/${allUrls.length} (${Math.round((i + 1) / allUrls.length * 100)}%)`);
       console.log(`✅ Success: ${results.success} variants`);
+      console.log(`🚫 Skipped (error page): ${results.skipped_error} variants`);
       console.log(`⏭️  Skipped (noindex): ${results.skipped} variants`);
       console.log(`🔍 Skipped (404): ${results.skipped_404} variants (${failed404Paths.size} unique URLs)`);
       console.log(`❌ Failed: ${results.failed} variants`);
@@ -673,6 +710,7 @@ async function main() {
     console.log(`📦 Batch: ${BATCH_NUMBER} (size ${BATCH_SIZE})`);
   }
   console.log(`✅ Success: ${results.success} variants`);
+  console.log(`🚫 Skipped (error page): ${results.skipped_error} variants`);
   console.log(`⏭️  Skipped (noindex): ${results.skipped} variants`);
   console.log(`🔍 Skipped (404): ${results.skipped_404} variants (${failed404Paths.size} unique URLs)`);
   console.log(`❌ Failed: ${results.failed} variants`);
