@@ -159,12 +159,12 @@ async function generatePageVariant(page, variantNumber, browser) {
     
     const fetchStart = Date.now();
     await browserPage.goto(url, { 
-      waitUntil: 'networkidle0',
-      timeout: 45000
+      waitUntil: 'networkidle2',  // tolerates up to 2 in-flight requests (avoids timeout from analytics/polling)
+      timeout: 60000              // increased from 45s to 60s
     });
     
-    // Wait for content to load
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    // Wait for dynamic content to finish rendering
+    await new Promise(resolve => setTimeout(resolve, 3000)); // increased from 2s to 3s
     
     let html = await browserPage.content();
     await browserPage.close();
