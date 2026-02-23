@@ -8,6 +8,14 @@
  * Returns: { success, type, count, paths: ["family-category/", ...], generated_at }
  * Paths are prepended with /listings/ to form the full URL path.
  *
+ * OPTIMISATIONS (applied):
+ *  1. HTTP 500/502/503 → immediate skip, zero retries (saves ~6s wasted per bad variant)
+ *  2. Reduced delays: 100ms between variants, 300ms between URLs (was 300ms/800ms)
+ *  3. Error pages skipped immediately before KV upload (already present, kept)
+ *  Note: min_count API filter (#1 from spec) and API noindex pre-filter (#3 from spec)
+ *        require API changes — add ?min_count=1 param and index field to API response
+ *        when ready. Client-side guards below are already in place.
+ *
  * IMPORTANT - SLUG FORMAT (DO NOT CHANGE):
  * Path: /listings/caravans/nsw/ → Slug: caravans-nsw → KV keys: caravans-nsw-v1, caravans-nsw-v2, ...
  * Path: /listings/motorhomes/    → Slug: motorhomes   → KV keys: motorhomes-v1, motorhomes-v2, ...
@@ -34,12 +42,17 @@ const TARGET_SITEMAP = process.env.TARGET_SITEMAP || 'all';
 
 // Configuration
 const VARIANTS_PER_URL = 4;
-const DELAY_BETWEEN_VARIANTS = 300; // ms
-const DELAY_BETWEEN_URLS = 800;     // ms
+const DELAY_BETWEEN_VARIANTS = 100; // ms — reduced from 300ms (optimisation #2)
+const DELAY_BETWEEN_URLS = 300;     // ms — reduced from 800ms (optimisation #2)
 const BATCH_SIZE = process.env.BATCH_SIZE ? parseInt(process.env.BATCH_SIZE) : null;
 const BATCH_NUMBER = process.env.BATCH_NUMBER ? parseInt(process.env.BATCH_NUMBER) : null;
 const KV_UPLOAD_RETRIES = 3;
 const KV_RETRY_DELAY = 2000;
+
+// OPTIMISATION #1: HTTP status codes that must be skipped immediately with no retries.
+// 500/502/503 are transient server errors — retrying them burns 6s each (3 attempts × 2s).
+// With 21 failures × 4 variants = 84 retries = ~8 wasted minutes per batch.
+const SKIP_IMMEDIATELY_STATUSES = new Set([404, 500, 502, 503]);
 
 // SKIP_ROUTES_UPDATE: When running in parallel (matrix strategy),
 // skip routes mapping update to avoid race conditions.
@@ -371,9 +384,14 @@ async function generatePageVariant(urlData, variantNumber) {
       timeout: 30000
     });
 
-    if (response.status === 404) {
-      console.log(`   ⏭️  Skipping: HTTP 404 (page not found)`);
-      return { status: 'skipped_404', path, kvKey, variant: variantNumber };
+    // OPTIMISATION #1: skip bad statuses immediately — no retries, no delay
+    if (SKIP_IMMEDIATELY_STATUSES.has(response.status)) {
+      if (response.status === 404) {
+        console.log(`   ⏭️  Skipping: HTTP 404 (page not found)`);
+        return { status: 'skipped_404', path, kvKey, variant: variantNumber };
+      }
+      console.log(`   ⏭️  Skipping: HTTP ${response.status} (immediate skip, no retries)`);
+      return { status: 'skipped_server_error', path, kvKey, variant: variantNumber, httpStatus: response.status };
     }
 
     if (!response.ok) {
@@ -446,7 +464,7 @@ async function main() {
   }
   console.log('█'.repeat(70));
 
-  const results = { success: 0, failed: 0, skipped: 0, skipped_error: 0, skipped_404: 0, pages: [] };
+  const results = { success: 0, failed: 0, skipped: 0, skipped_error: 0, skipped_server_error: 0, skipped_404: 0, pages: [] };
   const failed404Paths = new Set();
   const startTime = Date.now();
 
@@ -505,7 +523,8 @@ async function main() {
   console.log(`🔄 Total URLs to process: ${allUrls.length}`);
   console.log(`📦 Total variants to generate: ${allUrls.length * VARIANTS_PER_URL}`);
   const estimatedMinutes = Math.round(allUrls.length * VARIANTS_PER_URL * 2 / 60);
-  console.log(`⏱️  Estimated time: ~${estimatedMinutes} minutes`);
+  const estimatedMinutesOptimised = Math.round(allUrls.length * VARIANTS_PER_URL * 1.2 / 60);
+  console.log(`⏱️  Estimated time: ~${estimatedMinutesOptimised} minutes (optimised delays)`);
   console.log('='.repeat(70));
 
   if (allUrls.length === 0) {
@@ -556,6 +575,8 @@ async function main() {
           totalProcessed += remainingVariants;
         }
         break;
+      } else if (result.status === 'skipped_server_error') {
+        results.skipped_server_error++;
       } else if (result.status === 'skipped_error') {
         results.skipped_error++;
       } else if (result.status === 'skipped') {
@@ -580,6 +601,7 @@ async function main() {
       console.log(`📊 URLs: ${i + 1}/${allUrls.length} (${Math.round((i + 1) / allUrls.length * 100)}%)`);
       console.log(`✅ Success: ${results.success} variants`);
       console.log(`🚫 Skipped (error page): ${results.skipped_error} variants`);
+      console.log(`⚡ Skipped (500/502/503): ${results.skipped_server_error} variants`);
       console.log(`⏭️  Skipped (noindex): ${results.skipped} variants`);
       console.log(`🔍 Skipped (404): ${results.skipped_404} variants (${failed404Paths.size} unique URLs)`);
       console.log(`❌ Failed: ${results.failed} variants`);
@@ -711,6 +733,7 @@ async function main() {
   }
   console.log(`✅ Success: ${results.success} variants`);
   console.log(`🚫 Skipped (error page): ${results.skipped_error} variants`);
+  console.log(`⚡ Skipped (500/502/503): ${results.skipped_server_error} variants`);
   console.log(`⏭️  Skipped (noindex): ${results.skipped} variants`);
   console.log(`🔍 Skipped (404): ${results.skipped_404} variants (${failed404Paths.size} unique URLs)`);
   console.log(`❌ Failed: ${results.failed} variants`);
