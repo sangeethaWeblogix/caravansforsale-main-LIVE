@@ -7,21 +7,22 @@ export async function GET() {
 
   const sitemaps = [
     "general-sitemap.xml",
+    "listings-sitemap.xml",
     "categories-sitemap.xml",
     "states-sitemap.xml",
-    "blogs-sitemap.xml",
     "regions-sitemap.xml",
     "makes-sitemap.xml",
-    "models-sitemap.xml",
-    "weights-sitemap.xml",
-    "prices-sitemap.xml",
-    "length-sitemap.xml",
-    "sleep-sitemap.xml",
-    "state-make-sitemap.xml",
-    "region-make-sitemap.xml", 
-    "category-state-sitemap.xml",
-    "category-region-sitemap.xml",
-    "category-sleep-sitemap.xml",
+    "blogs-sitemap.xml",
+    // "models-sitemap.xml",
+    // "weights-sitemap.xml",
+    // "prices-sitemap.xml",
+    // "length-sitemap.xml",
+    // "sleep-sitemap.xml",
+    // "state-make-sitemap.xml",
+    // "region-make-sitemap.xml", 
+    // "category-state-sitemap.xml",
+    // "category-region-sitemap.xml",
+    // "category-sleep-sitemap.xml",
   ];
 
   const lastModified = new Date().toISOString().split("T")[0];

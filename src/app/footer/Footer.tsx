@@ -52,13 +52,13 @@ Marketplace Network makes no representations or warranties regarding the accurac
                     <a href="/blog/">Blog</a>
                   </li>
                   <li>
-                    <a href="/terms-conditions/">Terms & Conditions</a>
+                    <a href="/terms-conditions/" rel="nofollow">Terms & Conditions</a>
                   </li>
                   <li>
-                    <a href="/privacy-policy/">Privacy Policy</a>
+                    <a href="/privacy-policy/" rel="nofollow">Privacy Policy</a>
                   </li>
                   <li>
-                    <a href="/privacy-collection-statement/">
+                    <a href="/privacy-collection-statement/" rel="nofollow">
                       Privacy Collection Statement
                     </a>
                   </li>

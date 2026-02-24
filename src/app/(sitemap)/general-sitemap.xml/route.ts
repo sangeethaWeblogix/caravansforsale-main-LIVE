@@ -11,21 +11,25 @@ const staticUrls = [
   "off-road-caravans-manufacturers",
   "listings",
   "blog",
-  "terms-conditions",
-  "privacy-policy",
-  "privacy-collection-statement",
   "about-us",
   "contact",
 ];
 
 export async function GET() {
+  const today = new Date().toISOString().split("T")[0];
+  const homepage = `<url>
+    <loc>${SITE_URL}/</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+    </url>`;
   const urls = staticUrls
     .map((path) => {
       return `
         <url>
           <loc>${SITE_URL}/${path}/</loc>
-          <lastmod>${new Date().toISOString().split("T")[0]}</lastmod>
-          <changefreq>daily</changefreq>
+          <lastmod>${today}</lastmod>
+          <changefreq>weekly</changefreq>
           <priority>0.8</priority>
         </url>
       `;
@@ -34,6 +38,7 @@ export async function GET() {
 
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
   <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    ${homepage}
     ${urls}
   </urlset>`;
 

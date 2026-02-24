@@ -25,8 +25,8 @@
    <url>
      <loc>${SITE_URL}${path}</loc>
       <lastmod>${new Date().toISOString()}</lastmod>
-            <changefreq>daily</changefreq>
-       <priority>0.5</priority>
+            <changefreq>monthly</changefreq>
+       <priority>0.8</priority>
    </url>`
        )
        .join("");
