@@ -20,6 +20,7 @@
    } from "@/api/homeSearch/api";
    import { flushSync } from "react-dom";
    import { fetchMakeDetails } from "@/api/make-new/api";
+import CategorySkeleton from "./CategorySkeleton";
    
    type LocationSuggestion = {
      key: string;
@@ -163,6 +164,7 @@
      const [categories, setCategories] = useState<Option[]>([]);
      const [visibleCount, setVisibleCount] = useState(10);
      const [modelCounts, setModelCounts] = useState<ModelCount[]>([]);
+     const [isCategoryCountLoading, setIsCategoryCountLoading] = useState(true);
    // இந்த state variables add பண்ணு (top-ல்)
 const [tempStateName, setTempStateName] = useState<string | null>(null);
 const [tempRegionName, setTempRegionName] = useState<string | null>(null);
@@ -422,16 +424,27 @@ const [tempRegionName, setTempRegionName] = useState<string | null>(null);
     // ─── CATEGORY COUNTS ───
     const catParams = buildCountParamsMulti(activeFilters, ["category"]);
     catParams.set("group_by", "category");
-  
+ setIsCategoryCountLoading(true);
     fetch(
       `https://admin.caravansforsale.com.au/wp-json/cfs/v1/params_count?${catParams.toString()}`,
       { signal }
     )
       .then((res) => res.json())
       .then((json) => {
-        if (!signal.aborted) setCategoryCounts(json.data || []);
-      })
-      .catch((e) => { if (e.name !== "AbortError") console.error(e); });
+       if (!signal.aborted) {
+      console.log("✅ CATEGORY COUNT DATA:", json);  // ← இது print ஆகுதா?
+      setCategoryCounts(json.data || []);
+      setIsCategoryCountLoading(false);
+    } else {
+      console.log("❌ CATEGORY ABORTED");  // ← இது print ஆகுதா?
+    }
+  })
+    .catch((e) => {
+    if (e.name !== "AbortError") {
+  console.log("❌ CATEGORY ERROR:", e);        
+      setIsCategoryCountLoading(false);  // ← STOP on error too
+    }
+  });
   
     // ─── MAKE COUNTS ───
     const makeParams = buildCountParamsMulti(activeFilters, ["make", "model"]);
@@ -1947,7 +1960,13 @@ const hasAnyTempFilter = useMemo(() => {
                      <div className="filter-item pt-0">
                        <h4>Caravan Type</h4>
                        <ul className="category-list">
-                                             {categoryCounts.map((cat) => (
+
+
+                                                 {isCategoryCountLoading ? (
+      // ✅ Skeleton - data வரும் வரை காட்டு
+       <CategorySkeleton />
+    ) : (
+categoryCounts.map((cat) => (
           
                          <li key={cat.slug} className="category-item">
                            <label className="category-checkbox-row checkbox">
@@ -1987,7 +2006,8 @@ const hasAnyTempFilter = useMemo(() => {
                         
                         
                         
-                          ))}
+                          ))
+    )}
                          
                        </ul>
                      </div>

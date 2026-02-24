@@ -1,4 +1,4 @@
-"use client";
+ "use client";
 
 import Link from "next/link";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -7,11 +7,17 @@ import { Navigation } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
 
-const FilterSlider = ({ items }) => {
+// ✅ ChipItem type define பண்ணு
+interface ChipItem {
+  label: string;
+  url: string;
+  group: string;
+}
 
-  // Example slug generator (optional but useful)
-  const getSlug = (text) =>
-    text.toLowerCase().replace(/\s+/g, "-");
+// ✅ items type மாத்து - string[] → ChipItem[]
+const FilterSlider = ({ items }: { items: ChipItem[] }) => {
+
+  if (!items || items.length === 0) return null;
 
   return (
     <div className="filter-row">
@@ -23,10 +29,14 @@ const FilterSlider = ({ items }) => {
           navigation
           className="filter-swiper"
         >
-          {items.map((item, index) => (
+          {items.map((chip, index) => (
             <SwiperSlide key={index} style={{ width: "auto" }}>
-              <Link href={`/filter/${getSlug(item)}`} className="tag">
-                {item}
+              {/* ✅ chip.url directly use பண்ணு - API URL */}
+              <Link href={chip.url} className="tag">
+                {/* ✅ label capitalize பண்ணு */}
+                {chip.label
+                  .replace(/-/g, " ")
+                  .replace(/\b\w/g, (c) => c.toUpperCase())}
               </Link>
             </SwiperSlide>
           ))}

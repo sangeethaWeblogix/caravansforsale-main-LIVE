@@ -169,7 +169,7 @@ export default function ListingsPage({
    const searchParams = useSearchParams();
    const [isLoading, setIsLoading] = useState(false);
    const router = useRouter();
- 
+ const [relatedChips, setRelatedChips] = useState<{ label: string; url: string; group: string }[]>([]);
    const [isMainLoading, setIsMainLoading] = useState(false);
    const [isFeaturedLoading, setIsFeaturedLoading] = useState(false);
    const [isPremiumLoading, setIsPremiumLoading] = useState(false);
@@ -365,6 +365,63 @@ export default function ListingsPage({
      return undefined;
    };
  
+
+   useEffect(() => {
+  const fetchRelatedLinks = async () => {
+    try {
+      const params = new URLSearchParams();
+      const f = filtersRef.current;
+      
+      if (f.category)          params.set("category", f.category);
+      if (f.make)              params.set("make", f.make);
+      if (f.model)             params.set("model", f.model);
+      if (f.state)             params.set("state", f.state);
+      if (f.region)            params.set("region", f.region);
+      if (f.suburb)            params.set("suburb", f.suburb);
+      if (f.condition)         params.set("condition", f.condition);
+      if (f.from_price)        params.set("from_price", String(f.from_price));
+      if (f.to_price)          params.set("to_price", String(f.to_price));
+      if (f.minKg)             params.set("from_atm", String(f.minKg));
+      if (f.maxKg)             params.set("to_atm", String(f.maxKg));
+      if (f.acustom_fromyears) params.set("acustom_fromyears", String(f.acustom_fromyears));
+      if (f.from_sleep)        params.set("from_sleep", String(f.from_sleep));
+      if (f.to_sleep)          params.set("to_sleep", String(f.to_sleep));
+      if (f.from_length)       params.set("from_length", String(f.from_length));
+      if (f.to_length)         params.set("to_length", String(f.to_length));
+      if (f.search)            params.set("search", f.search);
+      if (f.keyword)           params.set("keyword", f.keyword);
+
+      const res = await fetch(
+        `https://admin.caravansforsale.com.au/wp-json/cfs/v1/related_links?${params.toString()}`
+      );
+      const json = await res.json();
+      setRelatedChips(json.chips || []);
+    } catch (e) {
+      console.error("Related links error:", e);
+    }
+  };
+
+  fetchRelatedLinks();
+}, [
+  filters.category,
+  filters.make,
+  filters.model,
+  filters.state,
+  filters.region,
+  filters.suburb,
+  filters.condition,
+  filters.from_price,
+  filters.to_price,
+  filters.minKg,
+  filters.maxKg,
+  filters.acustom_fromyears,
+  filters.from_length,
+  filters.to_length,
+  filters.from_sleep,
+  filters.to_sleep,
+  filters.search,
+  filters.keyword,
+]);
    // Parse slug ONCE on mount; do not fetch here
    const initializedRef = useRef(false);
  
@@ -675,7 +732,7 @@ export default function ListingsPage({
  
          // ---- Store EMPTY EXCLUSIVE ----
          setEmptyProduct(transformApiItemsToProducts(emptyExclusiveList ?? []));
- 
+   
          // ---- Other metadata ----
          setCategories(response?.data?.all_categories ?? []);
          setMakes(response?.data?.make_options ?? []);
@@ -1125,7 +1182,7 @@ export default function ListingsPage({
         />
       </Head>
 <div>
-   {/* {clientMounted && clientLinksData && (
+   {clientMounted && clientLinksData && (
     <div className="cfs-links-section" id="client-links">
       {(["states", "categories", "makes", "conditions", "regions", "models"] as string[]).map((sectionKey) => {
         const items = clientLinksData[sectionKey];
@@ -1169,7 +1226,7 @@ export default function ListingsPage({
         );
       })}
     </div>
-  )} */}
+  )}
 </div>
         
               <div className="search-bar">
@@ -1188,7 +1245,7 @@ export default function ListingsPage({
                           </button>
                         </div>
                         <div>
-                          <FilterSlider label="Top Links" items={data} />
+<FilterSlider   items={relatedChips} />
                           
                         </div>
                         

@@ -107,9 +107,13 @@ h1.page-title {
   position: relative;
   overflow: hidden;
   justify-content: center;
-      transform: scale(1.2);
+      transform: scale(1);
 }
 
+
+.smooth_scroll:has(.filter-card .cfs-links-section) > .ssr-links-only {
+  display: none;
+}
 .view-more-btn-wrapper {
   z-index: 9;
   text-align: center;
