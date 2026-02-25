@@ -2,58 +2,139 @@
  import { parseSlugToFilters } from "@/app/components/urlBuilder";
  import type { Metadata } from "next";
   
+ type RobotsResult = { index: boolean };
+
  export async function metaFromSlug(
-   filters: string[] = [],
-   searchParams: Record<string, string | string[] | undefined> = {}
- ): Promise<Metadata> {
-   const parsed = parseSlugToFilters(filters, searchParams);
- 
-   const page = parsed.page ? Number(parsed.page) : 1;
-   const finalFilters = { ...parsed, page };
- 
-   const res = await fetchListings(finalFilters);
- 
-   // ✅ Trim metatitle to remove unwanted spaces
-   const rawTitle =
-     res?.seo?.list_page_metatitle?.trim() ||
-     "Caravans for Sale in Australia - Find Exclusive Deals";
-   const title = rawTitle.trim();
-   const description =  "Browse new & used caravans for sale across Australia. Compare off-road, hybrid, pop-top & luxury models by price, size, weight and sleeping capacity."
-  
-const rawIndex = String(res?.seo?.index ?? "")
-  .toLowerCase()
-  .trim();
+  filters: string[] = [],
+  searchParams: Record<string, string | string[] | undefined> = {}
+): Promise<Metadata> {
 
-const rawFollow = String(res?.seo?.follow ?? "")
-  .toLowerCase()
-  .trim();
-    const robots = {
-  index: rawIndex !== "noindex",
-  follow: rawFollow !== "nofollow",
-};
+  // ─── Allowed bands ───
+const ALLOWED_PRICE_BANDS = new Set([
+  "under-20000", "between-20000-30000", "between-30000-40000",
+  "between-40000-50000", "between-50000-70000", "between-70000-100000",
+  "between-100000-150000", "between-150000-200000", "over-200000",
+]);
 
- 
-   const canonical = res?.seo?.canonical || "https://www.caravansforsale.com.au"
- 
+const ALLOWED_ATM_BANDS = new Set([
+  "under-1500-kg-atm", "between-1500-kg-2500-kg-atm",
+  "between-2500-kg-3500-kg-atm", "between-3500-kg-4500-kg-atm",
+  "over-4500-kg-atm",
+]);
+
+const ALLOWED_SLEEP_BANDS = new Set([
+  "between-1-2-people-sleeping-capacity", "between-3-4-people-sleeping-capacity",
+  "between-4-6-people-sleeping-capacity", "over-6-people-sleeping-capacity",
+]);
+
+const ALLOWED_LENGTH_BANDS = new Set([
+  "under-12-length-in-feet", "between-12-14-length-in-feet",
+  "between-15-17-length-in-feet", "between-18-20-length-in-feet",
+  "between-21-23-length-in-feet", "over-24-length-in-feet",
+]);
+
+// ─── Main robots function ───
+function getRobotsFromFilters(
+  parsed: ReturnType<typeof parseSlugToFilters>,
+  slugSegments: string[] = []
+): RobotsResult {
+   const noindex: RobotsResult = { index: false };
+const index: RobotsResult   = { index: true };
+
+  // ── Always noindex ──
+  if (parsed.model)    return noindex;
+  if (parsed.suburb)   return noindex;
+  if (parsed.condition) return noindex;
+  if (parsed.acustom_fromyears)     return noindex;
+
+  // ── Check band filters from slug segments ──
+  let priceSlug  = slugSegments.find(s => ALLOWED_PRICE_BANDS.has(s)  || isPriceLike(s));
+  let atmSlug    = slugSegments.find(s => s.includes("-kg-atm"));
+  let sleepSlug  = slugSegments.find(s => s.includes("-people-sleeping-capacity"));
+  let lengthSlug = slugSegments.find(s => s.includes("-length-in-feet"));
+
+  const hasPrice  = !!priceSlug;
+  const hasAtm    = !!atmSlug;
+  const hasSleep  = !!sleepSlug;
+  const hasLength = !!lengthSlug;
+
+  const hasBandFilter = hasPrice || hasAtm || hasSleep || hasLength;
+
+  // ── If band filter present, validate it's an allowed band ──
+  if (hasPrice  && !ALLOWED_PRICE_BANDS.has(priceSlug!))   return noindex;
+  if (hasAtm    && !ALLOWED_ATM_BANDS.has(atmSlug!))       return noindex;
+  if (hasSleep  && !ALLOWED_SLEEP_BANDS.has(sleepSlug!))   return noindex;
+  if (hasLength && !ALLOWED_LENGTH_BANDS.has(lengthSlug!)) return noindex;
+
+  // ── Count filters ──
+  // state + region = 1 location filter
+  let filterCount = 0;
+  if (parsed.state)    filterCount += 1; // region grouped with state, no extra count
+  if (parsed.make)     filterCount += 1;
+  if (parsed.category) filterCount += 1;
+  if (hasBandFilter)   filterCount += 1; // all band types = 1 filter slot
+
+  // ── More than 2 filters → noindex ──
+  if (filterCount > 2) return noindex;
+
+  return index;
+}
+
+// helper: detect any price-like slug (even non-allowed ones like "under-10000")
+function isPriceLike(s: string): boolean {
+  return /^(under|over)-\d+$/.test(s) || /^between-\d+-\d+$/.test(s);
+}
+  const parsed = parseSlugToFilters(filters, searchParams);
+
+  const page = parsed.page ? Number(parsed.page) : 1;
+  const finalFilters = { ...parsed, page };
+
+  const res = await fetchListings(finalFilters);
+
+  // ─── Build canonical from slug + searchParams ───
+  const BASE_URL = "https://www.caravansforsale.com.au";
   
-    
- 
-   
-   return {
-     title: { absolute: title },
-     description,
-     robots,
-     verification: {
-       google: "6tT6MT6AJgGromLaqvdnyyDQouJXq0VHS-7HC194xEo",
-     },
-     alternates: {
-       canonical,
-       languages: {},
-       media: {},
-     },
-    
-     openGraph: { title, description, url: canonical },
-     twitter: { title, description },
-   };
- }
- 
+  // slug segments → /listings/segment1/segment2/
+  const slugPath = filters.length > 0 ? filters.join("/") : "";
+  let canonicalUrl = `${BASE_URL}/listings/${slugPath ? slugPath + "/" : ""}`;
+
+  // append searchParams (except page=1)
+  const spEntries = Object.entries(searchParams).filter(([k, v]) => {
+    if (k === "page" && String(v) === "1") return false;
+  });
+
+  if (spEntries.length > 0) {
+    const qs = spEntries
+      .map(([k, v]) => `${k}=${Array.isArray(v) ? v[0] : v}`)
+      .join("&");
+    canonicalUrl += `?${qs}`;
+  }
+
+  // ─── Fallback: API canonical (only if you trust API) ───
+  // const canonical = res?.seo?.canonical || canonicalUrl;
+  const canonical = canonicalUrl; // ✅ always use actual URL
+
+  const rawTitle =
+    res?.seo?.list_page_metatitle?.trim() ||
+    "Caravans for Sale in Australia - Find Exclusive Deals";
+  const title = rawTitle.trim();
+  const description = "Browse new & used caravans for sale across Australia. Compare off-road, hybrid, pop-top & luxury models by price, size, weight and sleeping capacity.";
+
+  const robots = getRobotsFromFilters(parsed, filters); // filters = slug segments array
+
+  return {
+    title: { absolute: title },
+    description,
+    robots,
+    verification: {
+      google: "6tT6MT6AJgGromLaqvdnyyDQouJXq0VHS-7HC194xEo",
+    },
+    alternates: {
+      canonical,
+      languages: {},
+      media: {},
+    },
+    openGraph: { title, description, url: canonical },
+    twitter: { title, description },
+  };
+}
