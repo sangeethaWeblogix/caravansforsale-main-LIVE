@@ -12,9 +12,12 @@
  *  1. HTTP 500/502/503 → immediate skip, zero retries (saves ~6s wasted per bad variant)
  *  2. Reduced delays: 100ms between variants, 300ms between URLs (was 300ms/800ms)
  *  3. Error pages skipped immediately before KV upload (already present, kept)
- *  Note: min_count API filter (#1 from spec) and API noindex pre-filter (#3 from spec)
- *        require API changes — add ?min_count=1 param and index field to API response
- *        when ready. Client-side guards below are already in place.
+ *
+ * SEO META CHECK:
+ *  Removed. The WordPress API only returns URLs that should be cached (indexable pages).
+ *  Noindex pages will have a robots meta tag; index/follow pages will have NO meta robots tag.
+ *  Checking for index/follow is therefore unnecessary — all API URLs are cached unless they
+ *  are error pages (isErrorPage) or return a bad HTTP status.
  *
  * IMPORTANT - SLUG FORMAT (DO NOT CHANGE):
  * Path: /listings/caravans/nsw/ → Slug: caravans-nsw → KV keys: caravans-nsw-v1, caravans-nsw-v2, ...
@@ -260,32 +263,6 @@ function isErrorPage(html) {
   return false; // not an error page
 }
 
-function shouldCachePage(html) {
-  // Use regex to handle JSON with or without spaces after colons:
-  // matches: "index":"index"  OR  "index": "index"
-  const hasJsonIndexFollow =
-    /["']index["']\s*:\s*["']index["']/.test(html) &&
-    /["']follow["']\s*:\s*["']follow["']/.test(html);
-
-  const hasMetaIndexFollow =
-    html.includes('content="index, follow"') ||
-    html.includes("content='index, follow'") ||
-    html.includes('content="index,follow"') ||
-    html.includes("content='index,follow'");
-
-  // Match noindex in JSON (with/without spaces) or meta tag
-  const hasNoIndex =
-    /["']index["']\s*:\s*["']noindex["']/.test(html) ||
-    html.includes('content="noindex') ||
-    html.includes("content='noindex");
-
-  const hasNoRobotsTag =
-    !html.match(/<meta[^>]*name=["'"]robots["'""][^>]*>/i) &&
-    !/["']index["']\s*:/.test(html);
-
-  return (hasJsonIndexFollow || hasMetaIndexFollow || hasNoRobotsTag) && !hasNoIndex;
-}
-
 // ============================================
 // FETCH PATHS FROM WP API (replaces fetchSitemapUrls)
 // ============================================
@@ -406,20 +383,15 @@ async function generatePageVariant(urlData, variantNumber) {
       throw new Error('Invalid HTML (no closing </html> tag)');
     }
 
-    // Check for error pages BEFORE index/follow — error pages must NEVER be cached
+    // Check for error pages — error pages must NEVER be cached
     const errorMatch = isErrorPage(html);
     if (errorMatch) {
       console.log(`   🚫 Skipping: Error page detected ("${errorMatch}")`);
       return { status: 'skipped_error', path, kvKey, variant: variantNumber };
     }
 
-    const shouldCache = shouldCachePage(html);
-    console.log(`   🔍 Index/Follow check: ${shouldCache ? '✅' : '❌'}`);
-
-    if (!shouldCache) {
-      console.log(`   ⏭️  Skipping: Not index/follow`);
-      return { status: 'skipped', path, kvKey };
-    }
+    // SEO meta check intentionally removed — API URLs are pre-validated indexable pages.
+    // Noindex pages carry a robots meta tag; index/follow pages have no meta robots tag at all.
 
     html = injectPerformanceTags(html);
 
@@ -464,7 +436,7 @@ async function main() {
   }
   console.log('█'.repeat(70));
 
-  const results = { success: 0, failed: 0, skipped: 0, skipped_error: 0, skipped_server_error: 0, skipped_404: 0, pages: [] };
+  const results = { success: 0, failed: 0, skipped_error: 0, skipped_server_error: 0, skipped_404: 0, pages: [] };
   const failed404Paths = new Set();
   const startTime = Date.now();
 
@@ -579,8 +551,6 @@ async function main() {
         results.skipped_server_error++;
       } else if (result.status === 'skipped_error') {
         results.skipped_error++;
-      } else if (result.status === 'skipped') {
-        results.skipped++;
       } else {
         results.failed++;
       }
@@ -602,7 +572,6 @@ async function main() {
       console.log(`✅ Success: ${results.success} variants`);
       console.log(`🚫 Skipped (error page): ${results.skipped_error} variants`);
       console.log(`⚡ Skipped (500/502/503): ${results.skipped_server_error} variants`);
-      console.log(`⏭️  Skipped (noindex): ${results.skipped} variants`);
       console.log(`🔍 Skipped (404): ${results.skipped_404} variants (${failed404Paths.size} unique URLs)`);
       console.log(`❌ Failed: ${results.failed} variants`);
       console.log(`⏱️  Elapsed: ${elapsed} min | Remaining: ~${remaining} min`);
@@ -734,7 +703,6 @@ async function main() {
   console.log(`✅ Success: ${results.success} variants`);
   console.log(`🚫 Skipped (error page): ${results.skipped_error} variants`);
   console.log(`⚡ Skipped (500/502/503): ${results.skipped_server_error} variants`);
-  console.log(`⏭️  Skipped (noindex): ${results.skipped} variants`);
   console.log(`🔍 Skipped (404): ${results.skipped_404} variants (${failed404Paths.size} unique URLs)`);
   console.log(`❌ Failed: ${results.failed} variants`);
   console.log(`🔄 Unique paths cached: ${Object.keys(results.pages.reduce((acc, p) => ({ ...acc, [p.path]: true }), {})).length}`);
