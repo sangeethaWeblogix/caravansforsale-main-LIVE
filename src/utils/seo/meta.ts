@@ -34,47 +34,47 @@ const ALLOWED_LENGTH_BANDS = new Set([
 ]);
 
 // ─── Main robots function ───
-function getRobotsFromFilters(
+ function getRobotsFromFilters(
   parsed: ReturnType<typeof parseSlugToFilters>,
   slugSegments: string[] = []
-): RobotsResult {
-   const noindex: RobotsResult = { index: false };
-const index: RobotsResult   = { index: true };
+): { index: boolean } {
+  const noindex = { index: false };
+  const index   = { index: true };
 
   // ── Always noindex ──
-  if (parsed.model)    return noindex;
-  if (parsed.suburb)   return noindex;
+  if (parsed.model)     return noindex;
+  if (parsed.suburb)    return noindex;
   if (parsed.condition) return noindex;
-  if (parsed.acustom_fromyears)     return noindex;
+  if (parsed.acustom_fromyears) return noindex;
 
-  // ── Check band filters from slug segments ──
-  let priceSlug  = slugSegments.find(s => ALLOWED_PRICE_BANDS.has(s)  || isPriceLike(s));
-  let atmSlug    = slugSegments.find(s => s.includes("-kg-atm"));
-  let sleepSlug  = slugSegments.find(s => s.includes("-people-sleeping-capacity"));
-  let lengthSlug = slugSegments.find(s => s.includes("-length-in-feet"));
+  // ── Detect band filters ──
+  const priceSlug  = slugSegments.find(s => isPriceLike(s));
+  const atmSlug    = slugSegments.find(s => s.includes("-kg-atm"));
+  const sleepSlug  = slugSegments.find(s => s.includes("-people-sleeping-capacity"));
+  const lengthSlug = slugSegments.find(s => s.includes("-length-in-feet"));
 
-  const hasPrice  = !!priceSlug;
-  const hasAtm    = !!atmSlug;
-  const hasSleep  = !!sleepSlug;
-  const hasLength = !!lengthSlug;
+  const hasBand = !!(priceSlug || atmSlug || sleepSlug || lengthSlug);
 
-  const hasBandFilter = hasPrice || hasAtm || hasSleep || hasLength;
+  // ── Validate allowed bands ──
+  if (priceSlug  && !ALLOWED_PRICE_BANDS.has(priceSlug))   return noindex;
+  if (atmSlug    && !ALLOWED_ATM_BANDS.has(atmSlug))       return noindex;
+  if (sleepSlug  && !ALLOWED_SLEEP_BANDS.has(sleepSlug))   return noindex;
+  if (lengthSlug && !ALLOWED_LENGTH_BANDS.has(lengthSlug)) return noindex;
 
-  // ── If band filter present, validate it's an allowed band ──
-  if (hasPrice  && !ALLOWED_PRICE_BANDS.has(priceSlug!))   return noindex;
-  if (hasAtm    && !ALLOWED_ATM_BANDS.has(atmSlug!))       return noindex;
-  if (hasSleep  && !ALLOWED_SLEEP_BANDS.has(sleepSlug!))   return noindex;
-  if (hasLength && !ALLOWED_LENGTH_BANDS.has(lengthSlug!)) return noindex;
+  // ── If band present → noindex (PHP: only alone = index) ──
+  if (hasBand) {
+    // band alone = index, band + anything = noindex
+    const hasOtherFilters = !!(parsed.state || parsed.make || parsed.category);
+    if (hasOtherFilters) return noindex;
+    return index;
+  }
 
-  // ── Count filters ──
-  // state + region = 1 location filter
+  // ── No band filter — count remaining filters ──
   let filterCount = 0;
-  if (parsed.state)    filterCount += 1; // region grouped with state, no extra count
+  if (parsed.state)    filterCount += 1; // region grouped, no extra
   if (parsed.make)     filterCount += 1;
   if (parsed.category) filterCount += 1;
-  if (hasBandFilter)   filterCount += 1; // all band types = 1 filter slot
 
-  // ── More than 2 filters → noindex ──
   if (filterCount > 2) return noindex;
 
   return index;
