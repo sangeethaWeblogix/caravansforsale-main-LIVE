@@ -1,4 +1,4 @@
-  .list-container {
+     .list-container {
   padding: 15px 0px;
 }
 .search_quick_links .title {
@@ -74,6 +74,14 @@ h1.page-title {
   text-decoration: underline !important;
 }
 
+.cfs-links-section {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    padding: 16px;
+    display: none;
+}
 .filter-acc-icon,
 .toggle_show_make_more {
   cursor: pointer;
@@ -96,7 +104,7 @@ h1.page-title {
   margin-left: 25px;
 }
 .show_count {
-    font-size: 16px;
+    font-size: 18px;
     display: inline;
 }
 .mb-10 {
@@ -519,7 +527,7 @@ h1.page-title {
     -webkit-transition-timing-function: ease-in;
     transition-timing-function: ease-in;
     overflow: hidden;
-    box-shadow: 0px 0px 0px 1.5px #b6b3b3 !important;
+    box-shadow: 0px 0px 0px 1.5px #d9d9d9 !important;
     outline: none;
 }
 .cfs-select-input:focus {
@@ -1008,7 +1016,7 @@ input[type="number"]::-webkit-outer-spin-button {
 
 @media (max-width: 767px) {
   .product_listing {
-    padding: 30px 0;
+    padding: 15px 0;
   }
   h1.page-title {
     padding-bottom: 10px;
