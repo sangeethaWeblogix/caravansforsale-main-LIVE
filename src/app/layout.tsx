@@ -120,12 +120,7 @@ const gtmServer = "https://gtm.caravansforsale.com.au";
           {children}
         </ThemeRegistry>
                     </main>
-          
-                  <Suspense fallback={null}>
-
           <Footer />
-                    </Suspense>
-
         </body>
       </html>
       
