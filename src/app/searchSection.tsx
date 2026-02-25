@@ -24,6 +24,9 @@ import { fetchAtmBasedCaravans } from "@/api/homeApi/weight/api";
 import { fetchLengthBasedCaravans } from "@/api/homeApi/length/api";
 import { fetchUsedCaravansList } from "@/api/homeApi/usedCaravanList/api";
 import { fetchStateBasedCaravans } from "@/api/homeApi/state/api";
+import TabCardSkeleton from "./components/TabCardSkeleton";
+
+
 interface TabsItem {
   label: string;
   capacity: number;
@@ -324,6 +327,7 @@ export default function SearchSection() {
   };
 
   const closeSuggestions = () => setIsSuggestionBoxOpen(false);
+const isTabsLoading = tabsData.every((t) => t.cards.length === 0);
 
   // ------------- typed suggestions (≥ 3 chars) -------------
   useEffect(() => {
@@ -837,15 +841,18 @@ export default function SearchSection() {
                   className="custom-card-grid"
                   style={{ display: activeTab === tab.key ? "grid" : "none" }}
                 >
-                  {tab.cards?.map((item, index) => (
+                 {isTabsLoading
+  ? Array.from({ length: 6 }).map((_, i) => <TabCardSkeleton key={i} />)
+  : tab.cards?.map((item, index) => (
                     
                     <a href={item.url} className="custom-card" key={index}>
                       <h4 className="custom-card-title">
                         <span className="count">{item.sub}</span> {item.title}
                       </h4>
                     </a>
+                     ))}
 
-                  ))}
+                  
                 </div>
               ))}
             </div>
