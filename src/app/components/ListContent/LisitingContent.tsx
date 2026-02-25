@@ -178,7 +178,7 @@
      }
    }, []);
  
-   const handleViewDetails = async (
+   const handleViewDetails = (
      e: React.MouseEvent,
      productId: number,
      href: string,
@@ -190,7 +190,7 @@
      setNavigating(true);
  
      // 🔁 tracking + session flag
-     await handleProductClick(productId);
+     handleProductClick(productId);
  
      // 🔁 navigate
      goToProduct(href);
@@ -273,8 +273,8 @@
      }
    };
  
-   const handleProductClick = async (id) => {
-     await postTrackEvent(
+   const handleProductClick = (id) => {
+     postTrackEvent(
        "https://admin.caravansforsale.com.au/wp-json/cfs/v1/update-clicks",
        id,
      );

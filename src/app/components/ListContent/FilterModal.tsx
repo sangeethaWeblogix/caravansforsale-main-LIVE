@@ -415,120 +415,7 @@ const [tempRegionName, setTempRegionName] = useState<string | null>(null);
   
    // Replace your count useEffect with this:
   
-  useEffect(() => {
-    const activeFilters: Filters = mergeFilters(currentFilters, filters);
-  
-    const controller = new AbortController();
-    const { signal } = controller;
-  
-    // ─── CATEGORY COUNTS ───
-    const catParams = buildCountParamsMulti(activeFilters, ["category"]);
-    catParams.set("group_by", "category");
- setIsCategoryCountLoading(true);
-    fetch(
-      `https://admin.caravansforsale.com.au/wp-json/cfs/v1/params_count?${catParams.toString()}`,
-      { signal }
-    )
-      .then((res) => res.json())
-      .then((json) => {
-       if (!signal.aborted) {
-      console.log("✅ CATEGORY COUNT DATA:", json);  // ← இது print ஆகுதா?
-      setCategoryCounts(json.data || []);
-      setIsCategoryCountLoading(false);
-    } else {
-      console.log("❌ CATEGORY ABORTED");  // ← இது print ஆகுதா?
-    }
-  })
-    .catch((e) => {
-    if (e.name !== "AbortError") {
-  console.log("❌ CATEGORY ERROR:", e);        
-      setIsCategoryCountLoading(false);  // ← STOP on error too
-    }
-  });
-  
-    // ─── MAKE COUNTS ───
-    const makeParams = buildCountParamsMulti(activeFilters, ["make", "model"]);
-    makeParams.set("group_by", "make");
-  
-    // 🔍 DEBUG: Log exact URL being fetched
-    const makeURL = `https://admin.caravansforsale.com.au/wp-json/cfs/v1/params_count?${makeParams.toString()}`;
-    console.log("🔢 MAKE FETCH URL:", makeURL);
-  
-    fetch(makeURL, { signal })
-      .then((res) => res.json())
-      .then((json) => {
-        if (!signal.aborted) {
-          console.log("🔢 MAKE RESPONSE:", json.data?.length, "makes received");
-          console.log("🔢 MAKE SAMPLE:", json.data?.slice(0, 3));
-          setMakeCounts(json.data || []);
-          setPopularMakes(json.popular_makes || []);
-        } else {
-          console.log("🔢 MAKE ABORTED — stale response ignored");
-        }
-      })
-      .catch((e) => { if (e.name !== "AbortError") console.error(e); });
-  
-    // ─── MODEL COUNTS ───
-    const activeMake = activeFilters.make;
-    if (activeMake) {
-      const modelParams = buildCountParamsMulti(activeFilters, ["model"]);
-      modelParams.set("group_by", "model");
-      modelParams.set("make", activeMake);
-  
-      fetch(
-        `https://admin.caravansforsale.com.au/wp-json/cfs/v1/params_count?${modelParams.toString()}`,
-        { signal }
-      )
-        .then((res) => res.json())
-        .then((json) => {
-          if (!signal.aborted) setModelCounts(json.data || []);
-        })
-        .catch((e) => { if (e.name !== "AbortError") console.error(e); });
-    } else {
-      setModelCounts([]);
-    }
-  
-    return () => controller.abort();
-  }, [
-    currentFilters.category,
-    currentFilters.make,
-    currentFilters.model,
-    currentFilters.condition,
-    currentFilters.state,
-    currentFilters.region,
-    currentFilters.suburb,
-    currentFilters.from_price,
-    currentFilters.to_price,
-    currentFilters.minKg,
-    currentFilters.maxKg,
-    currentFilters.acustom_fromyears,
-    currentFilters.acustom_toyears,
-    currentFilters.from_length,
-    currentFilters.to_length,
-    currentFilters.from_sleep,
-    currentFilters.to_sleep,
-    currentFilters.search,
-    currentFilters.keyword,
-    filters.category,
-    filters.make,
-    filters.model,
-    filters.state,
-    filters.region,
-    filters.suburb,
-    filters.condition,
-    filters.from_price,
-    filters.to_price,
-    filters.minKg,
-    filters.maxKg,
-    filters.acustom_fromyears,
-    filters.acustom_toyears,
-    filters.from_length,
-    filters.to_length,
-    filters.from_sleep,
-    filters.to_sleep,
-    filters.search,
-    filters.keyword,
-   ]);
+ 
       
    
     
@@ -1927,6 +1814,155 @@ const hasAnyTempFilter = useMemo(() => {
   currentFilters.search, currentFilters.keyword,
 ]);
      // ✅ categoryCounts load ஆன பிறகு run ஆகும்
+
+     // Replace your count useEffect with this:
+
+useEffect(() => {
+  // ✅ temp values merge பண்ணு - modal-ல் select பண்ணவுடனே count update ஆகும்
+  const tempFilters: Filters = {};
+  if (tempCategory) tempFilters.category = tempCategory;
+  if (selectedMakeTemp) tempFilters.make = selectedMakeTemp;
+  if (tempModel) tempFilters.model = tempModel;
+  if (tempCondition) tempFilters.condition = tempCondition;
+  if (tempStateName) tempFilters.state = tempStateName.toLowerCase();
+  if (tempRegionName) tempFilters.region = tempRegionName;
+  if (tempAtmFrom) tempFilters.minKg = tempAtmFrom;
+  if (tempAtmTo) tempFilters.maxKg = tempAtmTo;
+  if (tempPriceFrom) tempFilters.from_price = tempPriceFrom;
+  if (tempPriceTo) tempFilters.to_price = tempPriceTo;
+  if (tempSleepFrom) tempFilters.from_sleep = tempSleepFrom;
+  if (tempSleepTo) tempFilters.to_sleep = tempSleepTo;
+  if (tempLengthFrom) tempFilters.from_length = tempLengthFrom;
+  if (tempLengthTo) tempFilters.to_length = tempLengthTo;
+  if (tempYear) {
+    tempFilters.acustom_fromyears = tempYear;
+    tempFilters.acustom_toyears = tempYear;
+  }
+
+  // ✅ 3-layer merge: currentFilters → filters → tempFilters (highest priority)
+  const activeFilters: Filters = mergeFilters(
+    mergeFilters(currentFilters, filters),
+    tempFilters
+  );
+
+  const controller = new AbortController();
+  const { signal } = controller;
+
+  // ─── CATEGORY COUNTS ───
+  const catParams = buildCountParamsMulti(activeFilters, ["category"]);
+  catParams.set("group_by", "category");
+  setIsCategoryCountLoading(true);
+  fetch(
+    `https://admin.caravansforsale.com.au/wp-json/cfs/v1/params_count?${catParams.toString()}`,
+    { signal }
+  )
+    .then((res) => res.json())
+    .then((json) => {
+      if (!signal.aborted) {
+        setCategoryCounts(json.data || []);
+        setIsCategoryCountLoading(false);
+      }
+    })
+    .catch((e) => {
+      if (e.name !== "AbortError") {
+        setIsCategoryCountLoading(false);
+      }
+    });
+
+  // ─── MAKE COUNTS ───
+  const makeParams = buildCountParamsMulti(activeFilters, ["make", "model"]);
+  makeParams.set("group_by", "make");
+  fetch(
+    `https://admin.caravansforsale.com.au/wp-json/cfs/v1/params_count?${makeParams.toString()}`,
+    { signal }
+  )
+    .then((res) => res.json())
+    .then((json) => {
+      if (!signal.aborted) {
+        setMakeCounts(json.data || []);
+        setPopularMakes(json.popular_makes || []);
+      }
+    })
+    .catch((e) => { if (e.name !== "AbortError") console.error(e); });
+
+  // ─── MODEL COUNTS ───
+  const activeMake = activeFilters.make;
+  if (activeMake) {
+    const modelParams = buildCountParamsMulti(activeFilters, ["model"]);
+    modelParams.set("group_by", "model");
+    modelParams.set("make", activeMake);
+    fetch(
+      `https://admin.caravansforsale.com.au/wp-json/cfs/v1/params_count?${modelParams.toString()}`,
+      { signal }
+    )
+      .then((res) => res.json())
+      .then((json) => {
+        if (!signal.aborted) setModelCounts(json.data || []);
+      })
+      .catch((e) => { if (e.name !== "AbortError") console.error(e); });
+  } else {
+    setModelCounts([]);
+  }
+
+  return () => controller.abort();
+}, [
+  // currentFilters deps
+  currentFilters.category,
+  currentFilters.make,
+  currentFilters.model,
+  currentFilters.condition,
+  currentFilters.state,
+  currentFilters.region,
+  currentFilters.suburb,
+  currentFilters.from_price,
+  currentFilters.to_price,
+  currentFilters.minKg,
+  currentFilters.maxKg,
+  currentFilters.acustom_fromyears,
+  currentFilters.acustom_toyears,
+  currentFilters.from_length,
+  currentFilters.to_length,
+  currentFilters.from_sleep,
+  currentFilters.to_sleep,
+  currentFilters.search,
+  currentFilters.keyword,
+  // filters deps
+  filters.category,
+  filters.make,
+  filters.model,
+  filters.state,
+  filters.region,
+  filters.suburb,
+  filters.condition,
+  filters.from_price,
+  filters.to_price,
+  filters.minKg,
+  filters.maxKg,
+  filters.acustom_fromyears,
+  filters.acustom_toyears,
+  filters.from_length,
+  filters.to_length,
+  filters.from_sleep,
+  filters.to_sleep,
+  filters.search,
+  filters.keyword,
+  // ✅ NEW: temp values - இவை change ஆனவுடனே count re-fetch ஆகும்
+  tempCategory,
+  selectedMakeTemp,
+  tempModel,
+  tempCondition,
+  tempStateName,
+  tempRegionName,
+  tempAtmFrom,
+  tempAtmTo,
+  tempPriceFrom,
+  tempPriceTo,
+  tempSleepFrom,
+  tempSleepTo,
+  tempLengthFrom,
+  tempLengthTo,
+  tempYear,
+]);
     return (
 <>
 
