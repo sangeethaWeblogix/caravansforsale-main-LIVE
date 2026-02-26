@@ -1360,27 +1360,66 @@ export default function ListingsPage({
   // ✅ handleSliderCategorySelect — loadListings bypass, direct fetchListings call
   // இந்த function-ஐ Listings.tsx-ல் replace பண்ணு
 
-  const handleSliderCategorySelect = async (slug: string | null) => {
-    console.log("🔥 slider category:", slug);
+  // ✅ Generic handler — எந்த filter-க்கும் use பண்ணலாம்
+  // Listings.tsx-ல் handleSliderCategorySelect-ஐ replace பண்ணி இதை மட்டும் வை
 
-    // ✅ next filters build
+  const handleSliderFilterSelect = async (newFilters: Partial<Filters>) => {
+    console.log("🔥 slider filter change:", newFilters);
+
+    // ✅ Build next filters
     const next: Filters = { ...filtersRef.current };
-    if (slug) {
-      next.category = slug;
-    } else {
-      delete next.category;
+
+    // ✅ Apply incoming values — null/undefined = delete that key
+    (Object.keys(newFilters) as (keyof Filters)[]).forEach((key) => {
+      const val = newFilters[key];
+      if (val === null || val === undefined || val === "") {
+        delete next[key];
+      } else {
+        (next as any)[key] = val;
+      }
+    });
+
+    // ✅ Location hierarchy: state மாறினா region/suburb/pincode clear
+    if ("state" in newFilters) {
+      delete next.region;
+      delete next.suburb;
+      delete next.pincode;
     }
+
+    // ✅ State value capitalize பண்ணு — "new south wales" → "New South Wales"
+    if (next.state) {
+      next.state = next.state
+        .toLowerCase()
+        .replace(/\b\w/g, (c) => c.toUpperCase());
+    }
+    // ✅ Region value capitalize
+    if (next.region) {
+      next.region = next.region
+        .toLowerCase()
+        .replace(/\b\w/g, (c) => c.toUpperCase());
+    }
+    if ("region" in newFilters) {
+      delete next.suburb;
+      delete next.pincode;
+    }
+
+    // ✅ Make மாறினா model clear
+    if ("make" in newFilters) {
+      delete next.model;
+    }
+
     console.log("🔥 next filters:", next);
 
-    // ✅ state + ref update
+    // ✅ State + ref update
     filtersRef.current = next;
     setFilters({ ...next });
 
-    // ✅ loaders
+    // ✅ Loaders ON
     setIsMainLoading(true);
     setIsFeaturedLoading(true);
     setIsPremiumLoading(true);
 
+    // ✅ Pagination reset
     setPagination({
       current_page: 1,
       total_pages: 1,
@@ -1393,7 +1432,6 @@ export default function ListingsPage({
     updateURLWithFilters(next, 1);
 
     try {
-      // ✅ loadListings bypass — direct API call
       const radiusNum =
         typeof next.radius_kms === "number"
           ? next.radius_kms
@@ -1406,12 +1444,13 @@ export default function ListingsPage({
           ? String(radiusNum)
           : undefined;
 
-      console.log("🔥 calling fetchListings with category:", next.category);
-
       const response: ApiResponse = await fetchListings({
         ...next,
         page: 1,
         category: next.category,
+        region: next.region,
+        state: next.state,
+        suburb: next.suburb,
         minKg: next.minKg?.toString(),
         maxKg: next.maxKg?.toString(),
         from_price: next.from_price?.toString(),
@@ -1425,15 +1464,10 @@ export default function ListingsPage({
         radius_kms: radiusParam,
       });
 
-      console.log(
-        "🔥 API response products:",
-        response?.data?.products?.length,
+      // ✅ State update
+      const validProducts = (response?.data?.products ?? []).filter(
+        (p: any) => p != null,
       );
-
-      // ✅ state update
-      const productsList = response?.data?.products ?? [];
-      const validProducts = productsList.filter((p: any) => p != null);
-
       setProducts(
         validProducts.length > 0
           ? transformApiItemsToProducts(validProducts)
@@ -1460,13 +1494,16 @@ export default function ListingsPage({
         setMetaDescription(response.seo.metadescription);
       if (response?.list_page_title) setPageTitle(response.list_page_title);
     } catch (err) {
-      console.error("❌ slider category fetch error:", err);
+      console.error("❌ slider filter fetch error:", err);
     } finally {
       setIsMainLoading(false);
       setIsFeaturedLoading(false);
       setIsPremiumLoading(false);
     }
   };
+
+  console.log("initialData states:", initialData?.data?.states?.length);
+  console.log("stateOptions state:", stateOptions?.length);
 
   return (
     <>
@@ -1568,8 +1605,67 @@ export default function ListingsPage({
                     currentFilters={filters}
                     categoryCounts={sliderCategoryCounts}
                     isCategoryCountLoading={sliderCatLoading}
+                    stateOptions={stateOptions}
                     onOpenModal={handleOpenModal}
-                    onCategorySelect={handleSliderCategorySelect}
+                    onCategorySelect={(slug) =>
+                      handleSliderFilterSelect({ category: slug ?? undefined })
+                    }
+                    onLocationSelect={(state, region) => {
+                      const normalize = (s: string | null) =>
+                        s ? s.toLowerCase().replace(/-/g, " ").trim() : "";
+
+                      // ✅ normalize பண்ணி compare — case/hyphen mismatch தவிர்க்கணும்
+                      const prevState = filtersRef.current.state ?? null;
+                      const stateChanged =
+                        normalize(state) !== normalize(prevState);
+
+                      const cap = (s: string | null) =>
+                        s
+                          ? s
+                              .toLowerCase()
+                              .replace(/\b\w/g, (c) => c.toUpperCase())
+                          : undefined;
+
+                      console.log(
+                        "🔥 onLocationSelect — state:",
+                        state,
+                        "region:",
+                        region,
+                      );
+                      console.log(
+                        "🔥 prevState:",
+                        prevState,
+                        "stateChanged:",
+                        stateChanged,
+                      );
+
+                      if (state === null && region === null) {
+                        handleSliderFilterSelect({
+                          state: undefined,
+                          region: undefined,
+                        });
+                      } else if (stateChanged) {
+                        handleSliderFilterSelect({ state: cap(state) });
+                      } else {
+                        // ✅ Same state — region மட்டும் pass, "state" key இல்லாம
+                        handleSliderFilterSelect({ region: cap(region) });
+                      }
+                    }}
+                    onMakeSelect={(slug) =>
+                      handleSliderFilterSelect({ make: slug ?? undefined })
+                    }
+                    onPriceSelect={(from, to) =>
+                      handleSliderFilterSelect({
+                        from_price: from ?? undefined,
+                        to_price: to ?? undefined,
+                      })
+                    }
+                    onAtmSelect={(min, max) =>
+                      handleSliderFilterSelect({
+                        minKg: min ?? undefined,
+                        maxKg: max ?? undefined,
+                      })
+                    }
                   />
                 </div>
               </div>
