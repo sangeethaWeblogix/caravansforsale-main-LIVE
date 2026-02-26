@@ -41,6 +41,8 @@ interface FilterSliderProps {
   onCategorySelect: (slug: string | null) => void;
   onLocationSelect: (state: string | null, region: string | null) => void;
   onOpenModal?: (section?: string) => void;
+  onPriceSelect?: (from: number | null, to: number | null) => void; // ✅ NEW
+  onAtmSelect?: (min: number | null, max: number | null) => void; // ✅ NEW
 }
 
 const FilterSlider = ({
@@ -51,6 +53,8 @@ const FilterSlider = ({
   onCategorySelect,
   onLocationSelect,
   onOpenModal,
+  onPriceSelect,
+  onAtmSelect,
 }: FilterSliderProps) => {
   // ✅ Self fetch — FilterModal மாதிரியே
   const [states, setStates] = useState<StateOption[]>(propStateOptions);
@@ -79,8 +83,64 @@ const FilterSlider = ({
     load();
   }, [propStateOptions.length]);
 
+  // ✅ Price & ATM arrays — FilterModal-ல் உள்ளதே
+  const priceOptions = [
+    10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000,
+    125000, 150000, 175000, 200000, 225000, 250000, 275000, 300000,
+  ];
+  const atmOptions = [
+    600, 800, 1000, 1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000, 3500, 4000,
+    4500,
+  ];
+
+  // ✅ Price & ATM temp states
+  const [tempPriceFrom, setTempPriceFrom] = useState<number | null>(null);
+  const [tempPriceTo, setTempPriceTo] = useState<number | null>(null);
+  const [tempAtmFrom, setTempAtmFrom] = useState<number | null>(null);
+  const [tempAtmTo, setTempAtmTo] = useState<number | null>(null);
+
   // ── modal state ──
-  const [openModal, setOpenModal] = useState<"type" | "location" | null>(null);
+  const [openModal, setOpenModal] = useState<
+    "type" | "location" | "price" | "atm" | null
+  >(null);
+
+  // ✅ Price handlers
+  const handlePriceOpen = () => {
+    setTempPriceFrom(
+      currentFilters.from_price ? Number(currentFilters.from_price) : null,
+    );
+    setTempPriceTo(
+      currentFilters.to_price ? Number(currentFilters.to_price) : null,
+    );
+    setOpenModal("price");
+  };
+  const handlePriceSearch = () => {
+    onPriceSelect?.(tempPriceFrom, tempPriceTo);
+    setOpenModal(null);
+  };
+  const handlePriceClear = () => {
+    setTempPriceFrom(null);
+    setTempPriceTo(null);
+    onPriceSelect?.(null, null);
+    setOpenModal(null);
+  };
+
+  // ✅ ATM handlers
+  const handleAtmOpen = () => {
+    setTempAtmFrom(currentFilters.minKg ? Number(currentFilters.minKg) : null);
+    setTempAtmTo(currentFilters.maxKg ? Number(currentFilters.maxKg) : null);
+    setOpenModal("atm");
+  };
+  const handleAtmSearch = () => {
+    onAtmSelect?.(tempAtmFrom, tempAtmTo);
+    setOpenModal(null);
+  };
+  const handleAtmClear = () => {
+    setTempAtmFrom(null);
+    setTempAtmTo(null);
+    onAtmSelect?.(null, null);
+    setOpenModal(null);
+  };
   const [tempCategory, setTempCategory] = useState<string | null>(null);
   const [tempState, setTempState] = useState<string | null>(null);
   const [tempRegion, setTempRegion] = useState<string | null>(null);
@@ -120,10 +180,6 @@ const FilterSlider = ({
     setOpenModal("location");
   };
   const handleLocationSearch = () => {
-    console.log("🔥 temp tempState:", tempState);
-    console.log("🔥 temp tempRegion:", tempRegion);
-    console.log("🔥 temp currentFilters.state:", currentFilters.state);
-    console.log("🔥 temp currentFilters.region:", currentFilters.region);
     const normalize = (s: string | null) =>
       s ? s.toLowerCase().replace(/-/g, " ").trim() : "";
 
@@ -228,10 +284,24 @@ const FilterSlider = ({
             <SwiperSlide style={{ width: "auto" }}>
               <button
                 className={`tag ${currentFilters.from_price || currentFilters.to_price ? "active" : ""}`}
-                onClick={() => onOpenModal?.("price")}
+                onClick={handlePriceOpen}
               >
                 Price
                 {(currentFilters.from_price || currentFilters.to_price) && (
+                  <span className="active_filter">
+                    <i className="bi bi-circle-fill"></i>
+                  </span>
+                )}
+              </button>
+            </SwiperSlide>
+
+            <SwiperSlide style={{ width: "auto" }}>
+              <button
+                className={`tag ${currentFilters.minKg || currentFilters.maxKg ? "active" : ""}`}
+                onClick={handleAtmOpen}
+              >
+                ATM
+                {(currentFilters.minKg || currentFilters.maxKg) && (
                   <span className="active_filter">
                     <i className="bi bi-circle-fill"></i>
                   </span>
@@ -382,6 +452,162 @@ const FilterSlider = ({
               <button
                 className={`search ${hasLocationChange ? "active" : ""}`}
                 onClick={handleLocationSearch}
+              >
+                Search
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Price Modal */}
+      {openModal === "price" && (
+        <div className="filter-overlay">
+          <div className="filter-modal">
+            <div className="filter-header">
+              <h3>Price</h3>
+              {closeBtn}
+            </div>
+            <div className="filter-body">
+              <div className="row">
+                <div className="col-lg-6">
+                  <div className="location-item">
+                    <label>Min</label>
+                    <select
+                      className="cfs-select-input form-select"
+                      value={tempPriceFrom ?? ""}
+                      onChange={(e) =>
+                        setTempPriceFrom(
+                          e.target.value ? Number(e.target.value) : null,
+                        )
+                      }
+                    >
+                      <option value="">Any</option>
+                      {priceOptions.map((v) => (
+                        <option key={v} value={v}>
+                          ${v.toLocaleString()}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <div className="col-lg-6">
+                  <div className="location-item">
+                    <label>Max</label>
+                    <select
+                      className="cfs-select-input form-select"
+                      value={tempPriceTo ?? ""}
+                      onChange={(e) =>
+                        setTempPriceTo(
+                          e.target.value ? Number(e.target.value) : null,
+                        )
+                      }
+                    >
+                      <option value="">Any</option>
+                      {priceOptions
+                        .filter((v) => !tempPriceFrom || v > tempPriceFrom)
+                        .map((v) => (
+                          <option key={v} value={v}>
+                            ${v.toLocaleString()}
+                          </option>
+                        ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="filter-footer">
+              <button
+                className="clear"
+                onClick={handlePriceClear}
+                style={{
+                  opacity: tempPriceFrom || tempPriceTo ? 1 : 0.4,
+                  cursor:
+                    tempPriceFrom || tempPriceTo ? "pointer" : "not-allowed",
+                }}
+              >
+                Clear filters
+              </button>
+              <button
+                className={`search ${tempPriceFrom || tempPriceTo ? "active" : ""}`}
+                onClick={handlePriceSearch}
+              >
+                Search
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ATM Modal */}
+      {openModal === "atm" && (
+        <div className="filter-overlay">
+          <div className="filter-modal">
+            <div className="filter-header">
+              <h3>ATM</h3>
+              {closeBtn}
+            </div>
+            <div className="filter-body">
+              <div className="row">
+                <div className="col-lg-6">
+                  <div className="location-item">
+                    <label>Min</label>
+                    <select
+                      className="cfs-select-input form-select"
+                      value={tempAtmFrom ?? ""}
+                      onChange={(e) =>
+                        setTempAtmFrom(
+                          e.target.value ? Number(e.target.value) : null,
+                        )
+                      }
+                    >
+                      <option value="">Any</option>
+                      {atmOptions.map((v) => (
+                        <option key={v} value={v}>
+                          {v} kg
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <div className="col-lg-6">
+                  <div className="location-item">
+                    <label>Max</label>
+                    <select
+                      className="cfs-select-input form-select"
+                      value={tempAtmTo ?? ""}
+                      onChange={(e) =>
+                        setTempAtmTo(
+                          e.target.value ? Number(e.target.value) : null,
+                        )
+                      }
+                    >
+                      <option value="">Any</option>
+                      {atmOptions
+                        .filter((v) => !tempAtmFrom || v > tempAtmFrom)
+                        .map((v) => (
+                          <option key={v} value={v}>
+                            {v} kg
+                          </option>
+                        ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="filter-footer">
+              <button
+                className="clear"
+                onClick={handleAtmClear}
+                style={{
+                  opacity: tempAtmFrom || tempAtmTo ? 1 : 0.4,
+                  cursor: tempAtmFrom || tempAtmTo ? "pointer" : "not-allowed",
+                }}
+              >
+                Clear filters
+              </button>
+              <button
+                className={`search ${tempAtmFrom || tempAtmTo ? "active" : ""}`}
+                onClick={handleAtmSearch}
               >
                 Search
               </button>
