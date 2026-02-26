@@ -4,11 +4,11 @@ import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { fetchListings, ApiResponse, Item } from "../../../api/listings/api";
 import Listing from "./LisitingContent";
 import ExculsiveContent from "./exculsiveContent";
-import FilterModal from './FilterModal';
+import FilterModal from "./FilterModal";
 import { flushSync } from "react-dom";
 import { v4 as uuidv4 } from "uuid";
 import "./newList.css?=18";
-import './top-filters.css?=44';
+import "./top-filters.css?=44";
 import dynamic from "next/dynamic";
 
 const ListingSkeleton = dynamic(() => import("../skelton"), { ssr: false });
@@ -119,7 +119,6 @@ interface Props extends Filters {
   page?: string | number;
   initialData?: ApiResponse;
   linksData?: any;
-
 }
 
 /** ------------ Helper Functions ------------ */
@@ -172,7 +171,9 @@ export default function ListingsPage({
   const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const [relatedChips, setRelatedChips] = useState<{ label: string; url: string; group: string }[]>([]);
+  const [relatedChips, setRelatedChips] = useState<
+    { label: string; url: string; group: string }[]
+  >([]);
   const [isMainLoading, setIsMainLoading] = useState(false);
   const [isFeaturedLoading, setIsFeaturedLoading] = useState(false);
   const [isPremiumLoading, setIsPremiumLoading] = useState(false);
@@ -189,7 +190,7 @@ export default function ListingsPage({
   const savePage = (id: string, page: number) => {
     try {
       localStorage.setItem(PAGE_KEY(id), String(page));
-    } catch { }
+    } catch {}
   };
 
   // Update readPage to fallback to extracting page from clickid
@@ -299,6 +300,11 @@ export default function ListingsPage({
       : [],
   );
 
+  // ── 1. Add state for category counts (top of component) ──
+  const [sliderCategoryCounts, setSliderCategoryCounts] = useState<
+    { name: string; slug: string; count: number }[]
+  >([]);
+  const [sliderCatLoading, setSliderCatLoading] = useState(false);
   const [categories, setCategories] = useState<Category[]>(
     initialData?.data?.all_categories || [],
   );
@@ -333,9 +339,9 @@ export default function ListingsPage({
     const fromURL =
       typeof window !== "undefined"
         ? parseInt(
-          new URLSearchParams(window.location.search).get("page") || "1",
-          10,
-        )
+            new URLSearchParams(window.location.search).get("page") || "1",
+            10,
+          )
         : 1;
     return {
       current_page: fromURL,
@@ -434,7 +440,6 @@ export default function ListingsPage({
 
   const updateURLWithFilters = useCallback(
     (nextFilters: Filters, pageNum: number, clickidParam?: string) => {
-
       console.log(pageNum);
       const slug = buildSlugFromFilters(nextFilters); // your slug builder
       const query = new URLSearchParams();
@@ -446,7 +451,10 @@ export default function ListingsPage({
         query.set("radius_kms", String(r));
       }
       //  if (clickid) query.set("clickid", clickid);
-      const cid = clickidParam !== undefined ? clickidParam : new URLSearchParams(window.location.search).get("clickid");
+      const cid =
+        clickidParam !== undefined
+          ? clickidParam
+          : new URLSearchParams(window.location.search).get("clickid");
       if (cid && cid !== "") query.set("clickid", cid);
 
       // Use current pathname (do not force a route push)
@@ -625,6 +633,7 @@ export default function ListingsPage({
       console.error("Failed to prefetch Next data", err);
     }
   };
+  const isUsingInitialDataRef = useRef(!!initialData);
 
   const loadListings = useCallback(
     async (
@@ -632,7 +641,8 @@ export default function ListingsPage({
       appliedFilters: Filters = filtersRef.current,
       skipInitialCheck = false,
     ): Promise<ApiResponse | undefined> => {
-      if (initialData && !skipInitialCheck && isUsingInitialData) {
+      if (initialData && !skipInitialCheck && isUsingInitialDataRef.current) {
+        isUsingInitialDataRef.current = false;
         setIsUsingInitialData(false);
         return initialData;
       }
@@ -813,8 +823,6 @@ export default function ListingsPage({
       }
 
       await loadListings(prevPage, filtersRef.current, true);
-
-
     } catch (err) {
       console.error(err);
     } finally {
@@ -829,7 +837,6 @@ export default function ListingsPage({
   // 3️⃣  restore effect
 
   // restore effect
-
 
   console.log("paginationapi", pagination);
   /* ---- SINGLE source of truth: URL -> fetch ---- */
@@ -964,7 +971,6 @@ export default function ListingsPage({
       isPremiumLoading,
     });
   }, [isLoading, isMainLoading, isFeaturedLoading, isPremiumLoading]);
-
 
   // ✅ Add this ref near your other refs
   const isPopStateRef = useRef(false);
@@ -1116,9 +1122,8 @@ export default function ListingsPage({
   // Mobile offcanvas filter state
   const mobileFiltersRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    import("bootstrap/js/dist/offcanvas").catch(() => { });
+    import("bootstrap/js/dist/offcanvas").catch(() => {});
   }, []);
-
 
   // 1. Add state for client-side links
   const [clientLinksData, setClientLinksData] = useState<any>(null);
@@ -1137,7 +1142,7 @@ export default function ListingsPage({
           }
         });
         const res = await fetch(
-          `https://admin.caravansforsale.com.au/wp-json/cfs/v1/links?${params.toString()}`
+          `https://admin.caravansforsale.com.au/wp-json/cfs/v1/links?${params.toString()}`,
         );
         const json = await res.json();
         setClientLinksData(json.data ?? json);
@@ -1206,7 +1211,9 @@ export default function ListingsPage({
     const slugPath = buildSlugFromFilters(linkFilters);
     const base = slugPath.endsWith("/") ? slugPath.slice(0, -1) : slugPath;
 
-    if (["prices", "atm_ranges", "length_ranges", "sleep_ranges"].includes(type)) {
+    if (
+      ["prices", "atm_ranges", "length_ranges", "sleep_ranges"].includes(type)
+    ) {
       return `${base}/${item.slug}/`;
     }
 
@@ -1230,7 +1237,8 @@ export default function ListingsPage({
         if (f.to_price) params.set("to_price", String(f.to_price));
         if (f.minKg) params.set("from_atm", String(f.minKg));
         if (f.maxKg) params.set("to_atm", String(f.maxKg));
-        if (f.acustom_fromyears) params.set("acustom_fromyears", String(f.acustom_fromyears));
+        if (f.acustom_fromyears)
+          params.set("acustom_fromyears", String(f.acustom_fromyears));
         if (f.from_sleep) params.set("from_sleep", String(f.from_sleep));
         if (f.to_sleep) params.set("to_sleep", String(f.to_sleep));
         if (f.from_length) params.set("from_length", String(f.from_length));
@@ -1239,7 +1247,7 @@ export default function ListingsPage({
         if (f.keyword) params.set("keyword", f.keyword);
 
         const res = await fetch(
-          `https://admin.caravansforsale.com.au/wp-json/cfs/v1/related_links?${params.toString()}`
+          `https://admin.caravansforsale.com.au/wp-json/cfs/v1/related_links?${params.toString()}`,
         );
         const json = await res.json();
         setRelatedChips(json.chips || []);
@@ -1269,6 +1277,197 @@ export default function ListingsPage({
     filters.search,
     filters.keyword,
   ]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    setSliderCatLoading(true);
+
+    const params = new URLSearchParams();
+    const f = filtersRef.current;
+    // exclude category itself so all counts are unfiltered by category
+    if (f.make) params.set("make", f.make);
+    if (f.model) params.set("model", f.model);
+    if (f.condition) params.set("condition", f.condition);
+    if (f.state) params.set("state", f.state.toLowerCase());
+    if (f.region) params.set("region", f.region);
+    if (f.suburb) params.set("suburb", f.suburb);
+    if (f.from_price) params.set("from_price", String(f.from_price));
+    if (f.to_price) params.set("to_price", String(f.to_price));
+    if (f.minKg) params.set("from_atm", String(f.minKg));
+    if (f.maxKg) params.set("to_atm", String(f.maxKg));
+    if (f.acustom_fromyears)
+      params.set("acustom_fromyears", String(f.acustom_fromyears));
+    if (f.acustom_toyears)
+      params.set("acustom_toyears", String(f.acustom_toyears));
+    if (f.from_length) params.set("from_length", String(f.from_length));
+    if (f.to_length) params.set("to_length", String(f.to_length));
+    if (f.from_sleep) params.set("from_sleep", String(f.from_sleep));
+    if (f.to_sleep) params.set("to_sleep", String(f.to_sleep));
+    if (f.search) params.set("search", f.search);
+    if (f.keyword) params.set("keyword", f.keyword);
+    params.set("group_by", "category");
+
+    fetch(
+      `https://admin.caravansforsale.com.au/wp-json/cfs/v1/params_count?${params.toString()}`,
+      { signal: controller.signal },
+    )
+      .then((r) => r.json())
+      .then((json) => {
+        if (!controller.signal.aborted) {
+          setSliderCategoryCounts(json.data || []);
+          setSliderCatLoading(false);
+        }
+      })
+      .catch((e) => {
+        if (e.name !== "AbortError") setSliderCatLoading(false);
+      });
+
+    return () => controller.abort();
+  }, [
+    filters.make,
+    filters.model,
+    filters.condition,
+    filters.state,
+    filters.region,
+    filters.suburb,
+    filters.from_price,
+    filters.to_price,
+    filters.minKg,
+    filters.maxKg,
+    filters.acustom_fromyears,
+    filters.acustom_toyears,
+    filters.from_length,
+    filters.to_length,
+    filters.from_sleep,
+    filters.to_sleep,
+    filters.search,
+    filters.keyword,
+  ]);
+  // Listings.tsx — add near your other handlers
+
+  const [modalFocusSection, setModalFocusSection] = useState<
+    string | undefined
+  >();
+
+  const handleOpenModal = (section?: string) => {
+    setModalFocusSection(section);
+    setOpenModal(true);
+  };
+  // ── 3. Handler: category selected from slider dropdown ──
+  // ✅ இந்த function-ஐ மட்டும் replace பண்ணு (handleSliderCategorySelect)
+  // handleFilterChange பயன்படுத்தாம directly loadListings call பண்ணு
+
+  // ✅ handleSliderCategorySelect — loadListings bypass, direct fetchListings call
+  // இந்த function-ஐ Listings.tsx-ல் replace பண்ணு
+
+  const handleSliderCategorySelect = async (slug: string | null) => {
+    console.log("🔥 slider category:", slug);
+
+    // ✅ next filters build
+    const next: Filters = { ...filtersRef.current };
+    if (slug) {
+      next.category = slug;
+    } else {
+      delete next.category;
+    }
+    console.log("🔥 next filters:", next);
+
+    // ✅ state + ref update
+    filtersRef.current = next;
+    setFilters({ ...next });
+
+    // ✅ loaders
+    setIsMainLoading(true);
+    setIsFeaturedLoading(true);
+    setIsPremiumLoading(true);
+
+    setPagination({
+      current_page: 1,
+      total_pages: 1,
+      total_items: 0,
+      per_page: 12,
+      total_products: 0,
+    });
+
+    // ✅ URL update
+    updateURLWithFilters(next, 1);
+
+    try {
+      // ✅ loadListings bypass — direct API call
+      const radiusNum =
+        typeof next.radius_kms === "number"
+          ? next.radius_kms
+          : typeof next.radius_kms === "string"
+            ? parseInt(next.radius_kms, 10)
+            : undefined;
+
+      const radiusParam =
+        typeof radiusNum === "number" && !isNaN(radiusNum) && radiusNum !== 50
+          ? String(radiusNum)
+          : undefined;
+
+      console.log("🔥 calling fetchListings with category:", next.category);
+
+      const response: ApiResponse = await fetchListings({
+        ...next,
+        page: 1,
+        category: next.category,
+        minKg: next.minKg?.toString(),
+        maxKg: next.maxKg?.toString(),
+        from_price: next.from_price?.toString(),
+        to_price: next.to_price?.toString(),
+        acustom_fromyears: next.acustom_fromyears?.toString(),
+        acustom_toyears: next.acustom_toyears?.toString(),
+        from_length: next.from_length?.toString(),
+        to_length: next.to_length?.toString(),
+        from_sleep: next.from_sleep?.toString(),
+        to_sleep: next.to_sleep?.toString(),
+        radius_kms: radiusParam,
+      });
+
+      console.log(
+        "🔥 API response products:",
+        response?.data?.products?.length,
+      );
+
+      // ✅ state update
+      const productsList = response?.data?.products ?? [];
+      const validProducts = productsList.filter((p: any) => p != null);
+
+      setProducts(
+        validProducts.length > 0
+          ? transformApiItemsToProducts(validProducts)
+          : [],
+      );
+      setFeaturedProducts(
+        transformApiItemsToProducts(response?.data?.featured_products ?? []),
+      );
+      setPremiumProducts(
+        transformApiItemsToProducts(response?.data?.premium_products ?? []),
+      );
+      setExculisiveProducts(
+        transformApiItemsToProducts(response?.data?.exclusive_products ?? []),
+      );
+      setEmptyProduct(
+        transformApiItemsToProducts(
+          response?.data?.emp_exclusive_products ?? [],
+        ),
+      );
+
+      if (response?.pagination) setPagination(response.pagination);
+      if (response?.seo?.metatitle) setMetaTitle(response.seo.metatitle);
+      if (response?.seo?.metadescription)
+        setMetaDescription(response.seo.metadescription);
+      if (response?.list_page_title) setPageTitle(response.list_page_title);
+    } catch (err) {
+      console.error("❌ slider category fetch error:", err);
+    } finally {
+      setIsMainLoading(false);
+      setIsFeaturedLoading(false);
+      setIsPremiumLoading(false);
+    }
+  };
+
   return (
     <>
       <Head>
@@ -1291,62 +1490,68 @@ export default function ListingsPage({
       <div>
         {clientMounted && clientLinksData && (
           <div className="cfs-links-section" id="client-links">
-            {(["states", "categories", "regions",] as string[]).map((sectionKey) => {
-              const items = clientLinksData[sectionKey];
-              if (!items || items.length === 0) return null;
+            {(["states", "categories", "regions"] as string[]).map(
+              (sectionKey) => {
+                const items = clientLinksData[sectionKey];
+                if (!items || items.length === 0) return null;
 
-              const titles: Record<string, string> = {
-                states: "Browse by State",
-                categories: "Browse by Category",
-                regions: "Browse by Region",
-                //         makes: "Browse by Make",
-                //         models: "Browse by Model",
-                //         conditions: "Browse by Condition",
-                //          prices: "Browse by Price",
-                // atm_ranges: "Browse by ATM",
-                // length_ranges: "Browse by Length",
-                // sleep_ranges: "Browse by Sleep",
-              };
+                const titles: Record<string, string> = {
+                  states: "Browse by State",
+                  categories: "Browse by Category",
+                  regions: "Browse by Region",
+                  //         makes: "Browse by Make",
+                  //         models: "Browse by Model",
+                  //         conditions: "Browse by Condition",
+                  //          prices: "Browse by Price",
+                  // atm_ranges: "Browse by ATM",
+                  // length_ranges: "Browse by Length",
+                  // sleep_ranges: "Browse by Sleep",
+                };
 
-              return (
-                <div key={sectionKey} className="cfs-links-group">
-                  <h5 className="cfs-filter-label">{titles[sectionKey] || sectionKey}</h5>
-                  <ul className="cfs-links-list">
-                    {items.map((item: any) => {
-                      const linkUrl = buildClientLinkUrl(sectionKey, item);
-                      return (
-                        <li key={item.slug} className="cfs-links-item">
-                          <a
-                            href={linkUrl}
-                            target=""
-                            className="cfs-links-link"
-                            onClick={(e: React.MouseEvent) => {
-                              e.preventDefault();
-                              router.push(linkUrl);
-                            }}
-                          >
-                            {item.name.includes(" ")
-                              ? item.name.replace(/\b\w/g, (c: string) => c.toUpperCase())
-                              : item.name.replace(/-/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase())
-                            }                    </a>
-
-                        </li>
-
-                      );
-                    })}
-                  </ul>
-                </div>
-              );
-            })}
+                return (
+                  <div key={sectionKey} className="cfs-links-group">
+                    <h5 className="cfs-filter-label">
+                      {titles[sectionKey] || sectionKey}
+                    </h5>
+                    <ul className="cfs-links-list">
+                      {items.map((item: any) => {
+                        const linkUrl = buildClientLinkUrl(sectionKey, item);
+                        return (
+                          <li key={item.slug} className="cfs-links-item">
+                            <a
+                              href={linkUrl}
+                              target=""
+                              className="cfs-links-link"
+                              onClick={(e: React.MouseEvent) => {
+                                e.preventDefault();
+                                router.push(linkUrl);
+                              }}
+                            >
+                              {item.name.includes(" ")
+                                ? item.name.replace(/\b\w/g, (c: string) =>
+                                    c.toUpperCase(),
+                                  )
+                                : item.name
+                                    .replace(/-/g, " ")
+                                    .replace(/\b\w/g, (c: string) =>
+                                      c.toUpperCase(),
+                                    )}{" "}
+                            </a>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                );
+              },
+            )}
           </div>
         )}
       </div>
 
       <div className="search-bar">
         <div className="container">
-
           <div className="row align-items-end">
-
             <div className="col-lg-12">
               <div className="filter_left">
                 <div className="filter_btn_top">
@@ -1354,17 +1559,21 @@ export default function ListingsPage({
                     className="filter-btn"
                     onClick={() => setOpenModal(true)}
                   >
-                    <span>{/* <i className="bi bi-filter"></i> */} 2</span> Filters
+                    <span>{/* <i className="bi bi-filter"></i> */} 2</span>{" "}
+                    Filters
                   </button>
                 </div>
                 <div>
-                  <FilterSlider />
-
+                  <FilterSlider
+                    currentFilters={filters}
+                    categoryCounts={sliderCategoryCounts}
+                    isCategoryCountLoading={sliderCatLoading}
+                    onOpenModal={handleOpenModal}
+                    onCategorySelect={handleSliderCategorySelect}
+                  />
                 </div>
-
               </div>
             </div>
-
           </div>
         </div>
       </div>
@@ -1378,13 +1587,13 @@ export default function ListingsPage({
           models={models}
           states={stateOptions}
           onFilterChange={(partial) => {
-
             handleFilterChange(partial);
           }}
           currentFilters={filters}
           setIsFeaturedLoading={setIsFeaturedLoading}
           setIsPremiumLoading={setIsPremiumLoading}
           setIsMainLoading={setIsMainLoading}
+          focusSection={modalFocusSection}
         />
 
         //  <CaravanFilter
@@ -1419,14 +1628,13 @@ export default function ListingsPage({
             <div className="row">
               {/* Desktop sidebar */}
 
-
               {/* Listings */}
               {/* Listings */}
 
               {isLoading ||
-                isMainLoading ||
-                isFeaturedLoading ||
-                isPremiumLoading ? (
+              isMainLoading ||
+              isFeaturedLoading ||
+              isPremiumLoading ? (
                 <div className="col-lg-8">
                   <ListingSkeleton count={8} />
                 </div>
@@ -1436,26 +1644,26 @@ export default function ListingsPage({
                   {(products.length > 0 ||
                     fetauredProducts.length > 0 ||
                     preminumProducts.length > 0) && (
-                      <Listing
-                        pageTitle={pageTitle}
-                        products={products}
-                        data={products}
-                        pagination={pagination}
-                        onNext={handleNextPage}
-                        onPrev={handlePrevPage}
-                        metaDescription={metaDescription}
-                        metaTitle={metaTitle}
-                        onFilterChange={handleFilterChange}
-                        currentFilters={filters}
-                        preminumProducts={preminumProducts}
-                        fetauredProducts={fetauredProducts}
-                        exculisiveProducts={exculisiveProducts}
-                        isMainLoading={isMainLoading}
-                        isFeaturedLoading={isFeaturedLoading}
-                        isPremiumLoading={isPremiumLoading}
+                    <Listing
+                      pageTitle={pageTitle}
+                      products={products}
+                      data={products}
+                      pagination={pagination}
+                      onNext={handleNextPage}
+                      onPrev={handlePrevPage}
+                      metaDescription={metaDescription}
+                      metaTitle={metaTitle}
+                      onFilterChange={handleFilterChange}
+                      currentFilters={filters}
+                      preminumProducts={preminumProducts}
+                      fetauredProducts={fetauredProducts}
+                      exculisiveProducts={exculisiveProducts}
+                      isMainLoading={isMainLoading}
+                      isFeaturedLoading={isFeaturedLoading}
+                      isPremiumLoading={isPremiumLoading}
                       // isNextLoading={isNextLoading}
-                      />
-                    )}
+                    />
+                  )}
 
                   {/** CASE 2: SHOW EXCLUSIVE PAGE */}
                   {products.length === 0 &&
@@ -1507,7 +1715,6 @@ export default function ListingsPage({
                 models={models}
                 states={stateOptions}
                 onFilterChange={(partial) => {
-
                   handleFilterChange(partial);
                 }}
                 currentFilters={filters}
@@ -1532,7 +1739,6 @@ export default function ListingsPage({
               //                         hideSSRLinks={true}
               //                       />
             )}
-
           </Suspense>
         </div>
       </div>
