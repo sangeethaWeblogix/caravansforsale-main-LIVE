@@ -1,6 +1,13 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import {
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { fetchListings, ApiResponse, Item } from "../../../api/listings/api";
 import Listing from "./LisitingContent";
 import ExculsiveContent from "./exculsiveContent";
@@ -1522,6 +1529,37 @@ export default function ListingsPage({
   console.log("initialData states:", initialData?.data?.states?.length);
   console.log("stateOptions state:", stateOptions?.length);
 
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (filters.category) count++;
+    if (filters.state) count++; // state + region = 1
+    if (filters.make) count++; // make + model = 1
+    if (filters.minKg || filters.maxKg) count++; // ATM = 1
+    if (filters.from_price || filters.to_price) count++; // Price = 1
+    if (filters.condition) count++;
+    if (filters.acustom_fromyears) count++;
+    if (filters.from_sleep || filters.to_sleep) count++; // Sleep = 1
+    if (filters.from_length || filters.to_length) count++; // Length = 1
+    if (filters.search || filters.keyword) count++;
+    return count;
+  }, [
+    filters.category,
+    filters.state,
+    filters.make,
+    filters.minKg,
+    filters.maxKg,
+    filters.from_price,
+    filters.to_price,
+    filters.condition,
+    filters.acustom_fromyears,
+    filters.from_sleep,
+    filters.to_sleep,
+    filters.from_length,
+    filters.to_length,
+    filters.search,
+    filters.keyword,
+  ]);
+
   return (
     <>
       <Head>
@@ -1613,7 +1651,11 @@ export default function ListingsPage({
                     className="filter-btn"
                     onClick={() => setOpenModal(true)}
                   >
-                    <span>{/* <i className="bi bi-filter"></i> */} 2</span>{" "}
+                    {activeFilterCount > 0 ? (
+                      <span className="filter-count">{activeFilterCount}</span>
+                    ) : (
+                      <i className="bi bi-filter"></i>
+                    )}{" "}
                     Filters
                   </button>
                 </div>
