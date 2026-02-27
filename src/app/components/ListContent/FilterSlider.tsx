@@ -407,11 +407,18 @@ const FilterSlider = ({
                 className={`tag ${currentFilters.category ? "active" : ""}`}
                 onClick={handleTypeOpen}
               >
-                Caravan Type
-                {currentFilters.category && (
-                  <span className="active_filter">
-                    <i className="bi bi-circle-fill"></i>
-                  </span>
+                {currentFilters.category ? (
+                  <>
+                    <small className="selected_label">Type: </small>
+                    {categoryCounts.find(
+                      (c) => c.slug === currentFilters.category,
+                    )?.name ?? currentFilters.category}
+                    <span className="active_filter">
+                      <i className="bi bi-circle-fill"></i>
+                    </span>
+                  </>
+                ) : (
+                  "Caravan Type"
                 )}
               </button>
             </SwiperSlide>
@@ -472,11 +479,20 @@ const FilterSlider = ({
                 className={`tag ${currentFilters.from_price || currentFilters.to_price ? "active" : ""}`}
                 onClick={handlePriceOpen}
               >
-                Price
-                {(currentFilters.from_price || currentFilters.to_price) && (
-                  <span className="active_filter">
-                    <i className="bi bi-circle-fill"></i>
-                  </span>
+                {currentFilters.from_price || currentFilters.to_price ? (
+                  <>
+                    <small className="selected_label">Price: </small>
+                    {currentFilters.from_price && currentFilters.to_price
+                      ? `${Number(currentFilters.from_price).toLocaleString()} – ${Number(currentFilters.to_price).toLocaleString()}`
+                      : currentFilters.from_price
+                        ? `From ${Number(currentFilters.from_price).toLocaleString()}`
+                        : `Up to ${Number(currentFilters.to_price).toLocaleString()}`}
+                    <span className="active_filter">
+                      <i className="bi bi-circle-fill"></i>
+                    </span>
+                  </>
+                ) : (
+                  "Price"
                 )}
               </button>
             </SwiperSlide>
@@ -486,11 +502,20 @@ const FilterSlider = ({
                 className={`tag ${currentFilters.minKg || currentFilters.maxKg ? "active" : ""}`}
                 onClick={handleAtmOpen}
               >
-                ATM
-                {(currentFilters.minKg || currentFilters.maxKg) && (
-                  <span className="active_filter">
-                    <i className="bi bi-circle-fill"></i>
-                  </span>
+                {currentFilters.minKg || currentFilters.maxKg ? (
+                  <>
+                    <small className="selected_label">ATM: </small>
+                    {currentFilters.minKg && currentFilters.maxKg
+                      ? `${Number(currentFilters.minKg).toLocaleString()} kg – ${Number(currentFilters.maxKg).toLocaleString()} kg`
+                      : currentFilters.minKg
+                        ? `From ${Number(currentFilters.minKg).toLocaleString()} kg`
+                        : `Up to ${Number(currentFilters.maxKg).toLocaleString()} kg`}
+                    <span className="active_filter">
+                      <i className="bi bi-circle-fill"></i>
+                    </span>
+                  </>
+                ) : (
+                  "ATM"
                 )}
               </button>
             </SwiperSlide>
