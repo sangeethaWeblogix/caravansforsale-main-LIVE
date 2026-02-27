@@ -45,64 +45,159 @@ export const filterOptions = {
         name: "Australian Capital Territory",
         slug: "/australian-capital-territory-state/",
         region: [
-          { name: "", slug: "" },
-          { name: "", slug: "" },
+          {
+            name: "Australian Capital Territory",
+            slug: "/australian-capital-territory-state/australian-capital-territory-region/",
+          },
         ],
       },
       {
         name: "New South Wales",
         slug: "/new-south-wales-state/",
         region: [
-          { name: "", slug: "" },
-          { name: "", slug: "" },
+          { name: "Sydney", slug: "/new-south-wales-state/sydney-region/" },
+          { name: "Hunter", slug: "/new-south-wales-state/hunter-region/" },
+          {
+            name: "Coffs Harbour",
+            slug: "/new-south-wales-state/coffs-harbour-region/",
+          },
+          {
+            name: "Newcastle",
+            slug: "/new-south-wales-state/newcastle-region/",
+          },
+          {
+            name: "Southern Highlands",
+            slug: "/new-south-wales-state/southern-highlands-region/",
+          },
+          {
+            name: "Richmond Tweed",
+            slug: "/new-south-wales-state/richmond-tweed-region/",
+          },
+          {
+            name: "Central Coast",
+            slug: "/new-south-wales-state/central-coast-region/",
+          },
+          {
+            name: "Central West",
+            slug: "/new-south-wales-state/central-west-region/",
+          },
+          {
+            name: "Mid North Coast",
+            slug: "/new-south-wales-state/mid-north-coast-region/",
+          },
+          { name: "Murray", slug: "/new-south-wales-state/murray-region/" },
+          {
+            name: "New England",
+            slug: "/new-south-wales-state/new-england-region/",
+          },
+          { name: "Riverina", slug: "/new-south-wales-state/riverina-region/" },
+          { name: "Capital", slug: "/new-south-wales-state/capital-region/" },
+          { name: "Orana", slug: "/new-south-wales-state/orana-region/" },
+          {
+            name: "Illawarra",
+            slug: "/new-south-wales-state/illawarra-region/",
+          },
         ],
       },
       {
         name: "Northern Territory",
         slug: "/northern-territory-state/",
         region: [
-          { name: "", slug: "" },
-          { name: "", slug: "" },
+          { name: "Darwin", slug: "/northern-territory-state/darwin-region/" },
         ],
       },
       {
         name: "Queensland",
         slug: "/queensland-state/",
         region: [
-          { name: "", slug: "" },
-          { name: "", slug: "" },
+          {
+            name: "Moreton Bay North",
+            slug: "/queensland-state/moreton-bay-north-region/",
+          },
+          { name: "Wide Bay", slug: "/queensland-state/wide-bay-region/" },
+          { name: "Gold Coast", slug: "/queensland-state/gold-coast-region/" },
+          { name: "Brisbane", slug: "/queensland-state/brisbane-region/" },
+          {
+            name: "Sunshine Coast",
+            slug: "/queensland-state/sunshine-coast-region/",
+          },
+          {
+            name: "Logan Beaudesert",
+            slug: "/queensland-state/logan-beaudesert-region/",
+          },
+          {
+            name: "Moreton Bay South",
+            slug: "/queensland-state/moreton-bay-south-region/",
+          },
+          { name: "Townsville", slug: "/queensland-state/townsville-region/" },
+          {
+            name: "Mackay Isaac Whitsunday",
+            slug: "/queensland-state/mackay-isaac-whitsunday-region/",
+          },
+          { name: "Ipswich", slug: "/queensland-state/ipswich-region/" },
+          { name: "Toowoomba", slug: "/queensland-state/toowoomba-region/" },
+          { name: "Cairns", slug: "/queensland-state/cairns-region/" },
         ],
       },
       {
         name: "South Australia",
         slug: "/south-australia-state/",
         region: [
-          { name: "", slug: "" },
-          { name: "", slug: "" },
+          { name: "Adelaide", slug: "/south-australia-state/adelaide-region/" },
+          {
+            name: "South Australia South East",
+            slug: "/south-australia-state/south-australia-south-east-region/",
+          },
         ],
       },
       {
         name: "Tasmania",
         slug: "/tasmania-state/",
         region: [
-          { name: "", slug: "" },
-          { name: "", slug: "" },
+          { name: "North West", slug: "/tasmania-state/north-west-region/" },
+          { name: "Hobart", slug: "/tasmania-state/hobart-region/" },
+          { name: "Launceston", slug: "/tasmania-state/launceston-region/" },
         ],
       },
       {
         name: "Victoria",
         slug: "/victoria-state/",
         region: [
-          { name: "", slug: "" },
-          { name: "", slug: "" },
+          { name: "Melbourne", slug: "/victoria-state/melbourne-region/" },
+          { name: "Ballarat", slug: "/victoria-state/ballarat-region/" },
+          { name: "Geelong", slug: "/victoria-state/geelong-region/" },
+          { name: "Shepparton", slug: "/victoria-state/shepparton-region/" },
+          {
+            name: "Latrobe Gippsland",
+            slug: "/victoria-state/latrobe-gippsland-region/",
+          },
+          { name: "Bendigo", slug: "/victoria-state/bendigo-region/" },
+          {
+            name: "Mornington Peninsula",
+            slug: "/victoria-state/mornington-peninsula-region/",
+          },
+          { name: "Hume", slug: "/victoria-state/hume-region/" },
+          { name: "North West", slug: "/victoria-state/north-west-region/" },
+          {
+            name: "Warrnambool And South West",
+            slug: "/victoria-state/warrnambool-and-south-west-region/",
+          },
         ],
       },
       {
         name: "Western Australia",
         slug: "/western-australia-state/",
         region: [
-          { name: "", slug: "" },
-          { name: "", slug: "" },
+          { name: "Perth", slug: "/western-australia-state/perth-region/" },
+          {
+            name: "Mandurah",
+            slug: "/western-australia-state/mandurah-region/",
+          },
+          {
+            name: "Western Australia Outback South",
+            slug: "/western-australia-state/western-australia-outback-south-region/",
+          },
+          { name: "Bunbury", slug: "/western-australia-state/bunbury-region/" },
         ],
       },
     ],
