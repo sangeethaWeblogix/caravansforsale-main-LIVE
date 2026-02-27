@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
-import { fetchProductList } from "@/api/productList/api";
+import { fetchProductList } from "@/api/productList/api"; // ✅ FilterModal-ல் உள்ளதே
 
 import "swiper/css";
 import "swiper/css/navigation";
@@ -25,24 +25,10 @@ interface StateOption {
 interface Filters {
   category?: string;
   make?: string;
-  model?: string;
   state?: string;
   region?: string;
-  suburb?: string;
-  pincode?: string;
   from_price?: string | number;
   to_price?: string | number;
-  minKg?: string | number;
-  maxKg?: string | number;
-  condition?: string;
-  from_length?: string | number;
-  to_length?: string | number;
-  from_sleep?: string | number;
-  to_sleep?: string | number;
-  acustom_fromyears?: string | number;
-  acustom_toyears?: string | number;
-  search?: string;
-  keyword?: string;
   [key: string]: any;
 }
 
@@ -50,51 +36,21 @@ interface FilterSliderProps {
   currentFilters: Filters;
   categoryCounts: CategoryCount[];
   isCategoryCountLoading?: boolean;
+  // ✅ stateOptions prop optional பண்ணு — self fetch பண்ணும்
   stateOptions?: StateOption[];
   onCategorySelect: (slug: string | null) => void;
-  onMakeSelect?: (make: string | null, model: string | null) => void;
+  onMakeSelect?: (make: string | null, model: string | null) => void; // ✅ NEW
   onLocationSelect: (state: string | null, region: string | null) => void;
   onOpenModal?: (section?: string) => void;
-  onPriceSelect?: (from: number | null, to: number | null) => void;
-  onAtmSelect?: (min: number | null, max: number | null) => void;
+  onPriceSelect?: (from: number | null, to: number | null) => void; // ✅ NEW
+  onAtmSelect?: (min: number | null, max: number | null) => void; // ✅ NEW
 }
-
-// ── FilterModal-போல் buildCountParams helper ──
-const buildMakeCountParams = (filters: Filters): URLSearchParams => {
-  const params = new URLSearchParams();
-
-  // make & model exclude பண்ணு (make count-க்கு)
-  if (filters.category) params.set("category", filters.category);
-  if (filters.condition) params.set("condition", filters.condition);
-  if (filters.state) params.set("state", filters.state.toLowerCase());
-  if (filters.region) params.set("region", filters.region);
-  if (filters.suburb) params.set("suburb", filters.suburb);
-  if (filters.pincode) params.set("pincode", filters.pincode);
-  if (filters.from_price) params.set("from_price", String(filters.from_price));
-  if (filters.to_price) params.set("to_price", String(filters.to_price));
-  if (filters.minKg) params.set("from_atm", String(filters.minKg));
-  if (filters.maxKg) params.set("to_atm", String(filters.maxKg));
-  if (filters.acustom_fromyears)
-    params.set("acustom_fromyears", String(filters.acustom_fromyears));
-  if (filters.acustom_toyears)
-    params.set("acustom_toyears", String(filters.acustom_toyears));
-  if (filters.from_length)
-    params.set("from_length", String(filters.from_length));
-  if (filters.to_length) params.set("to_length", String(filters.to_length));
-  if (filters.from_sleep) params.set("from_sleep", String(filters.from_sleep));
-  if (filters.to_sleep) params.set("to_sleep", String(filters.to_sleep));
-  if (filters.search) params.set("search", filters.search);
-  if (filters.keyword) params.set("keyword", filters.keyword);
-
-  params.set("group_by", "make");
-  return params;
-};
 
 const FilterSlider = ({
   currentFilters,
   categoryCounts,
   isCategoryCountLoading,
-  stateOptions: propStateOptions = [],
+  stateOptions: propStateOptions = [], // prop வந்தா use பண்ணு
   onCategorySelect,
   onLocationSelect,
   onOpenModal,
@@ -102,24 +58,34 @@ const FilterSlider = ({
   onAtmSelect,
   onMakeSelect,
 }: FilterSliderProps) => {
+  // ✅ Self fetch — FilterModal மாதிரியே
   const [states, setStates] = useState<StateOption[]>(propStateOptions);
 
   useEffect(() => {
+    // prop-ல் data இருந்தா fetch வேண்டாம்
     if (propStateOptions.length > 0) {
       setStates(propStateOptions);
       return;
     }
+
+    // ✅ prop empty-யா இருந்தா தன்னா fetch பண்ணு
     const load = async () => {
       try {
         const res = await fetchProductList();
         setStates(res?.data?.states || []);
+        console.log(
+          "🔥 FilterSlider fetched states:",
+          res?.data?.states?.length,
+        );
       } catch (e) {
         console.error("FilterSlider states fetch error:", e);
       }
     };
+
     load();
   }, [propStateOptions.length]);
 
+  // ✅ Price & ATM arrays — FilterModal-ல் உள்ளதே
   const priceOptions = [
     10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000,
     125000, 150000, 175000, 200000, 225000, 250000, 275000, 300000,
@@ -129,7 +95,7 @@ const FilterSlider = ({
     4500,
   ];
 
-  // ── Make & Model states ──
+  // ✅ Make & Model states
   const [makes, setMakes] = useState<
     { name: string; slug: string; models?: { name: string; slug: string }[] }[]
   >([]);
@@ -141,6 +107,7 @@ const FilterSlider = ({
   const [makeSearch, setMakeSearch] = useState("");
   const [makeLoading, setMakeLoading] = useState(false);
 
+  // ✅ Make fetch — FilterModal மாதிரியே
   const didFetchMakeRef = useRef(false);
   useEffect(() => {
     if (didFetchMakeRef.current) return;
@@ -153,58 +120,42 @@ const FilterSlider = ({
       .finally(() => setMakeLoading(false));
   }, []);
 
+  // ✅ Available models based on selected make
   const availableModels = makes.find((m) => m.slug === tempMake)?.models ?? [];
 
+  // ✅ Filtered makes by search
   const filteredMakes = makeSearch
     ? makeCounts.filter((m) =>
         m.name.toLowerCase().includes(makeSearch.toLowerCase()),
       )
     : makeCounts;
 
-  // ── FIXED: FilterModal-போல் full filter params use பண்ணி make count fetch ──
+  // ✅ Make count fetch
   useEffect(() => {
-    const controller = new AbortController();
-
-    const params = buildMakeCountParams(currentFilters);
+    const params = new URLSearchParams();
+    if (currentFilters.category)
+      params.set("category", currentFilters.category);
+    if (currentFilters.state)
+      params.set("state", currentFilters.state.toLowerCase());
+    if (currentFilters.region) params.set("region", currentFilters.region);
+    if (currentFilters.condition)
+      params.set("condition", currentFilters.condition);
+    params.set("group_by", "make");
 
     fetch(
-      `https://admin.caravansforsale.com.au/wp-json/cfs/v1/params_count?${params.toString()}`,
-      { signal: controller.signal },
+      `https://admin.caravansforsale.com.au/wp-json/cfs/v1/params_count?${params}`,
     )
       .then((r) => r.json())
-      .then((json) => {
-        if (!controller.signal.aborted) {
-          setMakeCounts(json.data || []);
-        }
-      })
-      .catch((e) => {
-        if (e.name !== "AbortError") console.error(e);
-      });
-
-    return () => controller.abort();
+      .then((json) => setMakeCounts(json.data || []))
+      .catch(console.error);
   }, [
-    // ── FilterModal-போல் ALL relevant filters watch பண்ணு ──
     currentFilters.category,
-    currentFilters.condition,
     currentFilters.state,
     currentFilters.region,
-    currentFilters.suburb,
-    currentFilters.pincode,
-    currentFilters.from_price,
-    currentFilters.to_price,
-    currentFilters.minKg,
-    currentFilters.maxKg,
-    currentFilters.acustom_fromyears,
-    currentFilters.acustom_toyears,
-    currentFilters.from_length,
-    currentFilters.to_length,
-    currentFilters.from_sleep,
-    currentFilters.to_sleep,
-    currentFilters.search,
-    currentFilters.keyword,
+    currentFilters.condition,
   ]);
 
-  // ── Make & Model handlers ──
+  // ✅ Make & Model handlers
   const handleMakeOpen = () => {
     setTempMake(currentFilters.make ?? null);
     setTempModel(currentFilters.model ?? null);
@@ -222,17 +173,18 @@ const FilterSlider = ({
     setOpenModal(null);
   };
 
-  // ── Price & ATM temp states ──
+  // ✅ Price & ATM temp states
   const [tempPriceFrom, setTempPriceFrom] = useState<number | null>(null);
   const [tempPriceTo, setTempPriceTo] = useState<number | null>(null);
   const [tempAtmFrom, setTempAtmFrom] = useState<number | null>(null);
   const [tempAtmTo, setTempAtmTo] = useState<number | null>(null);
 
+  // ── modal state ──
   const [openModal, setOpenModal] = useState<
     "type" | "location" | "price" | "atm" | "make" | null
   >(null);
 
-  // ── Price handlers ──
+  // ✅ Price handlers
   const handlePriceOpen = () => {
     setTempPriceFrom(
       currentFilters.from_price ? Number(currentFilters.from_price) : null,
@@ -253,7 +205,7 @@ const FilterSlider = ({
     setOpenModal(null);
   };
 
-  // ── ATM handlers ──
+  // ✅ ATM handlers
   const handleAtmOpen = () => {
     setTempAtmFrom(currentFilters.minKg ? Number(currentFilters.minKg) : null);
     setTempAtmTo(currentFilters.maxKg ? Number(currentFilters.maxKg) : null);
@@ -269,7 +221,6 @@ const FilterSlider = ({
     onAtmSelect?.(null, null);
     setOpenModal(null);
   };
-
   const [tempCategory, setTempCategory] = useState<string | null>(null);
   const [tempState, setTempState] = useState<string | null>(null);
   const [tempRegion, setTempRegion] = useState<string | null>(null);
@@ -289,6 +240,7 @@ const FilterSlider = ({
   };
 
   const handleLocationOpen = () => {
+    // ✅ currentFilters.state-ஐ states list-ல் match பண்ணி canonical name எடு
     const matchedState = states.find(
       (s) =>
         s.name.toLowerCase() === (currentFilters.state ?? "").toLowerCase() ||
@@ -299,6 +251,10 @@ const FilterSlider = ({
         r.name.toLowerCase() === (currentFilters.region ?? "").toLowerCase() ||
         r.value.toLowerCase() === (currentFilters.region ?? "").toLowerCase(),
     );
+
+    console.log("🔥 matched state:", matchedState?.name);
+    console.log("🔥 matched region:", matchedRegion?.name);
+
     setTempState(matchedState?.name ?? currentFilters.state ?? null);
     setTempRegion(matchedRegion?.name ?? currentFilters.region ?? null);
     setOpenModal("location");
@@ -306,14 +262,21 @@ const FilterSlider = ({
   const handleLocationSearch = () => {
     const normalize = (s: string | null) =>
       s ? s.toLowerCase().replace(/-/g, " ").trim() : "";
+
     const prevState = currentFilters.state ?? null;
+    // ✅ normalize compare — case mismatch தவிர்க்கணும்
     const stateChanged = normalize(tempState) !== normalize(prevState);
+
+    console.log("🔥 search — tempState:", tempState, "tempRegion:", tempRegion);
+    console.log("🔥 stateChanged:", stateChanged);
 
     if (tempState === null && tempRegion === null) {
       onLocationSelect(null, null);
     } else if (stateChanged) {
+      // ✅ State மாறினா region reset
       onLocationSelect(tempState, null);
     } else {
+      // ✅ Same state — region மட்டும் pass
       onLocationSelect(tempState, tempRegion);
     }
     setOpenModal(null);
@@ -325,6 +288,7 @@ const FilterSlider = ({
     setOpenModal(null);
   };
 
+  // ✅ states state use பண்ணு (prop இல்ல)
   const filteredRegions =
     states.find((s) => s.name.toLowerCase() === tempState?.toLowerCase())
       ?.regions ?? [];
@@ -542,12 +506,14 @@ const FilterSlider = ({
                       value={tempState || ""}
                       onChange={(e) => {
                         const newState = e.target.value || null;
+                        // ✅ value மாறாம இருந்தா ignore பண்ணு
                         if (newState === tempState) return;
                         setTempState(newState);
                         setTempRegion(null);
                       }}
                     >
                       <option value="">Any</option>
+                      {/* ✅ states (self-fetched) use பண்ணு */}
                       {states.map((s, i) => (
                         <option key={i} value={s.name}>
                           {s.name}
@@ -556,6 +522,7 @@ const FilterSlider = ({
                     </select>
                   </div>
                 </div>
+
                 {tempState && filteredRegions.length > 0 && (
                   <div className="col-lg-6">
                     <div className="location-item">
@@ -598,7 +565,6 @@ const FilterSlider = ({
           </div>
         </div>
       )}
-
       {/* Make & Model Modal */}
       {openModal === "make" && (
         <div className="filter-overlay">
@@ -612,12 +578,14 @@ const FilterSlider = ({
                 <div className="col-lg-6">
                   <div className="location-item">
                     <label>Make</label>
+                    {/* ✅ Search input */}
+
                     <select
                       className="cfs-select-input form-select"
                       value={tempMake ?? ""}
                       onChange={(e) => {
                         setTempMake(e.target.value || null);
-                        setTempModel(null);
+                        setTempModel(null); // make மாறினா model reset
                       }}
                     >
                       <option value="">Any</option>
@@ -633,6 +601,8 @@ const FilterSlider = ({
                     </select>
                   </div>
                 </div>
+
+                {/* ✅ Model — make select ஆனா மட்டும் show */}
                 {tempMake && availableModels.length > 0 && (
                   <div className="col-lg-6">
                     <div className="location-item">

@@ -1405,7 +1405,9 @@ export default function ListingsPage({
 
     // ✅ Make மாறினா model clear
     if ("make" in newFilters) {
-      delete next.model;
+      if (!("model" in newFilters)) {
+        delete next.model;
+      }
     }
 
     console.log("🔥 next filters:", next);
@@ -1444,10 +1446,25 @@ export default function ListingsPage({
           ? String(radiusNum)
           : undefined;
 
+      // handleSliderFilterSelect-ல் fetchListings call-க்கு முன்னாடி இதை add பண்ணு
+
+      console.log("🔥 FINAL next filters before fetch:", {
+        make: next.make,
+        model: next.model,
+        category: next.category,
+        state: next.state,
+        from_price: next.from_price,
+        to_price: next.to_price,
+        minKg: next.minKg,
+        maxKg: next.maxKg,
+      });
       const response: ApiResponse = await fetchListings({
         ...next,
         page: 1,
         category: next.category,
+        make: next.make,
+        model: next.model,
+        condition: next.condition,
         region: next.region,
         state: next.state,
         suburb: next.suburb,
@@ -1651,21 +1668,53 @@ export default function ListingsPage({
                         handleSliderFilterSelect({ region: cap(region) });
                       }
                     }}
-                    onMakeSelect={(slug) =>
-                      handleSliderFilterSelect({ make: slug ?? undefined })
-                    }
-                    onPriceSelect={(from, to) =>
-                      handleSliderFilterSelect({
-                        from_price: from ?? undefined,
-                        to_price: to ?? undefined,
-                      })
-                    }
-                    onAtmSelect={(min, max) =>
-                      handleSliderFilterSelect({
-                        minKg: min ?? undefined,
-                        maxKg: max ?? undefined,
-                      })
-                    }
+                    onPriceSelect={(from, to) => {
+                      const next: Partial<Filters> = {};
+                      // from/to null ஆனா explicitly undefined set பண்ணு (delete ஆகும்)
+                      // value இருந்தா set பண்ணு
+                      if (from !== null && from !== undefined) {
+                        next.from_price = from;
+                      } else {
+                        next.from_price = undefined; // delete
+                      }
+                      if (to !== null && to !== undefined) {
+                        next.to_price = to;
+                      } else {
+                        next.to_price = undefined; // delete
+                      }
+                      handleSliderFilterSelect(next);
+                    }}
+                    onMakeSelect={(make, model) => {
+                      const next: Partial<Filters> = {};
+
+                      if (make !== null && make !== undefined) {
+                        next.make = make;
+                      } else {
+                        next.make = undefined; // delete
+                      }
+
+                      if (model !== null && model !== undefined) {
+                        next.model = model;
+                      }
+                      if (filtersRef.current.category) {
+                        next.category = filtersRef.current.category;
+                      }
+                      handleSliderFilterSelect(next);
+                    }}
+                    onAtmSelect={(min, max) => {
+                      const next: Partial<Filters> = {};
+                      if (min !== null && min !== undefined) {
+                        next.minKg = min;
+                      } else {
+                        next.minKg = undefined;
+                      }
+                      if (max !== null && max !== undefined) {
+                        next.maxKg = max;
+                      } else {
+                        next.maxKg = undefined;
+                      }
+                      handleSliderFilterSelect(next);
+                    }}
                   />
                 </div>
               </div>
