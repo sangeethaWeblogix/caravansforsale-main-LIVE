@@ -249,23 +249,31 @@ const FilterSlider = ({
   ]);
 
   // ── Make & Model handlers ──
+
+  // ── handleMakeOpen — validate பண்ணாம directly set பண்ணு ──
   const handleMakeOpen = () => {
-    setTempMake(currentFilters.make ?? null);
-    setTempModel(currentFilters.model ?? null);
+    const currentMake = currentFilters.make ?? null;
+    const currentModel = currentFilters.model ?? null;
+
+    setTempMake(currentMake);
+    setTempModel(currentModel);
     setMakeSearch("");
     setOpenModal("make");
   };
   const handleMakeSearch = () => {
+    delete localOverrideRef.current.make;
+    delete localOverrideRef.current.model;
     onMakeSelect?.(tempMake, tempModel);
     setOpenModal(null);
   };
   const handleMakeClear = () => {
+    localOverrideRef.current.make = undefined;
+    localOverrideRef.current.model = undefined;
     setTempMake(null);
     setTempModel(null);
     onMakeSelect?.(null, null);
     setOpenModal(null);
   };
-
   // ── Price & ATM temp states ──
   const [tempPriceFrom, setTempPriceFrom] = useState<number | null>(null);
   const [tempPriceTo, setTempPriceTo] = useState<number | null>(null);
@@ -278,6 +286,8 @@ const FilterSlider = ({
 
   // ── Price handlers ──
   const handlePriceOpen = () => {
+    const f = getEffectiveFilters();
+
     setTempPriceFrom(
       currentFilters.from_price ? Number(currentFilters.from_price) : null,
     );
@@ -287,10 +297,14 @@ const FilterSlider = ({
     setOpenModal("price");
   };
   const handlePriceSearch = () => {
+    delete localOverrideRef.current.from_price;
+    delete localOverrideRef.current.to_price;
     onPriceSelect?.(tempPriceFrom, tempPriceTo);
     setOpenModal(null);
   };
   const handlePriceClear = () => {
+    localOverrideRef.current.from_price = undefined;
+    localOverrideRef.current.to_price = undefined;
     setTempPriceFrom(null);
     setTempPriceTo(null);
     onPriceSelect?.(null, null);
@@ -299,15 +313,20 @@ const FilterSlider = ({
 
   // ── ATM handlers ──
   const handleAtmOpen = () => {
-    setTempAtmFrom(currentFilters.minKg ? Number(currentFilters.minKg) : null);
-    setTempAtmTo(currentFilters.maxKg ? Number(currentFilters.maxKg) : null);
+    const f = getEffectiveFilters();
+    setTempAtmFrom(f.minKg ? Number(f.minKg) : null);
+    setTempAtmTo(f.maxKg ? Number(f.maxKg) : null);
     setOpenModal("atm");
   };
   const handleAtmSearch = () => {
+    delete localOverrideRef.current.minKg;
+    delete localOverrideRef.current.maxKg;
     onAtmSelect?.(tempAtmFrom, tempAtmTo);
     setOpenModal(null);
   };
   const handleAtmClear = () => {
+    localOverrideRef.current.minKg = undefined;
+    localOverrideRef.current.maxKg = undefined;
     setTempAtmFrom(null);
     setTempAtmTo(null);
     onAtmSelect?.(null, null);
@@ -319,39 +338,46 @@ const FilterSlider = ({
   const [tempRegion, setTempRegion] = useState<string | null>(null);
 
   const handleTypeOpen = () => {
-    setTempCategory(currentFilters.category ?? null);
+    const f = getEffectiveFilters();
+    setTempCategory(f.category ?? null);
     setOpenModal("type");
   };
   const handleTypeSearch = () => {
+    delete localOverrideRef.current.category;
     onCategorySelect(tempCategory);
     setOpenModal(null);
   };
   const handleTypeClear = () => {
+    localOverrideRef.current.category = undefined;
     setTempCategory(null);
     onCategorySelect(null);
     setOpenModal(null);
   };
 
   const handleLocationOpen = () => {
+    const f = getEffectiveFilters();
     const matchedState = states.find(
       (s) =>
-        s.name.toLowerCase() === (currentFilters.state ?? "").toLowerCase() ||
-        s.value.toLowerCase() === (currentFilters.state ?? "").toLowerCase(),
+        s.name.toLowerCase() === (f.state ?? "").toLowerCase() ||
+        s.value.toLowerCase() === (f.state ?? "").toLowerCase(),
     );
     const matchedRegion = matchedState?.regions?.find(
       (r) =>
-        r.name.toLowerCase() === (currentFilters.region ?? "").toLowerCase() ||
-        r.value.toLowerCase() === (currentFilters.region ?? "").toLowerCase(),
+        r.name.toLowerCase() === (f.region ?? "").toLowerCase() ||
+        r.value.toLowerCase() === (f.region ?? "").toLowerCase(),
     );
-    setTempState(matchedState?.name ?? currentFilters.state ?? null);
-    setTempRegion(matchedRegion?.name ?? currentFilters.region ?? null);
+    setTempState(matchedState?.name ?? f.state ?? null);
+    setTempRegion(matchedRegion?.name ?? f.region ?? null);
     setOpenModal("location");
   };
   const handleLocationSearch = () => {
     const normalize = (s: string | null) =>
       s ? s.toLowerCase().replace(/-/g, " ").trim() : "";
-    const prevState = currentFilters.state ?? null;
+    const prevState = getEffectiveFilters().state ?? null;
     const stateChanged = normalize(tempState) !== normalize(prevState);
+
+    delete localOverrideRef.current.state;
+    delete localOverrideRef.current.region;
 
     if (tempState === null && tempRegion === null) {
       onLocationSelect(null, null);
@@ -363,6 +389,8 @@ const FilterSlider = ({
     setOpenModal(null);
   };
   const handleLocationClear = () => {
+    localOverrideRef.current.state = undefined;
+    localOverrideRef.current.region = undefined;
     setTempState(null);
     setTempRegion(null);
     onLocationSelect(null, null);
@@ -390,7 +418,22 @@ const FilterSlider = ({
       </svg>
     </button>
   );
+  const localOverrideRef = useRef<Partial<Filters>>({});
 
+  // ── Helper: currentFilters + local override merge பண்ணு ──
+  const getEffectiveFilters = () => {
+    const merged = { ...currentFilters };
+    // localOverrideRef-ல் உள்ள keys loop பண்ணி explicitly override பண்ணு
+    for (const key of Object.keys(localOverrideRef.current)) {
+      const val = localOverrideRef.current[key];
+      if (val === null || val === undefined) {
+        delete merged[key]; // ✅ null/undefined ஆனா key-ஐயே remove பண்ணு
+      } else {
+        merged[key] = val;
+      }
+    }
+    return merged;
+  };
   return (
     <>
       <div className="filter-row">
@@ -688,19 +731,33 @@ const FilterSlider = ({
                       className="cfs-select-input form-select"
                       value={tempMake ?? ""}
                       onChange={(e) => {
-                        setTempMake(e.target.value || null);
+                        const val = e.target.value || null;
+                        setTempMake(val);
                         setTempModel(null);
+                        if (!val) setModelCounts([]);
                       }}
                     >
                       <option value="">Any</option>
                       {makeLoading ? (
                         <option disabled>Loading...</option>
                       ) : (
-                        filteredMakes.map((m) => (
-                          <option key={m.slug} value={m.slug}>
-                            {m.name} ({m.count})
-                          </option>
-                        ))
+                        <>
+                          {/* ✅ tempMake இருக்கு ஆனால் makeCounts-ல் இல்லன்னா
+                        (0 products — count இல்ல) manually show பண்ணு */}
+                          {tempMake &&
+                            !filteredMakes.some((m) => m.slug === tempMake) && (
+                              <option value={tempMake}>
+                                {makes.find((m) => m.slug === tempMake)?.name ??
+                                  tempMake}{" "}
+                                (0)
+                              </option>
+                            )}
+                          {filteredMakes.map((m) => (
+                            <option key={m.slug} value={m.slug}>
+                              {m.name} ({m.count})
+                            </option>
+                          ))}
+                        </>
                       )}
                     </select>
                   </div>
@@ -718,11 +775,23 @@ const FilterSlider = ({
                         {modelCountLoading ? (
                           <option disabled>Loading...</option>
                         ) : (
-                          modelCounts.map((mod) => (
-                            <option key={mod.slug} value={mod.slug}>
-                              {mod.name || mod.slug} ({mod.count})
-                            </option>
-                          ))
+                          <>
+                            {/* ✅ tempModel இருக்கு ஆனால் modelCounts-ல் இல்லன்னா
+                          (0 products) manually show பண்ணு */}
+                            {tempModel &&
+                              !modelCounts.some(
+                                (m) => m.slug === tempModel,
+                              ) && (
+                                <option value={tempModel}>
+                                  {tempModel} (0)
+                                </option>
+                              )}
+                            {modelCounts.map((mod) => (
+                              <option key={mod.slug} value={mod.slug}>
+                                {mod.name || mod.slug} ({mod.count})
+                              </option>
+                            ))}
+                          </>
                         )}
                       </select>
                     </div>
