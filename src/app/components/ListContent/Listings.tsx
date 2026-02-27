@@ -11,7 +11,7 @@ import "./newList.css?=18";
 import './top-filters.css?=44';
 import dynamic from "next/dynamic";
 
-const ListingSkeleton = dynamic(() => import("../skelton"), { ssr: false });
+import ListingSkeleton from "../skelton";
 
 import {
   redirect,
