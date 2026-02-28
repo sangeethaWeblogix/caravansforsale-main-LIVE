@@ -1,4 +1,5 @@
-  export const dynamic = "force-dynamic";
+  // export const dynamic = "force-dynamic"
+;
   
   import "bootstrap/dist/css/bootstrap.min.css";
   import "bootstrap-icons/font/bootstrap-icons.css";
@@ -6,12 +7,13 @@
   import "@fortawesome/fontawesome-free/css/all.min.css";
   import Navbar from "./navbar/Navbar";
   import Footer from "./footer/Footer";
-  import React from "react";
+  import React, { Suspense } from "react";
   import { Metadata } from "next";
-  import ScrollToTop from "./ScrollToTop";
+  import ScrollToTop from "./navigation/ScrollToTopGlobal";
   import UTMTracker from "./UTMTracker";
   // import NextTopLoader from "nextjs-toploader";
 import ThemeRegistry from './components/ThemeRegistry';
+import NavigationHistory from "@/components/NavigationHistory";
 
   
   export const metadata: Metadata = {
@@ -95,9 +97,19 @@ const gtmServer = "https://gtm.caravansforsale.com.au";
 </noscript>
 
   
-          <UTMTracker />
-          <Navbar />
+         <Suspense fallback={null}>
+  <UTMTracker />
+</Suspense>
+<Suspense fallback={null}>
+  <NavigationHistory />
+</Suspense>
+<Suspense fallback={null}>
+  <Navbar />
+</Suspense>
+                  <Suspense fallback={null}>
+
           <ScrollToTop />
+          </Suspense>
           <main className="product-page style-5">
             {/* <NextTopLoader
           color="#ff6600"
@@ -108,8 +120,6 @@ const gtmServer = "https://gtm.caravansforsale.com.au";
           {children}
         </ThemeRegistry>
                     </main>
-          
-
           <Footer />
         </body>
       </html>

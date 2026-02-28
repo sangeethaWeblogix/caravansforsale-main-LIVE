@@ -55,6 +55,7 @@ export default function CaravanDetailModal({
   const [errors, setErrors] = useState<Partial<typeof form>>({});
   const [submitting, setSubmitting] = useState(false);
   const [okMsg, setOkMsg] = useState<string | null>(null);
+  const [isFinanceQuoteChecked, setFinanceQuoteChecked] = useState(false);
   const router = useRouter();
 
   // Validation regex
@@ -104,6 +105,11 @@ export default function CaravanDetailModal({
     setSubmitting(true);
     setOkMsg(null);
     try {
+      const navHistory = sessionStorage.getItem("nav_history");
+      const navigation_path = navHistory
+        ? JSON.parse(navHistory).join(", ")
+        : "";
+
       const data = await createProductEnquiry({
         product_id: product.id ?? product.slug ?? product.name,
         email: form.email.trim(),
@@ -111,6 +117,8 @@ export default function CaravanDetailModal({
         phone: form.phone.trim(),
         message: form.message.trim() || "",
         postcode: form.postcode.trim(),
+        page_url: navigation_path,
+        finance: isFinanceQuoteChecked,
       });
 
       if (data?.success && data.data?.redirect_slug) {
@@ -218,7 +226,7 @@ export default function CaravanDetailModal({
                   <div className="sidebar-enquiry">
                     <form className="wpcf7-form" noValidate onSubmit={onSubmit}>
                       <div className="form">
-                        <h4>Contact Dealer</h4>
+                        <h4>Contact Seller</h4>
 
                         {/* Name */}
                         <div className="form-item">
@@ -367,23 +375,39 @@ export default function CaravanDetailModal({
 
                         {okMsg && <div className="cfs-success">{okMsg}</div>}
 
+                        {/* finance checkbox */}
+                        <div className="checkbox-wrapper">
+                          <input
+                            type="checkbox"
+                            id="financeQuote"
+                            onChange={() =>
+                              setFinanceQuoteChecked((prevState) => !prevState)
+                            }
+                            checked={isFinanceQuoteChecked}
+                          />
+                          <label htmlFor="financeQuote">
+                            Get a no-obligation finance quote with competitive
+                            rates
+                          </label>
+                        </div>
+
                         <p className="terms_text">
                           By clicking &apos;Send Enquiry&apos;, you agree to
                           Caravan Marketplace{" "}
-                          <Link
+                          <a
                             href="/privacy-collection-statement"
                             target="_blank"
                           >
                             Collection Statement
-                          </Link>
+                          </a>
                           ,{" "}
-                          <Link href="/privacy-policy" target="_blank">
+                          <a href="/privacy-policy" target="_blank">
                             Privacy Policy
-                          </Link>{" "}
+                          </a>{" "}
                           and{" "}
-                          <Link href="/terms-conditions" target="_blank">
+                          <a href="/terms-conditions" target="_blank">
                             Terms and Conditions
-                          </Link>
+                          </a>
                           .
                         </p>
 

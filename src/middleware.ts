@@ -1,26 +1,70 @@
- import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { parseSlugToFilters } from "@/app/components/urlBuilder";
 
 /* ──────────────────────────────────────────────
    Edge-safe in-memory cache
 ────────────────────────────────────────────── */
-const seoCache = new Map<
-  string,
-  { robots: string; expires: number }
->();
-
+const seoCache = new Map<string, { robots: string; expires: number }>();
 const CACHE_TTL = 60 * 1000; // 1 minute
+
+/* ──────────────────────────────────────────────
+   Bot Detection
+────────────────────────────────────────────── */
+const BOT_USER_AGENTS = [
+  'googlebot',
+  'bingbot',
+  'slurp',
+  'duckduckbot',
+  'baiduspider',
+  'yandexbot',
+  'facebookexternalhit',
+  'twitterbot',
+  'linkedinbot',
+  'whatsapp',
+  'crawler',
+  'spider',
+  'bot'
+] as const;
+
+function isBot(userAgent: string): boolean {
+  if (!userAgent) return false;
+  const ua = userAgent.toLowerCase();
+  return BOT_USER_AGENTS.some(bot => ua.includes(bot));
+}
 
 export async function middleware(request: NextRequest) {
   const url = request.nextUrl.clone();
   const fullPath = url.pathname + url.search;
+  const userAgent = request.headers.get('user-agent') || '';
 
+  /* 🤖 STEP 1: Bot Detection - Let Cloudflare Worker Handle It */
+  if (isBot(userAgent)) {
+    console.log(`🤖 Bot detected: ${userAgent.substring(0, 50)}...`);
+    
+    // Just pass through - Cloudflare Worker will serve from KV
+    // Don't try to fetch from KV API here - let the Worker do it
+    const response = NextResponse.next();
+    
+    // Add header to help Worker identify bot traffic
+    response.headers.set('X-Is-Bot', 'true');
+    
+    return response;
+  }
+ if (
+    !url.pathname.endsWith('/') &&
+    !url.pathname.includes('.') &&
+    !url.pathname.startsWith('/api') &&
+    !url.pathname.startsWith('/_next')
+  ) {
+    url.pathname = `${url.pathname}/`;
+    return NextResponse.redirect(url, 308);
+  }
   /* 1️⃣ Block /feed URLs */
   if (/feed/i.test(fullPath)) {
     return new NextResponse(null, { status: 410 });
   }
-
   /* 2️⃣ Remove add-to-cart param */
+
   if (url.searchParams.has("add-to-cart")) {
     url.searchParams.delete("add-to-cart");
     return NextResponse.redirect(url, { status: 301 });
@@ -31,7 +75,7 @@ export async function middleware(request: NextRequest) {
 
   /* 4️⃣ SEO Middleware (LISTINGS ONLY) */
   if (url.pathname.startsWith("/listings")) {
-    const cacheKey = fullPath; // ✅ FIXED: include query params
+    const cacheKey = fullPath;
 
     /* 🔹 Cache hit */
     const cached = seoCache.get(cacheKey);
@@ -64,12 +108,13 @@ export async function middleware(request: NextRequest) {
           "User-Agent": "next-middleware",
         },
         signal: controller.signal,
-        next: { revalidate: 60 }, // Edge cache hint
+        // @ts-ignore - Edge runtime specific
+        next: { revalidate: 60 },
       });
 
       clearTimeout(timeoutId);
 
-      let robotsHeader = "index, follow"; // ✅ safe default
+      let robotsHeader = "index, follow";
 
       if (apiRes.ok) {
         const data = await apiRes.json();
@@ -113,6 +158,7 @@ export async function middleware(request: NextRequest) {
 ────────────────────────────────────────────── */
 export const config = {
   matcher: [
+    "/",
     "/listings/:path*",
     "/((?!_next/static|_next/image|favicon.ico).*)",
   ],

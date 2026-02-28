@@ -3,7 +3,7 @@ import "../components/ListContent/newList.css";
 import "./listings.css";
 import { Metadata } from "next";
 
-export const revalidate = 60;
+ export const revalidate = 3600
 
 export const metadata: Metadata = {
   title: "Caravans For Sale in Australia - Find Exclusive Deals",

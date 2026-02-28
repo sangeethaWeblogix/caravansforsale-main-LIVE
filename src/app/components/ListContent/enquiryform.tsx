@@ -45,6 +45,7 @@ export function useEnquiryForm(product: Product) {
 
   const [errors, setErrors] = useState<FormErrors>({});
   const [submitting, setSubmitting] = useState(false);
+  const [isFinanceQuoteChecked, setFinanceQuoteChecked] = useState(false);
 
   const NAME_RE = /^[A-Za-z][A-Za-z\s'.-]{1,49}$/;
   const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
@@ -109,6 +110,11 @@ export function useEnquiryForm(product: Product) {
     setSubmitting(true);
 
     try {
+      const navHistory = sessionStorage.getItem("nav_history");
+      const navigation_path = navHistory
+        ? JSON.parse(navHistory).join(", ")
+        : "";
+
       const data = await createProductEnquiry({
         product_id: product.id ?? product.slug ?? product.name,
         email: form.email.trim(),
@@ -116,6 +122,8 @@ export function useEnquiryForm(product: Product) {
         phone: form.phone.trim(),
         message: form.message.trim(),
         postcode: form.postcode.trim(),
+        page_url: navigation_path,
+        finance: isFinanceQuoteChecked,
       });
 
       if (data?.success && data.data?.redirect_slug) {
@@ -136,5 +144,7 @@ export function useEnquiryForm(product: Product) {
     setField,
     onBlur,
     onSubmit,
+    isFinanceQuoteChecked,
+    setFinanceQuoteChecked,
   };
 }

@@ -1,3 +1,4 @@
+
 import React, { Suspense } from "react";
 import Listing from "../components/ListContent/Listings";
 import { fetchListings } from "@/api/listings/api";
@@ -5,7 +6,8 @@ import type { Metadata } from "next";
 import { ensureValidPage } from "@/utils/seo/validatePage";
 import { notFound } from "next/navigation";
 import ApiErrorFallback from "../components/ApiErrorFallback";
-export const revalidate = 60;
+ 
+ export const revalidate = 3600
 
 export const metadata: Metadata = {
   title: "Caravans For Sale in Australia - Find Exclusive Deals",

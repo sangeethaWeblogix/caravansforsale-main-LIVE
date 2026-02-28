@@ -12,7 +12,7 @@ const PrivacyPolicyPage = () => {
             <div className="section-head mb-40">
               <h1 className="divide-orange pb-20">Privacy Policy</h1>
               <p>
-                At Caravan Marketplace, safeguarding your privacy and ensuring
+                At Marketplace Network, safeguarding your privacy and ensuring
                 the security of your personal information are top priorities for
                 us. This comprehensive privacy policy elaborates on how we
                 collect, utilize, safeguard, and provide access to your
@@ -114,20 +114,20 @@ const PrivacyPolicyPage = () => {
               <p>
                 <strong>Email:</strong>{" "}
                 <Link
-                  href="mailto:privacy@caravansforsale.com.au"
+                  href="mailto:privacy@marketplacenetwork.com.au"
                   target="_blank"
                   rel="noreferrer noopener"
                 >
-                  privacy@caravansforsale.com.au
+                  privacy@marketplacenetwork.com.au
                 </Link>
                 <br />
                 <strong>Website:</strong>{" "}
                 <Link
-                  href="https://www.caravansforsale.com.au/"
+                  href="https://www.marketplacenetwork.com.au/"
                   target="_blank"
                   rel="noreferrer noopener"
                 >
-                  www.caravansforsale.com.au
+                  www.marketplacenetwork.com.au
                 </Link>
               </p>
             </div>

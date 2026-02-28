@@ -14,7 +14,7 @@ export const metadata: Metadata = {
    },
 };
 
-export const revalidate = 60; // ISR: refresh every 60s
+ export const revalidate = 3600; // ISR: refresh every 60s
 
 export default async function BlogPage() {
   // Your Blogs component should fetch page=1 by default

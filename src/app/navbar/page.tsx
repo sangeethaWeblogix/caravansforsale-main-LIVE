@@ -1,6 +1,9 @@
- import Navbar from "./Navbar"
+ import { Suspense } from "react"
+import Navbar from "./Navbar"
 export default function Home() {
   return (
-  <Navbar />
+  <Suspense fallback={null}>
+      <Navbar />
+    </Suspense>
   )
 }

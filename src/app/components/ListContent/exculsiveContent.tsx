@@ -128,8 +128,17 @@ export default function ExculisiveContent({
         name: "",
       };
 
-  const { form, errors, touched, submitting, setField, onBlur, onSubmit } =
-    useEnquiryForm(enquiryProduct);
+  const {
+    form,
+    errors,
+    touched,
+    submitting,
+    setField,
+    onBlur,
+    onSubmit,
+    isFinanceQuoteChecked,
+    setFinanceQuoteChecked,
+  } = useEnquiryForm(enquiryProduct);
 
   // Remove all the lazy loading state and just load all images immediately
 
@@ -339,11 +348,11 @@ console.log("exxx", data)
         <meta name="twitter:description" content={metaDescription} />
       </Head>
 
-      <div className="col-lg-6 ">
+      <div className="col-lg-9 ">
         <div className="top-filter mb-10">
           <div className="row align-items-center">
-            <div className="col-lg-8">
-              <h1 className="show_count">
+            <div className="col-lg-12">
+              <h1 className="show_count text-center d-block mb-3">
                 <strong>{pageTitle}</strong>
               </h1>
             </div>
@@ -607,7 +616,7 @@ console.log("exxx", data)
                                   setShowContact(true);
                                 }}
                               >
-                                Contact Dealer
+                                Contact Seller
                               </button>
                               <button className="btn btn-primary">
                                 View Details
@@ -651,7 +660,7 @@ console.log("exxx", data)
         </div>
       )}
 
-      {/* === Contact Dealer Popup === */}
+      {/* === Contact Seller Popup === */}
       {showContact && (
         <div className="popup-overlay">
           <div className="popup-box">
@@ -666,7 +675,7 @@ console.log("exxx", data)
               ×
             </button>
 
-            <h4>Contact Dealer</h4>
+            <h4>Contact Seller</h4>
 
             <div className="sidebar-enquiry">
               <form className="wpcf7-form" noValidate onSubmit={onSubmit}>
@@ -765,6 +774,21 @@ console.log("exxx", data)
                         onChange={(e) => setField("message", e.target.value)}
                       ></textarea>
                     </p>
+                  </div>
+
+                  {/* finance checkbox */}
+                  <div className="checkbox-wrapper">
+                    <input
+                      type="checkbox"
+                      id="financeQuote"
+                      onChange={() =>
+                        setFinanceQuoteChecked((prevState) => !prevState)
+                      }
+                      checked={isFinanceQuoteChecked}
+                    />
+                    <label htmlFor="financeQuote">
+                      Get a no-obligation finance quote with competitive rates
+                    </label>
                   </div>
 
                   <p className="terms_text">

@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import FaqSection from "./FaqSection";
 import RelatedNews from "./RelatedNews";
 import "./details.css";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { formatPostDate } from "@/utils/date";
 
 type BlogDetail = {
@@ -96,6 +96,111 @@ export default function BlogDetailsPage({
     redirect("/404");
   }
   const [showFullToc, setShowFullToc] = useState(false);
+
+  const blogContentRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const container = blogContentRef.current;
+    if (!container || !post?.content || !post?.id) return;
+
+    const getSessionId = () => {
+      let sid = sessionStorage.getItem("blr_session");
+      if (!sid) {
+        sid =
+          "sess_" +
+          Math.random().toString(36).slice(2) +
+          Date.now().toString(36);
+        sessionStorage.setItem("blr_session", sid);
+      }
+      return sid;
+    };
+
+    const getDeviceType = () => {
+      const w = window.innerWidth;
+      if (w < 768) return "mobile";
+      if (w < 1024) return "tablet";
+      return "desktop";
+    };
+
+    const trackBlogLink = async (
+      linkId: string,
+      eventType: "click" | "impression",
+    ) => {
+      return;
+
+      try {
+        await fetch(
+          `${process.env.NEXT_PUBLIC_CF7_BASE}/wp-json/ads-manager/v1/blog-links/track`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              link_id: parseInt(linkId),
+              post_id: post?.id,
+              event_type: eventType,
+              session_id: getSessionId(),
+              device_type: getDeviceType(),
+              user_agent: navigator.userAgent,
+            }),
+          },
+        );
+      } catch (e) {}
+    };
+
+    // CLICK TRACKING
+    const handleClick = (e: MouseEvent) => {
+      const anchor = (e.target as HTMLElement).closest(
+        ".blog-tracked-link",
+      ) as HTMLAnchorElement | null;
+      if (!anchor) return;
+
+      const linkId = anchor.dataset.linkId;
+      if (!linkId) return;
+      trackBlogLink(linkId, "click");
+    };
+
+    container.addEventListener("click", handleClick);
+
+    // VIEW TRACKING
+    let observer: IntersectionObserver | null = null;
+    let raf1: number;
+    let raf2: number;
+
+    raf1 = requestAnimationFrame(() => {
+      raf2 = requestAnimationFrame(() => {
+        const trackedLinks =
+          container.querySelectorAll<HTMLAnchorElement>(".blog-tracked-link");
+
+        if (!trackedLinks.length) return;
+
+        observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (!entry.isIntersecting) return;
+
+              const anchor = entry.target as HTMLAnchorElement;
+              const linkId = anchor.dataset.linkId;
+              if (!linkId) return;
+
+              trackBlogLink(linkId, "impression");
+              observer?.unobserve(anchor);
+            });
+          },
+          { threshold: 0.5 },
+        );
+
+        trackedLinks.forEach((link) => observer!.observe(link));
+      });
+    });
+
+    // CLEANUP
+    return () => {
+      container.removeEventListener("click", handleClick);
+      cancelAnimationFrame(raf1);
+      cancelAnimationFrame(raf2);
+      observer?.disconnect();
+    };
+  }, [post?.content, post?.id]);
 
   return (
     <div className="blog-page style-5 color-4">
@@ -200,6 +305,7 @@ export default function BlogDetailsPage({
                 {/* Content goes here: Use dangerouslySetInnerHTML if content is static and trusted */}
                 {/* Or convert entire content into JSX/MDX if editable */}
                 <div
+                  ref={blogContentRef}
                   dangerouslySetInnerHTML={{
                     __html: post.content || "<p>No content available</p>",
                   }}

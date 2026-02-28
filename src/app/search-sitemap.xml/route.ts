@@ -8,7 +8,7 @@ const SITE_URL =
   try {
     const response = await fetch(
       "https://admin.caravansforsale.com.au/wp-json/cfs/v1/search-keyword",
-      { cache: "no-store" }
+     
     );
 
     const json = await response.json();

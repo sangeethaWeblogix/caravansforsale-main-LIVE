@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     google: "6tT6MT6AJgGromLaqvdnyyDQouJXq0VHS-7HC194xEo", // ✅ this auto generates <meta name="google-site-verification" />
   },
 };
-export const revalidate = 60; // ISR: refresh every 60s
+ export const revalidate = 3600; // ISR: refresh every 60s
 
 export default async function BlogPage() {
   // Your Blogs component should fetch page=1 by default

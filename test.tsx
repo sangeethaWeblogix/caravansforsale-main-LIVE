@@ -524,7 +524,7 @@ const getFirstImage = (item: Product) => {
                                     setShowContact(true);
                                   }}
                                 >
-                                  Contact Dealer
+                                  Contact Seller
                                 </button>
                                 <button className="btn btn-primary">
                                   View Details
@@ -773,7 +773,7 @@ const imgs = lazyImages[item.id] || [getFirstImage(item)];
                                   setShowContact(true);
                                 }}
                               >
-                                Contact Dealer
+                                Contact Seller
                               </button>
                               <button className="btn btn-primary">
                                 View Details
@@ -1012,7 +1012,7 @@ const imgs = lazyImages[item.id] || [getFirstImage(item)];
                                     setShowContact(true);
                                   }}
                                 >
-                                  Contact Dealer
+                                  Contact Seller
                                 </button>
                                 <button className="btn btn-primary">
                                   View Details
@@ -1084,7 +1084,7 @@ const imgs = lazyImages[item.id] || [getFirstImage(item)];
         </div>
       )}
 
-      {/* === Contact Dealer Popup === */}
+      {/* === Contact Seller Popup === */}
       {showContact && (
         <div className="popup-overlay">
           <div className="popup-box">
@@ -1095,7 +1095,7 @@ const imgs = lazyImages[item.id] || [getFirstImage(item)];
             >
               ×
             </button>
-            <h4>Contact Dealer</h4>
+            <h4>Contact Seller</h4>
             <div className="sidebar-enquiry">
               <form className="wpcf7-form" noValidate>
                 <div className="form">

@@ -4,6 +4,8 @@ import ClientLogger from "./product";
 import { redirect } from "next/navigation";
 import './product.css'
 
+export const revalidate = 3600;
+
 type RouteParams = { slug: string };
 type PageProps = { params: Promise<RouteParams> }; // ✅ params is a Promise
 
@@ -12,7 +14,7 @@ async function fetchProductDetail(slug: string) {
   try {
     const res = await fetch(
       `${API_BASE}/product-detail-new/?slug=${encodeURIComponent(slug)}`,
-      { cache: "no-store", headers: { Accept: "application/json" } }
+      { headers: { Accept: "application/json" } }
     );
     if (!res.ok) return null;
     return res.json();
@@ -107,5 +109,6 @@ export default async function ProductDetailPage({ params }: PageProps) {
     <main className="mx-auto">
       <ClientLogger data={data} />
     </main>
+    
   );
 }

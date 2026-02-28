@@ -15,21 +15,17 @@ export async function GET() {
     "models-sitemap.xml",
     "weights-sitemap.xml",
     "prices-sitemap.xml",
-    "conditions-sitemap.xml",
     "length-sitemap.xml",
     "sleep-sitemap.xml",
     "state-make-sitemap.xml",
     "region-make-sitemap.xml",
-  
     "category-state-sitemap.xml",
     "category-region-sitemap.xml",
     "state-atm-sitemap.xml",
     "region-atm-sitemap.xml",
-    
-    
+
     "state-length-sitemap.xml",
     "region-length-sitemap.xml",
-    
   ];
 
   const lastModified = new Date().toISOString().split("T")[0];
@@ -42,7 +38,7 @@ export async function GET() {
       (file) => `  <sitemap>
     <loc>${siteUrl}/${file}</loc>
     <lastmod>${lastModified}</lastmod>
-  </sitemap>`
+  </sitemap>`,
     ),
     "</sitemapindex>",
   ].join("\n");

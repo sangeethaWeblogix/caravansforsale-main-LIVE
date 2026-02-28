@@ -1,6 +1,7 @@
 // src/app/blog/page/[page]/page.tsx
 "use client";
-export const dynamic = "force-dynamic";
+// export const dynamic = "force-dynamic"
+;
 import React, { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -128,7 +129,7 @@ export default function BlogPage() {
                       <div className="row">
                         <div className="col-lg-5 col-sm-6">
                           <div className="img img-cover">
-                            <Link href={href}>
+                            <a href={href}>
                               <Image
                                 src={post.image}
                                 alt={post.title}
@@ -136,7 +137,7 @@ export default function BlogPage() {
                                 height={683}
                                 className="w-100 h-auto"
                               />
-                            </Link>
+                            </a>
                           </div>
                         </div>
                         <div className="col-lg-7 col-sm-6">
@@ -148,21 +149,22 @@ export default function BlogPage() {
                               >
                                 Tom
                               </Link>
-                              <Link href={href} className="op-8">
+                              <a href={href} className="op-8">
                                 {formatPostDate(post.date)}
-                              </Link>
+                              </a>
                             </small>
-                            <Link href={href} className="card-title mb-10">
+                            <a href={href} className="card-title mb-10">
                               {post.title}
-                            </Link>
+                            </a>
+                            
                             <p>{decodeHTML(post.excerpt)}</p>{" "}
-                            <Link
+                            <a
                               href={href}
                               onClick={() => setNavigating(true)}
                               className="btn rounded-pill bg-blue4 fw-bold text-white mt-10"
                             >
                               <small> Read More </small>
-                            </Link>
+                            </a>
                           </div>
                         </div>
                       </div>

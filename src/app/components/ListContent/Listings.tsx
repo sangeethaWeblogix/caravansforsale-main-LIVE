@@ -1,16 +1,25 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import {
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { fetchListings, ApiResponse, Item } from "../../../api/listings/api";
 import Listing from "./LisitingContent";
 import ExculsiveContent from "./exculsiveContent";
-import CaravanFilter from "../CaravanFilter";
+import FilterModal from "./FilterModal";
 import { flushSync } from "react-dom";
 import { v4 as uuidv4 } from "uuid";
-import "./newList.css";
+import "./newList.css?=18";
+import "./top-filters.css?=44";
 import dynamic from "next/dynamic";
+import { filterOptions } from "./filterOptions"; // உங்க path adjust பண்ணு
 
-const ListingSkeleton = dynamic(() => import("../skelton"), { ssr: false });
+import ListingSkeleton from "../skelton";
 
 import {
   redirect,
@@ -22,6 +31,7 @@ import { buildSlugFromFilters } from "../slugBuilter";
 import { parseSlugToFilters } from "../../components/urlBuilder";
 import Head from "next/head";
 import "./loader.css";
+import FilterSlider from "./FilterSlider";
 // import Link from "next/link";
 
 /* --------- GLOBAL de-dupe across StrictMode remounts --------- */
@@ -116,6 +126,7 @@ export interface Filters {
 interface Props extends Filters {
   page?: string | number;
   initialData?: ApiResponse;
+  linksData?: any;
 }
 
 /** ------------ Helper Functions ------------ */
@@ -156,9 +167,11 @@ function transformApiItemsToProducts(items: Item[]): Product[] {
 
 export default function ListingsPage({
   initialData,
+  linksData: serverLinksData,
   ...incomingFilters
 }: Props) {
   const DEFAULT_RADIUS = 50 as const;
+  const [openModal, setOpenModal] = useState(false);
 
   const [filters, setFilters] = useState<Filters>({});
   const filtersRef = useRef<Filters>({});
@@ -166,12 +179,14 @@ export default function ListingsPage({
   const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-
+  const [relatedChips, setRelatedChips] = useState<
+    { label: string; url: string; group: string }[]
+  >([]);
   const [isMainLoading, setIsMainLoading] = useState(false);
   const [isFeaturedLoading, setIsFeaturedLoading] = useState(false);
   const [isPremiumLoading, setIsPremiumLoading] = useState(false);
   const [isUsingInitialData, setIsUsingInitialData] = useState(!!initialData);
-  const [scrollStarted, setScrollStarted] = useState(false);
+  //  const [scrollStarted, setScrollStarted] = useState(false);
   const [isNextLoading, setIsNextLoading] = useState(false);
   const [nextPageData, setNextPageData] = useState<ApiResponse | null>(null);
 
@@ -185,11 +200,20 @@ export default function ListingsPage({
       localStorage.setItem(PAGE_KEY(id), String(page));
     } catch {}
   };
+
+  // Update readPage to fallback to extracting page from clickid
   const readPage = (id: string): number | null => {
     try {
       const v = localStorage.getItem(PAGE_KEY(id));
-      return v ? parseInt(v, 10) : null;
+      if (v) return parseInt(v, 10);
+
+      const match = id.match(/p(\d+)$/);
+      if (match) return parseInt(match[1], 10);
+
+      return null;
     } catch {
+      const match = id.match(/p(\d+)$/);
+      if (match) return parseInt(match[1], 10);
       return null;
     }
   };
@@ -284,6 +308,11 @@ export default function ListingsPage({
       : [],
   );
 
+  // ── 1. Add state for category counts (top of component) ──
+  const [sliderCategoryCounts, setSliderCategoryCounts] = useState<
+    { name: string; slug: string; count: number }[]
+  >([]);
+  const [sliderCatLoading, setSliderCatLoading] = useState(false);
   const [categories, setCategories] = useState<Category[]>(
     initialData?.data?.all_categories || [],
   );
@@ -415,8 +444,10 @@ export default function ListingsPage({
   //   },
   //   [router, DEFAULT_RADIUS]
   // );
+  // Add this useEffect near your other effects
+
   const updateURLWithFilters = useCallback(
-    (nextFilters: Filters, pageNum: number) => {
+    (nextFilters: Filters, pageNum: number, clickidParam?: string) => {
       console.log(pageNum);
       const slug = buildSlugFromFilters(nextFilters); // your slug builder
       const query = new URLSearchParams();
@@ -427,7 +458,12 @@ export default function ListingsPage({
       if (!Number.isNaN(r) && r !== DEFAULT_RADIUS) {
         query.set("radius_kms", String(r));
       }
-      if (clickid) query.set("clickid", clickid);
+      //  if (clickid) query.set("clickid", clickid);
+      const cid =
+        clickidParam !== undefined
+          ? clickidParam
+          : new URLSearchParams(window.location.search).get("clickid");
+      if (cid && cid !== "") query.set("clickid", cid);
 
       // Use current pathname (do not force a route push)
       const path = window.location.pathname;
@@ -435,10 +471,10 @@ export default function ListingsPage({
       const finalURL = query.toString() ? `${safeSlug}?${query}` : safeSlug;
 
       // Replace history only — avoids Next.js navigation / redirect
-      window.history.replaceState({}, "", finalURL);
+      window.history.pushState({}, "", finalURL);
 
       // then fetch data client-side
-      setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 150);
+      //  setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 150);
     },
     [DEFAULT_RADIUS, clickid],
   );
@@ -460,16 +496,48 @@ export default function ListingsPage({
   }, []);
 
   // tiny util
-  const ensureclickid = (): string => {
-    const newId = uuidv4();
-    setclickid(newId);
+  // Replace the existing ensureclickid function with this:
+  // Replace the existing ensureclickid function with this:
+  const generateClickidForPage = (pageNum: number): string => {
+    if (pageNum <= 1) return "";
 
-    // URL-லும் உடனே update பண்ணு
-    const url = new URL(window.location.href);
-    url.searchParams.set("clickid", newId);
-    window.history.replaceState({}, "", url.toString());
+    const filterString = JSON.stringify(filtersRef.current);
+    const str = `${filterString}_page_${pageNum}`;
+    let h1 = pageNum * 2654435761;
+    let h2 = pageNum * 2246822519;
+    let h3 = pageNum * 3266489917;
+    let h4 = pageNum * 668265263;
+    // let h1 = 0, h2 = 0, h3 = 0, h4 = 0;
+    for (let i = 0; i < str.length; i++) {
+      const c = str.charCodeAt(i);
+      h1 = ((h1 << 5) - h1 + c) | 0;
+      h2 = ((h2 << 7) - h2 + c * 31) | 0;
+      h3 = ((h3 << 3) - h3 + c * 127) | 0;
+      h4 = ((h4 << 11) - h4 + c * 17) | 0;
+    }
+    const part1 = Math.abs(h1 ^ 0x5f3759df).toString(36);
+    const part2 = Math.abs(h2 ^ 0x1b873593).toString(36);
+    const part3 = Math.abs(h3 ^ 0xe6546b64).toString(36);
+    const part4 = Math.abs(h4 ^ 0x85ebca6b).toString(36);
 
-    return newId;
+    const suffix = `p${pageNum}`;
+    const hash = `${part1}${part2}${part3}${part4}`;
+    return `${hash.slice(0, 25 - suffix.length)}${suffix}`;
+  };
+
+  const ensureclickid = (pageNum: number): string => {
+    const id = generateClickidForPage(pageNum);
+    if (!id) {
+      setclickid(null);
+      return "";
+    }
+    setclickid(id);
+
+    // const url = new URL(window.location.href);
+    // url.searchParams.set("clickid", id);
+    // window.history.replaceState({}, "", url.toString());
+
+    return id;
   };
 
   useEffect(() => {
@@ -496,8 +564,8 @@ export default function ListingsPage({
     const observer = new IntersectionObserver(
       async (entries) => {
         const entry = entries[0];
-        if (entry.isIntersecting && !scrollStarted && !isNextLoading) {
-          setScrollStarted(true);
+        if (entry.isIntersecting && !isNextLoading) {
+          //  setScrollStarted(true);
           try {
             const response = await preFetchListings(
               pagination.current_page + 1,
@@ -525,7 +593,7 @@ export default function ListingsPage({
 
     observer.observe(sentinelRef.current);
     return () => observer.disconnect();
-  }, [pagination.current_page, scrollStarted, isNextLoading]);
+  }, [pagination.current_page, isNextLoading]);
 
   const preFetchListings = async (
     pageNum: number,
@@ -573,6 +641,7 @@ export default function ListingsPage({
       console.error("Failed to prefetch Next data", err);
     }
   };
+  const isUsingInitialDataRef = useRef(!!initialData);
 
   const loadListings = useCallback(
     async (
@@ -580,13 +649,14 @@ export default function ListingsPage({
       appliedFilters: Filters = filtersRef.current,
       skipInitialCheck = false,
     ): Promise<ApiResponse | undefined> => {
-      if (initialData && !skipInitialCheck && isUsingInitialData) {
+      if (initialData && !skipInitialCheck && isUsingInitialDataRef.current) {
+        isUsingInitialDataRef.current = false;
         setIsUsingInitialData(false);
         return initialData;
       }
 
       try {
-        window.scrollTo({ top: 0, behavior: "smooth" });
+        //  window.scrollTo({ top: 0, behavior: "smooth" });
 
         const safeFilters = normalizeSearchFromMake(appliedFilters);
         console.log("appp1", appliedFilters);
@@ -669,16 +739,10 @@ export default function ListingsPage({
     [DEFAULT_RADIUS, router, initialData, isUsingInitialData],
   );
 
-  const scrollToTop = () => {
-    setTimeout(() => {
-      document.documentElement.scrollTo({ top: 0, behavior: "smooth" });
-      document.body.scrollTo({ top: 0, behavior: "smooth" });
-    }, 0);
-  };
   const handleNextPage = useCallback(async () => {
     if (pagination.current_page >= pagination.total_pages) return;
 
-    scrollToTop();
+    // scrollToTop();
 
     flushSync(() => {
       setIsMainLoading(true);
@@ -689,7 +753,7 @@ export default function ListingsPage({
     const nextPage = pagination.current_page + 1;
 
     // ✅ always ensure clickid
-    const id = ensureclickid();
+    const id = ensureclickid(nextPage);
     savePage(id, nextPage);
 
     try {
@@ -727,7 +791,7 @@ export default function ListingsPage({
       setIsFeaturedLoading(false);
       setIsPremiumLoading(false);
 
-      setScrollStarted(false);
+      //  setScrollStarted(false);
       setNextPageData(null);
       setIsNextLoading(false);
     }
@@ -752,12 +816,18 @@ export default function ListingsPage({
     try {
       if (prevPage > 1) {
         // ✅ ALWAYS generate NEW clickid
-        const newId = ensureclickid();
-        savePage(newId, prevPage);
+        const id = ensureclickid(prevPage);
+        if (id) savePage(id, prevPage);
+        await loadListings(prevPage, filtersRef.current, true);
+        updateURLWithFilters(filtersRef.current, prevPage, id);
       } else {
         // ✅ first page → remove clickid
         setclickid(null);
-        setUrlParams({ clickid: undefined });
+        await loadListings(1, filtersRef.current, true);
+        updateURLWithFilters(filtersRef.current, 1, "");
+        const url = new URL(window.location.href);
+        url.searchParams.delete("clickid");
+        window.history.pushState({}, "", url.toString());
       }
 
       await loadListings(prevPage, filtersRef.current, true);
@@ -775,21 +845,6 @@ export default function ListingsPage({
   // 3️⃣  restore effect
 
   // restore effect
-  useEffect(() => {
-    if (!clickid) return;
-    const savedPage = readPage(clickid);
-    if (savedPage && savedPage > 0) {
-      restoredOnceRef.current = true;
-      setPagination((p) => ({ ...p, current_page: savedPage }));
-      setUrlParams({ clickid });
-      loadListings(savedPage, filtersRef.current, true).finally(() => {
-        setIsRestored(true); // ✅ mark restore complete
-      });
-    } else {
-      setUrlParams({ clickid });
-      setIsRestored(true); // ✅ no saved page, ready anyway
-    }
-  }, [clickid]);
 
   console.log("paginationapi", pagination);
   /* ---- SINGLE source of truth: URL -> fetch ---- */
@@ -925,6 +980,86 @@ export default function ListingsPage({
     });
   }, [isLoading, isMainLoading, isFeaturedLoading, isPremiumLoading]);
 
+  // ✅ Add this ref near your other refs
+  const isPopStateRef = useRef(false);
+
+  // ✅ Full popstate handler
+  useEffect(() => {
+    const handlePopState = () => {
+      isPopStateRef.current = true;
+
+      const path = window.location.pathname;
+      const slugParts = path.split("/listings/")[1]?.split("/") || [];
+      const parsed = parseSlugToFilters(slugParts);
+
+      const sp = new URLSearchParams(window.location.search);
+      const orderby = sp.get("orderby") ?? undefined;
+      const urlClickid = sp.get("clickid") || null;
+
+      const merged: Filters = {
+        ...parsed,
+        ...(orderby ? { orderby } : {}),
+      };
+
+      filtersRef.current = merged;
+      setFilters(merged);
+      setclickid(urlClickid);
+
+      const savedPage = urlClickid ? readPage(urlClickid) : null;
+      const pageToLoad = savedPage && savedPage > 0 ? savedPage : 1;
+
+      // ✅ Prevent URL-watcher effect from double-fetching
+      prevFiltersRef.current = { ...merged };
+      prevPageRef.current = pageToLoad;
+      restoredOnceRef.current = true;
+
+      setIsMainLoading(true);
+      setIsFeaturedLoading(true);
+      setIsPremiumLoading(true);
+
+      setPagination((p) => ({ ...p, current_page: pageToLoad }));
+
+      loadListings(pageToLoad, merged, true).finally(() => {
+        setIsMainLoading(false);
+        setIsFeaturedLoading(false);
+        setIsPremiumLoading(false);
+      });
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [loadListings]);
+  // ✅ Ensure page 1 has a history entry
+  useEffect(() => {
+    if (!searchParams.has("clickid")) {
+      // Page 1 - make sure current URL is in history
+      window.history.replaceState({ page: 1 }, "", window.location.href);
+    }
+  }, []);
+  // ✅ Update your existing clickid restore useEffect
+  // ✅ KEEP ONLY THIS ONE
+  useEffect(() => {
+    if (!clickid) return;
+
+    // ✅ Skip if triggered by popstate - already handled
+    if (isPopStateRef.current) {
+      isPopStateRef.current = false;
+      return;
+    }
+
+    const savedPage = readPage(clickid);
+    if (savedPage && savedPage > 0) {
+      restoredOnceRef.current = true;
+      setPagination((p) => ({ ...p, current_page: savedPage }));
+      setUrlParams({ clickid });
+      loadListings(savedPage, filtersRef.current, true).finally(() => {
+        setIsRestored(true);
+      });
+    } else {
+      setUrlParams({ clickid });
+      setIsRestored(true);
+    }
+  }, [clickid]);
   // Only check real user filters
   const FILTER_KEYS_TO_CHECK: (keyof Filters)[] = [
     "category",
@@ -998,6 +1133,542 @@ export default function ListingsPage({
     import("bootstrap/js/dist/offcanvas").catch(() => {});
   }, []);
 
+  // 1. Add state for client-side links
+  const [clientLinksData, setClientLinksData] = useState<any>(null);
+  const [clientMounted, setClientMounted] = useState(false);
+
+  // 2. Add useEffect to fetch links when filters change
+  useEffect(() => {
+    setClientMounted(true);
+
+    const fetchLinks = async () => {
+      try {
+        const params = new URLSearchParams();
+        Object.entries(filtersRef.current).forEach(([k, v]) => {
+          if (v !== undefined && v !== null && v !== "" && k !== "page") {
+            params.set(k, String(v));
+          }
+        });
+        const res = await fetch(
+          `https://admin.caravansforsale.com.au/wp-json/cfs/v1/links?${params.toString()}`,
+        );
+        const json = await res.json();
+        setClientLinksData(json.data ?? json);
+      } catch (e) {
+        console.error("Links fetch error:", e);
+      }
+    };
+
+    fetchLinks();
+  }, [
+    filters.category,
+    filters.make,
+    filters.model,
+    filters.state,
+    filters.region,
+    filters.suburb,
+    filters.condition,
+    filters.from_price,
+    filters.to_price,
+    filters.minKg,
+    filters.maxKg,
+    filters.acustom_fromyears,
+    filters.acustom_toyears,
+    filters.from_length,
+    filters.to_length,
+    filters.keyword,
+    filters.search,
+  ]);
+
+  // 4. Add buildClientLinkUrl helper in Listings.tsx (simplified version of filter's buildLinkUrl)
+  const buildClientLinkUrl = (type: string, item: { slug: string }) => {
+    const linkFilters: Filters = { ...filtersRef.current };
+
+    switch (type) {
+      case "states":
+        linkFilters.state = item.slug.replace(/-/g, " ");
+        delete linkFilters.region;
+        delete linkFilters.suburb;
+        delete linkFilters.pincode;
+        break;
+      case "regions":
+        linkFilters.region = item.slug.replace(/-/g, " ");
+        delete linkFilters.suburb;
+        delete linkFilters.pincode;
+        break;
+      case "categories":
+        linkFilters.category = item.slug;
+        break;
+      case "makes":
+        linkFilters.make = item.slug;
+        delete linkFilters.model;
+        break;
+      case "models":
+        linkFilters.model = item.slug;
+        break;
+      case "conditions":
+        linkFilters.condition = item.slug;
+        break;
+      case "prices":
+      case "atm_ranges":
+      case "length_ranges":
+      case "sleep_ranges":
+        break;
+    }
+
+    const slugPath = buildSlugFromFilters(linkFilters);
+    const base = slugPath.endsWith("/") ? slugPath.slice(0, -1) : slugPath;
+
+    if (
+      ["prices", "atm_ranges", "length_ranges", "sleep_ranges"].includes(type)
+    ) {
+      return `${base}/${item.slug}/`;
+    }
+
+    return `${base}/` || "/listings/";
+  };
+
+  useEffect(() => {
+    const fetchRelatedLinks = async () => {
+      try {
+        const params = new URLSearchParams();
+        const f = filtersRef.current;
+
+        if (f.category) params.set("category", f.category);
+        if (f.make) params.set("make", f.make);
+        if (f.model) params.set("model", f.model);
+        if (f.state) params.set("state", f.state);
+        if (f.region) params.set("region", f.region);
+        if (f.suburb) params.set("suburb", f.suburb);
+        if (f.condition) params.set("condition", f.condition);
+        if (f.from_price) params.set("from_price", String(f.from_price));
+        if (f.to_price) params.set("to_price", String(f.to_price));
+        if (f.minKg) params.set("from_atm", String(f.minKg));
+        if (f.maxKg) params.set("to_atm", String(f.maxKg));
+        if (f.acustom_fromyears)
+          params.set("acustom_fromyears", String(f.acustom_fromyears));
+        if (f.from_sleep) params.set("from_sleep", String(f.from_sleep));
+        if (f.to_sleep) params.set("to_sleep", String(f.to_sleep));
+        if (f.from_length) params.set("from_length", String(f.from_length));
+        if (f.to_length) params.set("to_length", String(f.to_length));
+        if (f.search) params.set("search", f.search);
+        if (f.keyword) params.set("keyword", f.keyword);
+
+        const res = await fetch(
+          `https://admin.caravansforsale.com.au/wp-json/cfs/v1/related_links?${params.toString()}`,
+        );
+        const json = await res.json();
+        setRelatedChips(json.chips || []);
+      } catch (e) {
+        console.error("Related links error:", e);
+      }
+    };
+
+    fetchRelatedLinks();
+  }, [
+    filters.category,
+    filters.make,
+    filters.model,
+    filters.state,
+    filters.region,
+    filters.suburb,
+    filters.condition,
+    filters.from_price,
+    filters.to_price,
+    filters.minKg,
+    filters.maxKg,
+    filters.acustom_fromyears,
+    filters.from_length,
+    filters.to_length,
+    filters.from_sleep,
+    filters.to_sleep,
+    filters.search,
+    filters.keyword,
+  ]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    setSliderCatLoading(true);
+
+    const params = new URLSearchParams();
+    const f = filtersRef.current;
+    // exclude category itself so all counts are unfiltered by category
+    if (f.make) params.set("make", f.make);
+    if (f.model) params.set("model", f.model);
+    if (f.condition) params.set("condition", f.condition);
+    if (f.state) params.set("state", f.state.toLowerCase());
+    if (f.region) params.set("region", f.region);
+    if (f.suburb) params.set("suburb", f.suburb);
+    if (f.from_price) params.set("from_price", String(f.from_price));
+    if (f.to_price) params.set("to_price", String(f.to_price));
+    if (f.minKg) params.set("from_atm", String(f.minKg));
+    if (f.maxKg) params.set("to_atm", String(f.maxKg));
+    if (f.acustom_fromyears)
+      params.set("acustom_fromyears", String(f.acustom_fromyears));
+    if (f.acustom_toyears)
+      params.set("acustom_toyears", String(f.acustom_toyears));
+    if (f.from_length) params.set("from_length", String(f.from_length));
+    if (f.to_length) params.set("to_length", String(f.to_length));
+    if (f.from_sleep) params.set("from_sleep", String(f.from_sleep));
+    if (f.to_sleep) params.set("to_sleep", String(f.to_sleep));
+    if (f.search) params.set("search", f.search);
+    if (f.keyword) params.set("keyword", f.keyword);
+    params.set("group_by", "category");
+
+    fetch(
+      `https://admin.caravansforsale.com.au/wp-json/cfs/v1/params_count?${params.toString()}`,
+      { signal: controller.signal },
+    )
+      .then((r) => r.json())
+      .then((json) => {
+        if (!controller.signal.aborted) {
+          setSliderCategoryCounts(json.data || []);
+          setSliderCatLoading(false);
+        }
+      })
+      .catch((e) => {
+        if (e.name !== "AbortError") setSliderCatLoading(false);
+      });
+
+    return () => controller.abort();
+  }, [
+    filters.make,
+    filters.model,
+    filters.condition,
+    filters.state,
+    filters.region,
+    filters.suburb,
+    filters.from_price,
+    filters.to_price,
+    filters.minKg,
+    filters.maxKg,
+    filters.acustom_fromyears,
+    filters.acustom_toyears,
+    filters.from_length,
+    filters.to_length,
+    filters.from_sleep,
+    filters.to_sleep,
+    filters.search,
+    filters.keyword,
+  ]);
+  // Listings.tsx — add near your other handlers
+
+  const [modalFocusSection, setModalFocusSection] = useState<
+    string | undefined
+  >();
+
+  const handleOpenModal = (section?: string) => {
+    setModalFocusSection(section);
+    setOpenModal(true);
+  };
+  // ── 3. Handler: category selected from slider dropdown ──
+  // ✅ இந்த function-ஐ மட்டும் replace பண்ணு (handleSliderCategorySelect)
+  // handleFilterChange பயன்படுத்தாம directly loadListings call பண்ணு
+
+  // ✅ handleSliderCategorySelect — loadListings bypass, direct fetchListings call
+  // இந்த function-ஐ Listings.tsx-ல் replace பண்ணு
+
+  // ✅ Generic handler — எந்த filter-க்கும் use பண்ணலாம்
+  // Listings.tsx-ல் handleSliderCategorySelect-ஐ replace பண்ணி இதை மட்டும் வை
+
+  const handleSliderFilterSelect = async (newFilters: Partial<Filters>) => {
+    console.log("🔥 slider filter change:", newFilters);
+
+    // ✅ Build next filters
+    const next: Filters = { ...filtersRef.current };
+
+    // ✅ Apply incoming values — null/undefined = delete that key
+    (Object.keys(newFilters) as (keyof Filters)[]).forEach((key) => {
+      const val = newFilters[key];
+      if (val === null || val === undefined || val === "") {
+        delete next[key];
+      } else {
+        (next as any)[key] = val;
+      }
+    });
+
+    // ✅ Location hierarchy: state மாறினா region/suburb/pincode clear
+    if ("state" in newFilters) {
+      delete next.region;
+      delete next.suburb;
+      delete next.pincode;
+    }
+
+    // ✅ State value capitalize பண்ணு — "new south wales" → "New South Wales"
+    if (next.state) {
+      next.state = next.state
+        .toLowerCase()
+        .replace(/\b\w/g, (c) => c.toUpperCase());
+    }
+    // ✅ Region value capitalize
+    if (next.region) {
+      next.region = next.region
+        .toLowerCase()
+        .replace(/\b\w/g, (c) => c.toUpperCase());
+    }
+    if ("region" in newFilters) {
+      delete next.suburb;
+      delete next.pincode;
+    }
+
+    // ✅ Make மாறினா model clear
+    if ("make" in newFilters) {
+      if (!("model" in newFilters)) {
+        delete next.model;
+      }
+    }
+
+    console.log("🔥 next filters:", next);
+
+    // ✅ State + ref update
+    filtersRef.current = next;
+    setFilters({ ...next });
+
+    // ✅ Loaders ON
+    setIsMainLoading(true);
+    setIsFeaturedLoading(true);
+    setIsPremiumLoading(true);
+
+    // ✅ Pagination reset
+    setPagination({
+      current_page: 1,
+      total_pages: 1,
+      total_items: 0,
+      per_page: 12,
+      total_products: 0,
+    });
+
+    // ✅ URL update
+    updateURLWithFilters(next, 1);
+
+    try {
+      const radiusNum =
+        typeof next.radius_kms === "number"
+          ? next.radius_kms
+          : typeof next.radius_kms === "string"
+            ? parseInt(next.radius_kms, 10)
+            : undefined;
+
+      const radiusParam =
+        typeof radiusNum === "number" && !isNaN(radiusNum) && radiusNum !== 50
+          ? String(radiusNum)
+          : undefined;
+
+      // handleSliderFilterSelect-ல் fetchListings call-க்கு முன்னாடி இதை add பண்ணு
+
+      console.log("🔥 FINAL next filters before fetch:", {
+        make: next.make,
+        model: next.model,
+        category: next.category,
+        state: next.state,
+        from_price: next.from_price,
+        to_price: next.to_price,
+        minKg: next.minKg,
+        maxKg: next.maxKg,
+      });
+      const response: ApiResponse = await fetchListings({
+        ...next,
+        page: 1,
+        category: next.category,
+        make: next.make,
+        model: next.model,
+        condition: next.condition,
+        region: next.region,
+        state: next.state,
+        suburb: next.suburb,
+        minKg: next.minKg?.toString(),
+        maxKg: next.maxKg?.toString(),
+        from_price: next.from_price?.toString(),
+        to_price: next.to_price?.toString(),
+        acustom_fromyears: next.acustom_fromyears?.toString(),
+        acustom_toyears: next.acustom_toyears?.toString(),
+        from_length: next.from_length?.toString(),
+        to_length: next.to_length?.toString(),
+        from_sleep: next.from_sleep?.toString(),
+        to_sleep: next.to_sleep?.toString(),
+        radius_kms: radiusParam,
+      });
+
+      // ✅ State update
+      const validProducts = (response?.data?.products ?? []).filter(
+        (p: any) => p != null,
+      );
+      setProducts(
+        validProducts.length > 0
+          ? transformApiItemsToProducts(validProducts)
+          : [],
+      );
+      setFeaturedProducts(
+        transformApiItemsToProducts(response?.data?.featured_products ?? []),
+      );
+      setPremiumProducts(
+        transformApiItemsToProducts(response?.data?.premium_products ?? []),
+      );
+      setExculisiveProducts(
+        transformApiItemsToProducts(response?.data?.exclusive_products ?? []),
+      );
+      setEmptyProduct(
+        transformApiItemsToProducts(
+          response?.data?.emp_exclusive_products ?? [],
+        ),
+      );
+
+      if (response?.pagination) setPagination(response.pagination);
+      if (response?.seo?.metatitle) setMetaTitle(response.seo.metatitle);
+      if (response?.seo?.metadescription)
+        setMetaDescription(response.seo.metadescription);
+      if (response?.list_page_title) setPageTitle(response.list_page_title);
+    } catch (err) {
+      console.error("❌ slider filter fetch error:", err);
+    } finally {
+      setIsMainLoading(false);
+      setIsFeaturedLoading(false);
+      setIsPremiumLoading(false);
+    }
+  };
+
+  console.log("initialData states:", initialData?.data?.states?.length);
+  console.log("stateOptions state:", stateOptions?.length);
+
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (filters.category) count++;
+    if (filters.state) count++; // state + region = 1
+    if (filters.make) count++; // make + model = 1
+    if (filters.minKg || filters.maxKg) count++; // ATM = 1
+    if (filters.from_price || filters.to_price) count++; // Price = 1
+    if (filters.condition) count++;
+    if (filters.acustom_fromyears) count++;
+    if (filters.from_sleep || filters.to_sleep) count++; // Sleep = 1
+    if (filters.from_length || filters.to_length) count++; // Length = 1
+    if (filters.search || filters.keyword) count++;
+    return count;
+  }, [
+    filters.category,
+    filters.state,
+    filters.make,
+    filters.minKg,
+    filters.maxKg,
+    filters.from_price,
+    filters.to_price,
+    filters.condition,
+    filters.acustom_fromyears,
+    filters.from_sleep,
+    filters.to_sleep,
+    filters.from_length,
+    filters.to_length,
+    filters.search,
+    filters.keyword,
+  ]);
+
+  function buildStaticLinks(filters: Filters) {
+    const links: Record<string, { name: string; slug: string }[]> = {};
+
+    const hasState = !!filters.state;
+    const hasRegion = !!filters.region;
+
+    // ── Location ──
+    if (!hasState && !hasRegion) {
+      // No location selected → show all states
+      links.states = filterOptions.location.state.map((s) => ({
+        name: s.name,
+        slug: s.slug,
+      }));
+    } else if (hasState && !hasRegion) {
+      // State selected → show that state's regions
+      const found = filterOptions.location.state.find(
+        (s) => s.name.toLowerCase() === filters.state?.toLowerCase(),
+      );
+      if (found?.region && found.region.length > 0) {
+        links.regions = found.region.map((r) => ({
+          name: r.name,
+          slug: r.slug,
+        }));
+      }
+    } else if (hasState && hasRegion) {
+      // Region selected → show only that state (single item)
+      const found = filterOptions.location.state.find(
+        (s) => s.name.toLowerCase() === filters.state?.toLowerCase(),
+      );
+      if (found) {
+        links.states = [{ name: found.name, slug: found.slug }];
+      }
+    }
+
+    // ── Categories — always show ──
+    links.categories = filterOptions.categories.map((c) => ({
+      name: c.name,
+      slug: c.slug,
+    }));
+
+    // ── Price — always show ──
+    links.prices = filterOptions.price.map((p) => ({
+      name: p.name,
+      slug: p.slug,
+    }));
+
+    return links;
+  }
+
+  function buildStaticLinkUrl(
+    type: string,
+    slug: string,
+    currentFilters: Filters,
+  ): string {
+    // For state/region/category/price etc. — slug already has full path
+    // e.g. "/victoria-state/" → "/listings/victoria-state/"
+    const cleanSlug = slug.startsWith("/") ? slug.slice(1) : slug;
+
+    // If a category is already selected, prepend it before state/price etc.
+    // so URLs stay consistent with your slug builder
+    const base = buildSlugFromFilters({
+      ...currentFilters,
+      // Reset the filter we're about to set (avoid double slug)
+      ...(type === "categories" ? { category: undefined } : {}),
+      ...(type === "states" ? { state: undefined, region: undefined } : {}),
+      ...(type === "regions" ? { region: undefined } : {}),
+      ...(type === "prices"
+        ? { from_price: undefined, to_price: undefined }
+        : {}),
+      ...(type === "atm" ? { minKg: undefined, maxKg: undefined } : {}),
+      ...(type === "sleep"
+        ? { from_sleep: undefined, to_sleep: undefined }
+        : {}),
+      ...(type === "length"
+        ? { from_length: undefined, to_length: undefined }
+        : {}),
+    });
+
+    const safeBase = base.endsWith("/") ? base : `${base}/`;
+    return `${safeBase}${cleanSlug}`;
+  }
+
+  const staticLinks = useMemo(
+    () => buildStaticLinks(filters),
+    [
+      filters.category,
+      filters.state,
+      filters.from_price,
+      filters.to_price,
+      filters.minKg,
+      filters.maxKg,
+      filters.from_sleep,
+      filters.to_sleep,
+      filters.from_length,
+      filters.to_length,
+    ],
+  );
+
+  const SECTION_TITLES: Record<string, string> = {
+    categories: "Browse by Category",
+    states: "Browse by State",
+    regions: "Browse by Region",
+    prices: "Browse by Price",
+    atm: "Browse by ATM Weight",
+    sleep: "Browse by Sleeping Capacity",
+    length: "Browse by Length",
+  };
+
   return (
     <>
       <Head>
@@ -1017,57 +1688,210 @@ export default function ListingsPage({
           content={metaDescription || "Default Description"}
         />
       </Head>
+      {/* <div>
+        <div className="cfs-links-section" id="static-links">
+          {Object.entries(staticLinks).map(([sectionKey, items]) => {
+            if (!items || items.length === 0) return null;
+            return (
+              <div key={sectionKey} className="cfs-links-group">
+                <h5 className="cfs-filter-label">
+                  {SECTION_TITLES[sectionKey] || sectionKey}
+                </h5>
+                <ul className="cfs-links-list">
+                  {items.map((item) => {
+                    const linkUrl = buildStaticLinkUrl(
+                      sectionKey,
+                      item.slug,
+                      filters,
+                    );
+                    return (
+                      <li key={item.slug} className="cfs-links-item">
+                        <a href={linkUrl} className="cfs-links-link">
+                          {item.name}
+                        </a>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            );
+          })}
+        </div>
+      </div> */}
+
+      <div className="search-bar">
+        <div className="container">
+          <div className="row align-items-end">
+            <div className="col-lg-12">
+              <div className="filter_left">
+                <div className="filter_btn_top">
+                  <button
+                    className="filter-btn"
+                    onClick={() => setOpenModal(true)}
+                  >
+                    {activeFilterCount > 0 ? (
+                      <span className="filter-count">{activeFilterCount}</span>
+                    ) : (
+                      <i className="bi bi-filter"></i>
+                    )}{" "}
+                    Filters
+                  </button>
+                </div>
+                <div>
+                  <FilterSlider
+                    currentFilters={filters}
+                    categoryCounts={sliderCategoryCounts}
+                    isCategoryCountLoading={sliderCatLoading}
+                    stateOptions={stateOptions}
+                    onOpenModal={handleOpenModal}
+                    onCategorySelect={(slug) =>
+                      handleSliderFilterSelect({ category: slug ?? undefined })
+                    }
+                    onLocationSelect={(state, region) => {
+                      const normalize = (s: string | null) =>
+                        s ? s.toLowerCase().replace(/-/g, " ").trim() : "";
+
+                      // ✅ normalize பண்ணி compare — case/hyphen mismatch தவிர்க்கணும்
+                      const prevState = filtersRef.current.state ?? null;
+                      const stateChanged =
+                        normalize(state) !== normalize(prevState);
+
+                      const cap = (s: string | null) =>
+                        s
+                          ? s
+                              .toLowerCase()
+                              .replace(/\b\w/g, (c) => c.toUpperCase())
+                          : undefined;
+
+                      console.log(
+                        "🔥 onLocationSelect — state:",
+                        state,
+                        "region:",
+                        region,
+                      );
+                      console.log(
+                        "🔥 prevState:",
+                        prevState,
+                        "stateChanged:",
+                        stateChanged,
+                      );
+
+                      if (state === null && region === null) {
+                        handleSliderFilterSelect({
+                          state: undefined,
+                          region: undefined,
+                        });
+                      } else if (stateChanged) {
+                        handleSliderFilterSelect({ state: cap(state) });
+                      } else {
+                        // ✅ Same state — region மட்டும் pass, "state" key இல்லாம
+                        handleSliderFilterSelect({ region: cap(region) });
+                      }
+                    }}
+                    onPriceSelect={(from, to) => {
+                      const next: Partial<Filters> = {};
+                      // from/to null ஆனா explicitly undefined set பண்ணு (delete ஆகும்)
+                      // value இருந்தா set பண்ணு
+                      if (from !== null && from !== undefined) {
+                        next.from_price = from;
+                      } else {
+                        next.from_price = undefined; // delete
+                      }
+                      if (to !== null && to !== undefined) {
+                        next.to_price = to;
+                      } else {
+                        next.to_price = undefined; // delete
+                      }
+                      handleSliderFilterSelect(next);
+                    }}
+                    onMakeSelect={(make, model) => {
+                      const next: Partial<Filters> = {};
+
+                      if (make !== null && make !== undefined) {
+                        next.make = make;
+                      } else {
+                        next.make = undefined; // delete
+                      }
+
+                      if (model !== null && model !== undefined) {
+                        next.model = model;
+                      }
+                      if (filtersRef.current.category) {
+                        next.category = filtersRef.current.category;
+                      }
+                      handleSliderFilterSelect(next);
+                    }}
+                    onAtmSelect={(min, max) => {
+                      const next: Partial<Filters> = {};
+                      if (min !== null && min !== undefined) {
+                        next.minKg = min;
+                      } else {
+                        next.minKg = undefined;
+                      }
+                      if (max !== null && max !== undefined) {
+                        next.maxKg = max;
+                      } else {
+                        next.maxKg = undefined;
+                      }
+                      handleSliderFilterSelect(next);
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {openModal && (
+        <FilterModal
+          onClose={() => setOpenModal(false)}
+          onClearAll={resetAllFilters}
+          categories={categories}
+          makes={makes}
+          models={models}
+          states={stateOptions}
+          onFilterChange={(partial) => {
+            handleFilterChange(partial);
+          }}
+          currentFilters={filters}
+          setIsFeaturedLoading={setIsFeaturedLoading}
+          setIsPremiumLoading={setIsPremiumLoading}
+          setIsMainLoading={setIsMainLoading}
+          focusSection={modalFocusSection}
+        />
+
+        //  <CaravanFilter
+        //                         categories={categories}
+        //                         makes={makes}
+        //                         models={models}
+        //                         states={stateOptions}
+        //                         onFilterChange={(partial) => {
+
+        //                           handleFilterChange(partial);
+        //                         }}
+        //                         currentFilters={filters}
+        //                         setIsFeaturedLoading={setIsFeaturedLoading}
+        //                         setIsPremiumLoading={setIsPremiumLoading}
+        //                         setIsMainLoading={setIsMainLoading}
+        //                         hideSSRLinks={true}
+        //                       />
+      )}
 
       <section className="services product_listing new_listing bg-gray-100 section-padding pb-30 style-1">
-        <div className="container container-xxl">
+        <div className="container">
           <div className="content mb-4">
             {/*<div className="text-sm text-gray-600 header">
-                <Link href="/" className="hover:underline">
-                  Home
-                </Link>{" "}
-                &gt; <span className="font-medium text-black"> Listings</span>
-              </div>
-  
-              <h1 className="page-title">{pageTitle}</h1>*/}
+                 <Link href="/" className="hover:underline">
+                   Home
+                 </Link>{" "}
+                 &gt; <span className="font-medium text-black"> Listings</span>
+               </div>
+   
+               <h1 className="page-title">{pageTitle}</h1>*/}
             <div ref={sentinelRef} style={{ height: "1px" }} />
             <div className="row">
               {/* Desktop sidebar */}
-              <div className="col-lg-3">
-                <div className="filter filter_sticky hidden-xs hidden-sm">
-                  <div className="card-title align-items-center d-flex justify-content-between hidden-xs">
-                    <h3 className="filter_title">Filters</h3>
-                    <span className="text-uppercase clear_btn">
-                      <button
-                        onClick={resetAllFilters}
-                        disabled={!hasActiveFilters}
-                        className={`clear_btn ${
-                          !hasActiveFilters ? "disabled" : ""
-                        }`}
-                        style={{ border: "none", backgroundColor: "white" }}
-                      >
-                        <i className="bi bi-arrow-repeat me-1"></i> Clear All
-                      </button>{" "}
-                    </span>
-                  </div>
-                  <div className="smooth_scroll">
-                    <Suspense>
-                      <CaravanFilter
-                        categories={categories}
-                        makes={makes}
-                        models={models}
-                        states={stateOptions}
-                        onFilterChange={(partial) => {
-                          handleFilterChange(partial);
-                        }}
-                        currentFilters={filters}
-                        setIsFeaturedLoading={setIsFeaturedLoading}
-                        setIsPremiumLoading={setIsPremiumLoading}
-                        setIsMainLoading={setIsMainLoading}
-                      />
-                    </Suspense>
-                  </div>
-                </div>
-              </div>
 
               {/* Listings */}
               {/* Listings */}
@@ -1076,7 +1900,7 @@ export default function ListingsPage({
               isMainLoading ||
               isFeaturedLoading ||
               isPremiumLoading ? (
-                <div className="col-lg-6">
+                <div className="col-lg-8">
                   <ListingSkeleton count={8} />
                 </div>
               ) : (
@@ -1145,19 +1969,41 @@ export default function ListingsPage({
             aria-label="Close"
           />
         </div>
-
         <div className="offcanvas-body pt-2">
           <Suspense>
-            <CaravanFilter
-              categories={categories}
-              makes={makes}
-              models={models}
-              states={stateOptions}
-              onFilterChange={(partial) => {
-                handleFilterChange(partial);
-              }}
-              currentFilters={filters}
-            />
+            {openModal && (
+              <FilterModal
+                onClose={() => setOpenModal(false)}
+                onClearAll={resetAllFilters}
+                categories={categories}
+                makes={makes}
+                models={models}
+                states={stateOptions}
+                onFilterChange={(partial) => {
+                  handleFilterChange(partial);
+                }}
+                currentFilters={filters}
+                setIsFeaturedLoading={setIsFeaturedLoading}
+                setIsPremiumLoading={setIsPremiumLoading}
+                setIsMainLoading={setIsMainLoading}
+              />
+
+              //  <CaravanFilter
+              //                         categories={categories}
+              //                         makes={makes}
+              //                         models={models}
+              //                         states={stateOptions}
+              //                         onFilterChange={(partial) => {
+
+              //                           handleFilterChange(partial);
+              //                         }}
+              //                         currentFilters={filters}
+              //                         setIsFeaturedLoading={setIsFeaturedLoading}
+              //                         setIsPremiumLoading={setIsPremiumLoading}
+              //                         setIsMainLoading={setIsMainLoading}
+              //                         hideSSRLinks={true}
+              //                       />
+            )}
           </Suspense>
         </div>
       </div>
