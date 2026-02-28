@@ -21,11 +21,7 @@ export async function GET() {
     "region-make-sitemap.xml",
     "category-state-sitemap.xml",
     "category-region-sitemap.xml",
-    "state-atm-sitemap.xml",
-    "region-atm-sitemap.xml",
-
-    "state-length-sitemap.xml",
-    "region-length-sitemap.xml",
+    "category-sleep-sitemap.xml",
   ];
 
   const lastModified = new Date().toISOString().split("T")[0];

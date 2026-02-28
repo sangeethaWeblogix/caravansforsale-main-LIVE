@@ -1,4 +1,4 @@
-     .list-container {
+.list-container {
   padding: 15px 0px;
 }
 .search_quick_links .title {
@@ -9,7 +9,7 @@
   text-decoration: none;
   font-weight: 500;
 }
- 
+
 .header {
   margin-bottom: 0px;
 }
@@ -74,14 +74,6 @@ h1.page-title {
   text-decoration: underline !important;
 }
 
-.cfs-links-section {
-    background: #fff;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    margin-bottom: 12px;
-    padding: 16px;
-    display: none;
-}
 .filter-acc-icon,
 .toggle_show_make_more {
   cursor: pointer;
@@ -104,8 +96,8 @@ h1.page-title {
   margin-left: 25px;
 }
 .show_count {
-    font-size: 18px;
-    display: inline;
+  font-size: 16px;
+  display: inline;
 }
 .mb-10 {
   margin-bottom: 10px;
@@ -462,7 +454,6 @@ h1.page-title {
   color: #f58333;
 }
 
- 
 .filter .filter-card {
   padding: 20px 20px;
   border-radius: 8px;
@@ -479,10 +470,10 @@ h1.page-title {
   margin-bottom: 30px;
 }
 .filter_title {
-    letter-spacing: 0;
-    text-transform: capitalize;
-    font-size: 17px;
-    font-weight: 600;
+  letter-spacing: 0;
+  text-transform: capitalize;
+  font-size: 17px;
+  font-weight: 600;
 }
 .full_width_section {
   width: 100%;
@@ -507,28 +498,28 @@ h1.page-title {
   border-color: #fff;
 }
 .cfs-select-input {
-    text-align: left;
-    box-sizing: border-box;
-    text-overflow: ellipsis;
-    background-color: #fff;
-    border: 1px solid #ffffff !important;
-    border-radius: 4px;
-    width: 100%;
-    height: 48px;
-    margin: 8px 0;
-    padding-left: 16px;
-    padding-right: 16px;
-    font-size: 16px;
-    font-weight: 500;
-    -webkit-transition-property: border-width, border-color, box-shadow;
-    transition-property: border-width, border-color, box-shadow;
-    -webkit-transition-duration: .1s;
-    transition-duration: .1s;
-    -webkit-transition-timing-function: ease-in;
-    transition-timing-function: ease-in;
-    overflow: hidden;
-    box-shadow: 0px 0px 0px 1.5px #d9d9d9 !important;
-    outline: none;
+  text-align: left;
+  box-sizing: border-box;
+  text-overflow: ellipsis;
+  background-color: #fff;
+  border: 1px solid #ffffff !important;
+  border-radius: 4px;
+  width: 100%;
+  height: 48px;
+  margin: 8px 0;
+  padding-left: 16px;
+  padding-right: 16px;
+  font-size: 16px;
+  font-weight: 500;
+  -webkit-transition-property: border-width, border-color, box-shadow;
+  transition-property: border-width, border-color, box-shadow;
+  -webkit-transition-duration: 0.1s;
+  transition-duration: 0.1s;
+  -webkit-transition-timing-function: ease-in;
+  transition-timing-function: ease-in;
+  overflow: hidden;
+  box-shadow: 0px 0px 0px 1.5px #b6b3b3 !important;
+  outline: none;
 }
 .cfs-select-input:focus {
   box-shadow: 0px 0px 0px 1.5px #151515 !important;
@@ -619,78 +610,79 @@ h1.page-title {
   margin-right: 5%;
 }
 .cfs-modal {
-    z-index: 9999;
-    background-color: rgb(0 0 0 / 80%);
-    width: 100%;
-    height: 100%;
-    position: fixed;
-    top: 0;
-    left: 0;
-    overflow: auto;
+  z-index: 9999;
+  background-color: rgb(0 0 0 / 80%);
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  overflow: auto;
 }
 /* Modal Content/Box */
 .cfs-modal-content {
-    background-color: #fff;
-    border: none;
-    border-radius: 15px;
-    max-width: 600px;
-    margin: 8% auto;
-    overflow: hidden;
+  background-color: #fff;
+  border: none;
+  border-radius: 15px;
+  max-width: 600px;
+  margin: 8% auto;
+  overflow: hidden;
 }
 .cfs-modal-header {
-    background: #ffffff;
-    border-bottom: 1px solid #d6d6d6;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    padding: 10px 20px;
-    display: flex;
-    position: relative;
+  background: #ffffff;
+  border-bottom: 1px solid #d6d6d6;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 10px 20px;
+  display: flex;
+  position: relative;
 }
 .cfs-modal-header .cfs-filter-label {
-    color: #000;
-    margin: 0;
-    font-size: 17px;
-    font-weight: 600;
+  color: #000;
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
 }
 .cfs-modal-body {
   padding: 20px;
   min-height: 300px;
 }
 .cfs-modal-search-section {
-    max-width: 100%;
-    margin: 0 auto;
+  max-width: 100%;
+  margin: 0 auto;
 }
 .cfs-modal-footer {
-    text-align: center;
-    padding: 10px;
-    padding-bottom: 25px;
+  text-align: center;
+  padding: 10px;
+  padding-bottom: 25px;
 }
 .cfs-modal-footer .cfs-btn {
-    background: #ec7200;
-    width: 300px;
-    border-color: #ec7200;
-    color: #fff;
+  background: #ec7200;
+  width: 300px;
+  border-color: #ec7200;
+  color: #fff;
 }
 
-.cfs-modal-footer .cfs-btn:hover, .cfs-modal-footer .cfs-btn:focus {
+.cfs-modal-footer .cfs-btn:hover,
+.cfs-modal-footer .cfs-btn:focus {
   background: #ef7a0d;
-  color:#ffffff
+  color: #ffffff;
 }
 /* The Close Button */
 .cfs-close {
-    color: #aaa;
-    padding-top: 0;
-    padding-right: 0;
-    font-size: 28px;
-    font-weight: bold;
-    line-height: 28px;
+  color: #aaa;
+  padding-top: 0;
+  padding-right: 0;
+  font-size: 28px;
+  font-weight: bold;
+  line-height: 28px;
 }
 .cfs-close svg {
-    fill: #3b3b3b;
-    cursor: pointer;
-    width: 30px;
-    height: 30px;
+  fill: #3b3b3b;
+  cursor: pointer;
+  width: 30px;
+  height: 30px;
 }
 .cfs-close:hover,
 .cfs-close:focus {
@@ -917,9 +909,9 @@ input[type="number"]::-webkit-outer-spin-button {
   display: none;
 }
 .filter-accordion {
-    justify-content: space-between;
-    display: flex;
-    cursor: pointer;
+  justify-content: space-between;
+  display: flex;
+  cursor: pointer;
 }
 .filter-accordion svg {
   width: 20px;
@@ -1016,7 +1008,7 @@ input[type="number"]::-webkit-outer-spin-button {
 
 @media (max-width: 767px) {
   .product_listing {
-    padding: 15px 0;
+    padding: 30px 0;
   }
   h1.page-title {
     padding-bottom: 10px;
@@ -1037,7 +1029,6 @@ input[type="number"]::-webkit-outer-spin-button {
   }
   .vehicleDetailsWithIcons.simple {
     padding: 0;
-    
   }
   .vehicleSearch__column-poster .vehicleThumbDetails__part {
     display: inline-block;
@@ -1064,7 +1055,7 @@ input[type="number"]::-webkit-outer-spin-button {
     margin-bottom: 20px;
   }
   .cfs-modal-content {
-        margin: 5% 10px;
+    margin: 5% 10px;
   }
   .loader {
     border: 6px solid #f3f3f3;
