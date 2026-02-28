@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
 import { fetchProductList } from "@/api/productList/api";
-
+import { fetchMakeDetails } from "@/api/make-new/api";
 import "swiper/css";
 import "swiper/css/navigation";
 
@@ -140,6 +140,7 @@ const FilterSlider = ({
   const [tempModel, setTempModel] = useState<string | null>(null);
   const [makeSearch, setMakeSearch] = useState("");
   const [makeLoading, setMakeLoading] = useState(false);
+  const [lastModelName, setLastModelName] = useState<string | null>(null);
 
   // ── 1. modelCounts state add பண்ணு (makeCounts state-க்கு கீழே) ──
   const [modelCounts, setModelCounts] = useState<
@@ -149,12 +150,15 @@ const FilterSlider = ({
   const [modelCountLoading, setModelCountLoading] = useState(false);
 
   const didFetchMakeRef = useRef(false);
+
+  const toTitleCase = (str: string): string =>
+    str.replace(/\b\w/g, (c) => c.toUpperCase());
+
   useEffect(() => {
     if (didFetchMakeRef.current) return;
     didFetchMakeRef.current = true;
     setMakeLoading(true);
-    import("@/api/make-new/api")
-      .then(({ fetchMakeDetails }) => fetchMakeDetails())
+    fetchMakeDetails()
       .then((list) => setMakes(list || []))
       .catch(console.error)
       .finally(() => setMakeLoading(false));
@@ -183,8 +187,14 @@ const FilterSlider = ({
       .then((r) => r.json())
       .then((json) => {
         if (!controller.signal.aborted) {
-          setModelCounts(json.data || []);
+          const data = json.data || [];
+          setModelCounts(data);
           setModelCountLoading(false);
+          // ✅ Cache the matched model name for tag display
+          const matched = data.find(
+            (m: any) => m.slug === currentFilters.model,
+          );
+          if (matched) setLastModelName(matched.name);
         }
       })
       .catch((e) => {
@@ -270,6 +280,7 @@ const FilterSlider = ({
     localOverrideRef.current.make = undefined;
     localOverrideRef.current.model = undefined;
     setTempMake(null);
+    setLastModelName(null);
     setTempModel(null);
     onMakeSelect?.(null, null);
     setOpenModal(null);
@@ -465,9 +476,11 @@ const FilterSlider = ({
                 {currentFilters.category ? (
                   <>
                     <small className="selected_label">Type: </small>
-                    {categoryCounts.find(
-                      (c) => c.slug === currentFilters.category,
-                    )?.name ?? currentFilters.category}
+                    {toTitleCase(
+                      categoryCounts.find(
+                        (c) => c.slug === currentFilters.category,
+                      )?.name ?? currentFilters.category,
+                    )}
                     <span className="active_filter">
                       <i className="bi bi-circle-fill"></i>
                     </span>
@@ -486,11 +499,11 @@ const FilterSlider = ({
                 {currentFilters.state ? (
                   <>
                     <small className="selected_label">State: </small>
-                    {currentFilters.state}
+                    {toTitleCase(currentFilters.state)}
                     {currentFilters.region && (
                       <>
                         , <small className="selected_label">Region: </small>
-                        {currentFilters.region}
+                        {toTitleCase(currentFilters.region)}
                       </>
                     )}
                     <span className="active_filter">
@@ -511,12 +524,21 @@ const FilterSlider = ({
                 {currentFilters.make ? (
                   <>
                     <small className="selected_label">Make: </small>
-                    {makeCounts.find((m) => m.slug === currentFilters.make)
-                      ?.name ?? currentFilters.make}
+                    {toTitleCase(
+                      makeCounts.find((m) => m.slug === currentFilters.make)
+                        ?.name ??
+                        makes.find((m) => m.slug === currentFilters.make)
+                          ?.name ??
+                        currentFilters.make,
+                    )}
                     {currentFilters.model && (
                       <>
                         , <small className="selected_label">Model: </small>
-                        {currentFilters.model}
+                        {lastModelName ??
+                          modelCounts.find(
+                            (m) => m.slug === currentFilters.model,
+                          )?.name ??
+                          toTitleCase(currentFilters.model.replace(/-/g, " "))}
                       </>
                     )}
                     <span className="active_filter">
