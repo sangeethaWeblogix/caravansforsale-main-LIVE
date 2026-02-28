@@ -17,6 +17,7 @@ import { v4 as uuidv4 } from "uuid";
 import "./newList.css?=18";
 import "./top-filters.css?=44";
 import dynamic from "next/dynamic";
+import { filterOptions } from "./filterOptions"; // உங்க path adjust பண்ணு
 
 const ListingSkeleton = dynamic(() => import("../skelton"), { ssr: false });
 
@@ -1560,6 +1561,114 @@ export default function ListingsPage({
     filters.keyword,
   ]);
 
+  function buildStaticLinks(filters: Filters) {
+    const links: Record<string, { name: string; slug: string }[]> = {};
+
+    const hasState = !!filters.state;
+    const hasRegion = !!filters.region;
+
+    // ── Location ──
+    if (!hasState && !hasRegion) {
+      // No location selected → show all states
+      links.states = filterOptions.location.state.map((s) => ({
+        name: s.name,
+        slug: s.slug,
+      }));
+    } else if (hasState && !hasRegion) {
+      // State selected → show that state's regions
+      const found = filterOptions.location.state.find(
+        (s) => s.name.toLowerCase() === filters.state?.toLowerCase(),
+      );
+      if (found?.region && found.region.length > 0) {
+        links.regions = found.region.map((r) => ({
+          name: r.name,
+          slug: r.slug,
+        }));
+      }
+    } else if (hasState && hasRegion) {
+      // Region selected → show only that state (single item)
+      const found = filterOptions.location.state.find(
+        (s) => s.name.toLowerCase() === filters.state?.toLowerCase(),
+      );
+      if (found) {
+        links.states = [{ name: found.name, slug: found.slug }];
+      }
+    }
+
+    // ── Categories — always show ──
+    links.categories = filterOptions.categories.map((c) => ({
+      name: c.name,
+      slug: c.slug,
+    }));
+
+    // ── Price — always show ──
+    links.prices = filterOptions.price.map((p) => ({
+      name: p.name,
+      slug: p.slug,
+    }));
+
+    return links;
+  }
+
+  function buildStaticLinkUrl(
+    type: string,
+    slug: string,
+    currentFilters: Filters,
+  ): string {
+    // For state/region/category/price etc. — slug already has full path
+    // e.g. "/victoria-state/" → "/listings/victoria-state/"
+    const cleanSlug = slug.startsWith("/") ? slug.slice(1) : slug;
+
+    // If a category is already selected, prepend it before state/price etc.
+    // so URLs stay consistent with your slug builder
+    const base = buildSlugFromFilters({
+      ...currentFilters,
+      // Reset the filter we're about to set (avoid double slug)
+      ...(type === "categories" ? { category: undefined } : {}),
+      ...(type === "states" ? { state: undefined, region: undefined } : {}),
+      ...(type === "regions" ? { region: undefined } : {}),
+      ...(type === "prices"
+        ? { from_price: undefined, to_price: undefined }
+        : {}),
+      ...(type === "atm" ? { minKg: undefined, maxKg: undefined } : {}),
+      ...(type === "sleep"
+        ? { from_sleep: undefined, to_sleep: undefined }
+        : {}),
+      ...(type === "length"
+        ? { from_length: undefined, to_length: undefined }
+        : {}),
+    });
+
+    const safeBase = base.endsWith("/") ? base : `${base}/`;
+    return `${safeBase}${cleanSlug}`;
+  }
+
+  const staticLinks = useMemo(
+    () => buildStaticLinks(filters),
+    [
+      filters.category,
+      filters.state,
+      filters.from_price,
+      filters.to_price,
+      filters.minKg,
+      filters.maxKg,
+      filters.from_sleep,
+      filters.to_sleep,
+      filters.from_length,
+      filters.to_length,
+    ],
+  );
+
+  const SECTION_TITLES: Record<string, string> = {
+    categories: "Browse by Category",
+    states: "Browse by State",
+    regions: "Browse by Region",
+    prices: "Browse by Price",
+    atm: "Browse by ATM Weight",
+    sleep: "Browse by Sleeping Capacity",
+    length: "Browse by Length",
+  };
+
   return (
     <>
       <Head>
@@ -1579,67 +1688,36 @@ export default function ListingsPage({
           content={metaDescription || "Default Description"}
         />
       </Head>
-      <div>
-        {clientMounted && clientLinksData && (
-          <div className="cfs-links-section" id="client-links">
-            {(["states", "categories", "regions"] as string[]).map(
-              (sectionKey) => {
-                const items = clientLinksData[sectionKey];
-                if (!items || items.length === 0) return null;
-
-                const titles: Record<string, string> = {
-                  states: "Browse by State",
-                  categories: "Browse by Category",
-                  regions: "Browse by Region",
-                  //         makes: "Browse by Make",
-                  //         models: "Browse by Model",
-                  //         conditions: "Browse by Condition",
-                  //          prices: "Browse by Price",
-                  // atm_ranges: "Browse by ATM",
-                  // length_ranges: "Browse by Length",
-                  // sleep_ranges: "Browse by Sleep",
-                };
-
-                return (
-                  <div key={sectionKey} className="cfs-links-group">
-                    <h5 className="cfs-filter-label">
-                      {titles[sectionKey] || sectionKey}
-                    </h5>
-                    <ul className="cfs-links-list">
-                      {items.map((item: any) => {
-                        const linkUrl = buildClientLinkUrl(sectionKey, item);
-                        return (
-                          <li key={item.slug} className="cfs-links-item">
-                            <a
-                              href={linkUrl}
-                              target=""
-                              className="cfs-links-link"
-                              onClick={(e: React.MouseEvent) => {
-                                e.preventDefault();
-                                router.push(linkUrl);
-                              }}
-                            >
-                              {item.name.includes(" ")
-                                ? item.name.replace(/\b\w/g, (c: string) =>
-                                    c.toUpperCase(),
-                                  )
-                                : item.name
-                                    .replace(/-/g, " ")
-                                    .replace(/\b\w/g, (c: string) =>
-                                      c.toUpperCase(),
-                                    )}{" "}
-                            </a>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  </div>
-                );
-              },
-            )}
-          </div>
-        )}
-      </div>
+      {/* <div>
+        <div className="cfs-links-section" id="static-links">
+          {Object.entries(staticLinks).map(([sectionKey, items]) => {
+            if (!items || items.length === 0) return null;
+            return (
+              <div key={sectionKey} className="cfs-links-group">
+                <h5 className="cfs-filter-label">
+                  {SECTION_TITLES[sectionKey] || sectionKey}
+                </h5>
+                <ul className="cfs-links-list">
+                  {items.map((item) => {
+                    const linkUrl = buildStaticLinkUrl(
+                      sectionKey,
+                      item.slug,
+                      filters,
+                    );
+                    return (
+                      <li key={item.slug} className="cfs-links-item">
+                        <a href={linkUrl} className="cfs-links-link">
+                          {item.name}
+                        </a>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            );
+          })}
+        </div>
+      </div> */}
 
       <div className="search-bar">
         <div className="container">
