@@ -1389,11 +1389,13 @@ export default function ListingsPage({
 
     // ✅ Location hierarchy: state மாறினா region/suburb/pincode clear
     if ("state" in newFilters) {
-      delete next.region;
+      // ✅ Only clear region if it was NOT explicitly passed together
+      if (!("region" in newFilters)) {
+        delete next.region;
+      }
       delete next.suburb;
       delete next.pincode;
     }
-
     // ✅ State value capitalize பண்ணு — "new south wales" → "New South Wales"
     if (next.state) {
       next.state = next.state
@@ -1748,13 +1750,13 @@ export default function ListingsPage({
                       handleSliderFilterSelect({ category: slug ?? undefined })
                     }
                     onLocationSelect={(state, region) => {
-                      const normalize = (s: string | null) =>
-                        s ? s.toLowerCase().replace(/-/g, " ").trim() : "";
-
-                      // ✅ normalize பண்ணி compare — case/hyphen mismatch தவிர்க்கணும்
-                      const prevState = filtersRef.current.state ?? null;
-                      const stateChanged =
-                        normalize(state) !== normalize(prevState);
+                      if (state === null && region === null) {
+                        handleSliderFilterSelect({
+                          state: undefined,
+                          region: undefined,
+                        });
+                        return;
+                      }
 
                       const cap = (s: string | null) =>
                         s
@@ -1763,30 +1765,11 @@ export default function ListingsPage({
                               .replace(/\b\w/g, (c) => c.toUpperCase())
                           : undefined;
 
-                      console.log(
-                        "🔥 onLocationSelect — state:",
-                        state,
-                        "region:",
-                        region,
-                      );
-                      console.log(
-                        "🔥 prevState:",
-                        prevState,
-                        "stateChanged:",
-                        stateChanged,
-                      );
-
-                      if (state === null && region === null) {
-                        handleSliderFilterSelect({
-                          state: undefined,
-                          region: undefined,
-                        });
-                      } else if (stateChanged) {
-                        handleSliderFilterSelect({ state: cap(state) });
-                      } else {
-                        // ✅ Same state — region மட்டும் pass, "state" key இல்லாம
-                        handleSliderFilterSelect({ region: cap(region) });
-                      }
+                      // ✅ Always pass both state + region together — never split
+                      handleSliderFilterSelect({
+                        state: cap(state),
+                        region: cap(region),
+                      });
                     }}
                     onPriceSelect={(from, to) => {
                       const next: Partial<Filters> = {};

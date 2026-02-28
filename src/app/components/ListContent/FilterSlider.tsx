@@ -377,26 +377,24 @@ const FilterSlider = ({
         r.name.toLowerCase() === (f.region ?? "").toLowerCase() ||
         r.value.toLowerCase() === (f.region ?? "").toLowerCase(),
     );
-    setTempState(matchedState?.name ?? f.state ?? null);
-    setTempRegion(matchedRegion?.name ?? f.region ?? null);
+    setTempState(matchedState?.name ?? f.state ?? null); // keep Title Case for <select> display
+    const resolvedRegion = matchedRegion?.name ?? null;
+    const fallbackRegion =
+      !resolvedRegion && f.region
+        ? (matchedState?.regions?.find(
+            (r) => r.name.toLowerCase() === f.region!.toLowerCase(),
+          )?.name ?? null)
+        : null;
+    setTempRegion(resolvedRegion ?? fallbackRegion ?? null);
     setOpenModal("location");
   };
   const handleLocationSearch = () => {
-    const normalize = (s: string | null) =>
-      s ? s.toLowerCase().replace(/-/g, " ").trim() : "";
-    const prevState = getEffectiveFilters().state ?? null;
-    const stateChanged = normalize(tempState) !== normalize(prevState);
-
     delete localOverrideRef.current.state;
     delete localOverrideRef.current.region;
-
-    if (tempState === null && tempRegion === null) {
-      onLocationSelect(null, null);
-    } else if (stateChanged) {
-      onLocationSelect(tempState, null);
-    } else {
-      onLocationSelect(tempState, tempRegion);
-    }
+    onLocationSelect(
+      tempState ? tempState.toLowerCase() : null,
+      tempRegion ? tempRegion.toLowerCase() : null,
+    );
     setOpenModal(null);
   };
   const handleLocationClear = () => {
@@ -404,7 +402,7 @@ const FilterSlider = ({
     localOverrideRef.current.region = undefined;
     setTempState(null);
     setTempRegion(null);
-    onLocationSelect(null, null);
+    onLocationSelect(null, null); // null is fine, no case issue
     setOpenModal(null);
   };
 
@@ -414,9 +412,10 @@ const FilterSlider = ({
 
   const hasTypeChange = tempCategory !== (currentFilters.category ?? null);
   const hasLocationChange =
-    tempState !== (currentFilters.state ?? null) ||
-    tempRegion !== (currentFilters.region ?? null);
-
+    (tempState?.toLowerCase() ?? null) !==
+      (currentFilters.state?.toLowerCase() ?? null) ||
+    (tempRegion?.toLowerCase() ?? null) !==
+      (currentFilters.region?.toLowerCase() ?? null);
   const closeBtn = (
     <button className="filter-close" onClick={() => setOpenModal(null)}>
       <svg
