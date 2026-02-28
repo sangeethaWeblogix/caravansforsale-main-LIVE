@@ -167,6 +167,8 @@ const FilterModal: React.FC<CaravanFilterProps> = ({
   const [visibleCount, setVisibleCount] = useState(10);
   const [modelCounts, setModelCounts] = useState<ModelCount[]>([]);
   const [isCategoryCountLoading, setIsCategoryCountLoading] = useState(true);
+  const categoryFirstLoadDoneRef = useRef(false); // ← add this ref
+
   // இந்த state variables add பண்ணு (top-ல்)
   const [tempStateName, setTempStateName] = useState<string | null>(null);
   const [tempRegionName, setTempRegionName] = useState<string | null>(null);
@@ -1867,7 +1869,9 @@ const FilterModal: React.FC<CaravanFilterProps> = ({
     // ─── CATEGORY COUNTS ───
     const catParams = buildCountParamsMulti(activeFilters, ["category"]);
     catParams.set("group_by", "category");
-    setIsCategoryCountLoading(true);
+    if (!categoryFirstLoadDoneRef.current) {
+      setIsCategoryCountLoading(true); // ← only on first fetch
+    }
     fetch(
       `https://admin.caravansforsale.com.au/wp-json/cfs/v1/params_count?${catParams.toString()}`,
       { signal },
@@ -1877,6 +1881,7 @@ const FilterModal: React.FC<CaravanFilterProps> = ({
         if (!signal.aborted) {
           setCategoryCounts(json.data || []);
           setIsCategoryCountLoading(false);
+          categoryFirstLoadDoneRef.current = true;
         }
       })
       .catch((e) => {
@@ -2021,7 +2026,7 @@ const FilterModal: React.FC<CaravanFilterProps> = ({
               <div className="filter-item pt-0" ref={categoryRef}>
                 <h4>Caravan Type</h4>
                 <ul className="category-list">
-                  {isCategoryCountLoading ? (
+                  {isCategoryCountLoading && categoryCounts.length === 0 ? (
                     // ✅ Skeleton - data வரும் வரை காட்டு
                     <CategorySkeleton />
                   ) : (

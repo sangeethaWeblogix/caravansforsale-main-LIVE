@@ -434,6 +434,18 @@ const FilterSlider = ({
     }
     return merged;
   };
+
+  // ── In FilterSlider component, add this ref near the top (after useState declarations) ──
+
+  const cachedCategoryCountsRef = useRef<CategoryCount[]>([]);
+
+  // Update cache whenever we get real data
+  useEffect(() => {
+    if (categoryCounts.length > 0) {
+      cachedCategoryCountsRef.current = categoryCounts;
+    }
+  }, [categoryCounts]);
+
   return (
     <>
       <div className="filter-row">
@@ -579,10 +591,15 @@ const FilterSlider = ({
                 className="category-list"
                 style={{ listStyle: "none", padding: 0, margin: 0 }}
               >
-                {isCategoryCountLoading ? (
+                {isCategoryCountLoading &&
+                cachedCategoryCountsRef.current.length === 0 ? (
                   <li style={{ padding: "12px 0", color: "#888" }}>Loading…</li>
                 ) : (
-                  categoryCounts.map((cat) => (
+                  // Use cached data as fallback while re-fetching
+                  (categoryCounts.length > 0
+                    ? categoryCounts
+                    : cachedCategoryCountsRef.current
+                  ).map((cat) => (
                     <li key={cat.slug} className="category-item">
                       <label className="category-checkbox-row checkbox">
                         <div className="d-flex align-items-center">
