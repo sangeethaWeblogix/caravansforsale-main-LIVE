@@ -146,7 +146,7 @@ export default function ListingContent({
     setNavigating(false);
   }, [pathname]);
 
-  const IMAGE_BASE_URL = "https://caravansforsale.imagestack.net/400x300/";
+  const IMAGE_BASE_URL = "https://caravansforsale.imagestack.net/800x600/";
 
   const IMAGE_EXT = ".avif";
 
@@ -227,17 +227,8 @@ export default function ListingContent({
         name: "",
       };
 
-  const {
-    form,
-    errors,
-    touched,
-    submitting,
-    setField,
-    onBlur,
-    onSubmit,
-    isFinanceQuoteChecked,
-    setFinanceQuoteChecked,
-  } = useEnquiryForm(enquiryProduct);
+  const { form, errors, touched, submitting, setField, onBlur, onSubmit } =
+    useEnquiryForm(enquiryProduct);
 
   const MAX_SWIPER_IMAGES = 5;
 
@@ -517,10 +508,10 @@ export default function ListingContent({
         <meta name="twitter:description" content={metaDescription} />
       </Head>
 
-      <div className="col-lg-6">
+      <div className="col-lg-9">
         <div className="top-filter mb-10">
           <div className="row align-items-center">
-            <div className="col-lg-8 show_count_wrapper ">
+            <div className="col-lg-8 col-md-8 col-sm-8 col-12 show_count_wrapper ">
               {count && (
                 <span className="show_count mb-2 d-inline">
                   <strong>{count} </strong>
@@ -531,18 +522,18 @@ export default function ListingContent({
               </h1>
             </div>
 
-            <div className="col-4 d-lg-none d-md-none">
-              <button
-                type="button"
-                className="mobile_fltn navbar-toggler mytogglebutton"
-                data-bs-toggle="offcanvas"
-                data-bs-target="#mobileFilters"
-                aria-controls="mobileFilters"
-              >
-                <i className="bi bi-search" /> &nbsp;Filter
-              </button>
-            </div>
-            <div className="col-lg-4 col-8">
+            {/* <div className="col-4 d-lg-none d-md-none">
+                <button
+                  type="button"
+                  className="mobile_fltn navbar-toggler mytogglebutton"
+                  data-bs-toggle="offcanvas"
+                  data-bs-target="#mobileFilters"
+                  aria-controls="mobileFilters"
+                >
+                  <i className="bi bi-search" /> &nbsp;Filter
+                </button>
+              </div> */}
+            <div className="col-lg-4 col-md-4 col-sm-4 col-12">
               <div className="r-side">
                 <form className="woocommerce-ordering" method="get">
                   <div className="form-group shot-buy">
@@ -610,7 +601,10 @@ export default function ListingContent({
 
                     console.log("imgs", firstImage);
                     return (
-                      <div className="col-lg-6 mb-0" key={index}>
+                      <div
+                        className="col-lg-6 col-sm-6 col-md-6 mb-0"
+                        key={index}
+                      >
                         <a
                           href={href}
                           className="lli_head"
@@ -629,8 +623,8 @@ export default function ListingContent({
                                   src={firstImage}
                                   priority={isPriority}
                                   alt="Caravan"
-                                  width={400}
-                                  height={300}
+                                  width={800}
+                                  height={600}
                                 />
                               </div>
                               <div
@@ -677,12 +671,13 @@ export default function ListingContent({
                                         <ImageWithSkeleton
                                           src={img}
                                           alt={`Caravan ${i + 1}`}
-                                          width={400}
-                                          height={300}
+                                          width={800}
+                                          height={600}
                                         />
                                       </div>
                                     </SwiperSlide>
                                   ))}
+                                  thu
                                 </Swiper>
                               </div>
                             </div>
@@ -780,12 +775,12 @@ export default function ListingContent({
                               {/* --- DETAILS LIST --- */}
                               <ul className="vehicleDetailsWithIcons simple">
                                 {/* {item.condition && (
-                                  <li>
-                                    <span className="attribute3">
-                                      {item.condition}
-                                    </span>
-                                  </li>
-                                )} */}
+                                    <li>
+                                      <span className="attribute3">
+                                        {item.condition}
+                                      </span>
+                                    </li>
+                                  )} */}
 
                                 {item.categories &&
                                   item.categories.length > 0 && (
@@ -850,7 +845,7 @@ export default function ListingContent({
                                     setShowContact(true);
                                   }}
                                 >
-                                  Contact Seller
+                                  Contact Dealer
                                 </button>
 
                                 <button
@@ -904,6 +899,72 @@ export default function ListingContent({
           </nav>
         </div>
       </div>
+      <div className="col-lg-3">
+        <div className="sticky_spot hidden-xs hidden-sm">
+          <div className="related-products">
+            <div className="other_items">
+              <Link href="#" className="lli_head">
+                <div className="product-card">
+                  <div className="img">
+                    <span className="lab">Spotlight Van</span>
+                    <Image
+                      src="https://caravansforsale.imagestack.net/800x600/CFS-N-12800004/2025-newgen-ngb21s-21-luxury-slide-out-2main1.avif"
+                      alt="Caravan"
+                      width={400}
+                      height={300}
+                      className="w-100 h-100 object-fit-cover"
+                    />
+                  </div>
+
+                  {/* Product Details */}
+                  <div className="product_de">
+                    <div className="info">
+                      <h3 className="title cursor-pointer">
+                        2025 NewGen NGB21S 21&apos; Luxury Slideout
+                      </h3>
+                    </div>
+
+                    <div className="price">
+                      <div className="metc2">
+                        <h5 className="slog">$77,125</h5>
+                      </div>
+                    </div>
+
+                    <ul className="vehicleDetailsWithIcons simple">
+                      <li className="attribute3_list">
+                        <span className="attribute3">Luxury</span>
+                      </li>
+                      <li>
+                        <span className="attribute3">21 ft</span>
+                      </li>
+                      <li>
+                        <span className="attribute3">3500 Kg</span>
+                      </li>
+                      <li>
+                        <span className="attribute3">NewGen</span>
+                      </li>
+                    </ul>
+
+                    <div className="bottom_mid">
+                      <span>
+                        <i className="bi bi-check-circle-fill"></i> Condition
+                        New
+                      </span>
+                      <span>
+                        <i className="fa fa-map-marker-alt"></i> NSW
+                      </span>
+                    </div>
+
+                    <div className="bottom_button">
+                      <button className="btn btn-primary">View Details</button>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
       {showInfo && selectedProduct && (
         <div className="popup-overlay">
           <div className="popup-box">
@@ -931,7 +992,7 @@ export default function ListingContent({
         </div>
       )}
 
-      {/* === Contact Seller Popup === */}
+      {/* === Contact Dealer Popup === */}
       {showContact && (
         <div className="popup-overlay">
           <div className="popup-box">
@@ -946,7 +1007,7 @@ export default function ListingContent({
               ×
             </button>
 
-            <h4>Contact Seller</h4>
+            <h4>Contact Dealer</h4>
 
             <div className="sidebar-enquiry">
               <form className="wpcf7-form" noValidate onSubmit={onSubmit}>
@@ -1045,20 +1106,7 @@ export default function ListingContent({
                       ></textarea>
                     </p>
                   </div>
-                  {/* finance checkbox */}
-                  <div className="checkbox-wrapper">
-                    <input
-                      type="checkbox"
-                      id="financeQuote"
-                      onChange={() =>
-                        setFinanceQuoteChecked((prevState) => !prevState)
-                      }
-                      checked={isFinanceQuoteChecked}
-                    />
-                    <label htmlFor="financeQuote">
-                      Get a no-obligation finance quote with competitive rates
-                    </label>
-                  </div>
+
                   <p className="terms_text">
                     By clicking &lsquo;Send Enquiry&lsquo;, you agree to Caravan
                     Marketplace{" "}

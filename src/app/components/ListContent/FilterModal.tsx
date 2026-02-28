@@ -21,6 +21,7 @@ import {
 import { flushSync } from "react-dom";
 import { fetchMakeDetails } from "@/api/make-new/api";
 import CategorySkeleton from "./CategorySkeleton";
+import SearchSuggestionSkeleton from "../Searchsuggestionskeleton ";
 
 type LocationSuggestion = {
   key: string;
@@ -2130,64 +2131,81 @@ const FilterModal: React.FC<CaravanFilterProps> = ({
               <div className="filter-item search-filter">
                 <h4>Suburb/Postcode</h4>
                 <div className="search-box">
-                  <div className="secrch_icon">
-                    <i className="bi bi-search search-icon"></i>
-                    <input
-                      type="text"
-                      //placeholder="Suburb or postcode..."
-                      className="filter-dropdown cfs-select-input"
-                      autoComplete="off"
-                      placeholder="Search suburb, postcode, state, region"
-                      value={formatted(modalInput)} // 👈 modalInput} // 👈 use modalInput
-                      onFocus={() => setShowSuggestions(true)}
-                      onChange={(e) => {
-                        // isUserTypingRef.current = true;
-                        setShowSuggestions(true);
-
-                        const rawValue = e.target.value;
-                        // Format for filtering suggestions only
-                        setModalInput(rawValue); // 👈 Store raw value
-                        // const formattedValue = formatLocationInput(modalInput);
-                        const formattedValue = /^\d+$/.test(rawValue)
-                          ? rawValue // if user types only numbers, don’t format
-                          : formatLocationInput(rawValue);
-
-                        // Use the existing locationSuggestions state or fetch new data
-                        // Since you're already fetching locations in useEffect, you can filter the existing suggestions
-                        // OR trigger the same API call logic here
-                        if (formattedValue.length < 1) {
-                          setLocationSuggestions([]);
-                          return;
-                        }
-
-                        // Use the same API call logic as in your useEffect
-                        const suburb = formattedValue.split(" ")[0];
-                        fetchLocations(suburb)
-                          .then((data) => {
-                            // Filter the API results based on the formatted input
-                            const filtered = data.filter((item) => {
-                              const searchValue = formattedValue.toLowerCase();
-                              return (
-                                item.short_address
-                                  .toLowerCase()
-                                  .includes(searchValue) ||
-                                item.address
-                                  .toLowerCase()
-                                  .includes(searchValue) ||
-                                (item.postcode &&
-                                  item.postcode
-                                    .toString()
-                                    .includes(searchValue)) // ✅ added
-                              );
-                            });
-                            setLocationSuggestions(filtered);
-                          })
-                          .catch(console.error);
+                  <div className="secrch_icon" style={{ position: "relative" }}>
+                    <div
+                      style={{
+                        position: "relative",
+                        display: "flex",
+                        alignItems: "center",
                       }}
-                      onBlur={() =>
-                        setTimeout(() => setShowSuggestions(false), 150)
-                      }
-                    />
+                    >
+                      <i
+                        className="bi bi-search search-icon "
+                        style={{
+                          position: "absolute",
+                          left: 10,
+                          zIndex: 1,
+                          pointerEvents: "none",
+                        }}
+                      ></i>
+                      <input
+                        type="text"
+                        //placeholder="Suburb or postcode..."
+                        className="filter-dropdown cfs-select-input"
+                        autoComplete="off"
+                        placeholder="Search suburb, postcode, state, region"
+                        value={formatted(modalInput)} // 👈 modalInput} // 👈 use modalInput
+                        onFocus={() => setShowSuggestions(true)}
+                        onChange={(e) => {
+                          // isUserTypingRef.current = true;
+                          setShowSuggestions(true);
+
+                          const rawValue = e.target.value;
+                          // Format for filtering suggestions only
+                          setModalInput(rawValue); // 👈 Store raw value
+                          // const formattedValue = formatLocationInput(modalInput);
+                          const formattedValue = /^\d+$/.test(rawValue)
+                            ? rawValue // if user types only numbers, don’t format
+                            : formatLocationInput(rawValue);
+
+                          // Use the existing locationSuggestions state or fetch new data
+                          // Since you're already fetching locations in useEffect, you can filter the existing suggestions
+                          // OR trigger the same API call logic here
+                          if (formattedValue.length < 1) {
+                            setLocationSuggestions([]);
+                            return;
+                          }
+
+                          // Use the same API call logic as in your useEffect
+                          const suburb = formattedValue.split(" ")[0];
+                          fetchLocations(suburb)
+                            .then((data) => {
+                              // Filter the API results based on the formatted input
+                              const filtered = data.filter((item) => {
+                                const searchValue =
+                                  formattedValue.toLowerCase();
+                                return (
+                                  item.short_address
+                                    .toLowerCase()
+                                    .includes(searchValue) ||
+                                  item.address
+                                    .toLowerCase()
+                                    .includes(searchValue) ||
+                                  (item.postcode &&
+                                    item.postcode
+                                      .toString()
+                                      .includes(searchValue)) // ✅ added
+                                );
+                              });
+                              setLocationSuggestions(filtered);
+                            })
+                            .catch(console.error);
+                        }}
+                        onBlur={() =>
+                          setTimeout(() => setShowSuggestions(false), 150)
+                        }
+                      />
+                    </div>
                     {showSuggestions && locationSuggestions.length > 0 && (
                       <ul className="location-suggestions">
                         {locationSuggestions.map((item, i) => {
@@ -2690,7 +2708,12 @@ const FilterModal: React.FC<CaravanFilterProps> = ({
                       {/* Show base list when field is empty (<2 chars) */}
                       {modalKeyword.trim().length < 2 &&
                         (baseLoading ? (
-                          <div style={{ marginTop: 8 }}>Loading…</div>
+                          <div style={{ marginTop: 8 }}>
+                            <SearchSuggestionSkeleton
+                              count={4}
+                              label="Suggested searches"
+                            />
+                          </div>
                         ) : (
                           <div style={{ marginTop: 8 }}>
                             {/* 🏷 Title for base list */}
@@ -2727,7 +2750,12 @@ const FilterModal: React.FC<CaravanFilterProps> = ({
                       {/* Show typed suggestions when >=2 chars */}
                       {modalKeyword.trim().length >= 2 &&
                         (keywordLoading ? (
-                          <div style={{ marginTop: 8 }}>Loading…</div>
+                          <div style={{ marginTop: 8 }}>
+                            <SearchSuggestionSkeleton
+                              count={4}
+                              label="Suggested searches"
+                            />
+                          </div>
                         ) : (
                           <div style={{ marginTop: 8 }}>
                             {/* 🏷 Title for typed suggestions */}
