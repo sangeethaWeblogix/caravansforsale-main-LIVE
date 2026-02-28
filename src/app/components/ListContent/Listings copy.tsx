@@ -1,597 +1,673 @@
-  
-  "use client";
-  
-  import { Suspense, useCallback, useEffect, useRef, useState } from "react";
-  import { fetchListings, ApiResponse, Item } from "../../../api/listings/api";
-  import Listing from "./LisitingContent";
-  import ExculsiveContent from "./exculsiveContent";
-  import CaravanFilter from "../CaravanFilter";
-  import { flushSync } from "react-dom";
-  import { v4 as uuidv4 } from "uuid";
-  import "./newList.css";
-  import dynamic from "next/dynamic";
-  
-  import "../filter.css";
-  
-  const ListingSkeleton = dynamic(() => import("../skelton"), { ssr: false });
-  
-  import {
-    redirect,
-    usePathname,
-    useRouter,
-    useSearchParams,
-  } from "next/navigation";
-  import { buildSlugFromFilters } from "../slugBuilter";
-  import { parseSlugToFilters } from "../../components/urlBuilder";
-  import Head from "next/head";
-  import "./loader.css";
-  // import Link from "next/link";
-  
-  /* --------- GLOBAL de-dupe across StrictMode remounts --------- */
-  // let LAST_GLOBAL_REQUEST_KEY = "";
-  
-  /** ------------ Local types (match what UI renders) ------------ */
-  
-  interface Product {
-    id: number;
-    name: string;
-    length: string;
-    kg: string;
-    regular_price: string;
-    sale_price?: string;
-    price_difference?: string;
-    image: string;
-    link: string;
-    condition: string;
-    location?: string;
-    categories?: string[];
-    people?: string;
-    make?: string;
-    slug?: string;
-    description?: string;
-    sku?: string;
-    gallery?: string[];
-    // Include additional properties that might come from API
-    list_page_title?: string;
-    weight?: string;
-    price?: string;
-    thumbnail?: string;
-    url?: string;
-    sleeps?: string;
-    manufacturer?: string;
-    is_exclusive?: boolean;
-    is_premium?: boolean;
-    image_url?: string[];
-  }
-  
-  interface Pagination {
-    current_page: number;
-    total_pages: number;
-    total_items?: number;
-    per_page: number;
-    total_products: number;
-  }
-  
-  export interface Category {
-    name: string;
-    slug: string;
-  }
-  
-  export interface StateOption {
-    value: string;
-    name: string;
-  }
-  
-  export interface MakeOption {
-    name: string;
-    slug: string;
-  }
-  
-  export interface Filters {
-    category?: string;
-    image_format?: string[];
-    make?: string;
-    location?: string | null;
-    from_price?: string | number;
-    to_price?: string | number;
-    condition?: string;
-    sleeps?: string;
-    states?: string;
-    minKg?: string | number;
-    maxKg?: string | number;
-    acustom_fromyears?: number | string;
-    acustom_toyears?: number | string;
-    from_length?: string | number;
-    to_length?: string | number;
-    model?: string;
-    state?: string;
-    region?: string;
-    suburb?: string;
-    pincode?: string;
-    orderby?: string;
-    search?: string;
-    keyword?: string;
-    radius_kms?: number | string;
-    from_sleep?: string | number;
-    to_sleep?: string | number;
-  }
-  
-  interface Props extends Filters {
-    page?: string | number;
-    initialData?: ApiResponse;
-    linksData?: any;
-  }
-  
-  /** ------------ Helper Functions ------------ */
-  
-  // Add this helper function to transform API items to Products
-  function transformApiItemsToProducts(items: Item[]): Product[] {
-    return items.map((item) => ({
-      id: typeof item.id === "number" ? item.id : parseInt(String(item.id)) || 0,
-      name: item.name || "",
-      sleep: item.people || "",
-      length: item.length || "",
-      kg: item.kg || "",
-      regular_price: item.regular_price || "",
-      sale_price: item.sale_price,
-      price_difference: item.price_difference,
-      image: item.image || "",
-      link: item.link || "",
-      condition: item.condition || "",
-      location: item.location,
-      categories: item.categories,
-      people: item.people || "",
-      make: item.make || "",
-      model: item.model || "",
-      slug: item.slug,
-      description: item.description,
-      sku: item.sku,
-      gallery: item.gallery || [],
-      is_exclusive: item.is_exclusive,
-      is_premium: item.is_premium,
-      image_format: item.image_format || [],
-      image_url: item.image_url || [],
-  
-      // keep extra props
-    }));
-  }
-  
-  /** ------------ Component ------------ */
-  
-  export default function ListingsPage({
-    initialData,
-    linksData: serverLinksData, 
-    ...incomingFilters
-  }: Props) {
-    const DEFAULT_RADIUS = 50 as const;
-  
-    const [filters, setFilters] = useState<Filters>({});
-    const filtersRef = useRef<Filters>({});
-    const pathname = usePathname();
-    const searchParams = useSearchParams();
-    const [isLoading, setIsLoading] = useState(false);
-    const router = useRouter();
-  
-    const [isMainLoading, setIsMainLoading] = useState(false);
-    const [isFeaturedLoading, setIsFeaturedLoading] = useState(false);
-    const [isPremiumLoading, setIsPremiumLoading] = useState(false);
-    const [isUsingInitialData, setIsUsingInitialData] = useState(!!initialData);
-   //  const [scrollStarted, setScrollStarted] = useState(false);
-    const [isNextLoading, setIsNextLoading] = useState(false);
-    const [nextPageData, setNextPageData] = useState<ApiResponse | null>(null);
-  
-    const [clickid, setclickid] = useState<string | null>(null);
-    const [isRestored, setIsRestored] = useState(false);
-    console.log(isRestored);
-    // 1️⃣  persistence helpers  (top of file near imports)
-    const PAGE_KEY = (id: string) => `page_${id}`;
-    const savePage = (id: string, page: number) => {
-      try {
-        localStorage.setItem(PAGE_KEY(id), String(page));
-      } catch {}
-    };
- 
+"use client";
+
+import {
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { fetchListings, ApiResponse, Item } from "../../../api/listings/api";
+import Listing from "./LisitingContent";
+import ExculsiveContent from "./exculsiveContent";
+import FilterModal from "./FilterModal";
+import { flushSync } from "react-dom";
+import { v4 as uuidv4 } from "uuid";
+import "./newList.css?=18";
+import "./top-filters.css?=44";
+import dynamic from "next/dynamic";
+import { filterOptions } from "./filterOptions"; // உங்க path adjust பண்ணு
+
+import ListingSkeleton from "../skelton";
+
+import {
+  redirect,
+  usePathname,
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
+import { buildSlugFromFilters } from "../slugBuilter";
+import { parseSlugToFilters } from "../../components/urlBuilder";
+import Head from "next/head";
+import "./loader.css";
+import FilterSlider from "./FilterSlider";
+// import Link from "next/link";
+
+/* --------- GLOBAL de-dupe across StrictMode remounts --------- */
+// let LAST_GLOBAL_REQUEST_KEY = "";
+
+/** ------------ Local types (match what UI renders) ------------ */
+
+interface Product {
+  id: number;
+  name: string;
+  length: string;
+  kg: string;
+  regular_price: string;
+  sale_price?: string;
+  price_difference?: string;
+  image: string;
+  link: string;
+  condition: string;
+  location?: string;
+  categories?: string[];
+  people?: string;
+  make?: string;
+  slug?: string;
+  description?: string;
+  sku?: string;
+  gallery?: string[];
+  // Include additional properties that might come from API
+  list_page_title?: string;
+  weight?: string;
+  price?: string;
+  thumbnail?: string;
+  url?: string;
+  sleeps?: string;
+  manufacturer?: string;
+  is_exclusive?: boolean;
+  is_premium?: boolean;
+  image_url?: string[];
+}
+
+interface Pagination {
+  current_page: number;
+  total_pages: number;
+  total_items?: number;
+  per_page: number;
+  total_products: number;
+}
+
+export interface Category {
+  name: string;
+  slug: string;
+}
+
+export interface StateOption {
+  value: string;
+  name: string;
+}
+
+export interface MakeOption {
+  name: string;
+  slug: string;
+}
+
+export interface Filters {
+  category?: string;
+  image_format?: string[];
+  make?: string;
+  location?: string | null;
+  from_price?: string | number;
+  to_price?: string | number;
+  condition?: string;
+  sleeps?: string;
+  states?: string;
+  minKg?: string | number;
+  maxKg?: string | number;
+  acustom_fromyears?: number | string;
+  acustom_toyears?: number | string;
+  from_length?: string | number;
+  to_length?: string | number;
+  model?: string;
+  state?: string;
+  region?: string;
+  suburb?: string;
+  pincode?: string;
+  orderby?: string;
+  search?: string;
+  keyword?: string;
+  radius_kms?: number | string;
+  from_sleep?: string | number;
+  to_sleep?: string | number;
+}
+
+interface Props extends Filters {
+  page?: string | number;
+  initialData?: ApiResponse;
+  linksData?: any;
+}
+
+/** ------------ Helper Functions ------------ */
+
+// Add this helper function to transform API items to Products
+function transformApiItemsToProducts(items: Item[]): Product[] {
+  return items.map((item) => ({
+    id: typeof item.id === "number" ? item.id : parseInt(String(item.id)) || 0,
+    name: item.name || "",
+    sleep: item.people || "",
+    length: item.length || "",
+    kg: item.kg || "",
+    regular_price: item.regular_price || "",
+    sale_price: item.sale_price,
+    price_difference: item.price_difference,
+    image: item.image || "",
+    link: item.link || "",
+    condition: item.condition || "",
+    location: item.location,
+    categories: item.categories,
+    people: item.people || "",
+    make: item.make || "",
+    model: item.model || "",
+    slug: item.slug,
+    description: item.description,
+    sku: item.sku,
+    gallery: item.gallery || [],
+    is_exclusive: item.is_exclusive,
+    is_premium: item.is_premium,
+    image_format: item.image_format || [],
+    image_url: item.image_url || [],
+
+    // keep extra props
+  }));
+}
+
+/** ------------ Component ------------ */
+
+export default function ListingsPage({
+  initialData,
+  linksData: serverLinksData,
+  ...incomingFilters
+}: Props) {
+  const DEFAULT_RADIUS = 50 as const;
+  const [openModal, setOpenModal] = useState(false);
+
+  const [filters, setFilters] = useState<Filters>({});
+  const filtersRef = useRef<Filters>({});
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+  const [relatedChips, setRelatedChips] = useState<
+    { label: string; url: string; group: string }[]
+  >([]);
+  const [isMainLoading, setIsMainLoading] = useState(false);
+  const [isFeaturedLoading, setIsFeaturedLoading] = useState(false);
+  const [isPremiumLoading, setIsPremiumLoading] = useState(false);
+  const [isUsingInitialData, setIsUsingInitialData] = useState(!!initialData);
+  //  const [scrollStarted, setScrollStarted] = useState(false);
+  const [isNextLoading, setIsNextLoading] = useState(false);
+  const [nextPageData, setNextPageData] = useState<ApiResponse | null>(null);
+
+  const [clickid, setclickid] = useState<string | null>(null);
+  const [isRestored, setIsRestored] = useState(false);
+  console.log(isRestored);
+  // 1️⃣  persistence helpers  (top of file near imports)
+  const PAGE_KEY = (id: string) => `page_${id}`;
+  const savePage = (id: string, page: number) => {
+    try {
+      localStorage.setItem(PAGE_KEY(id), String(page));
+    } catch {}
+  };
+
   // Update readPage to fallback to extracting page from clickid
-     const readPage = (id: string): number | null => {
-   try {
-     const v = localStorage.getItem(PAGE_KEY(id));
-     if (v) return parseInt(v, 10);
- 
-     const match = id.match(/p(\d+)$/);
-     if (match) return parseInt(match[1], 10);
- 
-     return null;
-   } catch {
-     const match = id.match(/p(\d+)$/);
-     if (match) return parseInt(match[1], 10);
-     return null;
-   }
- };
-  
-    if (searchParams.has("page")) {
-      redirect("/404");
+  const readPage = (id: string): number | null => {
+    try {
+      const v = localStorage.getItem(PAGE_KEY(id));
+      if (v) return parseInt(v, 10);
+
+      const match = id.match(/p(\d+)$/);
+      if (match) return parseInt(match[1], 10);
+
+      return null;
+    } catch {
+      const match = id.match(/p(\d+)$/);
+      if (match) return parseInt(match[1], 10);
+      return null;
     }
-    // ✅ If page is missing → default to 1
-  
-    const fromYears = searchParams.get("acustom_fromyears");
-    const toYears = searchParams.get("acustom_toyears");
-  
-    if (fromYears !== null || toYears !== null) {
-      redirect("/404");
+  };
+
+  if (searchParams.has("page")) {
+    redirect("/404");
+  }
+  // ✅ If page is missing → default to 1
+
+  const fromYears = searchParams.get("acustom_fromyears");
+  const toYears = searchParams.get("acustom_toyears");
+
+  if (fromYears !== null || toYears !== null) {
+    redirect("/404");
+  }
+
+  const getIP = async () => {
+    try {
+      const res = await fetch("https://api.ipify.org?format=json");
+      const data = await res.json();
+      return data.ip || "";
+    } catch {
+      return "";
     }
-  
-    const getIP = async () => {
-      try {
-        const res = await fetch("https://api.ipify.org?format=json");
-        const data = await res.json();
-        return data.ip || "";
-      } catch {
-        return "";
-      }
-    };
-  
-    const postTrackEvent = async (url: string, product_id: number) => {
-      const ip = await getIP();
-      const user_agent = navigator.userAgent;
-  
-      await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          product_id,
-          ip,
-          user_agent,
-        }),
-      });
-    };
-  
-    useEffect(() => {
-      const observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              const id = Number(entry.target.getAttribute("data-product-id"));
-              postTrackEvent(
-                "https://admin.caravansforsale.com.au/wp-json/cfs/v1/update-impressions",
-                id,
-              );
-              observer.unobserve(entry.target);
-            }
-          });
-        },
-        { threshold: 0.3 },
-      );
-  
-      document
-        .querySelectorAll(".product-card[data-product-id]")
-        .forEach((el) => {
-          observer.observe(el);
-        });
-  
-      return () => observer.disconnect();
-    }, []);
-  
-    // Initialize state with initialData if provided
-    const [products, setProducts] = useState<Product[]>(
-      initialData?.data?.products
-        ? transformApiItemsToProducts(initialData.data.products)
-        : [],
-    );
-    const [exculisiveProducts, setExculisiveProducts] = useState<Product[]>(
-      initialData?.data?.exclusive_products
-        ? transformApiItemsToProducts(initialData.data.exclusive_products)
-        : [],
-    );
-    const [fetauredProducts, setFeaturedProducts] = useState<Product[]>(
-      initialData?.data?.featured_products
-        ? transformApiItemsToProducts(initialData.data.featured_products)
-        : [],
-    );
-    const [preminumProducts, setPremiumProducts] = useState<Product[]>(
-      initialData?.data?.premium_products
-        ? transformApiItemsToProducts(initialData.data.premium_products)
-        : [],
-    );
-    const [emptyProduct, setEmptyProduct] = useState<Product[]>(
-      initialData?.data?.emp_exclusive_products
-        ? transformApiItemsToProducts(initialData.data.emp_exclusive_products)
-        : [],
-    );
-  
-    const [categories, setCategories] = useState<Category[]>(
-      initialData?.data?.all_categories || [],
-    );
-    const [makes, setMakes] = useState<MakeOption[]>(
-      initialData?.data?.make_options || [],
-    );
-    const [stateOptions, setStateOptions] = useState<StateOption[]>(
-      initialData?.data?.states || [],
-    );
-    const [models, setModels] = useState<MakeOption[]>(
-      initialData?.data?.model_options || [],
-    );
-    const [pageTitle, setPageTitle] = useState(
-      initialData?.list_page_title || " ",
-    );
-    const [metaTitle, setMetaTitle] = useState(initialData?.seo?.metatitle || "");
-    const [metaDescription, setMetaDescription] = useState(
-      initialData?.seo?.metadescription || "",
-    );
-    const [pagination, setPagination] = useState<Pagination>(() => {
-      // Use initial data if available, otherwise fall back to default
-      if (initialData?.pagination) {
-        return {
-          current_page: initialData.pagination.current_page || 1,
-          total_pages: initialData.pagination.total_pages || 1,
-          per_page: initialData.pagination.per_page || 12,
-          total_products: initialData.pagination.total_products || 0,
-          total_items: initialData.pagination.total_products || 0,
-        };
-      }
-  
-      const fromURL =
-        typeof window !== "undefined"
-          ? parseInt(
-              new URLSearchParams(window.location.search).get("page") || "1",
-              10,
-            )
-          : 1;
-      return {
-        current_page: fromURL,
-        total_pages: 1,
-        total_items: 0,
-        per_page: 12,
-        total_products: 0,
-      };
+  };
+
+  const postTrackEvent = async (url: string, product_id: number) => {
+    const ip = await getIP();
+    const user_agent = navigator.userAgent;
+
+    await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        product_id,
+        ip,
+        user_agent,
+      }),
     });
-  
-    const asNumber = (v: unknown): number | undefined => {
-      if (typeof v === "number") return v;
-      if (typeof v === "string") {
-        const n = parseInt(v, 10);
-        return Number.isFinite(n) ? n : undefined;
-      }
-      return undefined;
-    };
-  
-    // Parse slug ONCE on mount; do not fetch here
-    const initializedRef = useRef(false);
-  
-    useEffect(() => {
-      if (initializedRef.current) return;
-      initializedRef.current = true;
-  
-      const path = pathname;
-      const slugParts = path.split("/listings/")[1]?.split("/") || [];
-      const parsed = parseSlugToFilters(slugParts);
-  
-      const merged = { ...parsed, ...incomingFilters };
-      filtersRef.current = merged;
-      setFilters(merged);
-    }, [incomingFilters, pathname]);
-  
-    const normalizeSearchFromMake = (f: Filters): Filters => {
-      if (!f?.make) return f;
-      const decoded = decodeURIComponent(String(f.make));
-      if (!decoded.includes("=")) return f;
-      const [k, v = ""] = decoded.split("=", 2);
-      if (k === "search" || k === "keyword") {
-        const out: Filters = { ...f, [k]: v };
-        delete out.make;
-        if (out.keyword) out.search = undefined;
-        return out;
-      }
-      return f;
-    };
-    const validatePage = (raw: string | null): number => {
-      if (raw === null) {
-        return 1; // no ?page → default to 1
-      }
-  
-      if (raw.trim() === "") {
-        redirect("/404"); // 🚫 block empty ?page=
-      }
-  
-      if (!/^\d+$/.test(raw)) {
-        redirect("/404"); // 🚫 block non-numeric
-      }
-  
-      const page = parseInt(raw, 10);
-  
-      if (!Number.isInteger(page) || page < 1) {
-        redirect("/404"); // 🚫 block invalid numbers
-      }
-  
-      return page;
-    };
-  
-    // const updateURLWithFilters = useCallback(
-    //   (nextFilters: Filters, pageNum: number) => {
-    //     console.log(pageNum);
-    //     const slug = buildSlugFromFilters(nextFilters);
-    //     const query = new URLSearchParams();
-  
-    // if (nextFilters.orderby) query.set("orderby", String(nextFilters.orderby));
-  
-    //     const r = Number(nextFilters.radius_kms);
-    //     if (!Number.isNaN(r) && r !== DEFAULT_RADIUS) {
-    //       query.set("radius_kms", String(r));
-    //     }
-    //     if (clickid) query.set("clickid", clickid); // only clickid
-  
-    //     const safeSlug = slug.endsWith("/") ? slug : `${slug}/`; // 👈 important
-    //     const finalURL = query.toString() ? `${safeSlug}?${query}` : safeSlug;
-    //     console.log("final", finalURL);
-    //     router.push(finalURL, { scroll: false }); // ✅ Prevent auto-scroll
-    //     setTimeout(() => {
-    //       window.scrollTo({ top: 0, behavior: "smooth" });
-    //     }, 150);
-    //   },
-    //   [router, DEFAULT_RADIUS]
-    // );
-    // Add this useEffect near your other effects
-  
-    const updateURLWithFilters = useCallback(
-     (nextFilters: Filters, pageNum: number, clickidParam?: string) => {
- 
-        console.log(pageNum);
-        const slug = buildSlugFromFilters(nextFilters); // your slug builder
-        const query = new URLSearchParams();
-  
-        if (nextFilters.orderby)
-          query.set("orderby", String(nextFilters.orderby));
-        const r = Number(nextFilters.radius_kms);
-        if (!Number.isNaN(r) && r !== DEFAULT_RADIUS) {
-          query.set("radius_kms", String(r));
-        }
-       //  if (clickid) query.set("clickid", clickid);
-  const cid = clickidParam !== undefined ? clickidParam : new URLSearchParams(window.location.search).get("clickid");
-     if (cid && cid !== "") query.set("clickid", cid);
- 
-        // Use current pathname (do not force a route push)
-        const path = window.location.pathname;
-        const safeSlug = slug ? (slug.endsWith("/") ? slug : `${slug}/`) : path;
-        const finalURL = query.toString() ? `${safeSlug}?${query}` : safeSlug;
-  
-        // Replace history only — avoids Next.js navigation / redirect
-        window.history.pushState({}, "", finalURL);
-  
-        // then fetch data client-side
-       //  setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 150);
+  };
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const id = Number(entry.target.getAttribute("data-product-id"));
+            postTrackEvent(
+              "https://admin.caravansforsale.com.au/wp-json/cfs/v1/update-impressions",
+              id,
+            );
+            observer.unobserve(entry.target);
+          }
+        });
       },
-      [DEFAULT_RADIUS, clickid],
+      { threshold: 0.3 },
     );
-    // put near your other helpers
-    const getUrlParams = () => new URLSearchParams(window.location.search);
-    const setUrlParams = (params: Record<string, string | undefined>) => {
-      const url = new URL(window.location.href);
-      Object.entries(params).forEach(([k, v]) => {
-        if (v === undefined || v === null || v === "") url.searchParams.delete(k);
-        else url.searchParams.set(k, v);
+
+    document
+      .querySelectorAll(".product-card[data-product-id]")
+      .forEach((el) => {
+        observer.observe(el);
       });
-      window.history.replaceState({}, "", url.toString());
+
+    return () => observer.disconnect();
+  }, []);
+
+  // Initialize state with initialData if provided
+  const [products, setProducts] = useState<Product[]>(
+    initialData?.data?.products
+      ? transformApiItemsToProducts(initialData.data.products)
+      : [],
+  );
+  const [exculisiveProducts, setExculisiveProducts] = useState<Product[]>(
+    initialData?.data?.exclusive_products
+      ? transformApiItemsToProducts(initialData.data.exclusive_products)
+      : [],
+  );
+  const [fetauredProducts, setFeaturedProducts] = useState<Product[]>(
+    initialData?.data?.featured_products
+      ? transformApiItemsToProducts(initialData.data.featured_products)
+      : [],
+  );
+  const [preminumProducts, setPremiumProducts] = useState<Product[]>(
+    initialData?.data?.premium_products
+      ? transformApiItemsToProducts(initialData.data.premium_products)
+      : [],
+  );
+  const [emptyProduct, setEmptyProduct] = useState<Product[]>(
+    initialData?.data?.emp_exclusive_products
+      ? transformApiItemsToProducts(initialData.data.emp_exclusive_products)
+      : [],
+  );
+
+  // ── 1. Add state for category counts (top of component) ──
+  const [sliderCategoryCounts, setSliderCategoryCounts] = useState<
+    { name: string; slug: string; count: number }[]
+  >([]);
+  const [sliderCatLoading, setSliderCatLoading] = useState(false);
+  const [categories, setCategories] = useState<Category[]>(
+    initialData?.data?.all_categories || [],
+  );
+  const [makes, setMakes] = useState<MakeOption[]>(
+    initialData?.data?.make_options || [],
+  );
+  const [stateOptions, setStateOptions] = useState<StateOption[]>(
+    initialData?.data?.states || [],
+  );
+  const [models, setModels] = useState<MakeOption[]>(
+    initialData?.data?.model_options || [],
+  );
+  const [pageTitle, setPageTitle] = useState(
+    initialData?.list_page_title || " ",
+  );
+  const [metaTitle, setMetaTitle] = useState(initialData?.seo?.metatitle || "");
+  const [metaDescription, setMetaDescription] = useState(
+    initialData?.seo?.metadescription || "",
+  );
+  const [pagination, setPagination] = useState<Pagination>(() => {
+    // Use initial data if available, otherwise fall back to default
+    if (initialData?.pagination) {
+      return {
+        current_page: initialData.pagination.current_page || 1,
+        total_pages: initialData.pagination.total_pages || 1,
+        per_page: initialData.pagination.per_page || 12,
+        total_products: initialData.pagination.total_products || 0,
+        total_items: initialData.pagination.total_products || 0,
+      };
+    }
+
+    const fromURL =
+      typeof window !== "undefined"
+        ? parseInt(
+            new URLSearchParams(window.location.search).get("page") || "1",
+            10,
+          )
+        : 1;
+    return {
+      current_page: fromURL,
+      total_pages: 1,
+      total_items: 0,
+      per_page: 12,
+      total_products: 0,
     };
-  
-    useEffect(() => {
-      const qp = typeof window !== "undefined" ? getUrlParams() : null;
-      const incoming = qp?.get("clickid") || null;
-      if (incoming) setclickid(incoming);
-    }, []);
-  
-    // tiny util
-   // Replace the existing ensureclickid function with this:
+  });
+
+  const asNumber = (v: unknown): number | undefined => {
+    if (typeof v === "number") return v;
+    if (typeof v === "string") {
+      const n = parseInt(v, 10);
+      return Number.isFinite(n) ? n : undefined;
+    }
+    return undefined;
+  };
+
+  // Parse slug ONCE on mount; do not fetch here
+  const initializedRef = useRef(false);
+
+  useEffect(() => {
+    if (initializedRef.current) return;
+    initializedRef.current = true;
+
+    const path = pathname;
+    const slugParts = path.split("/listings/")[1]?.split("/") || [];
+    const parsed = parseSlugToFilters(slugParts);
+
+    const merged = { ...parsed, ...incomingFilters };
+    filtersRef.current = merged;
+    setFilters(merged);
+  }, [incomingFilters, pathname]);
+
+  const normalizeSearchFromMake = (f: Filters): Filters => {
+    if (!f?.make) return f;
+    const decoded = decodeURIComponent(String(f.make));
+    if (!decoded.includes("=")) return f;
+    const [k, v = ""] = decoded.split("=", 2);
+    if (k === "search" || k === "keyword") {
+      const out: Filters = { ...f, [k]: v };
+      delete out.make;
+      if (out.keyword) out.search = undefined;
+      return out;
+    }
+    return f;
+  };
+  const validatePage = (raw: string | null): number => {
+    if (raw === null) {
+      return 1; // no ?page → default to 1
+    }
+
+    if (raw.trim() === "") {
+      redirect("/404"); // 🚫 block empty ?page=
+    }
+
+    if (!/^\d+$/.test(raw)) {
+      redirect("/404"); // 🚫 block non-numeric
+    }
+
+    const page = parseInt(raw, 10);
+
+    if (!Number.isInteger(page) || page < 1) {
+      redirect("/404"); // 🚫 block invalid numbers
+    }
+
+    return page;
+  };
+
+  // const updateURLWithFilters = useCallback(
+  //   (nextFilters: Filters, pageNum: number) => {
+  //     console.log(pageNum);
+  //     const slug = buildSlugFromFilters(nextFilters);
+  //     const query = new URLSearchParams();
+
+  // if (nextFilters.orderby) query.set("orderby", String(nextFilters.orderby));
+
+  //     const r = Number(nextFilters.radius_kms);
+  //     if (!Number.isNaN(r) && r !== DEFAULT_RADIUS) {
+  //       query.set("radius_kms", String(r));
+  //     }
+  //     if (clickid) query.set("clickid", clickid); // only clickid
+
+  //     const safeSlug = slug.endsWith("/") ? slug : `${slug}/`; // 👈 important
+  //     const finalURL = query.toString() ? `${safeSlug}?${query}` : safeSlug;
+  //     console.log("final", finalURL);
+  //     router.push(finalURL, { scroll: false }); // ✅ Prevent auto-scroll
+  //     setTimeout(() => {
+  //       window.scrollTo({ top: 0, behavior: "smooth" });
+  //     }, 150);
+  //   },
+  //   [router, DEFAULT_RADIUS]
+  // );
+  // Add this useEffect near your other effects
+
+  const updateURLWithFilters = useCallback(
+    (nextFilters: Filters, pageNum: number, clickidParam?: string) => {
+      console.log(pageNum);
+      const slug = buildSlugFromFilters(nextFilters); // your slug builder
+      const query = new URLSearchParams();
+
+      if (nextFilters.orderby)
+        query.set("orderby", String(nextFilters.orderby));
+      const r = Number(nextFilters.radius_kms);
+      if (!Number.isNaN(r) && r !== DEFAULT_RADIUS) {
+        query.set("radius_kms", String(r));
+      }
+      //  if (clickid) query.set("clickid", clickid);
+      const cid =
+        clickidParam !== undefined
+          ? clickidParam
+          : new URLSearchParams(window.location.search).get("clickid");
+      if (cid && cid !== "") query.set("clickid", cid);
+
+      // Use current pathname (do not force a route push)
+      const path = window.location.pathname;
+      const safeSlug = slug ? (slug.endsWith("/") ? slug : `${slug}/`) : path;
+      const finalURL = query.toString() ? `${safeSlug}?${query}` : safeSlug;
+
+      // Replace history only — avoids Next.js navigation / redirect
+      window.history.pushState({}, "", finalURL);
+
+      // then fetch data client-side
+      //  setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 150);
+    },
+    [DEFAULT_RADIUS, clickid],
+  );
+  // put near your other helpers
+  const getUrlParams = () => new URLSearchParams(window.location.search);
+  const setUrlParams = (params: Record<string, string | undefined>) => {
+    const url = new URL(window.location.href);
+    Object.entries(params).forEach(([k, v]) => {
+      if (v === undefined || v === null || v === "") url.searchParams.delete(k);
+      else url.searchParams.set(k, v);
+    });
+    window.history.replaceState({}, "", url.toString());
+  };
+
+  useEffect(() => {
+    const qp = typeof window !== "undefined" ? getUrlParams() : null;
+    const incoming = qp?.get("clickid") || null;
+    if (incoming) setclickid(incoming);
+  }, []);
+
+  // tiny util
+  // Replace the existing ensureclickid function with this:
   // Replace the existing ensureclickid function with this:
   const generateClickidForPage = (pageNum: number): string => {
-   if (pageNum <= 1) return "";
- 
-   const filterString = JSON.stringify(filtersRef.current);
-   const str = `${filterString}_page_${pageNum}`;
-   let h1 = pageNum * 2654435761;
-   let h2 = pageNum * 2246822519;
-   let h3 = pageNum * 3266489917;
-   let h4 = pageNum * 668265263;
-   // let h1 = 0, h2 = 0, h3 = 0, h4 = 0;
-   for (let i = 0; i < str.length; i++) {
-     const c = str.charCodeAt(i);
-     h1 = ((h1 << 5) - h1 + c) | 0;
-     h2 = ((h2 << 7) - h2 + c * 31) | 0;
-     h3 = ((h3 << 3) - h3 + c * 127) | 0;
-     h4 = ((h4 << 11) - h4 + c * 17) | 0;
-   }
-  const part1 = Math.abs(h1 ^ 0x5f3759df).toString(36);
-   const part2 = Math.abs(h2 ^ 0x1b873593).toString(36);
-   const part3 = Math.abs(h3 ^ 0xe6546b64).toString(36);
-   const part4 = Math.abs(h4 ^ 0x85ebca6b).toString(36);
- 
-   const suffix = `p${pageNum}`;
-   const hash = `${part1}${part2}${part3}${part4}`;
-   return `${hash.slice(0, 25 - suffix.length)}${suffix}`;
- };
- 
- const ensureclickid = (pageNum: number): string => {
-   const id = generateClickidForPage(pageNum);
-   if (!id) {
-     setclickid(null);
-     return "";
-   }
-   setclickid(id);
- 
-   // const url = new URL(window.location.href);
-   // url.searchParams.set("clickid", id);
-   // window.history.replaceState({}, "", url.toString());
- 
-   return id;
- };
-  
-    useEffect(() => {
-      if (initialData?.data?.products) {
-        const transformed = transformApiItemsToProducts(
-          initialData.data.products,
-        );
-        setProducts(transformed);
-        setCategories(initialData.data.all_categories || []);
-        setMakes(initialData.data.make_options || []);
-        setStateOptions(initialData.data.states || []);
-        setModels(initialData.data.model_options || []);
-        setPageTitle(initialData.list_page_title || "");
-        setMetaTitle(initialData.seo?.metatitle || "");
-        setMetaDescription(initialData.seo?.metadescription || "");
-        if (initialData.pagination) setPagination(initialData.pagination);
-      }
-    }, [initialData]);
-  
-    const sentinelRef = useRef<HTMLDivElement | null>(null);
-    useEffect(() => {
-      if (!sentinelRef.current) return;
-  
-      const observer = new IntersectionObserver(
-        async (entries) => {
-          const entry = entries[0];
-          if (entry.isIntersecting  && !isNextLoading) {
-           //  setScrollStarted(true);
-            try {
-              const response = await preFetchListings(
-                pagination.current_page + 1,
-                filtersRef.current,
-              );
-  
-              if (response?.success) {
-                console.log(
-                  "Prefetch success for page:",
-                  pagination.current_page + 1,
-                );
-                console.log("responsepre", response);
-                setNextPageData(response);
-                setIsNextLoading(true);
-              } else {
-                setNextPageData(null);
-              }
-            } catch (err) {
-              console.error("Prefetch failed:", err);
-            }
-          }
-        },
-        { threshold: 0.1 },
+    if (pageNum <= 1) return "";
+
+    const filterString = JSON.stringify(filtersRef.current);
+    const str = `${filterString}_page_${pageNum}`;
+    let h1 = pageNum * 2654435761;
+    let h2 = pageNum * 2246822519;
+    let h3 = pageNum * 3266489917;
+    let h4 = pageNum * 668265263;
+    // let h1 = 0, h2 = 0, h3 = 0, h4 = 0;
+    for (let i = 0; i < str.length; i++) {
+      const c = str.charCodeAt(i);
+      h1 = ((h1 << 5) - h1 + c) | 0;
+      h2 = ((h2 << 7) - h2 + c * 31) | 0;
+      h3 = ((h3 << 3) - h3 + c * 127) | 0;
+      h4 = ((h4 << 11) - h4 + c * 17) | 0;
+    }
+    const part1 = Math.abs(h1 ^ 0x5f3759df).toString(36);
+    const part2 = Math.abs(h2 ^ 0x1b873593).toString(36);
+    const part3 = Math.abs(h3 ^ 0xe6546b64).toString(36);
+    const part4 = Math.abs(h4 ^ 0x85ebca6b).toString(36);
+
+    const suffix = `p${pageNum}`;
+    const hash = `${part1}${part2}${part3}${part4}`;
+    return `${hash.slice(0, 25 - suffix.length)}${suffix}`;
+  };
+
+  const ensureclickid = (pageNum: number): string => {
+    const id = generateClickidForPage(pageNum);
+    if (!id) {
+      setclickid(null);
+      return "";
+    }
+    setclickid(id);
+
+    // const url = new URL(window.location.href);
+    // url.searchParams.set("clickid", id);
+    // window.history.replaceState({}, "", url.toString());
+
+    return id;
+  };
+
+  useEffect(() => {
+    if (initialData?.data?.products) {
+      const transformed = transformApiItemsToProducts(
+        initialData.data.products,
       );
-  
-      observer.observe(sentinelRef.current);
-      return () => observer.disconnect();
-    }, [pagination.current_page, isNextLoading]);
-  
-    const preFetchListings = async (
-      pageNum: number,
+      setProducts(transformed);
+      setCategories(initialData.data.all_categories || []);
+      setMakes(initialData.data.make_options || []);
+      setStateOptions(initialData.data.states || []);
+      setModels(initialData.data.model_options || []);
+      setPageTitle(initialData.list_page_title || "");
+      setMetaTitle(initialData.seo?.metatitle || "");
+      setMetaDescription(initialData.seo?.metadescription || "");
+      if (initialData.pagination) setPagination(initialData.pagination);
+    }
+  }, [initialData]);
+
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    if (!sentinelRef.current) return;
+
+    const observer = new IntersectionObserver(
+      async (entries) => {
+        const entry = entries[0];
+        if (entry.isIntersecting && !isNextLoading) {
+          //  setScrollStarted(true);
+          try {
+            const response = await preFetchListings(
+              pagination.current_page + 1,
+              filtersRef.current,
+            );
+
+            if (response?.success) {
+              console.log(
+                "Prefetch success for page:",
+                pagination.current_page + 1,
+              );
+              console.log("responsepre", response);
+              setNextPageData(response);
+              setIsNextLoading(true);
+            } else {
+              setNextPageData(null);
+            }
+          } catch (err) {
+            console.error("Prefetch failed:", err);
+          }
+        }
+      },
+      { threshold: 0.1 },
+    );
+
+    observer.observe(sentinelRef.current);
+    return () => observer.disconnect();
+  }, [pagination.current_page, isNextLoading]);
+
+  const preFetchListings = async (
+    pageNum: number,
+    appliedFilters: Filters = filtersRef.current,
+  ): Promise<ApiResponse | undefined> => {
+    try {
+      console.log("pageNumpageNum", pageNum);
+      const safeFilters = normalizeSearchFromMake(appliedFilters);
+
+      const radiusNum = asNumber(safeFilters.radius_kms);
+      const radiusParam =
+        typeof radiusNum === "number" && radiusNum !== DEFAULT_RADIUS
+          ? String(radiusNum)
+          : undefined;
+
+      const response: ApiResponse = await fetchListings({
+        ...safeFilters,
+        page: pageNum,
+        condition: safeFilters.condition,
+        minKg: safeFilters.minKg?.toString(),
+        maxKg: safeFilters.maxKg?.toString(),
+        sleeps: safeFilters.sleeps,
+        from_price: safeFilters.from_price?.toString(),
+        to_price: safeFilters.to_price?.toString(),
+        acustom_fromyears: safeFilters.acustom_fromyears?.toString(),
+        acustom_toyears: safeFilters.acustom_toyears?.toString(),
+        from_length: safeFilters.from_length?.toString(),
+        to_length: safeFilters.to_length?.toString(),
+        make: safeFilters.make,
+        model: safeFilters.model,
+        state: safeFilters.state,
+        region: safeFilters.region,
+        suburb: safeFilters.suburb,
+        pincode: safeFilters.pincode,
+        orderby: safeFilters.orderby,
+        search: safeFilters.search,
+        keyword: safeFilters.keyword,
+        from_sleep: safeFilters.from_sleep?.toString(),
+        to_sleep: safeFilters.to_sleep?.toString(),
+        radius_kms: radiusParam,
+      });
+
+      return response;
+    } catch (err) {
+      console.error("Failed to prefetch Next data", err);
+    }
+  };
+  const isUsingInitialDataRef = useRef(!!initialData);
+
+  const loadListings = useCallback(
+    async (
+      pageNum = 1,
       appliedFilters: Filters = filtersRef.current,
+      skipInitialCheck = false,
     ): Promise<ApiResponse | undefined> => {
+      if (initialData && !skipInitialCheck && isUsingInitialDataRef.current) {
+        isUsingInitialDataRef.current = false;
+        setIsUsingInitialData(false);
+        return initialData;
+      }
+
       try {
-        console.log("pageNumpageNum", pageNum);
+        //  window.scrollTo({ top: 0, behavior: "smooth" });
+
         const safeFilters = normalizeSearchFromMake(appliedFilters);
-  
+        console.log("appp1", appliedFilters);
+        console.log("app", safeFilters.orderby);
+
         const radiusNum = asNumber(safeFilters.radius_kms);
         const radiusParam =
           typeof radiusNum === "number" && radiusNum !== DEFAULT_RADIUS
             ? String(radiusNum)
             : undefined;
-  
+
         const response: ApiResponse = await fetchListings({
           ...safeFilters,
           page: pageNum,
@@ -618,420 +694,359 @@
           to_sleep: safeFilters.to_sleep?.toString(),
           radius_kms: radiusParam,
         });
-  
+
+        // ---- Extract all product groups ----
+        const productsList = response?.data?.products ?? [];
+        const featuredList = response?.data?.featured_products ?? [];
+        const premiumList = response?.data?.premium_products ?? [];
+        const exclusiveList = response?.data?.exclusive_products ?? [];
+        const emptyExclusiveList = response?.data?.emp_exclusive_products ?? [];
+
+        // ---- Store NORMAL PRODUCTS ----
+        const validProducts = Array.isArray(productsList)
+          ? productsList.filter((p) => p != null)
+          : [];
+
+        setProducts(
+          validProducts.length > 0
+            ? transformApiItemsToProducts(validProducts)
+            : [],
+        );
+
+        // ---- Store FEATURED, PREMIUM, EXCLUSIVE ----
+        setFeaturedProducts(transformApiItemsToProducts(featuredList ?? []));
+        setPremiumProducts(transformApiItemsToProducts(premiumList ?? []));
+        setExculisiveProducts(transformApiItemsToProducts(exclusiveList ?? []));
+
+        // ---- Store EMPTY EXCLUSIVE ----
+        setEmptyProduct(transformApiItemsToProducts(emptyExclusiveList ?? []));
+
+        // ---- Other metadata ----
+        setCategories(response?.data?.all_categories ?? []);
+        setMakes(response?.data?.make_options ?? []);
+        setStateOptions(response?.data?.states ?? []);
+        setModels(response?.data?.model_options ?? []);
+        setMetaDescription(response?.seo?.metadescription ?? "");
+        setMetaTitle(response?.seo?.metatitle ?? "");
+        if (response.pagination) setPagination(response.pagination);
+
         return response;
       } catch (err) {
-        console.error("Failed to prefetch Next data", err);
+        console.error("❌ Listing Fetch Error:", err);
+        return undefined;
       }
-    };
-  
-    const loadListings = useCallback(
-      async (
-        pageNum = 1,
-        appliedFilters: Filters = filtersRef.current,
-        skipInitialCheck = false,
-      ): Promise<ApiResponse | undefined> => {
-        if (initialData && !skipInitialCheck && isUsingInitialData) {
-          setIsUsingInitialData(false);
-          return initialData;
-        }
-  
-        try {
-         //  window.scrollTo({ top: 0, behavior: "smooth" });
-  
-          const safeFilters = normalizeSearchFromMake(appliedFilters);
-          console.log("appp1", appliedFilters);
-          console.log("app", safeFilters.orderby);
-  
-          const radiusNum = asNumber(safeFilters.radius_kms);
-          const radiusParam =
-            typeof radiusNum === "number" && radiusNum !== DEFAULT_RADIUS
-              ? String(radiusNum)
-              : undefined;
-  
-          const response: ApiResponse = await fetchListings({
-            ...safeFilters,
-            page: pageNum,
-            condition: safeFilters.condition,
-            minKg: safeFilters.minKg?.toString(),
-            maxKg: safeFilters.maxKg?.toString(),
-            sleeps: safeFilters.sleeps,
-            from_price: safeFilters.from_price?.toString(),
-            to_price: safeFilters.to_price?.toString(),
-            acustom_fromyears: safeFilters.acustom_fromyears?.toString(),
-            acustom_toyears: safeFilters.acustom_toyears?.toString(),
-            from_length: safeFilters.from_length?.toString(),
-            to_length: safeFilters.to_length?.toString(),
-            make: safeFilters.make,
-            model: safeFilters.model,
-            state: safeFilters.state,
-            region: safeFilters.region,
-            suburb: safeFilters.suburb,
-            pincode: safeFilters.pincode,
-            orderby: safeFilters.orderby,
-            search: safeFilters.search,
-            keyword: safeFilters.keyword,
-            from_sleep: safeFilters.from_sleep?.toString(),
-            to_sleep: safeFilters.to_sleep?.toString(),
-            radius_kms: radiusParam,
-          });
-  
-          // ---- Extract all product groups ----
-          const productsList = response?.data?.products ?? [];
-          const featuredList = response?.data?.featured_products ?? [];
-          const premiumList = response?.data?.premium_products ?? [];
-          const exclusiveList = response?.data?.exclusive_products ?? [];
-          const emptyExclusiveList = response?.data?.emp_exclusive_products ?? [];
-  
-          // ---- Store NORMAL PRODUCTS ----
-          const validProducts = Array.isArray(productsList)
-            ? productsList.filter((p) => p != null)
-            : [];
-  
-          setProducts(
-            validProducts.length > 0
-              ? transformApiItemsToProducts(validProducts)
-              : [],
-          );
-  
-          // ---- Store FEATURED, PREMIUM, EXCLUSIVE ----
-          setFeaturedProducts(transformApiItemsToProducts(featuredList ?? []));
-          setPremiumProducts(transformApiItemsToProducts(premiumList ?? []));
-          setExculisiveProducts(transformApiItemsToProducts(exclusiveList ?? []));
-  
-          // ---- Store EMPTY EXCLUSIVE ----
-          setEmptyProduct(transformApiItemsToProducts(emptyExclusiveList ?? []));
-  
-          // ---- Other metadata ----
-          setCategories(response?.data?.all_categories ?? []);
-          setMakes(response?.data?.make_options ?? []);
-          setStateOptions(response?.data?.states ?? []);
-          setModels(response?.data?.model_options ?? []);
-          setMetaDescription(response?.seo?.metadescription ?? "");
-          setMetaTitle(response?.seo?.metatitle ?? "");
-          if (response.pagination) setPagination(response.pagination);
-  
-          return response;
-        } catch (err) {
-          console.error("❌ Listing Fetch Error:", err);
-          return undefined;
-        }
-      },
-      [DEFAULT_RADIUS, router, initialData, isUsingInitialData],
-    );
-  
-    const handleNextPage = useCallback(async () => {
-      if (pagination.current_page >= pagination.total_pages) return;
-  
-       // scrollToTop();
-  
-      flushSync(() => {
-        setIsMainLoading(true);
-        setIsFeaturedLoading(true);
-        setIsPremiumLoading(true);
-      });
-  
-      const nextPage = pagination.current_page + 1;
-  
-      // ✅ always ensure clickid
-   const id = ensureclickid(nextPage);
-      savePage(id, nextPage);
-  
-      try {
-        if (nextPageData?.data?.products?.length) {
-          // ✅ use prefetched data
-          setProducts(transformApiItemsToProducts(nextPageData.data.products));
-          setPremiumProducts(
-            transformApiItemsToProducts(nextPageData.data.premium_products ?? []),
-          );
-          setFeaturedProducts(
-            transformApiItemsToProducts(
-              nextPageData.data.featured_products ?? [],
-            ),
-          );
-          setExculisiveProducts(
-            transformApiItemsToProducts(
-              nextPageData.data.exclusive_products ?? [],
-            ),
-          );
-  
-          if (nextPageData.pagination) {
-            setPagination(nextPageData.pagination);
-          }
-        } else {
-          // ✅ fallback fetch
-          await loadListings(nextPage, filtersRef.current, true);
-        }
-  
-        // ✅ VERY IMPORTANT: URL update using router
-        updateURLWithFilters(filtersRef.current, nextPage);
-      } catch (error) {
-        console.error("Error loading next page:", error);
-      } finally {
-        setIsMainLoading(false);
-        setIsFeaturedLoading(false);
-        setIsPremiumLoading(false);
-  
-       //  setScrollStarted(false);
-        setNextPageData(null);
-        setIsNextLoading(false);
-      }
-    }, [
-      pagination.current_page,
-      pagination.total_pages,
-      nextPageData,
-      loadListings,
-      updateURLWithFilters,
-    ]);
-  
-    // ✅ FIXED: Proper handlePrevPage function
-    const handlePrevPage = useCallback(async () => {
-      if (pagination.current_page <= 1) return;
-  
-      const prevPage = pagination.current_page - 1;
-  
+    },
+    [DEFAULT_RADIUS, router, initialData, isUsingInitialData],
+  );
+
+  const handleNextPage = useCallback(async () => {
+    if (pagination.current_page >= pagination.total_pages) return;
+
+    // scrollToTop();
+
+    flushSync(() => {
       setIsMainLoading(true);
       setIsFeaturedLoading(true);
       setIsPremiumLoading(true);
-  
-      try {
-        if (prevPage > 1) {
-          // ✅ ALWAYS generate NEW clickid
-         const id = ensureclickid(prevPage);
-       if (id) savePage(id, prevPage);
-       await loadListings(prevPage, filtersRef.current, true);
-   updateURLWithFilters(filtersRef.current, prevPage, id);
-     } else {
-       // ✅ first page → remove clickid
-       setclickid(null);
-        await loadListings(1, filtersRef.current, true);
-   updateURLWithFilters(filtersRef.current, 1, ""); 
-       const url = new URL(window.location.href);
-       url.searchParams.delete("clickid");
-       window.history.pushState({}, "", url.toString());
-     }
-  
+    });
+
+    const nextPage = pagination.current_page + 1;
+
+    // ✅ always ensure clickid
+    const id = ensureclickid(nextPage);
+    savePage(id, nextPage);
+
+    try {
+      if (nextPageData?.data?.products?.length) {
+        // ✅ use prefetched data
+        setProducts(transformApiItemsToProducts(nextPageData.data.products));
+        setPremiumProducts(
+          transformApiItemsToProducts(nextPageData.data.premium_products ?? []),
+        );
+        setFeaturedProducts(
+          transformApiItemsToProducts(
+            nextPageData.data.featured_products ?? [],
+          ),
+        );
+        setExculisiveProducts(
+          transformApiItemsToProducts(
+            nextPageData.data.exclusive_products ?? [],
+          ),
+        );
+
+        if (nextPageData.pagination) {
+          setPagination(nextPageData.pagination);
+        }
+      } else {
+        // ✅ fallback fetch
+        await loadListings(nextPage, filtersRef.current, true);
+      }
+
+      // ✅ VERY IMPORTANT: URL update using router
+      updateURLWithFilters(filtersRef.current, nextPage);
+    } catch (error) {
+      console.error("Error loading next page:", error);
+    } finally {
+      setIsMainLoading(false);
+      setIsFeaturedLoading(false);
+      setIsPremiumLoading(false);
+
+      //  setScrollStarted(false);
+      setNextPageData(null);
+      setIsNextLoading(false);
+    }
+  }, [
+    pagination.current_page,
+    pagination.total_pages,
+    nextPageData,
+    loadListings,
+    updateURLWithFilters,
+  ]);
+
+  // ✅ FIXED: Proper handlePrevPage function
+  const handlePrevPage = useCallback(async () => {
+    if (pagination.current_page <= 1) return;
+
+    const prevPage = pagination.current_page - 1;
+
+    setIsMainLoading(true);
+    setIsFeaturedLoading(true);
+    setIsPremiumLoading(true);
+
+    try {
+      if (prevPage > 1) {
+        // ✅ ALWAYS generate NEW clickid
+        const id = ensureclickid(prevPage);
+        if (id) savePage(id, prevPage);
         await loadListings(prevPage, filtersRef.current, true);
-    
-     
-      } catch (err) {
-        console.error(err);
+        updateURLWithFilters(filtersRef.current, prevPage, id);
+      } else {
+        // ✅ first page → remove clickid
+        setclickid(null);
+        await loadListings(1, filtersRef.current, true);
+        updateURLWithFilters(filtersRef.current, 1, "");
+        const url = new URL(window.location.href);
+        url.searchParams.delete("clickid");
+        window.history.pushState({}, "", url.toString());
+      }
+
+      await loadListings(prevPage, filtersRef.current, true);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsMainLoading(false);
+      setIsFeaturedLoading(false);
+      setIsPremiumLoading(false);
+    }
+  }, [pagination, loadListings]);
+
+  // add near other refs
+  const restoredOnceRef = useRef(false);
+  // 3️⃣  restore effect
+
+  // restore effect
+
+  console.log("paginationapi", pagination);
+  /* ---- SINGLE source of truth: URL -> fetch ---- */
+  const searchKey = searchParams.toString();
+  const pathKey = pathname;
+
+  const incomingFiltersRef = useRef<Filters>(incomingFilters);
+  useEffect(() => {
+    const prev = JSON.stringify(incomingFiltersRef.current);
+    const next = JSON.stringify(incomingFilters);
+    if (prev !== next) incomingFiltersRef.current = incomingFilters;
+  }, [incomingFilters]);
+
+  // Add these refs to track previous values
+  const prevFiltersRef = useRef<Filters>({});
+  const prevPageRef = useRef(1);
+
+  useEffect(() => {
+    if (!initializedRef.current) return;
+
+    if (isClearAllRef.current) {
+      isClearAllRef.current = false;
+      return;
+    }
+    if (restoredOnceRef.current) {
+      restoredOnceRef.current = false; // reset for future real changes
+      return;
+    }
+
+    const slugParts = pathKey.split("/listings/")[1]?.split("/") || [];
+    const parsedFromURL = parseSlugToFilters(slugParts);
+    const orderbyFromQuery = searchParams.get("orderby") ?? undefined;
+
+    const pageFromURL = validatePage(searchParams.get("page"));
+
+    const merged: Filters = {
+      ...parsedFromURL,
+      ...incomingFiltersRef.current,
+      ...(orderbyFromQuery ? { orderby: orderbyFromQuery } : {}),
+    };
+
+    const filtersChanged =
+      JSON.stringify(merged) !== JSON.stringify(prevFiltersRef.current);
+    const pageChanged = pageFromURL !== prevPageRef.current;
+
+    if (!filtersChanged && !pageChanged) return;
+
+    prevFiltersRef.current = { ...merged };
+    prevPageRef.current = pageFromURL;
+
+    filtersRef.current = merged;
+    setFilters(merged);
+    setPagination((prev) => ({ ...prev, current_page: pageFromURL }));
+
+    // ✅ Prevent re-fetch on initial load (SSR already has data)
+    if (isUsingInitialData && initialData) {
+      setIsUsingInitialData(false);
+      return;
+    }
+
+    // ✅ If client-side navigation happens and no data → 404
+    loadListings(pageFromURL, merged, true).then((res) => {
+      if (!res?.data?.products?.length) {
+      }
+    });
+  }, [searchKey, pathKey, loadListings, DEFAULT_RADIUS, searchParams]);
+
+  const mergeFiltersSafely = (prev: Filters, next: Filters): Filters => {
+    const merged: Filters = { ...prev };
+
+    Object.entries(next).forEach(([key, value]) => {
+      if (value === undefined || value === null || value === "") {
+        // ❌ do nothing → keep previous value
+        return;
+      }
+      merged[key as keyof Filters] = value;
+    });
+
+    return merged;
+  };
+
+  const handleFilterChange = useCallback(
+    async (newFilters: Filters) => {
+      // ✅ Show skeleton for ALL sections immediately
+      // setIsLoading(true);
+      // setIsMainLoading(true);
+      // setIsFeaturedLoading(true);
+      // setIsPremiumLoading(true);
+
+      const mergedFilters = mergeFiltersSafely(filtersRef.current, newFilters);
+
+      // cleanup empty values
+      if ("orderby" in newFilters && !newFilters.orderby) {
+        mergedFilters.orderby = undefined;
+      }
+      // ensureclickid();
+      filtersRef.current = mergedFilters;
+      setFilters(mergedFilters);
+
+      // reset pagination when filters change
+      setPagination({
+        current_page: 1,
+        total_pages: 1,
+        total_items: 0,
+        per_page: 12,
+        total_products: 0,
+      });
+
+      try {
+        // ✅ update URL
+        updateURLWithFilters(mergedFilters, 1);
+
+        // ✅ fetch data immediately
+        await loadListings(1, mergedFilters, true);
+      } catch (error) {
+        console.error("Error applying filters:", error);
       } finally {
+        // ✅ Hide all loaders when done
+        setIsLoading(false);
+        // setIsMainLoading(false);
+        // setIsFeaturedLoading(false);
+        // setIsPremiumLoading(false);
+      }
+    },
+    [updateURLWithFilters, loadListings],
+  );
+  useEffect(() => {
+    console.log("Loading state:", {
+      isLoading,
+      isMainLoading,
+      isFeaturedLoading,
+      isPremiumLoading,
+    });
+  }, [isLoading, isMainLoading, isFeaturedLoading, isPremiumLoading]);
+
+  // ✅ Add this ref near your other refs
+  const isPopStateRef = useRef(false);
+
+  // ✅ Full popstate handler
+  useEffect(() => {
+    const handlePopState = () => {
+      isPopStateRef.current = true;
+
+      const path = window.location.pathname;
+      const slugParts = path.split("/listings/")[1]?.split("/") || [];
+      const parsed = parseSlugToFilters(slugParts);
+
+      const sp = new URLSearchParams(window.location.search);
+      const orderby = sp.get("orderby") ?? undefined;
+      const urlClickid = sp.get("clickid") || null;
+
+      const merged: Filters = {
+        ...parsed,
+        ...(orderby ? { orderby } : {}),
+      };
+
+      filtersRef.current = merged;
+      setFilters(merged);
+      setclickid(urlClickid);
+
+      const savedPage = urlClickid ? readPage(urlClickid) : null;
+      const pageToLoad = savedPage && savedPage > 0 ? savedPage : 1;
+
+      // ✅ Prevent URL-watcher effect from double-fetching
+      prevFiltersRef.current = { ...merged };
+      prevPageRef.current = pageToLoad;
+      restoredOnceRef.current = true;
+
+      setIsMainLoading(true);
+      setIsFeaturedLoading(true);
+      setIsPremiumLoading(true);
+
+      setPagination((p) => ({ ...p, current_page: pageToLoad }));
+
+      loadListings(pageToLoad, merged, true).finally(() => {
         setIsMainLoading(false);
         setIsFeaturedLoading(false);
         setIsPremiumLoading(false);
-      }
-    }, [pagination, loadListings]);
-  
-    // add near other refs
-    const restoredOnceRef = useRef(false);
-    // 3️⃣  restore effect
-  
-    // restore effect
-   
-  
-    console.log("paginationapi", pagination);
-    /* ---- SINGLE source of truth: URL -> fetch ---- */
-    const searchKey = searchParams.toString();
-    const pathKey = pathname;
-  
-    const incomingFiltersRef = useRef<Filters>(incomingFilters);
-    useEffect(() => {
-      const prev = JSON.stringify(incomingFiltersRef.current);
-      const next = JSON.stringify(incomingFilters);
-      if (prev !== next) incomingFiltersRef.current = incomingFilters;
-    }, [incomingFilters]);
-  
-    // Add these refs to track previous values
-    const prevFiltersRef = useRef<Filters>({});
-    const prevPageRef = useRef(1);
-  
-    useEffect(() => {
-      if (!initializedRef.current) return;
-  
-      if (isClearAllRef.current) {
-        isClearAllRef.current = false;
-        return;
-      }
-      if (restoredOnceRef.current) {
-        restoredOnceRef.current = false; // reset for future real changes
-        return;
-      }
-  
-      const slugParts = pathKey.split("/listings/")[1]?.split("/") || [];
-      const parsedFromURL = parseSlugToFilters(slugParts);
-      const orderbyFromQuery = searchParams.get("orderby") ?? undefined;
-  
-      const pageFromURL = validatePage(searchParams.get("page"));
-  
-      const merged: Filters = {
-        ...parsedFromURL,
-        ...incomingFiltersRef.current,
-        ...(orderbyFromQuery ? { orderby: orderbyFromQuery } : {}),
-      };
-  
-      const filtersChanged =
-        JSON.stringify(merged) !== JSON.stringify(prevFiltersRef.current);
-      const pageChanged = pageFromURL !== prevPageRef.current;
-  
-      if (!filtersChanged && !pageChanged) return;
-  
-      prevFiltersRef.current = { ...merged };
-      prevPageRef.current = pageFromURL;
-  
-      filtersRef.current = merged;
-      setFilters(merged);
-      setPagination((prev) => ({ ...prev, current_page: pageFromURL }));
-  
-      // ✅ Prevent re-fetch on initial load (SSR already has data)
-      if (isUsingInitialData && initialData) {
-        setIsUsingInitialData(false);
-        return;
-      }
-  
-      // ✅ If client-side navigation happens and no data → 404
-      loadListings(pageFromURL, merged, true).then((res) => {
-        if (!res?.data?.products?.length) {
-        }
       });
-    }, [searchKey, pathKey, loadListings, DEFAULT_RADIUS, searchParams]);
-  
-    const mergeFiltersSafely = (prev: Filters, next: Filters): Filters => {
-      const merged: Filters = { ...prev };
-  
-      Object.entries(next).forEach(([key, value]) => {
-        if (value === undefined || value === null || value === "") {
-          // ❌ do nothing → keep previous value
-          return;
-        }
-        merged[key as keyof Filters] = value;
-      });
-  
-      return merged;
     };
-  
-    const handleFilterChange = useCallback(
-      async (newFilters: Filters) => {
-        // ✅ Show skeleton for ALL sections immediately
-        // setIsLoading(true);
-        // setIsMainLoading(true);
-        // setIsFeaturedLoading(true);
-        // setIsPremiumLoading(true);
-  
-        const mergedFilters = mergeFiltersSafely(filtersRef.current, newFilters);
-  
-        // cleanup empty values
-        if ("orderby" in newFilters && !newFilters.orderby) {
-          mergedFilters.orderby = undefined;
-        }
-        // ensureclickid();
-        filtersRef.current = mergedFilters;
-        setFilters(mergedFilters);
-  
-        // reset pagination when filters change
-        setPagination({
-          current_page: 1,
-          total_pages: 1,
-          total_items: 0,
-          per_page: 12,
-          total_products: 0,
-        });
-  
-        try {
-          // ✅ update URL
-          updateURLWithFilters(mergedFilters, 1);
-  
-          // ✅ fetch data immediately
-          await loadListings(1, mergedFilters, true);
-        } catch (error) {
-          console.error("Error applying filters:", error);
-        } finally {
-          // ✅ Hide all loaders when done
-          setIsLoading(false);
-          // setIsMainLoading(false);
-          // setIsFeaturedLoading(false);
-          // setIsPremiumLoading(false);
-        }
-      },
-      [updateURLWithFilters, loadListings],
-    );
-    useEffect(() => {
-      console.log("Loading state:", {
-        isLoading,
-        isMainLoading,
-        isFeaturedLoading,
-        isPremiumLoading,
-      });
-    }, [isLoading, isMainLoading, isFeaturedLoading, isPremiumLoading]);
-  
-  
-   // ✅ Add this ref near your other refs
-  const isPopStateRef = useRef(false);
-  
-  // ✅ Full popstate handler
- useEffect(() => {
-   const handlePopState = () => {
-     isPopStateRef.current = true;
- 
-     const path = window.location.pathname;
-     const slugParts = path.split("/listings/")[1]?.split("/") || [];
-     const parsed = parseSlugToFilters(slugParts);
- 
-     const sp = new URLSearchParams(window.location.search);
-     const orderby = sp.get("orderby") ?? undefined;
-     const urlClickid = sp.get("clickid") || null;
- 
-     const merged: Filters = {
-       ...parsed,
-       ...(orderby ? { orderby } : {}),
-     };
- 
-     filtersRef.current = merged;
-     setFilters(merged);
-     setclickid(urlClickid);
- 
-     const savedPage = urlClickid ? readPage(urlClickid) : null;
-     const pageToLoad = savedPage && savedPage > 0 ? savedPage : 1;
- 
-     // ✅ Prevent URL-watcher effect from double-fetching
-     prevFiltersRef.current = { ...merged };
-     prevPageRef.current = pageToLoad;
-     restoredOnceRef.current = true;
- 
-     setIsMainLoading(true);
-     setIsFeaturedLoading(true);
-     setIsPremiumLoading(true);
- 
-     setPagination((p) => ({ ...p, current_page: pageToLoad }));
- 
-     loadListings(pageToLoad, merged, true).finally(() => {
-       setIsMainLoading(false);
-       setIsFeaturedLoading(false);
-       setIsPremiumLoading(false);
-     });
-   };
- 
-   window.addEventListener("popstate", handlePopState);
-   return () => window.removeEventListener("popstate", handlePopState);
- }, [loadListings]);
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [loadListings]);
   // ✅ Ensure page 1 has a history entry
- useEffect(() => {
-   if (!searchParams.has("clickid")) {
-     // Page 1 - make sure current URL is in history
-     window.history.replaceState({ page: 1 }, "", window.location.href);
-   }
- }, []);
+  useEffect(() => {
+    if (!searchParams.has("clickid")) {
+      // Page 1 - make sure current URL is in history
+      window.history.replaceState({ page: 1 }, "", window.location.href);
+    }
+  }, []);
   // ✅ Update your existing clickid restore useEffect
-   // ✅ KEEP ONLY THIS ONE
+  // ✅ KEEP ONLY THIS ONE
   useEffect(() => {
     if (!clickid) return;
-  
+
     // ✅ Skip if triggered by popstate - already handled
     if (isPopStateRef.current) {
       isPopStateRef.current = false;
       return;
     }
-  
+
     const savedPage = readPage(clickid);
     if (savedPage && savedPage > 0) {
       restoredOnceRef.current = true;
@@ -1045,88 +1060,87 @@
       setIsRestored(true);
     }
   }, [clickid]);
-    // Only check real user filters
-    const FILTER_KEYS_TO_CHECK: (keyof Filters)[] = [
-      "category",
-      "make",
-      "model",
-      "condition",
-      "state",
-      "region",
-      "suburb",
-      "pincode",
-      "from_price",
-      "to_price",
-      "minKg",
-      "maxKg",
-  
-      "from_sleep",
-      "to_sleep",
-      "from_length",
-      "to_length",
-      "search",
-      "keyword",
-      "orderby",
-      "acustom_fromyears",
-      "acustom_toyears",
-    ];
-  
-    const hasActiveFilters = FILTER_KEYS_TO_CHECK.some((key) => {
-      const value = filters[key];
-      return value !== undefined && value !== "" && value !== null;
+  // Only check real user filters
+  const FILTER_KEYS_TO_CHECK: (keyof Filters)[] = [
+    "category",
+    "make",
+    "model",
+    "condition",
+    "state",
+    "region",
+    "suburb",
+    "pincode",
+    "from_price",
+    "to_price",
+    "minKg",
+    "maxKg",
+
+    "from_sleep",
+    "to_sleep",
+    "from_length",
+    "to_length",
+    "search",
+    "keyword",
+    "orderby",
+    "acustom_fromyears",
+    "acustom_toyears",
+  ];
+
+  const hasActiveFilters = FILTER_KEYS_TO_CHECK.some((key) => {
+    const value = filters[key];
+    return value !== undefined && value !== "" && value !== null;
+  });
+  const isClearAllRef = useRef(false);
+
+  const resetAllFilters = async () => {
+    if (!hasActiveFilters) return;
+
+    isClearAllRef.current = true; // 🔒 mark clear-all
+
+    // ✅ show skeleton
+    setIsLoading(true);
+    setIsMainLoading(true);
+    setIsFeaturedLoading(true);
+    setIsPremiumLoading(true);
+
+    // ✅ HARD CLEAR DATA (IMPORTANT)
+    setProducts([]);
+    setFeaturedProducts([]);
+    setPremiumProducts([]);
+    setExculisiveProducts([]);
+    setEmptyProduct([]);
+
+    const clearedFilters: Filters = {};
+
+    flushSync(() => {
+      setFilters(clearedFilters);
+      filtersRef.current = clearedFilters;
     });
-    const isClearAllRef = useRef(false);
-  
-    const resetAllFilters = async () => {
-      if (!hasActiveFilters) return;
-  
-      isClearAllRef.current = true; // 🔒 mark clear-all
-  
-      // ✅ show skeleton
-      setIsLoading(true);
-      setIsMainLoading(true);
-      setIsFeaturedLoading(true);
-      setIsPremiumLoading(true);
-  
-      // ✅ HARD CLEAR DATA (IMPORTANT)
-      setProducts([]);
-      setFeaturedProducts([]);
-      setPremiumProducts([]);
-      setExculisiveProducts([]);
-      setEmptyProduct([]);
-  
-      const clearedFilters: Filters = {};
-  
-      flushSync(() => {
-        setFilters(clearedFilters);
-        filtersRef.current = clearedFilters;
-      });
-  
-      try {
-        // ✅ update URL only (no duplicate fetch)
-        router.replace("/listings", { scroll: false });
-  
-        // ❌ DO NOT call loadListings here
-      } catch (err) {
-        console.error("Clear all failed:", err);
-      }
-    };
-  
-    // Mobile offcanvas filter state
-    const mobileFiltersRef = useRef<HTMLDivElement>(null);
-    useEffect(() => {
-      import("bootstrap/js/dist/offcanvas").catch(() => {});
-    }, []);
-  
-  
-    // 1. Add state for client-side links
+
+    try {
+      // ✅ update URL only (no duplicate fetch)
+      router.replace("/listings", { scroll: false });
+
+      // ❌ DO NOT call loadListings here
+    } catch (err) {
+      console.error("Clear all failed:", err);
+    }
+  };
+
+  // Mobile offcanvas filter state
+  const mobileFiltersRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    import("bootstrap/js/dist/offcanvas").catch(() => {});
+  }, []);
+
+  // 1. Add state for client-side links
   const [clientLinksData, setClientLinksData] = useState<any>(null);
   const [clientMounted, setClientMounted] = useState(false);
-  
+
   // 2. Add useEffect to fetch links when filters change
   useEffect(() => {
     setClientMounted(true);
-    
+
     const fetchLinks = async () => {
       try {
         const params = new URLSearchParams();
@@ -1136,7 +1150,7 @@
           }
         });
         const res = await fetch(
-          `https://admin.caravansforsale.com.au/wp-json/cfs/v1/links?${params.toString()}`
+          `https://admin.caravansforsale.com.au/wp-json/cfs/v1/links?${params.toString()}`,
         );
         const json = await res.json();
         setClientLinksData(json.data ?? json);
@@ -1144,7 +1158,7 @@
         console.error("Links fetch error:", e);
       }
     };
-  
+
     fetchLinks();
   }, [
     filters.category,
@@ -1165,11 +1179,11 @@
     filters.keyword,
     filters.search,
   ]);
-  
+
   // 4. Add buildClientLinkUrl helper in Listings.tsx (simplified version of filter's buildLinkUrl)
   const buildClientLinkUrl = (type: string, item: { slug: string }) => {
     const linkFilters: Filters = { ...filtersRef.current };
-  
+
     switch (type) {
       case "states":
         linkFilters.state = item.slug.replace(/-/g, " ");
@@ -1195,227 +1209,772 @@
       case "conditions":
         linkFilters.condition = item.slug;
         break;
-         case "prices":
+      case "prices":
       case "atm_ranges":
       case "length_ranges":
       case "sleep_ranges":
-          break;
+        break;
     }
-  
+
     const slugPath = buildSlugFromFilters(linkFilters);
-   const base = slugPath.endsWith("/") ? slugPath.slice(0, -1) : slugPath;
-  
-    if (["prices", "atm_ranges", "length_ranges", "sleep_ranges"].includes(type)) {
+    const base = slugPath.endsWith("/") ? slugPath.slice(0, -1) : slugPath;
+
+    if (
+      ["prices", "atm_ranges", "length_ranges", "sleep_ranges"].includes(type)
+    ) {
       return `${base}/${item.slug}/`;
     }
-  
+
     return `${base}/` || "/listings/";
   };
-    return (
-      <>
-        <Head>
-          <title>{metaTitle || "Default Title"}</title>
-          <meta
-            name="description"
-            content={metaDescription || "Default Description"}
-          />
-          <meta property="og:title" content={metaTitle || "Default Title"} />
-          <meta
-            property="og:description"
-            content={metaDescription || "Default Description"}
-          />
-          <meta name="twitter:title" content={metaTitle || "Default Title"} />
-          <meta
-            name="twitter:description"
-            content={metaDescription || "Default Description"}
-          />
-        </Head>
-  
-        <section className="services product_listing new_listing bg-gray-100 section-padding pb-30 style-1">
-          <div className="container container-xxl">
-            <div className="content mb-4">
-              {/*<div className="text-sm text-gray-600 header">
-                  <Link href="/" className="hover:underline">
-                    Home
-                  </Link>{" "}
-                  &gt; <span className="font-medium text-black"> Listings</span>
+
+  useEffect(() => {
+    const fetchRelatedLinks = async () => {
+      try {
+        const params = new URLSearchParams();
+        const f = filtersRef.current;
+
+        if (f.category) params.set("category", f.category);
+        if (f.make) params.set("make", f.make);
+        if (f.model) params.set("model", f.model);
+        if (f.state) params.set("state", f.state);
+        if (f.region) params.set("region", f.region);
+        if (f.suburb) params.set("suburb", f.suburb);
+        if (f.condition) params.set("condition", f.condition);
+        if (f.from_price) params.set("from_price", String(f.from_price));
+        if (f.to_price) params.set("to_price", String(f.to_price));
+        if (f.minKg) params.set("from_atm", String(f.minKg));
+        if (f.maxKg) params.set("to_atm", String(f.maxKg));
+        if (f.acustom_fromyears)
+          params.set("acustom_fromyears", String(f.acustom_fromyears));
+        if (f.from_sleep) params.set("from_sleep", String(f.from_sleep));
+        if (f.to_sleep) params.set("to_sleep", String(f.to_sleep));
+        if (f.from_length) params.set("from_length", String(f.from_length));
+        if (f.to_length) params.set("to_length", String(f.to_length));
+        if (f.search) params.set("search", f.search);
+        if (f.keyword) params.set("keyword", f.keyword);
+
+        const res = await fetch(
+          `https://admin.caravansforsale.com.au/wp-json/cfs/v1/related_links?${params.toString()}`,
+        );
+        const json = await res.json();
+        setRelatedChips(json.chips || []);
+      } catch (e) {
+        console.error("Related links error:", e);
+      }
+    };
+
+    fetchRelatedLinks();
+  }, [
+    filters.category,
+    filters.make,
+    filters.model,
+    filters.state,
+    filters.region,
+    filters.suburb,
+    filters.condition,
+    filters.from_price,
+    filters.to_price,
+    filters.minKg,
+    filters.maxKg,
+    filters.acustom_fromyears,
+    filters.from_length,
+    filters.to_length,
+    filters.from_sleep,
+    filters.to_sleep,
+    filters.search,
+    filters.keyword,
+  ]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    setSliderCatLoading(true);
+
+    const params = new URLSearchParams();
+    const f = filtersRef.current;
+    // exclude category itself so all counts are unfiltered by category
+    if (f.make) params.set("make", f.make);
+    if (f.model) params.set("model", f.model);
+    if (f.condition) params.set("condition", f.condition);
+    if (f.state) params.set("state", f.state.toLowerCase());
+    if (f.region) params.set("region", f.region);
+    if (f.suburb) params.set("suburb", f.suburb);
+    if (f.from_price) params.set("from_price", String(f.from_price));
+    if (f.to_price) params.set("to_price", String(f.to_price));
+    if (f.minKg) params.set("from_atm", String(f.minKg));
+    if (f.maxKg) params.set("to_atm", String(f.maxKg));
+    if (f.acustom_fromyears)
+      params.set("acustom_fromyears", String(f.acustom_fromyears));
+    if (f.acustom_toyears)
+      params.set("acustom_toyears", String(f.acustom_toyears));
+    if (f.from_length) params.set("from_length", String(f.from_length));
+    if (f.to_length) params.set("to_length", String(f.to_length));
+    if (f.from_sleep) params.set("from_sleep", String(f.from_sleep));
+    if (f.to_sleep) params.set("to_sleep", String(f.to_sleep));
+    if (f.search) params.set("search", f.search);
+    if (f.keyword) params.set("keyword", f.keyword);
+    params.set("group_by", "category");
+
+    fetch(
+      `https://admin.caravansforsale.com.au/wp-json/cfs/v1/params_count?${params.toString()}`,
+      { signal: controller.signal },
+    )
+      .then((r) => r.json())
+      .then((json) => {
+        if (!controller.signal.aborted) {
+          setSliderCategoryCounts(json.data || []);
+          setSliderCatLoading(false);
+        }
+      })
+      .catch((e) => {
+        if (e.name !== "AbortError") setSliderCatLoading(false);
+      });
+
+    return () => controller.abort();
+  }, [
+    filters.make,
+    filters.model,
+    filters.condition,
+    filters.state,
+    filters.region,
+    filters.suburb,
+    filters.from_price,
+    filters.to_price,
+    filters.minKg,
+    filters.maxKg,
+    filters.acustom_fromyears,
+    filters.acustom_toyears,
+    filters.from_length,
+    filters.to_length,
+    filters.from_sleep,
+    filters.to_sleep,
+    filters.search,
+    filters.keyword,
+  ]);
+  // Listings.tsx — add near your other handlers
+
+  const [modalFocusSection, setModalFocusSection] = useState<
+    string | undefined
+  >();
+
+  const handleOpenModal = (section?: string) => {
+    setModalFocusSection(section);
+    setOpenModal(true);
+  };
+  // ── 3. Handler: category selected from slider dropdown ──
+  // ✅ இந்த function-ஐ மட்டும் replace பண்ணு (handleSliderCategorySelect)
+  // handleFilterChange பயன்படுத்தாம directly loadListings call பண்ணு
+
+  // ✅ handleSliderCategorySelect — loadListings bypass, direct fetchListings call
+  // இந்த function-ஐ Listings.tsx-ல் replace பண்ணு
+
+  // ✅ Generic handler — எந்த filter-க்கும் use பண்ணலாம்
+  // Listings.tsx-ல் handleSliderCategorySelect-ஐ replace பண்ணி இதை மட்டும் வை
+
+  const handleSliderFilterSelect = async (newFilters: Partial<Filters>) => {
+    console.log("🔥 slider filter change:", newFilters);
+
+    // ✅ Build next filters
+    const next: Filters = { ...filtersRef.current };
+
+    // ✅ Apply incoming values — null/undefined = delete that key
+    (Object.keys(newFilters) as (keyof Filters)[]).forEach((key) => {
+      const val = newFilters[key];
+      if (val === null || val === undefined || val === "") {
+        delete next[key];
+      } else {
+        (next as any)[key] = val;
+      }
+    });
+
+    // ✅ Location hierarchy: state மாறினா region/suburb/pincode clear
+    if ("state" in newFilters) {
+      delete next.region;
+      delete next.suburb;
+      delete next.pincode;
+    }
+
+    // ✅ State value capitalize பண்ணு — "new south wales" → "New South Wales"
+    if (next.state) {
+      next.state = next.state
+        .toLowerCase()
+        .replace(/\b\w/g, (c) => c.toUpperCase());
+    }
+    // ✅ Region value capitalize
+    if (next.region) {
+      next.region = next.region
+        .toLowerCase()
+        .replace(/\b\w/g, (c) => c.toUpperCase());
+    }
+    if ("region" in newFilters) {
+      delete next.suburb;
+      delete next.pincode;
+    }
+
+    // ✅ Make மாறினா model clear
+    if ("make" in newFilters) {
+      if (!("model" in newFilters)) {
+        delete next.model;
+      }
+    }
+
+    console.log("🔥 next filters:", next);
+
+    // ✅ State + ref update
+    filtersRef.current = next;
+    setFilters({ ...next });
+
+    // ✅ Loaders ON
+    setIsMainLoading(true);
+    setIsFeaturedLoading(true);
+    setIsPremiumLoading(true);
+
+    // ✅ Pagination reset
+    setPagination({
+      current_page: 1,
+      total_pages: 1,
+      total_items: 0,
+      per_page: 12,
+      total_products: 0,
+    });
+
+    // ✅ URL update
+    updateURLWithFilters(next, 1);
+
+    try {
+      const radiusNum =
+        typeof next.radius_kms === "number"
+          ? next.radius_kms
+          : typeof next.radius_kms === "string"
+            ? parseInt(next.radius_kms, 10)
+            : undefined;
+
+      const radiusParam =
+        typeof radiusNum === "number" && !isNaN(radiusNum) && radiusNum !== 50
+          ? String(radiusNum)
+          : undefined;
+
+      // handleSliderFilterSelect-ல் fetchListings call-க்கு முன்னாடி இதை add பண்ணு
+
+      console.log("🔥 FINAL next filters before fetch:", {
+        make: next.make,
+        model: next.model,
+        category: next.category,
+        state: next.state,
+        from_price: next.from_price,
+        to_price: next.to_price,
+        minKg: next.minKg,
+        maxKg: next.maxKg,
+      });
+      const response: ApiResponse = await fetchListings({
+        ...next,
+        page: 1,
+        category: next.category,
+        make: next.make,
+        model: next.model,
+        condition: next.condition,
+        region: next.region,
+        state: next.state,
+        suburb: next.suburb,
+        minKg: next.minKg?.toString(),
+        maxKg: next.maxKg?.toString(),
+        from_price: next.from_price?.toString(),
+        to_price: next.to_price?.toString(),
+        acustom_fromyears: next.acustom_fromyears?.toString(),
+        acustom_toyears: next.acustom_toyears?.toString(),
+        from_length: next.from_length?.toString(),
+        to_length: next.to_length?.toString(),
+        from_sleep: next.from_sleep?.toString(),
+        to_sleep: next.to_sleep?.toString(),
+        radius_kms: radiusParam,
+      });
+
+      // ✅ State update
+      const validProducts = (response?.data?.products ?? []).filter(
+        (p: any) => p != null,
+      );
+      setProducts(
+        validProducts.length > 0
+          ? transformApiItemsToProducts(validProducts)
+          : [],
+      );
+      setFeaturedProducts(
+        transformApiItemsToProducts(response?.data?.featured_products ?? []),
+      );
+      setPremiumProducts(
+        transformApiItemsToProducts(response?.data?.premium_products ?? []),
+      );
+      setExculisiveProducts(
+        transformApiItemsToProducts(response?.data?.exclusive_products ?? []),
+      );
+      setEmptyProduct(
+        transformApiItemsToProducts(
+          response?.data?.emp_exclusive_products ?? [],
+        ),
+      );
+
+      if (response?.pagination) setPagination(response.pagination);
+      if (response?.seo?.metatitle) setMetaTitle(response.seo.metatitle);
+      if (response?.seo?.metadescription)
+        setMetaDescription(response.seo.metadescription);
+      if (response?.list_page_title) setPageTitle(response.list_page_title);
+    } catch (err) {
+      console.error("❌ slider filter fetch error:", err);
+    } finally {
+      setIsMainLoading(false);
+      setIsFeaturedLoading(false);
+      setIsPremiumLoading(false);
+    }
+  };
+
+  console.log("initialData states:", initialData?.data?.states?.length);
+  console.log("stateOptions state:", stateOptions?.length);
+
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (filters.category) count++;
+    if (filters.state) count++; // state + region = 1
+    if (filters.make) count++; // make + model = 1
+    if (filters.minKg || filters.maxKg) count++; // ATM = 1
+    if (filters.from_price || filters.to_price) count++; // Price = 1
+    if (filters.condition) count++;
+    if (filters.acustom_fromyears) count++;
+    if (filters.from_sleep || filters.to_sleep) count++; // Sleep = 1
+    if (filters.from_length || filters.to_length) count++; // Length = 1
+    if (filters.search || filters.keyword) count++;
+    return count;
+  }, [
+    filters.category,
+    filters.state,
+    filters.make,
+    filters.minKg,
+    filters.maxKg,
+    filters.from_price,
+    filters.to_price,
+    filters.condition,
+    filters.acustom_fromyears,
+    filters.from_sleep,
+    filters.to_sleep,
+    filters.from_length,
+    filters.to_length,
+    filters.search,
+    filters.keyword,
+  ]);
+
+  function buildStaticLinks(filters: Filters) {
+    const links: Record<string, { name: string; slug: string }[]> = {};
+
+    const hasState = !!filters.state;
+    const hasRegion = !!filters.region;
+
+    // ── Location ──
+    if (!hasState && !hasRegion) {
+      // No location selected → show all states
+      links.states = filterOptions.location.state.map((s) => ({
+        name: s.name,
+        slug: s.slug,
+      }));
+    } else if (hasState && !hasRegion) {
+      // State selected → show that state's regions
+      const found = filterOptions.location.state.find(
+        (s) => s.name.toLowerCase() === filters.state?.toLowerCase(),
+      );
+      if (found?.region && found.region.length > 0) {
+        links.regions = found.region.map((r) => ({
+          name: r.name,
+          slug: r.slug,
+        }));
+      }
+    } else if (hasState && hasRegion) {
+      // Region selected → show only that state (single item)
+      const found = filterOptions.location.state.find(
+        (s) => s.name.toLowerCase() === filters.state?.toLowerCase(),
+      );
+      if (found) {
+        links.states = [{ name: found.name, slug: found.slug }];
+      }
+    }
+
+    // ── Categories — always show ──
+    links.categories = filterOptions.categories.map((c) => ({
+      name: c.name,
+      slug: c.slug,
+    }));
+
+    // ── Price — always show ──
+    links.prices = filterOptions.price.map((p) => ({
+      name: p.name,
+      slug: p.slug,
+    }));
+
+    return links;
+  }
+
+  function buildStaticLinkUrl(
+    type: string,
+    slug: string,
+    currentFilters: Filters,
+  ): string {
+    // For state/region/category/price etc. — slug already has full path
+    // e.g. "/victoria-state/" → "/listings/victoria-state/"
+    const cleanSlug = slug.startsWith("/") ? slug.slice(1) : slug;
+
+    // If a category is already selected, prepend it before state/price etc.
+    // so URLs stay consistent with your slug builder
+    const base = buildSlugFromFilters({
+      ...currentFilters,
+      // Reset the filter we're about to set (avoid double slug)
+      ...(type === "categories" ? { category: undefined } : {}),
+      ...(type === "states" ? { state: undefined, region: undefined } : {}),
+      ...(type === "regions" ? { region: undefined } : {}),
+      ...(type === "prices"
+        ? { from_price: undefined, to_price: undefined }
+        : {}),
+      ...(type === "atm" ? { minKg: undefined, maxKg: undefined } : {}),
+      ...(type === "sleep"
+        ? { from_sleep: undefined, to_sleep: undefined }
+        : {}),
+      ...(type === "length"
+        ? { from_length: undefined, to_length: undefined }
+        : {}),
+    });
+
+    const safeBase = base.endsWith("/") ? base : `${base}/`;
+    return `${safeBase}${cleanSlug}`;
+  }
+
+  const staticLinks = useMemo(
+    () => buildStaticLinks(filters),
+    [
+      filters.category,
+      filters.state,
+      filters.from_price,
+      filters.to_price,
+      filters.minKg,
+      filters.maxKg,
+      filters.from_sleep,
+      filters.to_sleep,
+      filters.from_length,
+      filters.to_length,
+    ],
+  );
+
+  const SECTION_TITLES: Record<string, string> = {
+    categories: "Browse by Category",
+    states: "Browse by State",
+    regions: "Browse by Region",
+    prices: "Browse by Price",
+    atm: "Browse by ATM Weight",
+    sleep: "Browse by Sleeping Capacity",
+    length: "Browse by Length",
+  };
+
+  return (
+    <>
+      <Head>
+        <title>{metaTitle || "Default Title"}</title>
+        <meta
+          name="description"
+          content={metaDescription || "Default Description"}
+        />
+        <meta property="og:title" content={metaTitle || "Default Title"} />
+        <meta
+          property="og:description"
+          content={metaDescription || "Default Description"}
+        />
+        <meta name="twitter:title" content={metaTitle || "Default Title"} />
+        <meta
+          name="twitter:description"
+          content={metaDescription || "Default Description"}
+        />
+      </Head>
+      {/* <div>
+        <div className="cfs-links-section" id="static-links">
+          {Object.entries(staticLinks).map(([sectionKey, items]) => {
+            if (!items || items.length === 0) return null;
+            return (
+              <div key={sectionKey} className="cfs-links-group">
+                <h5 className="cfs-filter-label">
+                  {SECTION_TITLES[sectionKey] || sectionKey}
+                </h5>
+                <ul className="cfs-links-list">
+                  {items.map((item) => {
+                    const linkUrl = buildStaticLinkUrl(
+                      sectionKey,
+                      item.slug,
+                      filters,
+                    );
+                    return (
+                      <li key={item.slug} className="cfs-links-item">
+                        <a href={linkUrl} className="cfs-links-link">
+                          {item.name}
+                        </a>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            );
+          })}
+        </div>
+      </div> */}
+
+      <div className="search-bar">
+        <div className="container">
+          <div className="row align-items-end">
+            <div className="col-lg-12">
+              <div className="filter_left">
+                <div className="filter_btn_top">
+                  <button
+                    className="filter-btn"
+                    onClick={() => setOpenModal(true)}
+                  >
+                    {activeFilterCount > 0 ? (
+                      <span className="filter-count">{activeFilterCount}</span>
+                    ) : (
+                      <i className="bi bi-filter"></i>
+                    )}{" "}
+                    Filters
+                  </button>
                 </div>
-    
-                <h1 className="page-title">{pageTitle}</h1>*/}
-              <div ref={sentinelRef} style={{ height: "1px" }} />
-              <div className="row">
-                {/* Desktop sidebar */}
-                <div className="col-lg-3">
-                  <div className="filter filter_sticky hidden-xs hidden-sm">
-                    <div className="card-title align-items-center d-flex justify-content-between hidden-xs">
-                      <h3 className="filter_title">Filters</h3>
-                      <span className="text-uppercase clear_btn">
-                        <button
-                          onClick={resetAllFilters}
-                          disabled={!hasActiveFilters}
-                          className={`clear_btn ${
-                            !hasActiveFilters ? "disabled" : ""
-                          }`}
-                          style={{ border: "none", backgroundColor: "white" }}
-                        >
-                          <i className="bi bi-arrow-repeat me-1"></i> Clear All
-                        </button>{" "}
-                      </span>
-                    </div>
-  
-                    <div className="smooth_scroll">
-                        {/* ✅ SSR Links — will appear in View Page Source */}
-   {clientMounted && clientLinksData && (
-      <div className="cfs-links-section" id="client-links">
-        {(["states", "categories", "regions", ] as string[]).map((sectionKey) => {
-          const items = clientLinksData[sectionKey];
-          if (!items || items.length === 0) return null;
-  
-          const titles: Record<string, string> = {
-            states: "Browse by State",
-            categories: "Browse by Category",
-            regions: "Browse by Region",
-    //         makes: "Browse by Make",
-    //         models: "Browse by Model",
-    //         conditions: "Browse by Condition",
-    //          prices: "Browse by Price",
-    // atm_ranges: "Browse by ATM",
-    // length_ranges: "Browse by Length",
-    // sleep_ranges: "Browse by Sleep",
-          };
-  
-          return (
-            <div key={sectionKey} className="cfs-links-group">
-              <h5 className="cfs-filter-label">{titles[sectionKey] || sectionKey}</h5>
-              <ul className="cfs-links-list">
-                {items.map((item: any) => {
-                  const linkUrl = buildClientLinkUrl(sectionKey, item);
-                  return (
-                    <li key={item.slug} className="cfs-links-item">
-                      <a
-                        href={linkUrl}
-                        target=""
-                        className="cfs-links-link"
-                        onClick={(e: React.MouseEvent) => {
-                          e.preventDefault();
-                          router.push(linkUrl);
-                        }}
-                      >
-  {item.name.includes(" ") 
-    ? item.name.replace(/\b\w/g, (c: string) => c.toUpperCase())
-    : item.name.replace(/-/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase())
-  }                    </a>
-                      
-                    </li>
-                    
-                  );
-                })}
-              </ul>
-            </div>
-          );
-        })}
-      </div>
-    )}
-    <Suspense >
-                        <CaravanFilter
-                          categories={categories}
-                          makes={makes}
-                          models={models}
-                          states={stateOptions}
-                          onFilterChange={(partial) => {
-                            handleFilterChange(partial);
-                          }}
-                          currentFilters={filters}
-                          setIsFeaturedLoading={setIsFeaturedLoading}
-                          setIsPremiumLoading={setIsPremiumLoading}
-                          setIsMainLoading={setIsMainLoading}
-                         />
-                      </Suspense>
-                    </div>
-                  </div>
+                <div>
+                  <FilterSlider
+                    currentFilters={filters}
+                    categoryCounts={sliderCategoryCounts}
+                    isCategoryCountLoading={sliderCatLoading}
+                    stateOptions={stateOptions}
+                    onOpenModal={handleOpenModal}
+                    onCategorySelect={(slug) =>
+                      handleSliderFilterSelect({ category: slug ?? undefined })
+                    }
+                    onLocationSelect={(state, region) => {
+                      const normalize = (s: string | null) =>
+                        s ? s.toLowerCase().replace(/-/g, " ").trim() : "";
+
+                      // ✅ normalize பண்ணி compare — case/hyphen mismatch தவிர்க்கணும்
+                      const prevState = filtersRef.current.state ?? null;
+                      const stateChanged =
+                        normalize(state) !== normalize(prevState);
+
+                      const cap = (s: string | null) =>
+                        s
+                          ? s
+                              .toLowerCase()
+                              .replace(/\b\w/g, (c) => c.toUpperCase())
+                          : undefined;
+
+                      console.log(
+                        "🔥 onLocationSelect — state:",
+                        state,
+                        "region:",
+                        region,
+                      );
+                      console.log(
+                        "🔥 prevState:",
+                        prevState,
+                        "stateChanged:",
+                        stateChanged,
+                      );
+
+                      if (state === null && region === null) {
+                        handleSliderFilterSelect({
+                          state: undefined,
+                          region: undefined,
+                        });
+                      } else if (stateChanged) {
+                        handleSliderFilterSelect({ state: cap(state) });
+                      } else {
+                        // ✅ Same state — region மட்டும் pass, "state" key இல்லாம
+                        handleSliderFilterSelect({ region: cap(region) });
+                      }
+                    }}
+                    onPriceSelect={(from, to) => {
+                      const next: Partial<Filters> = {};
+                      // from/to null ஆனா explicitly undefined set பண்ணு (delete ஆகும்)
+                      // value இருந்தா set பண்ணு
+                      if (from !== null && from !== undefined) {
+                        next.from_price = from;
+                      } else {
+                        next.from_price = undefined; // delete
+                      }
+                      if (to !== null && to !== undefined) {
+                        next.to_price = to;
+                      } else {
+                        next.to_price = undefined; // delete
+                      }
+                      handleSliderFilterSelect(next);
+                    }}
+                    onMakeSelect={(make, model) => {
+                      const next: Partial<Filters> = {};
+
+                      if (make !== null && make !== undefined) {
+                        next.make = make;
+                      } else {
+                        next.make = undefined; // delete
+                      }
+
+                      if (model !== null && model !== undefined) {
+                        next.model = model;
+                      }
+                      if (filtersRef.current.category) {
+                        next.category = filtersRef.current.category;
+                      }
+                      handleSliderFilterSelect(next);
+                    }}
+                    onAtmSelect={(min, max) => {
+                      const next: Partial<Filters> = {};
+                      if (min !== null && min !== undefined) {
+                        next.minKg = min;
+                      } else {
+                        next.minKg = undefined;
+                      }
+                      if (max !== null && max !== undefined) {
+                        next.maxKg = max;
+                      } else {
+                        next.maxKg = undefined;
+                      }
+                      handleSliderFilterSelect(next);
+                    }}
+                  />
                 </div>
-  
-                {/* Listings */}
-                {/* Listings */}
-  
-                {isLoading ||
-                isMainLoading ||
-                isFeaturedLoading ||
-                isPremiumLoading ? (
-                  <div className="col-lg-6">
-                    <ListingSkeleton count={8} />
-                  </div>
-                ) : (
-                  <>
-                    {/** CASE 1: SHOW LISTING PAGE */}
-                    {(products.length > 0 ||
-                      fetauredProducts.length > 0 ||
-                      preminumProducts.length > 0) && (
-                      <Listing
-                        pageTitle={pageTitle}
-                        products={products}
-                        data={products}
-                        pagination={pagination}
-                        onNext={handleNextPage}
-                        onPrev={handlePrevPage}
-                        metaDescription={metaDescription}
-                        metaTitle={metaTitle}
-                        onFilterChange={handleFilterChange}
-                        currentFilters={filters}
-                        preminumProducts={preminumProducts}
-                        fetauredProducts={fetauredProducts}
-                        exculisiveProducts={exculisiveProducts}
-                        isMainLoading={isMainLoading}
-                        isFeaturedLoading={isFeaturedLoading}
-                        isPremiumLoading={isPremiumLoading}
-                        // isNextLoading={isNextLoading}
-                      />
-                    )}
-  
-                    {/** CASE 2: SHOW EXCLUSIVE PAGE */}
-                    {products.length === 0 &&
-                      fetauredProducts.length === 0 &&
-                      preminumProducts.length === 0 &&
-                      emptyProduct.length > 0 && (
-                        <ExculsiveContent
-                          data={emptyProduct}
-                          pageTitle={pageTitle}
-                          metaDescription={metaDescription}
-                          metaTitle={metaTitle}
-                          isPremiumLoading={isPremiumLoading}
-                        />
-                      )}
-                  </>
-                )}
               </div>
             </div>
           </div>
-        </section>
-  
-        {/* Mobile Offcanvas */}
-        <div
- 
-          ref={mobileFiltersRef}
-          id="mobileFilters"
-          className="offcanvas mobile-filter-xs offcanvas-end d-lg-none"
-          tabIndex={-1}
-          aria-labelledby="mobileFiltersLabel"
-          data-bs-scroll="true"
-          data-bs-backdrop="true"
-          style={{ maxHeight: "100dvh" }}
-        >
-          <div className="offcanvas-header mobile_filter_xs sticky-top bg-white">
-            <button
-              type="button"
-              className="btn-close"
-              data-bs-dismiss="offcanvas"
-              aria-label="Close"
-            />
+        </div>
+      </div>
+
+      {openModal && (
+        <FilterModal
+          onClose={() => setOpenModal(false)}
+          onClearAll={resetAllFilters}
+          categories={categories}
+          makes={makes}
+          models={models}
+          states={stateOptions}
+          onFilterChange={(partial) => {
+            handleFilterChange(partial);
+          }}
+          currentFilters={filters}
+          setIsFeaturedLoading={setIsFeaturedLoading}
+          setIsPremiumLoading={setIsPremiumLoading}
+          setIsMainLoading={setIsMainLoading}
+          focusSection={modalFocusSection}
+        />
+
+        //  <CaravanFilter
+        //                         categories={categories}
+        //                         makes={makes}
+        //                         models={models}
+        //                         states={stateOptions}
+        //                         onFilterChange={(partial) => {
+
+        //                           handleFilterChange(partial);
+        //                         }}
+        //                         currentFilters={filters}
+        //                         setIsFeaturedLoading={setIsFeaturedLoading}
+        //                         setIsPremiumLoading={setIsPremiumLoading}
+        //                         setIsMainLoading={setIsMainLoading}
+        //                         hideSSRLinks={true}
+        //                       />
+      )}
+
+      <section className="services product_listing new_listing bg-gray-100 section-padding pb-30 style-1">
+        <div className="container">
+          <div className="content mb-4">
+            {/*<div className="text-sm text-gray-600 header">
+                 <Link href="/" className="hover:underline">
+                   Home
+                 </Link>{" "}
+                 &gt; <span className="font-medium text-black"> Listings</span>
+               </div>
+   
+               <h1 className="page-title">{pageTitle}</h1>*/}
+            <div ref={sentinelRef} style={{ height: "1px" }} />
+            <div className="row">
+              {/* Desktop sidebar */}
+
+              {/* Listings */}
+              {/* Listings */}
+
+              {isLoading ||
+              isMainLoading ||
+              isFeaturedLoading ||
+              isPremiumLoading ? (
+                <div className="col-lg-8">
+                  <ListingSkeleton count={8} />
+                </div>
+              ) : (
+                <>
+                  {/** CASE 1: SHOW LISTING PAGE */}
+                  {(products.length > 0 ||
+                    fetauredProducts.length > 0 ||
+                    preminumProducts.length > 0) && (
+                    <Listing
+                      pageTitle={pageTitle}
+                      products={products}
+                      data={products}
+                      pagination={pagination}
+                      onNext={handleNextPage}
+                      onPrev={handlePrevPage}
+                      metaDescription={metaDescription}
+                      metaTitle={metaTitle}
+                      onFilterChange={handleFilterChange}
+                      currentFilters={filters}
+                      preminumProducts={preminumProducts}
+                      fetauredProducts={fetauredProducts}
+                      exculisiveProducts={exculisiveProducts}
+                      isMainLoading={isMainLoading}
+                      isFeaturedLoading={isFeaturedLoading}
+                      isPremiumLoading={isPremiumLoading}
+                      // isNextLoading={isNextLoading}
+                    />
+                  )}
+
+                  {/** CASE 2: SHOW EXCLUSIVE PAGE */}
+                  {products.length === 0 &&
+                    fetauredProducts.length === 0 &&
+                    preminumProducts.length === 0 &&
+                    emptyProduct.length > 0 && (
+                      <ExculsiveContent
+                        data={emptyProduct}
+                        pageTitle={pageTitle}
+                        metaDescription={metaDescription}
+                        metaTitle={metaTitle}
+                        isPremiumLoading={isPremiumLoading}
+                      />
+                    )}
+                </>
+              )}
+            </div>
           </div>
-  
-          <div className="offcanvas-body pt-2">
-            <Suspense>
-              <CaravanFilter
+        </div>
+      </section>
+
+      {/* Mobile Offcanvas */}
+      <div
+        ref={mobileFiltersRef}
+        id="mobileFilters"
+        className="offcanvas mobile-filter-xs offcanvas-end d-lg-none"
+        tabIndex={-1}
+        aria-labelledby="mobileFiltersLabel"
+        data-bs-scroll="true"
+        data-bs-backdrop="true"
+        style={{ maxHeight: "100dvh" }}
+      >
+        <div className="offcanvas-header mobile_filter_xs sticky-top bg-white">
+          <button
+            type="button"
+            className="btn-close"
+            data-bs-dismiss="offcanvas"
+            aria-label="Close"
+          />
+        </div>
+        <div className="offcanvas-body pt-2">
+          <Suspense>
+            {openModal && (
+              <FilterModal
+                onClose={() => setOpenModal(false)}
+                onClearAll={resetAllFilters}
                 categories={categories}
                 makes={makes}
                 models={models}
@@ -1424,11 +1983,30 @@
                   handleFilterChange(partial);
                 }}
                 currentFilters={filters}
+                setIsFeaturedLoading={setIsFeaturedLoading}
+                setIsPremiumLoading={setIsPremiumLoading}
+                setIsMainLoading={setIsMainLoading}
               />
-            </Suspense>
-          </div>
-        </div>
 
-      </>
-    );
-  }
+              //  <CaravanFilter
+              //                         categories={categories}
+              //                         makes={makes}
+              //                         models={models}
+              //                         states={stateOptions}
+              //                         onFilterChange={(partial) => {
+
+              //                           handleFilterChange(partial);
+              //                         }}
+              //                         currentFilters={filters}
+              //                         setIsFeaturedLoading={setIsFeaturedLoading}
+              //                         setIsPremiumLoading={setIsPremiumLoading}
+              //                         setIsMainLoading={setIsMainLoading}
+              //                         hideSSRLinks={true}
+              //                       />
+            )}
+          </Suspense>
+        </div>
+      </div>
+    </>
+  );
+}

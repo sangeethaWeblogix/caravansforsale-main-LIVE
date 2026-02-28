@@ -4,9 +4,10 @@
   }
 }
 .new_listing.bg-gray-100 {
-  background-color: #ffffff;
-  border-top: 1px solid #e1e1e1;
-  border-bottom: 1px solid #e1e1e1;
+  background-color: #fff;
+  border-top: none;
+  border-bottom: none;
+  padding-top: 30px;
 }
 h1.page-title {
   text-align: left;
@@ -71,11 +72,16 @@ h1.page-title {
   position: relative;
   z-index: 0;
 }
+
+.product-page .new_listing .related-products .product-card .img {
+  min-height: 350px;
+  max-height: 350px;
+}
 .main_thumb {
   position: relative;
   align-items: center;
-  min-height: 250px;
-  max-height: 250px;
+  min-height: 350px;
+  max-height: 350px;
   display: flex;
   overflow: hidden;
 }
@@ -95,12 +101,13 @@ h1.page-title {
   .main_thumb
   .thumb_img {
   align-items: center;
-  min-height: 250px;
-  max-height: 250px;
+  min-height: 350px;
+  max-height: 350px;
   display: flex;
   position: relative;
   overflow: hidden;
   justify-content: center;
+  transform: scale(1);
 }
 
 .view-more-btn-wrapper {
@@ -136,7 +143,7 @@ h1.page-title {
   text-align: left;
   margin-top: 0;
   margin-bottom: 0;
-  font-size: 20px;
+  font-size: 25px;
   font-weight: 600;
 }
 .product-page .other_items .product-card .price .metc2 h5.slog s {
@@ -202,12 +209,12 @@ h1.page-title {
 
 .product-page .other_items .product-card .btn {
   color: #333;
-  text-transform: capitalize;
+  text-transform: uppercase;
   letter-spacing: 0.5px;
   background: none;
   border: 1px solid #333;
   display: block;
-  padding: 8px;
+  padding: 10px;
   font-size: 14px;
   width: 100%;
 }
@@ -256,8 +263,8 @@ h1.page-title {
   align-items: center;
   width: 35%;
   margin-right: 25px;
-  padding: 3px;
-  font-size: 14px;
+  padding: 4px 0px;
+  font-size: 15px;
   line-height: 19px;
   display: flex;
 }
@@ -299,10 +306,52 @@ h1.page-title {
        top: 23px;
     left: 12px;
 } */
-/* When client links exist, hide SSR links */
-.smooth_scroll:has(.filter-card .cfs-links-section) > .ssr-links-only {
-  display: none;
+
+.sticky_spot .main_thumb,
+.product-page .new_listing .sticky_spot .related-products .product-card .img {
+  min-height: 230px;
+  max-height: 230px;
 }
+
+.sticky_spot .other_items {
+  margin-top: 0;
+}
+
+.sticky_spot .product_de {
+  background: #f1f1f1;
+  padding: 15px;
+}
+
+.product-page .sticky_spot .product-card {
+  border: 1px solid #dedede;
+}
+
+.sticky_spot .bottom_button {
+  gap: 10px;
+  display: flex;
+  margin: -15px;
+  border-color: #000;
+  background: #000;
+  border-radius: 0;
+  margin-top: 0;
+}
+
+.product-page .sticky_spot .other_items .product-card .btn.btn-primary {
+  border-color: #000;
+  background: #000;
+  border-radius: 0;
+  margin-top: 0;
+}
+
+.product-page .sticky_spot .product-card .info {
+  margin-bottom: 10px;
+  min-height: inherit;
+}
+
+.product-page .sticky_spot .product-card .info .title {
+  height: auto;
+}
+
 .secrch_icon .cfs-select-input {
   padding-left: 40px;
 }
@@ -317,7 +366,7 @@ h1.page-title {
   color: #adadad;
 }
 .bottom_mid span {
-  font-size: 14px;
+  font-size: 15px;
   color: #000;
 }
 .bottom_button {
@@ -580,7 +629,7 @@ h1.page-title {
   transform: scale(1);
 }
 .lab {
-  z-index: 12;
+  z-index: 1;
   width: 100%;
   position: absolute;
   top: 0;
