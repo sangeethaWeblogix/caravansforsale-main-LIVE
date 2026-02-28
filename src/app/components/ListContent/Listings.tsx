@@ -19,7 +19,7 @@ import "./top-filters.css?=44";
 import dynamic from "next/dynamic";
 import { filterOptions } from "./filterOptions"; // உங்க path adjust பண்ணு
 
-const ListingSkeleton = dynamic(() => import("../skelton"), { ssr: false });
+import ListingSkeleton from "../skelton";
 
 import {
   redirect,

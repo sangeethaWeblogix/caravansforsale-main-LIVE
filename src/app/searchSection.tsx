@@ -25,7 +25,8 @@ import { fetchLengthBasedCaravans } from "@/api/homeApi/length/api";
 import { fetchUsedCaravansList } from "@/api/homeApi/usedCaravanList/api";
 import { fetchStateBasedCaravans } from "@/api/homeApi/state/api";
 import TabCardSkeleton from "./components/TabCardSkeleton";
-
+import CaravansByStateSkeleton from "./components/Caravansbystateskeleton";
+import SearchSuggestionSkeleton from "./components/Searchsuggestionskeleton ";
 
 interface TabsItem {
   label: string;
@@ -74,6 +75,8 @@ export default function SearchSection() {
   const [category, setCategory] = useState("");
   const [location, setLocation] = useState("");
   const [conditionValue, setConditionValue] = useState("");
+  const [stateBandsLoading, setStateBandsLoading] = useState(true); // ← ADD THIS
+
   const isSearchEnabled = category || location || conditionValue;
   const [activeIndex, setActiveIndex] = useState(0);
 
@@ -131,6 +134,7 @@ export default function SearchSection() {
       setUsedState(usedData.by_state);
       setUsedRegion(usedData.by_region);
       setStateBands(state);
+      setStateBandsLoading(false); // ← ADD THIS
     }
 
     loadAll();
@@ -327,7 +331,7 @@ export default function SearchSection() {
   };
 
   const closeSuggestions = () => setIsSuggestionBoxOpen(false);
-const isTabsLoading = tabsData.every((t) => t.cards.length === 0);
+  const isTabsLoading = tabsData.every((t) => t.cards.length === 0);
 
   // ------------- typed suggestions (≥ 3 chars) -------------
   useEffect(() => {
@@ -684,8 +688,16 @@ const isTabsLoading = tabsData.every((t) => t.cards.length === 0);
 
                           {error && <p className="text-red-600">{error}</p>}
 
-                          {!error && loading && <p>Loading…</p>}
-
+                          {!error && loading && (
+                            <SearchSuggestionSkeleton
+                              count={6}
+                              label={
+                                showingFromKeywordApi
+                                  ? "Suggested searches"
+                                  : "Popular searches"
+                              }
+                            />
+                          )}
                           {!error && !loading && (
                             <ul className="text-left" id="suggestionList">
                               {suggestions?.length ? (
@@ -728,72 +740,75 @@ const isTabsLoading = tabsData.every((t) => t.cards.length === 0);
               </div>
             </div>
           </div>
+          {stateBandsLoading ? (
+            <CaravansByStateSkeleton count={4} />
+          ) : (
+            <div className="content">
+              <div className="explore-state position-relative">
+                <Swiper
+                  modules={[Navigation]}
+                  navigation={{
+                    nextEl: ".state-manu-next",
+                    prevEl: ".state-manu-prev",
+                  }}
+                  //autoplay={{ delay: 3000 }}
+                  spaceBetween={20}
+                  slidesPerView={1}
+                  breakpoints={{
+                    768: { slidesPerView: 2 },
+                    1024: { slidesPerView: 4 },
+                    1280: { slidesPerView: 4 },
+                  }}
+                >
+                  {stateBands.map((item, index) => {
+                    const key = item.state.toLowerCase().replace(/\s+/g, "-");
 
-          <div className="content">
-            <div className="explore-state position-relative">
-              <Swiper
-                modules={[Navigation]}
-                navigation={{
-                  nextEl: ".state-manu-next",
-                  prevEl: ".state-manu-prev",
-                }}
-                //autoplay={{ delay: 3000 }}
-                spaceBetween={20}
-                slidesPerView={1}
-                breakpoints={{
-                  768: { slidesPerView: 2 },
-                  1024: { slidesPerView: 4 },
-                  1280: { slidesPerView: 4 },
-                }}
-              >
-                {stateBands.map((item, index) => {
-                  const key = item.state.toLowerCase().replace(/\s+/g, "-");
+                    const meta = stateMeta[key] || {};
+                    const stateCode = meta.code || "";
+                    const mapImage = meta.image || "";
 
-                  const meta = stateMeta[key] || {};
-                  const stateCode = meta.code || "";
-                  const mapImage = meta.image || "";
+                    return (
+                      <SwiperSlide key={index}>
+                        <div className="service-box">
+                          <div className="sec_right">
+                            <span>
+                              <Image
+                                src={mapImage}
+                                alt={`${item.state} map`}
+                                width={100}
+                                height={100}
+                              />
+                            </span>
+                          </div>
+                          <div className="sec_left">
+                            <h3>{item.state}</h3>
+                            <div className="info">
+                              <div className="quick_linkss">
+                                {/* ✔ API BASED DISPLAY TEXT */}
+                                <p>{item.display_text}</p>
 
-                  return (
-                    <SwiperSlide key={index}>
-                      <div className="service-box">
-                        <div className="sec_right">
-                          <span>
-                            <Image
-                              src={mapImage}
-                              alt={`${item.state} map`}
-                              width={100}
-                              height={100}
-                            />
-                          </span>
-                        </div>
-                        <div className="sec_left">
-                          <h3>{item.state}</h3>
-                          <div className="info">
-                            <div className="quick_linkss">
-                              {/* ✔ API BASED DISPLAY TEXT */}
-                              <p>{item.display_text}</p>
-
-                              <a
-                                className="view_all"
-                                href={`/listings${item.permalink}`}
-                              >
-                                View All Caravans for Sale in {stateCode}{" "}
-                                <i className="bi bi-chevron-right"></i>
-                              </a>
+                                <a
+                                  className="view_all"
+                                  href={`/listings${item.permalink}`}
+                                >
+                                  View All Caravans for Sale in {stateCode}{" "}
+                                  <i className="bi bi-chevron-right"></i>
+                                </a>
+                              </div>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    </SwiperSlide>
-                  );
-                })}
-              </Swiper>
+                      </SwiperSlide>
+                    );
+                  })}
+                </Swiper>
 
-              {/* Arrows */}
-              <div className="swiper-button-next state-manu-next" />
-              <div className="swiper-button-prev state-manu-prev" />
+                {/* Arrows */}
+                <div className="swiper-button-next state-manu-next" />
+                <div className="swiper-button-prev state-manu-prev" />
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
       <div className="quick_links_tabs">
@@ -841,18 +856,18 @@ const isTabsLoading = tabsData.every((t) => t.cards.length === 0);
                   className="custom-card-grid"
                   style={{ display: activeTab === tab.key ? "grid" : "none" }}
                 >
-                 {isTabsLoading
-  ? Array.from({ length: 6 }).map((_, i) => <TabCardSkeleton key={i} />)
-  : tab.cards?.map((item, index) => (
-                    
-                    <a href={item.url} className="custom-card" key={index}>
-                      <h4 className="custom-card-title">
-                        <span className="count">{item.sub}</span> {item.title}
-                      </h4>
-                    </a>
-                     ))}
-
-                  
+                  {isTabsLoading
+                    ? Array.from({ length: 6 }).map((_, i) => (
+                        <TabCardSkeleton key={i} />
+                      ))
+                    : tab.cards?.map((item, index) => (
+                        <a href={item.url} className="custom-card" key={index}>
+                          <h4 className="custom-card-title">
+                            <span className="count">{item.sub}</span>{" "}
+                            {item.title}
+                          </h4>
+                        </a>
+                      ))}
                 </div>
               ))}
             </div>
