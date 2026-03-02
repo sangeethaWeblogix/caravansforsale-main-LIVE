@@ -841,7 +841,6 @@ h1.page-title {
   font-size: 14px;
 }
 
-
 @media (max-width: 1300px) {
   .product-page .other_items .product-card .btn {
     padding: 8px 5px;
@@ -860,16 +859,30 @@ h1.page-title {
   }
 }
 
-@media only screen and (min-width: 998px) and (max-width: 1200px) { 
-  .product-page .new_listing .dealers-section .product-card .img .main_thumb .thumb_img, .product-page .new_listing .related-products .product-card .img {
-        min-height: 280px;
+@media only screen and (min-width: 998px) and (max-width: 1200px) {
+  .product-page
+    .new_listing
+    .dealers-section
+    .product-card
+    .img
+    .main_thumb
+    .thumb_img,
+  .product-page .new_listing .related-products .product-card .img {
+    min-height: 280px;
     max-height: 280px;
   }
 }
 
 @media only screen and (min-width: 768px) and (max-width: 997px) {
-    .product-page .new_listing .dealers-section .product-card .img .main_thumb .thumb_img, .product-page .new_listing .related-products .product-card .img {
-        min-height: 280px;
+  .product-page
+    .new_listing
+    .dealers-section
+    .product-card
+    .img
+    .main_thumb
+    .thumb_img,
+  .product-page .new_listing .related-products .product-card .img {
+    min-height: 280px;
     max-height: 280px;
   }
 }
@@ -878,13 +891,20 @@ h1.page-title {
   .new_listing .other_items.featured_items {
     padding: 20px;
   }
-  .product-page .new_listing .dealers-section .product-card .img .main_thumb .thumb_img, .product-page .new_listing .related-products .product-card .img {
-        min-height: 250px;
+  .product-page
+    .new_listing
+    .dealers-section
+    .product-card
+    .img
+    .main_thumb
+    .thumb_img,
+  .product-page .new_listing .related-products .product-card .img {
+    min-height: 250px;
     max-height: 250px;
   }
   .product-page .product-card .info {
     margin-top: 0;
-        min-height: 75px;
+    min-height: 75px;
   }
   .product-page .other_items .product-card .price .metc2 h5.slog {
     font-size: 18px;

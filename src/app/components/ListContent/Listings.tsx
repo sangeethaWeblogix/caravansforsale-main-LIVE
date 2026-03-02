@@ -1734,7 +1734,9 @@ export default function ListingsPage({
                     {activeFilterCount > 0 ? (
                       <span className="filter-count">{activeFilterCount}</span>
                     ) : (
-                      <span><i className="bi bi-filter"></i></span>
+                      <span>
+                        <i className="bi bi-filter"></i>
+                      </span>
                     )}{" "}
                     Filters
                   </button>
