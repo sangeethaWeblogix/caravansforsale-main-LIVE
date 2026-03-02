@@ -677,7 +677,6 @@ export default function ListingContent({
                                       </div>
                                     </SwiperSlide>
                                   ))}
-                                  thu
                                 </Swiper>
                               </div>
                             </div>
