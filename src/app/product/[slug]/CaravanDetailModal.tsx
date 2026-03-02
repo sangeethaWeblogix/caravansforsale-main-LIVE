@@ -175,7 +175,7 @@ export default function CaravanDetailModal({
             <div className="container">
               <div className="row">
                 {/* Left Content */}
-                <div className="col-lg-9">
+                <div className="col-xl-9 col-lg-8 col-md-12">
                   <div className="pop-top">
                     <h3>{product.name}</h3>
                     <div className="vehicleThumbDetails__part__price pop_up_price">
@@ -222,7 +222,7 @@ export default function CaravanDetailModal({
                 </div>
 
                 {/* Right Content - Enquiry Form */}
-                <div className="col-lg-3">
+                <div className="col-xl-3 col-lg-4 col-md-12">
                   <div className="sidebar-enquiry">
                     <form className="wpcf7-form" noValidate onSubmit={onSubmit}>
                       <div className="form">

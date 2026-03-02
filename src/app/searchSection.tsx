@@ -527,7 +527,7 @@ export default function SearchSection() {
                     aria-labelledby="pills-find-tab"
                   >
                     <div className="content-info text-center pb-0">
-                      <ul className="category_icon list-unstyled d-flex flex-wrap justify-content-start">
+                      <ul className="category_icon list-unstyled d-flex justify-content-start">
                         <li>
                           <a href="/listings/off-road-category/">
                             <div className="item-image">

@@ -608,6 +608,7 @@ const FilterSlider = ({
               {closeBtn}
             </div>
             <div className="filter-body">
+              <div className="filter-item pt-0">
               <ul
                 className="category-list"
                 style={{ listStyle: "none", padding: 0, margin: 0 }}
@@ -654,6 +655,7 @@ const FilterSlider = ({
                   ))
                 )}
               </ul>
+              </div>
             </div>
             <div className="filter-footer">
               <button

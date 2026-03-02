@@ -2,7 +2,7 @@
 import { Metadata } from "next";
 import ClientLogger from "./product";
 import { redirect } from "next/navigation";
-import './product.css'
+import './product.css?=8'
 
 export const revalidate = 3600;
 

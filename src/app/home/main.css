@@ -318,9 +318,9 @@
 }
 
 .content.explore_tab {
-    position: relative;
-    overflow: hidden;
-    border-radius: 12px;
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
 }
 
 .home-post_head {
@@ -332,12 +332,12 @@
 }
 
 .caravans_by_state .home-post_head h3 {
-    color: #000;
-    text-transform: uppercase;
-    margin-bottom: 8px;
-    font-size: 26px;
-    font-weight: 600;
-    line-height: 33px;
+  color: #000;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 33px;
 }
 
 .home-post_head h3 span {
@@ -379,15 +379,15 @@
 }
 
 .top_cta {
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: cover;
-    background-clip: padding-box;
-    border: none;
-    border-radius: 20px;
-    margin-top: 0;
-    margin-bottom: 0;
-    padding: 0;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-clip: padding-box;
+  border: none;
+  border-radius: 20px;
+  margin-top: 0;
+  margin-bottom: 0;
+  padding: 0;
 }
 
 .search_requirement_area {
@@ -419,11 +419,11 @@
 }
 
 .post_bgs {
-    z-index: 1;
-    background: #fff;
-    border-radius: 30px;
-    padding: 0;
-    position: relative;
+  z-index: 1;
+  background: #fff;
+  border-radius: 30px;
+  padding: 0;
+  position: relative;
 }
 
 .type {
@@ -473,17 +473,16 @@
 }
 
 .home-post__item {
-    color: #171717;
-    border-radius: 0;
-    align-items: center;
-    margin-bottom: 10px;
-    padding: 35px 45px;
-    font-size: 15px;
-    font-weight: 400;
-    position: relative;
-    overflow: hidden;
-    /* background: linear-gradient(#f9f8f8, #f3efec); */
-    
+  color: #171717;
+  border-radius: 0;
+  align-items: center;
+  margin-bottom: 10px;
+  padding: 35px 45px;
+  font-size: 15px;
+  font-weight: 400;
+  position: relative;
+  overflow: hidden;
+  /* background: linear-gradient(#f9f8f8, #f3efec); */
 }
 
 .fet_feild {
@@ -535,19 +534,19 @@
 }
 
 .final_post_btn .btn {
-    text-transform: capitalize;
-    letter-spacing: 0;
-    background: #ec7200;
-    border: 2px solid #ec7200;
-    max-width: 350px;
-    height: 55px;
-    margin: 0;
-    padding: 0;
-    font-weight: 500;
-    line-height: 55px;
-    display: block;
-    color: #ffffff !important;
-    font-size: 18px;
+  text-transform: capitalize;
+  letter-spacing: 0;
+  background: #ec7200;
+  border: 2px solid #ec7200;
+  max-width: 350px;
+  height: 55px;
+  margin: 0;
+  padding: 0;
+  font-weight: 500;
+  line-height: 55px;
+  display: block;
+  color: #ffffff !important;
+  font-size: 18px;
 }
 
 .final_post_btn .btn:hover {
@@ -563,21 +562,21 @@
 }
 
 .caravans_by_state .service-box {
-    z-index: 1;
-    -o-transition: all .3s ease;
-    background-color: #fff;
-    border: 1px solid #9993;
-    border-radius: 12px;
-    text-align: center;
-    gap: 15px;
-    height: auto;
-    margin-bottom: 10px;
-    padding: 20px 40px;
-    -webkit-transition: all .3s;
-    transition: all .3s;
-    display: block;
-    position: relative;
-    box-shadow: 5px 5px 3px #6262621a;
+  z-index: 1;
+  -o-transition: all 0.3s ease;
+  background-color: #fff;
+  border: 1px solid #9993;
+  border-radius: 12px;
+  text-align: center;
+  gap: 15px;
+  height: auto;
+  margin-bottom: 10px;
+  padding: 20px 40px;
+  -webkit-transition: all 0.3s;
+  transition: all 0.3s;
+  display: block;
+  position: relative;
+  box-shadow: 5px 5px 3px #6262621a;
 }
 
 .caravans_by_state .service-box:hover {
@@ -614,7 +613,7 @@
 }
 
 .home_top .quick_linkss p {
-    text-align: center;
+  text-align: center;
 }
 
 .caravans_by_state .service-box h3 {
@@ -625,7 +624,7 @@
 }
 
 .caravans_by_state .service-box .sec_left {
-    width: 100%;
+  width: 100%;
 }
 
 .quick_linkss {
@@ -656,13 +655,13 @@
 }
 
 .caravans_by_state .service-box .sec_right {
-    justify-content: end;
-    width: 100%;
+  justify-content: end;
+  width: 100%;
 }
 
 .caravans_by_state .sec_right img {
-    height: 90px;
-    margin-bottom: 12px;
+  height: 90px;
+  margin-bottom: 12px;
 }
 
 .caravans_by_state .sec_left a.view_all i {
@@ -1425,13 +1424,13 @@ a.ignoretext {
 }
 
 .custom-tabs-top {
-    background: #fff;
-    border-radius: 0;
-    justify-content: flex-start;
-    align-items: center;
-    padding: 0;
-    display: flex;
-    overflow-x: auto;
+  background: #fff;
+  border-radius: 0;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 0;
+  display: flex;
+  overflow-x: auto;
 }
 
 .custom-tabs-nav {
@@ -1442,27 +1441,27 @@ a.ignoretext {
 }
 
 .custom-tab-btn {
-    cursor: pointer;
-    color: #000;
-    white-space: nowrap;
-    background: none;
-    border: none;
-    border-bottom: 2px solid #ddd;
-    border-radius: 0;
-    outline: none;
-    padding: 10px 20px;
-    font-size: 17px;
-    font-weight: 500;
-    transition: all .25s;
+  cursor: pointer;
+  color: #000;
+  white-space: nowrap;
+  background: none;
+  border: none;
+  border-bottom: 2px solid #ddd;
+  border-radius: 0;
+  outline: none;
+  padding: 10px 20px;
+  font-size: 17px;
+  font-weight: 500;
+  transition: all 0.25s;
 }
 
 .custom-tab-btn:hover {
 }
 
 .custom-tab-btn.active {
-    color: #ec7200;
-    background: #fff;
-    border-bottom: 2px solid;
+  color: #ec7200;
+  background: #fff;
+  border-bottom: 2px solid;
 }
 
 .tab-arrow {
@@ -1471,10 +1470,10 @@ a.ignoretext {
 }
 
 .custom-tabs-content {
-    margin-top: 0;
-    padding: 20px;
-    border-top: 2px solid #ddd;
-    margin-top: -2px;
+  margin-top: 0;
+  padding: 20px;
+  border-top: 2px solid #ddd;
+  margin-top: -2px;
 }
 .custom-card-grid {
   display: grid;
@@ -1527,18 +1526,18 @@ a.ignoretext {
     grid-template-columns: repeat(1, 1fr);
   }
   .custom-card {
-        padding: 0;
+    padding: 0;
   }
 }
 
 /* Wrapper background (optional) */
 .explore_tab .nav-pills {
-    background: #f4f1ef;
-    gap: 2px;
-    padding: 0px;
-    display: flex;
-    justify-content: center;
-    flex-wrap: inherit;
+  background: #f4f1ef;
+  gap: 2px;
+  padding: 0px;
+  display: flex;
+  justify-content: center;
+  flex-wrap: inherit;
 }
 
 .explore_tab .nav-pills li {
@@ -1547,15 +1546,15 @@ a.ignoretext {
 
 /* Tab buttons */
 .explore_tab .nav-pills .nav-link {
-    color: #333;
-    background: #e6e2df;
-    border: none;
-    border-radius: 0;
-    width: 100%;
-    padding: 12px 22px;
-    font-weight: 600;
-    transition: all .25s;
-    overflow: hidden;
+  color: #333;
+  background: #e6e2df;
+  border: none;
+  border-radius: 0;
+  width: 100%;
+  padding: 12px 22px;
+  font-weight: 600;
+  transition: all 0.25s;
+  overflow: hidden;
 }
 
 /* Hover state */
@@ -1574,29 +1573,29 @@ a.ignoretext {
 
 /* Orange underline for active tab */
 .explore_tab .nav-pills .nav-link.active:after {
-    content: "";
-    background: #ff7a00;
-    border-radius: 0;
-    height: 3px;
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
+  content: "";
+  background: #ff7a00;
+  border-radius: 0;
+  height: 3px;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
 }
 
 /* Tab content container */
 .explore_tab .tab-content {
-    background: #fff;
-    border-radius: 0 0px 12px 12px;
-    margin-top: 0;
-    padding: 25px;
-    box-shadow: 0 6px 20px #0000000f;
+  background: #fff;
+  border-radius: 0 0px 12px 12px;
+  margin-top: 0;
+  padding: 25px;
+  box-shadow: 0 6px 20px #0000000f;
 }
 
 /* Optional text styling */
 .explore_tab .tab-content p {
-    color: #000000;
-    font-size: 16px;
+  color: #000000;
+  font-size: 16px;
 }
 
 .explore_tab .tab-content .explore-box p {
@@ -1623,9 +1622,6 @@ a.ignoretext {
   gap: 8px;
 }
 
-
-
-
 .explore-boxes {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -1633,11 +1629,11 @@ a.ignoretext {
 }
 
 .explore-box {
-    background: linear-gradient(#f9f8f8, #f3efec);
-    border-radius: 18px;
-    padding: 24px;
-    position: relative;
-    overflow: hidden;
+  background: linear-gradient(#f9f8f8, #f3efec);
+  border-radius: 18px;
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
 }
 
 .explore-box h3 {
@@ -1654,14 +1650,14 @@ a.ignoretext {
 }
 
 .explore-box .btn {
-    color: #fff;
-    cursor: pointer;
-    background: #ec7200;
-    border: none;
-    border-radius: 6px;
-    padding: 10px 18px;
-    font-size: 14px;
-    font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+  background: #ec7200;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 600;
 }
 
 .explore-box .btn:hover {
@@ -1670,27 +1666,26 @@ a.ignoretext {
 
 /* Active box highlight (Buying) */
 .explore-box.active {
-  
 }
 
 /* Illustration placeholders */
 .illustration {
-    background: #f0e6df;
-    border-radius: 16px;
-    width: 120px;
-    height: 120px;
-    position: absolute;
-    bottom: 0;
-    right: 0;
+  background: #f0e6df;
+  border-radius: 16px;
+  width: 120px;
+  height: 120px;
+  position: absolute;
+  bottom: 0;
+  right: 0;
 }
 
 .illustration.left {
-    background: url("/images/illustration-left.png") bottom / 125px no-repeat;
+  background: url("/images/illustration-left.png") bottom / 125px no-repeat;
 }
 
 .illustration.center {
-    background: url("/images/illustration-center.png") bottom / 125px no-repeat;
-    width: 140px;
+  background: url("/images/illustration-center.png") bottom / 125px no-repeat;
+  width: 140px;
 }
 
 .illustration.right {
@@ -1708,22 +1703,21 @@ a.ignoretext {
   }
 }
 
-
 .banner_sell_caravan {
-    border-radius: 12px;
-    align-items: center;
-    width: 100%;
-    margin-top: 25px;
-    padding: 0px 25px;
-    display: flex;
-    position: relative;
-    overflow: hidden;
+  border-radius: 12px;
+  align-items: center;
+  width: 100%;
+  margin-top: 25px;
+  padding: 0px 25px;
+  display: flex;
+  position: relative;
+  overflow: hidden;
 }
 
 .banner_sell_caravan .bgImg {
-    object-fit: cover;
-    z-index: 1;
-    border-radius: 20px;
+  object-fit: cover;
+  z-index: 1;
+  border-radius: 20px;
 }
 
 .banner_sell_caravan .overlay {
@@ -1746,11 +1740,11 @@ a.ignoretext {
 }
 
 .banner_sell_caravan .title {
-    margin: 0 0 18px;
-    font-size: 25px;
-    font-weight: 600;
-    line-height: 1.1;
-    color: #000;
+  margin: 0 0 18px;
+  font-size: 25px;
+  font-weight: 600;
+  line-height: 1.1;
+  color: #000;
 }
 
 .banner_sell_caravan .desc {
@@ -1816,7 +1810,7 @@ a.ignoretext {
 .category_icon li {
   text-align: center;
   float: left;
-  width: 16%;
+  width: 100%;
   margin-bottom: 0;
 }
 
@@ -1917,6 +1911,51 @@ main .section-head .category_icon li img {
   border-radius: 4px;
 }
 
+@media only screen and (min-width: 1301px) and (max-width: 1400px) {
+   .blog.style-8 .side-posts .item .info h4.title {
+    height: 85px;
+  }
+ 
+}
+
+@media only screen and (min-width: 998px) and (max-width: 1300px) {
+  .caravans_by_state .service-box {
+    padding: 15px 15px;
+  }
+  .caravans_by_manufacturer .post_info p {
+    height: 120px;
+  }
+  .caravans_by_state .sec_right img {
+    height: 70px;
+    margin-bottom: 12px;
+  }
+  .explore_tab .tab-content .explore-box p {
+    height: 100px;
+  }
+  .illustration {
+    display: none;
+  }
+}
+
+@media only screen and (min-width: 768px) and (max-width: 997px) {
+  main .section-head .category_icon li img {
+    max-width: 85px;
+  }
+  main .section-head .category_icon li span {
+    font-size: 14px;
+  }
+  .custom-card-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  .home_top h1 {
+    font-size: 30px;
+  }
+  .blog.style-8 .side-posts .item .info h4.title {
+    height: 100px;
+  }
+}
+
 @media (max-width: 767px) {
   .search_home .nav-pills .nav-link {
     font-size: 14px;
@@ -1956,7 +1995,7 @@ main .section-head .category_icon li img {
     padding-bottom: 0;
   }
   .content.explore_tab {
-        padding-bottom: 30px;
+    padding-bottom: 30px;
   }
   .mb-40 {
     margin-bottom: 25px;
@@ -1977,27 +2016,28 @@ main .section-head .category_icon li img {
   .custom-card-title {
     font-size: 15px;
   }
-  .caravans_by_state h2, .quick_links_tabs h2 {
+  .caravans_by_state h2,
+  .quick_links_tabs h2 {
     font-size: 20px;
     font-weight: 600;
-}
+  }
 
-.explore_tab .nav-pills .nav-link span {
+  .explore_tab .nav-pills .nav-link span {
     align-items: center;
     gap: 8px;
     display: block;
-}
-.explore_tab .nav-pills .nav-link span svg {
+  }
+  .explore_tab .nav-pills .nav-link span svg {
     display: block;
     text-align: center;
     margin: 0 auto;
-}
-.illustration {
-  display: none;
-}
-.explore-box .btn {
-  width: 100%;
-}
+  }
+  .illustration {
+    display: none;
+  }
+  .explore-box .btn {
+    width: 100%;
+  }
 }
 
 .disabled_btn {
@@ -2029,10 +2069,19 @@ main .section-head .category_icon li img {
   transform: translateY(-50%) rotate(180deg);
 }
 @keyframes skeletonShimmer {
-  0%   { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 @keyframes skeletonPulse {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.6; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
 }

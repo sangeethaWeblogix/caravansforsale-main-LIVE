@@ -14,8 +14,8 @@ import ExculsiveContent from "./exculsiveContent";
 import FilterModal from "./FilterModal";
 import { flushSync } from "react-dom";
 import { v4 as uuidv4 } from "uuid";
-import "./newList.css?=18";
-import "./top-filters.css?=44";
+import "./newList.css?=25";
+import "./top-filters.css?=49";
 import dynamic from "next/dynamic";
 import { filterOptions } from "./filterOptions"; // உங்க path adjust பண்ணு
 
@@ -1734,7 +1734,7 @@ export default function ListingsPage({
                     {activeFilterCount > 0 ? (
                       <span className="filter-count">{activeFilterCount}</span>
                     ) : (
-                      <i className="bi bi-filter"></i>
+                      <span><i className="bi bi-filter"></i></span>
                     )}{" "}
                     Filters
                   </button>

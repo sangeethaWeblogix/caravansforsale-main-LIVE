@@ -126,7 +126,7 @@
 }
 .caravan__image_count {
   position: absolute;
-  bottom: 33px;
+  bottom: 20px;
   left: 30%;
   color: #fff;
   font-size: 30px;
@@ -339,9 +339,9 @@
   margin-bottom: 10px;
 }
 .community.style-5 .content .commun-card .icon img {
-  -webkit-animation: scale_up_down 1s ease-in-out infinite alternate both;
-  animation: scale_up_down 1s ease-in-out infinite alternate both;
-  height: 70px;
+    height: 70px;
+    min-height: inherit;
+    animation: 1s ease-in-out infinite alternate both scale_up_down;
 }
 .scale_up_down {
   -webkit-animation: scale_up_down 1s ease-in-out infinite alternate both;
@@ -523,7 +523,13 @@
   max-height: inherit;
 }
 
-@media (min-width: 768px) and (max-width: 991px) {
+@media only screen and (min-width: 998px) and (max-width: 1200px) {
+  .product-page .product-card .info .title {
+    height: 120px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 997px) {
   /*  */
   .price-container {
     display: flex;
@@ -531,6 +537,12 @@
     align-items: flex-start;
     gap: 10px;
   }
+
+  .product .pop-up-content-wrap img {
+    width: auto;
+    min-height: 480px;
+    max-height: 480px;
+}
 
   .price-left {
     display: flex;
@@ -623,10 +635,15 @@
     min-height: 60px;
   }
   .caravan__image_count {
-    bottom: 20px;
-    right: 4%;
+    bottom: 15px;
+    right: 9%;
     left: inherit;
-  }
+}
+.product .pop-up-content-wrap img {
+    width: auto;
+    max-height: 260px;
+    min-height: 260px;
+}
 
   .slider_thumb_vertical {
     margin-inline-end: 0;
@@ -687,12 +704,6 @@
     min-height: 60px;
     max-height: 60px;
   }
-
-  .slider_thumb_vertical img {
-    width: auto;
-    min-height: 50px;
-    max-height: 50px;
-}
 
 .product-page .product-details .nav-pills .nav-link {
   font-size: 18px;
