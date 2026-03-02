@@ -323,50 +323,23 @@ export default function ListingContent({
 
   const buildMergedProducts = (normal: Product[]) => {
     const premium = preminumProducts || [];
-    const exclusive = exculisiveProducts || [];
-
     const merged: Product[] = [];
-    let exclusiveIndex = 0;
 
-    // 1️⃣ Normal + Exclusive placement
-    normal.forEach((item, i) => {
+    // ✅ No exclusive insertion here anymore
+    normal.forEach((item) => {
       merged.push(item);
-
-      if ((i + 1) % 10 === 0 && exclusiveIndex < exclusive.length) {
-        merged.push({
-          ...exclusive[exclusiveIndex],
-          is_exclusive: true,
-        });
-        exclusiveIndex++;
-      }
     });
 
-    while (exclusiveIndex < exclusive.length) {
-      merged.push({
-        ...exclusive[exclusiveIndex],
-        is_exclusive: true,
-      });
-      exclusiveIndex++;
-    }
-
-    // 2️⃣ Premium fixed index (DO NOT MOVE)
+    // Premium fixed index (unchanged)
     if (merged.length >= 3 && premium.length > 0) {
-      merged.splice(2, 0, {
-        ...premium[0],
-        is_premium: true,
-      });
-
+      merged.splice(2, 0, { ...premium[0], is_premium: true });
       if (premium.length > 1) {
-        merged.splice(3, 0, {
-          ...premium[1],
-          is_premium: true,
-        });
+        merged.splice(3, 0, { ...premium[1], is_premium: true });
       }
     }
 
     return merged;
   };
-
   // useEffect(() => {
   //   mergedProducts.forEach((item) => {
   //     if (!loadedAll[item.id]) {
@@ -901,66 +874,195 @@ export default function ListingContent({
       <div className="col-lg-3">
         <div className="sticky_spot hidden-xs hidden-sm">
           <div className="related-products">
-            <div className="other_items">
-              <Link href="#" className="lli_head">
-                <div className="product-card">
-                  <div className="img">
-                    <span className="lab">Spotlight Van</span>
-                    <Image
-                      src="https://caravansforsale.imagestack.net/800x600/CFS-N-12800004/2025-newgen-ngb21s-21-luxury-slide-out-2main1.avif"
-                      alt="Caravan"
-                      width={400}
-                      height={300}
-                      className="w-100 h-100 object-fit-cover"
-                    />
-                  </div>
+            {exculisiveProducts.length === 0 || isOrderbyLoading ? (
+              <Skelton count={6} />
+            ) : (
+              <div className="other_items">
+                {exculisiveProducts.map((item, index) => {
+                  const href = getHref(item);
+                  const isPriority = index < 5;
+                  // const resizedBase = getResizedBase(item);
+                  // const imgs = lazyImages[item.id] ?? [];
+                  const firstImage = getFirstImage(item);
+                  const isActive = swiperActivated[item.id];
+                  const slides = isActive
+                    ? (lazyImages[item.id] ?? [])
+                    : firstImage
+                      ? [firstImage, firstImage]
+                      : [];
 
-                  {/* Product Details */}
-                  <div className="product_de">
-                    <div className="info">
-                      <h3 className="title cursor-pointer">
-                        2025 NewGen NGB21S 21&apos; Luxury Slideout
-                      </h3>
-                    </div>
+                  console.log("imgs", firstImage);
+                  return (
+                    <a
+                      href={href}
+                      className="lli_head"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        goToProduct(href);
+                      }}
+                    >
+                      {" "}
+                      <div className="product-card">
+                        <div className="img">
+                          <span className="lab">Spotlight Van</span>
+                          <Image
+                            src={firstImage || "/images/placeholder.png"}
+                            alt="Caravan"
+                            width={400}
+                            height={300}
+                            className="w-100 h-100 object-fit-cover"
+                          />
+                        </div>
 
-                    <div className="price">
-                      <div className="metc2">
-                        <h5 className="slog">$77,125</h5>
+                        {/* Product Details */}
+                        <div className="product_de">
+                          <div className="info">
+                            {item.name && (
+                              <h3
+                                className="title cursor-pointer"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+
+                                  goToProduct(href);
+                                }}
+                              >
+                                {item.name}
+                              </h3>
+                            )}
+                          </div>
+
+                          {(item.regular_price ||
+                            item.sale_price ||
+                            item.price_difference) && (
+                            <div className="price">
+                              <div className="metc2">
+                                {(item.regular_price || item.sale_price) && (
+                                  <h5 className="slog">
+                                    {/* ✅ Stable price rendering: precompute safely */}
+                                    {(() => {
+                                      const rawRegular =
+                                        item.regular_price || "";
+                                      const rawSale = item.sale_price || "";
+                                      const cleanRegular = rawRegular.replace(
+                                        /[^0-9.]/g,
+                                        "",
+                                      );
+                                      const regNum = Number(cleanRegular) || 0;
+                                      const cleanSale = rawSale.replace(
+                                        /[^0-9.]/g,
+                                        "",
+                                      );
+                                      const saleNum = Number(cleanSale) || 0;
+
+                                      // If regular price is 0 → show POA
+                                      if (regNum === 0) {
+                                        return <>POA</>;
+                                      }
+
+                                      // If sale price exists → show sale and strike-through
+                                      if (saleNum > 0) {
+                                        return (
+                                          <>
+                                            <del>{rawRegular}</del> {rawSale}
+                                          </>
+                                        );
+                                      }
+
+                                      // Otherwise → show regular price
+                                      return <>{rawRegular}</>;
+                                    })()}
+                                  </h5>
+                                )}
+
+                                {/* ✅ Show SAVE only if > $0 */}
+                                {(() => {
+                                  const cleanDiff = (
+                                    item.price_difference || ""
+                                  ).replace(/[^0-9.]/g, "");
+                                  const diffNum = Number(cleanDiff) || 0;
+                                  return diffNum > 0 ? (
+                                    <p className="card-price">
+                                      <span>SAVE</span> {item.price_difference}
+                                    </p>
+                                  ) : null;
+                                })()}
+                                {item.is_premium && (
+                                  <div className="more_info">
+                                    <div className="informat">
+                                      <span className="premium_van">
+                                        <i className="fa fa-star"></i> Premium
+                                      </span>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                          <ul className="vehicleDetailsWithIcons simple">
+                            {item.categories && item.categories.length > 0 && (
+                              <li className="attribute3_list">
+                                <span className="attribute3">
+                                  {item.categories.slice(0, 2).join(", ")}
+                                </span>
+                              </li>
+                            )}
+                            {item.length && (
+                              <li>
+                                <span className="attribute3">
+                                  {item.length}
+                                </span>
+                              </li>
+                            )}
+
+                            {item.kg && (
+                              <li>
+                                <span className="attribute3">{item.kg}</span>
+                              </li>
+                            )}
+
+                            {item.make && (
+                              <li>
+                                <span className="attribute3">{item.make}</span>
+                              </li>
+                            )}
+                          </ul>
+
+                          {(item.condition || item.location) && (
+                            <div className="bottom_mid">
+                              {item.condition && (
+                                <span>
+                                  <i className="bi bi-check-circle-fill"></i>{" "}
+                                  Condition {item.condition}
+                                </span>
+                              )}
+                              {item.location && (
+                                <span>
+                                  <i className="fa fa-map-marker-alt"></i>{" "}
+                                  {item.location}
+                                </span>
+                              )}
+                            </div>
+                          )}
+
+                          <div className="bottom_button">
+                            <button
+                              className="btn btn-primary"
+                              onClick={(e) =>
+                                handleViewDetails(e, item.id, href)
+                              }
+                            >
+                              View Details
+                            </button>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-
-                    <ul className="vehicleDetailsWithIcons simple">
-                      <li className="attribute3_list">
-                        <span className="attribute3">Luxury</span>
-                      </li>
-                      <li>
-                        <span className="attribute3">21 ft</span>
-                      </li>
-                      <li>
-                        <span className="attribute3">3500 Kg</span>
-                      </li>
-                      <li>
-                        <span className="attribute3">NewGen</span>
-                      </li>
-                    </ul>
-
-                    <div className="bottom_mid">
-                      <span>
-                        <i className="bi bi-check-circle-fill"></i> Condition
-                        New
-                      </span>
-                      <span>
-                        <i className="fa fa-map-marker-alt"></i> NSW
-                      </span>
-                    </div>
-
-                    <div className="bottom_button">
-                      <button className="btn btn-primary">View Details</button>
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            </div>
+                    </a>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
       </div>
