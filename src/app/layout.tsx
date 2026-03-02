@@ -14,6 +14,7 @@
   // import NextTopLoader from "nextjs-toploader";
 import ThemeRegistry from './components/ThemeRegistry';
 import NavigationHistory from "@/components/NavigationHistory";
+import { BannerProvider } from "@/components/BannerHandler";
 
   
   export const metadata: Metadata = {
@@ -117,7 +118,9 @@ const gtmServer = "https://gtm.caravansforsale.com.au";
           showSpinner={false}
         /> */}
  <ThemeRegistry>
+          <BannerProvider>
           {children}
+          </BannerProvider>
         </ThemeRegistry>
                     </main>
           <Footer />

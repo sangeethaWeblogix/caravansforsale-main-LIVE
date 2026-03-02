@@ -32,6 +32,7 @@ import { parseSlugToFilters } from "../../components/urlBuilder";
 import Head from "next/head";
 import "./loader.css";
 import FilterSlider from "./FilterSlider";
+import { useBanners } from "@/components/BannerHandler";
 // import Link from "next/link";
 
 /* --------- GLOBAL de-dupe across StrictMode remounts --------- */
@@ -254,6 +255,11 @@ export default function ListingsPage({
       }),
     });
   };
+
+  const { matchedBanners } = useBanners();
+  useEffect(() => {
+
+  }, [matchedBanners]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
