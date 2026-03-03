@@ -74,14 +74,14 @@ h1.page-title {
   text-decoration: underline !important;
 }
 
-.cfs-links-section {
+/* .cfs-links-section {
   background: #fff;
   border: 1px solid #e0e0e0;
   border-radius: 8px;
   margin-bottom: 12px;
   padding: 16px;
   display: none;
-}
+} */
 .filter-acc-icon,
 .toggle_show_make_more {
   cursor: pointer;

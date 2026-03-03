@@ -32,6 +32,7 @@ import { parseSlugToFilters } from "../../components/urlBuilder";
 import Head from "next/head";
 import "./loader.css";
 import FilterSlider from "./FilterSlider";
+import StaticLinks from "./StaticLinks";
 // import Link from "next/link";
 
 /* --------- GLOBAL de-dupe across StrictMode remounts --------- */
@@ -1568,46 +1569,122 @@ export default function ListingsPage({
 
     const hasState = !!filters.state;
     const hasRegion = !!filters.region;
+    const hasSuburb = !!filters.suburb;
+    const hasPrice = !!(filters.from_price || filters.to_price);
+    const hasAtm = !!(filters.minKg || filters.maxKg);
+    const hasLength = !!(filters.from_length || filters.to_length);
+    const hasSleep = !!(filters.from_sleep || filters.to_sleep);
+    const hasCondition = !!filters.condition;
 
-    // ── Location ──
-    if (!hasState && !hasRegion) {
-      // No location selected → show all states
+    // ── 1. LOCATION ──────────────────────────────────────────
+    if (!hasState && !hasRegion && !hasSuburb) {
+      // No location → show all states
       links.states = filterOptions.location.state.map((s) => ({
         name: s.name,
         slug: s.slug,
       }));
-    } else if (hasState && !hasRegion) {
+    } else if (hasState && !hasRegion && !hasSuburb) {
       // State selected → show that state's regions
       const found = filterOptions.location.state.find(
         (s) => s.name.toLowerCase() === filters.state?.toLowerCase(),
       );
-      if (found?.region && found.region.length > 0) {
+      if (found?.region?.length) {
         links.regions = found.region.map((r) => ({
           name: r.name,
           slug: r.slug,
         }));
       }
-    } else if (hasState && hasRegion) {
-      // Region selected → show only that state (single item)
+    } else if (hasState && hasRegion && !hasSuburb) {
+      // Region selected → show only that state (single)
       const found = filterOptions.location.state.find(
         (s) => s.name.toLowerCase() === filters.state?.toLowerCase(),
       );
       if (found) {
         links.states = [{ name: found.name, slug: found.slug }];
       }
+    } else if (hasState && hasSuburb) {
+      // Suburb selected → show state + region
+      const found = filterOptions.location.state.find(
+        (s) => s.name.toLowerCase() === filters.state?.toLowerCase(),
+      );
+      if (found) {
+        links.states = [{ name: found.name, slug: found.slug }];
+      }
+      if (hasRegion && found) {
+        const region = found.region?.find(
+          (r) => r.name.toLowerCase() === filters.region?.toLowerCase(),
+        );
+        if (region) {
+          links.regions = [{ name: region.name, slug: region.slug }];
+        }
+      }
     }
 
-    // ── Categories — always show ──
+    // ── 2. CATEGORIES — always show ──────────────────────────
     links.categories = filterOptions.categories.map((c) => ({
       name: c.name,
       slug: c.slug,
     }));
 
-    // ── Price — always show ──
-    links.prices = filterOptions.price.map((p) => ({
-      name: p.name,
-      slug: p.slug,
-    }));
+    // ── 3. PRICE ─────────────────────────────────────────────
+    // Price selected → remove that price, show remaining
+    // Price இல்லா → all prices show
+    links.prices = filterOptions.price
+      .filter((p) => {
+        if (!hasPrice) return true; // no filter → show all
+        const slugParts = p.slug.replace(/\//g, "");
+        if (slugParts.startsWith("under-")) {
+          const limit = parseInt(slugParts.replace("under-", ""));
+          return !(!filters.from_price && Number(filters.to_price) === limit);
+        }
+        if (slugParts.startsWith("over-")) {
+          const limit = parseInt(slugParts.replace("over-", ""));
+          return !(Number(filters.from_price) === limit && !filters.to_price);
+        }
+        if (slugParts.startsWith("between-")) {
+          const parts = slugParts.replace("between-", "").split("-");
+          const from = parseInt(parts[0]);
+          const to = parseInt(parts[1]);
+          return !(
+            Number(filters.from_price) === from &&
+            Number(filters.to_price) === to
+          );
+        }
+        return true;
+      })
+      .map((p) => ({ name: p.name, slug: p.slug }));
+
+    // ── 4. ATM ───────────────────────────────────────────────
+    if (!hasAtm) {
+      links.atm = filterOptions.atm.map((a) => ({
+        name: a.name,
+        slug: a.slug,
+      }));
+    }
+
+    // ── 5. LENGTH ────────────────────────────────────────────
+    if (!hasLength) {
+      links.length = filterOptions.length.map((l) => ({
+        name: l.name,
+        slug: l.slug,
+      }));
+    }
+
+    // ── 6. SLEEP ─────────────────────────────────────────────
+    if (!hasSleep) {
+      links.sleep = filterOptions.sleep.map((s) => ({
+        name: s.name,
+        slug: s.slug,
+      }));
+    }
+
+    // ── 7. CONDITION ─────────────────────────────────────────
+    if (!hasCondition) {
+      links.conditions = [
+        { name: "New", slug: "new-condition" },
+        { name: "Used", slug: "used-condition" },
+      ];
+    }
 
     return links;
   }
@@ -1617,18 +1694,15 @@ export default function ListingsPage({
     slug: string,
     currentFilters: Filters,
   ): string {
-    // For state/region/category/price etc. — slug already has full path
-    // e.g. "/victoria-state/" → "/listings/victoria-state/"
     const cleanSlug = slug.startsWith("/") ? slug.slice(1) : slug;
 
-    // If a category is already selected, prepend it before state/price etc.
-    // so URLs stay consistent with your slug builder
     const base = buildSlugFromFilters({
       ...currentFilters,
-      // Reset the filter we're about to set (avoid double slug)
       ...(type === "categories" ? { category: undefined } : {}),
-      ...(type === "states" ? { state: undefined, region: undefined } : {}),
-      ...(type === "regions" ? { region: undefined } : {}),
+      ...(type === "states"
+        ? { state: undefined, region: undefined, suburb: undefined }
+        : {}),
+      ...(type === "regions" ? { region: undefined, suburb: undefined } : {}),
       ...(type === "prices"
         ? { from_price: undefined, to_price: undefined }
         : {}),
@@ -1639,6 +1713,7 @@ export default function ListingsPage({
       ...(type === "length"
         ? { from_length: undefined, to_length: undefined }
         : {}),
+      ...(type === "conditions" ? { condition: undefined } : {}),
     });
 
     const safeBase = base.endsWith("/") ? base : `${base}/`;
@@ -1690,36 +1765,11 @@ export default function ListingsPage({
           content={metaDescription || "Default Description"}
         />
       </Head>
-      {/* <div>
-         <div className="cfs-links-section" id="static-links">
-           {Object.entries(staticLinks).map(([sectionKey, items]) => {
-             if (!items || items.length === 0) return null;
-             return (
-               <div key={sectionKey} className="cfs-links-group">
-                 <h5 className="cfs-filter-label">
-                   {SECTION_TITLES[sectionKey] || sectionKey}
-                 </h5>
-                 <ul className="cfs-links-list">
-                   {items.map((item) => {
-                     const linkUrl = buildStaticLinkUrl(
-                       sectionKey,
-                       item.slug,
-                       filters,
-                     );
-                     return (
-                       <li key={item.slug} className="cfs-links-item">
-                         <a href={linkUrl} className="cfs-links-link">
-                           {item.name}
-                         </a>
-                       </li>
-                     );
-                   })}
-                 </ul>
-               </div>
-             );
-           })}
-         </div>
-       </div> */}
+      <div>
+        <div className="cfs-links-section" id="static-links">
+          <StaticLinks filters={filters} />
+        </div>
+      </div>
 
       <div className="search-bar">
         <div className="container">

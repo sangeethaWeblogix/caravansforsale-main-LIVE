@@ -871,12 +871,12 @@ export default function ListingContent({
           </nav>
         </div>
       </div>
-      <div className="col-lg-3">
-        <div className="sticky_spot hidden-xs hidden-sm">
-          <div className="related-products">
-            {exculisiveProducts.length === 0 || isOrderbyLoading ? (
-              <Skelton count={6} />
-            ) : (
+      {exculisiveProducts.length === 0 || isOrderbyLoading ? (
+        <Skelton count={1} />
+      ) : (
+        <div className="col-lg-3">
+          <div className="sticky_spot hidden-xs hidden-sm">
+            <div className="related-products">
               <div className="other_items">
                 {exculisiveProducts.map((item, index) => {
                   const href = getHref(item);
@@ -894,6 +894,7 @@ export default function ListingContent({
                   console.log("imgs", firstImage);
                   return (
                     <a
+                      key={index}
                       href={href}
                       className="lli_head"
                       onClick={(e) => {
@@ -1062,10 +1063,10 @@ export default function ListingContent({
                   );
                 })}
               </div>
-            )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
       {showInfo && selectedProduct && (
         <div className="popup-overlay">
           <div className="popup-box">

@@ -19,25 +19,69 @@ export const filterOptions = {
     { name: "over 200k", slug: "/over-200000/" },
   ],
   atm: [
-    { name: "Under 1500kg", slug: "/under-1500-kg-atm/" },
-    { name: "1500kg-2500kg", slug: "/between-1500-kg-2500-kg-atm/" },
-    { name: "2500kg-3500kg", slug: "/between-2500-kg-3500-kg-atm/" },
-    { name: "3500kg-4500kg", slug: "/between-3500-kg-4500-kg-atm/" },
-    { name: "Over 4500kg", slug: "/over-4500-kg-atm/" },
+    { name: "Under 1500kg", slug: "/under-1500-kg-atm/", value: "1500" },
+    {
+      name: "1500kg-2500kg",
+      slug: "/between-1500-kg-2500-kg-atm/",
+      value: "1500-2500",
+    },
+    {
+      name: "2500kg-3500kg",
+      slug: "/between-2500-kg-3500-kg-atm/",
+      value: "2500-3500",
+    },
+    {
+      name: "3500kg-4500kg",
+      slug: "/between-3500-kg-4500-kg-atm/",
+      value: "3500-4500",
+    },
+    { name: "Over 4500kg", slug: "/over-4500-kg-atm/", value: "4500" },
   ],
   sleep: [
-    { name: "Sleeps 1-2", slug: "/between-1-2-people-sleeping-capacity/" },
-    { name: "Sleeps 3-4", slug: "/between-3-4-people-sleeping-capacity/" },
-    { name: "Sleeps 4-6", slug: "/between-4-6-people-sleeping-capacity/" },
-    { name: "Over 6 Sleeps", slug: "/over-6-people-sleeping-capacity/" },
+    {
+      name: "Sleeps 1-2",
+      slug: "/between-1-2-people-sleeping-capacity/",
+      value: "1-2",
+    },
+    {
+      name: "Sleeps 3-4",
+      slug: "/between-3-4-people-sleeping-capacity/",
+      value: "3-4",
+    },
+    {
+      name: "Sleeps 4-6",
+      slug: "/between-4-6-people-sleeping-capacity/",
+      value: "4-6",
+    },
+    {
+      name: "Over 6 Sleeps",
+      slug: "/over-6-people-sleeping-capacity/",
+      value: "6",
+    },
   ],
   length: [
-    { name: "Under 12ft", slug: "/under-12-length-in-feet/" },
-    { name: "12ft-14ft", slug: "/between-12-14-length-in-feet/" },
-    { name: "15ft-17ft", slug: "/between-15-17-length-in-feet/" },
-    { name: "18ft-20ft", slug: "/between-18-20-length-in-feet/" },
-    { name: "21ft-23ft", slug: "/between-21-23-length-in-feet/" },
-    { name: "Over 24ft", slug: "/over-24-length-in-feet/" },
+    { name: "Under 12ft", slug: "/under-12-length-in-feet/", value: "12" },
+    {
+      name: "12ft-14ft",
+      slug: "/between-12-14-length-in-feet/",
+      value: "12-14",
+    },
+    {
+      name: "15ft-17ft",
+      slug: "/between-15-17-length-in-feet/",
+      value: "15-17",
+    },
+    {
+      name: "18ft-20ft",
+      slug: "/between-18-20-length-in-feet/",
+      value: "18-20",
+    },
+    {
+      name: "21ft-23ft",
+      slug: "/between-21-23-length-in-feet/",
+      value: "21-23",
+    },
+    { name: "Over 24ft", slug: "/over-24-length-in-feet/", value: "24" },
   ],
   location: {
     state: [
