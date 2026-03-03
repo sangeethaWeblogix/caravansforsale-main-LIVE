@@ -321,6 +321,8 @@ export default function BlogDetailsPage({
                             rel="noopener noreferrer"
                             className="banner_ad_now"
                           >
+                            {false && (
+                            <>
                             {/* Desktop Image */}
                             <div className="banner-desktop">
                               <Image
@@ -345,6 +347,8 @@ export default function BlogDetailsPage({
                                 priority
                               />
                             </div>
+                            </>
+                            )}
                           </a>
                         </div>
             </div>

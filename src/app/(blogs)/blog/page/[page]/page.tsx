@@ -104,6 +104,8 @@ export default function BlogPage() {
                 rel="noopener noreferrer"
                 className="banner_ad_now"
               >
+                {false && (
+                  <>
                 {/* Desktop Image */}
                 <div className="banner-desktop">
                   <Image
@@ -128,6 +130,8 @@ export default function BlogPage() {
                     priority
                   />
                 </div>
+                </>
+                )}
               </a>
             </div>
           <div className="section-head mb-60 style-5">
@@ -269,6 +273,8 @@ export default function BlogPage() {
                             rel="noopener noreferrer"
                             className="banner_ad_now mb-0"
                           >
+                            {false && (
+                            <>
                             {/* Desktop Image */}
                             <div className="banner-desktop">
                               <Image
@@ -293,6 +299,8 @@ export default function BlogPage() {
                                 priority
                               />
                             </div>
+                            </>
+                            )}
                           </a>
                         </div>
             </div>

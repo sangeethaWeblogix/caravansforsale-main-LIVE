@@ -1074,6 +1074,8 @@ export default function ListingContent({
               rel="noopener noreferrer"
               className="banner_ad_now mb-0"
             >
+              {false && (
+              <>
               {/* Desktop Image */}
               <div className="banner-desktop">
                 <Image
@@ -1098,6 +1100,8 @@ export default function ListingContent({
                   priority
                 />
               </div>
+              </>
+              )}
             </a>
           </div>
       </div>

@@ -729,6 +729,7 @@ export default function SearchSection() {
             </div>
           </div>
           <div className="display_ad">
+            {false && (
             <a
               href="#"
               target="_blank"
@@ -760,6 +761,7 @@ export default function SearchSection() {
                 />
               </div>
             </a>
+            )}
           </div>
         </div>
       </div>

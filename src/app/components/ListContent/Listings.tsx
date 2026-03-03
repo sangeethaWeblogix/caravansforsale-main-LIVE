@@ -1730,6 +1730,7 @@ export default function ListingsPage({
 
       <div className="container">
         <div className="display_ad">
+          {false && (
           <a
             href="#"
             target="_blank"
@@ -1761,6 +1762,7 @@ export default function ListingsPage({
               />
             </div>
           </a>
+          )}
         </div>
       </div>
 
