@@ -17,6 +17,7 @@ import { v4 as uuidv4 } from "uuid";
 import "./newList.css?=278";
 import "./top-filters.css?=491";
 import dynamic from "next/dynamic";
+import Image from "next/image";
 import { filterOptions } from "./filterOptions"; // உங்க path adjust பண்ணு
 
 import ListingSkeleton from "../skelton";
@@ -198,7 +199,7 @@ export default function ListingsPage({
   const savePage = (id: string, page: number) => {
     try {
       localStorage.setItem(PAGE_KEY(id), String(page));
-    } catch {}
+    } catch { }
   };
 
   // Update readPage to fallback to extracting page from clickid
@@ -347,9 +348,9 @@ export default function ListingsPage({
     const fromURL =
       typeof window !== "undefined"
         ? parseInt(
-            new URLSearchParams(window.location.search).get("page") || "1",
-            10,
-          )
+          new URLSearchParams(window.location.search).get("page") || "1",
+          10,
+        )
         : 1;
     return {
       current_page: fromURL,
@@ -1130,7 +1131,7 @@ export default function ListingsPage({
   // Mobile offcanvas filter state
   const mobileFiltersRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    import("bootstrap/js/dist/offcanvas").catch(() => {});
+    import("bootstrap/js/dist/offcanvas").catch(() => { });
   }, []);
 
   // 1. Add state for client-side links
@@ -1721,6 +1722,42 @@ export default function ListingsPage({
          </div>
        </div> */}
 
+      <div className="container">
+        <div className="display_ad">
+          <a
+            href="#"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="banner_ad_now"
+          >
+            {/* Desktop Image */}
+            <div className="banner-desktop">
+              <Image
+                src="/images/static_index_dk_banner_3.jpg"
+                alt="Caravans For Sale"
+                className="hidden-xs"
+                width={1200}
+                height={200}
+                priority
+
+              />
+            </div>
+
+            {/* Mobile Image */}
+            <div className="banner-mobile">
+              <Image
+                src="/images/static_index_mb_banner_3.jpg"
+                alt="Caravans For Sale Mobile"
+                className="hidden-lg hidden-md hidden-sm"
+                width={600}
+                height={300}
+                priority
+              />
+            </div>
+          </a>
+        </div>
+      </div>
+
       <div className="search-bar">
         <div className="container">
           <div className="row align-items-end">
@@ -1763,8 +1800,8 @@ export default function ListingsPage({
                       const cap = (s: string | null) =>
                         s
                           ? s
-                              .toLowerCase()
-                              .replace(/\b\w/g, (c) => c.toUpperCase())
+                            .toLowerCase()
+                            .replace(/\b\w/g, (c) => c.toUpperCase())
                           : undefined;
 
                       // ✅ Always pass both state + region together — never split
@@ -1882,9 +1919,9 @@ export default function ListingsPage({
               {/* Listings */}
 
               {isLoading ||
-              isMainLoading ||
-              isFeaturedLoading ||
-              isPremiumLoading ? (
+                isMainLoading ||
+                isFeaturedLoading ||
+                isPremiumLoading ? (
                 <div className="col-lg-8">
                   <ListingSkeleton count={8} />
                 </div>
@@ -1894,26 +1931,26 @@ export default function ListingsPage({
                   {(products.length > 0 ||
                     fetauredProducts.length > 0 ||
                     preminumProducts.length > 0) && (
-                    <Listing
-                      pageTitle={pageTitle}
-                      products={products}
-                      data={products}
-                      pagination={pagination}
-                      onNext={handleNextPage}
-                      onPrev={handlePrevPage}
-                      metaDescription={metaDescription}
-                      metaTitle={metaTitle}
-                      onFilterChange={handleFilterChange}
-                      currentFilters={filters}
-                      preminumProducts={preminumProducts}
-                      fetauredProducts={fetauredProducts}
-                      exculisiveProducts={exculisiveProducts}
-                      isMainLoading={isMainLoading}
-                      isFeaturedLoading={isFeaturedLoading}
-                      isPremiumLoading={isPremiumLoading}
+                      <Listing
+                        pageTitle={pageTitle}
+                        products={products}
+                        data={products}
+                        pagination={pagination}
+                        onNext={handleNextPage}
+                        onPrev={handlePrevPage}
+                        metaDescription={metaDescription}
+                        metaTitle={metaTitle}
+                        onFilterChange={handleFilterChange}
+                        currentFilters={filters}
+                        preminumProducts={preminumProducts}
+                        fetauredProducts={fetauredProducts}
+                        exculisiveProducts={exculisiveProducts}
+                        isMainLoading={isMainLoading}
+                        isFeaturedLoading={isFeaturedLoading}
+                        isPremiumLoading={isPremiumLoading}
                       // isNextLoading={isNextLoading}
-                    />
-                  )}
+                      />
+                    )}
 
                   {/** CASE 2: SHOW EXCLUSIVE PAGE */}
                   {products.length === 0 &&

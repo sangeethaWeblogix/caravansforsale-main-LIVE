@@ -93,16 +93,50 @@ export default function BlogPage() {
   const nextUrl = `/blog/page/${Math.min(totalPages, currentPage + 1)}/`;
 
   return (
+
     <div className="blog-page style-5">
-      <section className="all-news bg-light-gray blog-listing section-padding blog bg-transparent style-3">
+      <section className="all-news bg-light-gray blog-listing section-padding blog bg-transparent style-3 pt-0">
         <div className="container">
+          <div className="display_ad">
+              <a
+                href="#"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="banner_ad_now"
+              >
+                {/* Desktop Image */}
+                <div className="banner-desktop">
+                  <Image
+                    src="/images/static_index_dk_banner_3.jpg"
+                    alt="Caravans For Sale"
+                    className="hidden-xs"
+                    width={1200}
+                    height={200}
+                    priority
+
+                  />
+                </div>
+
+                {/* Mobile Image */}
+                <div className="banner-mobile">
+                  <Image
+                    src="/images/static_index_mb_banner_3.jpg"
+                    alt="Caravans For Sale Mobile"
+                    className="hidden-lg hidden-md hidden-sm"
+                    width={600}
+                    height={300}
+                    priority
+                  />
+                </div>
+              </a>
+            </div>
           <div className="section-head mb-60 style-5">
             <div className="section-head mb-60 style-5">
               <h2>
                 Valuable News, Reviews &amp; Advice From Caravan Marketplace
               </h2>
             </div>
-            
+
           </div>
         </div>
         <div className="container">
@@ -156,7 +190,7 @@ export default function BlogPage() {
                             <a href={href} className="card-title mb-10">
                               {post.title}
                             </a>
-                            
+
                             <p>{decodeHTML(post.excerpt)}</p>{" "}
                             <a
                               href={href}
@@ -203,9 +237,8 @@ export default function BlogPage() {
                         key={`page-${p}`}
                         href={p === 1 ? "/blog/" : `/blog/page/${p}/`}
                         aria-current={p === currentPage ? "page" : undefined}
-                        className={`page-numbers px-3 py-1 border rounded ${
-                          p === currentPage ? "current fw-bold" : ""
-                        }`}
+                        className={`page-numbers px-3 py-1 border rounded ${p === currentPage ? "current fw-bold" : ""
+                          }`}
                       >
                         {p}
                       </Link>
@@ -227,6 +260,41 @@ export default function BlogPage() {
                   )}
                 </nav>
               )}
+            </div>
+            <div className="col-lg-3">
+              <div className="display_ad listing_sticky">
+                          <a
+                            href="#"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="banner_ad_now mb-0"
+                          >
+                            {/* Desktop Image */}
+                            <div className="banner-desktop">
+                              <Image
+                                src="/images/static_index_dk_banner.jpg"
+                                alt="Caravans For Sale"
+                                className="hidden-xs"
+                                width={1200}
+                                height={200}
+                                priority
+              
+                              />
+                            </div>
+              
+                            {/* Mobile Image */}
+                            <div className="banner-mobile">
+                              <Image
+                                src="/images/static_index_mb_banner_3.jpg"
+                                alt="Caravans For Sale Mobile"
+                                className="hidden-lg hidden-md hidden-sm"
+                                width={600}
+                                height={300}
+                                priority
+                              />
+                            </div>
+                          </a>
+                        </div>
             </div>
           </div>
         </div>

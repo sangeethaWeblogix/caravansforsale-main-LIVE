@@ -60,13 +60,7 @@ img {
   text-transform: capitalize;
   letter-spacing: 0.3px;
 }
-.home_top {
-  background-color: #f2f2f2;
-  border-bottom: solid 1px #e1e1e1;
-  border-top: solid 1px #e1e1e1;
-  padding-top: 55px;
-  padding-bottom: 55px;
-}
+
 
 .home_top h1 {
   font-weight: 500;
@@ -124,6 +118,29 @@ img {
   overflow: hidden;
   border: 1px solid #000;
   box-shadow: 0px 0px 15px rgb(0 0 0 / 13%);
+}
+
+.display_ad {
+    display: block;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.display_ad .banner_ad_now {
+  border-radius: 0;
+  box-shadow: none;
+  margin: 30px 0px;
+  display: inline-block;
+}
+
+.display_ad .banner_ad_now img {
+  max-width: 100%;
+  width: auto;
+}
+
+.display_ad.listing_sticky {
+position: sticky;
+top: 60px;
 }
 
 /*media hidden */
@@ -535,4 +552,217 @@ small {
   white-space: normal;
   overflow-wrap: break-word;
   text-align: left;
+}
+
+/*media hidden */
+
+@-ms-viewport {
+    width: device-width;
+}
+
+.visible-xs {
+    display: none !important
+}
+
+.visible-sm {
+    display: none !important
+}
+
+.visible-md {
+    display: none !important
+}
+
+.visible-lg {
+    display: none !important
+}
+
+.visible-xs-block,
+.visible-xs-inline,
+.visible-xs-inline-block,
+.visible-sm-block,
+.visible-sm-inline,
+.visible-sm-inline-block,
+.visible-md-block,
+.visible-md-inline,
+.visible-md-inline-block,
+.visible-lg-block,
+.visible-lg-inline,
+.visible-lg-inline-block {
+    display: none !important
+}
+
+@media(max-width:767px) {
+    .visible-xs {
+        display: block !important
+    }
+
+    table.visible-xs {
+        display: table !important
+    }
+
+    tr.visible-xs {
+        display: table-row !important
+    }
+
+    th.visible-xs,
+    td.visible-xs {
+        display: table-cell !important
+    }
+
+    #mobile-menu-active {
+        display: none;
+    }
+}
+
+@media(max-width:767px) {
+    .visible-xs-block {
+        display: block !important
+    }
+}
+
+@media(max-width:767px) {
+    .visible-xs-inline {
+        display: inline !important
+    }
+}
+
+@media(max-width:767px) {
+    .visible-xs-inline-block {
+        display: inline-block !important
+    }
+}
+
+@media(min-width:768px) and (max-width:991px) {
+    .visible-sm {
+        display: block !important
+    }
+
+    table.visible-sm {
+        display: table !important
+    }
+
+    tr.visible-sm {
+        display: table-row !important
+    }
+
+    th.visible-sm,
+    td.visible-sm {
+        display: table-cell !important
+    }
+}
+
+@media(min-width:768px) and (max-width:991px) {
+    .visible-sm-block {
+        display: block !important
+    }
+}
+
+@media(min-width:768px) and (max-width:991px) {
+    .visible-sm-inline {
+        display: inline !important
+    }
+}
+
+@media(min-width:768px) and (max-width:991px) {
+    .visible-sm-inline-block {
+        display: inline-block !important
+    }
+}
+
+@media(min-width:992px) and (max-width:1199px) {
+    .visible-md {
+        display: block !important
+    }
+
+    table.visible-md {
+        display: table !important
+    }
+
+    tr.visible-md {
+        display: table-row !important
+    }
+
+    th.visible-md,
+    td.visible-md {
+        display: table-cell !important
+    }
+}
+
+@media(min-width:992px) and (max-width:1199px) {
+    .visible-md-block {
+        display: block !important
+    }
+}
+
+@media(min-width:992px) and (max-width:1199px) {
+    .visible-md-inline {
+        display: inline !important
+    }
+}
+
+@media(min-width:992px) and (max-width:1199px) {
+    .visible-md-inline-block {
+        display: inline-block !important
+    }
+}
+
+@media(min-width:1200px) {
+    .visible-lg {
+        display: block !important
+    }
+
+    table.visible-lg {
+        display: table !important
+    }
+
+    tr.visible-lg {
+        display: table-row !important
+    }
+
+    th.visible-lg,
+    td.visible-lg {
+        display: table-cell !important
+    }
+}
+
+@media(min-width:1200px) {
+    .visible-lg-block {
+        display: block !important
+    }
+}
+
+@media(min-width:1200px) {
+    .visible-lg-inline {
+        display: inline !important
+    }
+}
+
+@media(min-width:1200px) {
+    .visible-lg-inline-block {
+        display: inline-block !important
+    }
+}
+
+@media(max-width:767px) {
+    .hidden-xs {
+        display: none !important
+    }
+}
+
+@media(min-width:768px) and (max-width:991px) {
+    .hidden-sm {
+        display: none !important
+    }
+}
+
+@media(min-width:992px) and (max-width:1199px) {
+    .hidden-md {
+        display: none !important
+    }
+}
+
+@media(min-width:1200px) {
+    .hidden-lg {
+        display: none !important
+    }
 }

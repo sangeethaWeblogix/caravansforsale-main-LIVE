@@ -145,70 +145,70 @@ export default function SearchSection() {
     label: string;
     cards: TabCard[];
   }[] = [
-    {
-      key: "Region",
-      label: "Location",
-      cards: regionBands.map((item) => ({
-        title: "Caravans for Sale in " + item.region,
-        sub: `${item.caravan_count ?? 0}`,
-        url: `/listings/${item.permalink}`,
-      })),
-    },
-    {
-      key: "price",
-      label: "Price",
-      cards: priceBands.map((item) => ({
-        title: "Caravans for Sale " + item.short_label,
-        sub: `${item.caravan_count ?? 0}`,
-        url: `/listings/${item.permalink}`,
-      })),
-    },
-    {
-      key: "Weight",
-      label: "Weight",
-      cards: atmBands.map((item) => ({
-        title: "Caravans for Sale " + item.short_label,
-        sub: `${item.caravan_count ?? 0}`,
-        url: `/listings/${item.permalink}`,
-      })),
-    },
-    {
-      key: "Sleep",
-      label: "Sleep",
-      cards: sleepBands.map((item) => ({
-        title: "Caravans for Sale " + item.short_label,
-        sub: `${item.caravan_count ?? 0}`,
-        url: `/listings/${item.permalink}`,
-      })),
-    },
-    {
-      key: "Length",
-      label: "Length",
-      cards: lengthBands.map((item) => ({
-        title: "Caravans for Sale " + item.short_label,
-        sub: `${item.caravan_count ?? 0}`,
-        url: `/listings/${item.permalink}`,
-      })),
-    },
-    // {
-    //   key: "Used",
-    //   label: "Used",
-    //   cards: usedCategoryList.map((item) => ({
-    //     title: item.short_label,
-    //     sub: item.short_count,
-    //     url: `/listings/${item.permalink}`,
-    //   })),
-    // },
-    {
-      key: "Manufacturer",
-      label: "Manufacturer",
-      cards: manufactureBands.map((item) => ({
-        title: item.short_label + " Caravans for Sale",
-        sub: `${item.caravan_count ?? 0}`,
-        url: `/listings/${item.permalink}`,
-      })),
-    },
-  ];
+      {
+        key: "Region",
+        label: "Location",
+        cards: regionBands.map((item) => ({
+          title: "Caravans for Sale in " + item.region,
+          sub: `${item.caravan_count ?? 0}`,
+          url: `/listings/${item.permalink}`,
+        })),
+      },
+      {
+        key: "price",
+        label: "Price",
+        cards: priceBands.map((item) => ({
+          title: "Caravans for Sale " + item.short_label,
+          sub: `${item.caravan_count ?? 0}`,
+          url: `/listings/${item.permalink}`,
+        })),
+      },
+      {
+        key: "Weight",
+        label: "Weight",
+        cards: atmBands.map((item) => ({
+          title: "Caravans for Sale " + item.short_label,
+          sub: `${item.caravan_count ?? 0}`,
+          url: `/listings/${item.permalink}`,
+        })),
+      },
+      {
+        key: "Sleep",
+        label: "Sleep",
+        cards: sleepBands.map((item) => ({
+          title: "Caravans for Sale " + item.short_label,
+          sub: `${item.caravan_count ?? 0}`,
+          url: `/listings/${item.permalink}`,
+        })),
+      },
+      {
+        key: "Length",
+        label: "Length",
+        cards: lengthBands.map((item) => ({
+          title: "Caravans for Sale " + item.short_label,
+          sub: `${item.caravan_count ?? 0}`,
+          url: `/listings/${item.permalink}`,
+        })),
+      },
+      // {
+      //   key: "Used",
+      //   label: "Used",
+      //   cards: usedCategoryList.map((item) => ({
+      //     title: item.short_label,
+      //     sub: item.short_count,
+      //     url: `/listings/${item.permalink}`,
+      //   })),
+      // },
+      {
+        key: "Manufacturer",
+        label: "Manufacturer",
+        cards: manufactureBands.map((item) => ({
+          title: item.short_label + " Caravans for Sale",
+          sub: `${item.caravan_count ?? 0}`,
+          url: `/listings/${item.permalink}`,
+        })),
+      },
+    ];
 
   const [activeTab, setActiveTab] = useState(tabsData[0].key);
   const currentTab = tabsData.find((t) => t.key === activeTab);
@@ -728,8 +728,42 @@ export default function SearchSection() {
               </div>
             </div>
           </div>
+          <div className="display_ad">
+            <a
+              href="#"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="banner_ad_now mb-0"
+            >
+              {/* Desktop Image */}
+              <div className="banner-desktop">
+                <Image
+                  src="/images/static_index_dk_banner_3.jpg"
+                  alt="Caravans For Sale"
+                  className="hidden-xs"
+                  width={1200}
+                  height={200}
+                  priority
+
+                />
+              </div>
+
+              {/* Mobile Image */}
+              <div className="banner-mobile">
+                <Image
+                  src="/images/static_index_mb_banner_3.jpg"
+                  alt="Caravans For Sale Mobile"
+                  className="hidden-lg hidden-md hidden-sm"
+                  width={600}
+                  height={300}
+                  priority
+                />
+              </div>
+            </a>
+          </div>
         </div>
       </div>
+
       {/* Caravans by State Section */}
       <div className="caravans_by_state related-products services section-padding style-1 pt-0">
         <div className="container">
@@ -823,9 +857,8 @@ export default function SearchSection() {
                 {tabsData.map((tab) => (
                   <button
                     key={tab.key}
-                    className={`custom-tab-btn ${
-                      activeTab === tab.key ? "active" : ""
-                    }`}
+                    className={`custom-tab-btn ${activeTab === tab.key ? "active" : ""
+                      }`}
                     onClick={() => setActiveTab(tab.key)}
                     type="button"
                   >
@@ -858,16 +891,16 @@ export default function SearchSection() {
                 >
                   {isTabsLoading
                     ? Array.from({ length: 6 }).map((_, i) => (
-                        <TabCardSkeleton key={i} />
-                      ))
+                      <TabCardSkeleton key={i} />
+                    ))
                     : tab.cards?.map((item, index) => (
-                        <a href={item.url} className="custom-card" key={index}>
-                          <h4 className="custom-card-title">
-                            <span className="count">{item.sub}</span>{" "}
-                            {item.title}
-                          </h4>
-                        </a>
-                      ))}
+                      <a href={item.url} className="custom-card" key={index}>
+                        <h4 className="custom-card-title">
+                          <span className="count">{item.sub}</span>{" "}
+                          {item.title}
+                        </h4>
+                      </a>
+                    ))}
                 </div>
               ))}
             </div>
