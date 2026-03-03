@@ -1209,11 +1209,11 @@ a.ignoretext {
   }
   .product-page .related-products .swiper-button-next,
   .product-page .related-products .swiper-container-rtl .swiper-button-prev {
-    right: -10px;
+    right: -10px !important;
   }
   .product-page .related-products .swiper-button-prev,
   .product-page .related-products .swiper-container-rtl .swiper-button-next {
-    left: -10px;
+    left: -10px !important;
   }
   .related-products.latest_blog {
     padding-top: 0;
@@ -1294,12 +1294,12 @@ a.ignoretext {
 
   .product-page .related-products .swiper-button-next,
   .product-page .related-products .swiper-button-prev {
-    width: 40px;
-    height: 40px;
+    width: 40px !important;
+    height: 40px !important;
   }
   .product-page .related-products .swiper-button-next:after,
   .product-page .related-products .swiper-button-prev:after {
-    font-size: 18px;
+    font-size: 18px !important;
     color: #000;
   }
   .latest_blog .title {
