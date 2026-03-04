@@ -27,6 +27,8 @@ import { fetchStateBasedCaravans } from "@/api/homeApi/state/api";
 import TabCardSkeleton from "./components/TabCardSkeleton";
 import CaravansByStateSkeleton from "./components/Caravansbystateskeleton";
 import SearchSuggestionSkeleton from "./components/Searchsuggestionskeleton ";
+import { useBanners } from "@/components/BannerHandler";
+import { useBannerTracking } from "@/hooks/useBannerTracking";
 
 interface TabsItem {
   label: string;
@@ -438,6 +440,9 @@ export default function SearchSection() {
 
   const showingFromKeywordApi = query.length >= 3;
 
+  const { matchedBanners } = useBanners();
+  const { bannerRefs, trackClick } = useBannerTracking(matchedBanners);
+
   return (
     <div>
       <div className="ad_banner">
@@ -729,39 +734,49 @@ export default function SearchSection() {
             </div>
           </div>
           <div className="display_ad">
-            {false && (
-            <a
-              href="#"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="banner_ad_now mb-0"
-            >
-              {/* Desktop Image */}
-              <div className="banner-desktop">
-                <Image
-                  src="/images/static_index_dk_banner_3.jpg"
-                  alt="Caravans For Sale"
-                  className="hidden-xs"
-                  width={1200}
-                  height={200}
-                  priority
+            {false && matchedBanners.map((banner, index) => (
+              <a
+                key={banner.id}
+                ref={(el) => {
+                  bannerRefs.current[index] = el;
+                }}
+                data-index={index}
+                href={banner.target_href_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="banner_ad_now mb-0"
+                onClick={() => trackClick(banner.id)}
+              >
+                {/* Desktop Image */}
+                {banner.banner_size === "horizontal_large" && (
+                  <div className="banner-desktop">
+                    <Image
+                      src={banner.image_url}
+                      alt={banner.name}
+                      className="hidden-xs"
+                      width={1200}
+                      height={200}
+                      priority
 
-                />
-              </div>
+                    />
+                  </div>
+                )}
 
-              {/* Mobile Image */}
-              <div className="banner-mobile">
-                <Image
-                  src="/images/static_index_mb_banner_3.jpg"
-                  alt="Caravans For Sale Mobile"
-                  className="hidden-lg hidden-md hidden-sm"
-                  width={600}
-                  height={300}
-                  priority
-                />
-              </div>
-            </a>
-            )}
+                {/* Mobile Image */}
+                {banner.banner_size === "vertical_small" && (
+                  <div className="banner-mobile">
+                    <Image
+                      src={banner.image_url}
+                      alt={banner.name}
+                      className="hidden-lg hidden-md hidden-sm"
+                      width={600}
+                      height={300}
+                      priority
+                    />
+                  </div>
+                )}
+              </a>
+            ))}
           </div>
         </div>
       </div>
