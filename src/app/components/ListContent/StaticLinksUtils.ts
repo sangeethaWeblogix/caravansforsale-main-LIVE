@@ -103,7 +103,7 @@ export function buildStaticLinks(
   if (effectiveCount === 1) {
     if (hasCategory) {
       links.categories = filterOptions.categories.filter(
-        (c) => c.slug === filters.category,
+        (c) => c.name.toLowerCase() === filters.category?.toLowerCase(),
       );
       links.states = filterOptions.location.state;
       links.prices = filterOptions.price;
@@ -114,8 +114,21 @@ export function buildStaticLinks(
       const state = filterOptions.location.state.find(
         (s) => s.name.toLowerCase() === filters.state?.toLowerCase(),
       );
+
+      // selected state link
+      links.states = filterOptions.location.state.filter(
+        (s) => s.name.toLowerCase() === filters.state?.toLowerCase(),
+      );
+
+      // that state's regions
       if (state?.region) links.regions = state.region;
+
+      // all categories
       links.categories = filterOptions.categories;
+
+      // all prices
+      links.prices = filterOptions.price;
+
       return links;
     }
 
@@ -148,8 +161,8 @@ export function buildStaticLinks(
   // ─────────────────────────────
   if (effectiveCount >= 2) {
     if (hasCategory) {
-      links.categories = filterOptions.categories.filter(
-        (c) => c.name.toLowerCase() === filters.category?.toLowerCase(),
+      links.categories = filterOptions.categories.filter((c) =>
+        c.slug.includes(filters.category?.toLowerCase() ?? ""),
       );
     }
 
@@ -402,15 +415,47 @@ export function buildStaticLinkUrl(
   }
 
   // 🟢 0 or 1 filter → normal
+
+  // 🟢 0 or 1 filter → normal — current filters keep பண்ணி new filter add பண்ணு
   const normalFilters: Filters = {};
 
   if (type === "categories") {
     normalFilters.category = cleanSlug.replace("-category", "");
+    // ✅ current state/region carry பண்ணு
+    if (currentFilters.state) normalFilters.state = currentFilters.state;
+    if (currentFilters.region) normalFilters.region = currentFilters.region;
   } else if (type === "states") {
+    // ✅ current category keep பண்ணு
+    if (currentFilters.category)
+      normalFilters.category = currentFilters.category;
     normalFilters.state = cleanSlug.replace("-state", "");
   } else if (type === "regions") {
+    if (currentFilters.category)
+      normalFilters.category = currentFilters.category;
+    if (currentFilters.state) normalFilters.state = currentFilters.state;
     normalFilters.region = cleanSlug.replace("-region", "");
+  } else if (type === "prices") {
+    // ✅ current category + state keep பண்ணு
+    if (currentFilters.category)
+      normalFilters.category = currentFilters.category;
+    if (currentFilters.state) normalFilters.state = currentFilters.state;
+    const parts = cleanSlug.match(/(\d+)/g);
+    if (parts) {
+      if (cleanSlug.startsWith("between")) {
+        normalFilters.from_price = Number(parts[0]);
+        normalFilters.to_price = Number(parts[1]);
+      } else if (cleanSlug.startsWith("under")) {
+        normalFilters.from_price = Number(parts[0]);
+        normalFilters.type = "under";
+      } else if (cleanSlug.startsWith("over")) {
+        normalFilters.from_price = Number(parts[0]);
+        normalFilters.type = "over";
+      }
+    }
   } else if (type === "atm") {
+    if (currentFilters.category)
+      normalFilters.category = currentFilters.category;
+    if (currentFilters.state) normalFilters.state = currentFilters.state;
     const parts = cleanSlug.match(/(\d+)/g);
     if (parts) {
       if (cleanSlug.startsWith("between")) {
@@ -423,6 +468,9 @@ export function buildStaticLinkUrl(
       }
     }
   } else if (type === "length") {
+    if (currentFilters.category)
+      normalFilters.category = currentFilters.category;
+    if (currentFilters.state) normalFilters.state = currentFilters.state;
     const nums = cleanSlug.match(/\d+/g)?.map(Number) ?? [];
     if (cleanSlug.startsWith("between") && nums.length >= 2) {
       normalFilters.from_length = nums[0];
@@ -433,6 +481,9 @@ export function buildStaticLinkUrl(
       normalFilters.from_length = nums[0];
     }
   } else if (type === "sleep") {
+    if (currentFilters.category)
+      normalFilters.category = currentFilters.category;
+    if (currentFilters.state) normalFilters.state = currentFilters.state;
     const nums = cleanSlug.match(/\d+/g)?.map(Number) ?? [];
     if (cleanSlug.startsWith("between") && nums.length >= 2) {
       normalFilters.from_sleep = nums[0];
