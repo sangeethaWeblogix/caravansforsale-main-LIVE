@@ -325,46 +325,56 @@ h1.page-title {
   gap: 10px;
 }
 
-.sticky_spot .main_thumb, .product-page .new_listing .sticky_spot .related-products .product-card .img {
-    min-height: 230px;
-    max-height: 230px;
+.sticky_spot .main_thumb,
+.product-page .new_listing .sticky_spot .related-products .product-card .img {
+  min-height: inherit;
+  max-height: inherit;
+  display: block;
 }
- 
+
+.sticky_spot .lab {
+  position: relative;
+}
+
+.new_listing .sticky_spot .vehicleDetailsWithIcons.simple li {
+  width: 40%;
+}
+
 .sticky_spot .other_items {
   margin-top: 0;
 }
- 
+
 .sticky_spot .product_de {
-    background: #f1f1f1;
-    padding: 15px;
+  background: #f1f1f1;
+  padding: 15px;
 }
- 
+
 .product-page .sticky_spot .product-card {
   border: 1px solid #dedede;
 }
- 
+
 .sticky_spot .bottom_button {
-    gap: 10px;
-    display: flex;
-    margin: -15px;
-    border-color: #000;
-    background: #000;
-    border-radius: 0;
-    margin-top: 0;
+  gap: 10px;
+  display: flex;
+  margin: -15px;
+  border-color: #000;
+  background: #000;
+  border-radius: 0;
+  margin-top: 0;
 }
- 
+
 .product-page .sticky_spot .other_items .product-card .btn.btn-primary {
-    border-color: #000;
-    background: #000;
-    border-radius: 0;
-    margin-top: 0;
+  border-color: #000;
+  background: #000;
+  border-radius: 0;
+  margin-top: 0;
 }
- 
+
 .product-page .sticky_spot .product-card .info {
   margin-bottom: 10px;
   min-height: inherit;
 }
- 
+
 .product-page .sticky_spot .product-card .info .title {
   height: auto;
 }
