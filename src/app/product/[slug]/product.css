@@ -127,7 +127,7 @@
 .caravan__image_count {
   position: absolute;
   bottom: 20px;
-  left: 30%;
+  left: 42%;
   color: #fff;
   font-size: 30px;
   font-weight: 600;
@@ -636,7 +636,7 @@
   }
   .caravan__image_count {
     bottom: 15px;
-    right: 9%;
+    right: 10%;
     left: inherit;
 }
 .product .pop-up-content-wrap img {

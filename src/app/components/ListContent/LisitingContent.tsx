@@ -1065,6 +1065,42 @@ export default function ListingContent({
               </div>
             </div>
           </div>
+          <div className="display_ad listing_sticky">
+            <a
+              href="#"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="banner_ad_now mb-0"
+            >
+              {false && (
+                <>
+                  {/* Desktop Image */}
+                  <div className="banner-desktop">
+                    <Image
+                      src="/images/static_index_dk_banner.jpg"
+                      alt="Caravans For Sale"
+                      className="hidden-xs"
+                      width={1200}
+                      height={200}
+                      priority
+                    />
+                  </div>
+
+                  {/* Mobile Image */}
+                  <div className="banner-mobile">
+                    <Image
+                      src="/images/static_index_mb_banner_3.jpg"
+                      alt="Caravans For Sale Mobile"
+                      className="hidden-lg hidden-md hidden-sm"
+                      width={600}
+                      height={300}
+                      priority
+                    />
+                  </div>
+                </>
+              )}
+            </a>
+          </div>
         </div>
       )}
       {showInfo && selectedProduct && (

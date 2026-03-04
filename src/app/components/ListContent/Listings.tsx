@@ -14,9 +14,10 @@ import ExculsiveContent from "./exculsiveContent";
 import FilterModal from "./FilterModal";
 import { flushSync } from "react-dom";
 import { v4 as uuidv4 } from "uuid";
-import "./newList.css?=25";
-import "./top-filters.css?=49";
+import "./newList.css?=279";
+import "./top-filters.css?=491";
 import dynamic from "next/dynamic";
+import Image from "next/image";
 import { filterOptions } from "./filterOptions"; // உங்க path adjust பண்ணு
 
 import ListingSkeleton from "../skelton";
@@ -33,6 +34,7 @@ import Head from "next/head";
 import "./loader.css";
 import FilterSlider from "./FilterSlider";
 import StaticLinks from "./StaticLinks";
+import { useBanners } from "@/components/BannerHandler";
 // import Link from "next/link";
 
 /* --------- GLOBAL de-dupe across StrictMode remounts --------- */
@@ -255,6 +257,9 @@ export default function ListingsPage({
       }),
     });
   };
+
+  const { matchedBanners } = useBanners();
+  useEffect(() => {}, [matchedBanners]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -1586,6 +1591,80 @@ export default function ListingsPage({
       <div>
         <div className="cfs-links-section" id="static-links">
           <StaticLinks filters={filters} />
+        </div>
+      </div>
+
+      <div className="container">
+        <div className="display_ad">
+          {false && (
+            <a
+              href="#"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="banner_ad_now"
+            >
+              {/* Desktop Image */}
+              <div className="banner-desktop">
+                <Image
+                  src="/images/static_index_dk_banner_3.jpg"
+                  alt="Caravans For Sale"
+                  className="hidden-xs"
+                  width={1200}
+                  height={200}
+                  priority
+                />
+              </div>
+
+              {/* Mobile Image */}
+              <div className="banner-mobile">
+                <Image
+                  src="/images/static_index_mb_banner_3.jpg"
+                  alt="Caravans For Sale Mobile"
+                  className="hidden-lg hidden-md hidden-sm"
+                  width={600}
+                  height={300}
+                  priority
+                />
+              </div>
+            </a>
+          )}
+        </div>
+      </div>
+
+      <div className="container">
+        <div className="display_ad">
+          {false && (
+            <a
+              href="#"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="banner_ad_now"
+            >
+              {/* Desktop Image */}
+              <div className="banner-desktop">
+                <Image
+                  src="/images/static_index_dk_banner_3.jpg"
+                  alt="Caravans For Sale"
+                  className="hidden-xs"
+                  width={1200}
+                  height={200}
+                  priority
+                />
+              </div>
+
+              {/* Mobile Image */}
+              <div className="banner-mobile">
+                <Image
+                  src="/images/static_index_mb_banner_3.jpg"
+                  alt="Caravans For Sale Mobile"
+                  className="hidden-lg hidden-md hidden-sm"
+                  width={600}
+                  height={300}
+                  priority
+                />
+              </div>
+            </a>
+          )}
         </div>
       </div>
 
