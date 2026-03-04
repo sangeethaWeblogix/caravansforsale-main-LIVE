@@ -871,238 +871,233 @@ export default function ListingContent({
           </nav>
         </div>
       </div>
-      {exculisiveProducts.length === 0 || isOrderbyLoading ? (
+      {/* {exculisiveProducts.length === 0 || isOrderbyLoading ? (
         <Skelton count={1} />
-      ) : (
-        <div className="col-lg-3">
-          <div className="sticky_spot hidden-xs hidden-sm">
-            <div className="related-products">
-              <div className="other_items">
-                {exculisiveProducts.map((item, index) => {
-                  const href = getHref(item);
-                  const isPriority = index < 5;
-                  // const resizedBase = getResizedBase(item);
-                  // const imgs = lazyImages[item.id] ?? [];
-                  const firstImage = getFirstImage(item);
-                  const isActive = swiperActivated[item.id];
-                  const slides = isActive
-                    ? (lazyImages[item.id] ?? [])
-                    : firstImage
-                      ? [firstImage, firstImage]
-                      : [];
+      ) : ( */}
+      <div className="col-lg-3">
+        <div className="sticky_spot hidden-xs hidden-sm">
+          <div className="related-products">
+            <div className="other_items">
+              {exculisiveProducts.map((item, index) => {
+                const href = getHref(item);
+                const isPriority = index < 5;
+                // const resizedBase = getResizedBase(item);
+                // const imgs = lazyImages[item.id] ?? [];
+                const firstImage = getFirstImage(item);
+                const isActive = swiperActivated[item.id];
+                const slides = isActive
+                  ? (lazyImages[item.id] ?? [])
+                  : firstImage
+                    ? [firstImage, firstImage]
+                    : [];
 
-                  console.log("imgs", firstImage);
-                  return (
-                    <a
-                      key={index}
-                      href={href}
-                      className="lli_head"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        goToProduct(href);
-                      }}
-                    >
-                      {" "}
-                      <div className="product-card">
-                        <div className="img">
-                          <span className="lab">Spotlight Van</span>
-                          <Image
-                            src={firstImage || "/images/placeholder.png"}
-                            alt="Caravan"
-                            width={400}
-                            height={300}
-                            className="w-100 h-100 object-fit-cover"
-                          />
+                console.log("imgs", firstImage);
+                return (
+                  <a
+                    key={index}
+                    href={href}
+                    className="lli_head"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      goToProduct(href);
+                    }}
+                  >
+                    {" "}
+                    <div className="product-card">
+                      <div className="img">
+                        <span className="lab">Spotlight Van</span>
+                        <Image
+                          src={firstImage || "/images/placeholder.png"}
+                          alt="Caravan"
+                          width={400}
+                          height={300}
+                          className="w-100 h-100 object-fit-cover"
+                        />
+                      </div>
+
+                      {/* Product Details */}
+                      <div className="product_de">
+                        <div className="info">
+                          {item.name && (
+                            <h3
+                              className="title cursor-pointer"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+
+                                goToProduct(href);
+                              }}
+                            >
+                              {item.name}
+                            </h3>
+                          )}
                         </div>
 
-                        {/* Product Details */}
-                        <div className="product_de">
-                          <div className="info">
-                            {item.name && (
-                              <h3
-                                className="title cursor-pointer"
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  e.stopPropagation();
+                        {(item.regular_price ||
+                          item.sale_price ||
+                          item.price_difference) && (
+                          <div className="price">
+                            <div className="metc2">
+                              {(item.regular_price || item.sale_price) && (
+                                <h5 className="slog">
+                                  {/* ✅ Stable price rendering: precompute safely */}
+                                  {(() => {
+                                    const rawRegular = item.regular_price || "";
+                                    const rawSale = item.sale_price || "";
+                                    const cleanRegular = rawRegular.replace(
+                                      /[^0-9.]/g,
+                                      "",
+                                    );
+                                    const regNum = Number(cleanRegular) || 0;
+                                    const cleanSale = rawSale.replace(
+                                      /[^0-9.]/g,
+                                      "",
+                                    );
+                                    const saleNum = Number(cleanSale) || 0;
 
-                                  goToProduct(href);
-                                }}
-                              >
-                                {item.name}
-                              </h3>
-                            )}
-                          </div>
+                                    // If regular price is 0 → show POA
+                                    if (regNum === 0) {
+                                      return <>POA</>;
+                                    }
 
-                          {(item.regular_price ||
-                            item.sale_price ||
-                            item.price_difference) && (
-                            <div className="price">
-                              <div className="metc2">
-                                {(item.regular_price || item.sale_price) && (
-                                  <h5 className="slog">
-                                    {/* ✅ Stable price rendering: precompute safely */}
-                                    {(() => {
-                                      const rawRegular =
-                                        item.regular_price || "";
-                                      const rawSale = item.sale_price || "";
-                                      const cleanRegular = rawRegular.replace(
-                                        /[^0-9.]/g,
-                                        "",
+                                    // If sale price exists → show sale and strike-through
+                                    if (saleNum > 0) {
+                                      return (
+                                        <>
+                                          <del>{rawRegular}</del> {rawSale}
+                                        </>
                                       );
-                                      const regNum = Number(cleanRegular) || 0;
-                                      const cleanSale = rawSale.replace(
-                                        /[^0-9.]/g,
-                                        "",
-                                      );
-                                      const saleNum = Number(cleanSale) || 0;
+                                    }
 
-                                      // If regular price is 0 → show POA
-                                      if (regNum === 0) {
-                                        return <>POA</>;
-                                      }
+                                    // Otherwise → show regular price
+                                    return <>{rawRegular}</>;
+                                  })()}
+                                </h5>
+                              )}
 
-                                      // If sale price exists → show sale and strike-through
-                                      if (saleNum > 0) {
-                                        return (
-                                          <>
-                                            <del>{rawRegular}</del> {rawSale}
-                                          </>
-                                        );
-                                      }
-
-                                      // Otherwise → show regular price
-                                      return <>{rawRegular}</>;
-                                    })()}
-                                  </h5>
-                                )}
-
-                                {/* ✅ Show SAVE only if > $0 */}
-                                {(() => {
-                                  const cleanDiff = (
-                                    item.price_difference || ""
-                                  ).replace(/[^0-9.]/g, "");
-                                  const diffNum = Number(cleanDiff) || 0;
-                                  return diffNum > 0 ? (
-                                    <p className="card-price">
-                                      <span>SAVE</span> {item.price_difference}
-                                    </p>
-                                  ) : null;
-                                })()}
-                                {item.is_premium && (
-                                  <div className="more_info">
-                                    <div className="informat">
-                                      <span className="premium_van">
-                                        <i className="fa fa-star"></i> Premium
-                                      </span>
-                                    </div>
+                              {/* ✅ Show SAVE only if > $0 */}
+                              {(() => {
+                                const cleanDiff = (
+                                  item.price_difference || ""
+                                ).replace(/[^0-9.]/g, "");
+                                const diffNum = Number(cleanDiff) || 0;
+                                return diffNum > 0 ? (
+                                  <p className="card-price">
+                                    <span>SAVE</span> {item.price_difference}
+                                  </p>
+                                ) : null;
+                              })()}
+                              {item.is_premium && (
+                                <div className="more_info">
+                                  <div className="informat">
+                                    <span className="premium_van">
+                                      <i className="fa fa-star"></i> Premium
+                                    </span>
                                   </div>
-                                )}
-                              </div>
-                            </div>
-                          )}
-
-                          <ul className="vehicleDetailsWithIcons simple">
-                            {item.categories && item.categories.length > 0 && (
-                              <li className="attribute3_list">
-                                <span className="attribute3">
-                                  {item.categories.slice(0, 2).join(", ")}
-                                </span>
-                              </li>
-                            )}
-                            {item.length && (
-                              <li>
-                                <span className="attribute3">
-                                  {item.length}
-                                </span>
-                              </li>
-                            )}
-
-                            {item.kg && (
-                              <li>
-                                <span className="attribute3">{item.kg}</span>
-                              </li>
-                            )}
-
-                            {item.make && (
-                              <li>
-                                <span className="attribute3">{item.make}</span>
-                              </li>
-                            )}
-                          </ul>
-
-                          {(item.condition || item.location) && (
-                            <div className="bottom_mid">
-                              {item.condition && (
-                                <span>
-                                  <i className="bi bi-check-circle-fill"></i>{" "}
-                                  Condition {item.condition}
-                                </span>
-                              )}
-                              {item.location && (
-                                <span>
-                                  <i className="fa fa-map-marker-alt"></i>{" "}
-                                  {item.location}
-                                </span>
+                                </div>
                               )}
                             </div>
-                          )}
-
-                          <div className="bottom_button">
-                            <button
-                              className="btn btn-primary"
-                              onClick={(e) =>
-                                handleViewDetails(e, item.id, href)
-                              }
-                            >
-                              View Details
-                            </button>
                           </div>
+                        )}
+
+                        <ul className="vehicleDetailsWithIcons simple">
+                          {item.categories && item.categories.length > 0 && (
+                            <li className="attribute3_list">
+                              <span className="attribute3">
+                                {item.categories.slice(0, 2).join(", ")}
+                              </span>
+                            </li>
+                          )}
+                          {item.length && (
+                            <li>
+                              <span className="attribute3">{item.length}</span>
+                            </li>
+                          )}
+
+                          {item.kg && (
+                            <li>
+                              <span className="attribute3">{item.kg}</span>
+                            </li>
+                          )}
+
+                          {item.make && (
+                            <li>
+                              <span className="attribute3">{item.make}</span>
+                            </li>
+                          )}
+                        </ul>
+
+                        {(item.condition || item.location) && (
+                          <div className="bottom_mid">
+                            {item.condition && (
+                              <span>
+                                <i className="bi bi-check-circle-fill"></i>{" "}
+                                Condition {item.condition}
+                              </span>
+                            )}
+                            {item.location && (
+                              <span>
+                                <i className="fa fa-map-marker-alt"></i>{" "}
+                                {item.location}
+                              </span>
+                            )}
+                          </div>
+                        )}
+
+                        <div className="bottom_button">
+                          <button
+                            className="btn btn-primary"
+                            onClick={(e) => handleViewDetails(e, item.id, href)}
+                          >
+                            View Details
+                          </button>
                         </div>
                       </div>
-                    </a>
-                  );
-                })}
-              </div>
+                    </div>
+                  </a>
+                );
+              })}
             </div>
           </div>
-          <div className="display_ad listing_sticky">
-            <a
-              href="#"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="banner_ad_now mb-0"
-            >
-              {false && (
-                <>
-                  {/* Desktop Image */}
-                  <div className="banner-desktop">
-                    <Image
-                      src="/images/static_index_dk_banner.jpg"
-                      alt="Caravans For Sale"
-                      className="hidden-xs"
-                      width={1200}
-                      height={200}
-                      priority
-                    />
-                  </div>
-
-                  {/* Mobile Image */}
-                  <div className="banner-mobile">
-                    <Image
-                      src="/images/static_index_mb_banner_3.jpg"
-                      alt="Caravans For Sale Mobile"
-                      className="hidden-lg hidden-md hidden-sm"
-                      width={600}
-                      height={300}
-                      priority
-                    />
-                  </div>
-                </>
-              )}
-            </a>
-          </div>
         </div>
-      )}
+        <div className="display_ad listing_sticky">
+          <a
+            href="#"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="banner_ad_now mb-0"
+          >
+            {false && (
+              <>
+                {/* Desktop Image */}
+                <div className="banner-desktop">
+                  <Image
+                    src="/images/static_index_dk_banner.jpg"
+                    alt="Caravans For Sale"
+                    className="hidden-xs"
+                    width={1200}
+                    height={200}
+                    priority
+                  />
+                </div>
+
+                {/* Mobile Image */}
+                <div className="banner-mobile">
+                  <Image
+                    src="/images/static_index_mb_banner_3.jpg"
+                    alt="Caravans For Sale Mobile"
+                    className="hidden-lg hidden-md hidden-sm"
+                    width={600}
+                    height={300}
+                    priority
+                  />
+                </div>
+              </>
+            )}
+          </a>
+        </div>
+      </div>
+      {/* )} */}
       {showInfo && selectedProduct && (
         <div className="popup-overlay">
           <div className="popup-box">
