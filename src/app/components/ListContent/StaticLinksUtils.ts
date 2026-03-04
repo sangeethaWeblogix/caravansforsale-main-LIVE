@@ -46,6 +46,7 @@ export const SECTION_TITLES: Record<string, string> = {
   sleep: "Browse by Sleeping Capacity",
   length: "Browse by Length",
   conditions: "Browse by Condition",
+  makes: "Browse by Make",
   // FIX
   all: " ",
 };
@@ -66,7 +67,8 @@ export function buildStaticLinks(
   const hasSleep = Boolean(filters.from_sleep || filters.to_sleep);
   const hasCondition = Boolean(filters.condition);
   const hasYear = Boolean(filters.acustom_fromyears || filters.acustom_toyears);
-
+  const hasMake = Boolean(filters.make);
+  const hasModel = Boolean(filters.model);
   const activeCount = [
     hasState,
     hasRegion,
@@ -76,6 +78,7 @@ export function buildStaticLinks(
     hasAtm,
     hasLength,
     hasSleep,
+    hasMake, // ← add
   ].filter(Boolean).length;
 
   const effectiveCount =
@@ -109,7 +112,10 @@ export function buildStaticLinks(
       links.prices = filterOptions.price;
       return links;
     }
-
+    if (hasMake) {
+      links.makes = [{ name: filters.make!, slug: filters.make! }];
+      return links;
+    }
     if (hasState) {
       const state = filterOptions.location.state.find(
         (s) => s.name.toLowerCase() === filters.state?.toLowerCase(),
@@ -165,7 +171,13 @@ export function buildStaticLinks(
         c.slug.includes(filters.category?.toLowerCase() ?? ""),
       );
     }
-
+    if (hasMake) {
+      // model இருந்தா model value use பண்ணு, இல்லன்னா make
+      const makeSlug = filters.model
+        ? `${filters.make}/${filters.model}`
+        : filters.make!;
+      links.makes = [{ name: filters.make!, slug: makeSlug }];
+    }
     if (hasState) {
       links.states = filterOptions.location.state.filter(
         (s) => s.name.toLowerCase() === filters.state?.toLowerCase(),
@@ -334,6 +346,7 @@ export function buildStaticLinkUrl(
     currentFilters.minKg || currentFilters.maxKg,
     currentFilters.from_length || currentFilters.to_length,
     currentFilters.from_sleep || currentFilters.to_sleep,
+    currentFilters.make, // ← add
   ].filter(Boolean).length;
 
   const hasCondition = Boolean(currentFilters.condition);
@@ -409,6 +422,15 @@ export function buildStaticLinkUrl(
       }
     } else if (type === "conditions") {
       directFilters.condition = cleanSlug;
+    } else if (type === "makes") {
+      // slug-ல் make/model இருக்கா check பண்ணு
+      if (cleanSlug.includes("/")) {
+        const [make, model] = cleanSlug.split("/");
+        directFilters.make = make;
+        directFilters.model = model;
+      } else {
+        directFilters.make = cleanSlug;
+      }
     }
 
     return buildFilters(directFilters);
@@ -495,6 +517,14 @@ export function buildStaticLinkUrl(
     }
   } else if (type === "conditions") {
     normalFilters.condition = cleanSlug;
+  } else if (type === "makes") {
+    if (cleanSlug.includes("/")) {
+      const [make, model] = cleanSlug.split("/");
+      normalFilters.make = make;
+      normalFilters.model = model;
+    } else {
+      normalFilters.make = cleanSlug;
+    }
   }
 
   return buildFilters(normalFilters);
