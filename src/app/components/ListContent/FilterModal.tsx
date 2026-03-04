@@ -1437,9 +1437,10 @@ const FilterModal: React.FC<CaravanFilterProps> = ({
     const finalURL = query.toString() ? `${slugPath}?${query}` : safeSlugPath;
     if (lastPushedURLRef.current !== finalURL) {
       lastPushedURLRef.current = finalURL;
+      window.history.replaceState(null, "", finalURL);
+
       if (mountedRef.current) {
         router.replace(finalURL);
-        // onFilterChange(next);
       }
     }
   };
