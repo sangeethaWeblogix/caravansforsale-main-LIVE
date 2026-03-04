@@ -104,6 +104,11 @@ export function buildStaticLinks(
   // 🟢 1 FILTER
   // ─────────────────────────────
   if (effectiveCount === 1) {
+    console.log("make", filters.make);
+    console.log("make mod", filters.model);
+
+    let makeCategories: { name: string; slug: string }[] = [];
+    let makeStates: { name: string; slug: string }[] = [];
     if (hasCategory) {
       links.categories = filterOptions.categories.filter(
         (c) => c.name.toLowerCase() === filters.category?.toLowerCase(),
@@ -113,9 +118,17 @@ export function buildStaticLinks(
       return links;
     }
     if (hasMake) {
-      links.makes = [{ name: filters.make!, slug: filters.make! }];
+      links.makes = [
+        {
+          name: filters.make!,
+          slug: `/${filters.make!.toLowerCase()}/`,
+        },
+      ];
+      links.states = filterOptions.location.state;
+      links.categories = filterOptions.categories;
       return links;
     }
+
     if (hasState) {
       const state = filterOptions.location.state.find(
         (s) => s.name.toLowerCase() === filters.state?.toLowerCase(),
@@ -173,10 +186,8 @@ export function buildStaticLinks(
     }
     if (hasMake) {
       // model இருந்தா model value use பண்ணு, இல்லன்னா make
-      const makeSlug = filters.model
-        ? `${filters.make}/${filters.model}`
-        : filters.make!;
-      links.makes = [{ name: filters.make!, slug: makeSlug }];
+
+      links.makes = [{ name: filters.make!, slug: filters.make! }];
     }
     if (hasState) {
       links.states = filterOptions.location.state.filter(
@@ -423,14 +434,7 @@ export function buildStaticLinkUrl(
     } else if (type === "conditions") {
       directFilters.condition = cleanSlug;
     } else if (type === "makes") {
-      // slug-ல் make/model இருக்கா check பண்ணு
-      if (cleanSlug.includes("/")) {
-        const [make, model] = cleanSlug.split("/");
-        directFilters.make = make;
-        directFilters.model = model;
-      } else {
-        directFilters.make = cleanSlug;
-      }
+      directFilters.make = cleanSlug; // model ignore பண்ணு
     }
 
     return buildFilters(directFilters);
@@ -519,13 +523,7 @@ export function buildStaticLinkUrl(
   } else if (type === "conditions") {
     normalFilters.condition = cleanSlug;
   } else if (type === "makes") {
-    if (cleanSlug.includes("/")) {
-      const [make, model] = cleanSlug.split("/");
-      normalFilters.make = make;
-      normalFilters.model = model;
-    } else {
-      normalFilters.make = cleanSlug;
-    }
+    return `/${currentFilters.make!.toLowerCase()}/`;
   }
 
   return buildFilters(normalFilters);

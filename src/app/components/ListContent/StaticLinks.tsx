@@ -121,6 +121,12 @@ export default function StaticLinks({ filters }: StaticLinksProps) {
   const displayLinks: Record<string, { name: string; slug: string }[]> =
     hasMakeOnly
       ? {
+          makes: [
+            {
+              name: filters.make!,
+              slug: `/${filters.make!.toLowerCase()}/`,
+            },
+          ], // ← add this
           ...(makeCategories.length > 0 ? { categories: makeCategories } : {}),
           ...(makeStates.length > 0 ? { states: makeStates } : {}),
         }
@@ -130,6 +136,7 @@ export default function StaticLinks({ filters }: StaticLinksProps) {
     type: string,
     item: { name: string; slug: string },
   ): string => {
+    if (type === "makes") return item.slug;
     const comboFilters: Filters = { make: filters.make };
     if (type === "categories") {
       comboFilters.category = item.slug
@@ -158,7 +165,9 @@ export default function StaticLinks({ filters }: StaticLinksProps) {
                   <a
                     href={
                       hasMakeOnly
-                        ? buildMakeComboUrl(sectionKey, item)
+                        ? sectionKey === "makes"
+                          ? `/${filters.make!.toLowerCase()}/` // ← direct make link
+                          : buildMakeComboUrl(sectionKey, item)
                         : buildStaticLinkUrl(sectionKey, item.slug, filters)
                     }
                     className="cfs-links-link"
