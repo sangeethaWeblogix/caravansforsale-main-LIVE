@@ -10,6 +10,7 @@ import {
   SECTION_TITLES,
 } from "./StaticLinksUtils";
 import type { Filters } from "./Listings";
+import { buildSlugFromFilters } from "../slugBuilter";
 
 interface StaticLinksProps {
   filters: Filters;
@@ -75,6 +76,24 @@ export default function StaticLinks({ filters }: StaticLinksProps) {
 
     fetchMakeData();
   }, [filters.make]);
+  const hasMakeOnly =
+    Boolean(filters.make) &&
+    !Boolean(
+      filters.category ||
+      filters.state ||
+      filters.region ||
+      filters.from_price ||
+      filters.to_price ||
+      filters.minKg ||
+      filters.maxKg ||
+      filters.from_length ||
+      filters.to_length ||
+      filters.from_sleep ||
+      filters.to_sleep ||
+      filters.condition ||
+      filters.acustom_fromyears ||
+      filters.acustom_toyears,
+    );
 
   const staticLinks = useMemo(
     () => buildStaticLinks(filters) || {},
@@ -99,20 +118,33 @@ export default function StaticLinks({ filters }: StaticLinksProps) {
     ],
   );
 
-  const hasMakeOnly =
-    Boolean(filters.make) &&
-    !Boolean(
-      filters.category ||
-      filters.state ||
-      filters.from_price ||
-      filters.to_price ||
-      filters.minKg ||
-      filters.maxKg,
-    );
+  const displayLinks: Record<string, { name: string; slug: string }[]> =
+    hasMakeOnly
+      ? {
+          ...(makeCategories.length > 0 ? { categories: makeCategories } : {}),
+          ...(makeStates.length > 0 ? { states: makeStates } : {}),
+        }
+      : staticLinks;
+
+  const buildMakeComboUrl = (
+    type: string,
+    item: { name: string; slug: string },
+  ): string => {
+    const comboFilters: Filters = { make: filters.make };
+    if (type === "categories") {
+      comboFilters.category = item.slug
+        .replace(/\//g, "")
+        .replace("-category", "");
+    } else if (type === "states") {
+      comboFilters.state = item.name;
+    }
+    const result = buildSlugFromFilters(comboFilters);
+    return result.endsWith("/") ? result : `${result}/`;
+  };
 
   return (
     <div className="cfs-links-section" id="static-links">
-      {Object.entries(staticLinks).map(([sectionKey, items]) => {
+      {Object.entries(displayLinks).map(([sectionKey, items]) => {
         if (!items || items.length === 0) return null;
 
         return (
@@ -124,7 +156,11 @@ export default function StaticLinks({ filters }: StaticLinksProps) {
               {items.map((item) => (
                 <li key={item.slug} className="cfs-links-item">
                   <a
-                    href={buildStaticLinkUrl(sectionKey, item.slug, filters)}
+                    href={
+                      hasMakeOnly
+                        ? buildMakeComboUrl(sectionKey, item)
+                        : buildStaticLinkUrl(sectionKey, item.slug, filters)
+                    }
                     className="cfs-links-link"
                   >
                     {item.name}

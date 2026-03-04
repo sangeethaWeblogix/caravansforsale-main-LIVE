@@ -443,13 +443,14 @@ export function buildStaticLinkUrl(
 
   if (type === "categories") {
     normalFilters.category = cleanSlug.replace("-category", "");
-    // ✅ current state/region carry பண்ணு
     if (currentFilters.state) normalFilters.state = currentFilters.state;
     if (currentFilters.region) normalFilters.region = currentFilters.region;
+    if (currentFilters.make) normalFilters.make = currentFilters.make; // ← add
   } else if (type === "states") {
     // ✅ current category keep பண்ணு
     if (currentFilters.category)
       normalFilters.category = currentFilters.category;
+    if (currentFilters.make) normalFilters.make = currentFilters.make; // ← add
     normalFilters.state = cleanSlug.replace("-state", "");
   } else if (type === "regions") {
     if (currentFilters.category)
