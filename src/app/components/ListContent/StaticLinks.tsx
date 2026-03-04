@@ -129,6 +129,7 @@ export default function StaticLinks({ filters }: StaticLinksProps) {
           ], // ← add this
           ...(makeCategories.length > 0 ? { categories: makeCategories } : {}),
           ...(makeStates.length > 0 ? { states: makeStates } : {}),
+          all: [{ name: "All Caravans", slug: "/listings/" }], // ← add
         }
       : staticLinks;
 

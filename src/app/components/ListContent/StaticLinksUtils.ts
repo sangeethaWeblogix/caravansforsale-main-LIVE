@@ -97,6 +97,8 @@ export function buildStaticLinks(
     links.categories = filterOptions.categories;
     links.states = filterOptions.location.state;
     links.prices = filterOptions.price;
+    links.all = [{ name: "All Caravans", slug: "/listings/" }]; // ← add
+
     return links;
   }
 
@@ -115,6 +117,8 @@ export function buildStaticLinks(
       );
       links.states = filterOptions.location.state;
       links.prices = filterOptions.price;
+      links.all = [{ name: "All Caravans", slug: "/listings/" }]; // ← add
+
       return links;
     }
     if (hasMake) {
@@ -126,6 +130,8 @@ export function buildStaticLinks(
       ];
       links.states = filterOptions.location.state;
       links.categories = filterOptions.categories;
+      links.all = [{ name: "All Caravans", slug: "/listings/" }]; // ← add
+
       return links;
     }
 
@@ -147,27 +153,36 @@ export function buildStaticLinks(
 
       // all prices
       links.prices = filterOptions.price;
+      links.all = [{ name: "All Caravans", slug: "/listings/" }]; // ← add
 
       return links;
     }
 
     if (hasPrice) {
       links.prices = filterOptions.price;
+      links.all = [{ name: "All Caravans", slug: "/listings/" }]; // ← add
+
       return links;
     }
 
     if (hasAtm) {
       links.atm = filterOptions.atm;
+      links.all = [{ name: "All Caravans", slug: "/listings/" }]; // ← add
+
       return links;
     }
 
     if (hasLength) {
       links.length = filterOptions.length;
+      links.all = [{ name: "All Caravans", slug: "/listings/" }]; // ← add
+
       return links;
     }
 
     if (hasSleep) {
       links.sleep = filterOptions.sleep;
+      links.all = [{ name: "All Caravans", slug: "/listings/" }]; // ← add
+
       return links;
     }
 
