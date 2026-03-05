@@ -442,6 +442,7 @@ export default function SearchSection() {
 
   const { matchedBanners } = useBanners();
   const { bannerRefs, trackClick } = useBannerTracking(matchedBanners);
+  const isMobile = typeof window !== "undefined" ? window.innerWidth < 768 : false;
 
   return (
     <div>
@@ -734,47 +735,31 @@ export default function SearchSection() {
             </div>
           </div>
           <div className="display_ad">
-            {false && matchedBanners.map((banner, index) => (
+            {false && matchedBanners.filter(b => isMobile 
+                ? b.banner_size === "vertical_small"
+                : b.banner_size === "horizontal_large"
+            ).map((banner, index) => (
               <a
                 key={banner.id}
                 ref={(el) => {
                   bannerRefs.current[index] = el;
                 }}
-                data-index={index}
+                data-banner-id={banner.id}
                 href={banner.target_href_url}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="banner_ad_now mb-0"
                 onClick={() => trackClick(banner.id)}
               >
-                {/* Desktop Image */}
-                {banner.banner_size === "horizontal_large" && (
-                  <div className="banner-desktop">
+                  <div className={isMobile ? "banner-mobile" : "banner-desktop"}>
                     <Image
                       src={banner.image_url}
                       alt={banner.name}
-                      className="hidden-xs"
-                      width={1200}
-                      height={200}
-                      priority
-
-                    />
-                  </div>
-                )}
-
-                {/* Mobile Image */}
-                {banner.banner_size === "vertical_small" && (
-                  <div className="banner-mobile">
-                    <Image
-                      src={banner.image_url}
-                      alt={banner.name}
-                      className="hidden-lg hidden-md hidden-sm"
-                      width={600}
-                      height={300}
+                      width={isMobile ? 600 : 1200}
+                      height={isMobile ? 300 : 200}
                       priority
                     />
                   </div>
-                )}
               </a>
             ))}
           </div>
