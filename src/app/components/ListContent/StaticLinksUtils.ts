@@ -301,34 +301,27 @@ export function buildStaticLinks(
     }
 
     if (hasRegion) {
-      const state = filterOptions.location.state.find(
-        (s) => s.name.toLowerCase() === filters.state?.toLowerCase(),
-      );
-      if (state?.region) {
-        links.regions = state.region.filter(
-          (r) => r.name.toLowerCase() === filters.region?.toLowerCase(),
-        );
-      }
       if (
-        hasState &&
-        hasRegion &&
-        !hasCategory &&
-        !hasPrice &&
-        !hasAtm &&
-        !hasLength &&
-        !hasSleep &&
-        !hasMake
+        hasMake ||
+        hasCategory ||
+        hasPrice ||
+        hasAtm ||
+        hasLength ||
+        hasSleep
       ) {
-        links.categories = filterOptions.categories;
+        const state = filterOptions.location.state.find(
+          (s) => s.name.toLowerCase() === filters.state?.toLowerCase(),
+        );
+        if (state?.region) {
+          links.regions = state.region.filter(
+            (r) => r.name.toLowerCase() === filters.region?.toLowerCase(),
+          );
+        }
       }
-
-      // if (state?.region) {
-      //   links.regions = state.region.filter(
-      //     (r) => r.name.toLowerCase() === filters.region?.toLowerCase(),
-      //   );
-      // }
     }
-
+    if (activeCount === 2 && hasState && hasRegion) {
+      links.categories = filterOptions.categories;
+    }
     if (hasPrice) {
       const from = Number(filters.from_price);
       const to = filters.to_price ? Number(filters.to_price) : null;
