@@ -3,7 +3,7 @@
   
   import "bootstrap/dist/css/bootstrap.min.css";
   import "bootstrap-icons/font/bootstrap-icons.css";
-  import "./globals.css";
+  import "./globals.css?=32";
   import "@fortawesome/fontawesome-free/css/all.min.css";
   import Navbar from "./navbar/Navbar";
   import Footer from "./footer/Footer";
@@ -14,6 +14,7 @@
   // import NextTopLoader from "nextjs-toploader";
 import ThemeRegistry from './components/ThemeRegistry';
 import NavigationHistory from "@/components/NavigationHistory";
+import { BannerProvider } from "@/components/BannerHandler";
 
   
   export const metadata: Metadata = {
@@ -117,15 +118,12 @@ const gtmServer = "https://gtm.caravansforsale.com.au";
           showSpinner={false}
         /> */}
  <ThemeRegistry>
+          <BannerProvider>
           {children}
+          </BannerProvider>
         </ThemeRegistry>
                     </main>
-          
-                  <Suspense fallback={null}>
-
           <Footer />
-                    </Suspense>
-
         </body>
       </html>
       

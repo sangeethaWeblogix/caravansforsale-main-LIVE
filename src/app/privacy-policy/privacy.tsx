@@ -114,20 +114,20 @@ const PrivacyPolicyPage = () => {
               <p>
                 <strong>Email:</strong>{" "}
                 <Link
-                  href="mailto:privacy@caravansforsale.com.au"
+                  href="mailto:privacy@marketplacenetwork.com.au"
                   target="_blank"
                   rel="noreferrer noopener"
                 >
-                  privacy@caravansforsale.com.au
+                  privacy@marketplacenetwork.com.au
                 </Link>
                 <br />
                 <strong>Website:</strong>{" "}
                 <Link
-                  href="https://www.caravansforsale.com.au/"
+                  href="https://www.marketplacenetwork.com.au/"
                   target="_blank"
                   rel="noreferrer noopener"
                 >
-                  www.caravansforsale.com.au
+                  www.marketplacenetwork.com.au
                 </Link>
               </p>
             </div>

@@ -138,6 +138,33 @@ async function uploadToKV(key, value, metadata = null) {
   return false;
 }
 
+// ============================================
+// ERROR PAGE DETECTION
+// If your app shows a new error UI, add its unique text here.
+// These pages will be skipped and never written to KV.
+// ============================================
+function isErrorPage(html) {
+  const errorSignatures = [
+    // Image 1: API/listing load failure
+    "Sorry, something went wrong",
+    "We couldn't load the listings at this moment",
+    // Image 2: Service error
+    "Service error",
+    "Our listing service encountered an error",
+    // Next.js unhandled exception
+    "Application error: a client-side exception has occurred",
+    // Generic fallback
+    "This page could not be found",
+  ];
+
+  for (const sig of errorSignatures) {
+    if (html.includes(sig)) {
+      return sig; // returns the matched string for logging
+    }
+  }
+  return false; // not an error page
+}
+
 async function generatePageVariant(page, variantNumber, browser) {
   let url = `${VERCEL_BASE_URL}${page.path}`;
   if (page.variants > 1) {
@@ -159,12 +186,12 @@ async function generatePageVariant(page, variantNumber, browser) {
     
     const fetchStart = Date.now();
     await browserPage.goto(url, { 
-      waitUntil: 'networkidle0',
-      timeout: 45000
+      waitUntil: 'networkidle2',  // tolerates up to 2 in-flight requests (avoids timeout from analytics/polling)
+      timeout: 60000              // increased from 45s to 60s
     });
     
-    // Wait for content to load
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    // Wait for dynamic content to finish rendering
+    await new Promise(resolve => setTimeout(resolve, 3000)); // increased from 2s to 3s
     
     let html = await browserPage.content();
     await browserPage.close();
@@ -174,6 +201,18 @@ async function generatePageVariant(page, variantNumber, browser) {
     
     if (!html.includes('</html>')) {
       throw new Error('Invalid HTML response (no closing </html> tag)');
+    }
+
+    // Check for error pages — must never be cached
+    const errorMatch = isErrorPage(html);
+    if (errorMatch) {
+      console.log(`   🚫 Skipping: Error page detected ("${errorMatch}")`);
+      return {
+        path: page.path,
+        slug: kvKey,
+        variant: variantNumber,
+        status: 'skipped_error'
+      };
     }
     
     // ============================================
@@ -316,6 +355,9 @@ async function generateStaticPages() {
         if (result.status === 'success') {
           results.success++;
           results.pages.push(result);
+        } else if (result.status === 'skipped_error') {
+          results.skipped_error = (results.skipped_error || 0) + 1;
+          console.log(`   🚫 Variant ${result.variant} was an error page, not cached`);
         } else {
           results.failed++;
           results.errors.push(result);

@@ -146,7 +146,7 @@ export default function ListingContent({
     setNavigating(false);
   }, [pathname]);
 
-  const IMAGE_BASE_URL = "https://caravansforsale.imagestack.net/400x300/";
+  const IMAGE_BASE_URL = "https://caravansforsale.imagestack.net/";
 
   const IMAGE_EXT = ".avif";
 
@@ -227,31 +227,20 @@ export default function ListingContent({
         name: "",
       };
 
-  const {
-    form,
-    errors,
-    touched,
-    submitting,
-    setField,
-    onBlur,
-    onSubmit,
-    isFinanceQuoteChecked,
-    setFinanceQuoteChecked,
-  } = useEnquiryForm(enquiryProduct);
+  const { form, errors, touched, submitting, setField, onBlur, onSubmit } =
+    useEnquiryForm(enquiryProduct);
 
   const MAX_SWIPER_IMAGES = 5;
 
   const getFirstImage = (item: Product): string | undefined => {
     const img = item.image_format?.[0];
-    return img ? `${IMAGE_BASE_URL}${img}${IMAGE_EXT}` : undefined;
+    return img ? `${img}` : undefined;
   };
 
   const getRemainingImages = (item: Product): string[] => {
     if (!Array.isArray(item.image_format)) return [];
 
-    return item.image_format
-      .slice(0, MAX_SWIPER_IMAGES)
-      .map((img) => `${IMAGE_BASE_URL}${img}${IMAGE_EXT}`);
+    return item.image_format.slice(0, MAX_SWIPER_IMAGES).map((img) => `${img}`);
   };
 
   const loadRemaining = (item: Product) => {
@@ -332,50 +321,23 @@ export default function ListingContent({
 
   const buildMergedProducts = (normal: Product[]) => {
     const premium = preminumProducts || [];
-    const exclusive = exculisiveProducts || [];
-
     const merged: Product[] = [];
-    let exclusiveIndex = 0;
 
-    // 1️⃣ Normal + Exclusive placement
-    normal.forEach((item, i) => {
+    // ✅ No exclusive insertion here anymore
+    normal.forEach((item) => {
       merged.push(item);
-
-      if ((i + 1) % 10 === 0 && exclusiveIndex < exclusive.length) {
-        merged.push({
-          ...exclusive[exclusiveIndex],
-          is_exclusive: true,
-        });
-        exclusiveIndex++;
-      }
     });
 
-    while (exclusiveIndex < exclusive.length) {
-      merged.push({
-        ...exclusive[exclusiveIndex],
-        is_exclusive: true,
-      });
-      exclusiveIndex++;
-    }
-
-    // 2️⃣ Premium fixed index (DO NOT MOVE)
+    // Premium fixed index (unchanged)
     if (merged.length >= 3 && premium.length > 0) {
-      merged.splice(2, 0, {
-        ...premium[0],
-        is_premium: true,
-      });
-
+      merged.splice(2, 0, { ...premium[0], is_premium: true });
       if (premium.length > 1) {
-        merged.splice(3, 0, {
-          ...premium[1],
-          is_premium: true,
-        });
+        merged.splice(3, 0, { ...premium[1], is_premium: true });
       }
     }
 
     return merged;
   };
-
   // useEffect(() => {
   //   mergedProducts.forEach((item) => {
   //     if (!loadedAll[item.id]) {
@@ -517,10 +479,10 @@ export default function ListingContent({
         <meta name="twitter:description" content={metaDescription} />
       </Head>
 
-      <div className="col-lg-6">
+      <div className="col-lg-9">
         <div className="top-filter mb-10">
           <div className="row align-items-center">
-            <div className="col-lg-8 show_count_wrapper ">
+            <div className="col-lg-8 col-md-8 col-sm-8 col-12 show_count_wrapper ">
               {count && (
                 <span className="show_count mb-2 d-inline">
                   <strong>{count} </strong>
@@ -531,18 +493,18 @@ export default function ListingContent({
               </h1>
             </div>
 
-            <div className="col-4 d-lg-none d-md-none">
-              <button
-                type="button"
-                className="mobile_fltn navbar-toggler mytogglebutton"
-                data-bs-toggle="offcanvas"
-                data-bs-target="#mobileFilters"
-                aria-controls="mobileFilters"
-              >
-                <i className="bi bi-search" /> &nbsp;Filter
-              </button>
-            </div>
-            <div className="col-lg-4 col-8">
+            {/* <div className="col-4 d-lg-none d-md-none">
+                <button
+                  type="button"
+                  className="mobile_fltn navbar-toggler mytogglebutton"
+                  data-bs-toggle="offcanvas"
+                  data-bs-target="#mobileFilters"
+                  aria-controls="mobileFilters"
+                >
+                  <i className="bi bi-search" /> &nbsp;Filter
+                </button>
+              </div> */}
+            <div className="col-lg-4 col-md-4 col-sm-4 col-12">
               <div className="r-side">
                 <form className="woocommerce-ordering" method="get">
                   <div className="form-group shot-buy">
@@ -610,10 +572,13 @@ export default function ListingContent({
 
                     console.log("imgs", firstImage);
                     return (
-                      <div className="col-lg-6 mb-0" key={index}>
+                      <div
+                        className="col-lg-6 col-sm-6 col-md-6 mb-0"
+                        key={index}
+                      >
                         <a
                           href={href}
-                           className="lli_head"
+                          className="lli_head"
                           onClick={(e) => {
                             e.preventDefault();
                             goToProduct(href);
@@ -629,8 +594,8 @@ export default function ListingContent({
                                   src={firstImage}
                                   priority={isPriority}
                                   alt="Caravan"
-                                  width={400}
-                                  height={300}
+                                  width={800}
+                                  height={600}
                                 />
                               </div>
                               <div
@@ -677,8 +642,8 @@ export default function ListingContent({
                                         <ImageWithSkeleton
                                           src={img}
                                           alt={`Caravan ${i + 1}`}
-                                          width={400}
-                                          height={300}
+                                          width={800}
+                                          height={600}
                                         />
                                       </div>
                                     </SwiperSlide>
@@ -688,8 +653,7 @@ export default function ListingContent({
                             </div>
 
                             <div className="product_de">
-                               <div className="info">
-                                
+                              <div className="info">
                                 {item.name && (
                                   <h3
                                     className="title cursor-pointer"
@@ -781,12 +745,12 @@ export default function ListingContent({
                               {/* --- DETAILS LIST --- */}
                               <ul className="vehicleDetailsWithIcons simple">
                                 {/* {item.condition && (
-                                  <li>
-                                    <span className="attribute3">
-                                      {item.condition}
-                                    </span>
-                                  </li>
-                                )} */}
+                                    <li>
+                                      <span className="attribute3">
+                                        {item.condition}
+                                      </span>
+                                    </li>
+                                  )} */}
 
                                 {item.categories &&
                                   item.categories.length > 0 && (
@@ -851,7 +815,7 @@ export default function ListingContent({
                                     setShowContact(true);
                                   }}
                                 >
-                                  Contact Seller
+                                  Contact Dealer
                                 </button>
 
                                 <button
@@ -905,6 +869,233 @@ export default function ListingContent({
           </nav>
         </div>
       </div>
+      {/* {exculisiveProducts.length === 0 || isOrderbyLoading ? (
+        <Skelton count={1} />
+      ) : ( */}
+      <div className="col-lg-3">
+        <div className="sticky_spot hidden-xs hidden-sm">
+          <div className="related-products">
+            <div className="other_items">
+              {exculisiveProducts.map((item, index) => {
+                const href = getHref(item);
+                const isPriority = index < 5;
+                // const resizedBase = getResizedBase(item);
+                // const imgs = lazyImages[item.id] ?? [];
+                const firstImage = getFirstImage(item);
+                const isActive = swiperActivated[item.id];
+                const slides = isActive
+                  ? (lazyImages[item.id] ?? [])
+                  : firstImage
+                    ? [firstImage, firstImage]
+                    : [];
+
+                console.log("imgs", firstImage);
+                return (
+                  <a
+                    key={index}
+                    href={href}
+                    className="lli_head"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      goToProduct(href);
+                    }}
+                  >
+                    {" "}
+                    <div className="product-card">
+                      <div className="img">
+                        <span className="lab">Spotlight Van</span>
+                        <Image
+                          src={firstImage || "/images/placeholder.png"}
+                          alt="Caravan"
+                          width={400}
+                          height={300}
+                          className="w-100 h-100 object-fit-cover"
+                        />
+                      </div>
+
+                      {/* Product Details */}
+                      <div className="product_de">
+                        <div className="info">
+                          {item.name && (
+                            <h3
+                              className="title cursor-pointer"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+
+                                goToProduct(href);
+                              }}
+                            >
+                              {item.name}
+                            </h3>
+                          )}
+                        </div>
+
+                        {(item.regular_price ||
+                          item.sale_price ||
+                          item.price_difference) && (
+                          <div className="price">
+                            <div className="metc2">
+                              {(item.regular_price || item.sale_price) && (
+                                <h5 className="slog">
+                                  {/* ✅ Stable price rendering: precompute safely */}
+                                  {(() => {
+                                    const rawRegular = item.regular_price || "";
+                                    const rawSale = item.sale_price || "";
+                                    const cleanRegular = rawRegular.replace(
+                                      /[^0-9.]/g,
+                                      "",
+                                    );
+                                    const regNum = Number(cleanRegular) || 0;
+                                    const cleanSale = rawSale.replace(
+                                      /[^0-9.]/g,
+                                      "",
+                                    );
+                                    const saleNum = Number(cleanSale) || 0;
+
+                                    // If regular price is 0 → show POA
+                                    if (regNum === 0) {
+                                      return <>POA</>;
+                                    }
+
+                                    // If sale price exists → show sale and strike-through
+                                    if (saleNum > 0) {
+                                      return (
+                                        <>
+                                          <del>{rawRegular}</del> {rawSale}
+                                        </>
+                                      );
+                                    }
+
+                                    // Otherwise → show regular price
+                                    return <>{rawRegular}</>;
+                                  })()}
+                                </h5>
+                              )}
+
+                              {/* ✅ Show SAVE only if > $0 */}
+                              {(() => {
+                                const cleanDiff = (
+                                  item.price_difference || ""
+                                ).replace(/[^0-9.]/g, "");
+                                const diffNum = Number(cleanDiff) || 0;
+                                return diffNum > 0 ? (
+                                  <p className="card-price">
+                                    <span>SAVE</span> {item.price_difference}
+                                  </p>
+                                ) : null;
+                              })()}
+                              {item.is_premium && (
+                                <div className="more_info">
+                                  <div className="informat">
+                                    <span className="premium_van">
+                                      <i className="fa fa-star"></i> Premium
+                                    </span>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+
+                        <ul className="vehicleDetailsWithIcons simple">
+                          {item.categories && item.categories.length > 0 && (
+                            <li className="attribute3_list">
+                              <span className="attribute3">
+                                {item.categories.slice(0, 2).join(", ")}
+                              </span>
+                            </li>
+                          )}
+                          {item.length && (
+                            <li>
+                              <span className="attribute3">{item.length}</span>
+                            </li>
+                          )}
+
+                          {item.kg && (
+                            <li>
+                              <span className="attribute3">{item.kg}</span>
+                            </li>
+                          )}
+
+                          {item.make && (
+                            <li>
+                              <span className="attribute3">{item.make}</span>
+                            </li>
+                          )}
+                        </ul>
+
+                        {(item.condition || item.location) && (
+                          <div className="bottom_mid">
+                            {item.condition && (
+                              <span>
+                                <i className="bi bi-check-circle-fill"></i>{" "}
+                                Condition {item.condition}
+                              </span>
+                            )}
+                            {item.location && (
+                              <span>
+                                <i className="fa fa-map-marker-alt"></i>{" "}
+                                {item.location}
+                              </span>
+                            )}
+                          </div>
+                        )}
+
+                        <div className="bottom_button">
+                          <button
+                            className="btn btn-primary"
+                            onClick={(e) => handleViewDetails(e, item.id, href)}
+                          >
+                            View Details
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </a>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+        <div className="display_ad listing_sticky">
+          <a
+            href="#"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="banner_ad_now mb-0"
+          >
+            {false && (
+              <>
+                {/* Desktop Image */}
+                <div className="banner-desktop">
+                  <Image
+                    src="/images/static_index_dk_banner.jpg"
+                    alt="Caravans For Sale"
+                    className="hidden-xs"
+                    width={1200}
+                    height={200}
+                    priority
+                  />
+                </div>
+
+                {/* Mobile Image */}
+                <div className="banner-mobile">
+                  <Image
+                    src="/images/static_index_mb_banner_3.jpg"
+                    alt="Caravans For Sale Mobile"
+                    className="hidden-lg hidden-md hidden-sm"
+                    width={600}
+                    height={300}
+                    priority
+                  />
+                </div>
+              </>
+            )}
+          </a>
+        </div>
+      </div>
+      {/* )} */}
       {showInfo && selectedProduct && (
         <div className="popup-overlay">
           <div className="popup-box">
@@ -932,7 +1123,7 @@ export default function ListingContent({
         </div>
       )}
 
-      {/* === Contact Seller Popup === */}
+      {/* === Contact Dealer Popup === */}
       {showContact && (
         <div className="popup-overlay">
           <div className="popup-box">
@@ -947,7 +1138,7 @@ export default function ListingContent({
               ×
             </button>
 
-            <h4>Contact Seller</h4>
+            <h4>Contact Dealer</h4>
 
             <div className="sidebar-enquiry">
               <form className="wpcf7-form" noValidate onSubmit={onSubmit}>
@@ -1046,20 +1237,7 @@ export default function ListingContent({
                       ></textarea>
                     </p>
                   </div>
-                  {/* finance checkbox */}
-                  <div className="checkbox-wrapper">
-                    <input
-                      type="checkbox"
-                      id="financeQuote"
-                      onChange={() =>
-                        setFinanceQuoteChecked((prevState) => !prevState)
-                      }
-                      checked={isFinanceQuoteChecked}
-                    />
-                    <label htmlFor="financeQuote">
-                      Get a no-obligation finance quote with competitive rates
-                    </label>
-                  </div>
+
                   <p className="terms_text">
                     By clicking &lsquo;Send Enquiry&lsquo;, you agree to Caravan
                     Marketplace{" "}

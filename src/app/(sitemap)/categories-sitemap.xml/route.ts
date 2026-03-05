@@ -1,4 +1,4 @@
- import { NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL ||
@@ -8,7 +8,6 @@ export async function GET() {
   try {
     const res = await fetch(
       "https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap/categories",
-     
     );
 
     const data = await res.json();
@@ -16,8 +15,6 @@ export async function GET() {
     if (!data?.success || !Array.isArray(data.paths)) {
       throw new Error("Invalid sitemap API response");
     }
-
-    
 
     const urls = data.paths
       .map(
@@ -27,7 +24,7 @@ export async function GET() {
      <lastmod>${new Date().toISOString()}</lastmod>
            <changefreq>weekly</changefreq>
       <priority>0.7</priority>
-  </url>`
+  </url>`,
       )
       .join("");
 

@@ -1,4 +1,4 @@
- import { fetchLocations } from "@/api/location/api";
+import { fetchLocations } from "@/api/location/api";
 import React, {
   useState,
   Dispatch,
@@ -21,6 +21,7 @@ import {
 } from "@/api/homeSearch/api";
 import { flushSync } from "react-dom";
 import { fetchMakeDetails } from "@/api/make-new/api";
+import SearchSuggestionSkeleton from "./Searchsuggestionskeleton ";
 
 type LocationSuggestion = {
   key: string;
@@ -39,7 +40,7 @@ type LinkItem = {
 };
 
 type LinksData = {
- states?: LinkItem[];
+  states?: LinkItem[];
   regions?: LinkItem[];
   categories?: LinkItem[];
   makes?: LinkItem[];
@@ -124,7 +125,7 @@ export interface Filters {
 }
 
 interface CaravanFilterProps {
-  hideSSRLinks?: boolean; 
+  hideSSRLinks?: boolean;
   categories: Category[];
   makes: Make[];
   models: Model[];
@@ -168,8 +169,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
   setIsPremiumLoading,
   setIsMainLoading,
   setIsLoading,
-    hideSSRLinks,
-
+  hideSSRLinks,
 }) => {
   const router = useRouter();
   const pathname = usePathname();
@@ -180,8 +180,8 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
   const [categories, setCategories] = useState<Option[]>([]);
   const [visibleCount, setVisibleCount] = useState(10);
   const [modelCounts, setModelCounts] = useState<ModelCount[]>([]);
-const [linksData, setLinksData] = useState<LinksData | null>(null);
-const [linksLoading, setLinksLoading] = useState(false);
+  const [linksData, setLinksData] = useState<LinksData | null>(null);
+  const [linksLoading, setLinksLoading] = useState(false);
   const [makes, setMakes] = useState<Make[]>([]);
   const [model, setModel] = useState<Model[]>([]);
   const [states, setStates] = useState<StateOption[]>([]);
@@ -267,7 +267,7 @@ const [linksLoading, setLinksLoading] = useState(false);
   const [selectedSuburbName, setSelectedSuburbName] = useState<string | null>(
     null,
   );
- 
+
   const [selectedSuggestion, setSelectedSuggestion] =
     useState<LocationSuggestion | null>(null);
   const [keywordInput, setKeywordInput] = useState("");
@@ -327,108 +327,107 @@ const [linksLoading, setLinksLoading] = useState(false);
   const [selectedRegion, setSelectedRegion] = useState<string>();
   const [showSuggestions, setShowSuggestions] = useState(false);
 
-
   // ADD AFTER line 360 (after fetchCounts closing brace)
 
- const fetchLinks = async (activeFilters: Filters) => {
-  const params = buildParamsFromFilters(activeFilters);
-  const url = `https://admin.caravansforsale.com.au/wp-json/cfs/v1/links?${params.toString()}`;
-  
-  console.log("🔗 LINKS FETCH URL:", url); // DEBUG
-  
-  const res = await fetch(url);
-  const json = await res.json();
-  
-  console.log("🔗 LINKS RAW RESPONSE:", json); // DEBUG
-  console.log("🔗 LINKS KEYS:", Object.keys(json)); // DEBUG
-  
-  // Handle both { state, category, make } and { data: { state, category, make } }
-  const data = json.data ?? json;
-  return data as LinksData;
-};
+  const fetchLinks = async (activeFilters: Filters) => {
+    const params = buildParamsFromFilters(activeFilters);
+    const url = `https://admin.caravansforsale.com.au/wp-json/cfs/v1/links?${params.toString()}`;
 
-// ADD AFTER your existing count useEffects
+    console.log("🔗 LINKS FETCH URL:", url); // DEBUG
 
-useEffect(() => {
-  const activeFilters: Filters = mergeFilters(currentFilters, filters);
+    const res = await fetch(url);
+    const json = await res.json();
 
-  let cancelled = false;
-  setLinksLoading(true);
+    console.log("🔗 LINKS RAW RESPONSE:", json); // DEBUG
+    console.log("🔗 LINKS KEYS:", Object.keys(json)); // DEBUG
 
-  fetchLinks(activeFilters)
-    .then((data) => {
-      if (!cancelled) setLinksData(data);
-    })
-    .catch(console.error)
-    .finally(() => {
-      if (!cancelled) setLinksLoading(false);
-    });
+    // Handle both { state, category, make } and { data: { state, category, make } }
+    const data = json.data ?? json;
+    return data as LinksData;
+  };
 
-  return () => { cancelled = true; };
-}, [
-  currentFilters.category,
-  currentFilters.make,
-  currentFilters.model,
-  currentFilters.state,
-  currentFilters.region,
-  currentFilters.suburb,
-  currentFilters.condition,
-  currentFilters.from_price,
-  currentFilters.to_price,
-  currentFilters.minKg,
-  currentFilters.maxKg,
-  currentFilters.acustom_fromyears,
-  currentFilters.acustom_toyears,
-  currentFilters.from_length,
-  currentFilters.to_length,
-  currentFilters.keyword,
-  filters,
-]);
+  // ADD AFTER your existing count useEffects
 
-// ADD AFTER line 867 (after buildShortAddress function)
+  useEffect(() => {
+    const activeFilters: Filters = mergeFilters(currentFilters, filters);
 
-const formatLinkName = (name: string): string =>
-  name
-    .replace(/-/g, " ")
-    .replace(/\b\w/g, (c) => c.toUpperCase());
+    let cancelled = false;
+    setLinksLoading(true);
 
- const buildLinkUrl = (type: string, item: LinkItem): string => {
-  const activeFilters: Filters = mergeFilters(currentFilters, filters);
-  const linkFilters: Filters = { ...activeFilters };
+    fetchLinks(activeFilters)
+      .then((data) => {
+        if (!cancelled) setLinksData(data);
+      })
+      .catch(console.error)
+      .finally(() => {
+        if (!cancelled) setLinksLoading(false);
+      });
 
-  switch (type) {
-    case "states":
-      linkFilters.state = item.slug.replace(/-/g, " ");
-      delete linkFilters.region;
-      delete linkFilters.suburb;
-      delete linkFilters.pincode;
-      break;
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    currentFilters.category,
+    currentFilters.make,
+    currentFilters.model,
+    currentFilters.state,
+    currentFilters.region,
+    currentFilters.suburb,
+    currentFilters.condition,
+    currentFilters.from_price,
+    currentFilters.to_price,
+    currentFilters.minKg,
+    currentFilters.maxKg,
+    currentFilters.acustom_fromyears,
+    currentFilters.acustom_toyears,
+    currentFilters.from_length,
+    currentFilters.to_length,
+    currentFilters.keyword,
+    filters,
+  ]);
+
+  // ADD AFTER line 867 (after buildShortAddress function)
+
+  const formatLinkName = (name: string): string =>
+    name.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+
+  const buildLinkUrl = (type: string, item: LinkItem): string => {
+    const activeFilters: Filters = mergeFilters(currentFilters, filters);
+    const linkFilters: Filters = { ...activeFilters };
+
+    switch (type) {
+      case "states":
+        linkFilters.state = item.slug.replace(/-/g, " ");
+        delete linkFilters.region;
+        delete linkFilters.suburb;
+        delete linkFilters.pincode;
+        break;
       case "regions":
-      linkFilters.region = item.slug.replace(/-/g, " ");
-       delete linkFilters.suburb;
-      delete linkFilters.pincode;
-      break;
-    case "categories":
-      linkFilters.category = item.slug;
-      break;
-    case "makes":
-      linkFilters.make = item.slug;
-      delete linkFilters.model;
-      break;
+        linkFilters.region = item.slug.replace(/-/g, " ");
+        delete linkFilters.suburb;
+        delete linkFilters.pincode;
+        break;
+      case "categories":
+        linkFilters.category = item.slug;
+        break;
+      case "makes":
+        linkFilters.make = item.slug;
+        delete linkFilters.model;
+        break;
       case "models":
-      // Make already set, just add model
-      linkFilters.model = item.slug;
-      break;
-    case "conditions":
-      linkFilters.condition = item.slug;
-      break;
-    default:
-      break;
-  }
+        // Make already set, just add model
+        linkFilters.model = item.slug;
+        break;
+      case "conditions":
+        linkFilters.condition = item.slug;
+        break;
+      default:
+        break;
+    }
 
-  const slugPath = buildSlugFromFilters(linkFilters);
-  return slugPath.endsWith("/") ? slugPath : `${slugPath}/`;
-};
+    const slugPath = buildSlugFromFilters(linkFilters);
+    return slugPath.endsWith("/") ? slugPath : `${slugPath}/`;
+  };
   // put near other utils
   const AUS_ABBR: Record<string, string> = {
     Victoria: "VIC",
@@ -878,7 +877,7 @@ const formatLinkName = (name: string): string =>
       clearTimeout(t);
     };
   }, [isKeywordModalOpen, modalKeyword]);
-   
+
   // add near other useMemos
   const keywordText = useMemo(() => {
     const v = (currentFilters.keyword ??
@@ -1012,7 +1011,6 @@ const formatLinkName = (name: string): string =>
     return out;
   };
 
-   
   const didFetchRef = useRef(false);
   useEffect(() => {
     if (didFetchRef.current) return;
@@ -1131,8 +1129,6 @@ const formatLinkName = (name: string): string =>
     return reg?.name; // return canonical name if valid, else undefined
   };
   // neww
-
-  
 
   useEffect(() => {
     if (!filtersInitialized.current) {
@@ -1262,7 +1258,6 @@ const formatLinkName = (name: string): string =>
     cursor: "pointer",
   });
 
-  
   const resetMakeFilters = () => {
     setSelectedMake(null);
     setSelectedMakeName(null);
@@ -1607,8 +1602,6 @@ const formatLinkName = (name: string): string =>
     suburbClickedRef.current = false;
   };
 
-  
- 
   const isKnownMake = (slug?: string | null) =>
     !!slug && makes.some((m) => m.slug === slug);
 
@@ -1933,9 +1926,6 @@ const formatLinkName = (name: string): string =>
     }
   }, [model, selectedModel]);
 
-
-  
-
   const isValidMakeSlug = (slug: string | null | undefined): slug is string =>
     !!slug && makes.some((m) => m.slug === slug);
   const isValidModelSlug = (slug: string | null | undefined): slug is string =>
@@ -1993,14 +1983,13 @@ const formatLinkName = (name: string): string =>
     const finalURL = query.toString() ? `${slugPath}?${query}` : safeSlugPath;
     if (lastPushedURLRef.current !== finalURL) {
       lastPushedURLRef.current = finalURL;
-              window.history.replaceState(null, "", finalURL);
+      window.history.replaceState(null, "", finalURL);
 
       if (mountedRef.current) {
         router.replace(finalURL);
-       }
+      }
     }
   };
-  
 
   useEffect(() => {
     if (keepModelOpenRef.current) {
@@ -2030,7 +2019,6 @@ const formatLinkName = (name: string): string =>
       updateAllFiltersAndURL(updatedFilters); // Trigger API + URL sync
     });
   };
-  
 
   const resetCategoryFilter = () => {
     setSelectedCategory(null);
@@ -2247,12 +2235,6 @@ const formatLinkName = (name: string): string =>
 
   return (
     <>
-   
- 
-
-
-      
-        
       <div className="filter-card mobile-search">
         {/* ─── Links Section ─── */}
 
@@ -2970,8 +2952,6 @@ const formatLinkName = (name: string): string =>
                     updateAllFiltersAndURL(updatedFilters);
                     setIsModalMakeOpen(true);
                   }}
-
-                  
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -2988,7 +2968,6 @@ const formatLinkName = (name: string): string =>
             )}
 
             {isModalMakeOpen && (
-              
               <div className="cfs-modal">
                 <div
                   className="cfs-modal-content"
@@ -4564,7 +4543,12 @@ const formatLinkName = (name: string): string =>
                       {/* Show typed suggestions when >=2 chars */}
                       {modalKeyword.trim().length >= 2 &&
                         (keywordLoading ? (
-                          <div style={{ marginTop: 8 }}>Loading…</div>
+                          <div style={{ marginTop: 8 }}>
+                            <SearchSuggestionSkeleton
+                              count={4}
+                              label="Suggested searches"
+                            />
+                          </div>
                         ) : (
                           <div style={{ marginTop: 8 }}>
                             {/* 🏷 Title for typed suggestions */}

@@ -156,7 +156,7 @@ export default function ExculisiveContent({
   }, [showInfo, showContact]);
 
   // Example placeholder function for product links
-console.log("exxx", data)
+  console.log("exxx", data);
   // const imageUrl = "public/favicon.ico";
   const getHref = (p: Product) => {
     const slug = p.slug?.trim() || toSlug(p.name);
@@ -348,11 +348,11 @@ console.log("exxx", data)
         <meta name="twitter:description" content={metaDescription} />
       </Head>
 
-      <div className="col-lg-6 ">
+      <div className="col-lg-9 ">
         <div className="top-filter mb-10">
           <div className="row align-items-center">
-            <div className="col-lg-8">
-              <h1 className="show_count">
+            <div className="col-lg-12">
+              <h1 className="show_count text-center d-block mb-3">
                 <strong>{pageTitle}</strong>
               </h1>
             </div>

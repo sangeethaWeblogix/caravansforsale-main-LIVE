@@ -14,10 +14,9 @@ import ExculsiveContent from "./exculsiveContent";
 import FilterModal from "./FilterModal";
 import { flushSync } from "react-dom";
 import { v4 as uuidv4 } from "uuid";
-import "./newList.css?=279";
-import "./top-filters.css?=491";
+import "./newList.css?=18";
+import "./top-filters.css?=44";
 import dynamic from "next/dynamic";
-import Image from "next/image";
 import { filterOptions } from "./filterOptions"; // உங்க path adjust பண்ணு
 
 import ListingSkeleton from "../skelton";
@@ -33,8 +32,6 @@ import { parseSlugToFilters } from "../../components/urlBuilder";
 import Head from "next/head";
 import "./loader.css";
 import FilterSlider from "./FilterSlider";
-import StaticLinks from "./StaticLinks";
-import { useBanners } from "@/components/BannerHandler";
 // import Link from "next/link";
 
 /* --------- GLOBAL de-dupe across StrictMode remounts --------- */
@@ -257,9 +254,6 @@ export default function ListingsPage({
       }),
     });
   };
-
-  const { matchedBanners } = useBanners();
-  useEffect(() => {}, [matchedBanners]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -1395,13 +1389,11 @@ export default function ListingsPage({
 
     // ✅ Location hierarchy: state மாறினா region/suburb/pincode clear
     if ("state" in newFilters) {
-      // ✅ Only clear region if it was NOT explicitly passed together
-      if (!("region" in newFilters)) {
-        delete next.region;
-      }
+      delete next.region;
       delete next.suburb;
       delete next.pincode;
     }
+
     // ✅ State value capitalize பண்ணு — "new south wales" → "New South Wales"
     if (next.state) {
       next.state = next.state
@@ -1569,6 +1561,114 @@ export default function ListingsPage({
     filters.keyword,
   ]);
 
+  function buildStaticLinks(filters: Filters) {
+    const links: Record<string, { name: string; slug: string }[]> = {};
+
+    const hasState = !!filters.state;
+    const hasRegion = !!filters.region;
+
+    // ── Location ──
+    if (!hasState && !hasRegion) {
+      // No location selected → show all states
+      links.states = filterOptions.location.state.map((s) => ({
+        name: s.name,
+        slug: s.slug,
+      }));
+    } else if (hasState && !hasRegion) {
+      // State selected → show that state's regions
+      const found = filterOptions.location.state.find(
+        (s) => s.name.toLowerCase() === filters.state?.toLowerCase(),
+      );
+      if (found?.region && found.region.length > 0) {
+        links.regions = found.region.map((r) => ({
+          name: r.name,
+          slug: r.slug,
+        }));
+      }
+    } else if (hasState && hasRegion) {
+      // Region selected → show only that state (single item)
+      const found = filterOptions.location.state.find(
+        (s) => s.name.toLowerCase() === filters.state?.toLowerCase(),
+      );
+      if (found) {
+        links.states = [{ name: found.name, slug: found.slug }];
+      }
+    }
+
+    // ── Categories — always show ──
+    links.categories = filterOptions.categories.map((c) => ({
+      name: c.name,
+      slug: c.slug,
+    }));
+
+    // ── Price — always show ──
+    links.prices = filterOptions.price.map((p) => ({
+      name: p.name,
+      slug: p.slug,
+    }));
+
+    return links;
+  }
+
+  function buildStaticLinkUrl(
+    type: string,
+    slug: string,
+    currentFilters: Filters,
+  ): string {
+    // For state/region/category/price etc. — slug already has full path
+    // e.g. "/victoria-state/" → "/listings/victoria-state/"
+    const cleanSlug = slug.startsWith("/") ? slug.slice(1) : slug;
+
+    // If a category is already selected, prepend it before state/price etc.
+    // so URLs stay consistent with your slug builder
+    const base = buildSlugFromFilters({
+      ...currentFilters,
+      // Reset the filter we're about to set (avoid double slug)
+      ...(type === "categories" ? { category: undefined } : {}),
+      ...(type === "states" ? { state: undefined, region: undefined } : {}),
+      ...(type === "regions" ? { region: undefined } : {}),
+      ...(type === "prices"
+        ? { from_price: undefined, to_price: undefined }
+        : {}),
+      ...(type === "atm" ? { minKg: undefined, maxKg: undefined } : {}),
+      ...(type === "sleep"
+        ? { from_sleep: undefined, to_sleep: undefined }
+        : {}),
+      ...(type === "length"
+        ? { from_length: undefined, to_length: undefined }
+        : {}),
+    });
+
+    const safeBase = base.endsWith("/") ? base : `${base}/`;
+    return `${safeBase}${cleanSlug}`;
+  }
+
+  const staticLinks = useMemo(
+    () => buildStaticLinks(filters),
+    [
+      filters.category,
+      filters.state,
+      filters.from_price,
+      filters.to_price,
+      filters.minKg,
+      filters.maxKg,
+      filters.from_sleep,
+      filters.to_sleep,
+      filters.from_length,
+      filters.to_length,
+    ],
+  );
+
+  const SECTION_TITLES: Record<string, string> = {
+    categories: "Browse by Category",
+    states: "Browse by State",
+    regions: "Browse by Region",
+    prices: "Browse by Price",
+    atm: "Browse by ATM Weight",
+    sleep: "Browse by Sleeping Capacity",
+    length: "Browse by Length",
+  };
+
   return (
     <>
       <Head>
@@ -1588,85 +1688,36 @@ export default function ListingsPage({
           content={metaDescription || "Default Description"}
         />
       </Head>
-      <div>
+      {/* <div>
         <div className="cfs-links-section" id="static-links">
-          <StaticLinks filters={filters} />
+          {Object.entries(staticLinks).map(([sectionKey, items]) => {
+            if (!items || items.length === 0) return null;
+            return (
+              <div key={sectionKey} className="cfs-links-group">
+                <h5 className="cfs-filter-label">
+                  {SECTION_TITLES[sectionKey] || sectionKey}
+                </h5>
+                <ul className="cfs-links-list">
+                  {items.map((item) => {
+                    const linkUrl = buildStaticLinkUrl(
+                      sectionKey,
+                      item.slug,
+                      filters,
+                    );
+                    return (
+                      <li key={item.slug} className="cfs-links-item">
+                        <a href={linkUrl} className="cfs-links-link">
+                          {item.name}
+                        </a>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            );
+          })}
         </div>
-      </div>
-
-      <div className="container">
-        <div className="display_ad">
-          {false && (
-            <a
-              href="#"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="banner_ad_now"
-            >
-              {/* Desktop Image */}
-              <div className="banner-desktop">
-                <Image
-                  src="/images/static_index_dk_banner_3.jpg"
-                  alt="Caravans For Sale"
-                  className="hidden-xs"
-                  width={1200}
-                  height={200}
-                  priority
-                />
-              </div>
-
-              {/* Mobile Image */}
-              <div className="banner-mobile">
-                <Image
-                  src="/images/static_index_mb_banner_3.jpg"
-                  alt="Caravans For Sale Mobile"
-                  className="hidden-lg hidden-md hidden-sm"
-                  width={600}
-                  height={300}
-                  priority
-                />
-              </div>
-            </a>
-          )}
-        </div>
-      </div>
-
-      <div className="container">
-        <div className="display_ad">
-          {false && (
-            <a
-              href="#"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="banner_ad_now"
-            >
-              {/* Desktop Image */}
-              <div className="banner-desktop">
-                <Image
-                  src="/images/static_index_dk_banner_3.jpg"
-                  alt="Caravans For Sale"
-                  className="hidden-xs"
-                  width={1200}
-                  height={200}
-                  priority
-                />
-              </div>
-
-              {/* Mobile Image */}
-              <div className="banner-mobile">
-                <Image
-                  src="/images/static_index_mb_banner_3.jpg"
-                  alt="Caravans For Sale Mobile"
-                  className="hidden-lg hidden-md hidden-sm"
-                  width={600}
-                  height={300}
-                  priority
-                />
-              </div>
-            </a>
-          )}
-        </div>
-      </div>
+      </div> */}
 
       <div className="search-bar">
         <div className="container">
@@ -1681,9 +1732,7 @@ export default function ListingsPage({
                     {activeFilterCount > 0 ? (
                       <span className="filter-count">{activeFilterCount}</span>
                     ) : (
-                      <span>
-                        <i className="bi bi-filter"></i>
-                      </span>
+                      <i className="bi bi-filter"></i>
                     )}{" "}
                     Filters
                   </button>
@@ -1699,13 +1748,13 @@ export default function ListingsPage({
                       handleSliderFilterSelect({ category: slug ?? undefined })
                     }
                     onLocationSelect={(state, region) => {
-                      if (state === null && region === null) {
-                        handleSliderFilterSelect({
-                          state: undefined,
-                          region: undefined,
-                        });
-                        return;
-                      }
+                      const normalize = (s: string | null) =>
+                        s ? s.toLowerCase().replace(/-/g, " ").trim() : "";
+
+                      // ✅ normalize பண்ணி compare — case/hyphen mismatch தவிர்க்கணும்
+                      const prevState = filtersRef.current.state ?? null;
+                      const stateChanged =
+                        normalize(state) !== normalize(prevState);
 
                       const cap = (s: string | null) =>
                         s
@@ -1714,11 +1763,30 @@ export default function ListingsPage({
                               .replace(/\b\w/g, (c) => c.toUpperCase())
                           : undefined;
 
-                      // ✅ Always pass both state + region together — never split
-                      handleSliderFilterSelect({
-                        state: cap(state),
-                        region: cap(region),
-                      });
+                      console.log(
+                        "🔥 onLocationSelect — state:",
+                        state,
+                        "region:",
+                        region,
+                      );
+                      console.log(
+                        "🔥 prevState:",
+                        prevState,
+                        "stateChanged:",
+                        stateChanged,
+                      );
+
+                      if (state === null && region === null) {
+                        handleSliderFilterSelect({
+                          state: undefined,
+                          region: undefined,
+                        });
+                      } else if (stateChanged) {
+                        handleSliderFilterSelect({ state: cap(state) });
+                      } else {
+                        // ✅ Same state — region மட்டும் pass, "state" key இல்லாம
+                        handleSliderFilterSelect({ region: cap(region) });
+                      }
                     }}
                     onPriceSelect={(from, to) => {
                       const next: Partial<Filters> = {};
@@ -1814,13 +1882,13 @@ export default function ListingsPage({
         <div className="container">
           <div className="content mb-4">
             {/*<div className="text-sm text-gray-600 header">
-                  <Link href="/" className="hover:underline">
-                    Home
-                  </Link>{" "}
-                  &gt; <span className="font-medium text-black"> Listings</span>
-                </div>
-    
-                <h1 className="page-title">{pageTitle}</h1>*/}
+                 <Link href="/" className="hover:underline">
+                   Home
+                 </Link>{" "}
+                 &gt; <span className="font-medium text-black"> Listings</span>
+               </div>
+   
+               <h1 className="page-title">{pageTitle}</h1>*/}
             <div ref={sentinelRef} style={{ height: "1px" }} />
             <div className="row">
               {/* Desktop sidebar */}

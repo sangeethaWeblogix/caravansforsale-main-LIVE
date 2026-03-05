@@ -1,5 +1,3 @@
-"use client";
-
 import "./footer.css";
 import Link from "next/link";
 import {
@@ -9,13 +7,9 @@ import {
   FaPinterestP,
 } from "react-icons/fa";
 import { BsChevronUp } from "react-icons/bs";
-import { useEffect, useState } from "react";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-  if (!mounted) return null;
 
   return (
     <>

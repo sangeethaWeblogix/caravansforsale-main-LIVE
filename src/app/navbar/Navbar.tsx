@@ -1,4 +1,3 @@
-
 "use client";
 
 import "./navbar.css";
@@ -7,8 +6,16 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useSearchParams } from "next/navigation";
 
-
-type DropdownType = "state" | "category" | "price" | "condition" | "manufacturers" | "weight" | "length" | "sleep" | null;
+type DropdownType =
+  | "state"
+  | "category"
+  | "price"
+  | "condition"
+  | "manufacturers"
+  | "weight"
+  | "length"
+  | "sleep"
+  | null;
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -64,7 +71,6 @@ export default function Navbar() {
     setIsOpen(false);
     setOpenDropdown(null);
   };
-
 
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
@@ -145,7 +151,6 @@ export default function Navbar() {
               )}
             </div> */}
 
-
             <div className="left_menu">
               <input
                 type="checkbox"
@@ -172,7 +177,6 @@ export default function Navbar() {
         <div id="mySidenav" className={`sidenav ${isOpen ? "open" : ""}`}>
           <div className="sidebar-navigation">
             <ul>
-
               {/* <li>
                 <a href="/sell-my-caravan/"
                   onClick={() => {
@@ -196,9 +200,10 @@ export default function Navbar() {
               </li> */}
 
               <li>
-                <a href="/listings/"
+                <a
+                  href="/listings/"
                   onClick={() => {
-                    setNavigating(true); // start loader immediately
+                    // setNavigating(true); // start loader immediately
                     closeNav();
                   }}
                 >
@@ -527,8 +532,6 @@ export default function Navbar() {
                 </ul>
               </li> */}
 
-
-
               {/* <li>
                 <a href="/used-all/"
                   onClick={() => {
@@ -540,26 +543,35 @@ export default function Navbar() {
                 </a>
               </li>  */}
               <li>
-                <a href="/blog/" onClick={() => {
-                  // setNavigating(true); // start loader immediately
-                  closeNav();
-                }} >
+                <a
+                  href="/blog/"
+                  onClick={() => {
+                    // setNavigating(true); // start loader immediately
+                    closeNav();
+                  }}
+                >
                   Blog
                 </a>
               </li>
               <li>
-                <a href="/about-us/" onClick={() => {
-                  // setNavigating(true); // start loader immediately
-                  closeNav();
-                }} >
+                <a
+                  href="/about-us/"
+                  onClick={() => {
+                    // setNavigating(true); // start loader immediately
+                    closeNav();
+                  }}
+                >
                   About
                 </a>
               </li>
               <li>
-                <a href="/contact/" onClick={() => {
-                  // setNavigating(true); // start loader immediately
-                  closeNav();
-                }}>
+                <a
+                  href="/contact/"
+                  onClick={() => {
+                    // setNavigating(true); // start loader immediately
+                    closeNav();
+                  }}
+                >
                   Contact
                 </a>
               </li>
@@ -614,8 +626,6 @@ export default function Navbar() {
             <div className="mt-2 fw-semibold">Loading…</div>
           </div>
         </div>
-
-
       )}
     </>
   );

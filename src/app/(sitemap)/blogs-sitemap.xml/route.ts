@@ -26,7 +26,7 @@ export async function GET() {
       }</lastmod>
       <changefreq>daily</changefreq>
       <priority>0.7</priority>
-    </url>`
+    </url>`,
     )
     .join("");
 

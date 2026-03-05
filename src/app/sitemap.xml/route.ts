@@ -19,7 +19,7 @@ export async function GET() {
     // "length-sitemap.xml",
     // "sleep-sitemap.xml",
     // "state-make-sitemap.xml",
-    // "region-make-sitemap.xml", 
+    // "region-make-sitemap.xml",
     // "category-state-sitemap.xml",
     // "category-region-sitemap.xml",
     // "category-sleep-sitemap.xml",
@@ -35,7 +35,7 @@ export async function GET() {
       (file) => `  <sitemap>
     <loc>${siteUrl}/${file}</loc>
     <lastmod>${lastModified}</lastmod>
-  </sitemap>`
+  </sitemap>`,
     ),
     "</sitemapindex>",
   ].join("\n");

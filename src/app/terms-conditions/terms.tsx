@@ -202,15 +202,15 @@ const TermsAndConditions = () => {
 
               <h4>21. Effective Date</h4>
               <p>
-                These Terms are effective as of 21/6/2024, and any updates or modifications to
+                These Terms are effective as of 23/2/2026, and any updates or modifications to
                 these Terms shall be effective as of the date they are posted on the Marketplace Network websites including caravansforsale.com.au.
               </p>
 
               <h4>22. Contact Information</h4>
               <p>If you have any questions or concerns about these Terms, please contact us at:</p>
               <p>Marketplace Network Pty Ltd</p>
-              <p>Email – questions: info@caravansforsale.com.au</p>
-              <p>Email – complaints: complaints@caravansforsale.com.au</p>
+               <p>Email – questions: info@marketplacenetwork.com.au</p>
+              <p>Email – complaints: complaints@marketplacenetwork.com.au</p>
             </div>
           </div>
         </div>

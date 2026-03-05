@@ -24,6 +24,12 @@ import { fetchAtmBasedCaravans } from "@/api/homeApi/weight/api";
 import { fetchLengthBasedCaravans } from "@/api/homeApi/length/api";
 import { fetchUsedCaravansList } from "@/api/homeApi/usedCaravanList/api";
 import { fetchStateBasedCaravans } from "@/api/homeApi/state/api";
+import TabCardSkeleton from "./components/TabCardSkeleton";
+import CaravansByStateSkeleton from "./components/Caravansbystateskeleton";
+import SearchSuggestionSkeleton from "./components/Searchsuggestionskeleton ";
+import { useBanners } from "@/components/BannerHandler";
+import { useBannerTracking } from "@/hooks/useBannerTracking";
+
 interface TabsItem {
   label: string;
   capacity: number;
@@ -71,6 +77,8 @@ export default function SearchSection() {
   const [category, setCategory] = useState("");
   const [location, setLocation] = useState("");
   const [conditionValue, setConditionValue] = useState("");
+  const [stateBandsLoading, setStateBandsLoading] = useState(true); // ← ADD THIS
+
   const isSearchEnabled = category || location || conditionValue;
   const [activeIndex, setActiveIndex] = useState(0);
 
@@ -128,6 +136,7 @@ export default function SearchSection() {
       setUsedState(usedData.by_state);
       setUsedRegion(usedData.by_region);
       setStateBands(state);
+      setStateBandsLoading(false); // ← ADD THIS
     }
 
     loadAll();
@@ -138,70 +147,70 @@ export default function SearchSection() {
     label: string;
     cards: TabCard[];
   }[] = [
-    {
-      key: "Region",
-      label: "Location",
-      cards: regionBands.map((item) => ({
-        title: "Caravans for Sale in " + item.region,
-        sub: `${item.caravan_count ?? 0}`,
-        url: `/listings/${item.permalink}`,
-      })),
-    },
-    {
-      key: "price",
-      label: "Price",
-      cards: priceBands.map((item) => ({
-        title: "Caravans for Sale " + item.short_label,
-        sub: `${item.caravan_count ?? 0}`,
-        url: `/listings/${item.permalink}`,
-      })),
-    },
-    {
-      key: "Weight",
-      label: "Weight",
-      cards: atmBands.map((item) => ({
-        title: "Caravans for Sale " + item.short_label,
-        sub: `${item.caravan_count ?? 0}`,
-        url: `/listings/${item.permalink}`,
-      })),
-    },
-    {
-      key: "Sleep",
-      label: "Sleep",
-      cards: sleepBands.map((item) => ({
-        title: "Caravans for Sale " + item.short_label,
-        sub: `${item.caravan_count ?? 0}`,
-        url: `/listings/${item.permalink}`,
-      })),
-    },
-    {
-      key: "Length",
-      label: "Length",
-      cards: lengthBands.map((item) => ({
-        title: "Caravans for Sale " + item.short_label,
-        sub: `${item.caravan_count ?? 0}`,
-        url: `/listings/${item.permalink}`,
-      })),
-    },
-    // {
-    //   key: "Used",
-    //   label: "Used",
-    //   cards: usedCategoryList.map((item) => ({
-    //     title: item.short_label,
-    //     sub: item.short_count,
-    //     url: `/listings/${item.permalink}`,
-    //   })),
-    // },
-    {
-      key: "Manufacturer",
-      label: "Manufacturer",
-      cards: manufactureBands.map((item) => ({
-        title: item.short_label + " Caravans for Sale",
-        sub: `${item.caravan_count ?? 0}`,
-        url: `/listings/${item.permalink}`,
-      })),
-    },
-  ];
+      {
+        key: "Region",
+        label: "Location",
+        cards: regionBands.map((item) => ({
+          title: "Caravans for Sale in " + item.region,
+          sub: `${item.caravan_count ?? 0}`,
+          url: `/listings/${item.permalink}`,
+        })),
+      },
+      {
+        key: "price",
+        label: "Price",
+        cards: priceBands.map((item) => ({
+          title: "Caravans for Sale " + item.short_label,
+          sub: `${item.caravan_count ?? 0}`,
+          url: `/listings/${item.permalink}`,
+        })),
+      },
+      {
+        key: "Weight",
+        label: "Weight",
+        cards: atmBands.map((item) => ({
+          title: "Caravans for Sale " + item.short_label,
+          sub: `${item.caravan_count ?? 0}`,
+          url: `/listings/${item.permalink}`,
+        })),
+      },
+      {
+        key: "Sleep",
+        label: "Sleep",
+        cards: sleepBands.map((item) => ({
+          title: "Caravans for Sale " + item.short_label,
+          sub: `${item.caravan_count ?? 0}`,
+          url: `/listings/${item.permalink}`,
+        })),
+      },
+      {
+        key: "Length",
+        label: "Length",
+        cards: lengthBands.map((item) => ({
+          title: "Caravans for Sale " + item.short_label,
+          sub: `${item.caravan_count ?? 0}`,
+          url: `/listings/${item.permalink}`,
+        })),
+      },
+      // {
+      //   key: "Used",
+      //   label: "Used",
+      //   cards: usedCategoryList.map((item) => ({
+      //     title: item.short_label,
+      //     sub: item.short_count,
+      //     url: `/listings/${item.permalink}`,
+      //   })),
+      // },
+      {
+        key: "Manufacturer",
+        label: "Manufacturer",
+        cards: manufactureBands.map((item) => ({
+          title: item.short_label + " Caravans for Sale",
+          sub: `${item.caravan_count ?? 0}`,
+          url: `/listings/${item.permalink}`,
+        })),
+      },
+    ];
 
   const [activeTab, setActiveTab] = useState(tabsData[0].key);
   const currentTab = tabsData.find((t) => t.key === activeTab);
@@ -324,6 +333,7 @@ export default function SearchSection() {
   };
 
   const closeSuggestions = () => setIsSuggestionBoxOpen(false);
+  const isTabsLoading = tabsData.every((t) => t.cards.length === 0);
 
   // ------------- typed suggestions (≥ 3 chars) -------------
   useEffect(() => {
@@ -430,6 +440,9 @@ export default function SearchSection() {
 
   const showingFromKeywordApi = query.length >= 3;
 
+  const { matchedBanners } = useBanners();
+  const { bannerRefs, trackClick } = useBannerTracking(matchedBanners);
+
   return (
     <div>
       <div className="ad_banner">
@@ -519,7 +532,7 @@ export default function SearchSection() {
                     aria-labelledby="pills-find-tab"
                   >
                     <div className="content-info text-center pb-0">
-                      <ul className="category_icon list-unstyled d-flex flex-wrap justify-content-start">
+                      <ul className="category_icon list-unstyled d-flex justify-content-start">
                         <li>
                           <a href="/listings/off-road-category/">
                             <div className="item-image">
@@ -680,8 +693,16 @@ export default function SearchSection() {
 
                           {error && <p className="text-red-600">{error}</p>}
 
-                          {!error && loading && <p>Loading…</p>}
-
+                          {!error && loading && (
+                            <SearchSuggestionSkeleton
+                              count={6}
+                              label={
+                                showingFromKeywordApi
+                                  ? "Suggested searches"
+                                  : "Popular searches"
+                              }
+                            />
+                          )}
                           {!error && !loading && (
                             <ul className="text-left" id="suggestionList">
                               {suggestions?.length ? (
@@ -712,8 +733,54 @@ export default function SearchSection() {
               </div>
             </div>
           </div>
+          <div className="display_ad">
+            {false && matchedBanners.map((banner, index) => (
+              <a
+                key={banner.id}
+                ref={(el) => {
+                  bannerRefs.current[index] = el;
+                }}
+                data-index={index}
+                href={banner.target_href_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="banner_ad_now mb-0"
+                onClick={() => trackClick(banner.id)}
+              >
+                {/* Desktop Image */}
+                {banner.banner_size === "horizontal_large" && (
+                  <div className="banner-desktop">
+                    <Image
+                      src={banner.image_url}
+                      alt={banner.name}
+                      className="hidden-xs"
+                      width={1200}
+                      height={200}
+                      priority
+
+                    />
+                  </div>
+                )}
+
+                {/* Mobile Image */}
+                {banner.banner_size === "vertical_small" && (
+                  <div className="banner-mobile">
+                    <Image
+                      src={banner.image_url}
+                      alt={banner.name}
+                      className="hidden-lg hidden-md hidden-sm"
+                      width={600}
+                      height={300}
+                      priority
+                    />
+                  </div>
+                )}
+              </a>
+            ))}
+          </div>
         </div>
       </div>
+
       {/* Caravans by State Section */}
       <div className="caravans_by_state related-products services section-padding style-1 pt-0">
         <div className="container">
@@ -724,72 +791,75 @@ export default function SearchSection() {
               </div>
             </div>
           </div>
+          {stateBandsLoading ? (
+            <CaravansByStateSkeleton count={4} />
+          ) : (
+            <div className="content">
+              <div className="explore-state position-relative">
+                <Swiper
+                  modules={[Navigation]}
+                  navigation={{
+                    nextEl: ".state-manu-next",
+                    prevEl: ".state-manu-prev",
+                  }}
+                  //autoplay={{ delay: 3000 }}
+                  spaceBetween={20}
+                  slidesPerView={1}
+                  breakpoints={{
+                    768: { slidesPerView: 2 },
+                    1024: { slidesPerView: 4 },
+                    1280: { slidesPerView: 4 },
+                  }}
+                >
+                  {stateBands.map((item, index) => {
+                    const key = item.state.toLowerCase().replace(/\s+/g, "-");
 
-          <div className="content">
-            <div className="explore-state position-relative">
-              <Swiper
-                modules={[Navigation]}
-                navigation={{
-                  nextEl: ".state-manu-next",
-                  prevEl: ".state-manu-prev",
-                }}
-                //autoplay={{ delay: 3000 }}
-                spaceBetween={20}
-                slidesPerView={1}
-                breakpoints={{
-                  768: { slidesPerView: 2 },
-                  1024: { slidesPerView: 4 },
-                  1280: { slidesPerView: 4 },
-                }}
-              >
-                {stateBands.map((item, index) => {
-                  const key = item.state.toLowerCase().replace(/\s+/g, "-");
+                    const meta = stateMeta[key] || {};
+                    const stateCode = meta.code || "";
+                    const mapImage = meta.image || "";
 
-                  const meta = stateMeta[key] || {};
-                  const stateCode = meta.code || "";
-                  const mapImage = meta.image || "";
+                    return (
+                      <SwiperSlide key={index}>
+                        <div className="service-box">
+                          <div className="sec_right">
+                            <span>
+                              <Image
+                                src={mapImage}
+                                alt={`${item.state} map`}
+                                width={100}
+                                height={100}
+                              />
+                            </span>
+                          </div>
+                          <div className="sec_left">
+                            <h3>{item.state}</h3>
+                            <div className="info">
+                              <div className="quick_linkss">
+                                {/* ✔ API BASED DISPLAY TEXT */}
+                                <p>{item.display_text}</p>
 
-                  return (
-                    <SwiperSlide key={index}>
-                      <div className="service-box">
-                        <div className="sec_right">
-                          <span>
-                            <Image
-                              src={mapImage}
-                              alt={`${item.state} map`}
-                              width={100}
-                              height={100}
-                            />
-                          </span>
-                        </div>
-                        <div className="sec_left">
-                          <h3>{item.state}</h3>
-                          <div className="info">
-                            <div className="quick_linkss">
-                              {/* ✔ API BASED DISPLAY TEXT */}
-                              <p>{item.display_text}</p>
-
-                              <a
-                                className="view_all"
-                                href={`/listings${item.permalink}`}
-                              >
-                                View All Caravans for Sale in {stateCode}{" "}
-                                <i className="bi bi-chevron-right"></i>
-                              </a>
+                                <a
+                                  className="view_all"
+                                  href={`/listings${item.permalink}`}
+                                >
+                                  View All Caravans for Sale in {stateCode}{" "}
+                                  <i className="bi bi-chevron-right"></i>
+                                </a>
+                              </div>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    </SwiperSlide>
-                  );
-                })}
-              </Swiper>
+                      </SwiperSlide>
+                    );
+                  })}
+                </Swiper>
 
-              {/* Arrows */}
-              <div className="swiper-button-next state-manu-next" />
-              <div className="swiper-button-prev state-manu-prev" />
+                {/* Arrows */}
+                <div className="swiper-button-next state-manu-next" />
+                <div className="swiper-button-prev state-manu-prev" />
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
       <div className="quick_links_tabs">
@@ -804,9 +874,8 @@ export default function SearchSection() {
                 {tabsData.map((tab) => (
                   <button
                     key={tab.key}
-                    className={`custom-tab-btn ${
-                      activeTab === tab.key ? "active" : ""
-                    }`}
+                    className={`custom-tab-btn ${activeTab === tab.key ? "active" : ""
+                      }`}
                     onClick={() => setActiveTab(tab.key)}
                     type="button"
                   >
@@ -837,15 +906,18 @@ export default function SearchSection() {
                   className="custom-card-grid"
                   style={{ display: activeTab === tab.key ? "grid" : "none" }}
                 >
-                  {tab.cards?.map((item, index) => (
-                    
-                    <a href={item.url} className="custom-card" key={index}>
-                      <h4 className="custom-card-title">
-                        <span className="count">{item.sub}</span> {item.title}
-                      </h4>
-                    </a>
-
-                  ))}
+                  {isTabsLoading
+                    ? Array.from({ length: 6 }).map((_, i) => (
+                      <TabCardSkeleton key={i} />
+                    ))
+                    : tab.cards?.map((item, index) => (
+                      <a href={item.url} className="custom-card" key={index}>
+                        <h4 className="custom-card-title">
+                          <span className="count">{item.sub}</span>{" "}
+                          {item.title}
+                        </h4>
+                      </a>
+                    ))}
                 </div>
               ))}
             </div>

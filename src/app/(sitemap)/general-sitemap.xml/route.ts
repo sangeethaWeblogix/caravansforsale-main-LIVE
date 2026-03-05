@@ -6,7 +6,6 @@ const SITE_URL =
 
 // Static URLs (you can extend this later with categories, states, regions)
 const staticUrls = [
-  
   "caravan-manufacturers",
   "off-road-caravans-manufacturers",
   "listings",
