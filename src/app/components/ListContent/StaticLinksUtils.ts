@@ -97,7 +97,6 @@ export function buildStaticLinks(
     links.categories = filterOptions.categories;
     links.states = filterOptions.location.state;
     links.prices = filterOptions.price;
-    links.all = [{ name: "All Caravans", slug: "/listings/" }]; // ← add
 
     return links;
   }
@@ -159,33 +158,103 @@ export function buildStaticLinks(
     }
 
     if (hasPrice) {
-      links.prices = filterOptions.price;
-      links.all = [{ name: "All Caravans", slug: "/listings/" }]; // ← add
+      const from = Number(filters.from_price);
+      const to = filters.to_price ? Number(filters.to_price) : null;
+      const type = filters.type;
 
+      if (to && !type) {
+        // between — selected value-க்கு மேல உள்ளவை
+        links.prices = filterOptions.price.filter((p) => {
+          const nums =
+            p.slug.replace(/\//g, "").match(/\d+/g)?.map(Number) ?? [];
+          return nums[0] >= to;
+        });
+      } else if (type === "under") {
+        // under — selected value-க்கு கீழ உள்ளவை
+        links.prices = filterOptions.price.filter((p) => {
+          const nums =
+            p.slug.replace(/\//g, "").match(/\d+/g)?.map(Number) ?? [];
+          return nums[0] < (to || from);
+        });
+      } else {
+        // over — selected value-க்கு மேல உள்ளவை
+        links.prices = filterOptions.price.filter((p) => {
+          const slug = p.slug.replace(/\//g, "");
+          const nums = slug.match(/\d+/g)?.map(Number) ?? [];
+          if (slug.startsWith("between")) return nums[0] >= from;
+          if (slug.startsWith("over")) return nums[0] > from;
+          return false;
+        });
+      }
+
+      links.all = [{ name: "All Caravans", slug: "/listings/" }];
       return links;
     }
-
     if (hasAtm) {
-      links.atm = filterOptions.atm;
-      links.all = [{ name: "All Caravans", slug: "/listings/" }]; // ← add
+      const min = filters.minKg ? Number(filters.minKg) : null;
+      const max = filters.maxKg ? Number(filters.maxKg) : null;
 
+      links.atm = filterOptions.atm.filter((o) => {
+        const nums = o.value.split("-").map(Number);
+        const optMin = nums[0];
+
+        if (min && !max) {
+          return optMin >= min;
+        } else if (!min && max) {
+          return optMin < max;
+        } else if (min && max) {
+          return optMin >= max;
+        }
+        return true;
+      });
+
+      links.all = [{ name: "All Caravans", slug: "/listings/" }];
       return links;
     }
 
     if (hasLength) {
-      links.length = filterOptions.length;
-      links.all = [{ name: "All Caravans", slug: "/listings/" }]; // ← add
+      const min = filters.from_length ? Number(filters.from_length) : null;
+      const max = filters.to_length ? Number(filters.to_length) : null;
 
+      links.length = filterOptions.length.filter((o) => {
+        const nums = o.value.split("-").map(Number);
+        const optMin = nums[0];
+
+        if (min && !max) {
+          return optMin >= min;
+        } else if (!min && max) {
+          return optMin < max;
+        } else if (min && max) {
+          return optMin >= max;
+        }
+        return true;
+      });
+
+      links.all = [{ name: "All Caravans", slug: "/listings/" }];
       return links;
     }
 
     if (hasSleep) {
-      links.sleep = filterOptions.sleep;
-      links.all = [{ name: "All Caravans", slug: "/listings/" }]; // ← add
+      const from = filters.from_sleep ? Number(filters.from_sleep) : null;
+      const to = filters.to_sleep ? Number(filters.to_sleep) : null;
 
+      links.sleep = filterOptions.sleep.filter((o) => {
+        const nums = o.value.split("-").map(Number);
+        const optMin = nums[0];
+
+        if (from && !to) {
+          return optMin >= from;
+        } else if (!from && to) {
+          return optMin < to;
+        } else if (from && to) {
+          return optMin >= to;
+        }
+        return true;
+      });
+
+      links.all = [{ name: "All Caravans", slug: "/listings/" }];
       return links;
     }
-
     links.all = [{ name: "All Caravans", slug: "/listings/" }];
     return links;
   }
@@ -487,7 +556,7 @@ export function buildStaticLinkUrl(
         normalFilters.from_price = Number(parts[0]);
         normalFilters.to_price = Number(parts[1]);
       } else if (cleanSlug.startsWith("under")) {
-        normalFilters.from_price = Number(parts[0]);
+        normalFilters.to_price = Number(parts[0]);
         normalFilters.type = "under";
       } else if (cleanSlug.startsWith("over")) {
         normalFilters.from_price = Number(parts[0]);
