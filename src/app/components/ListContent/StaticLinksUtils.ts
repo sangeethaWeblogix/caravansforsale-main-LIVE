@@ -138,11 +138,32 @@ export function buildStaticLinks(
       const state = filterOptions.location.state.find(
         (s) => s.name.toLowerCase() === filters.state?.toLowerCase(),
       );
-
+      if (hasRegion) {
+        const state = filterOptions.location.state.find(
+          (s) => s.name.toLowerCase() === filters.state?.toLowerCase(),
+        );
+        if (state?.region) {
+          links.regions = state.region.filter(
+            (r) => r.name.toLowerCase() === filters.region?.toLowerCase(),
+          );
+        }
+      }
+      if (
+        hasState &&
+        hasRegion &&
+        !hasCategory &&
+        !hasPrice &&
+        !hasAtm &&
+        !hasLength &&
+        !hasSleep &&
+        !hasMake
+      ) {
+        links.categories = filterOptions.categories;
+      }
       // selected state link
-      links.states = filterOptions.location.state.filter(
-        (s) => s.name.toLowerCase() === filters.state?.toLowerCase(),
-      );
+      // links.states = filterOptions.location.state.filter(
+      //   (s) => s.name.toLowerCase() === filters.state?.toLowerCase(),
+      // );
 
       // that state's regions
       if (state?.region) links.regions = state.region;
@@ -151,7 +172,7 @@ export function buildStaticLinks(
       links.categories = filterOptions.categories;
 
       // all prices
-      links.prices = filterOptions.price;
+      // links.prices = filterOptions.price;
       links.all = [{ name: "All Caravans", slug: "/listings/" }]; // ← add
 
       return links;
@@ -288,6 +309,24 @@ export function buildStaticLinks(
           (r) => r.name.toLowerCase() === filters.region?.toLowerCase(),
         );
       }
+      if (
+        hasState &&
+        hasRegion &&
+        !hasCategory &&
+        !hasPrice &&
+        !hasAtm &&
+        !hasLength &&
+        !hasSleep &&
+        !hasMake
+      ) {
+        links.categories = filterOptions.categories;
+      }
+
+      // if (state?.region) {
+      //   links.regions = state.region.filter(
+      //     (r) => r.name.toLowerCase() === filters.region?.toLowerCase(),
+      //   );
+      // }
     }
 
     if (hasPrice) {
@@ -464,6 +503,8 @@ export function buildStaticLinkUrl(
 
     if (type === "categories") {
       directFilters.category = cleanSlug.replace("-category", "");
+      if (currentFilters.state) directFilters.state = currentFilters.state;
+      if (currentFilters.region) directFilters.region = currentFilters.region;
     } else if (type === "states") {
       directFilters.state = cleanSlug.replace("-state", "");
     } else if (type === "regions") {
