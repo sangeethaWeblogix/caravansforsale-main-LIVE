@@ -64,12 +64,11 @@ export function useBannerTracking(banners: Banner[]) {
       (entries) => {
         entries.forEach((entry) => {
           if (!entry.isIntersecting) return;
+          const bannerId = Number(entry.target.getAttribute("data-banner-id"));
 
-          const index = Number(entry.target.getAttribute("data-index"));
-          const banner = banners[index];
-          if (!banner) return;
+          if (!bannerId) return;
 
-          track(banner.id, "impression");
+          track(bannerId, "impression");
           observer.unobserve(entry.target);
         });
       },
