@@ -488,9 +488,7 @@ export default function ListingContent({
                   <strong>{count} </strong>
                 </span>
               )}
-              <h1 className="show_count d-inline">
-                <strong>{text}</strong>
-              </h1>
+              <h1 className="show_count d-inline fw-bolder">{text}</h1>
             </div>
 
             {/* <div className="col-4 d-lg-none d-md-none">
