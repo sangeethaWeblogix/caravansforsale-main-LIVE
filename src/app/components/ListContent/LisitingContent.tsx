@@ -146,7 +146,7 @@ export default function ListingContent({
     setNavigating(false);
   }, [pathname]);
 
-  const IMAGE_BASE_URL = "https://caravansforsale.imagestack.net/800x600/";
+  const IMAGE_BASE_URL = "https://caravansforsale.imagestack.net/";
 
   const IMAGE_EXT = ".avif";
 
@@ -234,15 +234,13 @@ export default function ListingContent({
 
   const getFirstImage = (item: Product): string | undefined => {
     const img = item.image_format?.[0];
-    return img ? `${IMAGE_BASE_URL}${img}${IMAGE_EXT}` : undefined;
+    return img ? `${img}` : undefined;
   };
 
   const getRemainingImages = (item: Product): string[] => {
     if (!Array.isArray(item.image_format)) return [];
 
-    return item.image_format
-      .slice(0, MAX_SWIPER_IMAGES)
-      .map((img) => `${IMAGE_BASE_URL}${img}${IMAGE_EXT}`);
+    return item.image_format.slice(0, MAX_SWIPER_IMAGES).map((img) => `${img}`);
   };
 
   const loadRemaining = (item: Product) => {
