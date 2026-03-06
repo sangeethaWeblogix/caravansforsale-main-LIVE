@@ -14,6 +14,8 @@ import { useEnquiryForm } from "./enquiryform";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { buildSlugFromFilters } from "../slugBuilter";
 import Image from "next/image";
+import { useBanners } from "@/components/BannerHandler";
+import { useBannerTracking } from "@/hooks/useBannerTracking";
 
 interface Product {
   id: number;
@@ -465,6 +467,10 @@ export default function ListingContent({
 
     loadRemaining(item);
   };
+
+  const { matchedBanners, isMobile } = useBanners();
+  const { bannerRefs, trackClick } = useBannerTracking(matchedBanners);
+  const rightBanners = matchedBanners.filter(b => b.position === "right");
 
   return (
     <>
@@ -1057,40 +1063,33 @@ export default function ListingContent({
           </div>
         </div>
         <div className="display_ad listing_sticky">
-          <a
-            href="#"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="banner_ad_now mb-0"
-          >
-            {false && (
-              <>
-                {/* Desktop Image */}
-                <div className="banner-desktop">
-                  <Image
-                    src="/images/static_index_dk_banner.jpg"
-                    alt="Caravans For Sale"
-                    className="hidden-xs"
-                    width={1200}
-                    height={200}
-                    priority
-                  />
-                </div>
-
-                {/* Mobile Image */}
-                <div className="banner-mobile">
-                  <Image
-                    src="/images/static_index_mb_banner_3.jpg"
-                    alt="Caravans For Sale Mobile"
-                    className="hidden-lg hidden-md hidden-sm"
-                    width={600}
-                    height={300}
-                    priority
-                  />
-                </div>
-              </>
-            )}
-          </a>
+           {false && rightBanners.filter(b => isMobile
+                ? ["vertical_small", "horizontal_small"].includes(b.banner_size)
+                : ["horizontal_large", "vertical_large"].includes(b.banner_size)
+            ).map((banner, index) => (
+              <a
+                key={banner.id}
+                ref={(el) => {
+                  bannerRefs.current[index] = el;
+                }}
+                data-banner-id={banner.id}
+                href={banner.target_href_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="banner_ad_now mb-0"
+                onClick={() => trackClick(banner.id)}
+              >
+                  <div className={isMobile ? "banner-mobile" : "banner-desktop"}>
+                    <Image
+                      src={banner.image_url}
+                      alt={banner.name}
+                      width={isMobile ? 600 : 1200}
+                      height={isMobile ? 300 : 200}
+                      priority
+                    />
+                  </div>
+              </a>
+            ))}
         </div>
       </div>
       {/* )} */}

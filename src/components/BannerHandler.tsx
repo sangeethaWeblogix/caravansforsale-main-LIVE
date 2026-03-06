@@ -27,6 +27,7 @@ type FullBanner = {
 
 type BannerContextType = {
   matchedBanners: FullBanner[];
+  isMobile: boolean;
 };
 
 const BannerContext = createContext<BannerContextType | undefined>(undefined);
@@ -34,6 +35,7 @@ const BannerContext = createContext<BannerContextType | undefined>(undefined);
 export function BannerProvider({ children }: { children: ReactNode }) {
   const [allBanners, setAllBanners] = useState<FullBanner[]>([]);
   const [matchedBanners, setMatchedBanners] = useState<FullBanner[]>([]);
+  const [isMobile, setIsMobile] = useState(false);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -62,8 +64,19 @@ export function BannerProvider({ children }: { children: ReactNode }) {
     setMatchedBanners(filtered);
   }, [pathname, allBanners]);
 
+  useEffect(() => {
+    const check = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    check();
+    window.addEventListener("resize", check);
+
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
   return (
-    <BannerContext.Provider value={{ matchedBanners }}>
+    <BannerContext.Provider value={{ matchedBanners, isMobile }}>
       {children}
     </BannerContext.Provider>
   );

@@ -440,9 +440,8 @@ export default function SearchSection() {
 
   const showingFromKeywordApi = query.length >= 3;
 
-  const { matchedBanners } = useBanners();
+  const { matchedBanners, isMobile } = useBanners();
   const { bannerRefs, trackClick } = useBannerTracking(matchedBanners);
-  const isMobile = typeof window !== "undefined" ? window.innerWidth < 768 : false;
 
   return (
     <div>
@@ -735,9 +734,9 @@ export default function SearchSection() {
             </div>
           </div>
           <div className="display_ad">
-            {false && matchedBanners.filter(b => isMobile 
-                ? b.banner_size === "vertical_small"
-                : b.banner_size === "horizontal_large"
+            {false && matchedBanners.filter(b => isMobile
+                 ? ["vertical_small", "horizontal_small"].includes(b.banner_size)
+                 : ["horizontal_large", "vertical_large"].includes(b.banner_size)
             ).map((banner, index) => (
               <a
                 key={banner.id}

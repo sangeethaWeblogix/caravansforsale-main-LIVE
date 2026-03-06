@@ -35,6 +35,7 @@ import "./loader.css";
 import FilterSlider from "./FilterSlider";
 import StaticLinks from "./StaticLinks";
 import { useBanners } from "@/components/BannerHandler";
+import { useBannerTracking } from "@/hooks/useBannerTracking";
 // import Link from "next/link";
 
 /* --------- GLOBAL de-dupe across StrictMode remounts --------- */
@@ -257,9 +258,6 @@ export default function ListingsPage({
       }),
     });
   };
-
-  const { matchedBanners } = useBanners();
-  useEffect(() => {}, [matchedBanners]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -1569,6 +1567,10 @@ export default function ListingsPage({
     filters.keyword,
   ]);
 
+  const { matchedBanners, isMobile } = useBanners();
+  const { bannerRefs, trackClick } = useBannerTracking(matchedBanners);
+  const topBanners = matchedBanners.filter(b => b.position === "top");
+
   return (
     <>
       <Head>
@@ -1596,75 +1598,33 @@ export default function ListingsPage({
 
       <div className="container">
         <div className="display_ad">
-          {false && (
+          {false && topBanners.filter(b => isMobile 
+              ? ["vertical_small", "horizontal_small"].includes(b.banner_size)
+              : ["horizontal_large", "vertical_large"].includes(b.banner_size)
+          ).map((banner, index) => (
             <a
-              href="#"
+              key={banner.id}
+              ref={(el) => {
+                bannerRefs.current[index] = el;
+              }}
+              data-banner-id={banner.id}
+              href={banner.target_href_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="banner_ad_now"
+              className="banner_ad_now mb-0"
+              onClick={() => trackClick(banner.id)}
             >
-              {/* Desktop Image */}
-              <div className="banner-desktop">
-                <Image
-                  src="/images/static_index_dk_banner_3.jpg"
-                  alt="Caravans For Sale"
-                  className="hidden-xs"
-                  width={1200}
-                  height={200}
-                  priority
-                />
-              </div>
-
-              {/* Mobile Image */}
-              <div className="banner-mobile">
-                <Image
-                  src="/images/static_index_mb_banner_3.jpg"
-                  alt="Caravans For Sale Mobile"
-                  className="hidden-lg hidden-md hidden-sm"
-                  width={600}
-                  height={300}
-                  priority
-                />
-              </div>
+                <div className={isMobile ? "banner-mobile" : "banner-desktop"}>
+                  <Image
+                    src={banner.image_url}
+                    alt={banner.name}
+                    width={isMobile ? 600 : 1200}
+                    height={isMobile ? 300 : 200}
+                    priority
+                  />
+                </div>
             </a>
-          )}
-        </div>
-      </div>
-
-      <div className="container">
-        <div className="display_ad">
-          {false && (
-            <a
-              href="#"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="banner_ad_now"
-            >
-              {/* Desktop Image */}
-              <div className="banner-desktop">
-                <Image
-                  src="/images/static_index_dk_banner_3.jpg"
-                  alt="Caravans For Sale"
-                  className="hidden-xs"
-                  width={1200}
-                  height={200}
-                  priority
-                />
-              </div>
-
-              {/* Mobile Image */}
-              <div className="banner-mobile">
-                <Image
-                  src="/images/static_index_mb_banner_3.jpg"
-                  alt="Caravans For Sale Mobile"
-                  className="hidden-lg hidden-md hidden-sm"
-                  width={600}
-                  height={300}
-                  priority
-                />
-              </div>
-            </a>
-          )}
+          ))}
         </div>
       </div>
 
