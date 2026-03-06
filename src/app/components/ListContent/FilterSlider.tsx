@@ -6,6 +6,9 @@ import { fetchProductList } from "@/api/productList/api";
 import { fetchMakeDetails } from "@/api/make-new/api";
 import "swiper/css";
 import "swiper/css/navigation";
+import CategorySkeleton from "./CategorySkeleton";
+import { buildSlugFromFilters } from "../slugBuilter";
+import { useRouter } from "next/navigation";
 
 interface CategoryCount {
   name: string;
@@ -47,6 +50,10 @@ interface Filters {
 }
 
 interface FilterSliderProps {
+  setIsLoading?: (val: boolean) => void;
+  setIsMainLoading?: (val: boolean) => void;
+  setIsFeaturedLoading?: (val: boolean) => void;
+  setIsPremiumLoading?: (val: boolean) => void;
   currentFilters: Filters;
   categoryCounts: CategoryCount[];
   isCategoryCountLoading?: boolean;
@@ -101,8 +108,13 @@ const FilterSlider = ({
   onPriceSelect,
   onAtmSelect,
   onMakeSelect,
+  setIsLoading,
+  setIsMainLoading,
+  setIsFeaturedLoading,
+  setIsPremiumLoading,
 }: FilterSliderProps) => {
   const [states, setStates] = useState<StateOption[]>(propStateOptions);
+  const router = useRouter();
 
   useEffect(() => {
     if (propStateOptions.length > 0) {
@@ -153,6 +165,14 @@ const FilterSlider = ({
 
   const toTitleCase = (str: string): string =>
     str.replace(/\b\w/g, (c) => c.toUpperCase());
+
+  // FilterSlider-ல் இதை add பண்ணு
+  const triggerGlobalLoaders = () => {
+    if (setIsLoading) setIsLoading(true);
+    if (setIsMainLoading) setIsMainLoading(true);
+    if (setIsFeaturedLoading) setIsFeaturedLoading(true);
+    if (setIsPremiumLoading) setIsPremiumLoading(true);
+  };
 
   useEffect(() => {
     if (didFetchMakeRef.current) return;
@@ -273,7 +293,18 @@ const FilterSlider = ({
   const handleMakeSearch = () => {
     delete localOverrideRef.current.make;
     delete localOverrideRef.current.model;
-    onMakeSelect?.(tempMake, tempModel);
+    triggerGlobalLoaders();
+    // onMakeSelect?.(tempMake, tempModel);
+    const newFilters = {
+      ...currentFilters,
+      make: tempMake ?? undefined,
+      model: tempModel ?? undefined,
+      page: 1,
+    };
+    const slugPath = buildSlugFromFilters(newFilters);
+    const safeSlug = slugPath.endsWith("/") ? slugPath : `${slugPath}/`;
+    router.replace(safeSlug);
+
     setOpenModal(null);
   };
   const handleMakeClear = () => {
@@ -310,7 +341,18 @@ const FilterSlider = ({
   const handlePriceSearch = () => {
     delete localOverrideRef.current.from_price;
     delete localOverrideRef.current.to_price;
-    onPriceSelect?.(tempPriceFrom, tempPriceTo);
+    triggerGlobalLoaders();
+    // onPriceSelect?.(tempPriceFrom, tempPriceTo);
+    const newFilters = {
+      ...currentFilters,
+      from_price: tempPriceFrom ?? undefined,
+      to_price: tempPriceTo ?? undefined,
+      page: 1,
+    };
+    const slugPath = buildSlugFromFilters(newFilters);
+    const safeSlug = slugPath.endsWith("/") ? slugPath : `${slugPath}/`;
+    router.replace(safeSlug);
+
     setOpenModal(null);
   };
   const handlePriceClear = () => {
@@ -332,7 +374,18 @@ const FilterSlider = ({
   const handleAtmSearch = () => {
     delete localOverrideRef.current.minKg;
     delete localOverrideRef.current.maxKg;
-    onAtmSelect?.(tempAtmFrom, tempAtmTo);
+    triggerGlobalLoaders();
+    // onAtmSelect?.(tempAtmFrom, tempAtmTo);
+    const newFilters = {
+      ...currentFilters,
+      minKg: tempAtmFrom ?? undefined,
+      maxKg: tempAtmTo ?? undefined,
+      page: 1,
+    };
+    const slugPath = buildSlugFromFilters(newFilters);
+    const safeSlug = slugPath.endsWith("/") ? slugPath : `${slugPath}/`;
+    router.replace(safeSlug);
+
     setOpenModal(null);
   };
   const handleAtmClear = () => {
@@ -355,7 +408,16 @@ const FilterSlider = ({
   };
   const handleTypeSearch = () => {
     delete localOverrideRef.current.category;
-    onCategorySelect(tempCategory);
+    triggerGlobalLoaders();
+    // onCategorySelect(tempCategory);
+    const newFilters = {
+      ...currentFilters,
+      category: tempCategory ?? undefined,
+      page: 1,
+    };
+    const slugPath = buildSlugFromFilters(newFilters);
+    const safeSlug = slugPath.endsWith("/") ? slugPath : `${slugPath}/`;
+    router.replace(safeSlug); // ← meta update trigger ஆகும்
     setOpenModal(null);
   };
   const handleTypeClear = () => {
@@ -391,10 +453,21 @@ const FilterSlider = ({
   const handleLocationSearch = () => {
     delete localOverrideRef.current.state;
     delete localOverrideRef.current.region;
-    onLocationSelect(
-      tempState ? tempState.toLowerCase() : null,
-      tempRegion ? tempRegion.toLowerCase() : null,
-    );
+    // onLocationSelect(
+    //   tempState ? tempState.toLowerCase() : null,
+    //   tempRegion ? tempRegion.toLowerCase() : null,
+    // );
+    triggerGlobalLoaders();
+    const newFilters = {
+      ...currentFilters,
+      state: tempState?.toLowerCase() ?? undefined,
+      region: tempRegion?.toLowerCase() ?? undefined,
+      page: 1,
+    };
+    const slugPath = buildSlugFromFilters(newFilters);
+    const safeSlug = slugPath.endsWith("/") ? slugPath : `${slugPath}/`;
+    router.replace(safeSlug);
+
     setOpenModal(null);
   };
   const handleLocationClear = () => {
@@ -497,14 +570,11 @@ const FilterSlider = ({
               >
                 {currentFilters.state ? (
                   <>
-                    <small className="selected_label">State: </small>
-                    {toTitleCase(currentFilters.state)}
+                    <small className="selected_label">Location: </small>
                     {currentFilters.region && (
-                      <>
-                        , <small className="selected_label">Region: </small>
-                        {toTitleCase(currentFilters.region)}
-                      </>
+                      <>{toTitleCase(currentFilters.region)},</>
                     )}
+                    {toTitleCase(currentFilters.state)}
                     <span className="active_filter">
                       <i className="bi bi-circle-fill"></i>
                     </span>
@@ -609,52 +679,52 @@ const FilterSlider = ({
             </div>
             <div className="filter-body">
               <div className="filter-item pt-0">
-              <ul
-                className="category-list"
-                style={{ listStyle: "none", padding: 0, margin: 0 }}
-              >
-                {isCategoryCountLoading &&
-                cachedCategoryCountsRef.current.length === 0 ? (
-                  <li style={{ padding: "12px 0", color: "#888" }}>Loading…</li>
-                ) : (
-                  // Use cached data as fallback while re-fetching
-                  (categoryCounts.length > 0
-                    ? categoryCounts
-                    : cachedCategoryCountsRef.current
-                  ).map((cat) => (
-                    <li key={cat.slug} className="category-item">
-                      <label className="category-checkbox-row checkbox">
-                        <div className="d-flex align-items-center">
-                          <input
-                            className="checkbox__trigger visuallyhidden"
-                            type="checkbox"
-                            checked={tempCategory === cat.slug}
-                            onChange={() =>
-                              setTempCategory(
-                                tempCategory === cat.slug ? null : cat.slug,
-                              )
-                            }
-                          />
-                          <span className="checkbox__symbol">
-                            <svg
-                              aria-hidden="true"
-                              className="icon-checkbox"
-                              width="28px"
-                              height="28px"
-                              viewBox="0 0 28 28"
-                              xmlns="http://www.w3.org/2000/svg"
-                            >
-                              <path d="M4 14l8 7L24 7"></path>
-                            </svg>
-                          </span>
-                          <span className="category-name">{cat.name}</span>
-                        </div>
-                        <span className="category-count">({cat.count})</span>
-                      </label>
-                    </li>
-                  ))
-                )}
-              </ul>
+                <ul
+                  className="category-list"
+                  style={{ listStyle: "none", padding: 0, margin: 0 }}
+                >
+                  {isCategoryCountLoading &&
+                  cachedCategoryCountsRef.current.length === 0 ? (
+                    <CategorySkeleton />
+                  ) : (
+                    // Use cached data as fallback while re-fetching
+                    (categoryCounts.length > 0
+                      ? categoryCounts
+                      : cachedCategoryCountsRef.current
+                    ).map((cat) => (
+                      <li key={cat.slug} className="category-item">
+                        <label className="category-checkbox-row checkbox">
+                          <div className="d-flex align-items-center">
+                            <input
+                              className="checkbox__trigger visuallyhidden"
+                              type="checkbox"
+                              checked={tempCategory === cat.slug}
+                              onChange={() =>
+                                setTempCategory(
+                                  tempCategory === cat.slug ? null : cat.slug,
+                                )
+                              }
+                            />
+                            <span className="checkbox__symbol">
+                              <svg
+                                aria-hidden="true"
+                                className="icon-checkbox"
+                                width="28px"
+                                height="28px"
+                                viewBox="0 0 28 28"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path d="M4 14l8 7L24 7"></path>
+                              </svg>
+                            </span>
+                            <span className="category-name">{cat.name}</span>
+                          </div>
+                          <span className="category-count">({cat.count})</span>
+                        </label>
+                      </li>
+                    ))
+                  )}
+                </ul>
               </div>
             </div>
             <div className="filter-footer">
