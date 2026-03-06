@@ -1,3 +1,4 @@
+
 "use client";
 import { fetchLocations } from "@/api/location/api";
 import React, {
