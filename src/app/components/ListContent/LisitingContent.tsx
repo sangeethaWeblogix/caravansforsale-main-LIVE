@@ -819,7 +819,7 @@ export default function ListingContent({
                                     setShowContact(true);
                                   }}
                                 >
-                                  Contact Dealer
+                                  Contact Seller
                                 </button>
 
                                 <button
@@ -1135,7 +1135,7 @@ export default function ListingContent({
               ×
             </button>
 
-            <h4>Contact Dealer</h4>
+            <h4>Contact Seller</h4>
 
             <div className="sidebar-enquiry">
               <form className="wpcf7-form" noValidate onSubmit={onSubmit}>
