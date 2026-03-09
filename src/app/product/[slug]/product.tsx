@@ -108,6 +108,8 @@ export default function ClientLogger({
   //   }
   // };
 
+  const [showPopup, setShowPopup] = useState(false);
+
   console.log("datapb", relatedProducts);
 
   const product: ProductData = productDetails;
@@ -351,21 +353,21 @@ export default function ClientLogger({
   const [returnUrl, setReturnUrl] = useState<string | null>(null);
 
   const [backReady, setBackReady] = useState(false);
- useEffect(() => {
-  if (typeof window === "undefined") return;
+  useEffect(() => {
+    if (typeof window === "undefined") return;
 
-  // ✅ Check if user came FROM listings (via referrer OR sessionStorage)
-  const saved = sessionStorage.getItem("listingsReturnUrl");
-  const referrer = document.referrer;
+    // ✅ Check if user came FROM listings (via referrer OR sessionStorage)
+    const saved = sessionStorage.getItem("listingsReturnUrl");
+    const referrer = document.referrer;
 
-  if (saved && saved.includes("/listings")) {
-    setReturnUrl(saved);
-  } else if (referrer && referrer.includes("/listings")) {
-    setReturnUrl(referrer);
-  }
+    if (saved && saved.includes("/listings")) {
+      setReturnUrl(saved);
+    } else if (referrer && referrer.includes("/listings")) {
+      setReturnUrl(referrer);
+    }
 
-  setBackReady(true);
-}, []);
+    setBackReady(true);
+  }, []);
   // ✅ Improved back button handler
   const handleBackClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -381,7 +383,7 @@ export default function ClientLogger({
 
     router.push(makeHref);
   };
- 
+
 
   const makeHref =
     makeValue && makeValue.trim()
@@ -599,13 +601,13 @@ export default function ClientLogger({
                       style={{ background: "none", border: "none", padding: 0 }}
                     >
                       <i className="bi bi-chevron-left"></i>
-                    Back to Search 
+                      Back to Search
                     </button>
                   ) : (
                     <a
                       href={makeHref}
                       className="back_to_search back_to_search_btn"
-                     >
+                    >
                       <i className="bi bi-chevron-left"></i> Back to Similar
                       Caravans
                     </a>
@@ -731,9 +733,8 @@ export default function ClientLogger({
                   <ul className="nav nav-pills">
                     <li className="nav-item">
                       <button
-                        className={`nav-link ${
-                          activeTab === "specifications" ? "active" : ""
-                        }`}
+                        className={`nav-link ${activeTab === "specifications" ? "active" : ""
+                          }`}
                         onClick={() => setActiveTab("specifications")}
                       >
                         Specifications
@@ -741,9 +742,8 @@ export default function ClientLogger({
                     </li>
                     <li className="nav-item">
                       <button
-                        className={`nav-link ${
-                          activeTab === "description" ? "active" : ""
-                        }`}
+                        className={`nav-link ${activeTab === "description" ? "active" : ""
+                          }`}
                         onClick={() => setActiveTab("description")}
                       >
                         Description
@@ -771,18 +771,18 @@ export default function ClientLogger({
                                       <span>
                                         {links
                                           ? links.map((lnk, idx) => (
-                                              <span key={lnk.href}>
-                                                <a
-                                                  href={lnk.href}
-                                                   
-                                                >
-                                                  {lnk.text}
-                                                </a>
-                                                {idx < links.length - 1
-                                                  ? ", "
-                                                  : ""}
-                                              </span>
-                                            ))
+                                            <span key={lnk.href}>
+                                              <a
+                                                href={lnk.href}
+
+                                              >
+                                                {lnk.text}
+                                              </a>
+                                              {idx < links.length - 1
+                                                ? ", "
+                                                : ""}
+                                            </span>
+                                          ))
                                           : String(f.value)}
                                       </span>
                                     </li>
@@ -802,66 +802,23 @@ export default function ClientLogger({
                   </div>
                 </section>
                 {/* Community Section */}
-                <section className="community product_dt_lower hidden-xs style-5 pt-4">
-                  <div className="content">
-                    <div className="heading">
-                      <h3>Caravan Marketplace Advantage</h3>
-                      <p>
-                        We help you get superior service, guaranteed deals, and
-                        access to top manufacturers.
-                      </p>
-                    </div>
-                    <div className="card_flex d-flex flex-wrap">
-                      {[
-                        {
-                          img: "low-price",
-                          text: "Get exclusive deals from top caravan manufacturers.",
-                        },
-                        {
-                          img: "deal",
-                          text: "Our expert team sources deals from across the market.",
-                        },
-                        {
-                          img: "special_deal",
-                          text: "Access insights and hidden gems in the industry.",
-                        },
-                      ].map((item) => (
-                        <div className="commun-card" key={item.img}>
-                          <div className="icon">
-                            <Image
-                              src={`/images/${item.img}.svg`}
-                              alt={item.img}
-                              width={32}
-                              height={32}
-                            />
-                          </div>
-                          <div className="inf">
-                            <p>{item.text}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="contact_dealer mt-3">
-                      <button
-                        className="btn btn-primary"
-                        onClick={() => setShowModal(true)}
-                      >
-                        {/* bottom */}
-                        Contact Seller
-                      </button>
-                    </div>
-                  </div>
-                </section>
+                
                 {/* Mobile Bottom Bar */}
                 <div className="fixed-bottom-bar d-lg-none">
                   <button
                     className="btn enbttn_qqr btn-primary w-100 mb-2"
                     onClick={() => setShowModal(true)}
                   >
-                    Send Enquiry
+                    Contact Seller
                   </button>
+                  <button
+                          className="cravan_buyer"
+                          onClick={() => setShowPopup(true)}
+                        >
+                          Caravan Buyer Safety Checklist <i className="bi bi-info-circle-fill"></i>
+                        </button>
                   <p className="terms_text small">
-                    By clicking &apos;Send Enquiry&apos;, you agree to our
+                    By clicking 'Send Enquiry', you agree to Marketplace Network
                     <a href="/privacy-collection-statement">
                       {" "}
                       Collection Statement
@@ -942,11 +899,99 @@ export default function ClientLogger({
                         >
                           Contact Seller{" "}
                         </button>
+                        <button
+                          className="cravan_buyer"
+                          onClick={() => setShowPopup(true)}
+                        >
+                          Caravan Buyer Safety Checklist <i className="bi bi-info-circle-fill"></i>
+                        </button>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
+
+              {/* Popup */}
+              {showPopup && (
+                <div className="popup-overlay">
+                  <div className="popup-box">
+
+                    <button
+                      className="popup-close"
+                      onClick={() => setShowPopup(false)}
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="100"
+                        height="100"
+                        viewBox="0 0 64 64"
+                      >
+                        <path d="M 16 14 C 15.488 14 14.976938 14.194937 14.585938 14.585938 C 13.804937 15.366937 13.804937 16.633063 14.585938 17.414062 L 29.171875 32 L 14.585938 46.585938 C 13.804938 47.366938 13.804937 48.633063 14.585938 49.414062 C 14.976937 49.805062 15.488 50 16 50 C 16.512 50 17.023062 49.805062 17.414062 49.414062 L 32 34.828125 L 46.585938 49.414062 C 47.366938 50.195063 48.633063 50.195062 49.414062 49.414062 C 50.195063 48.633062 50.195062 47.366937 49.414062 46.585938 L 34.828125 32 L 49.414062 17.414062 C 50.195063 16.633063 50.195062 15.366938 49.414062 14.585938 C 48.633062 13.804938 47.366937 13.804938 46.585938 14.585938 L 32 29.171875 L 17.414062 14.585938 C 17.023062 14.194938 16.512 14 16 14 z"></path>
+                      </svg>
+                    </button>
+
+                    <h2 className="title">Caravan Buyer Safety Checklist</h2>
+                    <p className="subtitle">
+                      Follow these steps to reduce the risk of scams when buying a caravan.
+                    </p>
+
+                    <div className="safety-wrapper">
+                      <div className="safety-left">
+
+                        <h3>Before you buy</h3>
+
+                        <ul className="checklist">
+
+                          <li>
+                            <span className="num">1</span>
+                            <div>
+                              <h4>Check for finance owing</h4>
+                              <p>Run a PPSR search before paying.</p>
+                            </div>
+                            {/* <a href="#" className="btn-secondary">Run PPSR Check</a> */}
+                          </li>
+
+                          <li>
+                            <span className="num">2</span>
+                            <div>
+                              <h4>Verify the seller</h4>
+                              <p>Confirm identity and speak directly with them.</p>
+                            </div>
+                          </li>
+
+                          <li>
+                            <span className="num">3</span>
+                            <div>
+                              <h4>Inspect the caravan first</h4>
+                              <p>Inspect in person or arrange an inspection.</p>
+                            </div>
+                          </li>
+
+                          <li>
+                            <span className="num">4</span>
+                            <div>
+                              <h4>Use safe payment methods</h4>
+                              <p>Avoid cryptocurrency or overseas transfers.</p>
+                            </div>
+                          </li>
+
+                          <li>
+                            <span className="num">5</span>
+                            <div>
+                              <h4>Report suspicious listings</h4>
+                              <p>Report listings that appear suspicious.</p>
+                            </div>
+                            {/* <a href="#" className="btn-light">Report Listing</a> */}
+                          </li>
+
+                        </ul>
+
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+              )}
 
               {/* Modal */}
               {showModal && (
@@ -1089,36 +1134,36 @@ export default function ClientLogger({
             >
               {blogPosts.length === 0
                 ? Array.from({ length: 4 }).map((_, idx) => (
-                    <SwiperSlide key={`blog-skeleton-${idx}`}>
-                      <ProductSkelton />
-                    </SwiperSlide>
-                  ))
+                  <SwiperSlide key={`blog-skeleton-${idx}`}>
+                    <ProductSkelton />
+                  </SwiperSlide>
+                ))
                 : blogPosts.map((post) => {
-                    const href = getHref(post);
-                    return (
-                      <SwiperSlide key={post.id}>
-                        <a href={href}>
-                          <div className="product-card">
-                            <div className="img">
-                              <Image
-                                src={post.image}
-                                alt={post.title}
-                                width={400}
-                                height={250}
-                                unoptimized
-                              />
-                            </div>
-                            <div className="product_de">
-                              <div className="info">
-                                <h5 className="title">{post.title}</h5>
-                                <p>{post.excerpt}</p>
-                              </div>
+                  const href = getHref(post);
+                  return (
+                    <SwiperSlide key={post.id}>
+                      <a href={href}>
+                        <div className="product-card">
+                          <div className="img">
+                            <Image
+                              src={post.image}
+                              alt={post.title}
+                              width={400}
+                              height={250}
+                              unoptimized
+                            />
+                          </div>
+                          <div className="product_de">
+                            <div className="info">
+                              <h5 className="title">{post.title}</h5>
+                              <p>{post.excerpt}</p>
                             </div>
                           </div>
-                        </a>
-                      </SwiperSlide>
-                    );
-                  })}
+                        </div>
+                      </a>
+                    </SwiperSlide>
+                  );
+                })}
               {!blogPosts.length && (
                 <div className="col-12 py-3 text-muted">No posts found.</div>
               )}

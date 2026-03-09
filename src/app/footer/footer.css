@@ -59,9 +59,10 @@ footer.style-8 .content .logo-social .socials a:hover {
 }
 
 .foot p {
-  color: #a3a3a3;
-  font-size: 14px;
-  line-height: 1.7;
+    color: #a3a3a3;
+    font-size: 14px;
+    line-height: 1.7;
+    margin-bottom: 0;
 }
 
 .new_font .foot-title.foot_xs {
@@ -168,4 +169,55 @@ footer.style-8 .content .logo-social .socials a:hover {
 
 .menu li + li {
   margin-left: 25px;
+}
+
+.footer_menu {
+  padding-left: 0;
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.footer_menu li {
+  position: relative;
+  list-style: none;
+  padding-left: 10px;
+  line-height: 15px;
+}
+.footer_menu li:first-child {
+  padding-left: 0;
+}
+.footer_menu li:first-child::before {
+  content: none;
+}
+.footer_menu li:before {
+  content: "";
+  background: #626262;
+  width: 1px;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+.footer_menu li a {
+  color: #a3a3a3;
+  position: relative;
+  font-size: 15px;
+}
+.footer_menu li a:hover {
+  color: #ffffff;
+}
+
+@media (max-width: 767px) {
+  .footer_menu {display: block;}
+  .footer_menu li {
+    padding-bottom: 12px;
+    padding-left: 0;
+}
+.footer_menu li a {
+    font-size: 16px;
+}
+  .footer_menu li::before {
+    content:none
+  }
 }

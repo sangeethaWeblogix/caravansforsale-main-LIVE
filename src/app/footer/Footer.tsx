@@ -1,4 +1,4 @@
-import "./footer.css";
+import "./footer.css?=16";
 import Link from "next/link";
 import {
   FaFacebookF,
@@ -18,25 +18,60 @@ const Footer = () => {
           <div className="foot py-4  brd-gray">
             <div className="row">
               {/* Left Column */}
-              <div className="col-lg-8">
+              <div className="col-lg-12">
+                <h6 className="foot-title hidden-lg hidden-md hidden-sm foot_xs">Marketplace Network</h6>
+                <ul className="footer_menu footer_xs">
+                  <li>
+                    <a href="/listings/">For Sale</a>
+                  </li>
+                  <li>
+                    <a href="/blog/">Blog</a>
+                  </li>
+                  <li>
+                    <a href="/terms-conditions/" rel="nofollow">Terms & Conditions</a>
+                  </li>
+                  <li>
+                    <a href="/privacy-policy/" rel="nofollow">Privacy Policy</a>
+                  </li>
+                  <li>
+                    <a href="/privacy-collection-statement/" rel="nofollow">
+                      Privacy Collection Statement
+                    </a>
+                  </li>
+                  <li>
+                    <a href="/buyer-safety-guide/" rel="nofollow">Buy Safely</a>
+                  </li>
+                  <li>
+                    <a href="/cookie-policy/" rel="nofollow">Cookie Policy</a>
+                  </li>
+                  <li>
+                    <a href="/about-us/">About</a>
+                  </li>
+                  <li>
+                    <a href="/contact/">Contact Us</a>
+                  </li>
+                </ul>
                 <div>
                   <p>
+                    © {currentYear ?? "----"} Marketplace Network Pty Ltd (ABN 70 694 987 052)
+                  </p>
+                  {/* <p>
                     Marketplace Network Pty Ltd. ABN : 70 694 987 052 <br />
                     Copyright © {currentYear ?? "----"}. All Rights Reserved.
-                  </p>
+                  </p> */}
                 </div>
-                <div className="disclaimer" style={{ marginTop: "12px" }}>
+                {/* <div className="disclaimer" style={{ marginTop: "12px" }}>
                   <p>
                     Disclaimer: Marketplace Network operates a portfolio of independent “for sale” marketplace websites. Marketplace Network is not affiliated with, endorsed by, or associated with any manufacturers, dealers, advertisers, or sellers listed on our websites unless expressly stated.
                     <br />
                     All product information, images, logos, trademarks, and brand names displayed on our websites are the property of their respective owners and are used for identification and informational purposes only.
 Marketplace Network makes no representations or warranties regarding the accuracy, completeness, or reliability of any information published on its platforms and accepts no liability for any loss or damage arising from reliance on such information. Information provided on our websites should not be considered professional, financial, or purchasing advice. Users are encouraged to conduct their own due diligence and seek independent professional advice before making any purchasing or commercial decisions.
                   </p>
-                </div>
+                </div> */}
               </div>
 
               {/* About Us Column */}
-              <div className="col-lg-4 col-sm-12">
+              {/* <div className="col-lg-4 col-sm-12">
                 <h6 className="foot-title foot_xs">Company</h6>
                 <ul className="menu footer_xs">
                   <li>
@@ -57,13 +92,19 @@ Marketplace Network makes no representations or warranties regarding the accurac
                     </a>
                   </li>
                   <li>
+                    <a href="/buyer-safety-guide/" rel="nofollow">Buy Safely</a>
+                  </li>
+                  <li>
+                    <a href="/cookie-policy/" rel="nofollow">Cookie Policy</a>
+                  </li>
+                  <li>
                     <a href="/about-us/">About</a>
                   </li>
                   <li>
                     <a href="/contact/">Contact Us</a>
                   </li>
                 </ul>
-              </div>
+              </div> */}
 
               {/* Popular Pages Column */}
               {/* <div className="col-lg-3 col-sm-6">

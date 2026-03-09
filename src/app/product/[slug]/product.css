@@ -13,6 +13,7 @@
   font-size: 25px;
   font-weight: 700;
   margin-top: 0;
+      text-align: left;
 }
 .product-page .product-info .category {
   font-size: 14px;
@@ -203,6 +204,18 @@
 .contact_dealer button:hover {
   background-color: #000000;
   border: 1px solid #000000;
+}
+
+.contact_dealer button.cravan_buyer {
+    background: none;
+    color: #444;
+    border: none;
+    padding: 0;
+    margin-top: 20px;
+    border-bottom: 1px solid #444;
+    border-radius: 0;
+    font-weight: 500;
+    font-size: 16px;
 }
 .projects.style-7 .projects-tabs .nav-pills .nav-item .nav-link img {
   height: 70px;
@@ -478,18 +491,30 @@
   text-align: center;
 }
 
+.fixed-bottom-bar .cravan_buyer {
+    color: #444;
+    background: none;
+    border: none;
+    border-bottom: 1px solid #444;
+    border-radius: 0;
+    margin-top: 0;
+    padding: 0;
+    font-size: 13px;
+    font-weight: 500;
+}
+
 .fixed-bottom-bar button.enbttn_qqr {
-  display: inline-block;
-  margin-top: 0;
-  background: #ec7200;
-  border: 1px solid #ec7200;
-  color: #fff;
-  padding: 10px 20px;
-  text-transform: uppercase;
-  border-radius: 20px;
-  font-weight: 500;
-  width: 100%;
-  letter-spacing: 1px;
+    color: #fff;
+    text-transform: capitalize;
+    letter-spacing: 0;
+    background: #ec7200;
+    border: 1px solid #ec7200;
+    border-radius: 20px;
+    width: 100%;
+    margin-top: 0;
+    padding: 10px 20px;
+    font-weight: 500;
+    display: inline-block;
 }
 
 .fixed-bottom-bar p.terms_text {
@@ -522,6 +547,268 @@
   min-height: auto;
   max-height: inherit;
 }
+
+.buyer-safety {
+    background: transparent;
+    padding: 30px 0px;
+}
+
+.buyer-safety .container{
+  max-width:1100px;
+  margin:auto;
+  background:#fcfcfc;
+  border:1px solid #ddd;
+  border-radius:16px;
+  padding:40px;
+}
+
+.title {
+    text-align: center;
+    font-size: 30px;
+    font-weight: 700;
+    color: #000;
+}
+
+.subtitle {
+    text-align: center;
+    color: #3c3c3c;
+    margin-bottom: 40px;
+}
+
+.safety-wrapper{
+  display:flex;
+  gap:30px;
+}
+
+/* LEFT SIDE */
+
+.safety-left {
+    border: 1px solid #ddd;
+    border-radius: 14px;
+    flex: 1;
+    padding: 25px;
+    background: #fff;
+}
+
+.safety-left h3{
+  font-size:24px;
+  margin-bottom:25px;
+}
+
+.checklist{
+  list-style:none;
+  padding:0;
+  margin:0;
+}
+
+.checklist li {
+  display:flex;
+  gap:15px;
+  margin-bottom:22px;
+}
+
+.checklist li .btn-secondary {
+    color: #f47b00;
+    background: #fff3e8;
+    border-radius: 20px;
+    padding: 5px 15px;
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-block;
+    height: fit-content;
+    margin-left: 10px;
+    font-size: 14px;
+    position: relative;
+    bottom: -4px;
+}
+
+.checklist li .btn-light {
+    color: #333;
+    background: #eee;
+    border-radius: 20px;
+    padding: 5px 15px;
+    text-decoration: none;
+    height: fit-content;
+    font-weight: 500;
+    position: relative;
+    bottom: -4px;
+    margin-left: 10px;
+    font-size: 14px;
+}
+
+.num{
+  background:#ffe7d0;
+  color:#f47b00;
+  width:34px;
+  height:34px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:bold;
+}
+
+.checklist h4 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 500;
+    color: #000;
+}
+
+.checklist p{
+  margin:3px 0 0;
+  color:#2a2a2a;
+  font-size:14px;
+}
+
+/* RIGHT SIDE */
+
+.safety-right{
+  flex:1;
+  border:1px solid #ddd;
+  border-radius:14px;
+  padding:25px;
+}
+
+.safety-right h3{
+  margin-bottom:20px;
+}
+
+.action-box{
+  border:1px solid #ddd;
+  border-radius:12px;
+  padding:18px;
+  margin-bottom:18px;
+  background:#fafafa;
+}
+
+.action-box h4{
+  margin:0 0 6px;
+}
+
+.action-box p{
+  color:#777;
+  font-size:14px;
+  margin-bottom:10px;
+}
+
+/* BUTTONS */
+
+.btn-secondary{
+  background:#fff3e8;
+  color:#f47b00;
+  padding:8px 14px;
+  border-radius:20px;
+  text-decoration:none;
+  font-weight:600;
+}
+
+.btn-light{
+  background:#eee;
+  padding:8px 14px;
+  border-radius:20px;
+  text-decoration:none;
+  color:#333;
+}
+
+.contact-btn{
+  text-align:center;
+  margin-top:30px;
+}
+
+.btn-primary{
+  background:#ec7200;
+  border-color: #ec7200;
+  color:#fff;
+  padding:14px 65px;
+  border-radius:30px;
+  font-size:18px;
+  text-decoration:none;
+  font-weight:600;
+}
+
+.btn-primary:hover {
+  background-color: #000000;
+  border-color: #000000;
+}
+
+/* MOBILE */
+
+@media(max-width:768px){
+
+  .safety-wrapper{
+    flex-direction:column;
+  }
+
+  .title{
+    font-size:24px;
+  }
+
+  .popup-box {
+    padding: 18px;
+  }
+  .safety-left {
+    background: #fff;
+    border: none;
+    border-radius: 14px;
+    flex: 1;
+    padding: 0;
+}
+.safety-left h3 {
+    margin-bottom: 25px;
+    font-size: 21px;
+}
+
+}
+
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.popup-box {
+  background: #fff;
+  width: 800px;
+  max-width: 90%;
+  padding: 30px;
+  border-radius: 10px;
+  position: relative;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.popup-close {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  font-size: 22px;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+.popup-close svg {
+  fill: #3b3b3b;
+    cursor: pointer;
+    width: 30px;
+    height: 30px;
+}
+
+.checklist li {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+
 
 @media only screen and (min-width: 998px) and (max-width: 1200px) {
   .product-page .product-card .info .title {
@@ -611,12 +898,36 @@
     font-size: 19px;
     margin-bottom: 10px;
     margin-top: 0;
+    text-align: left;
   }
 
   .contactSeller__container,
   .toolkit__container {
     margin-bottom: 12px;
   }
+
+  .buyer-safety .container {
+        padding: 15px;
+  }
+
+  .checklist li {
+    display: block;
+  }
+
+  .num {
+    position: absolute;
+    left: 0;
+    top: 0;
+  }
+
+  .checklist li {
+    position: relative;
+    padding-left: 47px;
+}
+
+.checklist li .btn-secondary, .checklist li .btn-light {
+  margin: 0;
+}
 
   .caravan_slider_visible {
     display: block;

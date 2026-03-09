@@ -1,6 +1,5 @@
 'use client'
 
-
 import Link from 'next/link'
 
 export default function PrivacyCollectionStatement() {
@@ -10,91 +9,156 @@ export default function PrivacyCollectionStatement() {
         <div className="row align-items-center justify-content-center">
           <div className="col-lg-12">
             <div className="section-head mb-40">
-              <h1 className="divide-orange pb-20">Privacy Collection Statement</h1>
 
-      <p>
-        Marketplace Network ABN 70 694 987 052 (we, us or our) is committed to protecting
-        the privacy of your personal information. You can access our full privacy policy
-        on our website at{' '}
-        <Link
-          href="https://www.caravansforsale.com.au/"
-          target="_blank"
-          rel="noreferrer noopener"
-        >
-          https://www.caravansforsale.com.au
-        </Link>
-        .
-      </p>
+              <h1 className="divide-orange pb-20">
+                Privacy Collection Statement
+              </h1>
 
-      <p>
-        In the course of our business, we collect personal information from our current
-        and prospective customers, manufacturers, dealers and prospective contractor,
-        consultant, employees.
-      </p>
+              <p><strong>Last Updated:</strong> 2026</p>
 
-      <p>
-        The primary purpose for which we collect personal information varies depending on
-        the individual that we are collecting the information from but is generally as
-        follows: (a) in the case of current or prospective customers, to provide the
-        customer with our products and services; (b) in the case of a current
-        manufacturer, dealer or agent, to have you assist us in providing our products
-        and services to potential customers; (c) in the case of a prospective contractor,
-        consultant, agent or employee, to assess suitability for employment or
-        engagement; and (d) in the case of other individuals that contact us (including
-        users of our website), to assist us to respond to enquiries or complaints.
-      </p>
+              <p>
+                Marketplace Network Pty Ltd (ABN 70 694 987 052)
+                ("Marketplace Network", "we", "us", or "our")
+                collects personal information when you interact with websites
+                operated by Marketplace Network Pty Ltd.
+              </p>
 
-      <p>
-        We may also collect personal information for secondary purposes that we expect to
-        be within your reasonable expectations and related to the primary purpose of
-        collection. For example, some of our secondary purposes may include holding
-        records of transactions to assist in future enquiries; to improve our website,
-        products and services; to provide support relating to our products and services;
-        for payment purposes; to provide you with updates that are relevant to you or
-        your business; and to refer you to other entities that offer related services,
-        such as providing you with exclusive deals from specific manufacturers and
-        contact you via an email marketing campaign. You do not have to provide your
-        personal information to us, but if you do not provide the information requested
-        by us, we may not be able to provide you with our services or otherwise engage
-        with you.
-      </p>
+              <p>
+                This Privacy Collection Statement explains how and why
+                personal information is collected when you submit enquiries,
+                create accounts, or use services provided on our marketplace platforms.
+              </p>
 
-      <p>
-        We usually collect personal information from the individual concerned through our
-        website or direct engagement. We also collect personal information from third
-        parties including your representatives and advisers, through referrals from
-        individuals or other entities, banks and financial institutions, your current and
-        previous employers, government bodies (such as relevant departments, regulatory
-        authorities etc.), our employees, contractors, agents and related entities, paid
-        search providers and through marketing and business development events.
-      </p>
+              <p>These platforms may include, but are not limited to:</p>
 
-      <p>
-        We may disclose your personal information to other entities such as our
-        contractors, agents, employees and related entities, our external auditors,
-        brokers, insurance providers, legal and other advisers, employers of individuals,
-        banks and financial institutions, your advisers, government bodies, law
-        enforcement agencies, third parties considering the acquisition of the whole or
-        part of our assets or business and other entities that offer finance or vehicle
-        searching services.
-      </p>
+              <ul>
+                <li>caravansforsale.com.au</li>
+                
+              </ul>
 
-      <p>
-        Our detailed privacy policy includes further information on how you can access
-        and seek correction of personal information that is held by us and how you can
-        complain about a breach of your privacy. The policy also contains information
-        about how we will deal with a complaint. If you have any questions about our
-        information handling practices or if you would like to request a copy of our
-        privacy policy, please contact us via email at{' '}
-        <Link
-          href="mailto:info@caravansforsale.com.au"
-          target="_blank"
-          rel="noreferrer noopener"
-        >
-          info@caravansforsale.com.au
-        </Link>
-        .
-      </p>
+              <p>
+                For further information about how personal information is managed,
+                please refer to our Privacy Policy.
+              </p>
+
+              <h3>1. What Personal Information We Collect</h3>
+
+              <p>We may collect personal information including:</p>
+
+              <ul>
+                <li>Name</li>
+                <li>Email address</li>
+                <li>Phone number</li>
+                <li>Enquiry details</li>
+                <li>Account registration information</li>
+                <li>Listing information submitted by sellers</li>
+              </ul>
+
+              <p>
+                In some cases, additional information may be collected where
+                required to provide services such as advertising listings,
+                responding to enquiries, or facilitating communication between buyers and sellers.
+              </p>
+
+              <h3>2. How Personal Information Is Collected</h3>
+
+              <p>Personal information may be collected when you:</p>
+
+              <ul>
+                <li>Submit an enquiry through our websites</li>
+                <li>Create a user account</li>
+                <li>Submit a listing or advertisement</li>
+                <li>Contact our support team</li>
+                <li>Interact with services provided through our platforms</li>
+              </ul>
+
+              <p>
+                Certain technical information such as IP address and browsing
+                activity may also be collected automatically when using our websites.
+              </p>
+
+              <h3>3. Why We Collect Personal Information</h3>
+
+              <p>We collect personal information for purposes including:</p>
+
+              <ul>
+                <li>Responding to enquiries submitted by users</li>
+                <li>Connecting buyers with sellers</li>
+                <li>Managing user accounts</li>
+                <li>Processing and displaying listings</li>
+                <li>Improving our marketplace services</li>
+                <li>Detecting fraud or suspicious activity</li>
+                <li>Providing customer support</li>
+              </ul>
+
+              <h3>4. Disclosure of Personal Information</h3>
+
+              <p>
+                When you submit an enquiry through our websites, your personal
+                information may be shared with the seller, dealer, advertiser,
+                or service provider associated with that listing so they can
+                respond to your enquiry.
+              </p>
+
+              <p>
+                Where relevant, your information may also be shared with
+                third-party service providers including:
+              </p>
+
+              <ul>
+                <li>Finance companies</li>
+                <li>Finance brokers</li>
+                <li>Insurance providers</li>
+                <li>Insurance brokers</li>
+                <li>Warranty providers</li>
+                <li>Logistics or transport providers</li>
+              </ul>
+
+              <p>
+                These organisations may contact you directly regarding
+                services related to your enquiry.
+              </p>
+
+              <h3>5. Third-Party Responsibility</h3>
+
+              <p>
+                Once personal information has been shared with a seller or
+                third-party service provider in order to respond to your enquiry,
+                that organisation becomes responsible for handling your personal
+                information in accordance with its own privacy policies and applicable laws.
+              </p>
+
+              <p>
+                Marketplace Network Pty Ltd does not control how third parties
+                manage personal information after it has been shared with them.
+              </p>
+
+              <h3>6. Access and Correction</h3>
+
+              <p>
+                You may request access to the personal information we hold about
+                you and request corrections where that information is inaccurate
+                or incomplete.
+              </p>
+
+              <p>
+                Requests may be made using the contact details provided below.
+              </p>
+
+              <h3>7. Contact</h3>
+
+              <p>
+                <strong>Marketplace Network Pty Ltd</strong><br />
+                ABN: 70 694 987 052
+              </p>
+
+              <p>
+                <strong>Email:</strong>{" "}
+                <a href="mailto:admin@marketplacenetwork.com.au">
+                  admin@marketplacenetwork.com.au
+                </a>
+              </p>
+
             </div>
           </div>
         </div>
@@ -102,4 +166,3 @@ export default function PrivacyCollectionStatement() {
     </section>
   )
 }
-

@@ -9,11 +9,15 @@
     font-size: 35px;
 }
 
-.static_page h4 {
+.static_page h3 {
 font-weight: 600;
     font-size: 20px;
 }
 
 .static_page p {
     line-height: 26px;
+}
+
+.static_page ul li {
+    padding-bottom: 10px;
 }
