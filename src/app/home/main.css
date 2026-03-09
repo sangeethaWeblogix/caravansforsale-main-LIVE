@@ -8,6 +8,10 @@
   position: relative;
 }
 
+.home_top .ad_banner a {
+  display: block;
+}
+
 .home_top .section-head {
   padding-top: 30px;
 }
