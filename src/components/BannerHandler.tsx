@@ -57,12 +57,16 @@ export function BannerProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!pathname || allBanners.length === 0) return;
 
-    const filtered = allBanners.filter((banner) =>
-      shouldShowBanner(pathname, banner),
-    );
+    const device = isMobile ? "mobile" : "desktop";
+
+    const filtered = allBanners.filter((banner) => {
+      if (!shouldShowBanner(pathname, banner)) return false;
+      if (banner.device_target !== device) return false;
+      return true;
+    });
 
     setMatchedBanners(filtered);
-  }, [pathname, allBanners]);
+  }, [pathname, allBanners, isMobile]);
 
   useEffect(() => {
     const check = () => {
