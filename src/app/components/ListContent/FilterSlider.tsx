@@ -307,15 +307,17 @@ const FilterSlider = ({
 
     setOpenModal(null);
   };
-  const handleMakeClear = () => {
-    localOverrideRef.current.make = undefined;
-    localOverrideRef.current.model = undefined;
-    setTempMake(null);
-    setLastModelName(null);
-    setTempModel(null);
-    onMakeSelect?.(null, null);
-    setOpenModal(null);
-  };
+ const handleMakeClear = () => {
+  setTempMake(null);
+  setTempModel(null);
+
+  updateFiltersAndURL({
+    make: undefined,
+    model: undefined,
+  });
+
+  setOpenModal(null);
+};
   // ── Price & ATM temp states ──
   const [tempPriceFrom, setTempPriceFrom] = useState<number | null>(null);
   const [tempPriceTo, setTempPriceTo] = useState<number | null>(null);
@@ -356,13 +358,16 @@ const FilterSlider = ({
     setOpenModal(null);
   };
   const handlePriceClear = () => {
-    localOverrideRef.current.from_price = undefined;
-    localOverrideRef.current.to_price = undefined;
-    setTempPriceFrom(null);
-    setTempPriceTo(null);
-    onPriceSelect?.(null, null);
-    setOpenModal(null);
-  };
+  setTempPriceFrom(null);
+  setTempPriceTo(null);
+
+  updateFiltersAndURL({
+    from_price: undefined,
+    to_price: undefined,
+  });
+
+  setOpenModal(null);
+};
 
   // ── ATM handlers ──
   const handleAtmOpen = () => {
@@ -388,44 +393,62 @@ const FilterSlider = ({
 
     setOpenModal(null);
   };
-  const handleAtmClear = () => {
-    localOverrideRef.current.minKg = undefined;
-    localOverrideRef.current.maxKg = undefined;
-    setTempAtmFrom(null);
-    setTempAtmTo(null);
-    onAtmSelect?.(null, null);
-    setOpenModal(null);
-  };
+ const handleAtmClear = () => {
+  setTempAtmFrom(null);
+  setTempAtmTo(null);
+
+  updateFiltersAndURL({
+    minKg: undefined,
+    maxKg: undefined,
+  });
+
+  setOpenModal(null);
+};
 
   const [tempCategory, setTempCategory] = useState<string | null>(null);
   const [tempState, setTempState] = useState<string | null>(null);
   const [tempRegion, setTempRegion] = useState<string | null>(null);
+const updateFiltersAndURL = (updates: Partial<Filters>) => {
+  triggerGlobalLoaders();
 
+  const newFilters = {
+    ...currentFilters,
+    ...updates,
+    page: 1,
+  };
+
+  // remove empty filters
+  Object.keys(newFilters).forEach((k) => {
+    if (newFilters[k] === undefined || newFilters[k] === null) {
+      delete newFilters[k];
+    }
+  });
+
+  const slugPath = buildSlugFromFilters(newFilters);
+  const safeSlug = slugPath.endsWith("/") ? slugPath : `${slugPath}/`;
+
+  router.replace(safeSlug);
+};
   const handleTypeOpen = () => {
     const f = getEffectiveFilters();
     setTempCategory(f.category ?? null);
     setOpenModal("type");
   };
-  const handleTypeSearch = () => {
-    delete localOverrideRef.current.category;
-    triggerGlobalLoaders();
-    // onCategorySelect(tempCategory);
-    const newFilters = {
-      ...currentFilters,
-      category: tempCategory ?? undefined,
-      page: 1,
-    };
-    const slugPath = buildSlugFromFilters(newFilters);
-    const safeSlug = slugPath.endsWith("/") ? slugPath : `${slugPath}/`;
-    router.replace(safeSlug); // ← meta update trigger ஆகும்
-    setOpenModal(null);
-  };
-  const handleTypeClear = () => {
-    localOverrideRef.current.category = undefined;
-    setTempCategory(null);
-    onCategorySelect(null);
-    setOpenModal(null);
-  };
+ const handleTypeSearch = () => {
+  updateFiltersAndURL({
+    category: tempCategory ?? undefined,
+  });
+
+  setOpenModal(null);
+};const handleTypeClear = () => {
+  setTempCategory(null);
+
+  updateFiltersAndURL({
+    category: undefined,
+  });
+
+  setOpenModal(null);
+};
 
   const handleLocationOpen = () => {
     const f = getEffectiveFilters();
@@ -470,14 +493,17 @@ const FilterSlider = ({
 
     setOpenModal(null);
   };
-  const handleLocationClear = () => {
-    localOverrideRef.current.state = undefined;
-    localOverrideRef.current.region = undefined;
-    setTempState(null);
-    setTempRegion(null);
-    onLocationSelect(null, null); // null is fine, no case issue
-    setOpenModal(null);
-  };
+ const handleLocationClear = () => {
+  setTempState(null);
+  setTempRegion(null);
+
+  updateFiltersAndURL({
+    state: undefined,
+    region: undefined,
+  });
+
+  setOpenModal(null);
+};
 
   const filteredRegions =
     states.find((s) => s.name.toLowerCase() === tempState?.toLowerCase())
