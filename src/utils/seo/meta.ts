@@ -130,14 +130,14 @@ if (parsed.suburb) {
   }
 
   // ─── Fallback: API canonical (only if you trust API) ───
-  // const canonical = res?.seo?.canonical || canonicalUrl;
+  // const canonical = res?.seo_v2?.canonical || canonicalUrl;
   const canonical = canonicalUrl; // ✅ always use actual URL
 
   const rawTitle =
-    res?.seo?.list_page_metatitle?.trim() ||
+    res?.seo_v2?.meta_title?.trim() ||
     "Caravans for Sale in Australia - Find Exclusive Deals";
   const title = rawTitle.trim();
-  const description = "Browse new & used caravans for sale across Australia. Compare off-road, hybrid, pop-top & luxury models by price, size, weight and sleeping capacity.";
+  const description =   res?.seo_v2?.meta_description?.trim(); 
 
   const robots = getRobotsFromFilters(parsed, filters); // filters = slug segments array
 

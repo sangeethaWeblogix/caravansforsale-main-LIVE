@@ -63,7 +63,7 @@
    sku?: string;
    gallery?: string[];
    // Include additional properties that might come from API
-   list_page_title?: string;
+   h1?: string;
    weight?: string;
    price?: string;
    thumbnail?: string;
@@ -330,13 +330,13 @@
      initialData?.data?.model_options || [],
    );
    const [pageTitle, setPageTitle] = useState(
-     initialData?.list_page_title || " ",
+     initialData?.seo_v2?.h1 || " ",
    );
    const [metaTitle, setMetaTitle] = useState(
-     initialData?.seo?.metatitle || "",
+     initialData?.seo_v2?.metatitle || "",
    );
    const [metaDescription, setMetaDescription] = useState(
-     initialData?.seo?.metadescription || "",
+     initialData?.seo_v2?.metadescription || "",
    );
    const [pagination, setPagination] = useState<Pagination>(() => {
      // Use initial data if available, otherwise fall back to default
@@ -557,9 +557,9 @@
        setMakes(initialData.data.make_options || []);
        setStateOptions(initialData.data.states || []);
        setModels(initialData.data.model_options || []);
-       setPageTitle(initialData.list_page_title || "");
-       setMetaTitle(initialData.seo?.metatitle || "");
-       setMetaDescription(initialData.seo?.metadescription || "");
+       setPageTitle(initialData.seo_v2?.h1 || "");
+       setMetaTitle(initialData.seo_v2?.metatitle || "");
+       setMetaDescription(initialData.seo_v2?.metadescription || "");
        if (initialData.pagination) setPagination(initialData.pagination);
      }
    }, [initialData]);
@@ -736,8 +736,8 @@
          setMakes(response?.data?.make_options ?? []);
          setStateOptions(response?.data?.states ?? []);
          setModels(response?.data?.model_options ?? []);
-         setMetaDescription(response?.seo?.metadescription ?? "");
-         setMetaTitle(response?.seo?.metatitle ?? "");
+         setMetaDescription(response?.seo_v2?.metadescription ?? "");
+         setMetaTitle(response?.seo_v2?.metatitle ?? "");
          if (response.pagination) setPagination(response.pagination);
 
          return response;
@@ -1528,10 +1528,10 @@
        );
 
        if (response?.pagination) setPagination(response.pagination);
-       if (response?.seo?.metatitle) setMetaTitle(response.seo.metatitle);
-       if (response?.seo?.metadescription)
-         setMetaDescription(response.seo.metadescription);
-       if (response?.list_page_title) setPageTitle(response.list_page_title);
+       if (response?.seo_v2?.metatitle) setMetaTitle(response.seo_v2.metatitle);
+       if (response?.seo_v2?.metadescription)
+         setMetaDescription(response.seo_v2.metadescription);
+       if (response?.seo_v2?.h1) setPageTitle(response.seo_v2?.h1);
      } catch (err) {
        console.error("❌ slider filter fetch error:", err);
      } finally {
