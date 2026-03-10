@@ -823,6 +823,7 @@ const FilterModal: React.FC<CaravanFilterProps> = ({
     currentFilters.to_length,
     currentFilters.sleeps,
     currentFilters.condition,
+
   ]);
 
   // correct 3
@@ -1847,6 +1848,20 @@ const FilterModal: React.FC<CaravanFilterProps> = ({
     if (tempCondition) tempFilters.condition = tempCondition;
     if (tempStateName) tempFilters.state = tempStateName.toLowerCase();
     if (tempRegionName) tempFilters.region = tempRegionName;
+    if (selectedSuggestion) {
+  const uriParts = selectedSuggestion.uri.split("/");
+
+  const suburbSlug = uriParts[2] || "";
+  let pincode = uriParts[3] || "";
+
+  const suburb = suburbSlug
+    .replace(/-suburb$/, "")
+    .replace(/-/g, " ")
+    .trim();
+
+  tempFilters.suburb = suburb.toLowerCase();
+  tempFilters.pincode = pincode;
+}
     if (tempAtmFrom) tempFilters.minKg = tempAtmFrom;
     if (tempAtmTo) tempFilters.maxKg = tempAtmTo;
     if (tempPriceFrom) tempFilters.from_price = tempPriceFrom;
@@ -1859,7 +1874,10 @@ const FilterModal: React.FC<CaravanFilterProps> = ({
       tempFilters.acustom_fromyears = tempYear;
       tempFilters.acustom_toyears = tempYear;
     }
-
+    
+if (modalKeyword && modalKeyword.trim()) {
+  tempFilters.search = toQueryPlus(modalKeyword.trim());
+}
     // ✅ 3-layer merge: currentFilters → filters → tempFilters (highest priority)
     const activeFilters: Filters = mergeFilters(
       mergeFilters(currentFilters, filters),
@@ -1872,9 +1890,8 @@ const FilterModal: React.FC<CaravanFilterProps> = ({
     // ─── CATEGORY COUNTS ───
     const catParams = buildCountParamsMulti(activeFilters, ["category"]);
     catParams.set("group_by", "category");
-    if (!categoryFirstLoadDoneRef.current) {
-      setIsCategoryCountLoading(true); // ← only on first fetch
-    }
+       setIsCategoryCountLoading(true); // ← only on first fetch
+    
     fetch(
       `https://admin.caravansforsale.com.au/wp-json/cfs/v1/params_count?${catParams.toString()}`,
       { signal },
@@ -1990,6 +2007,8 @@ const FilterModal: React.FC<CaravanFilterProps> = ({
     tempLengthFrom,
     tempLengthTo,
     tempYear,
+     modalKeyword,          // 🔥 add this
+  selectedSuggestion  ,
   ]);
 
   useEffect(() => {
@@ -2029,7 +2048,7 @@ const FilterModal: React.FC<CaravanFilterProps> = ({
               <div className="filter-item pt-0" ref={categoryRef}>
                 <h4>Caravan Type</h4>
                 <ul className="category-list">
-                  {isCategoryCountLoading && categoryCounts.length === 0 ? (
+{categoryCounts.length === 0 ? (
                     // ✅ Skeleton - data வரும் வரை காட்டு
                     <CategorySkeleton />
                   ) : (
@@ -2775,13 +2794,18 @@ const FilterModal: React.FC<CaravanFilterProps> = ({
                                     className="suggestion-item"
                                     onMouseDown={() => {
                                       pickedSourceRef.current = "typed";
-                                      setModalKeyword(k.label);
+                                       const keyword = k.label;
+  setModalKeyword(keyword);
                                       setKeywordSuggestions([]);
                                       setBaseKeywords([]);
                                       setShowSuggestions(false);
 
                                       // ✅ Prevent re-trigger of fetch
                                       setKeywordLoading(false);
+                                       setFilters((prev) => ({
+    ...prev,
+    search: toQueryPlus(keyword),
+  }));
                                     }}
                                   >
                                     {k.label}

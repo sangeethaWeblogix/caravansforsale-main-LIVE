@@ -94,9 +94,28 @@ function isPriceLike(s: string): boolean {
   // ─── Build canonical from slug + searchParams ───
   const BASE_URL = "https://www.caravansforsale.com.au";
   
-  // slug segments → /listings/segment1/segment2/
+   // ─── Build canonical from slug + searchParams ───
+ 
+let canonicalUrl = "";
+
+ 
+
+if (parsed.suburb) {
+
+  const locationSegments = filters.filter(
+    (seg) =>
+      seg.endsWith("-state") ||
+      seg.endsWith("-region") ||
+      seg.endsWith("-suburb")
+  );
+
+  canonicalUrl = `${BASE_URL}/listings/${locationSegments.join("/")}/`;
+
+} else {
+
   const slugPath = filters.length > 0 ? filters.join("/") : "";
-  let canonicalUrl = `${BASE_URL}/listings/${slugPath ? slugPath + "/" : ""}`;
+  canonicalUrl = `${BASE_URL}/listings/${slugPath ? slugPath + "/" : ""}`;
+}
 
   // append searchParams (except page=1)
   const spEntries = Object.entries(searchParams).filter(([k, v]) => {

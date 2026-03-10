@@ -42,7 +42,7 @@ export function BannerProvider({ children }: { children: ReactNode }) {
     async function fetchBanners() {
       try {
         const res = await fetch(
-          "https://www.admin.caravansforsale.com.au/wp-json/ads-manager/v1/banners",
+          "https://admin.caravansforsale.com.au/wp-json/ads-manager/v1/banners",
         );
         const data = await res.json();
         setAllBanners(data.data || []);
