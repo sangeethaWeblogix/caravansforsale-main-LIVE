@@ -1592,8 +1592,8 @@ export default function ListingsPage({
         />
       </Head>
       <div>
-        <div className="cfs-links-section" id="static-links">
-          <StaticLinks filters={filters} />
+        <div>
+          <StaticLinks filters={incomingFilters} />
         </div>
       </div>
 
@@ -1777,13 +1777,13 @@ export default function ListingsPage({
         <div className="container">
           <div className="content mb-4">
             {/*<div className="text-sm text-gray-600 header">
-                  <Link href="/" className="hover:underline">
-                    Home
-                  </Link>{" "}
-                  &gt; <span className="font-medium text-black"> Listings</span>
-                </div>
-    
-                <h1 className="page-title">{pageTitle}</h1>*/}
+                    <Link href="/" className="hover:underline">
+                      Home
+                    </Link>{" "}
+                    &gt; <span className="font-medium text-black"> Listings</span>
+                  </div>
+      
+                  <h1 className="page-title">{pageTitle}</h1>*/}
             <div ref={sentinelRef} style={{ height: "1px" }} />
             <div className="row">
               {/* Desktop sidebar */}

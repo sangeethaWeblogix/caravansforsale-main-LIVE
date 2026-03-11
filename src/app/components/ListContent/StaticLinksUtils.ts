@@ -38,6 +38,7 @@ export interface Filters {
 }
 
 export const SECTION_TITLES: Record<string, string> = {
+  home: "",
   categories: "Browse by Category",
   states: "Browse by State",
   regions: "Browse by Region",
@@ -69,6 +70,8 @@ export function buildStaticLinks(
   const hasYear = Boolean(filters.acustom_fromyears || filters.acustom_toyears);
   const hasMake = Boolean(filters.make);
   const hasModel = Boolean(filters.model);
+  const hasSearch = Boolean(filters.search || filters.keyword);
+
   const activeCount = [
     hasState,
     hasRegion,
@@ -79,6 +82,7 @@ export function buildStaticLinks(
     hasLength,
     hasSleep,
     hasMake, // ← add
+    hasSearch, // ← ADD THIS
   ].filter(Boolean).length;
 
   const effectiveCount =
@@ -94,6 +98,7 @@ export function buildStaticLinks(
       links.all = [{ name: "All Caravans", slug: "/listings/" }];
       return links;
     }
+    links.home = [{ name: "Home", slug: "/" }];
     links.categories = filterOptions.categories;
     links.states = filterOptions.location.state;
     links.prices = filterOptions.price;
@@ -107,7 +112,7 @@ export function buildStaticLinks(
   if (effectiveCount === 1) {
     console.log("make", filters.make);
     console.log("make mod", filters.model);
-
+    links.home = [{ name: "Home", slug: "/" }];
     let makeCategories: { name: string; slug: string }[] = [];
     let makeStates: { name: string; slug: string }[] = [];
     if (hasCategory) {
@@ -284,6 +289,7 @@ export function buildStaticLinks(
   // 🔴 2 OR MORE FILTERS
   // ─────────────────────────────
   if (effectiveCount >= 2) {
+    links.home = [{ name: "Home", slug: "/" }];
     if (hasCategory) {
       links.categories = filterOptions.categories.filter((c) =>
         c.slug.includes(filters.category?.toLowerCase() ?? ""),
@@ -327,15 +333,16 @@ export function buildStaticLinks(
       const to = filters.to_price ? Number(filters.to_price) : null;
 
       if (to) {
+        // exact match — between-X-Y
         links.prices = filterOptions.price.filter((p) => {
           const slug = p.slug.replace(/\//g, "");
           return slug === `between-${from}-${to}`;
         });
       } else {
-        const ranges = filterOptions.price
+        // from_price மட்டும் (over/under) — nearest between range show பண்ணு
+        const allRanges = filterOptions.price
           .map((p) => {
             const slug = p.slug.replace(/\//g, "");
-            if (!slug.startsWith("between")) return null;
             const match = slug.match(/between-(\d+)-(\d+)/);
             if (!match) return null;
             return { item: p, start: Number(match[1]), end: Number(match[2]) };
@@ -350,30 +357,41 @@ export function buildStaticLinks(
             } => r !== null,
           );
 
-        if (filters.type === "under") {
-          const nearest = ranges
-            .filter((r) => r.end >= from)
-            .sort((a, b) => a.end - b.end)[0];
-          links.prices = nearest ? [nearest.item] : [];
-        } else {
-          const nearest = ranges
-            .filter((r) => r.start >= from)
-            .sort((a, b) => a.start - b.start)[0];
-          links.prices = nearest ? [nearest.item] : [];
-        }
+        // from value-க்கு equal or nearest higher range show பண்ணு
+        const nearest = allRanges
+          .filter((r) => r.start >= from)
+          .sort((a, b) => a.start - b.start)[0];
+        links.prices = nearest ? [nearest.item] : [];
       }
     }
-
     if (hasAtm) {
       const min = filters.minKg ? Number(filters.minKg) : null;
       const max = filters.maxKg ? Number(filters.maxKg) : null;
 
       if (min && max) {
+        // exact range match
         links.atm = filterOptions.atm.filter((o) => {
           if (!o.value.includes("-")) return false;
           const [optMin, optMax] = o.value.split("-").map(Number);
           return min >= optMin && max <= optMax;
         });
+      } else if (min && !max) {
+        // min மட்டும் — min value உள்ள range find பண்ணு
+        // e.g. minKg=2500 → "2500-3500" range
+        links.atm = filterOptions.atm.filter((o) => {
+          if (!o.value.includes("-")) return false;
+          const [optMin, optMax] = o.value.split("-").map(Number);
+          return min >= optMin && min <= optMax; // ← FIX: <= instead of
+        });
+        // match இல்லன்னா nearest higher
+        if (!links.atm?.length) {
+          links.atm = filterOptions.atm
+            .filter((o) => {
+              const nums = o.value.split("-").map(Number);
+              return nums[0] >= min;
+            })
+            .slice(0, 1);
+        }
       } else if (!min && max) {
         links.atm = filterOptions.atm
           .filter((o) => {
@@ -382,15 +400,8 @@ export function buildStaticLinks(
             return optMin >= max;
           })
           .slice(0, 1);
-      } else if (min && !max) {
-        links.atm = filterOptions.atm.filter((o) => {
-          if (!o.value.includes("-")) return false;
-          const [optMin, optMax] = o.value.split("-").map(Number);
-          return min >= optMin && min < optMax;
-        });
       }
     }
-
     if (hasLength) {
       const min = filters.from_length ? Number(filters.from_length) : null;
       const max = filters.to_length ? Number(filters.to_length) : null;
@@ -460,6 +471,8 @@ export function buildStaticLinkUrl(
   slug: string,
   currentFilters: Filters,
 ): string {
+  if (type === "home") return "/"; // ← ADD THIS
+
   if (type === "all") return "/listings/";
 
   const cleanSlug = slug.toLowerCase().replace(/^\//, "").replace(/\/$/, "");
