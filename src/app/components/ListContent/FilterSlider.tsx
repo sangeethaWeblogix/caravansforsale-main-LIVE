@@ -307,17 +307,17 @@ const FilterSlider = ({
 
     setOpenModal(null);
   };
- const handleMakeClear = () => {
-  setTempMake(null);
-  setTempModel(null);
+  const handleMakeClear = () => {
+    setTempMake(null);
+    setTempModel(null);
 
-  updateFiltersAndURL({
-    make: undefined,
-    model: undefined,
-  });
+    updateFiltersAndURL({
+      make: undefined,
+      model: undefined,
+    });
 
-  setOpenModal(null);
-};
+    setOpenModal(null);
+  };
   // ── Price & ATM temp states ──
   const [tempPriceFrom, setTempPriceFrom] = useState<number | null>(null);
   const [tempPriceTo, setTempPriceTo] = useState<number | null>(null);
@@ -358,16 +358,16 @@ const FilterSlider = ({
     setOpenModal(null);
   };
   const handlePriceClear = () => {
-  setTempPriceFrom(null);
-  setTempPriceTo(null);
+    setTempPriceFrom(null);
+    setTempPriceTo(null);
 
-  updateFiltersAndURL({
-    from_price: undefined,
-    to_price: undefined,
-  });
+    updateFiltersAndURL({
+      from_price: undefined,
+      to_price: undefined,
+    });
 
-  setOpenModal(null);
-};
+    setOpenModal(null);
+  };
 
   // ── ATM handlers ──
   const handleAtmOpen = () => {
@@ -393,62 +393,63 @@ const FilterSlider = ({
 
     setOpenModal(null);
   };
- const handleAtmClear = () => {
-  setTempAtmFrom(null);
-  setTempAtmTo(null);
+  const handleAtmClear = () => {
+    setTempAtmFrom(null);
+    setTempAtmTo(null);
 
-  updateFiltersAndURL({
-    minKg: undefined,
-    maxKg: undefined,
-  });
+    updateFiltersAndURL({
+      minKg: undefined,
+      maxKg: undefined,
+    });
 
-  setOpenModal(null);
-};
+    setOpenModal(null);
+  };
 
   const [tempCategory, setTempCategory] = useState<string | null>(null);
   const [tempState, setTempState] = useState<string | null>(null);
   const [tempRegion, setTempRegion] = useState<string | null>(null);
-const updateFiltersAndURL = (updates: Partial<Filters>) => {
-  triggerGlobalLoaders();
+  const updateFiltersAndURL = (updates: Partial<Filters>) => {
+    triggerGlobalLoaders();
 
-  const newFilters = {
-    ...currentFilters,
-    ...updates,
-    page: 1,
+    const newFilters = {
+      ...currentFilters,
+      ...updates,
+      page: 1,
+    };
+
+    // remove empty filters
+    Object.keys(newFilters).forEach((k) => {
+      if (newFilters[k] === undefined || newFilters[k] === null) {
+        delete newFilters[k];
+      }
+    });
+
+    const slugPath = buildSlugFromFilters(newFilters);
+    const safeSlug = slugPath.endsWith("/") ? slugPath : `${slugPath}/`;
+
+    router.replace(safeSlug);
   };
-
-  // remove empty filters
-  Object.keys(newFilters).forEach((k) => {
-    if (newFilters[k] === undefined || newFilters[k] === null) {
-      delete newFilters[k];
-    }
-  });
-
-  const slugPath = buildSlugFromFilters(newFilters);
-  const safeSlug = slugPath.endsWith("/") ? slugPath : `${slugPath}/`;
-
-  router.replace(safeSlug);
-};
   const handleTypeOpen = () => {
     const f = getEffectiveFilters();
     setTempCategory(f.category ?? null);
     setOpenModal("type");
   };
- const handleTypeSearch = () => {
-  updateFiltersAndURL({
-    category: tempCategory ?? undefined,
-  });
+  const handleTypeSearch = () => {
+    updateFiltersAndURL({
+      category: tempCategory ?? undefined,
+    });
 
-  setOpenModal(null);
-};const handleTypeClear = () => {
-  setTempCategory(null);
+    setOpenModal(null);
+  };
+  const handleTypeClear = () => {
+    setTempCategory(null);
 
-  updateFiltersAndURL({
-    category: undefined,
-  });
+    updateFiltersAndURL({
+      category: undefined,
+    });
 
-  setOpenModal(null);
-};
+    setOpenModal(null);
+  };
 
   const handleLocationOpen = () => {
     const f = getEffectiveFilters();
@@ -485,6 +486,8 @@ const updateFiltersAndURL = (updates: Partial<Filters>) => {
       ...currentFilters,
       state: tempState?.toLowerCase() ?? undefined,
       region: tempRegion?.toLowerCase() ?? undefined,
+      suburb: undefined,
+      pincode: undefined,
       page: 1,
     };
     const slugPath = buildSlugFromFilters(newFilters);
@@ -493,17 +496,19 @@ const updateFiltersAndURL = (updates: Partial<Filters>) => {
 
     setOpenModal(null);
   };
- const handleLocationClear = () => {
-  setTempState(null);
-  setTempRegion(null);
+  const handleLocationClear = () => {
+    setTempState(null);
+    setTempRegion(null);
 
-  updateFiltersAndURL({
-    state: undefined,
-    region: undefined,
-  });
+    updateFiltersAndURL({
+      state: undefined,
+      region: undefined,
+      suburb: undefined, // ✅ add
+      pincode: undefined, // ✅ add
+    });
 
-  setOpenModal(null);
-};
+    setOpenModal(null);
+  };
 
   const filteredRegions =
     states.find((s) => s.name.toLowerCase() === tempState?.toLowerCase())
@@ -591,7 +596,7 @@ const updateFiltersAndURL = (updates: Partial<Filters>) => {
 
             <SwiperSlide style={{ width: "auto" }}>
               <button
-                className={`tag ${currentFilters.state ? "active" : ""}`}
+                className={`tag ${currentFilters.state || currentFilters.suburb ? "active" : ""}`}
                 onClick={handleLocationOpen}
               >
                 {currentFilters.state ? (
