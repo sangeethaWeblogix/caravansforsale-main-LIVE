@@ -73,8 +73,7 @@ export function buildStaticLinks(
   const hasSearch = Boolean(filters.search || filters.keyword);
 
   const activeCount = [
-    hasState,
-    hasRegion,
+    hasState || hasRegion || hasSuburb, //    hasRegion,
     hasSuburb,
     hasCategory,
     hasPrice,
@@ -143,72 +142,51 @@ export function buildStaticLinks(
       const state = filterOptions.location.state.find(
         (s) => s.name.toLowerCase() === filters.state?.toLowerCase(),
       );
+
       if (hasRegion) {
-        const state = filterOptions.location.state.find(
+        // state direct link மட்டும், region list வேண்டாம்
+        links.states = filterOptions.location.state.filter(
           (s) => s.name.toLowerCase() === filters.state?.toLowerCase(),
         );
-        if (state?.region) {
-          links.regions = state.region.filter(
-            (r) => r.name.toLowerCase() === filters.region?.toLowerCase(),
-          );
-        }
-      }
-      if (
-        hasState &&
-        hasRegion &&
-        !hasCategory &&
-        !hasPrice &&
-        !hasAtm &&
-        !hasLength &&
-        !hasSleep &&
-        !hasMake
-      ) {
         links.categories = filterOptions.categories;
+        links.all = [{ name: "All Caravans", slug: "/listings/" }];
+        return links;
       }
-      // selected state link
-      // links.states = filterOptions.location.state.filter(
-      //   (s) => s.name.toLowerCase() === filters.state?.toLowerCase(),
-      // );
 
-      // that state's regions
+      // region இல்லன்னா — all regions show பண்ணு
       if (state?.region) links.regions = state.region;
-
-      // all categories
       links.categories = filterOptions.categories;
-
-      // all prices
-      // links.prices = filterOptions.price;
-      links.all = [{ name: "All Caravans", slug: "/listings/" }]; // ← add
-
+      links.all = [{ name: "All Caravans", slug: "/listings/" }];
       return links;
     }
-
     if (hasPrice) {
       const from = Number(filters.from_price);
       const to = filters.to_price ? Number(filters.to_price) : null;
       const type = filters.type;
 
       if (to && !type) {
-        // between — selected value-க்கு மேல உள்ளவை
+        // 1 filter — to value-க்கு மேல உள்ள எல்லாம் show
         links.prices = filterOptions.price.filter((p) => {
-          const nums =
-            p.slug.replace(/\//g, "").match(/\d+/g)?.map(Number) ?? [];
-          return nums[0] >= to;
+          const slug = p.slug.replace(/\//g, "");
+          const nums = slug.match(/\d+/g)?.map(Number) ?? [];
+          if (slug.startsWith("between")) return nums[0] >= to;
+          if (slug.startsWith("over")) return nums[0] >= to;
+          return false;
         });
       } else if (type === "under") {
-        // under — selected value-க்கு கீழ உள்ளவை
-        links.prices = filterOptions.price.filter((p) => {
-          const nums =
-            p.slug.replace(/\//g, "").match(/\d+/g)?.map(Number) ?? [];
-          return nums[0] < (to || from);
-        });
-      } else {
-        // over — selected value-க்கு மேல உள்ளவை
         links.prices = filterOptions.price.filter((p) => {
           const slug = p.slug.replace(/\//g, "");
           const nums = slug.match(/\d+/g)?.map(Number) ?? [];
           if (slug.startsWith("between")) return nums[0] >= from;
-          if (slug.startsWith("over")) return nums[0] > from;
+          if (slug.startsWith("over")) return nums[0] >= from;
+          return false;
+        });
+      } else {
+        links.prices = filterOptions.price.filter((p) => {
+          const slug = p.slug.replace(/\//g, "");
+          const nums = slug.match(/\d+/g)?.map(Number) ?? [];
+          if (slug.startsWith("under")) return nums[0] <= from;
+          if (slug.startsWith("between")) return nums[1] <= from;
           return false;
         });
       }
@@ -220,41 +198,50 @@ export function buildStaticLinks(
       const min = filters.minKg ? Number(filters.minKg) : null;
       const max = filters.maxKg ? Number(filters.maxKg) : null;
 
-      links.atm = filterOptions.atm.filter((o) => {
-        const nums = o.value.split("-").map(Number);
-        const optMin = nums[0];
-
-        if (min && !max) {
-          return optMin >= min;
-        } else if (!min && max) {
-          return optMin < max;
-        } else if (min && max) {
-          return optMin >= max;
-        }
-        return true;
-      });
+      if (min && max) {
+        // 1 filter — max value-க்கு மேல உள்ள எல்லாம் show
+        links.atm = filterOptions.atm.filter((o) => {
+          const nums = o.value.split("-").map(Number);
+          return nums[0] >= max;
+        });
+      } else if (min && !max) {
+        // min மட்டும் — min-க்கு மேல உள்ளவை
+        links.atm = filterOptions.atm.filter((o) => {
+          const nums = o.value.split("-").map(Number);
+          return nums[0] >= min;
+        });
+      } else if (!min && max) {
+        // max மட்டும் — max-க்கு கீழ உள்ளவை
+        links.atm = filterOptions.atm.filter((o) => {
+          const nums = o.value.split("-").map(Number);
+          return nums[0] < max;
+        });
+      }
 
       links.all = [{ name: "All Caravans", slug: "/listings/" }];
       return links;
     }
-
     if (hasLength) {
       const min = filters.from_length ? Number(filters.from_length) : null;
       const max = filters.to_length ? Number(filters.to_length) : null;
 
-      links.length = filterOptions.length.filter((o) => {
-        const nums = o.value.split("-").map(Number);
-        const optMin = nums[0];
-
-        if (min && !max) {
-          return optMin >= min;
-        } else if (!min && max) {
-          return optMin < max;
-        } else if (min && max) {
-          return optMin >= max;
-        }
-        return true;
-      });
+      if (min && max) {
+        // 1 filter — max value-க்கு மேல உள்ள எல்லாம் show
+        links.length = filterOptions.length.filter((o) => {
+          const nums = o.value.split("-").map(Number);
+          return nums[0] >= max;
+        });
+      } else if (min && !max) {
+        links.length = filterOptions.length.filter((o) => {
+          const nums = o.value.split("-").map(Number);
+          return nums[0] >= min;
+        });
+      } else if (!min && max) {
+        links.length = filterOptions.length.filter((o) => {
+          const nums = o.value.split("-").map(Number);
+          return nums[0] < max;
+        });
+      }
 
       links.all = [{ name: "All Caravans", slug: "/listings/" }];
       return links;
@@ -264,19 +251,23 @@ export function buildStaticLinks(
       const from = filters.from_sleep ? Number(filters.from_sleep) : null;
       const to = filters.to_sleep ? Number(filters.to_sleep) : null;
 
-      links.sleep = filterOptions.sleep.filter((o) => {
-        const nums = o.value.split("-").map(Number);
-        const optMin = nums[0];
-
-        if (from && !to) {
-          return optMin >= from;
-        } else if (!from && to) {
-          return optMin < to;
-        } else if (from && to) {
-          return optMin >= to;
-        }
-        return true;
-      });
+      if (from && to) {
+        // 1 filter — to value-க்கு மேல உள்ள எல்லாம் show
+        links.sleep = filterOptions.sleep.filter((o) => {
+          const nums = o.value.split("-").map(Number);
+          return nums[0] >= to;
+        });
+      } else if (from && !to) {
+        links.sleep = filterOptions.sleep.filter((o) => {
+          const nums = o.value.split("-").map(Number);
+          return nums[0] >= from;
+        });
+      } else if (!from && to) {
+        links.sleep = filterOptions.sleep.filter((o) => {
+          const nums = o.value.split("-").map(Number);
+          return nums[0] < to;
+        });
+      }
 
       links.all = [{ name: "All Caravans", slug: "/listings/" }];
       return links;
@@ -290,78 +281,125 @@ export function buildStaticLinks(
   // ─────────────────────────────
   if (effectiveCount >= 2) {
     links.home = [{ name: "Home", slug: "/" }];
+
+    const hasOnlyLocation =
+      !hasCategory &&
+      !hasPrice &&
+      !hasAtm &&
+      !hasLength &&
+      !hasSleep &&
+      !hasMake &&
+      !hasSearch;
+
+    // state+region மட்டும் → state direct link
+    if (hasOnlyLocation && hasState) {
+      links.states = filterOptions.location.state.filter(
+        (s) => s.name.toLowerCase() === filters.state?.toLowerCase(),
+      );
+      links.all = [{ name: "All Caravans", slug: "/listings/" }];
+      return links;
+    }
+
+    // category + state only → category direct + state direct
+    if (
+      hasCategory &&
+      hasState &&
+      !hasRegion &&
+      !hasPrice &&
+      !hasAtm &&
+      !hasLength &&
+      !hasSleep &&
+      !hasMake
+    ) {
+      links.categories = filterOptions.categories.filter((c) =>
+        c.slug.includes(filters.category?.toLowerCase() ?? ""),
+      );
+      links.states = filterOptions.location.state.filter(
+        (s) => s.name.toLowerCase() === filters.state?.toLowerCase(),
+      );
+      links.all = [{ name: "All Caravans", slug: "/listings/" }];
+      return links;
+    }
+
+    // category + state + region → category + state + region links
+    if (
+      hasCategory &&
+      hasState &&
+      hasRegion &&
+      !hasPrice &&
+      !hasAtm &&
+      !hasLength &&
+      !hasSleep &&
+      !hasMake
+    ) {
+      links.categories = filterOptions.categories.filter((c) =>
+        c.slug.includes(filters.category?.toLowerCase() ?? ""),
+      );
+      links.states = filterOptions.location.state.filter(
+        (s) => s.name.toLowerCase() === filters.state?.toLowerCase(),
+      );
+      const state = filterOptions.location.state.find(
+        (s) => s.name.toLowerCase() === filters.state?.toLowerCase(),
+      );
+      if (state?.region) {
+        links.regions = state.region.filter(
+          (r) => r.name.toLowerCase() === filters.region?.toLowerCase(),
+        );
+      }
+      links.all = [{ name: "All Caravans", slug: "/listings/" }];
+      return links;
+    }
+
+    // other combinations → ALL active filters show
     if (hasCategory) {
       links.categories = filterOptions.categories.filter((c) =>
         c.slug.includes(filters.category?.toLowerCase() ?? ""),
       );
     }
     if (hasMake) {
-      // model இருந்தா model value use பண்ணு, இல்லன்னா make
-
-      links.makes = [{ name: filters.make!, slug: filters.make! }];
+      links.makes = [
+        { name: filters.make!, slug: `/${filters.make!.toLowerCase()}/` },
+      ];
     }
     if (hasState) {
       links.states = filterOptions.location.state.filter(
         (s) => s.name.toLowerCase() === filters.state?.toLowerCase(),
       );
     }
-
     if (hasRegion) {
-      if (
-        hasMake ||
-        hasCategory ||
-        hasPrice ||
-        hasAtm ||
-        hasLength ||
-        hasSleep
-      ) {
-        const state = filterOptions.location.state.find(
-          (s) => s.name.toLowerCase() === filters.state?.toLowerCase(),
+      const state = filterOptions.location.state.find(
+        (s) => s.name.toLowerCase() === filters.state?.toLowerCase(),
+      );
+      if (state?.region) {
+        links.regions = state.region.filter(
+          (r) => r.name.toLowerCase() === filters.region?.toLowerCase(),
         );
-        if (state?.region) {
-          links.regions = state.region.filter(
-            (r) => r.name.toLowerCase() === filters.region?.toLowerCase(),
-          );
-        }
       }
-    }
-    if (activeCount === 2 && hasState && hasRegion) {
-      links.categories = filterOptions.categories;
     }
     if (hasPrice) {
       const from = Number(filters.from_price);
       const to = filters.to_price ? Number(filters.to_price) : null;
-
       if (to) {
-        // exact match — between-X-Y
+        // exact match — to value உள்ள range மட்டும்
         links.prices = filterOptions.price.filter((p) => {
           const slug = p.slug.replace(/\//g, "");
-          return slug === `between-${from}-${to}`;
+          const nums = slug.match(/\d+/g)?.map(Number) ?? [];
+          if (slug.startsWith("between") && nums.length >= 2) {
+            return to >= nums[0] && to < nums[1];
+          }
+          if (slug.startsWith("over")) return to >= nums[0];
+          return false;
         });
       } else {
-        // from_price மட்டும் (over/under) — nearest between range show பண்ணு
-        const allRanges = filterOptions.price
-          .map((p) => {
+        links.prices = filterOptions.price
+          .filter((p) => {
             const slug = p.slug.replace(/\//g, "");
-            const match = slug.match(/between-(\d+)-(\d+)/);
-            if (!match) return null;
-            return { item: p, start: Number(match[1]), end: Number(match[2]) };
+            const nums = slug.match(/\d+/g)?.map(Number) ?? [];
+            if (slug.startsWith("between")) return nums[0] >= from;
+            if (slug.startsWith("over")) return nums[0] >= from;
+            return false;
           })
-          .filter(
-            (
-              r,
-            ): r is {
-              item: { name: string; slug: string };
-              start: number;
-              end: number;
-            } => r !== null,
-          );
-
-        // from value-க்கு equal or nearest higher range show பண்ணு
-        const nearest = allRanges
-          .filter((r) => r.start >= from)
-          .sort((a, b) => a.start - b.start)[0];
-        links.prices = nearest ? [nearest.item] : [];
+          .slice(0, 1);
       }
     }
     if (hasAtm) {
@@ -369,35 +407,26 @@ export function buildStaticLinks(
       const max = filters.maxKg ? Number(filters.maxKg) : null;
 
       if (min && max) {
-        // exact range match
-        links.atm = filterOptions.atm.filter((o) => {
-          if (!o.value.includes("-")) return false;
-          const [optMin, optMax] = o.value.split("-").map(Number);
-          return min >= optMin && max <= optMax;
-        });
+        // exact match — max value உள்ள range மட்டும்
+        links.atm = filterOptions.atm
+          .filter((o) => {
+            const nums = o.value.split("-").map(Number);
+            if (nums.length >= 2) return max >= nums[0] && max < nums[1];
+            return max >= nums[0]; // over case
+          })
+          .slice(0, 1);
       } else if (min && !max) {
-        // min மட்டும் — min value உள்ள range find பண்ணு
-        // e.g. minKg=2500 → "2500-3500" range
-        links.atm = filterOptions.atm.filter((o) => {
-          if (!o.value.includes("-")) return false;
-          const [optMin, optMax] = o.value.split("-").map(Number);
-          return min >= optMin && min <= optMax; // ← FIX: <= instead of
-        });
-        // match இல்லன்னா nearest higher
-        if (!links.atm?.length) {
-          links.atm = filterOptions.atm
-            .filter((o) => {
-              const nums = o.value.split("-").map(Number);
-              return nums[0] >= min;
-            })
-            .slice(0, 1);
-        }
+        links.atm = filterOptions.atm
+          .filter((o) => {
+            const nums = o.value.split("-").map(Number);
+            return min >= nums[0] && min < nums[1];
+          })
+          .slice(0, 1);
       } else if (!min && max) {
         links.atm = filterOptions.atm
           .filter((o) => {
-            if (!o.value.includes("-")) return false;
-            const [optMin] = o.value.split("-").map(Number);
-            return optMin >= max;
+            const nums = o.value.split("-").map(Number);
+            return nums[0] >= max;
           })
           .slice(0, 1);
       }
@@ -407,25 +436,27 @@ export function buildStaticLinks(
       const max = filters.to_length ? Number(filters.to_length) : null;
 
       if (min && max) {
-        links.length = filterOptions.length.filter((o) => {
-          if (!o.value.includes("-")) return false;
-          const [optMin, optMax] = o.value.split("-").map(Number);
-          return min >= optMin && max <= optMax;
-        });
-      } else if (!min && max) {
         links.length = filterOptions.length
           .filter((o) => {
-            if (!o.value.includes("-")) return false;
-            const [optMin] = o.value.split("-").map(Number);
-            return optMin >= max;
+            const nums = o.value.split("-").map(Number);
+            if (nums.length >= 2) return max >= nums[0] && max < nums[1];
+            return max >= nums[0];
           })
           .slice(0, 1);
       } else if (min && !max) {
-        links.length = filterOptions.length.filter((o) => {
-          if (!o.value.includes("-")) return false;
-          const [optMin, optMax] = o.value.split("-").map(Number);
-          return min >= optMin && min < optMax;
-        });
+        links.length = filterOptions.length
+          .filter((o) => {
+            const nums = o.value.split("-").map(Number);
+            return min >= nums[0] && min < nums[1];
+          })
+          .slice(0, 1);
+      } else if (!min && max) {
+        links.length = filterOptions.length
+          .filter((o) => {
+            const nums = o.value.split("-").map(Number);
+            return nums[0] >= max;
+          })
+          .slice(0, 1);
       }
     }
 
@@ -434,28 +465,38 @@ export function buildStaticLinks(
       const to = filters.to_sleep ? Number(filters.to_sleep) : null;
 
       if (from && to) {
-        links.sleep = filterOptions.sleep.filter((o) => {
-          if (!o.value.includes("-")) return false;
-          const [optMin, optMax] = o.value.split("-").map(Number);
-          return from >= optMin && from <= optMax;
-        });
+        links.sleep = filterOptions.sleep
+          .filter((o) => {
+            const nums = o.value.split("-").map(Number);
+            if (nums.length >= 2) return to >= nums[0] && to < nums[1];
+            return to >= nums[0];
+          })
+          .slice(0, 1);
       } else if (from && !to) {
         links.sleep = filterOptions.sleep
           .filter((o) => {
-            if (!o.value.includes("-")) return false;
-            const [optMin] = o.value.split("-").map(Number);
-            return optMin > from;
+            const nums = o.value.split("-").map(Number);
+            return from >= nums[0] && from < nums[1];
           })
           .slice(0, 1);
       } else if (!from && to) {
         links.sleep = filterOptions.sleep
           .filter((o) => {
-            if (!o.value.includes("-")) return false;
-            const [optMin] = o.value.split("-").map(Number);
-            return optMin >= to;
+            const nums = o.value.split("-").map(Number);
+            return nums[0] >= to;
           })
           .slice(0, 1);
       }
+    }
+    if (
+      !hasCategory &&
+      !hasMake &&
+      !hasPrice &&
+      !hasAtm &&
+      !hasLength &&
+      !hasSleep
+    ) {
+      links.categories = filterOptions.categories;
     }
 
     links.all = [{ name: "All Caravans", slug: "/listings/" }];
@@ -478,9 +519,7 @@ export function buildStaticLinkUrl(
   const cleanSlug = slug.toLowerCase().replace(/^\//, "").replace(/\/$/, "");
 
   const activeCount = [
-    currentFilters.state,
-    currentFilters.region,
-    currentFilters.suburb,
+    currentFilters.state || currentFilters.region || currentFilters.suburb,
     currentFilters.category,
     currentFilters.from_price || currentFilters.to_price,
     currentFilters.minKg || currentFilters.maxKg,
@@ -508,13 +547,14 @@ export function buildStaticLinkUrl(
     const directFilters: Filters = {};
 
     if (type === "categories") {
+      // direct — no carry over
       directFilters.category = cleanSlug.replace("-category", "");
-      if (currentFilters.state) directFilters.state = currentFilters.state;
-      if (currentFilters.region) directFilters.region = currentFilters.region;
     } else if (type === "states") {
-      directFilters.state = cleanSlug.replace("-state", "");
+      // category மட்டும் carry over
+      if (currentFilters.category)
+        directFilters.state = cleanSlug.replace("-state", "");
     } else if (type === "regions") {
-      directFilters.state = currentFilters.state;
+      if (currentFilters.state) directFilters.state = currentFilters.state;
       directFilters.region = cleanSlug.replace("-region", "");
     } else if (type === "prices") {
       const parts = cleanSlug.match(/(\d+)/g);
