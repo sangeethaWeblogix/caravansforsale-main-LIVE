@@ -48,6 +48,7 @@ export const SECTION_TITLES: Record<string, string> = {
   length: "Browse by Length",
   conditions: "Browse by Condition",
   makes: "Browse by Make",
+  suburbs: "Browse by Suburb",
   // FIX
   all: " ",
 };
@@ -57,7 +58,7 @@ export function buildStaticLinks(
   filters: Filters,
 ): Record<string, { name: string; slug: string }[]> {
   const links: Record<string, { name: string; slug: string }[]> = {};
-
+  console.log("suburb:", filters.suburb, "pincode:", filters.pincode);
   const hasState = Boolean(filters.state);
   const hasRegion = Boolean(filters.region);
   const hasSuburb = Boolean(filters.suburb);
@@ -74,7 +75,6 @@ export function buildStaticLinks(
 
   const activeCount = [
     hasState || hasRegion || hasSuburb, //    hasRegion,
-    hasSuburb,
     hasCategory,
     hasPrice,
     hasAtm,
@@ -142,7 +142,22 @@ export function buildStaticLinks(
       const state = filterOptions.location.state.find(
         (s) => s.name.toLowerCase() === filters.state?.toLowerCase(),
       );
+      if (hasRegion && hasSuburb) {
+        // suburb page → state, region, suburb links மட்டும்
+        links.states = filterOptions.location.state.filter(
+          (s) => s.name.toLowerCase() === filters.state?.toLowerCase(),
+        );
+        if (state?.region) {
+          links.regions = state.region.filter(
+            (r) => r.name.toLowerCase() === filters.region?.toLowerCase(),
+          );
+        }
+        // suburb link — pincode include ஆன slug as-is use பண்ணு
+        // effectiveCount === 1, hasRegion && hasSuburb block
 
+        links.all = [{ name: "All Caravans", slug: "/listings/" }];
+        return links;
+      }
       if (hasRegion) {
         // state direct link மட்டும், region list வேண்டாம்
         links.states = filterOptions.location.state.filter(
@@ -346,6 +361,12 @@ export function buildStaticLinks(
           (r) => r.name.toLowerCase() === filters.region?.toLowerCase(),
         );
       }
+      links.suburbs = [
+        {
+          name: filters.suburb!,
+          slug: `/${filters.state!.toLowerCase()}-state/${filters.region!.toLowerCase()}-region/${filters.suburb!.toLowerCase()}-${filters.pincode}-suburb/`,
+        },
+      ];
       links.all = [{ name: "All Caravans", slug: "/listings/" }];
       return links;
     }
@@ -375,6 +396,18 @@ export function buildStaticLinks(
           (r) => r.name.toLowerCase() === filters.region?.toLowerCase(),
         );
       }
+    }
+    if (
+      hasSuburb &&
+      hasRegion &&
+      (hasCategory || hasMake || hasPrice || hasAtm || hasLength || hasSleep)
+    ) {
+      links.suburbs = [
+        {
+          name: filters.suburb!,
+          slug: `/${filters.state!.toLowerCase()}-state/${filters.region!.toLowerCase()}-region/${filters.suburb!.toLowerCase()}-${filters.pincode}-suburb/`,
+        },
+      ];
     }
     if (hasPrice) {
       const from = Number(filters.from_price);
@@ -556,6 +589,12 @@ export function buildStaticLinkUrl(
     } else if (type === "regions") {
       if (currentFilters.state) directFilters.state = currentFilters.state;
       directFilters.region = cleanSlug.replace("-region", "");
+    } else if (type === "suburbs") {
+      const state = currentFilters.state?.toLowerCase();
+      const region = currentFilters.region?.toLowerCase();
+      const suburb = currentFilters.suburb?.toLowerCase();
+      const pincode = currentFilters.pincode;
+      return `/listings/${state}-state/${region}-region/${suburb}-${pincode}-suburb/`;
     } else if (type === "prices") {
       const parts = cleanSlug.match(/(\d+)/g);
       if (parts) {
@@ -632,6 +671,12 @@ export function buildStaticLinkUrl(
       normalFilters.category = currentFilters.category;
     if (currentFilters.state) normalFilters.state = currentFilters.state;
     normalFilters.region = cleanSlug.replace("-region", "");
+  } else if (type === "suburbs") {
+    const state = currentFilters.state?.toLowerCase();
+    const region = currentFilters.region?.toLowerCase();
+    const suburb = currentFilters.suburb?.toLowerCase();
+    const pincode = currentFilters.pincode;
+    return `/listings/${state}-state/${region}-region/${suburb}-${pincode}-suburb/`;
   } else if (type === "prices") {
     // ✅ current category + state keep பண்ணு
     if (currentFilters.category)
