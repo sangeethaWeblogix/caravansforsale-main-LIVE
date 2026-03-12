@@ -2,8 +2,10 @@ name: Generate Cache (With Batching)
 
 on:
   schedule:
+    # Run daily at 7 AM Melbourne time (AEST UTC+10 - standard time)
+    # Note: During DST (Oct–Apr) this will fire at 8 AM Melbourne time
     # Run daily at 2 AM UTC
-    - cron: '0 2 * * *'
+    - cron: '0 21 * * *'
 
   workflow_dispatch:
     inputs:
