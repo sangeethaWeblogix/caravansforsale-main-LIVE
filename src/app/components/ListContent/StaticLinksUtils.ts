@@ -289,13 +289,13 @@ export function buildStaticLinks(
       : activeFilters;
 
   // Always show Home
-  links.home = [{ name: "Home", slug: "/" }];
+  links.home = [{ name: "Browse by Home", slug: "/" }];
 
   // ─────────────────────────────
   // 0 FILTERS → Home + All Caravans
   // ─────────────────────────────
   if (effectiveCount === 0) {
-    links.all = [{ name: "All Caravans", slug: "/listings/" }];
+    links.home = [{ name: "Browse by Home", slug: "/" }];
     return links;
   }
 
@@ -311,7 +311,7 @@ export function buildStaticLinks(
         { name: filters.make!, slug: `/${filters.make!.toLowerCase()}/` },
       ];
     }
-    links.all = [{ name: "All Caravans", slug: "/listings/" }];
+    links.all = [{ name: "Browse by All Caravans", slug: "/listings/" }];
     return links;
   }
 
@@ -424,7 +424,7 @@ export function buildStaticLinks(
     if (sleepLink) links.sleep = [sleepLink];
   }
 
-  links.all = [{ name: "All Caravans", slug: "/listings/" }];
+  links.all = [{ name: "Browse by All Caravans", slug: "/listings/" }];
   return links;
 }
 
