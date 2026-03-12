@@ -73,7 +73,8 @@ const buildMakeCountParams = (filters: Filters): URLSearchParams => {
   // make & model exclude பண்ணு (make count-க்கு)
   if (filters.category) params.set("category", filters.category);
   if (filters.condition) params.set("condition", filters.condition);
-  if (filters.state) params.set("state", filters.state.toLowerCase());
+  if (filters.state && typeof filters.state === "string")
+    params.set("state", filters.state.toLowerCase());
   if (filters.region) params.set("region", filters.region);
   if (filters.suburb) params.set("suburb", filters.suburb);
   if (filters.pincode) params.set("pincode", filters.pincode);
@@ -455,13 +456,13 @@ const FilterSlider = ({
     const f = getEffectiveFilters();
     const matchedState = states.find(
       (s) =>
-        s.name.toLowerCase() === (f.state ?? "").toLowerCase() ||
-        s.value.toLowerCase() === (f.state ?? "").toLowerCase(),
+        s.name?.toLowerCase() === (f.state ?? "").toLowerCase() ||
+        s.value?.toLowerCase() === (f.state ?? "").toLowerCase(),
     );
     const matchedRegion = matchedState?.regions?.find(
       (r) =>
-        r.name.toLowerCase() === (f.region ?? "").toLowerCase() ||
-        r.value.toLowerCase() === (f.region ?? "").toLowerCase(),
+        r.name?.toLowerCase() === (f.region ?? "").toLowerCase() ||
+        r.value?.toLowerCase() === (f.region ?? "").toLowerCase(),
     );
     setTempState(matchedState?.name ?? f.state ?? null); // keep Title Case for <select> display
     const resolvedRegion = matchedRegion?.name ?? null;
