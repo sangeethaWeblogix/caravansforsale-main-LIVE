@@ -130,6 +130,12 @@ function findRangeBucket(
         if (minVal >= nums[0]) return o;
       }
     }
+    for (const o of options) {
+      const nums = o.value.split("-").map(Number);
+      if (nums.length === 1 && slugLc(o).startsWith("under")) {
+        if (minVal < nums[0]) return o; // ← NEW: 600 < 1500 → Under 1500kg ✓
+      }
+    }
     // else: last between bucket whose lower bound <= minVal
     const betweens = options.filter((o) => o.value.includes("-"));
     let best = betweens[0] || options[0];
