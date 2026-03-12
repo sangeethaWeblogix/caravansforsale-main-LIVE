@@ -1,5 +1,5 @@
  import Terms from "./terms";
-import "./terms.css";
+import "./terms.css?=2";
 
  
 export default function Home() {

@@ -5,11 +5,11 @@ import { ReactNode } from "react";
 
  export const metadata: Metadata = {
    title: {
-     default: "Terms and Conditions of Use - Caravan Marketplace",
+     default: "Terms of Use – CaravansForSale.com.au | Marketplace Network",
      template: "%s ",
    },
    description:
-     "Read the Terms and Conditions of Use for Caravan Marketplace. Learn about user responsibilities, content usage, and legal guidelines.",
+     "Read the Terms of Use for CaravansForSale.com.au, a marketplace platform operated by Marketplace Network Pty Ltd (ABN 70 694 987 052). Learn about listings, user responsibilities, and platform policies.",
    icons: { icon: "/favicon.ico" },
    robots: "index, follow",
    verification: {
@@ -22,9 +22,9 @@ import { ReactNode } from "react";
    
    openGraph: {
       url: "https://www.caravansforsale.com.au/terms-conditions/",
-     title: "Terms and Conditions of Use - Caravan Marketplace",
+     title: "Terms of Use – CaravansForSale.com.au | Marketplace Network",
        description:
-     "Read the Terms and Conditions of Use for Caravan Marketplace. Learn about user responsibilities, content usage, and legal guidelines.",
+     "Read the Terms of Use for CaravansForSale.com.au, a marketplace platform operated by Marketplace Network Pty Ltd (ABN 70 694 987 052). Learn about listings, user responsibilities, and platform policies.",
      
    },
  };

@@ -1233,8 +1233,7 @@ export default function ListingContent({
                   </div>
 
                   <p className="terms_text">
-                    By clicking &lsquo;Send Enquiry&lsquo;, you agree to Caravan
-                    Marketplace{" "}
+                    By clicking &lsquo;Send Enquiry&lsquo;, you agree to Marketplace Network{" "}
                     <a href="/privacy-collection-statement" target="_blank">
                       Collection Statement
                     </a>

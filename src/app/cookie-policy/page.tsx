@@ -3,9 +3,9 @@ import Statement from "./statement";
 import "./statement.css?=123";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const metaTitle = "Privacy Collection Statement - Marketplace Network";
+  const metaTitle = "Cookie Policy - Marketplace Network";
   const metaDescription =
-    "Learn how Marketplace Network Pty Ltd collects and uses personal information when you submit enquiries or interact with our marketplace websites.";
+    "Read our Cookie Policy for websites operated by Marketplace Network Pty Ltd (ABN 70 694 987 052), including how we collect, use, and protect your personal information.";
 
   const robots = "index";
 
@@ -15,13 +15,13 @@ export async function generateMetadata(): Promise<Metadata> {
     robots: robots,
 
     alternates: {
-      canonical: "https://www.caravansforsale.com.au/privacy-collection-statement/",
+      canonical: "https://www.caravansforsale.com.au/cookie-policy/",
     },
 
     openGraph: {
       title: metaTitle,
       description: metaDescription,
-      url: "https://www.caravansforsale.com.au/privacy-collection-statement/",
+      url: "https://www.caravansforsale.com.au/cookie-policy/",
       type: "article",
     },
 
@@ -31,6 +31,7 @@ export async function generateMetadata(): Promise<Metadata> {
     },
   };
 }
+
 export default function Home() {
   return <Statement />;
 }

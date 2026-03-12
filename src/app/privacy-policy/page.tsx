@@ -1,5 +1,5 @@
  import Privacy from "./privacy";
-import "./privacy.css";
+import "./privacy.css?=1";
 
 
 export default function PrivacyPolicyPage() {

@@ -393,7 +393,7 @@ export default function CaravanDetailModal({
 
                         <p className="terms_text">
                           By clicking &apos;Send Enquiry&apos;, you agree to
-                          Caravan Marketplace{" "}
+                          Marketplace Network{" "}
                           <a
                             href="/privacy-collection-statement"
                             target="_blank"

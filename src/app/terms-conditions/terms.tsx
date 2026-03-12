@@ -1,216 +1,231 @@
 'use client'
 
-import React from 'react'
-
-const TermsAndConditions = () => {
+export default function TermsOfUse() {
   return (
     <section className="services static_page section-padding pt-30 pb-30 style-1">
       <div className="container">
         <div className="row align-items-center justify-content-center">
           <div className="col-lg-12">
             <div className="section-head mb-40">
-              <h1 className="divide-orange pb-20">Terms &amp; Conditions</h1>
+
+              <h1 className="divide-orange pb-20">Terms of Use</h1>
+
+              <p><strong>Last Updated:</strong> 2026</p>
+
               <p>
-                Welcome to Marketplace Network Pty Ltd, by accessing or using any part of our network of websites, apps, and related services operated by Marketplace Network, ABN 70 694 987 052 including but not limited to www.caravansforsale.com.au (collectively referred to as the “Marketplace Network”), you agree to be bound by the following terms and conditions of use (“Terms”). Please read these Terms carefully before accessing or using any part of the Marketplace Network.
+                These Terms of Use govern your access to and use of this website and any services provided through it.
               </p>
 
-              <h4>1. Acceptance of Terms</h4>
               <p>
-                By accessing or using any part of the Marketplace Network , you agree to be bound
-                by these Terms and any other terms and conditions referred to in these Terms or
-                notified to you on the Marketplace Network Network, each as amended from time to
-                time in accordance with these Terms.
+                This website is operated by Marketplace Network Pty Ltd (ABN 70 694 987 052).
               </p>
 
-              <h4>2. Description of the Marketplace Network Websites</h4>
               <p>
-                (a) Marketplace Network provides a platform where users can access information,
-                advertisements, products, services, and other content (“Material”) provided by
-                Marketplace Network and third parties.
-              </p>
-              <p>
-                (b) While we strive to provide accurate and up-to-date information, we do not
-                warrant or endorse the accuracy or completeness of the Material or any information
-                received as a result of using the Marketplace Network websites including
-                caravansforsale.com.au. Users are responsible for assessing the accuracy of the
-                Material and any information they rely on.
+                By accessing or using this website, you agree to comply with these Terms of Use.
               </p>
 
-              <h4>3. Personal and Non-Commercial Use</h4>
               <p>
-                (a) Unless you have signed commercial terms with Marketplace Network, use of the
-                Marketplace Network websites including caravansforsale.com.au is for your personal
-                and non-commercial use only.
-              </p>
-              <p>
-                (b) Users must not modify, copy, distribute, transmit, display, perform, reproduce,
-                publish, license, or use any Material or Marketplace Network websites including
-                caravansforsale.com.au content for commercial purposes without prior written
-                approval from Marketplace Network.
+                If you do not agree with these Terms, you must not use this website.
               </p>
 
-              <h4>4. User Responsibilities</h4>
+              <h3>1. About the Platform</h3>
+
               <p>
-                (a) Users are responsible for their use of the Marketplace Network Websites
-                including caravansforsale.com.au and must not engage in any activity that violates
-                these Terms or any applicable laws.
-              </p>
-              <p>
-                (b) Users must keep their login credentials secure and not share them with third
-                parties. Marketplace Network is not liable for unauthorized use of user accounts.
+                This website operates as an online marketplace platform that allows users to advertise products and services and connect with potential buyers or sellers.
               </p>
 
-              <h4>5. Copyright, Trademarks, and Licensing</h4>
               <p>
-                (a) Material on the Marketplace Network website(s) including caravansforsale.com.au
-                is protected by copyright and intellectual property laws. Users may only use
-                Material for personal, private, or research purposes as permitted by law.
-              </p>
-              <p>
-                (b) Marketplace Network owns or licenses Marketplace Network business names. Users
-                must not use any trademarks without express written consent.
+                Marketplace Network Pty Ltd does not buy, sell, broker, inspect, or take ownership of any products or services listed on the platform unless explicitly stated.
               </p>
 
-              <h4>6. Privacy Policy</h4>
               <p>
-                By using caravansforsale.com.au , you agree to the Marketplace Network Privacy
-                Policy governing the collection, use, and disclosure of your personal information.
+                Transactions and agreements made between buyers and sellers are conducted solely between those parties.
               </p>
 
-              <h4>7. Communications Services</h4>
               <p>
-                (a) Marketplace Network may provide communication services allowing users to
-                interact with Marketplace Network, third-party advertisers, and other users. Users
-                must use these services responsibly and not engage in prohibited activities.
-              </p>
-              <p>
-                (b) Marketplace Network reserves the right to moderate, edit, or remove any
-                information or material posted using communication services.
+                Marketplace Network Pty Ltd is not a party to any transaction between users.
               </p>
 
-              <h4>8. Software Services</h4>
+              <h3>2. User Accounts</h3>
+
               <p>
-                (a) Any software provided by Marketplace Network is governed by the applicable
-                end-user license agreement. Users must comply with the terms of the license
-                agreement when using software provided by Marketplace Network.
+                To access certain features of the platform, users may be required to create an account.
               </p>
 
-              <h4>9. Liability</h4>
+              <p>Users agree to:</p>
+
+              <ul>
+                <li>Provide accurate information</li>
+                <li>Maintain the security of login credentials</li>
+                <li>Notify us of unauthorised access</li>
+                <li>Accept responsibility for activity on their account</li>
+              </ul>
+
               <p>
-                (a) Marketplace Network is not liable for any loss or damage arising from users’
-                use of the Marketplace Network website(s) including caravansforsale.com.au, except
-                where such liability cannot be excluded under applicable laws.
-              </p>
-              <p>
-                (b) Users agree to indemnify Marketplace Network against any liability, loss, or
-                claim arising from their breach of these Terms or any applicable laws.
+                We reserve the right to suspend or terminate accounts that violate these Terms.
               </p>
 
-              <h4>10. Changes to Terms</h4>
+              <h3>3. Listings and User Content</h3>
+
               <p>
-                Marketplace Network may modify these Terms at any time. Users are responsible for
-                regularly reviewing these Terms. Continued use of the Marketplace Network websites
-                including caravansforsale.com.au after modifications constitutes acceptance of the
-                updated Terms.
+                Users may post listings, descriptions, images, or other content on the platform.
               </p>
 
-              <h4>11. Governing Law</h4>
+              <p>By posting content you confirm that:</p>
+
+              <ul>
+                <li>You have the legal right to sell the item</li>
+                <li>The information provided is accurate and not misleading</li>
+                <li>The content does not infringe intellectual property rights</li>
+                <li>The item complies with applicable laws and regulations</li>
+              </ul>
+
               <p>
-                These Terms are governed by the laws of Victoria, Australia. Users submit to the
-                exclusive jurisdiction of the courts in Victoria.
+                Marketplace Network Pty Ltd reserves the right to remove or edit listings at its discretion.
               </p>
 
-              <h4>12. Third-Party Content and Links</h4>
+              <h3>4. Prohibited Activities</h3>
+
+              <p>Users must not use the platform to:</p>
+
+              <ul>
+                <li>Post fraudulent listings</li>
+                <li>Sell illegal goods or services</li>
+                <li>Misrepresent products</li>
+                <li>Engage in scams or deceptive practices</li>
+                <li>Upload harmful software or malicious code</li>
+                <li>Interfere with the website’s operation</li>
+              </ul>
+
               <p>
-                (a) The Marketplace Network network of websites including caravansforsale.com.au
-                may contain links to third-party websites, advertisements, products, or services
-                (“Third-Party Content”). Marketplace Network does not endorse or control
-                Third-Party Content and is not responsible for any actions, omissions, or
-                representations made by third parties.
-              </p>
-              <p>
-                (b) Users access Third-Party Content at their own risk and should review the terms
-                and conditions and privacy policies of third-party websites before using them.
+                Accounts violating these rules may be suspended or permanently banned.
               </p>
 
-              <h4>13. User Content</h4>
+              <h3>5. Accuracy of Information</h3>
+
               <p>
-                (a) Users may contribute content, such as comments, reviews, or listings, to the
-                Marketplace Network websites including caravansforsale.com.au (“User Content”).
-                Users retain ownership of their User Content but grant Marketplace Network a
-                non-exclusive, royalty-free, perpetual, irrevocable, and worldwide license to use,
-                reproduce, modify, adapt, publish, translate, distribute, and display User Content
-                in any form or medium.
-              </p>
-              <p>
-                (b) Users warrant that they have all necessary rights to their User Content and
-                that it does not infringe any third-party rights or violate any laws.
+                Listings and content published on the platform are provided by third parties.
               </p>
 
-              <h4>14. Dispute Resolution</h4>
               <p>
-                (a) Any disputes arising from or relating to these Terms or the Marketplace Network
-                Network shall be resolved through good faith negotiations between the parties.
-              </p>
-              <p>
-                (b) If a dispute cannot be resolved through negotiations, the parties agree to
-                submit to mediation in accordance with the laws of Victoria, Australia.
-              </p>
-              <p>
-                (c) If mediation is unsuccessful, the parties submit to the non-exclusive
-                jurisdiction of the courts in Victoria, Australia.
+                Marketplace Network Pty Ltd does not guarantee the accuracy, completeness, or reliability of any listing information.
               </p>
 
-              <h4>15. Severability</h4>
               <p>
-                If any provision of these Terms is found to be invalid or unenforceable, the
-                remaining provisions shall continue to be valid and enforceable to the fullest
-                extent permitted by law.
+                Users must conduct their own inspections and due diligence before entering into any transaction.
               </p>
 
-              <h4>16. Entire Agreement</h4>
+              <h3>6. Third-Party Transactions</h3>
+
               <p>
-                These Terms constitute the entire agreement between the parties regarding the use
-                of the Marketplace Network websites including caravansforsale.com.au and supersede
-                any prior agreements or understandings, whether written or oral.
+                All transactions conducted through the platform occur directly between buyers and sellers.
               </p>
 
-              <h4>17. Waiver</h4>
+              <p>Marketplace Network Pty Ltd:</p>
+
+              <ul>
+                <li>Does not participate in negotiations</li>
+                <li>Does not guarantee transactions</li>
+                <li>Does not provide escrow services</li>
+                <li>Is not responsible for delivery or payment disputes</li>
+              </ul>
+
               <p>
-                The failure of Marketplace Network to enforce any provision of these Terms shall
-                not be construed as a waiver of such provision or the right to enforce it at a
-                later time.
+                Users should exercise caution when entering agreements.
               </p>
 
-              <h4>18. Assignment</h4>
+              <h3>7. Intellectual Property</h3>
+
               <p>
-                Users may not assign, transfer, or sublicense their rights or obligations under
-                these Terms without prior written consent from Marketplace Network. Marketplace Network may assign, transfer, or delegate these Terms without restriction.
+                All website design, logos, branding, and content belonging to Marketplace Network Pty Ltd remain its intellectual property.
               </p>
 
-              <h4>19. Headings</h4>
               <p>
-                The headings in these Terms are for convenience only and do not affect the
-                interpretation of the provisions.
+                Users may not reproduce, distribute, or modify website content without permission.
               </p>
 
-              <h4>20. Survival</h4>
               <p>
-                Provisions related to liability, indemnification, intellectual property rights, and
-                dispute resolution shall survive termination or expiration of these Terms.
+                Third-party trademarks and brand names remain the property of their respective owners.
               </p>
 
-              <h4>21. Effective Date</h4>
+              <h3>8. Limitation of Liability</h3>
+
               <p>
-                These Terms are effective as of 23/2/2026, and any updates or modifications to
-                these Terms shall be effective as of the date they are posted on the Marketplace Network websites including caravansforsale.com.au.
+                To the fullest extent permitted by law, Marketplace Network Pty Ltd will not be liable for any loss or damage arising from:
               </p>
 
-              <h4>22. Contact Information</h4>
-              <p>If you have any questions or concerns about these Terms, please contact us at:</p>
-              <p>Marketplace Network Pty Ltd</p>
-               <p>Email – questions: info@marketplacenetwork.com.au</p>
-              <p>Email – complaints: complaints@marketplacenetwork.com.au</p>
+              <ul>
+                <li>Transactions between users</li>
+                <li>Errors in listings</li>
+                <li>Website downtime</li>
+                <li>Third-party actions</li>
+                <li>Malware or security breaches</li>
+              </ul>
+
+              <p>
+                Nothing in these Terms excludes rights available under Australian Consumer Law.
+              </p>
+
+              <h3>9. Account Suspension</h3>
+
+              <p>
+                We may suspend or terminate user accounts where:
+              </p>
+
+              <ul>
+                <li>Fraudulent activity is suspected</li>
+                <li>Listings breach our policies</li>
+                <li>Users misuse the platform</li>
+              </ul>
+
+              <p>
+                This action may occur without prior notice.
+              </p>
+
+              <h3>10. Changes to the Website</h3>
+
+              <p>
+                Marketplace Network Pty Ltd may modify, suspend, or discontinue any part of the website at any time without notice.
+              </p>
+
+              <h3>11. Changes to These Terms</h3>
+
+              <p>
+                We may update these Terms periodically.
+              </p>
+
+              <p>
+                Updated Terms will be published on this page.
+              </p>
+
+              <p>
+                Continued use of the website indicates acceptance of the updated Terms.
+              </p>
+
+              <h3>12. Governing Law</h3>
+
+              <p>
+                These Terms are governed by the laws of Australia.
+              </p>
+
+              <p>
+                Any disputes will be subject to the jurisdiction of Australian courts.
+              </p>
+
+              <h3>13. Contact</h3>
+
+              <p>
+                For enquiries regarding these Terms please contact:
+              </p>
+
+              <p>
+                <strong>Marketplace Network Pty Ltd</strong><br />
+                Email:{" "}
+                <a href="mailto:admin@marketplacenetwork.com.au">
+                  admin@marketplacenetwork.com.au
+                </a>
+              </p>
+
             </div>
           </div>
         </div>
@@ -218,5 +233,3 @@ const TermsAndConditions = () => {
     </section>
   )
 }
-
-export default TermsAndConditions
