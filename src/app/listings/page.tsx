@@ -1,4 +1,3 @@
-
 import React, { Suspense } from "react";
 import Listing from "../components/ListContent/Listings";
 import { fetchListings } from "@/api/listings/api";
@@ -6,24 +5,24 @@ import type { Metadata } from "next";
 import { ensureValidPage } from "@/utils/seo/validatePage";
 import { notFound } from "next/navigation";
 import ApiErrorFallback from "../components/ApiErrorFallback";
- 
- export const revalidate = 3600
+
+export const revalidate = 3600;
 
 export const metadata: Metadata = {
-  title: "Caravans For Sale in Australia - Find Exclusive Deals",
+  title: "Caravans for Sale in Australia | New & Used Caravans",
   description:
-    "Browse new & used caravans for sale across Australia. Compare off-road, hybrid, pop-top & luxury models by price, size, weight and sleeping capacity.",
+    "Browse caravans for sale across Australia. Compare new and used caravans including off road, hybrid, family and pop top caravans from dealers and private sellers.",
   robots: "index, follow",
   openGraph: {
-    title: "Caravans For Sale in Australia - Find Exclusive Deals",
+    title: "Caravans for Sale in Australia | New & Used Caravans",
     description:
-      "Browse new & used caravans for sale across Australia. Compare off-road, hybrid, pop-top & luxury models by price, size, weight and sleeping capacity.",
+      "Browse caravans for sale across Australia. Compare new and used caravans including off road, hybrid, family and pop top caravans from dealers and private sellers.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Caravans For Sale in Australia - Find Exclusive Deals",
+    title: "Caravans for Sale in Australia | New & Used Caravans",
     description:
-      "Browse new & used caravans for sale across Australia. Compare off-road, hybrid, pop-top & luxury models by price, size, weight and sleeping capacity.",
+      "Browse caravans for sale across Australia. Compare new and used caravans including off road, hybrid, family and pop top caravans from dealers and private sellers.",
   },
   alternates: {
     canonical: "https://www.caravansforsale.com.au/listings",

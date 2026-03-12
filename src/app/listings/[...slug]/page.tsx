@@ -372,44 +372,7 @@ export default async function Listings({
       </div>
     )}
      */}
-      <div
-        aria-hidden="true"
-        style={{
-          position: "absolute",
-          left: "-9999px",
-          width: "1px",
-          height: "1px",
-          overflow: "hidden",
-        }}
-      >
-        {Object.entries(buildStaticLinks(filters)).map(
-          ([sectionKey, items]) => {
-            if (!items?.length) return null;
-            return (
-              <div key={sectionKey}>
-                {SECTION_TITLES[sectionKey] && (
-                  <h5>{SECTION_TITLES[sectionKey]}</h5>
-                )}
-                <ul>
-                  {items.map((item) => (
-                    <li key={item.slug}>
-                      <a
-                        href={buildStaticLinkUrl(
-                          sectionKey,
-                          item.slug,
-                          filters,
-                        )}
-                      >
-                        {item.name}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            );
-          },
-        )}
-      </div>
+
       <ListingsPage {...filters} initialData={response} linksData={linksData} />
     </>
   );

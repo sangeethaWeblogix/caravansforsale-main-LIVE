@@ -10,6 +10,8 @@ import { fetchBlogs, type BlogPost, type BlogPageResult } from "@/api/blog/api";
 import { formatPostDate } from "@/utils/date";
 import { toSlug } from "@/utils/seo/slug";
 import BlogCardSkelton from "../../../../components/blogCardSkeleton";
+import { useBanners } from "@/components/BannerHandler";
+import { useBannerTracking } from "@/hooks/useBannerTracking";
 
 // Build compact page list like [1, '…', 8, 9, 10, 11, 12, '…', 35]
 function buildPageList(current: number, total: number, delta = 2) {
@@ -92,49 +94,49 @@ export default function BlogPage() {
     currentPage <= 2 ? "/blog/" : `/blog/page/${currentPage - 1}/`;
   const nextUrl = `/blog/page/${Math.min(totalPages, currentPage + 1)}/`;
 
+  const { matchedBanners, isMobile } = useBanners();
+  const { bannerRefs, trackClick } = useBannerTracking(matchedBanners);
+  const topBanners = matchedBanners.filter((b) => b.position === "top");
+  const rightBanners = matchedBanners.filter((b) => b.position === "right");
+
   return (
 
     <div className="blog-page style-5">
       <section className="all-news bg-light-gray blog-listing section-padding blog bg-transparent style-3 pt-0">
         <div className="container">
           <div className="display_ad">
-              <a
-                href="#"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="banner_ad_now"
-              >
-                {false && (
-                  <>
-                {/* Desktop Image */}
-                <div className="banner-desktop">
-                  <Image
-                    src="/images/static_index_dk_banner_3.jpg"
-                    alt="Caravans For Sale"
-                    className="hidden-xs"
-                    width={1200}
-                    height={200}
-                    priority
-
-                  />
-                </div>
-
-                {/* Mobile Image */}
-                <div className="banner-mobile">
-                  <Image
-                    src="/images/static_index_mb_banner_3.jpg"
-                    alt="Caravans For Sale Mobile"
-                    className="hidden-lg hidden-md hidden-sm"
-                    width={600}
-                    height={300}
-                    priority
-                  />
-                </div>
-                </>
-                )}
-              </a>
-            </div>
-          <div className="section-head mb-60 style-5">
+            {false &&
+              topBanners.map((banner, index) => (
+                <a
+                  key={banner.id}
+                  ref={(el) => {
+                    bannerRefs.current[index] = el;
+                  }}
+                  data-banner-id={banner.id}
+                  href={banner.target_href_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="banner_ad_now"
+                  onClick={() => trackClick(banner.id)}
+                >
+                  <div
+                    className={isMobile ? "banner-mobile" : "banner-desktop"}
+                  >
+                    <Image
+                      src={banner.image_url}
+                      alt={banner.name}
+                      width={isMobile ? 600 : 1200}
+                      height={isMobile ? 300 : 200}
+                      priority
+                    />
+                  </div>
+                </a>
+              ))}
+          </div>
+          <div
+            className="section-head mb-60 style-5"
+            style={{ margin: "30px 0px" }}
+          >
             <div className="section-head mb-60 style-5">
               <h2>
                 Valuable News, Reviews &amp; Advice From Caravan Marketplace
@@ -267,42 +269,36 @@ export default function BlogPage() {
             </div>
             <div className="col-lg-3">
               <div className="display_ad listing_sticky">
-                          <a
-                            href="#"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="banner_ad_now mb-0"
-                          >
-                            {false && (
-                            <>
-                            {/* Desktop Image */}
-                            <div className="banner-desktop">
-                              <Image
-                                src="/images/static_index_dk_banner.jpg"
-                                alt="Caravans For Sale"
-                                className="hidden-xs"
-                                width={1200}
-                                height={200}
-                                priority
-              
-                              />
-                            </div>
-              
-                            {/* Mobile Image */}
-                            <div className="banner-mobile">
-                              <Image
-                                src="/images/static_index_mb_banner_3.jpg"
-                                alt="Caravans For Sale Mobile"
-                                className="hidden-lg hidden-md hidden-sm"
-                                width={600}
-                                height={300}
-                                priority
-                              />
-                            </div>
-                            </>
-                            )}
-                          </a>
-                        </div>
+                {false &&
+                  rightBanners.map((banner, index) => (
+                    <a
+                      key={banner.id}
+                      ref={(el) => {
+                        bannerRefs.current[index] = el;
+                      }}
+                      data-banner-id={banner.id}
+                      href={banner.target_href_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="banner_ad_now mb-0"
+                      onClick={() => trackClick(banner.id)}
+                    >
+                      <div
+                        className={
+                          isMobile ? "banner-mobile" : "banner-desktop"
+                        }
+                      >
+                        <Image
+                          src={banner.image_url}
+                          alt={banner.name}
+                          width={isMobile ? 600 : 1200}
+                          height={isMobile ? 300 : 200}
+                          priority
+                        />
+                      </div>
+                    </a>
+                  ))}
+              </div>
             </div>
           </div>
         </div>

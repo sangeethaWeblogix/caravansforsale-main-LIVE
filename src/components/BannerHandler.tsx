@@ -42,7 +42,7 @@ export function BannerProvider({ children }: { children: ReactNode }) {
     async function fetchBanners() {
       try {
         const res = await fetch(
-          "https://www.admin.caravansforsale.com.au/wp-json/ads-manager/v1/banners",
+          "https://admin.caravansforsale.com.au/wp-json/ads-manager/v1/banners",
         );
         const data = await res.json();
         setAllBanners(data.data || []);
@@ -57,12 +57,16 @@ export function BannerProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!pathname || allBanners.length === 0) return;
 
-    const filtered = allBanners.filter((banner) =>
-      shouldShowBanner(pathname, banner),
-    );
+    const device = isMobile ? "mobile" : "desktop";
+
+    const filtered = allBanners.filter((banner) => {
+      if (!shouldShowBanner(pathname, banner)) return false;
+      if (banner.device_target !== device) return false;
+      return true;
+    });
 
     setMatchedBanners(filtered);
-  }, [pathname, allBanners]);
+  }, [pathname, allBanners, isMobile]);
 
   useEffect(() => {
     const check = () => {

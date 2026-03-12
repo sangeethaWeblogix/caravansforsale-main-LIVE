@@ -734,10 +734,7 @@ export default function SearchSection() {
             </div>
           </div>
           <div className="display_ad">
-            {false && matchedBanners.filter(b => isMobile
-                 ? ["vertical_small", "horizontal_small"].includes(b.banner_size)
-                 : ["horizontal_large", "vertical_large"].includes(b.banner_size)
-            ).map((banner, index) => (
+            {false && matchedBanners.map((banner, index) => (
               <a
                 key={banner.id}
                 ref={(el) => {

@@ -94,9 +94,28 @@ function isPriceLike(s: string): boolean {
   // ─── Build canonical from slug + searchParams ───
   const BASE_URL = "https://www.caravansforsale.com.au";
   
-  // slug segments → /listings/segment1/segment2/
+   // ─── Build canonical from slug + searchParams ───
+ 
+let canonicalUrl = "";
+
+ 
+
+if (parsed.suburb) {
+
+  const locationSegments = filters.filter(
+    (seg) =>
+      seg.endsWith("-state") ||
+      seg.endsWith("-region") ||
+      seg.endsWith("-suburb")
+  );
+
+  canonicalUrl = `${BASE_URL}/listings/${locationSegments.join("/")}/`;
+
+} else {
+
   const slugPath = filters.length > 0 ? filters.join("/") : "";
-  let canonicalUrl = `${BASE_URL}/listings/${slugPath ? slugPath + "/" : ""}`;
+  canonicalUrl = `${BASE_URL}/listings/${slugPath ? slugPath + "/" : ""}`;
+}
 
   // append searchParams (except page=1)
   const spEntries = Object.entries(searchParams).filter(([k, v]) => {
@@ -111,14 +130,14 @@ function isPriceLike(s: string): boolean {
   }
 
   // ─── Fallback: API canonical (only if you trust API) ───
-  // const canonical = res?.seo?.canonical || canonicalUrl;
+  // const canonical = res?.seo_v2?.canonical || canonicalUrl;
   const canonical = canonicalUrl; // ✅ always use actual URL
 
   const rawTitle =
-    res?.seo?.list_page_metatitle?.trim() ||
+    res?.seo_v2?.meta_title?.trim() ||
     "Caravans for Sale in Australia - Find Exclusive Deals";
   const title = rawTitle.trim();
-  const description = "Browse new & used caravans for sale across Australia. Compare off-road, hybrid, pop-top & luxury models by price, size, weight and sleeping capacity.";
+  const description =   res?.seo_v2?.meta_description?.trim(); 
 
   const robots = getRobotsFromFilters(parsed, filters); // filters = slug segments array
 

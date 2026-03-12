@@ -64,7 +64,10 @@ export interface ApiSEO {
   index?: string;
   canonical?: string;
   follow?: string;
+  h1?: string;
   list_page_metatitle?: string;
+  meta_title?: string;
+  meta_description?: string;
   cacheable?: boolean; // NEW: Cache hint for CDN
 }
 
@@ -90,13 +93,14 @@ export interface ApiData {
 export type ApiResponse = {
   success?: boolean;
   list_page_title?: string;
-  seo?: ApiSEO;
+  seo_v2?: ApiSEO;
   pagination?: ApiPagination;
   data?: ApiData;
   message?: string;
   errors?: string[];
   msid?: string | null;
   canonical?: string;
+  h1?: string;
 };
 
 /** Normalize "+", spaces for search/keyword */
@@ -188,8 +192,8 @@ export const fetchListings = async (
   // Return all useful sections from API
   return {
     success: json.success,
-    list_page_title: json.list_page_title,
-    seo: json.seo,
+    list_page_title: json.h1,
+    seo_v2: json.seo_v2,
     pagination: json.pagination,
     data: {
       products: json.data?.products ?? [],

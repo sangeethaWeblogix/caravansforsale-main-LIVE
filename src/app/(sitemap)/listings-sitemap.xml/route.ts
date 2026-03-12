@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 
+export const runtime = "nodejs";
 export const revalidate = 3600;
+export const dynamic = "force-dynamic";
 
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "https://www.caravansforsale.com.au";
@@ -9,9 +11,10 @@ const CONSUMER_KEY = "ck_73393ca56ac29867aa71c9beeba4714a49c4116b";
 const CONSUMER_SECRET = "cs_b554ee636b76bf9968bbe181695a6fb2b4b180b1";
 
 async function fetchProducts(page: number) {
-  const auth = Buffer.from(`${CONSUMER_KEY}:${CONSUMER_SECRET}`).toString(
-    "base64",
-  );
+const auth = Buffer.from(
+  `${CONSUMER_KEY}:${CONSUMER_SECRET}`,
+  "utf-8"
+).toString("base64");
 
   const res = await fetch(
     `https://www.admin.caravansforsale.com.au/wp-json/wc/v3/products?per_page=100&page=${page}&_fields=slug`,
@@ -22,8 +25,10 @@ async function fetchProducts(page: number) {
     },
   );
 
-  if (!res.ok) throw new Error("Failed to fetch products");
-
+if (!res.ok) {
+  console.error("Woo API failed:", res.status);
+  return { items: [], totalPages: 0 };
+}
   const data = await res.json();
   const totalPages = Number(res.headers.get("x-wp-totalpages"));
   return { items: data, totalPages };

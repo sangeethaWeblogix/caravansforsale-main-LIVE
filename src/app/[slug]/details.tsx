@@ -6,6 +6,8 @@ import RelatedNews from "./RelatedNews";
 import "./details.css";
 import { useEffect, useRef, useState } from "react";
 import { formatPostDate } from "@/utils/date";
+import { useBanners } from "@/components/BannerHandler";
+import { useBannerTracking } from "@/hooks/useBannerTracking";
 
 type BlogDetail = {
   id: number;
@@ -202,6 +204,10 @@ export default function BlogDetailsPage({
     };
   }, [post?.content, post?.id]);
 
+  const { matchedBanners, isMobile } = useBanners();
+  const { bannerRefs, trackClick } = useBannerTracking(matchedBanners);
+  const rightBanners = matchedBanners.filter((b) => b.position === "right");
+
   return (
     <div className="blog-page style-5 color-4">
       <section className="all-news section-padding pt-50 blog bg-transparent single_blog style-3">
@@ -315,42 +321,36 @@ export default function BlogDetailsPage({
 
             <div className="col-lg-3">
               <div className="display_ad listing_sticky">
-                          <a
-                            href="#"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="banner_ad_now"
-                          >
-                            {false && (
-                            <>
-                            {/* Desktop Image */}
-                            <div className="banner-desktop">
-                              <Image
-                                src="/images/static_index_dk_banner.jpg"
-                                alt="Caravans For Sale"
-                                className="hidden-xs"
-                                width={1200}
-                                height={200}
-                                priority
-              
-                              />
-                            </div>
-              
-                            {/* Mobile Image */}
-                            <div className="banner-mobile">
-                              <Image
-                                src="/images/static_index_mb_banner_3.jpg"
-                                alt="Caravans For Sale Mobile"
-                                className="hidden-lg hidden-md hidden-sm"
-                                width={600}
-                                height={300}
-                                priority
-                              />
-                            </div>
-                            </>
-                            )}
-                          </a>
-                        </div>
+                {false &&
+                  rightBanners.map((banner, index) => (
+                    <a
+                      key={banner.id}
+                      ref={(el) => {
+                        bannerRefs.current[index] = el;
+                      }}
+                      data-banner-id={banner.id}
+                      href={banner.target_href_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="banner_ad_now"
+                      onClick={() => trackClick(banner.id)}
+                    >
+                      <div
+                        className={
+                          isMobile ? "banner-mobile" : "banner-desktop"
+                        }
+                      >
+                        <Image
+                          src={banner.image_url}
+                          alt={banner.name}
+                          width={isMobile ? 600 : 1200}
+                          height={isMobile ? 300 : 200}
+                          priority
+                        />
+                      </div>
+                    </a>
+                  ))}
+              </div>
             </div>
           </div>
         </div>

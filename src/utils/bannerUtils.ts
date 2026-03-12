@@ -29,8 +29,13 @@ export function shouldShowBanner(
   currentPathname: string,
   banner: Banner,
 ): boolean {
-  const cleanCurrent = currentPathname.replace(/\/$/, "");
-  const includePath = extractPathname(banner.page_url);
+  const cleanCurrent = currentPathname
+    .replace(/\/$/, "")
+    .replace(/^\/listings/, "");
+
+  const includePath = extractPathname(banner.page_url)
+    .replace(/\/$/, "")
+    .replace(/^\/listings/, "");
   const excludedPaths = parseExcludedUrls(banner.excluded_urls);
 
   if (excludedPaths.some((path) => cleanCurrent.includes(path))) {

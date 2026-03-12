@@ -1063,10 +1063,7 @@ export default function ListingContent({
           </div>
         </div>
         <div className="display_ad listing_sticky">
-           {false && rightBanners.filter(b => isMobile
-                ? ["vertical_small", "horizontal_small"].includes(b.banner_size)
-                : ["horizontal_large", "vertical_large"].includes(b.banner_size)
-            ).map((banner, index) => (
+           {false && rightBanners.map((banner, index) => (
               <a
                 key={banner.id}
                 ref={(el) => {
