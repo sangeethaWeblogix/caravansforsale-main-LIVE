@@ -361,12 +361,14 @@ export function buildStaticLinks(
           (r) => r.name.toLowerCase() === filters.region?.toLowerCase(),
         );
       }
-      links.suburbs = [
-        {
-          name: filters.suburb!,
-          slug: `/${filters.state!.toLowerCase()}-state/${filters.region!.toLowerCase()}-region/${filters.suburb!.toLowerCase()}-${filters.pincode}-suburb/`,
-        },
-      ];
+      if (filters.suburb && filters.state && filters.region) {
+        links.suburbs = [
+          {
+            name: filters.suburb,
+            slug: `/${filters.state.toLowerCase()}-state/${filters.region.toLowerCase()}-region/${filters.suburb.toLowerCase()}-${filters.pincode}-suburb/`,
+          },
+        ];
+      }
       links.all = [{ name: "All Caravans", slug: "/listings/" }];
       return links;
     }
