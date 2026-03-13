@@ -1,4 +1,3 @@
-
 "use client";
 import { fetchLocations } from "@/api/location/api";
 import React, {
@@ -823,7 +822,6 @@ const FilterModal: React.FC<CaravanFilterProps> = ({
     currentFilters.to_length,
     currentFilters.sleeps,
     currentFilters.condition,
-
   ]);
 
   // correct 3
@@ -1439,10 +1437,10 @@ const FilterModal: React.FC<CaravanFilterProps> = ({
     const finalURL = query.toString() ? `${slugPath}?${query}` : safeSlugPath;
     if (lastPushedURLRef.current !== finalURL) {
       lastPushedURLRef.current = finalURL;
-      window.history.replaceState(null, "", finalURL);
+      // window.history.replaceState(null, "", finalURL);
 
       if (mountedRef.current) {
-        router.replace(finalURL);
+        router.push(finalURL, { scroll: false }); // ✅
       }
     }
   };
@@ -1849,19 +1847,19 @@ const FilterModal: React.FC<CaravanFilterProps> = ({
     if (tempStateName) tempFilters.state = tempStateName.toLowerCase();
     if (tempRegionName) tempFilters.region = tempRegionName;
     if (selectedSuggestion) {
-  const uriParts = selectedSuggestion.uri.split("/");
+      const uriParts = selectedSuggestion.uri.split("/");
 
-  const suburbSlug = uriParts[2] || "";
-  let pincode = uriParts[3] || "";
+      const suburbSlug = uriParts[2] || "";
+      let pincode = uriParts[3] || "";
 
-  const suburb = suburbSlug
-    .replace(/-suburb$/, "")
-    .replace(/-/g, " ")
-    .trim();
+      const suburb = suburbSlug
+        .replace(/-suburb$/, "")
+        .replace(/-/g, " ")
+        .trim();
 
-  tempFilters.suburb = suburb.toLowerCase();
-  tempFilters.pincode = pincode;
-}
+      tempFilters.suburb = suburb.toLowerCase();
+      tempFilters.pincode = pincode;
+    }
     if (tempAtmFrom) tempFilters.minKg = tempAtmFrom;
     if (tempAtmTo) tempFilters.maxKg = tempAtmTo;
     if (tempPriceFrom) tempFilters.from_price = tempPriceFrom;
@@ -1874,10 +1872,10 @@ const FilterModal: React.FC<CaravanFilterProps> = ({
       tempFilters.acustom_fromyears = tempYear;
       tempFilters.acustom_toyears = tempYear;
     }
-    
-if (modalKeyword && modalKeyword.trim()) {
-  tempFilters.search = toQueryPlus(modalKeyword.trim());
-}
+
+    if (modalKeyword && modalKeyword.trim()) {
+      tempFilters.search = toQueryPlus(modalKeyword.trim());
+    }
     // ✅ 3-layer merge: currentFilters → filters → tempFilters (highest priority)
     const activeFilters: Filters = mergeFilters(
       mergeFilters(currentFilters, filters),
@@ -1890,8 +1888,8 @@ if (modalKeyword && modalKeyword.trim()) {
     // ─── CATEGORY COUNTS ───
     const catParams = buildCountParamsMulti(activeFilters, ["category"]);
     catParams.set("group_by", "category");
-       setIsCategoryCountLoading(true); // ← only on first fetch
-    
+    setIsCategoryCountLoading(true); // ← only on first fetch
+
     fetch(
       `https://admin.caravansforsale.com.au/wp-json/cfs/v1/params_count?${catParams.toString()}`,
       { signal },
@@ -2007,8 +2005,8 @@ if (modalKeyword && modalKeyword.trim()) {
     tempLengthFrom,
     tempLengthTo,
     tempYear,
-     modalKeyword,          // 🔥 add this
-  selectedSuggestion  ,
+    modalKeyword, // 🔥 add this
+    selectedSuggestion,
   ]);
 
   useEffect(() => {
@@ -2048,7 +2046,7 @@ if (modalKeyword && modalKeyword.trim()) {
               <div className="filter-item pt-0" ref={categoryRef}>
                 <h4>Caravan Type</h4>
                 <ul className="category-list">
-{categoryCounts.length === 0 ? (
+                  {categoryCounts.length === 0 ? (
                     // ✅ Skeleton - data வரும் வரை காட்டு
                     <CategorySkeleton />
                   ) : (
@@ -2794,18 +2792,18 @@ if (modalKeyword && modalKeyword.trim()) {
                                     className="suggestion-item"
                                     onMouseDown={() => {
                                       pickedSourceRef.current = "typed";
-                                       const keyword = k.label;
-  setModalKeyword(keyword);
+                                      const keyword = k.label;
+                                      setModalKeyword(keyword);
                                       setKeywordSuggestions([]);
                                       setBaseKeywords([]);
                                       setShowSuggestions(false);
 
                                       // ✅ Prevent re-trigger of fetch
                                       setKeywordLoading(false);
-                                       setFilters((prev) => ({
-    ...prev,
-    search: toQueryPlus(keyword),
-  }));
+                                      setFilters((prev) => ({
+                                        ...prev,
+                                        search: toQueryPlus(keyword),
+                                      }));
                                     }}
                                   >
                                     {k.label}
