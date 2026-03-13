@@ -193,6 +193,7 @@ export default function ListingsPage({
   //  const [scrollStarted, setScrollStarted] = useState(false);
   const [isNextLoading, setIsNextLoading] = useState(false);
   const [nextPageData, setNextPageData] = useState<ApiResponse | null>(null);
+  const isSliderFetchingRef = useRef(false);
 
   const [clickid, setclickid] = useState<string | null>(null);
   const [isRestored, setIsRestored] = useState(false);
@@ -476,7 +477,9 @@ export default function ListingsPage({
 
       // Replace history only — avoids Next.js navigation / redirect
       window.history.pushState({}, "", finalURL);
+      // isSliderFetchingRef.current = true;
 
+      // router.push(finalURL, { scroll: false });
       // then fetch data client-side
       //  setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 150);
     },
@@ -877,6 +880,11 @@ export default function ListingsPage({
       restoredOnceRef.current = false; // reset for future real changes
       return;
     }
+    if (isSliderFetchingRef.current) {
+      isSliderFetchingRef.current = false;
+      return;
+    }
+    if (isPopStateRef.current) return; // ✅ ADD THIS LINE
 
     const slugParts = pathKey.split("/listings/")[1]?.split("/") || [];
     const parsedFromURL = parseSlugToFilters(slugParts);
@@ -909,11 +917,23 @@ export default function ListingsPage({
       return;
     }
 
+    setIsLoading(true);
+    setIsMainLoading(true);
+    setIsFeaturedLoading(true);
+    setIsPremiumLoading(true);
+
     // ✅ If client-side navigation happens and no data → 404
-    loadListings(pageFromURL, merged, true).then((res) => {
-      if (!res?.data?.products?.length) {
-      }
-    });
+    loadListings(pageFromURL, merged, true)
+      .then((res) => {
+        if (!res?.data?.products?.length) {
+        }
+      })
+      .finally(() => {
+        setIsLoading(false);
+        setIsMainLoading(false);
+        setIsFeaturedLoading(false);
+        setIsPremiumLoading(false);
+      });
   }, [searchKey, pathKey, loadListings, DEFAULT_RADIUS, searchParams]);
 
   const mergeFiltersSafely = (prev: Filters, next: Filters): Filters => {
@@ -933,10 +953,10 @@ export default function ListingsPage({
   const handleFilterChange = useCallback(
     async (newFilters: Filters) => {
       // ✅ Show skeleton for ALL sections immediately
-      // setIsLoading(true);
-      // setIsMainLoading(true);
-      // setIsFeaturedLoading(true);
-      // setIsPremiumLoading(true);
+      setIsLoading(true);
+      setIsMainLoading(true);
+      setIsFeaturedLoading(true);
+      setIsPremiumLoading(true);
 
       const mergedFilters = mergeFiltersSafely(filtersRef.current, newFilters);
 
@@ -968,9 +988,9 @@ export default function ListingsPage({
       } finally {
         // ✅ Hide all loaders when done
         setIsLoading(false);
-        // setIsMainLoading(false);
-        // setIsFeaturedLoading(false);
-        // setIsPremiumLoading(false);
+        setIsMainLoading(false);
+        setIsFeaturedLoading(false);
+        setIsPremiumLoading(false);
       }
     },
     [updateURLWithFilters, loadListings],
@@ -1027,6 +1047,7 @@ export default function ListingsPage({
         setIsMainLoading(false);
         setIsFeaturedLoading(false);
         setIsPremiumLoading(false);
+        isPopStateRef.current = false;
       });
     };
 
@@ -1444,7 +1465,7 @@ export default function ListingsPage({
       per_page: 12,
       total_products: 0,
     });
-
+    isSliderFetchingRef.current = true;
     // ✅ URL update
     updateURLWithFilters(next, 1);
 

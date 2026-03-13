@@ -304,7 +304,7 @@ const FilterSlider = ({
     };
     const slugPath = buildSlugFromFilters(newFilters);
     const safeSlug = slugPath.endsWith("/") ? slugPath : `${slugPath}/`;
-    router.replace(safeSlug);
+    router.push(safeSlug);
 
     setOpenModal(null);
   };
@@ -354,7 +354,7 @@ const FilterSlider = ({
     };
     const slugPath = buildSlugFromFilters(newFilters);
     const safeSlug = slugPath.endsWith("/") ? slugPath : `${slugPath}/`;
-    router.replace(safeSlug);
+    router.push(safeSlug);
 
     setOpenModal(null);
   };
@@ -390,7 +390,7 @@ const FilterSlider = ({
     };
     const slugPath = buildSlugFromFilters(newFilters);
     const safeSlug = slugPath.endsWith("/") ? slugPath : `${slugPath}/`;
-    router.replace(safeSlug);
+    router.push(safeSlug);
 
     setOpenModal(null);
   };
@@ -428,7 +428,7 @@ const FilterSlider = ({
     const slugPath = buildSlugFromFilters(newFilters);
     const safeSlug = slugPath.endsWith("/") ? slugPath : `${slugPath}/`;
 
-    router.replace(safeSlug);
+    router.push(safeSlug);
   };
   const handleTypeOpen = () => {
     const f = getEffectiveFilters();
@@ -493,7 +493,7 @@ const FilterSlider = ({
     };
     const slugPath = buildSlugFromFilters(newFilters);
     const safeSlug = slugPath.endsWith("/") ? slugPath : `${slugPath}/`;
-    router.replace(safeSlug);
+    router.push(safeSlug);
 
     setOpenModal(null);
   };

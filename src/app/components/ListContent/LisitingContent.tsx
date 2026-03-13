@@ -11,8 +11,7 @@ import { useEffect, useRef, useState } from "react";
 import { toSlug } from "@/utils/seo/slug";
 import ImageWithSkeleton from "../ImageWithSkeleton";
 import { useEnquiryForm } from "./enquiryform";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { buildSlugFromFilters } from "../slugBuilter";
+import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import { useBanners } from "@/components/BannerHandler";
 import { useBannerTracking } from "@/hooks/useBannerTracking";
@@ -127,7 +126,6 @@ export default function ListingContent({
   const [lazyImages, setLazyImages] = useState<{ [key: string]: string[] }>({});
   const [loadedAll, setLoadedAll] = useState<{ [key: string]: boolean }>({});
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [isOrderbyLoading, setIsOrderbyLoading] = useState(false);
   const [mergedProducts, setMergedProducts] = useState<Product[]>([]);
   const [navigating, setNavigating] = useState(false);
@@ -370,7 +368,7 @@ export default function ListingContent({
 
     let normal = products.filter((p) => !premiumIds.has(String(p.id)));
 
-    const orderbyFromUrl = searchParams.get("orderby");
+    const orderbyFromUrl = currentFilters.orderby;
 
     const shouldShuffle =
       allowShuffleRef.current && // ✅ new tab only
@@ -384,7 +382,7 @@ export default function ListingContent({
 
     // 🔥 IMPORTANT: mergedProducts set ONLY ONCE
     setMergedProducts(buildMergedProducts(normal));
-  }, [products, preminumProducts, exculisiveProducts, searchParams]);
+  }, [products, preminumProducts, exculisiveProducts, currentFilters.orderby]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -435,7 +433,7 @@ export default function ListingContent({
 
   console.log("data", exculisiveProducts);
 
-  const orderby = searchParams.get("orderby") ?? "featured";
+  const orderby = currentFilters.orderby ?? "featured";
   useEffect(() => {
     if (products && products.length > 0) {
       setIsOrderbyLoading(false);
@@ -470,7 +468,7 @@ export default function ListingContent({
 
   const { matchedBanners, isMobile } = useBanners();
   const { bannerRefs, trackClick } = useBannerTracking(matchedBanners);
-  const rightBanners = matchedBanners.filter(b => b.position === "right");
+  const rightBanners = matchedBanners.filter((b) => b.position === "right");
 
   return (
     <>
@@ -520,23 +518,10 @@ export default function ListingContent({
                       onChange={(e) => {
                         const value = e.target.value;
                         setIsOrderbyLoading(true);
-
-                        const params = new URLSearchParams(
-                          searchParams.toString(),
-                        );
-
-                        value === "featured"
-                          ? params.delete("orderby")
-                          : params.set("orderby", value);
-
-                        // ✅ build slug with existing filters
-                        const slug = buildSlugFromFilters(currentFilters);
-
-                        const finalURL = params.toString()
-                          ? `${slug}?${params.toString()}`
-                          : slug;
-
-                        router.push(finalURL, { scroll: false });
+                        onFilterChange({
+                          ...currentFilters,
+                          orderby: value === "featured" ? undefined : value,
+                        });
                       }}
                     >
                       <option value="featured">Featured</option>
@@ -1063,7 +1048,8 @@ export default function ListingContent({
           </div>
         </div>
         <div className="display_ad listing_sticky">
-           {false && rightBanners.map((banner, index) => (
+          {false &&
+            rightBanners.map((banner, index) => (
               <a
                 key={banner.id}
                 ref={(el) => {
@@ -1076,15 +1062,15 @@ export default function ListingContent({
                 className="banner_ad_now mb-0"
                 onClick={() => trackClick(banner.id)}
               >
-                  <div className={isMobile ? "banner-mobile" : "banner-desktop"}>
-                    <Image
-                      src={banner.image_url}
-                      alt={banner.name}
-                      width={isMobile ? 600 : 1200}
-                      height={isMobile ? 300 : 200}
-                      priority
-                    />
-                  </div>
+                <div className={isMobile ? "banner-mobile" : "banner-desktop"}>
+                  <Image
+                    src={banner.image_url}
+                    alt={banner.name}
+                    width={isMobile ? 600 : 1200}
+                    height={isMobile ? 300 : 200}
+                    priority
+                  />
+                </div>
               </a>
             ))}
         </div>
@@ -1233,7 +1219,8 @@ export default function ListingContent({
                   </div>
 
                   <p className="terms_text">
-                    By clicking &lsquo;Send Enquiry&lsquo;, you agree to Marketplace Network{" "}
+                    By clicking &lsquo;Send Enquiry&lsquo;, you agree to
+                    Marketplace Network{" "}
                     <a href="/privacy-collection-statement" target="_blank">
                       Collection Statement
                     </a>
