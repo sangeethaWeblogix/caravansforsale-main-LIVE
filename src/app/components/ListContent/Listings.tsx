@@ -649,6 +649,7 @@ export default function ListingsPage({
     }
   };
   const isUsingInitialDataRef = useRef(!!initialData);
+  const latestListingsRequestRef = useRef(0);
 
   const loadListings = useCallback(
     async (
@@ -674,6 +675,7 @@ export default function ListingsPage({
           typeof radiusNum === "number" && radiusNum !== DEFAULT_RADIUS
             ? String(radiusNum)
             : undefined;
+        const requestId = ++latestListingsRequestRef.current;
 
         const response: ApiResponse = await fetchListings({
           ...safeFilters,
@@ -701,6 +703,12 @@ export default function ListingsPage({
           to_sleep: safeFilters.to_sleep?.toString(),
           radius_kms: radiusParam,
         });
+
+        // Ignore stale responses so browser back/filter changes don't briefly
+        // paint old results before the latest request completes.
+        if (requestId !== latestListingsRequestRef.current) {
+          return response;
+        }
 
         // ---- Extract all product groups ----
         const productsList = response?.data?.products ?? [];

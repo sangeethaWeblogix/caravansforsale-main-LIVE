@@ -49,6 +49,7 @@ export const SECTION_TITLES: Record<string, string> = {
   models: "Browse by Model",
   suburbs: "Browse by Suburb",
   all: " ",
+  years: "Browse by Year",
 };
 
 // ── Helpers ──────────────────────────────────────────────────
@@ -289,19 +290,22 @@ export function buildStaticLinks(
     hasMake,
   ].filter(Boolean).length;
 
-  const effectiveCount =
-    (hasCondition || hasYear) && activeFilters >= 1
-      ? activeFilters + 1
+  const conditionOrYearOnly = (hasCondition || hasYear) && activeFilters === 0;
+
+  const effectiveCount = conditionOrYearOnly
+    ? 1 // treat as 1 so "all" link appears
+    : hasCondition || hasYear
+      ? activeFilters + 1 // combined with other filters → add 1
       : activeFilters;
 
   // Always show Home
-  links.home = [{ name: "Browse by Home", slug: "/" }];
+  links.home = [{ name: "Caravanforsale", slug: "/" }];
 
   // ─────────────────────────────
   // 0 FILTERS → Home + All Caravans
   // ─────────────────────────────
   if (effectiveCount === 0) {
-    links.home = [{ name: "Browse by Home", slug: "/" }];
+    links.home = [{ name: "Caravanforsale", slug: "/" }];
     return links;
   }
 
@@ -430,6 +434,15 @@ export function buildStaticLinks(
     if (sleepLink) links.sleep = [sleepLink];
   }
 
+  if (hasCondition && activeFilters >= 1) {
+    const conditionSlug = `/${filters.condition!.toLowerCase()}-condition/`;
+    links.conditions = [{ name: filters.condition!, slug: conditionSlug }];
+  }
+
+  if (hasYear && activeFilters >= 1) {
+    const year = filters.acustom_fromyears ?? filters.acustom_toyears;
+    links.years = [{ name: `${year}`, slug: `/${year}-caravans-range/` }];
+  }
   links.all = [{ name: "Browse by All Caravans", slug: "/listings/" }];
   return links;
 }
