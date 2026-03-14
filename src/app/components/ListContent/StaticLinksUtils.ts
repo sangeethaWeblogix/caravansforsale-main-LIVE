@@ -468,6 +468,7 @@ export function buildStaticLinkUrl(
   if (type === "length") return slug;
   if (type === "sleep") return slug;
   if (type === "conditions") return slug;
+  if (type === "years") return slug;
 
   return slug;
 }

@@ -326,7 +326,7 @@ const FilterSlider = ({
   const [tempAtmTo, setTempAtmTo] = useState<number | null>(null);
 
   const [openModal, setOpenModal] = useState<
-    "type" | "location" | "price" | "atm" | "make" | null
+    "type" | "location" | "price" | "atm" | "make" | "suburb" | null
   >(null);
 
   // ── Price handlers ──
@@ -451,7 +451,9 @@ const FilterSlider = ({
 
     setOpenModal(null);
   };
-
+  const handleLocationSuburbOpen = () => {
+    setOpenModal("suburb");
+  };
   const handleLocationOpen = () => {
     const f = getEffectiveFilters();
     const matchedState = states.find(
@@ -498,19 +500,28 @@ const FilterSlider = ({
     setOpenModal(null);
   };
   const handleLocationClear = () => {
-    setTempState(null);
-    setTempRegion(null);
-
-    updateFiltersAndURL({
-      state: undefined,
-      region: undefined,
-      suburb: undefined, // ✅ add
-      pincode: undefined, // ✅ add
-    });
-
+    if (currentFilters.suburb) {
+      // ✅ Suburb மட்டும் clear — state, region தொடரும்
+      updateFiltersAndURL({
+        ...currentFilters,
+        suburb: undefined,
+        pincode: undefined,
+        radius_kms: undefined,
+      });
+    } else {
+      // ✅ State/region clear
+      setTempState(null);
+      setTempRegion(null);
+      updateFiltersAndURL({
+        state: undefined,
+        region: undefined,
+        suburb: undefined,
+        pincode: undefined,
+        radius_kms: undefined,
+      });
+    }
     setOpenModal(null);
   };
-
   const filteredRegions =
     states.find((s) => s.name.toLowerCase() === tempState?.toLowerCase())
       ?.regions ?? [];
@@ -560,6 +571,19 @@ const FilterSlider = ({
       cachedCategoryCountsRef.current = categoryCounts;
     }
   }, [categoryCounts]);
+
+  // utils/formatSuburb.ts (or wherever suburb label is formatted)
+
+  const AUS_ABBR: Record<string, string> = {
+    VICTORIA: "VIC",
+    "NEW SOUTH WALES": "NSW",
+    QUEENSLAND: "QLD",
+    "SOUTH AUSTRALIA": "SA",
+    "WESTERN AUSTRALIA": "WA",
+    TASMANIA: "TAS",
+    "NORTHERN TERRITORY": "NT",
+    "AUSTRALIAN CAPITAL TERRITORY": "ACT",
+  };
 
   return (
     <>
@@ -616,6 +640,49 @@ const FilterSlider = ({
                 )}
               </button>
             </SwiperSlide>
+            {currentFilters.suburb ? (
+              <SwiperSlide style={{ width: "auto" }}>
+                <button
+                  className={`tag ${currentFilters.state || currentFilters.suburb ? "active" : ""}`}
+                  onClick={handleLocationSuburbOpen}
+                >
+                  {currentFilters.suburb ? (
+                    // ✅ Suburb is set — show suburb + state abbr + pincode + radius
+                    <>
+                      <small className="selected_label">Suburb: </small>
+                      {toTitleCase(currentFilters.suburb)}
+                      {currentFilters.state && (
+                        <>
+                          ,{" "}
+                          {AUS_ABBR[currentFilters.state.toUpperCase()] ??
+                            currentFilters.state.toUpperCase()}
+                        </>
+                      )}
+                      {currentFilters.pincode && <> {currentFilters.pincode}</>}
+                      <span className="active_filter">
+                        <i className="bi bi-circle-fill"></i>
+                      </span>
+                    </>
+                  ) : currentFilters.state ? (
+                    // ✅ Only state/region — existing logic
+                    <>
+                      <small className="selected_label">Suburb: </small>
+                      {currentFilters.region && (
+                        <>{toTitleCase(currentFilters.region)}, </>
+                      )}
+                      {toTitleCase(currentFilters.state)}
+                      <span className="active_filter">
+                        <i className="bi bi-circle-fill"></i>
+                      </span>
+                    </>
+                  ) : (
+                    "Suburb"
+                  )}
+                </button>
+              </SwiperSlide>
+            ) : (
+              " "
+            )}
 
             <SwiperSlide style={{ width: "auto" }}>
               <button
@@ -700,7 +767,46 @@ const FilterSlider = ({
           </Swiper>
         </div>
       </div>
-
+      {openModal === "suburb" && (
+        <div className="filter-overlay">
+          <div className="filter-modal">
+            <div className="filter-header">
+              <h3>Suburb</h3>
+              {closeBtn}
+            </div>
+            <div className="filter-body">
+              <p>
+                <strong>
+                  suburb: {toTitleCase(currentFilters.suburb ?? "")}
+                  {currentFilters.state && (
+                    <>
+                      ,{" "}
+                      {AUS_ABBR[currentFilters.state.toUpperCase()] ??
+                        currentFilters.state.toUpperCase()}
+                    </>
+                  )}
+                  {currentFilters.pincode && <> {currentFilters.pincode}</>}
+                </strong>
+              </p>
+            </div>
+            <div className="filter-footer">
+              <button
+                className="clear"
+                onClick={() => {
+                  updateFiltersAndURL({
+                    suburb: undefined,
+                    pincode: undefined,
+                    radius_kms: undefined,
+                  });
+                  setOpenModal(null);
+                }}
+              >
+                Clear filters
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Caravan Type Modal */}
       {openModal === "type" && (
         <div className="filter-overlay">
@@ -885,7 +991,7 @@ const FilterSlider = ({
                       ) : (
                         <>
                           {/* ✅ tempMake இருக்கு ஆனால் makeCounts-ல் இல்லன்னா
-                        (0 products — count இல்ல) manually show பண்ணு */}
+                          (0 products — count இல்ல) manually show பண்ணு */}
                           {tempMake &&
                             !filteredMakes.some((m) => m.slug === tempMake) && (
                               <option value={tempMake}>
@@ -919,7 +1025,7 @@ const FilterSlider = ({
                         ) : (
                           <>
                             {/* ✅ tempModel இருக்கு ஆனால் modelCounts-ல் இல்லன்னா
-                          (0 products) manually show பண்ணு */}
+                            (0 products) manually show பண்ணு */}
                             {tempModel &&
                               !modelCounts.some(
                                 (m) => m.slug === tempModel,
