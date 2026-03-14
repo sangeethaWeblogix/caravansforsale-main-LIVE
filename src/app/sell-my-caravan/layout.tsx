@@ -5,11 +5,11 @@ import { ReactNode } from "react";
 
  export const metadata: Metadata = {
    title: {
-     default: "Dealer Advertising",
+     default: "Sell Your Caravan for $35 Until Sold | CaravansForSale.com.au",
      template: "%s ",
    },
    description:
-     "",
+     "Sell your caravan on CaravansForSale.com.au for just $35 until sold. No subscriptions, no commissions, and connect directly with caravan buyers across Australia.",
    icons: { icon: "/favicon.ico" },
    robots: "index, follow",
    verification: {
