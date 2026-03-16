@@ -146,173 +146,302 @@
  };
  
  /** Nearest price link from filterOptions based on current price filter */
- function getNearestPriceLink(filters: Filters): { name: string; slug: string } | null {
-  const from = filters.from_price ? Number(filters.from_price) : null;
-  const to = filters.to_price ? Number(filters.to_price) : null;
-
-  if (!from && !to) return null;
-
-  const parsedOptions = filterOptions.price.map((p) => {
-    const slug = p.slug.replace(/\//g, "");
-    const nums = slug.match(/\d+/g)?.map(Number) ?? [];
-    let lower = 0;
-    let upper = Infinity;
-
-    if (slug.startsWith("under") && nums.length >= 1) { lower = 0; upper = nums[0]; }
-    else if (slug.startsWith("over") && nums.length >= 1) { lower = nums[0]; upper = Infinity; }
-    else if (slug.startsWith("between") && nums.length >= 2) { lower = nums[0]; upper = nums[1]; }
-
-    return { ...p, lower, upper };
-  });
-
-  // Over X → highest bucket whose lower ≤ from
-  if (from && !to) {
-    const candidates = parsedOptions
-      .filter((p) => p.lower <= from)
-      .sort((a, b) => b.lower - a.lower);
-    if (candidates[0]) return { name: candidates[0].name, slug: candidates[0].slug };
-
-    const above = parsedOptions
-      .filter((p) => p.lower > from)
-      .sort((a, b) => a.lower - b.lower)[0];
-    if (above) return { name: above.name, slug: above.slug };
-  }
-
-  // Under X → lowest bucket whose upper ≥ to
-  if (!from && to) {
-    const candidates = parsedOptions
-      .filter((p) => p.upper >= to)
-      .sort((a, b) => a.upper - b.upper);
-    if (candidates[0]) return { name: candidates[0].name, slug: candidates[0].slug };
-
-    const below = parsedOptions
-      .filter((p) => p.upper < to && p.upper !== Infinity)
-      .sort((a, b) => b.upper - a.upper)[0];
-    if (below) return { name: below.name, slug: below.slug };
-  }
-
-  // Between → bucket containing "to"
-  if (from && to) {
-    const contains = parsedOptions.find((p) => p.lower <= to && to <= p.upper);
-    if (contains) return { name: contains.name, slug: contains.slug };
-
-    const below = parsedOptions
-      .filter((p) => p.upper <= to && p.upper !== Infinity)
-      .sort((a, b) => b.upper - a.upper)[0];
-    if (below) return { name: below.name, slug: below.slug };
-
-    const above = parsedOptions
-      .filter((p) => p.lower >= from)
-      .sort((a, b) => a.lower - b.lower)[0];
-    if (above) return { name: above.name, slug: above.slug };
-  }
-
-  return parsedOptions[0] ?? null;
-}
+  function getNearestPriceLink(
+   filters: Filters,
+ ): { name: string; slug: string } | null {
+   const from = filters.from_price ? Number(filters.from_price) : null;
+   const to = filters.to_price ? Number(filters.to_price) : null;
+ 
+   if (!from && !to) return null;
+ 
+   // Extract numeric bounds from each price option slug
+   // slug format: /under-20000/ → [0, 20000]
+   //              /between-20000-30000/ → [20000, 30000]
+   //              /over-200000/ → [200000, Infinity]
+   const parsedOptions = filterOptions.price.map((p) => {
+     const slug = p.slug.replace(/\//g, "");
+     const nums = slug.match(/\d+/g)?.map(Number) ?? [];
+     let lower = 0;
+     let upper = Infinity;
+ 
+     if (slug.startsWith("under") && nums.length >= 1) {
+       lower = 0;
+       upper = nums[0];
+     } else if (slug.startsWith("over") && nums.length >= 1) {
+       lower = nums[0];
+       upper = Infinity;
+     } else if (slug.startsWith("between") && nums.length >= 2) {
+       lower = nums[0];
+       upper = nums[1];
+     }
+ 
+     return { ...p, lower, upper };
+   });
+ 
+   // Case 1: only "from" (e.g. over 50000)
+   // → find bucket whose UPPER bound is closest to / just >= from
+   // → e.g. from=50000 → between 40000-50000 (upper=50000 matches exactly)
+   if (from && !to) {
+     // exact upper match first
+     const exact = parsedOptions.find((p) => p.upper === from);
+     if (exact) return { name: exact.name, slug: exact.slug };
+ 
+     // find bucket where lower <= from <= upper
+     const contains = parsedOptions.find(
+       (p) => p.lower <= from && from <= p.upper,
+     );
+     if (contains) return { name: contains.name, slug: contains.slug };
+ 
+     // fallback: bucket with largest upper < from
+     const below = parsedOptions
+       .filter((p) => p.upper < from && p.upper !== Infinity)
+       .sort((a, b) => b.upper - a.upper)[0];
+     if (below) return { name: below.name, slug: below.slug };
+   }
+ 
+   // Case 2: only "to" (e.g. under 60000)
+   // → find bucket whose range CONTAINS "to"
+   // → e.g. to=60000 → between 50000-70000 (50000 <= 60000 <= 70000)
+   if (!from && to) {
+     // exact lower match
+     const exact = parsedOptions.find((p) => p.lower === to);
+     if (exact) return { name: exact.name, slug: exact.slug };
+ 
+     // bucket that contains "to"
+     const contains = parsedOptions.find(
+       (p) => p.lower <= to && to <= p.upper,
+     );
+     if (contains) return { name: contains.name, slug: contains.slug };
+ 
+     // fallback: bucket with smallest lower > to
+     const above = parsedOptions
+       .filter((p) => p.lower > to)
+       .sort((a, b) => a.lower - b.lower)[0];
+     if (above) return { name: above.name, slug: above.slug };
+   }
+ 
+   // Case 3: both from + to (e.g. between 50000-80000)
+   // → find bucket whose range best covers the upper bound (to)
+   // → e.g. to=80000 → between 70000-100000 (70000 <= 80000 <= 100000)
+   if (from && to) {
+     // bucket that contains "to"
+     const contains = parsedOptions.find(
+       (p) => p.lower <= to && to <= p.upper,
+     );
+     if (contains) return { name: contains.name, slug: contains.slug };
+ 
+     // fallback: bucket with largest upper <= to
+     const below = parsedOptions
+       .filter((p) => p.upper <= to && p.upper !== Infinity)
+       .sort((a, b) => b.upper - a.upper)[0];
+     if (below) return { name: below.name, slug: below.slug };
+ 
+     // fallback: bucket with smallest lower >= from
+     const above = parsedOptions
+       .filter((p) => p.lower >= from)
+       .sort((a, b) => a.lower - b.lower)[0];
+     if (above) return { name: above.name, slug: above.slug };
+   }
+ 
+   return parsedOptions[0] ?? null;
+ }
  
   // ── Replace entire findRangeBucket with new per-type functions ──
  
- // ── Shared bucket finder — correct over/under/between logic ──────────────
-function findNearestBucket(
-  options: { name: string; slug: string; value: string }[],
-  from: number | null,
-  to: number | null,
-): { name: string; slug: string } | null {
-  if (!from && !to) return null;
-
-  const parsedOptions = options.map((o) => {
-    const slugLc = o.slug.replace(/\//g, "").toLowerCase();
-    const nums = o.value.split("-").map(Number);
-    let lower = 0;
-    let upper = Infinity;
-
-    if (slugLc.startsWith("under") && nums.length === 1) {
-      lower = 0;
-      upper = nums[0];
-    } else if (slugLc.startsWith("over") && nums.length === 1) {
-      lower = nums[0];
-      upper = Infinity;
-    } else if (nums.length === 2) {
-      lower = nums[0];
-      upper = nums[1];
-    }
-
-    return { ...o, lower, upper };
-  });
-
-  // Case 1: Only "from" = user clicked "Over X"
-  // → show the bucket whose lower is the HIGHEST value still ≤ from
-  if (from && !to) {
-    const candidates = parsedOptions
-      .filter((p) => p.lower <= from)
-      .sort((a, b) => b.lower - a.lower); // highest lower first
-    if (candidates[0]) return { name: candidates[0].name, slug: candidates[0].slug };
-
-    // fallback: smallest lower > from
-    const above = parsedOptions
-      .filter((p) => p.lower > from)
-      .sort((a, b) => a.lower - b.lower)[0];
-    if (above) return { name: above.name, slug: above.slug };
-  }
-
-  // Case 2: Only "to" = user clicked "Under X"
-  // → show the bucket whose upper is the LOWEST value still ≥ to
-  if (!from && to) {
-    const candidates = parsedOptions
-      .filter((p) => p.upper >= to)
-      .sort((a, b) => a.upper - b.upper); // lowest upper first
-    if (candidates[0]) return { name: candidates[0].name, slug: candidates[0].slug };
-
-    // fallback: largest upper < to
-    const below = parsedOptions
-      .filter((p) => p.upper < to && p.upper !== Infinity)
-      .sort((a, b) => b.upper - a.upper)[0];
-    if (below) return { name: below.name, slug: below.slug };
-  }
-
-  // Case 3: Both from + to = user filtered a range
-  // → find bucket that contains "to" (the upper bound of their range)
-  if (from && to) {
-    const contains = parsedOptions.find(
-      (p) => p.lower <= to && to <= p.upper,
-    );
-    if (contains) return { name: contains.name, slug: contains.slug };
-
-    // fallback: bucket with largest upper ≤ to
-    const below = parsedOptions
-      .filter((p) => p.upper <= to && p.upper !== Infinity)
-      .sort((a, b) => b.upper - a.upper)[0];
-    if (below) return { name: below.name, slug: below.slug };
-
-    // fallback: bucket with smallest lower ≥ from
-    const above = parsedOptions
-      .filter((p) => p.lower >= from)
-      .sort((a, b) => a.lower - b.lower)[0];
-    if (above) return { name: above.name, slug: above.slug };
-  }
-
-  return parsedOptions[0] ?? null;
-}
-  /** ATM link */
-function getNearestAtmLink(filters: Filters): { name: string; slug: string } | null {
-  const from = filters.minKg ? Number(filters.minKg) : null;
-  const to = filters.maxKg ? Number(filters.maxKg) : null;
-  return findNearestBucket(filterOptions.atm, from, to);
-}
-
-/** Length link */
-function getNearestLengthLink(filters: Filters): { name: string; slug: string } | null {
-  const from = filters.from_length ? Number(filters.from_length) : null;
-  const to = filters.to_length ? Number(filters.to_length) : null;
-  return findNearestBucket(filterOptions.length, from, to); // ← same function now
-}
-
-/** Sleep link */
-function getNearestSleepLink(filters: Filters): { name: string; slug: string } | null {
-  const from = filters.from_sleep ? Number(filters.from_sleep) : null;
-  const to = filters.to_sleep ? Number(filters.to_sleep) : null;
-  return findNearestBucket(filterOptions.sleep, from, to);
-}
+ function findNearestBucket(
+   options: { name: string; slug: string; value: string }[],
+   from: number | null,
+   to: number | null,
+ ): { name: string; slug: string } | null {
+   if (!from && !to) return null;
+ 
+   // Parse each option into lower/upper bounds using value field
+   // value: "1500"       → under/over bucket
+   // value: "1500-2500"  → between bucket
+   // Determine under/over by checking slug
+   const parsedOptions = options.map((o) => {
+     const slugLc = o.slug.replace(/\//g, "").toLowerCase();
+     const nums = o.value.split("-").map(Number);
+     let lower = 0;
+     let upper = Infinity;
+ 
+     if (slugLc.startsWith("under") && nums.length === 1) {
+       lower = 0;
+       upper = nums[0];
+     } else if (slugLc.startsWith("over") && nums.length === 1) {
+       lower = nums[0];
+       upper = Infinity;
+     } else if (nums.length === 2) {
+       lower = nums[0];
+       upper = nums[1];
+     }
+ 
+     return { ...o, lower, upper };
+   });
+ 
+   // Case 1: only "from" (e.g. over 1500kg, from_length=15)
+   // → find bucket whose UPPER bound matches exactly OR contains "from"
+   if (from && !to) {
+     // exact upper match
+     const exact = parsedOptions.find((p) => p.upper === from);
+     if (exact) return { name: exact.name, slug: exact.slug };
+ 
+     // bucket that contains "from"
+     const contains = parsedOptions.find(
+       (p) => p.lower <= from && from <= p.upper,
+     );
+     if (contains) return { name: contains.name, slug: contains.slug };
+ 
+     // fallback: bucket with largest upper < from
+     const below = parsedOptions
+       .filter((p) => p.upper < from && p.upper !== Infinity)
+       .sort((a, b) => b.upper - a.upper)[0];
+     if (below) return { name: below.name, slug: below.slug };
+   }
+ 
+   // Case 2: only "to" (e.g. under 2500kg, to_length=20)
+   // → find bucket whose range CONTAINS "to"
+   if (!from && to) {
+     // exact lower match
+     const exact = parsedOptions.find((p) => p.lower === to);
+     if (exact) return { name: exact.name, slug: exact.slug };
+ 
+     // bucket that contains "to"
+     const contains = parsedOptions.find(
+       (p) => p.lower <= to && to <= p.upper,
+     );
+     if (contains) return { name: contains.name, slug: contains.slug };
+ 
+     // fallback: smallest lower > to
+     const above = parsedOptions
+       .filter((p) => p.lower > to)
+       .sort((a, b) => a.lower - b.lower)[0];
+     if (above) return { name: above.name, slug: above.slug };
+   }
+ 
+   // Case 3: both from + to (e.g. between 1500-3000kg)
+   // → find bucket whose range best covers the upper bound (to)
+   if (from && to) {
+     // bucket that contains "to"
+     const contains = parsedOptions.find(
+       (p) => p.lower <= to && to <= p.upper,
+     );
+     if (contains) return { name: contains.name, slug: contains.slug };
+ 
+     // fallback: largest upper <= to
+     const below = parsedOptions
+       .filter((p) => p.upper <= to && p.upper !== Infinity)
+       .sort((a, b) => b.upper - a.upper)[0];
+     if (below) return { name: below.name, slug: below.slug };
+ 
+     // fallback: smallest lower >= from
+     const above = parsedOptions
+       .filter((p) => p.lower >= from)
+       .sort((a, b) => a.lower - b.lower)[0];
+     if (above) return { name: above.name, slug: above.slug };
+   }
+ 
+   return parsedOptions[0] ?? null;
+ }
+ 
+ /** ATM link */
+ function getNearestAtmLink(
+   filters: Filters,
+ ): { name: string; slug: string } | null {
+   const from = filters.minKg ? Number(filters.minKg) : null;
+   const to = filters.maxKg ? Number(filters.maxKg) : null;
+   return findNearestBucket(filterOptions.atm, from, to);
+ }
+ 
+ /** Length link */
+  // ── Length only — separate bucket logic ──────────────────────
+ function findLengthBucket(
+   options: { name: string; slug: string; value: string }[],
+   from: number | null,
+   to: number | null,
+ ): { name: string; slug: string } | null {
+   if (!from && !to) return null;
+ 
+   const parsedOptions = options.map((o) => {
+     const slugLc = o.slug.replace(/\//g, "").toLowerCase();
+     const nums = o.value.split("-").map(Number);
+     let lower = 0;
+     let upper = Infinity;
+ 
+     if (slugLc.startsWith("under") && nums.length === 1) {
+       lower = 0;
+       upper = nums[0];
+     } else if (slugLc.startsWith("over") && nums.length === 1) {
+       lower = nums[0];
+       upper = Infinity;
+     } else if (nums.length === 2) {
+       lower = nums[0];
+       upper = nums[1];
+     }
+ 
+     return { ...o, lower, upper };
+   });
+ 
+   // Case 1: only "from" (under X = products above X)
+   // → find bucket that contains "from" or just above
+   if (from && !to) {
+     const contains = parsedOptions.find(
+       (p) => p.lower <= from && from <= p.upper,
+     );
+     if (contains) return { name: contains.name, slug: contains.slug };
+ 
+     const above = parsedOptions
+       .filter((p) => p.lower >= from)
+       .sort((a, b) => a.lower - b.lower)[0];
+     if (above) return { name: above.name, slug: above.slug };
+   }
+ 
+   // Case 2: only "to" (over X = products below X)
+   // → find bucket whose upper is strictly <= to
+   if (!from && to) {
+     const below = parsedOptions
+       .filter((p) => p.upper <= to && p.upper !== Infinity)
+       .sort((a, b) => b.upper - a.upper)[0];
+     if (below) return { name: below.name, slug: below.slug };
+ 
+     return parsedOptions[0] ?? null;
+   }
+ 
+   // Case 3: both from + to
+   // → find bucket that contains "to"
+   if (from && to) {
+     const contains = parsedOptions.find(
+       (p) => p.lower <= to && to <= p.upper,
+     );
+     if (contains) return { name: contains.name, slug: contains.slug };
+ 
+     const below = parsedOptions
+       .filter((p) => p.upper <= to && p.upper !== Infinity)
+       .sort((a, b) => b.upper - a.upper)[0];
+     if (below) return { name: below.name, slug: below.slug };
+   }
+ 
+   return parsedOptions[0] ?? null;
+ }
+ 
+ /** Length link — uses separate logic, ATM untouched */
+ function getNearestLengthLink(
+   filters: Filters,
+ ): { name: string; slug: string } | null {
+   const from = filters.from_length ? Number(filters.from_length) : null;
+   const to = filters.to_length ? Number(filters.to_length) : null;
+   return findLengthBucket(filterOptions.length, from, to); // ← findLengthBucket, not findNearestBucket
+ }
+ 
+ /** Sleep link */
+ function getNearestSleepLink(
+   filters: Filters,
+ ): { name: string; slug: string } | null {
+   const from = filters.from_sleep ? Number(filters.from_sleep) : null;
+   const to = filters.to_sleep ? Number(filters.to_sleep) : null;
+   return findNearestBucket(filterOptions.sleep, from, to);
+ }
+ 
  // ── Main buildStaticLinks ────────────────────────────────────
  export function buildStaticLinks(
    filters: Filters,
@@ -358,7 +487,7 @@ function getNearestSleepLink(filters: Filters): { name: string; slug: string } |
    }
  
    if (effectiveCount === 1) {
-         links.all = [{ name: "All Caravans", slug: "/listings/" }];
+         links.all = [{ name: "Browse by All Caravans", slug: "/listings/" }];
  
      if (hasMake && hasModel) {
        links.makes = [

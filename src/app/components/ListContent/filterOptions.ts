@@ -7,16 +7,17 @@ export const filterOptions = {
     { name: "Pop Top", slug: "/pop-top-category/" },
     { name: "Hybrid", slug: "/hybrid-category/" },
   ],
-  price: [
-    { name: "under 20k", slug: "/under-20000/" },
-    { name: "20k-30k", slug: "/between-20000-30000/" },
-    { name: "30k-40k", slug: "/between-30000-40000/" },
-    { name: "40k-50k", slug: "/between-40000-50000/" },
-    { name: "50k-70k", slug: "/between-50000-70000/" },
-    { name: "70k-100k", slug: "/between-70000-100000/" },
-    { name: "100k-150k", slug: "/between-100000-150000/" },
-    { name: "150k-200k", slug: "/between-150000-200000/" },
-    { name: "over 200k", slug: "/over-200000/" },
+   
+   price: [
+    { name: "Caravans Under $20,000 in Australia", slug: "/under-20000/" },
+    { name: "Caravans between $20,000 to $30,000 in Australia", slug: "/between-20000-30000/" },
+    { name: "Caravans between $30,000 to $40,000 in Australia", slug: "/between-30000-40000/" },
+    { name: "Caravans between $40,000 to $50,000 in Australia", slug: "/between-40000-50000/" },
+    { name: "Caravans between $50,000 to $70,000 in Australia", slug: "/between-50000-70000/" },
+    { name: "Caravans between $70,000 to $100,000 in Australia", slug: "/between-70000-100000/" },
+    { name: "Caravans between $100,000 to $150,000 in Australia", slug: "/between-100000-150000/" },
+    { name: "Caravans between $150,000 to $200,000 in Australia", slug: "/between-150000-200000/" },
+    { name: "Caravans Over $200,000 in Australia", slug: "/over-200000/" },
   ],
   atm: [
     { name: "Under 1500kg", slug: "/under-1500-kg-atm/", value: "1500" },
@@ -39,22 +40,22 @@ export const filterOptions = {
   ],
   sleep: [
     {
-      name: "Sleeps 1-2",
+      name: "1-2",
       slug: "/between-1-2-people-sleeping-capacity/",
       value: "1-2",
     },
     {
-      name: "Sleeps 3-4",
+      name: "3-4",
       slug: "/between-3-4-people-sleeping-capacity/",
       value: "3-4",
     },
     {
-      name: "Sleeps 4-6",
+      name: "4-6",
       slug: "/between-4-6-people-sleeping-capacity/",
       value: "4-6",
     },
     {
-      name: "Over 6 Sleeps",
+      name: "6",
       slug: "/over-6-people-sleeping-capacity/",
       value: "6",
     },
