@@ -144,7 +144,69 @@
    const result = buildSlugFromFilters(f);
    return result.endsWith("/") ? result : `${result}/`;
  };
- 
+  function getNearestAtmLink(filters: Filters): { name: string; slug: string } | null {
+  const from = filters.minKg ? Number(filters.minKg) : null;
+  const to = filters.maxKg ? Number(filters.maxKg) : null;
+
+   if (!from && !to) return null;
+
+  const parsedOptions = filterOptions.atm.map((p) => {
+    const slug = p.slug.replace(/\//g, "");
+    const nums = slug.match(/\d+/g)?.map(Number) ?? [];
+    let lower = 0;
+    let upper = Infinity;
+
+    if (slug.startsWith("under") && nums.length >= 1) { lower = 0; upper = nums[0]; }
+    else if (slug.startsWith("over") && nums.length >= 1) { lower = nums[0]; upper = Infinity; }
+    else if (slug.startsWith("between") && nums.length >= 2) { lower = nums[0]; upper = nums[1]; }
+
+    return { ...p, lower, upper };
+  });
+
+  // Over X → highest bucket whose lower ≤ from
+  if (from && !to) {
+    const candidates = parsedOptions
+      .filter((p) => p.lower <= from)
+      .sort((a, b) => b.lower - a.lower);
+    if (candidates[0]) return { name: candidates[0].name, slug: candidates[0].slug };
+
+    const above = parsedOptions
+      .filter((p) => p.lower > from)
+      .sort((a, b) => a.lower - b.lower)[0];
+    if (above) return { name: above.name, slug: above.slug };
+  }
+
+  // Under X → lowest bucket whose upper ≥ to
+  if (!from && to) {
+    const candidates = parsedOptions
+      .filter((p) => p.upper >= to)
+      .sort((a, b) => a.upper - b.upper);
+    if (candidates[0]) return { name: candidates[0].name, slug: candidates[0].slug };
+
+    const below = parsedOptions
+      .filter((p) => p.upper < to && p.upper !== Infinity)
+      .sort((a, b) => b.upper - a.upper)[0];
+    if (below) return { name: below.name, slug: below.slug };
+  }
+
+  // Between → bucket containing "to"
+  if (from && to) {
+    const contains = parsedOptions.find((p) => p.lower <= to && to <= p.upper);
+    if (contains) return { name: contains.name, slug: contains.slug };
+
+    const below = parsedOptions
+      .filter((p) => p.upper <= to && p.upper !== Infinity)
+      .sort((a, b) => b.upper - a.upper)[0];
+    if (below) return { name: below.name, slug: below.slug };
+
+    const above = parsedOptions
+      .filter((p) => p.lower >= from)
+      .sort((a, b) => a.lower - b.lower)[0];
+    if (above) return { name: above.name, slug: above.slug };
+  }
+
+  return parsedOptions[0] ?? null;
+}
  /** Nearest price link from filterOptions based on current price filter */
  function getNearestPriceLink(filters: Filters): { name: string; slug: string } | null {
   const from = filters.from_price ? Number(filters.from_price) : null;
@@ -242,19 +304,40 @@ function findNearestBucket(
 
   // Case 1: Only "from" = user clicked "Over X"
   // → show the bucket whose lower is the HIGHEST value still ≤ from
-  if (from && !to) {
-    const candidates = parsedOptions
-      .filter((p) => p.lower <= from)
-      .sort((a, b) => b.lower - a.lower); // highest lower first
-    if (candidates[0]) return { name: candidates[0].name, slug: candidates[0].slug };
+  // if (from && !to) {
+  //   const candidates = parsedOptions
+  //     .filter((p) => p.lower <= from)
+  //     .sort((a, b) => b.lower - a.lower); // highest lower first
+  //   if (candidates[0]) return { name: candidates[0].name, slug: candidates[0].slug };
 
-    // fallback: smallest lower > from
-    const above = parsedOptions
-      .filter((p) => p.lower > from)
-      .sort((a, b) => a.lower - b.lower)[0];
-    if (above) return { name: above.name, slug: above.slug };
-  }
+  //   // fallback: smallest lower > from
+  //   const above = parsedOptions
+  //     .filter((p) => p.lower > from)
+  //     .sort((a, b) => a.lower - b.lower)[0];
+  //   if (above) return { name: above.name, slug: above.slug };
+  // }
+// Case 1: Only "from" = user clicked "Over X"
+// → next bucket UP: smallest lower that is STRICTLY > from
+// Case 1: Only "from" = user clicked "Over X"
+// → next bucket UP: smallest lower STRICTLY > from
+if (from && !to) {
+  const above = parsedOptions
+    .filter((p) => p.lower > from)
+    .sort((a, b) => a.lower - b.lower)[0];
+  if (above) return { name: above.name, slug: above.slug };
 
+  // edge case: from exactly matches an "over X" bucket (e.g. over 4500 ATM, over 24ft length)
+  const exact = parsedOptions.find(
+    (p) => p.lower === from && p.upper === Infinity,
+  );
+  if (exact) return { name: exact.name, slug: exact.slug };
+
+  // last resort
+  const fallback = parsedOptions
+    .filter((p) => p.lower <= from)
+    .sort((a, b) => b.lower - a.lower)[0];
+  if (fallback) return { name: fallback.name, slug: fallback.slug };
+}
   // Case 2: Only "to" = user clicked "Under X"
   // → show the bucket whose upper is the LOWEST value still ≥ to
   if (!from && to) {
@@ -294,11 +377,12 @@ function findNearestBucket(
   return parsedOptions[0] ?? null;
 }
   /** ATM link */
-function getNearestAtmLink(filters: Filters): { name: string; slug: string } | null {
-  const from = filters.minKg ? Number(filters.minKg) : null;
-  const to = filters.maxKg ? Number(filters.maxKg) : null;
-  return findNearestBucket(filterOptions.atm, from, to);
-}
+// function getNearestAtmLink(filters: Filters): { name: string; slug: string } | null {
+//   const from = filters.minKg ? Number(filters.minKg) : null;
+//   const to = filters.maxKg ? Number(filters.maxKg) : null;
+  
+//   return findNearestBucket(filterOptions.atm, from, to);
+// }
 
 /** Length link */
 function getNearestLengthLink(filters: Filters): { name: string; slug: string } | null {
