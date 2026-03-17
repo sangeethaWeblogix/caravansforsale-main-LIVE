@@ -473,23 +473,7 @@ function getNearestSleepLink(filters: Filters): { name: string; slug: string } |
      }
    }
  
-   // ── Make / Model ─────────────────────────────────────────
-   if (hasMake) {
-     links.makes = [
-       { name: `${filters.make!} Caravans for Sale in Australia`,  // ✅ formatted
- 
-        slug: `/${filters.make!.toLowerCase()}/` },
-     ];
-   }
-   if (hasMake && hasModel) {
-     links.models = [
-       {
-              name: `${filters.make!} ${filters.model!} Caravans for Sale in Australia`,  // ✅ formatted
-
-         slug: `/${filters.make!.toLowerCase()}/${filters.model!.toLowerCase()}/`,
-       },
-     ];
-   }
+  
  
    // ── Location ─────────────────────────────────────────────
    if (hasSuburb && hasRegion && hasState) {
@@ -549,7 +533,23 @@ function getNearestSleepLink(filters: Filters): { name: string; slug: string } |
        }];
      }
    }
+  // ── Make / Model ─────────────────────────────────────────
+   if (hasMake) {
+     links.makes = [
+       { name: `${filters.make!} Caravans for Sale in Australia`,  // ✅ formatted
  
+        slug: `/${filters.make!.toLowerCase()}/` },
+     ];
+   }
+   if (hasMake && hasModel) {
+     links.models = [
+       {
+              name: `${filters.make!} ${filters.model!} Caravans for Sale in Australia`,  // ✅ formatted
+
+         slug: `/${filters.make!.toLowerCase()}/${filters.model!.toLowerCase()}/`,
+       },
+     ];
+   }
    // ── Price ─────────────────────────────────────────────────
    if (hasPrice) {
      const priceLink = getNearestPriceLink(filters);
