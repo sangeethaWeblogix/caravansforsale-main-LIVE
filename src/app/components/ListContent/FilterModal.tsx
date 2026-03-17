@@ -2062,7 +2062,7 @@ if (modalKeyword.trim().length < 2) {
                               type="checkbox"
                               checked={tempCategory === cat.slug}
                               onChange={() => {
-                                setTempCategory(cat.slug);
+  setTempCategory(prev => prev === cat.slug ? null : cat.slug); // ← toggle
                                 triggerOptimizeApi("category", cat.slug); // ✅
                               }}
                             />
