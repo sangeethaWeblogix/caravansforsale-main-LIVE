@@ -52,6 +52,7 @@
    conditions: "Browse by Condition",
    
    years: "Browse by Year",
+   search: "Browse by Search",
  };
  
  // ── Name Formatters ──────────────────────────────────────────
@@ -60,6 +61,14 @@
    if (name.toLowerCase().includes("caravan")) return name;
    return `${name} Caravans for Sale`;
  }
+ function formatSearchName(search: string): string {
+  // "off-road-caravans-with-bunks" → "Off Road Caravans With Bunks for Sale in Australia"
+  return search
+    .replace(/-search$/i, "")       // remove trailing -search if present
+    .split("-")
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ") + " for Sale in Australia";
+}
  
  function formatPriceName(name: string): string {
    const lower = name.toLowerCase();
@@ -415,7 +424,8 @@ function getNearestSleepLink(filters: Filters): { name: string; slug: string } |
    const hasModel = Boolean(filters.model);
    const hasCondition = Boolean(filters.condition);
    const hasYear = Boolean(filters.acustom_fromyears || filters.acustom_toyears);
- 
+ const hasSearch = Boolean(filters.search || filters.keyword);
+
    const activeFilters = [
      hasState || hasRegion || hasSuburb,
      hasCategory,
@@ -424,6 +434,7 @@ function getNearestSleepLink(filters: Filters): { name: string; slug: string } |
      hasLength,
      hasSleep,
      hasMake,
+     hasSearch,
    ].filter(Boolean).length;
  
    const conditionOrYearOnly = (hasCondition || hasYear) && activeFilters === 0;
@@ -594,6 +605,15 @@ function getNearestSleepLink(filters: Filters): { name: string; slug: string } |
      links.years = [{ name: `${year}`, slug: `/${year}-caravans-range/` }];
    }
  
+   // ── Search ────────────────────────────────────────────────
+if (hasSearch) {
+  const searchVal = (filters.search || filters.keyword)!;
+  const searchSlug = `/${searchVal.toLowerCase().replace(/ /g, "-")}-search/`;
+  links.search = [{
+    name: formatSearchName(searchVal),
+    slug: searchSlug,
+  }];
+}
     return links;
  }
  
@@ -617,5 +637,6 @@ function getNearestSleepLink(filters: Filters): { name: string; slug: string } |
    if (type === "sleep") return slug;
    if (type === "conditions") return slug;
    if (type === "years") return slug;
+   if (type === "search") return slug;
    return slug;
  }
