@@ -445,12 +445,22 @@ function getNearestSleepLink(filters: Filters): { name: string; slug: string } |
          links.all = [{ name: "All Caravans", slug: "/listings/" }];
  
      if (hasMake && hasModel) {
-       links.makes = [
-         { name: filters.make!, slug: `/${filters.make!.toLowerCase()}/` },
-       ];
-     }
-     return links;
-   }
+    links.makes = [
+      { 
+      name: `${filters.make!} Caravans for Sale in Australia`,  // ✅ formatted
+      slug: `/${filters.make!.toLowerCase()}/` 
+    },
+    ];
+    // ✅ Add this
+    links.models = [
+       {
+      name: `${filters.make!} ${filters.model!} Caravans for Sale in Australia`,  // ✅ formatted
+      slug: `/${filters.make!.toLowerCase()}/${filters.model!.toLowerCase()}/`,
+    },
+    ];
+  }
+  return links;
+}
    links.all = [{ name: "Browse by All Caravans", slug: "/listings/" }];
  
    // ── Category ─────────────────────────────────────────────
