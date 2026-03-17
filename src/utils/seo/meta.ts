@@ -68,11 +68,12 @@ const ALLOWED_LENGTH_BANDS = new Set([
     if (hasOtherFilters) return noindex;
     return index;
   }
+  if (parsed.category && parsed.make) return noindex;
 
   // ── No band filter — count remaining filters ──
   let filterCount = 0;
   if (parsed.state)    filterCount += 1; // region grouped, no extra
-  if (parsed.make)     filterCount += 1;
+  // if (parsed.make)     filterCount += 1;
   if (parsed.category) filterCount += 1;
 
   if (filterCount > 2) return noindex;
