@@ -1873,9 +1873,12 @@ const FilterModal: React.FC<CaravanFilterProps> = ({
       tempFilters.acustom_toyears = tempYear;
     }
 
-    if (modalKeyword && modalKeyword.trim()) {
-      tempFilters.search = toQueryPlus(modalKeyword.trim());
-    }
+   // tempFilters build பண்ற section-ல், கீழே add பண்ணு:
+if (modalKeyword.trim().length < 2) {
+  // modalKeyword sync ஆகல — currentFilters இருந்து directly எடு
+  const rawSearch = currentFilters.search || currentFilters.keyword;
+  if (rawSearch) tempFilters.search = rawSearch as string;
+}
     // ✅ 3-layer merge: currentFilters → filters → tempFilters (highest priority)
     const activeFilters: Filters = mergeFilters(
       mergeFilters(currentFilters, filters),
