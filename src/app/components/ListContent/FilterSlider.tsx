@@ -131,6 +131,7 @@ const [tempSuburbSuggestion, setTempSuburbSuggestion] = useState<LocationSuggest
 const [tempSuburbInput, setTempSuburbInput] = useState("");
 const [suburbLocationSuggestions, setSuburbLocationSuggestions] = useState<LocationSuggestion[]>([]);
 const [showSuburbSuggestions, setShowSuburbSuggestions] = useState(false);
+const [tempRegionRaw, setTempRegionRaw] = useState<string | null>(null);
 
   useEffect(() => {
     if (propStateOptions.length > 0) {
@@ -521,52 +522,56 @@ const getValidRegionName = (
   return reg?.name;
 };
   const handleLocationOpen = () => {
-    const f = getEffectiveFilters();
-    const matchedState = states.find(
-      (s) =>
-        s.name?.toLowerCase() === (f.state ?? "").toLowerCase() ||
-        s.value?.toLowerCase() === (f.state ?? "").toLowerCase(),
-    );
-    const matchedRegion = matchedState?.regions?.find(
-      (r) =>
-        r.name?.toLowerCase() === (f.region ?? "").toLowerCase() ||
-        r.value?.toLowerCase() === (f.region ?? "").toLowerCase(),
-    );
-    setTempState(matchedState?.name ?? f.state ?? null); // keep Title Case for <select> display
-    const resolvedRegion = matchedRegion?.name ?? null;
-    const fallbackRegion =
-      !resolvedRegion && f.region
-        ? (matchedState?.regions?.find(
-            (r) => r.name.toLowerCase() === f.region!.toLowerCase(),
-          )?.name ?? null)
-        : null;
-    setTempRegion(resolvedRegion ?? fallbackRegion ?? null);
-    setOpenModal("location");
-  };
-  const handleLocationSearch = () => {
-    delete localOverrideRef.current.state;
-    delete localOverrideRef.current.region;
-    // onLocationSelect(
-    //   tempState ? tempState.toLowerCase() : null,
-    //   tempRegion ? tempRegion.toLowerCase() : null,
-    // );
-    triggerGlobalLoaders();
-    const newFilters = {
-      ...currentFilters,
-      state: tempState?.toLowerCase() ?? undefined,
-      region: tempRegion?.toLowerCase() ?? undefined,
-      suburb: undefined,
-      pincode: undefined,
-      page: 1,
-    };
-    const slugPath = buildSlugFromFilters(newFilters);
-    const safeSlug = slugPath.endsWith("/") ? slugPath : `${slugPath}/`;
-    router.push(safeSlug);
+  const f = getEffectiveFilters();
+  
+  const matchedState = states.find(
+    (s) =>
+      s.name?.toLowerCase() === (f.state ?? "").toLowerCase() ||
+      s.value?.toLowerCase() === (f.state ?? "").toLowerCase(),
+  );
+  
+  setTempState(matchedState?.name ?? f.state ?? null);
 
-    setOpenModal(null);
+  // ✅ region dropdown-ல் இருக்கா check பண்ணு
+  const matchedRegion = matchedState?.regions?.find(
+    (r) =>
+      r.name?.toLowerCase() === (f.region ?? "").toLowerCase() ||
+      r.value?.toLowerCase() === (f.region ?? "").toLowerCase(),
+  );
+
+  if (matchedRegion) {
+    setTempRegion(matchedRegion.name);
+    setTempRegionRaw(null);
+  } else if (f.region) {
+    // ✅ dropdown-ல் இல்ல — raw-ஆ store பண்ணு
+    setTempRegion(null);
+    setTempRegionRaw(f.region);
+  } else {
+    setTempRegion(null);
+    setTempRegionRaw(null);
+  }
+
+  setOpenModal("location");
+};
+ const handleLocationSearch = () => {
+  triggerGlobalLoaders();
+  const newFilters = {
+    ...currentFilters,
+    state: tempState?.toLowerCase() ?? undefined,
+    region: tempRegion?.toLowerCase() ?? tempRegionRaw?.toLowerCase() ?? undefined,
+    suburb: undefined,
+    pincode: undefined,
+    page: 1,
   };
+  const slugPath = buildSlugFromFilters(newFilters);
+  const safeSlug = slugPath.endsWith("/") ? slugPath : `${slugPath}/`;
+  router.push(safeSlug);
+  setOpenModal(null);
+};
   const handleLocationClear = () => {
-    if (currentFilters.suburb) {
+    
+     if (currentFilters.suburb) {
+       setTempRegionRaw(null);
       // ✅ Suburb மட்டும் clear — state, region தொடரும்
       updateFiltersAndURL({
         ...currentFilters,
@@ -578,6 +583,7 @@ const getValidRegionName = (
       // ✅ State/region clear
       setTempState(null);
       setTempRegion(null);
+       setTempRegionRaw(null);
       updateFiltersAndURL({
         state: undefined,
         region: undefined,
@@ -588,6 +594,9 @@ const getValidRegionName = (
     }
     setOpenModal(null);
   };
+
+
+
   const filteredRegions =
     states.find((s) => s.name.toLowerCase() === tempState?.toLowerCase())
       ?.regions ?? [];
@@ -977,15 +986,33 @@ const getValidRegionName = (
         <button
           className="clear"
           onClick={() => {
-            updateFiltersAndURL({
-              suburb: undefined,
-              pincode: undefined,
-              radius_kms: undefined,
-            });
-            setTempSuburbInput("");
-            setTempSuburbSuggestion(null);
-            setOpenModal(null);
-          }}
+  // ✅ currentFilters.region, states list-ல் இருக்கா check பண்ணு
+  const currentState = currentFilters.state;
+  const currentRegion = currentFilters.region;
+  
+  const matchedState = states.find(
+    (s) => s.name?.toLowerCase() === currentState?.toLowerCase()
+  );
+  const isRegionInList = matchedState?.regions?.some(
+    (r) => r.name?.toLowerCase() === currentRegion?.toLowerCase()
+  );
+
+  // ✅ list-ல் இல்லாத region (raw) மட்டும் clear
+  const shouldClearRegion = currentRegion && !isRegionInList;
+
+  setTempRegionRaw(null);
+  setTempSuburbInput("");
+  setTempSuburbSuggestion(null);
+
+  updateFiltersAndURL({
+    suburb: undefined,
+    pincode: undefined,
+    radius_kms: undefined,
+    ...(shouldClearRegion ? { region: undefined } : {}),
+  }); 
+
+  setOpenModal(null);
+}}
           style={{
             opacity: currentFilters.suburb || tempSuburbSuggestion ? 1 : 0.4,
             cursor: currentFilters.suburb || tempSuburbSuggestion ? "pointer" : "not-allowed",
@@ -1159,18 +1186,32 @@ const getValidRegionName = (
                   <div className="col-lg-6">
                     <div className="location-item">
                       <label>Region</label>
-                      <select
-                        className="cfs-select-input form-select"
-                        value={tempRegion || ""}
-                        onChange={(e) => setTempRegion(e.target.value || null)}
-                      >
-                        <option value="">Any</option>
-                        {filteredRegions.map((r, i) => (
-                          <option key={i} value={r.name}>
-                            {r.name}
-                          </option>
-                        ))}
-                      </select>
+                     <select
+  className="cfs-select-input form-select"
+  value={tempRegion || tempRegionRaw || ""}
+  onChange={(e) => {
+    setTempRegion(e.target.value || null);
+    setTempRegionRaw(null); // user manually changed
+  }}
+>
+  <option value="">Any</option>
+
+  {/* ✅ dropdown-ல் இல்லாத region dynamic-ஆ show பண்ணு */}
+  {tempRegionRaw &&
+    !filteredRegions.some(
+      (r) => r.name.toLowerCase() === tempRegionRaw.toLowerCase()
+    ) && (
+      <option value={tempRegionRaw}>{tempRegionRaw}</option>
+    )}
+
+  {filteredRegions.map((r, i) => (
+    <option key={i} value={r.name}>
+      {r.name}
+    </option>
+
+  ))}
+</select>
+
                     </div>
                   </div>
                 )}

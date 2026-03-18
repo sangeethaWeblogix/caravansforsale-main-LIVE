@@ -23,6 +23,7 @@ import { fetchMakeDetails } from "@/api/make-new/api";
 import CategorySkeleton from "./CategorySkeleton";
 import SearchSuggestionSkeleton from "../Searchsuggestionskeleton ";
 
+
 type LocationSuggestion = {
   key: string;
   uri: string;
@@ -163,8 +164,7 @@ const FilterModal: React.FC<CaravanFilterProps> = ({
   // const searchParams = useSearchParams();
   const RADIUS_OPTIONS = [50, 100, 250, 500, 1000] as const;
   const [radiusKms, setRadiusKms] = useState<number>(RADIUS_OPTIONS[0]);
-  const [categoryOpen, setCategoryOpen] = useState(false);
-  const [categories, setCategories] = useState<Option[]>([]);
+   const [categories, setCategories] = useState<Option[]>([]);
   const [visibleCount, setVisibleCount] = useState(10);
   const [modelCounts, setModelCounts] = useState<ModelCount[]>([]);
   const [isCategoryCountLoading, setIsCategoryCountLoading] = useState(true);
@@ -176,27 +176,22 @@ const FilterModal: React.FC<CaravanFilterProps> = ({
   const [makes, setMakes] = useState<Make[]>([]);
   const [model, setModel] = useState<Model[]>([]);
   const [states, setStates] = useState<StateOption[]>([]);
-  const [makeOpen, setMakeOpen] = useState(false);
-  const [modelOpen, setModelOpen] = useState(false);
+   const [modelOpen, setModelOpen] = useState(false);
   // const [filteredRegions, setFilteredRegions] = useState<Region[]>([]);
   const [filteredSuburbs, setFilteredSuburbs] = useState<Suburb[]>([]);
   const [filters, setFilters] = useState<Filters>({});
-  const [conditionOpen, setConditionOpen] = useState(false);
-  const [yearOpen, setYearOpen] = useState(false);
-  const [isSleepModalOpen, setIsSleepModalOpen] = useState(false);
-  const [tempSleepFrom, setTempSleepFrom] = useState<number | null>(null);
+    const [tempSleepFrom, setTempSleepFrom] = useState<number | null>(null);
   const [tempSleepTo, setTempSleepTo] = useState<number | null>(null);
-  const [isLengthModalOpen, setIsLengthModalOpen] = useState(false);
-  const [tempLengthFrom, setTempLengthFrom] = useState<number | null>(null);
+   const [tempLengthFrom, setTempLengthFrom] = useState<number | null>(null);
   const [tempLengthTo, setTempLengthTo] = useState<number | null>(null);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isKeywordModalOpen, setIsKeywordModalOpen] = useState(false);
-
+// Add this new state at the top with other states
+const [tempRegionNameRaw, setTempRegionNameRaw] = useState<string | null>(null);
   const [locationInput, setLocationInput] = useState("");
   const [makeCounts, setMakeCounts] = useState<MakeCount[]>([]);
-  const [isPriceModalOpen, setIsPriceModalOpen] = useState(false);
-  const [tempPriceFrom, setTempPriceFrom] = useState<number | null>(null);
+   const [tempPriceFrom, setTempPriceFrom] = useState<number | null>(null);
   const [tempPriceTo, setTempPriceTo] = useState<number | null>(null);
 
   const [selectedMake, setSelectedMake] = useState<string | null>(null);
@@ -213,15 +208,13 @@ const FilterModal: React.FC<CaravanFilterProps> = ({
   );
   const [categoryCounts, setCategoryCounts] = useState<CategoryCount[]>([]);
   // ATM modal states
-  const [isATMModalOpen, setIsATMModalOpen] = useState(false);
-
+ 
   const [tempAtmFrom, setTempAtmFrom] = useState<number | null>(null);
   const [tempAtmTo, setTempAtmTo] = useState<number | null>(null);
   const [tempCondition, setTempCondition] = useState<string | null>(null);
   // top (other states kula)
   const [modalKeyword, setModalKeyword] = useState("");
-  const [showAllModels, setShowAllModels] = useState(false);
-  const hasCategoryBeenSetRef = useRef(false);
+   const hasCategoryBeenSetRef = useRef(false);
   const categoryApiCalledRef = useRef(false);
 
   const prevSuburbsKeyRef = useRef<string>("");
@@ -248,8 +241,7 @@ const FilterModal: React.FC<CaravanFilterProps> = ({
   const [stateLocationOpen, setStateLocationOpen] = useState(false);
   const [stateSuburbOpen, setStateSuburbOpen] = useState(true);
 
-  const [selectedState, setSelectedState] = useState<string | null>(null);
-  const [selectedStateName, setSelectedStateName] = useState<string | null>(
+   const [selectedStateName, setSelectedStateName] = useState<string | null>(
     null,
   );
   const [selectedRegionName, setSelectedRegionName] = useState<string | null>(
@@ -266,8 +258,7 @@ const FilterModal: React.FC<CaravanFilterProps> = ({
   const [keywordSuggestions, setKeywordSuggestions] = useState<KeywordItem[]>(
     [],
   );
-  const [isModalMakeOpen, setIsModalMakeOpen] = useState(false);
-  const [isYearModalOpen, setIsYearModalOpen] = useState(false);
+ 
   const [tempYear, setTempYear] = useState<number | null>(null);
 
   const [isMakeModalOpen, setIsMakeModalOpen] = useState(false);
@@ -276,9 +267,7 @@ const FilterModal: React.FC<CaravanFilterProps> = ({
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const categoryRef = useRef<HTMLDivElement>(null);
 
-  const [categorySearch, setCategorySearch] = useState("");
-  const autoCloseTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const [baseKeywords, setBaseKeywords] = useState<KeywordItem[]>([]);
+   const [baseKeywords, setBaseKeywords] = useState<KeywordItem[]>([]);
   const [keywordLoading, setKeywordLoading] = useState(false);
   const [baseLoading, setBaseLoading] = useState(false);
   const pickedSourceRef = useRef<"base" | "typed" | null>(null);
@@ -287,8 +276,7 @@ const FilterModal: React.FC<CaravanFilterProps> = ({
   const [lengthFrom, setLengthFrom] = useState<number | null>(null);
   const [lengthTo, setLengthTo] = useState<number | null>(null);
 
-  const conditionDatas = ["New", "Used"];
-  const [minPrice, setMinPrice] = useState<number | null>(null);
+   const [minPrice, setMinPrice] = useState<number | null>(null);
   const [maxPrice, setMaxPrice] = useState<number | null>(null);
 
   const filtersInitialized = useRef(false);
@@ -421,13 +409,13 @@ const FilterModal: React.FC<CaravanFilterProps> = ({
 
   const isSearching = searchText.trim().length > 0;
 
-  const filteredMakes = useMemo(() => {
-    if (!searchMake) return makeCounts;
+  // const filteredMakes = useMemo(() => {
+  //   if (!searchMake) return makeCounts;
 
-    return makeCounts.filter((m) =>
-      m.name.toLowerCase().includes(searchMake.toLowerCase()),
-    );
-  }, [makeCounts, searchMake]);
+  //   return makeCounts.filter((m) =>
+  //     m.name.toLowerCase().includes(searchMake.toLowerCase()),
+  //   );
+  // }, [makeCounts, searchMake]);
 
   const triggerGlobalLoaders = () => {
     flushSync(() => {
@@ -1262,7 +1250,7 @@ const FilterModal: React.FC<CaravanFilterProps> = ({
       model: tempModel || undefined,
       condition: tempCondition || undefined,
       state: suburbFilters.state || tempStateName?.toLowerCase() || undefined,
-      region: suburbFilters.region || tempRegionName || undefined,
+      region: suburbFilters.region || tempRegionName || tempRegionNameRaw  || undefined,
       suburb: suburbFilters.suburb || undefined,
       pincode: suburbFilters.pincode || undefined,
       radius_kms: suburbFilters.radius_kms || undefined,
@@ -1692,6 +1680,19 @@ const FilterModal: React.FC<CaravanFilterProps> = ({
       (r) =>
         r.name.toLowerCase() === (currentFilters.region || "").toLowerCase(),
     );
+      if (matchedRegion) {
+    // ✅ dropdown-ல் இருக்கு → normal set
+    setTempRegionName(matchedRegion.name);
+    setTempRegionNameRaw(null);
+  } else if (currentFilters.region) {
+    // ✅ dropdown-ல் இல்ல ஆனா URL-ல் இருக்கு → raw-ஆ set
+    setTempRegionName(null);
+    setTempRegionNameRaw(currentFilters.region);
+  } else {
+    setTempRegionName(null);
+    setTempRegionNameRaw(null);
+  }
+
     setTempRegionName(matchedRegion?.name || null);
     setTempCondition(currentFilters.condition || null);
     setTempCategory(currentFilters.category || null);
@@ -1845,7 +1846,8 @@ const FilterModal: React.FC<CaravanFilterProps> = ({
     if (tempModel) tempFilters.model = tempModel;
     if (tempCondition) tempFilters.condition = tempCondition;
     if (tempStateName) tempFilters.state = tempStateName.toLowerCase();
-    if (tempRegionName) tempFilters.region = tempRegionName;
+if (tempRegionName) tempFilters.region = tempRegionName;
+else if (tempRegionNameRaw) tempFilters.region = tempRegionNameRaw;
     if (selectedSuggestion) {
       const uriParts = selectedSuggestion.uri.split("/");
 
@@ -2123,27 +2125,36 @@ if (modalKeyword.trim().length < 2) {
                       <div className="col-lg-6">
                         <div className="location-item">
                           <label>Region</label>
-                          <select
-                            className="cfs-select-input form-select"
-                            value={tempRegionName || ""}
-                            onChange={(e) => {
-                              // ✅ temp-ல மட்டும் store பண்ணு, API call இல்ல
-                              setTempRegionName(e.target.value || null);
-                            }}
-                          >
-                            <option value="">Any</option>
-                            {(
-                              states.find(
-                                (s) =>
-                                  s.name.toLowerCase() ===
-                                  tempStateName?.toLowerCase(),
-                              )?.regions || []
-                            ).map((region, idx) => (
-                              <option key={idx} value={region.name}>
-                                {region.name}
-                              </option>
-                            ))}
-                          </select>
+                         <select
+  className="cfs-select-input form-select"
+  value={tempRegionName || tempRegionNameRaw || ""}
+  onChange={(e) => {
+    setTempRegionName(e.target.value || null);
+    setTempRegionNameRaw(null); // user manually changed, raw clear பண்ணு
+  }}
+>
+  <option value="">Any</option>
+
+  {/* ✅ dropdown-ல் இல்லாத suburb-derived region-ஐ dynamic-ஆ add பண்ணு */}
+  {tempRegionNameRaw &&
+    !(states
+      .find((s) => s.name.toLowerCase() === tempStateName?.toLowerCase())
+      ?.regions || []
+    ).some((r) => r.name.toLowerCase() === tempRegionNameRaw.toLowerCase()) && (
+      <option value={tempRegionNameRaw}>{tempRegionNameRaw}</option>
+    )}
+
+  {(
+    states.find(
+      (s) => s.name.toLowerCase() === tempStateName?.toLowerCase()
+    )?.regions || []
+  ).map((region, idx) => (
+    <option key={idx} value={region.name}>
+      {region.name}
+    </option>
+  ))}
+</select>
+
                         </div>
                       </div>
                     )}
@@ -2279,12 +2290,19 @@ if (modalKeyword.trim().length < 2) {
                                   regionName,
                                   states,
                                 );
-                                const canonicalRegionName =
-                                  validRegion || regionName;
+                                
+const canonicalRegionName = getValidRegionName(canonicalStateName, regionName, states);
 
                                 setTempStateName(canonicalStateName || null);
-                                setTempRegionName(canonicalRegionName || null);
-                              }}
+if (canonicalRegionName) {
+  // ✅ Region exists in dropdown → show it selected
+  setTempRegionName(canonicalRegionName);
+  setTempRegionNameRaw(null);
+} else {
+  // ✅ Region NOT in dropdown → store raw for API use only, don't show in select
+  setTempRegionName(null);
+  setTempRegionNameRaw(regionName || null);
+}                              }}
                             >
                               {item.address}
                             </li>
@@ -2852,11 +2870,13 @@ if (modalKeyword.trim().length < 2) {
                 setTempLengthTo(null);
                 setTempStateName(null);
                 setTempRegionName(null);
+                setTempRegionNameRaw(null);
                 setModalInput("");
                 setLocationInput("");
                 setSelectedSuggestion(null);
                 setModalKeyword("");
                 suburbClickedRef.current = false;
+                
 
                 // ✅ Parent-ல் உள்ள resetAllFilters call பண்ணு
                 if (onClearAll) onClearAll();
