@@ -9,6 +9,7 @@ import "swiper/css/navigation";
 import CategorySkeleton from "./CategorySkeleton";
 import { buildSlugFromFilters } from "../slugBuilter";
 import { useRouter } from "next/navigation";
+import { fetchLocations } from "@/api/location/api";
 
 interface CategoryCount {
   name: string;
@@ -65,6 +66,13 @@ interface FilterSliderProps {
   onPriceSelect?: (from: number | null, to: number | null) => void;
   onAtmSelect?: (min: number | null, max: number | null) => void;
 }
+
+type LocationSuggestion = {
+  key: string;
+  uri: string;
+  address: string;
+  short_address: string;
+};
 
 // ── FilterModal-போல் buildCountParams helper ──
 const buildMakeCountParams = (filters: Filters): URLSearchParams => {
@@ -585,6 +593,50 @@ const FilterSlider = ({
     "AUSTRALIAN CAPITAL TERRITORY": "ACT",
   };
 
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [modalInput, setModalInput] = useState("");
+  const [locationSuggestions, setLocationSuggestions] = useState<
+    LocationSuggestion[]
+  >([]);
+  const [selectedSuggestion, setSelectedSuggestion] =
+    useState<LocationSuggestion | null>(null);
+  const RADIUS_OPTIONS = [50, 100, 250, 500, 1000] as const;
+  const [radiusKms, setRadiusKms] = useState<number>(RADIUS_OPTIONS[0]);
+  const isUserTypingRef = useRef(false);
+  const suburbClickedRef = useRef(false);
+  const [locationInput, setLocationInput] = useState("");
+  const [tempStateName, setTempStateName] = useState<string | null>(null);
+  const [tempRegionName, setTempRegionName] = useState<string | null>(null);
+  const formatLocationInput = (s: string) =>
+    s
+      .replace(/_/g, " ") // underscores -> space
+      .replace(/\s*-\s*/g, "  ") // hyphen (with any spaces) -> double space
+      .replace(/\s{3,}/g, "  ") // collapse 3+ spaces -> 2
+      .trim()
+      .replace(/\b\w/g, (char) => char.toUpperCase());
+  const getValidRegionName = (
+    stateName: string | null | undefined,
+    regionName: string | null | undefined,
+    allStates: StateOption[],
+  ): string | undefined => {
+    if (!stateName || !regionName) return undefined;
+    const st = allStates.find(
+      (s) =>
+        s.name.toLowerCase() === stateName.toLowerCase() ||
+        s.value.toLowerCase() === stateName.toLowerCase(),
+    );
+    if (!st?.regions?.length) return undefined;
+    const reg = st.regions.find(
+      (r) =>
+        r.name.toLowerCase() === regionName.toLowerCase() ||
+        r.value.toLowerCase() === regionName.toLowerCase(),
+    );
+    return reg?.name; // return canonical name if valid, else undefined
+  };
+  const formatted = (s: string) =>
+    s
+      .replace(/ - /g, "  ") // replace hyphen separators with double spaces
+      .replace(/\s+/g, " ");
   return (
     <>
       <div className="filter-row">
@@ -771,23 +823,204 @@ const FilterSlider = ({
         <div className="filter-overlay">
           <div className="filter-modal">
             <div className="filter-header">
-              <h3>Suburb</h3>
+              <h3>
+                Suburb: {toTitleCase(currentFilters.suburb ?? "")}
+                {currentFilters.state && (
+                  <>
+                    ,{" "}
+                    {AUS_ABBR[currentFilters.state.toUpperCase()] ??
+                      currentFilters.state.toUpperCase()}
+                  </>
+                )}
+                {currentFilters.pincode && <> {currentFilters.pincode}</>}
+              </h3>
               {closeBtn}
             </div>
             <div className="filter-body">
-              <p>
-                <strong>
-                  suburb: {toTitleCase(currentFilters.suburb ?? "")}
-                  {currentFilters.state && (
-                    <>
-                      ,{" "}
-                      {AUS_ABBR[currentFilters.state.toUpperCase()] ??
-                        currentFilters.state.toUpperCase()}
-                    </>
+              <div className="search-box">
+                <div className="secrch_icon" style={{ position: "relative" }}>
+                  <div
+                    style={{
+                      position: "relative",
+                      display: "flex",
+                      alignItems: "center",
+                    }}
+                  >
+                    <i
+                      className="bi bi-search search-icon "
+                      style={{
+                        position: "absolute",
+                        left: 10,
+                        zIndex: 1,
+                        pointerEvents: "none",
+                      }}
+                    ></i>
+                    <input
+                      type="text"
+                      //placeholder="Suburb or postcode..."
+                      className="filter-dropdown cfs-select-input"
+                      autoComplete="off"
+                      placeholder="Search suburb, postcode, state, region"
+                      value={formatted(modalInput)} // 👈 modalInput} // 👈 use modalInput
+                      onFocus={() => setShowSuggestions(true)}
+                      onChange={(e) => {
+                        // isUserTypingRef.current = true;
+                        setShowSuggestions(true);
+
+                        const rawValue = e.target.value;
+                        // Format for filtering suggestions only
+                        setModalInput(rawValue); // 👈 Store raw value
+                        // const formattedValue = formatLocationInput(modalInput);
+                        const formattedValue = /^\d+$/.test(rawValue)
+                          ? rawValue // if user types only numbers, don’t format
+                          : formatLocationInput(rawValue);
+
+                        // Use the existing locationSuggestions state or fetch new data
+                        // Since you're already fetching locations in useEffect, you can filter the existing suggestions
+                        // OR trigger the same API call logic here
+                        if (formattedValue.length < 1) {
+                          setLocationSuggestions([]);
+                          return;
+                        }
+
+                        // Use the same API call logic as in your useEffect
+                        const suburb = formattedValue.split(" ")[0];
+                        fetchLocations(suburb)
+                          .then((data) => {
+                            // Filter the API results based on the formatted input
+                            const filtered = data.filter((item) => {
+                              const searchValue = formattedValue.toLowerCase();
+                              return (
+                                item.short_address
+                                  .toLowerCase()
+                                  .includes(searchValue) ||
+                                item.address
+                                  .toLowerCase()
+                                  .includes(searchValue) ||
+                                (item.postcode &&
+                                  item.postcode
+                                    .toString()
+                                    .includes(searchValue)) // ✅ added
+                              );
+                            });
+                            setLocationSuggestions(filtered);
+                          })
+                          .catch(console.error);
+                      }}
+                      onBlur={() =>
+                        setTimeout(() => setShowSuggestions(false), 150)
+                      }
+                    />
+                  </div>
+                  {showSuggestions && locationSuggestions.length > 0 && (
+                    <ul className="location-suggestions">
+                      {locationSuggestions.map((item, i) => {
+                        const isSelected =
+                          selectedSuggestion?.short_address ===
+                          item.short_address;
+                        return (
+                          <li
+                            key={i}
+                            className={`suggestion-item ${
+                              isSelected ? "selected" : ""
+                            }`}
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+
+                              isUserTypingRef.current = false;
+                              setSelectedSuggestion(item);
+                              setLocationInput(item.short_address);
+                              setModalInput(item.short_address);
+                              setLocationSuggestions([]);
+                              setShowSuggestions(false);
+                              suburbClickedRef.current = true;
+
+                              // ✅ Old code URI format: state/region/suburb/pincode
+                              const uriParts = item.uri.split("/");
+                              const stateSlug = uriParts[0] || ""; // ← state first
+                              const regionSlug = uriParts[1] || ""; // ← region second
+                              const suburbSlug = uriParts[2] || ""; // ← suburb third
+
+                              const stateName = stateSlug
+                                .replace(/-state$/, "")
+                                .replace(/-/g, " ")
+                                .trim();
+                              const regionName = regionSlug
+                                .replace(/-region$/, "")
+                                .replace(/-/g, " ")
+                                .trim();
+
+                              const matchedState = states.find(
+                                (s) =>
+                                  s.name.toLowerCase() ===
+                                  stateName.toLowerCase(),
+                              );
+                              const canonicalStateName =
+                                matchedState?.name || stateName;
+
+                              const validRegion = getValidRegionName(
+                                stateName,
+                                regionName,
+                                states,
+                              );
+                              const canonicalRegionName =
+                                validRegion || regionName;
+
+                              setTempStateName(canonicalStateName || null);
+                              setTempRegionName(canonicalRegionName || null);
+                            }}
+                          >
+                            {item.address}
+                          </li>
+                        );
+                      })}
+                    </ul>
                   )}
-                  {currentFilters.pincode && <> {currentFilters.pincode}</>}
-                </strong>
-              </p>
+
+                  {selectedSuggestion &&
+                    modalInput === selectedSuggestion.short_address && (
+                      <div style={{ marginTop: 12 }}>
+                        <div style={{ fontWeight: 600, marginBottom: 8 }}>
+                          {selectedSuggestion.address}{" "}
+                          {selectedSuggestion.uri.split("/").length >= 3 && (
+                            <span>+{radiusKms}km</span>
+                          )}
+                        </div>
+                        {selectedSuggestion.uri.split("/").length >= 3 && (
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 12,
+                            }}
+                          >
+                            <input
+                              type="range"
+                              min={0}
+                              max={RADIUS_OPTIONS.length - 1}
+                              step={1}
+                              value={Math.max(
+                                0,
+                                RADIUS_OPTIONS.indexOf(
+                                  radiusKms as (typeof RADIUS_OPTIONS)[number],
+                                ),
+                              )}
+                              onChange={(e) => {
+                                const idx = parseInt(e.target.value, 10);
+                                setRadiusKms(RADIUS_OPTIONS[idx]);
+                              }}
+                              style={{ flex: 1 }}
+                              aria-label="Search radius in kilometers"
+                            />
+                            <div style={{ minWidth: 60, textAlign: "right" }}>
+                              +{radiusKms}km
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                </div>
+              </div>
             </div>
             <div className="filter-footer">
               <button
