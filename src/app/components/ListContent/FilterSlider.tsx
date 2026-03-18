@@ -9,7 +9,16 @@ import "swiper/css/navigation";
 import CategorySkeleton from "./CategorySkeleton";
 import { buildSlugFromFilters } from "../slugBuilter";
 import { useRouter } from "next/navigation";
+import { fetchLocations } from "@/api/location/api";
 
+
+type LocationSuggestion = {
+  key: string;
+  uri: string;
+  address: string;
+  short_address: string;
+  postcode?: string | number;
+};
 interface CategoryCount {
   name: string;
   slug: string;
@@ -116,6 +125,12 @@ const FilterSlider = ({
 }: FilterSliderProps) => {
   const [states, setStates] = useState<StateOption[]>(propStateOptions);
   const router = useRouter();
+const RADIUS_OPTIONS = [50, 100, 250, 500, 1000] as const;
+const [tempSuburbRadius, setTempSuburbRadius] = useState<number>(RADIUS_OPTIONS[0]);
+const [tempSuburbSuggestion, setTempSuburbSuggestion] = useState<LocationSuggestion | null>(null);
+const [tempSuburbInput, setTempSuburbInput] = useState("");
+const [suburbLocationSuggestions, setSuburbLocationSuggestions] = useState<LocationSuggestion[]>([]);
+const [showSuburbSuggestions, setShowSuburbSuggestions] = useState(false);
 
   useEffect(() => {
     if (propStateOptions.length > 0) {
@@ -451,9 +466,60 @@ const FilterSlider = ({
 
     setOpenModal(null);
   };
-  const handleLocationSuburbOpen = () => {
-    setOpenModal("suburb");
-  };
+ const handleLocationSuburbOpen = () => {
+  setTempSuburbInput(
+    currentFilters.suburb
+      ? [
+          toTitleCase(currentFilters.suburb),
+          AUS_ABBR[currentFilters.state?.toUpperCase() ?? ""] ??
+            currentFilters.state?.toUpperCase() ?? "",
+          currentFilters.pincode,
+        ]
+          .filter(Boolean)
+          .join(" ")
+      : "",
+  );
+  setTempSuburbSuggestion(null);
+  setSuburbLocationSuggestions([]);
+  setShowSuburbSuggestions(false);
+  setTempSuburbRadius(
+    typeof currentFilters.radius_kms === "number"
+      ? currentFilters.radius_kms
+      : RADIUS_OPTIONS[0],
+  );
+  setOpenModal("suburb");
+};
+
+const formatLocationInput = (s: string) =>
+  s
+    .replace(/_/g, " ")
+    .replace(/\s*-\s*/g, "  ")
+    .replace(/\s{3,}/g, "  ")
+    .trim()
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+
+const formatted = (s: string) =>
+  s.replace(/ - /g, "  ").replace(/\s+/g, " ");
+
+const getValidRegionName = (
+  stateName: string | null | undefined,
+  regionName: string | null | undefined,
+  allStates: StateOption[],
+): string | undefined => {
+  if (!stateName || !regionName) return undefined;
+  const st = allStates.find(
+    (s) =>
+      s.name.toLowerCase() === stateName.toLowerCase() ||
+      s.value.toLowerCase() === stateName.toLowerCase(),
+  );
+  if (!st?.regions?.length) return undefined;
+  const reg = st.regions.find(
+    (r) =>
+      r.name.toLowerCase() === regionName.toLowerCase() ||
+      r.value.toLowerCase() === regionName.toLowerCase(),
+  );
+  return reg?.name;
+};
   const handleLocationOpen = () => {
     const f = getEffectiveFilters();
     const matchedState = states.find(
@@ -767,46 +833,216 @@ const FilterSlider = ({
           </Swiper>
         </div>
       </div>
-      {openModal === "suburb" && (
-        <div className="filter-overlay">
-          <div className="filter-modal">
-            <div className="filter-header">
-              <h3>Suburb</h3>
-              {closeBtn}
-            </div>
-            <div className="filter-body">
-              <p>
-                <strong>
-                  suburb: {toTitleCase(currentFilters.suburb ?? "")}
-                  {currentFilters.state && (
-                    <>
-                      ,{" "}
-                      {AUS_ABBR[currentFilters.state.toUpperCase()] ??
-                        currentFilters.state.toUpperCase()}
-                    </>
-                  )}
-                  {currentFilters.pincode && <> {currentFilters.pincode}</>}
-                </strong>
-              </p>
-            </div>
-            <div className="filter-footer">
-              <button
-                className="clear"
-                onClick={() => {
-                  updateFiltersAndURL({
-                    suburb: undefined,
-                    pincode: undefined,
-                    radius_kms: undefined,
-                  });
-                  setOpenModal(null);
-                }}
-              >
-                Clear filters
-              </button>
+   {openModal === "suburb" && (
+  <div className="filter-overlay">
+    <div className="filter-modal">
+      <div className="filter-header">
+           {!tempSuburbSuggestion && currentFilters.suburb && (
+                <div style={{ marginTop: 12 }}>
+                  <p style={{ margin: 0 }}>
+                    <strong>
+                      Suburb:  {" "}
+                      {toTitleCase(currentFilters.suburb)}
+                      {currentFilters.state && (
+                        <>
+                          ,{" "}
+                          {AUS_ABBR[currentFilters.state.toUpperCase()] ??
+                            currentFilters.state.toUpperCase()}
+                        </>
+                      )}
+                      {currentFilters.pincode && <> {currentFilters.pincode}</>}
+                    </strong>
+                  </p>
+                </div>
+              )}
+        {closeBtn}
+      </div>
+      <div className="filter-body">
+        <div className="filter-item search-filter">
+          <div className="search-box">
+            <div className="secrch_icon" style={{ position: "relative" }}>
+              <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+                <i
+                  className="bi bi-search search-icon"
+                  style={{ position: "absolute", left: 10, zIndex: 1, pointerEvents: "none" }}
+                ></i>
+                <input
+                  type="text"
+                  className="filter-dropdown cfs-select-input"
+                  autoComplete="off"
+                  placeholder="Search suburb, postcode, state, region"
+                  value={formatted(tempSuburbInput)}
+                  onFocus={() => setShowSuburbSuggestions(true)}
+                  onChange={(e) => {
+                    setShowSuburbSuggestions(true);
+                    const rawValue = e.target.value;
+                    setTempSuburbInput(rawValue);
+
+                    const formattedValue = /^\d+$/.test(rawValue)
+                      ? rawValue
+                      : formatLocationInput(rawValue);
+
+                    if (formattedValue.length < 1) {
+                      setSuburbLocationSuggestions([]);
+                      return;
+                    }
+
+                    const suburb = formattedValue.split(" ")[0];
+                    fetchLocations(suburb)
+                      .then((data) => {
+                        const filtered = data.filter((item) => {
+                          const searchValue = formattedValue.toLowerCase();
+                          return (
+                            item.short_address.toLowerCase().includes(searchValue) ||
+                            item.address.toLowerCase().includes(searchValue) ||
+                            (item.postcode &&
+                              item.postcode.toString().includes(searchValue))
+                          );
+                        });
+                        setSuburbLocationSuggestions(filtered);
+                      })
+                      .catch(console.error);
+                  }}
+                  onBlur={() => setTimeout(() => setShowSuburbSuggestions(false), 150)}
+                />
+              </div>
+
+              {showSuburbSuggestions && suburbLocationSuggestions.length > 0 && (
+                <ul className="location-suggestions">
+                  {suburbLocationSuggestions.map((item, i) => {
+                    const isSelected =
+                      tempSuburbSuggestion?.short_address === item.short_address;
+                    return (
+                      <li
+                        key={i}
+                        className={`suggestion-item ${isSelected ? "selected" : ""}`}
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          setTempSuburbSuggestion(item);
+                          setTempSuburbInput(item.short_address);
+                          setSuburbLocationSuggestions([]);
+                          setShowSuburbSuggestions(false);
+                        }}
+                      >
+                        {item.address}
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+
+              {tempSuburbSuggestion &&
+                tempSuburbInput === tempSuburbSuggestion.short_address && (
+                  <div style={{ marginTop: 12 }}>
+                    <div style={{ fontWeight: 600, marginBottom: 8 }}>
+                      {tempSuburbSuggestion.address}{" "}
+                      {tempSuburbSuggestion.uri.split("/").length >= 3 && (
+                        <span>+{tempSuburbRadius}km</span>
+                      )}
+                    </div>
+                    {tempSuburbSuggestion.uri.split("/").length >= 3 && (
+                      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                        <input
+                          type="range"
+                          min={0}
+                          max={RADIUS_OPTIONS.length - 1}
+                          step={1}
+                          value={Math.max(
+                            0,
+                            RADIUS_OPTIONS.indexOf(
+                              tempSuburbRadius as (typeof RADIUS_OPTIONS)[number],
+                            ),
+                          )}
+                          onChange={(e) => {
+                            const idx = parseInt(e.target.value, 10);
+                            setTempSuburbRadius(RADIUS_OPTIONS[idx]);
+                          }}
+                          style={{ flex: 1 }}
+                          aria-label="Search radius in kilometers"
+                        />
+                        <div style={{ minWidth: 60, textAlign: "right" }}>
+                          +{tempSuburbRadius}km
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+            
             </div>
           </div>
         </div>
-      )}
+      </div>
+      <div className="filter-footer">
+        <button
+          className="clear"
+          onClick={() => {
+            updateFiltersAndURL({
+              suburb: undefined,
+              pincode: undefined,
+              radius_kms: undefined,
+            });
+            setTempSuburbInput("");
+            setTempSuburbSuggestion(null);
+            setOpenModal(null);
+          }}
+          style={{
+            opacity: currentFilters.suburb || tempSuburbSuggestion ? 1 : 0.4,
+            cursor: currentFilters.suburb || tempSuburbSuggestion ? "pointer" : "not-allowed",
+          }}
+        >
+          Clear filters
+        </button>
+        <button
+          className={`search ${tempSuburbSuggestion ? "active" : ""}`}
+          onClick={() => {
+            if (!tempSuburbSuggestion) {
+              setOpenModal(null);
+              return;
+            }
+
+            triggerGlobalLoaders();
+
+            const uriParts = tempSuburbSuggestion.uri.split("/");
+            const stateSlug = uriParts[0] || "";
+            const regionSlug = uriParts[1] || "";
+            const suburbSlug = uriParts[2] || "";
+            let pincode = uriParts[3] || "";
+
+            const state = stateSlug.replace(/-state$/, "").replace(/-/g, " ").trim();
+            const region = regionSlug.replace(/-region$/, "").replace(/-/g, " ").trim();
+            const suburb = suburbSlug.replace(/-suburb$/, "").replace(/-/g, " ").trim();
+
+            if (!/^\d{4}$/.test(pincode)) {
+              const m = tempSuburbSuggestion.address.match(/\b\d{4}\b/);
+              if (m) pincode = m[0];
+            }
+
+            const validRegion = getValidRegionName(state, region, states);
+
+            const newFilters = {
+              ...currentFilters,
+              suburb: suburb.toLowerCase(),
+              pincode: pincode || undefined,
+              state: state,
+              region: validRegion || region,
+              radius_kms: tempSuburbRadius,
+              page: 1,
+            };
+
+            const slugPath = buildSlugFromFilters(newFilters);
+            const safeSlug = slugPath.endsWith("/") ? slugPath : `${slugPath}/`;
+            router.push(safeSlug);
+            setOpenModal(null);
+          }}
+        >
+          Search
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
       {/* Caravan Type Modal */}
       {openModal === "type" && (
         <div className="filter-overlay">
