@@ -11,7 +11,7 @@ import Image from "next/image";
 import { useEffect, useState, useRef } from "react";
 import { createProductEnquiry } from "@/api/enquiry/api";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
+// import Link from "next/link";
 
 type CaravanDetailModalProps = {
   isOpen: boolean;

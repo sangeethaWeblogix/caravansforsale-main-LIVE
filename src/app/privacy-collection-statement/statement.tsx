@@ -18,7 +18,7 @@ export default function PrivacyCollectionStatement() {
 
               <p>
                 Marketplace Network Pty Ltd (ABN 70 694 987 052)
-                ("Marketplace Network", "we", "us", or "our")
+                (&quot;Marketplace Network&quot;, &quot;we&quot;, &quot;us&quot;, or &quot;our&quot;)
                 collects personal information when you interact with websites
                 operated by Marketplace Network Pty Ltd.
               </p>

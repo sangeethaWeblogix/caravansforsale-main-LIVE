@@ -13,7 +13,7 @@ export default function PrivacyPolicy() {
               <p><strong>Last Updated:</strong> 2026</p>
 
               <p>
-                Marketplace Network Pty Ltd (ABN 70 694 987 052) ("Marketplace Network", "we", "us", or "our")
+                Marketplace Network Pty Ltd (ABN 70 694 987 052) (&ldquo;Marketplace Network&rdquo;, &ldquo;we&rdquo;, &ldquo;us&rdquo;, or &ldquo;our&rdquo;)
                 respects your privacy and is committed to protecting your personal information.
               </p>
 
