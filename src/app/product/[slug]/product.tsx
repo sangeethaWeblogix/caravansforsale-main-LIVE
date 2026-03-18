@@ -494,6 +494,10 @@ export default function ClientLogger({
       "https://admin.caravansforsale.com.au/wp-json/cfs/v1/update-clicks",
       Number(productDetails.id),
     );
+    postTrackEvent(
+      "https://admin.caravansforsale.com.au/wp-json/cfs/v1/update-impressions",
+      Number(productDetails.id),
+    );
   }, [productDetails?.id]);
 
   // ✅ Add these states after allSubs state
