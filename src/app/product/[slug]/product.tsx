@@ -1,4 +1,4 @@
-"use client";
+ "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -492,6 +492,10 @@ export default function ClientLogger({
 
     postTrackEvent(
       "https://admin.caravansforsale.com.au/wp-json/cfs/v1/update-clicks",
+      Number(productDetails.id),
+    );
+    postTrackEvent(
+      "https://admin.caravansforsale.com.au/wp-json/cfs/v1/update-impressions",
       Number(productDetails.id),
     );
   }, [productDetails?.id]);
@@ -1115,6 +1119,7 @@ export default function ClientLogger({
         <div className="container">
           <div className="news-title">
             <div className="tpof_tab">
+              
               <h3>Latest News, Reviews & Advice</h3>
             </div>
           </div>
