@@ -155,7 +155,7 @@ export const filterOptions = {
         region: [
           {
             name: "Moreton Bay North",
-            slug: " /moreton-bay-north-region/",
+            slug: "/moreton-bay-north-region/",
           },
           { name: "Wide Bay", slug: "/wide-bay-region/" },
           { name: "Gold Coast", slug: "/gold-coast-region/" },

@@ -411,7 +411,8 @@ function getNearestSleepLink(filters: Filters): { name: string; slug: string } |
    filters: Filters,
  ): Record<string, { name: string; slug: string }[]> {
    const links: Record<string, { name: string; slug: string }[]> = {};
- 
+   console.log("[buildStaticLinks] filters =", JSON.stringify(filters));
+
    const hasState = Boolean(filters.state);
    const hasRegion = Boolean(filters.region);
    const hasSuburb = Boolean(filters.suburb);
@@ -513,7 +514,7 @@ function getNearestSleepLink(filters: Filters): { name: string; slug: string } |
        slug: `/${filters.state!.toLowerCase()}-state/${filters.region!.toLowerCase()}-region/${filters.suburb!.toLowerCase()}-${filters.pincode}-suburb/`,
      }];
    } else if (hasRegion && hasState) {
-     const stateEntry = filterOptions.location.state.find(
+     const stateEntry = filterOptions?.location?.state.find(
        (s) => s.name.toLowerCase() === filters.state?.toLowerCase(),
      );
      if (stateEntry) {
@@ -534,7 +535,7 @@ function getNearestSleepLink(filters: Filters): { name: string; slug: string } |
        }];
      }
    } else if (hasState) {
-     const stateEntry = filterOptions.location.state.find(
+     const stateEntry = filterOptions?.location?.state.find(
        (s) => s.name.toLowerCase() === filters.state?.toLowerCase(),
      );
      if (stateEntry) {
