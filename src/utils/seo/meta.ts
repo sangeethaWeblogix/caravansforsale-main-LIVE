@@ -257,15 +257,31 @@ export async function metaFromSlug(
   const BASE_URL = "https://www.caravansforsale.com.au";
 
   const parsed = parseSlugToFilters(filters, searchParams);
+  
+  const slugPath = filters.length > 0 ? filters.join("/") : "";
+  const canonicalUrl = `${BASE_URL}/listings/${slugPath ? slugPath + "/" : ""}`;
+  const robotsResult = getRobotsFromFilters(parsed, filters, BASE_URL);
+  const canonical = robotsResult.overrideCanonical ?? canonicalUrl;
 
-  const page = parsed.page ? Number(parsed.page) : 1;
-  const finalFilters = { ...parsed, page };
+  // ── fetchListings — error வந்தாலும் robots return பண்ணு ──
+  let res: any = null;
+  try {
+    const page = parsed.page ? Number(parsed.page) : 1;
+    const finalFilters = { ...parsed, page };
+    res = await fetchListings(finalFilters);
+  } catch (e) {
+    console.error("❌ fetchListings error in metaFromSlug:", e);
+    // API fail ஆனாலும் robots tag கண்டிப்பா return ஆகும்
+    return {
+      title: { absolute: "Caravans for Sale in Australia - Find Exclusive Deals" },
+      robots: { index: robotsResult.index },
+      verification: { google: "6tT6MT6AJgGromLaqvdnyyDQouJXq0VHS-7HC194xEo" },
+      alternates: { canonical, languages: {}, media: {} },
+    };
+  }
 
-  const res = await fetchListings(finalFilters);
-
-  // ─── Build canonical from slug + searchParams ───
-  let canonicalUrl = "";
-
+  // ── suburb canonical fix ──
+  let finalCanonical = canonical;
   if (parsed.suburb) {
     const locationSegments = filters.filter(
       (seg) =>
@@ -273,31 +289,44 @@ export async function metaFromSlug(
         seg.endsWith("-region") ||
         seg.endsWith("-suburb")
     );
-    canonicalUrl = `${BASE_URL}/listings/${locationSegments.join("/")}/`;
-  } else {
-    const slugPath = filters.length > 0 ? filters.join("/") : "";
-    canonicalUrl = `${BASE_URL}/listings/${slugPath ? slugPath + "/" : ""}`;
+    finalCanonical = `${BASE_URL}/listings/${locationSegments.join("/")}/`;
   }
 
+
+  // const page = parsed.page ? Number(parsed.page) : 1;
+  // const finalFilters = { ...parsed, page };
+
+  // const res = await fetchListings(finalFilters);
+
+  // // ─── Build canonical from slug + searchParams ───
+  // let canonicalUrl = "";
+
+  // if (parsed.suburb) {
+  //   const locationSegments = filters.filter(
+  //     (seg) =>
+  //       seg.endsWith("-state") ||
+  //       seg.endsWith("-region") ||
+  //       seg.endsWith("-suburb")
+  //   );
+  //   canonicalUrl = `${BASE_URL}/listings/${locationSegments.join("/")}/`;
+  // } else {
+  //   const slugPath = filters.length > 0 ? filters.join("/") : "";
+  //   canonicalUrl = `${BASE_URL}/listings/${slugPath ? slugPath + "/" : ""}`;
+  // }
+
   // Append searchParams (except page=1)
-  const spEntries = Object.entries(searchParams).filter(([k, v]) => {
+   const spEntries = Object.entries(searchParams).filter(([k, v]) => {
     if (k === "page" && String(v) === "1") return false;
     return true;
   });
-
   if (spEntries.length > 0) {
     const qs = spEntries
       .map(([k, v]) => `${k}=${Array.isArray(v) ? v[0] : v}`)
       .join("&");
-    canonicalUrl += `?${qs}`;
+    finalCanonical += `?${qs}`;
   }
 
-  // ─── Robots + optional canonical override ───
-  const robotsResult = getRobotsFromFilters(parsed, filters, BASE_URL);
-
-  // If robots returned an overrideCanonical (non-allowed single band),
-  // use that as the canonical instead of the current URL.
-  const canonical = robotsResult.overrideCanonical ?? canonicalUrl;
+ 
 
   const rawTitle =
     res?.seo_v2?.meta_title?.trim() ||
@@ -310,15 +339,11 @@ export async function metaFromSlug(
   return {
     title: { absolute: title },
     description,
-    robots,
+    robots: { index: robotsResult.index },
     verification: {
       google: "6tT6MT6AJgGromLaqvdnyyDQouJXq0VHS-7HC194xEo",
     },
-    alternates: {
-      canonical,
-      languages: {},
-      media: {},
-    },
+    alternates: { canonical: finalCanonical, languages: {}, media: {} },
     openGraph: { title, description, url: canonical },
     twitter: { title, description },
   };
