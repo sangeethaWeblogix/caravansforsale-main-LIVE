@@ -1666,6 +1666,8 @@ const [tempRegionNameRaw, setTempRegionNameRaw] = useState<string | null>(null);
       keepalive: true,
     }).catch(() => {});
   };
+
+  
   // Modal open ஆகும்போது currentFilters sync பண்ணு
   useEffect(() => {
     // ✅ state case-insensitive match
@@ -1694,7 +1696,7 @@ const [tempRegionNameRaw, setTempRegionNameRaw] = useState<string | null>(null);
   }
 
     setTempRegionName(matchedRegion?.name || null);
-    setTempCondition(currentFilters.condition || null);
+setTempCondition(currentFilters.condition ?? null);
     setTempCategory(currentFilters.category || null);
     setSelectedMakeTemp(currentFilters.make || null);
     setTempModel(currentFilters.model || null);
@@ -1752,7 +1754,9 @@ const [tempRegionNameRaw, setTempRegionNameRaw] = useState<string | null>(null);
     currentFilters.search, // ✅ இது add பண்ணு
     currentFilters.keyword,
   ]);
-
+useEffect(() => {
+  setTempCondition(currentFilters.condition ?? null);
+}, [currentFilters.condition]);
   useEffect(() => {
     const existingKeyword = currentFilters.search
       ? toHumanFromQuery(currentFilters.search)
@@ -2526,8 +2530,8 @@ if (canonicalRegionName) {
                         <input
                           className="checkbox__trigger visuallyhidden"
                           type="checkbox"
-                          checked={tempCondition === "new"}
-                          onChange={() =>
+checked={tempCondition?.toLowerCase() === "new"}      
+                    onChange={() =>
                             setTempCondition(
                               tempCondition === "new" ? null : "new",
                             )
@@ -2557,7 +2561,7 @@ if (canonicalRegionName) {
                         <input
                           className="checkbox__trigger visuallyhidden"
                           type="checkbox"
-                          checked={tempCondition === "used"}
+                         checked={tempCondition?.toLowerCase() === "used"}
                           onChange={() =>
                             setTempCondition(
                               tempCondition === "used" ? null : "used",

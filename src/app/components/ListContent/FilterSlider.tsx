@@ -340,11 +340,38 @@ const [tempRegionRaw, setTempRegionRaw] = useState<string | null>(null);
   const [tempPriceTo, setTempPriceTo] = useState<number | null>(null);
   const [tempAtmFrom, setTempAtmFrom] = useState<number | null>(null);
   const [tempAtmTo, setTempAtmTo] = useState<number | null>(null);
-
+const [tempCondition, setTempCondition] = useState<string | null>(null);
   const [openModal, setOpenModal] = useState<
-    "type" | "location" | "price" | "atm" | "make" | "suburb" | null
+    "type" | "location" | "price" | "atm" | "make" | "suburb" | "condition" | null
   >(null);
 
+
+  // condition handlers
+
+  // ── Condition handlers ──
+const handleConditionOpen = () => {
+  setTempCondition(currentFilters.condition ?? null);
+  setOpenModal("condition");
+};
+
+const handleConditionSearch = () => {
+  triggerGlobalLoaders();
+  const newFilters = {
+    ...currentFilters,
+    condition: tempCondition ?? undefined,
+    page: 1,
+  };
+  const slugPath = buildSlugFromFilters(newFilters);
+  const safeSlug = slugPath.endsWith("/") ? slugPath : `${slugPath}/`;
+  router.push(safeSlug);
+  setOpenModal(null);
+};
+
+const handleConditionClear = () => {
+  setTempCondition(null);
+  updateFiltersAndURL({ condition: undefined });
+  setOpenModal(null);
+};
   // ── Price handlers ──
   const handlePriceOpen = () => {
     const f = getEffectiveFilters();
@@ -759,6 +786,25 @@ const getValidRegionName = (
               " "
             )}
 
+{/* Location SwiperSlide முடிந்த உடனே — suburb slide-க்கு முன்னாடி */}
+<SwiperSlide style={{ width: "auto" }}>
+  <button
+    className={`tag ${currentFilters.condition ? "active" : ""}`}
+    onClick={handleConditionOpen}
+  >
+    {currentFilters.condition ? (
+      <>
+        <small className="selected_label">Condition: </small>
+        {currentFilters.condition === "new" ? "New" : "Used"}
+        <span className="active_filter">
+          <i className="bi bi-circle-fill"></i>
+        </span>
+      </>
+    ) : (
+      "Condition"
+    )}
+  </button>
+</SwiperSlide>
             <SwiperSlide style={{ width: "auto" }}>
               <button
                 className={`tag ${currentFilters.make ? "active" : ""}`}
@@ -1502,6 +1548,99 @@ const getValidRegionName = (
           </div>
         </div>
       )}
+
+      {/* {condition label} */}
+      {/* Condition Modal */}
+{openModal === "condition" && (
+  <div className="filter-overlay">
+    <div className="filter-modal">
+      <div className="filter-header">
+        <h3>Condition</h3>
+        {closeBtn}
+      </div>
+      <div className="filter-body">
+        <div className="filter-item condition-field">
+          <ul className="category-list">
+            <li className="category-item">
+              <label className="category-checkbox-row checkbox">
+                <div className="d-flex align-items-center">
+                  <input
+                    className="checkbox__trigger visuallyhidden"
+                    type="checkbox"
+checked={tempCondition?.toLowerCase() === "new"}    
+                onChange={() =>
+                      setTempCondition(tempCondition === "new" ? null : "new")
+                    }
+                  />
+                  <span className="checkbox__symbol">
+                    <svg
+                      aria-hidden="true"
+                      className="icon-checkbox"
+                      width="28px"
+                      height="28px"
+                      viewBox="0 0 28 28"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path d="M4 14l8 7L24 7"></path>
+                    </svg>
+                  </span>
+                  <span className="category-name">New</span>
+                </div>
+              </label>
+            </li>
+
+            <li className="category-item">
+              <label className="category-checkbox-row checkbox">
+                <div className="d-flex align-items-center">
+                  <input
+                    className="checkbox__trigger visuallyhidden"
+                    type="checkbox"
+checked={tempCondition?.toLowerCase() === "used"}  
+                  onChange={() =>
+                      setTempCondition(tempCondition === "used" ? null : "used")
+                    }
+                  />
+                  <span className="checkbox__symbol">
+                    <svg
+                      aria-hidden="true"
+                      className="icon-checkbox"
+                      width="28px"
+                      height="28px"
+                      viewBox="0 0 28 28"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path d="M4 14l8 7L24 7"></path>
+                    </svg>
+                  </span>
+                  <span className="category-name">Used</span>
+                </div>
+              </label>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div className="filter-footer">
+        <button
+          className="clear"
+          onClick={handleConditionClear}
+          style={{
+            opacity: tempCondition ? 1 : 0.4,
+            cursor: tempCondition ? "pointer" : "not-allowed",
+          }}
+        >
+          Clear filters
+        </button>
+        <button
+          className={`search ${tempCondition ? "active" : ""}`}
+          onClick={handleConditionSearch}
+        >
+          Search
+        </button>
+      </div>
+    </div>
+  </div>
+)}
     </>
   );
 };
