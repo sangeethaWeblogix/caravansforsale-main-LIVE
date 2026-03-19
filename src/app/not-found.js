@@ -75,7 +75,7 @@ export default function NotFoundPage() {
             <ul>
               {states.map((state) => (
                 <li key={state.slug}>
-                  <Link href={`/listings/${state.slug}-state/`}>
+                  <Link href={`/listings/${state.slug}/`}>
                     {state.name}
                   </Link>
                 </li>
