@@ -317,6 +317,7 @@ export async function metaFromSlug(
   // Append searchParams (except page=1)
    const spEntries = Object.entries(searchParams).filter(([k, v]) => {
     if (k === "page" && String(v) === "1") return false;
+     if (k === "shuffle_seed") return false; // ← ADD THIS
     return true;
   });
   if (spEntries.length > 0) {
