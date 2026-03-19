@@ -23,7 +23,6 @@ import { fetchMakeDetails } from "@/api/make-new/api";
 import CategorySkeleton from "./CategorySkeleton";
 import SearchSuggestionSkeleton from "../Searchsuggestionskeleton ";
 
-
 type LocationSuggestion = {
   key: string;
   uri: string;
@@ -164,7 +163,7 @@ const FilterModal: React.FC<CaravanFilterProps> = ({
   // const searchParams = useSearchParams();
   const RADIUS_OPTIONS = [50, 100, 250, 500, 1000] as const;
   const [radiusKms, setRadiusKms] = useState<number>(RADIUS_OPTIONS[0]);
-   const [categories, setCategories] = useState<Option[]>([]);
+  const [categories, setCategories] = useState<Option[]>([]);
   const [visibleCount, setVisibleCount] = useState(10);
   const [modelCounts, setModelCounts] = useState<ModelCount[]>([]);
   const [isCategoryCountLoading, setIsCategoryCountLoading] = useState(true);
@@ -176,22 +175,24 @@ const FilterModal: React.FC<CaravanFilterProps> = ({
   const [makes, setMakes] = useState<Make[]>([]);
   const [model, setModel] = useState<Model[]>([]);
   const [states, setStates] = useState<StateOption[]>([]);
-   const [modelOpen, setModelOpen] = useState(false);
+  const [modelOpen, setModelOpen] = useState(false);
   // const [filteredRegions, setFilteredRegions] = useState<Region[]>([]);
   const [filteredSuburbs, setFilteredSuburbs] = useState<Suburb[]>([]);
   const [filters, setFilters] = useState<Filters>({});
-    const [tempSleepFrom, setTempSleepFrom] = useState<number | null>(null);
+  const [tempSleepFrom, setTempSleepFrom] = useState<number | null>(null);
   const [tempSleepTo, setTempSleepTo] = useState<number | null>(null);
-   const [tempLengthFrom, setTempLengthFrom] = useState<number | null>(null);
+  const [tempLengthFrom, setTempLengthFrom] = useState<number | null>(null);
   const [tempLengthTo, setTempLengthTo] = useState<number | null>(null);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isKeywordModalOpen, setIsKeywordModalOpen] = useState(false);
-// Add this new state at the top with other states
-const [tempRegionNameRaw, setTempRegionNameRaw] = useState<string | null>(null);
+  // Add this new state at the top with other states
+  const [tempRegionNameRaw, setTempRegionNameRaw] = useState<string | null>(
+    null,
+  );
   const [locationInput, setLocationInput] = useState("");
   const [makeCounts, setMakeCounts] = useState<MakeCount[]>([]);
-   const [tempPriceFrom, setTempPriceFrom] = useState<number | null>(null);
+  const [tempPriceFrom, setTempPriceFrom] = useState<number | null>(null);
   const [tempPriceTo, setTempPriceTo] = useState<number | null>(null);
 
   const [selectedMake, setSelectedMake] = useState<string | null>(null);
@@ -208,13 +209,13 @@ const [tempRegionNameRaw, setTempRegionNameRaw] = useState<string | null>(null);
   );
   const [categoryCounts, setCategoryCounts] = useState<CategoryCount[]>([]);
   // ATM modal states
- 
+
   const [tempAtmFrom, setTempAtmFrom] = useState<number | null>(null);
   const [tempAtmTo, setTempAtmTo] = useState<number | null>(null);
   const [tempCondition, setTempCondition] = useState<string | null>(null);
   // top (other states kula)
   const [modalKeyword, setModalKeyword] = useState("");
-   const hasCategoryBeenSetRef = useRef(false);
+  const hasCategoryBeenSetRef = useRef(false);
   const categoryApiCalledRef = useRef(false);
 
   const prevSuburbsKeyRef = useRef<string>("");
@@ -241,7 +242,7 @@ const [tempRegionNameRaw, setTempRegionNameRaw] = useState<string | null>(null);
   const [stateLocationOpen, setStateLocationOpen] = useState(false);
   const [stateSuburbOpen, setStateSuburbOpen] = useState(true);
 
-   const [selectedStateName, setSelectedStateName] = useState<string | null>(
+  const [selectedStateName, setSelectedStateName] = useState<string | null>(
     null,
   );
   const [selectedRegionName, setSelectedRegionName] = useState<string | null>(
@@ -258,7 +259,7 @@ const [tempRegionNameRaw, setTempRegionNameRaw] = useState<string | null>(null);
   const [keywordSuggestions, setKeywordSuggestions] = useState<KeywordItem[]>(
     [],
   );
- 
+
   const [tempYear, setTempYear] = useState<number | null>(null);
 
   const [isMakeModalOpen, setIsMakeModalOpen] = useState(false);
@@ -267,7 +268,7 @@ const [tempRegionNameRaw, setTempRegionNameRaw] = useState<string | null>(null);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const categoryRef = useRef<HTMLDivElement>(null);
 
-   const [baseKeywords, setBaseKeywords] = useState<KeywordItem[]>([]);
+  const [baseKeywords, setBaseKeywords] = useState<KeywordItem[]>([]);
   const [keywordLoading, setKeywordLoading] = useState(false);
   const [baseLoading, setBaseLoading] = useState(false);
   const pickedSourceRef = useRef<"base" | "typed" | null>(null);
@@ -276,7 +277,7 @@ const [tempRegionNameRaw, setTempRegionNameRaw] = useState<string | null>(null);
   const [lengthFrom, setLengthFrom] = useState<number | null>(null);
   const [lengthTo, setLengthTo] = useState<number | null>(null);
 
-   const [minPrice, setMinPrice] = useState<number | null>(null);
+  const [minPrice, setMinPrice] = useState<number | null>(null);
   const [maxPrice, setMaxPrice] = useState<number | null>(null);
 
   const filtersInitialized = useRef(false);
@@ -1250,7 +1251,11 @@ const [tempRegionNameRaw, setTempRegionNameRaw] = useState<string | null>(null);
       model: tempModel || undefined,
       condition: tempCondition || undefined,
       state: suburbFilters.state || tempStateName?.toLowerCase() || undefined,
-      region: suburbFilters.region || tempRegionName || tempRegionNameRaw  || undefined,
+      region:
+        suburbFilters.region ||
+        tempRegionName ||
+        tempRegionNameRaw ||
+        undefined,
       suburb: suburbFilters.suburb || undefined,
       pincode: suburbFilters.pincode || undefined,
       radius_kms: suburbFilters.radius_kms || undefined,
@@ -1667,7 +1672,6 @@ const [tempRegionNameRaw, setTempRegionNameRaw] = useState<string | null>(null);
     }).catch(() => {});
   };
 
-  
   // Modal open ஆகும்போது currentFilters sync பண்ணு
   useEffect(() => {
     // ✅ state case-insensitive match
@@ -1682,21 +1686,21 @@ const [tempRegionNameRaw, setTempRegionNameRaw] = useState<string | null>(null);
       (r) =>
         r.name.toLowerCase() === (currentFilters.region || "").toLowerCase(),
     );
-      if (matchedRegion) {
-    // ✅ dropdown-ல் இருக்கு → normal set
-    setTempRegionName(matchedRegion.name);
-    setTempRegionNameRaw(null);
-  } else if (currentFilters.region) {
-    // ✅ dropdown-ல் இல்ல ஆனா URL-ல் இருக்கு → raw-ஆ set
-    setTempRegionName(null);
-    setTempRegionNameRaw(currentFilters.region);
-  } else {
-    setTempRegionName(null);
-    setTempRegionNameRaw(null);
-  }
+    if (matchedRegion) {
+      // ✅ dropdown-ல் இருக்கு → normal set
+      setTempRegionName(matchedRegion.name);
+      setTempRegionNameRaw(null);
+    } else if (currentFilters.region) {
+      // ✅ dropdown-ல் இல்ல ஆனா URL-ல் இருக்கு → raw-ஆ set
+      setTempRegionName(null);
+      setTempRegionNameRaw(currentFilters.region);
+    } else {
+      setTempRegionName(null);
+      setTempRegionNameRaw(null);
+    }
 
     setTempRegionName(matchedRegion?.name || null);
-setTempCondition(currentFilters.condition ?? null);
+    setTempCondition(currentFilters.condition ?? null);
     setTempCategory(currentFilters.category || null);
     setSelectedMakeTemp(currentFilters.make || null);
     setTempModel(currentFilters.model || null);
@@ -1754,9 +1758,9 @@ setTempCondition(currentFilters.condition ?? null);
     currentFilters.search, // ✅ இது add பண்ணு
     currentFilters.keyword,
   ]);
-useEffect(() => {
-  setTempCondition(currentFilters.condition ?? null);
-}, [currentFilters.condition]);
+  useEffect(() => {
+    setTempCondition(currentFilters.condition ?? null);
+  }, [currentFilters.condition]);
   useEffect(() => {
     const existingKeyword = currentFilters.search
       ? toHumanFromQuery(currentFilters.search)
@@ -1850,8 +1854,8 @@ useEffect(() => {
     if (tempModel) tempFilters.model = tempModel;
     if (tempCondition) tempFilters.condition = tempCondition;
     if (tempStateName) tempFilters.state = tempStateName.toLowerCase();
-if (tempRegionName) tempFilters.region = tempRegionName;
-else if (tempRegionNameRaw) tempFilters.region = tempRegionNameRaw;
+    if (tempRegionName) tempFilters.region = tempRegionName;
+    else if (tempRegionNameRaw) tempFilters.region = tempRegionNameRaw;
     if (selectedSuggestion) {
       const uriParts = selectedSuggestion.uri.split("/");
 
@@ -1879,12 +1883,12 @@ else if (tempRegionNameRaw) tempFilters.region = tempRegionNameRaw;
       tempFilters.acustom_toyears = tempYear;
     }
 
-   // tempFilters build பண்ற section-ல், கீழே add பண்ணு:
-if (modalKeyword.trim().length < 2) {
-  // modalKeyword sync ஆகல — currentFilters இருந்து directly எடு
-  const rawSearch = currentFilters.search || currentFilters.keyword;
-  if (rawSearch) tempFilters.search = rawSearch as string;
-}
+    // tempFilters build பண்ற section-ல், கீழே add பண்ணு:
+    if (modalKeyword.trim().length < 2) {
+      // modalKeyword sync ஆகல — currentFilters இருந்து directly எடு
+      const rawSearch = currentFilters.search || currentFilters.keyword;
+      if (rawSearch) tempFilters.search = rawSearch as string;
+    }
     // ✅ 3-layer merge: currentFilters → filters → tempFilters (highest priority)
     const activeFilters: Filters = mergeFilters(
       mergeFilters(currentFilters, filters),
@@ -2068,7 +2072,9 @@ if (modalKeyword.trim().length < 2) {
                               type="checkbox"
                               checked={tempCategory === cat.slug}
                               onChange={() => {
-  setTempCategory(prev => prev === cat.slug ? null : cat.slug); // ← toggle
+                                setTempCategory((prev) =>
+                                  prev === cat.slug ? null : cat.slug,
+                                ); // ← toggle
                                 triggerOptimizeApi("category", cat.slug); // ✅
                               }}
                             />
@@ -2129,36 +2135,46 @@ if (modalKeyword.trim().length < 2) {
                       <div className="col-lg-6">
                         <div className="location-item">
                           <label>Region</label>
-                         <select
-  className="cfs-select-input form-select"
-  value={tempRegionName || tempRegionNameRaw || ""}
-  onChange={(e) => {
-    setTempRegionName(e.target.value || null);
-    setTempRegionNameRaw(null); // user manually changed, raw clear பண்ணு
-  }}
->
-  <option value="">Any</option>
+                          <select
+                            className="cfs-select-input form-select"
+                            value={tempRegionName || tempRegionNameRaw || ""}
+                            onChange={(e) => {
+                              setTempRegionName(e.target.value || null);
+                              setTempRegionNameRaw(null); // user manually changed, raw clear பண்ணு
+                            }}
+                          >
+                            <option value="">Any</option>
 
-  {/* ✅ dropdown-ல் இல்லாத suburb-derived region-ஐ dynamic-ஆ add பண்ணு */}
-  {tempRegionNameRaw &&
-    !(states
-      .find((s) => s.name.toLowerCase() === tempStateName?.toLowerCase())
-      ?.regions || []
-    ).some((r) => r.name.toLowerCase() === tempRegionNameRaw.toLowerCase()) && (
-      <option value={tempRegionNameRaw}>{tempRegionNameRaw}</option>
-    )}
+                            {/* ✅ dropdown-ல் இல்லாத suburb-derived region-ஐ dynamic-ஆ add பண்ணு */}
+                            {tempRegionNameRaw &&
+                              !(
+                                states.find(
+                                  (s) =>
+                                    s.name.toLowerCase() ===
+                                    tempStateName?.toLowerCase(),
+                                )?.regions || []
+                              ).some(
+                                (r) =>
+                                  r.name.toLowerCase() ===
+                                  tempRegionNameRaw.toLowerCase(),
+                              ) && (
+                                <option value={tempRegionNameRaw}>
+                                  {tempRegionNameRaw}
+                                </option>
+                              )}
 
-  {(
-    states.find(
-      (s) => s.name.toLowerCase() === tempStateName?.toLowerCase()
-    )?.regions || []
-  ).map((region, idx) => (
-    <option key={idx} value={region.name}>
-      {region.name}
-    </option>
-  ))}
-</select>
-
+                            {(
+                              states.find(
+                                (s) =>
+                                  s.name.toLowerCase() ===
+                                  tempStateName?.toLowerCase(),
+                              )?.regions || []
+                            ).map((region, idx) => (
+                              <option key={idx} value={region.name}>
+                                {region.name}
+                              </option>
+                            ))}
+                          </select>
                         </div>
                       </div>
                     )}
@@ -2294,19 +2310,24 @@ if (modalKeyword.trim().length < 2) {
                                   regionName,
                                   states,
                                 );
-                                
-const canonicalRegionName = getValidRegionName(canonicalStateName, regionName, states);
+
+                                const canonicalRegionName = getValidRegionName(
+                                  canonicalStateName,
+                                  regionName,
+                                  states,
+                                );
 
                                 setTempStateName(canonicalStateName || null);
-if (canonicalRegionName) {
-  // ✅ Region exists in dropdown → show it selected
-  setTempRegionName(canonicalRegionName);
-  setTempRegionNameRaw(null);
-} else {
-  // ✅ Region NOT in dropdown → store raw for API use only, don't show in select
-  setTempRegionName(null);
-  setTempRegionNameRaw(regionName || null);
-}                              }}
+                                if (canonicalRegionName) {
+                                  // ✅ Region exists in dropdown → show it selected
+                                  setTempRegionName(canonicalRegionName);
+                                  setTempRegionNameRaw(null);
+                                } else {
+                                  // ✅ Region NOT in dropdown → store raw for API use only, don't show in select
+                                  setTempRegionName(null);
+                                  setTempRegionNameRaw(regionName || null);
+                                }
+                              }}
                             >
                               {item.address}
                             </li>
@@ -2530,8 +2551,8 @@ if (canonicalRegionName) {
                         <input
                           className="checkbox__trigger visuallyhidden"
                           type="checkbox"
-checked={tempCondition?.toLowerCase() === "new"}      
-                    onChange={() =>
+                          checked={tempCondition?.toLowerCase() === "new"}
+                          onChange={() =>
                             setTempCondition(
                               tempCondition === "new" ? null : "new",
                             )
@@ -2561,7 +2582,7 @@ checked={tempCondition?.toLowerCase() === "new"}
                         <input
                           className="checkbox__trigger visuallyhidden"
                           type="checkbox"
-                         checked={tempCondition?.toLowerCase() === "used"}
+                          checked={tempCondition?.toLowerCase() === "used"}
                           onChange={() =>
                             setTempCondition(
                               tempCondition === "used" ? null : "used",
@@ -2880,7 +2901,6 @@ checked={tempCondition?.toLowerCase() === "new"}
                 setSelectedSuggestion(null);
                 setModalKeyword("");
                 suburbClickedRef.current = false;
-                
 
                 // ✅ Parent-ல் உள்ள resetAllFilters call பண்ணு
                 if (onClearAll) onClearAll();

@@ -216,6 +216,16 @@ if (parsed.model && (parsed.state || parsed.category )) {
   if (parsed.suburb)           return noindex;
   if (parsed.condition)        return noindex;
   if (parsed.acustom_fromyears) return noindex;
+  if (parsed.search ?? parsed.keyword) {
+    const hasOtherFilters = !!(
+      parsed.state    ||
+      parsed.make     ||
+      parsed.category ||
+      parsed.model    ||
+      resolveBand(slugSegments, BASE_URL).hasBand
+    );
+    return hasOtherFilters ? noindex : index;
+  }
 
   // ── Resolve band ──
   const band = resolveBand(slugSegments, BASE_URL);

@@ -11,7 +11,6 @@ import { buildSlugFromFilters } from "../slugBuilter";
 import { useRouter } from "next/navigation";
 import { fetchLocations } from "@/api/location/api";
 
-
 type LocationSuggestion = {
   key: string;
   uri: string;
@@ -125,13 +124,18 @@ const FilterSlider = ({
 }: FilterSliderProps) => {
   const [states, setStates] = useState<StateOption[]>(propStateOptions);
   const router = useRouter();
-const RADIUS_OPTIONS = [50, 100, 250, 500, 1000] as const;
-const [tempSuburbRadius, setTempSuburbRadius] = useState<number>(RADIUS_OPTIONS[0]);
-const [tempSuburbSuggestion, setTempSuburbSuggestion] = useState<LocationSuggestion | null>(null);
-const [tempSuburbInput, setTempSuburbInput] = useState("");
-const [suburbLocationSuggestions, setSuburbLocationSuggestions] = useState<LocationSuggestion[]>([]);
-const [showSuburbSuggestions, setShowSuburbSuggestions] = useState(false);
-const [tempRegionRaw, setTempRegionRaw] = useState<string | null>(null);
+  const RADIUS_OPTIONS = [50, 100, 250, 500, 1000] as const;
+  const [tempSuburbRadius, setTempSuburbRadius] = useState<number>(
+    RADIUS_OPTIONS[0],
+  );
+  const [tempSuburbSuggestion, setTempSuburbSuggestion] =
+    useState<LocationSuggestion | null>(null);
+  const [tempSuburbInput, setTempSuburbInput] = useState("");
+  const [suburbLocationSuggestions, setSuburbLocationSuggestions] = useState<
+    LocationSuggestion[]
+  >([]);
+  const [showSuburbSuggestions, setShowSuburbSuggestions] = useState(false);
+  const [tempRegionRaw, setTempRegionRaw] = useState<string | null>(null);
 
   useEffect(() => {
     if (propStateOptions.length > 0) {
@@ -340,38 +344,44 @@ const [tempRegionRaw, setTempRegionRaw] = useState<string | null>(null);
   const [tempPriceTo, setTempPriceTo] = useState<number | null>(null);
   const [tempAtmFrom, setTempAtmFrom] = useState<number | null>(null);
   const [tempAtmTo, setTempAtmTo] = useState<number | null>(null);
-const [tempCondition, setTempCondition] = useState<string | null>(null);
+  const [tempCondition, setTempCondition] = useState<string | null>(null);
   const [openModal, setOpenModal] = useState<
-    "type" | "location" | "price" | "atm" | "make" | "suburb" | "condition" | null
+    | "type"
+    | "location"
+    | "price"
+    | "atm"
+    | "make"
+    | "suburb"
+    | "condition"
+    | null
   >(null);
-
 
   // condition handlers
 
   // ── Condition handlers ──
-const handleConditionOpen = () => {
-  setTempCondition(currentFilters.condition ?? null);
-  setOpenModal("condition");
-};
-
-const handleConditionSearch = () => {
-  triggerGlobalLoaders();
-  const newFilters = {
-    ...currentFilters,
-    condition: tempCondition ?? undefined,
-    page: 1,
+  const handleConditionOpen = () => {
+    setTempCondition(currentFilters.condition ?? null);
+    setOpenModal("condition");
   };
-  const slugPath = buildSlugFromFilters(newFilters);
-  const safeSlug = slugPath.endsWith("/") ? slugPath : `${slugPath}/`;
-  router.push(safeSlug);
-  setOpenModal(null);
-};
 
-const handleConditionClear = () => {
-  setTempCondition(null);
-  updateFiltersAndURL({ condition: undefined });
-  setOpenModal(null);
-};
+  const handleConditionSearch = () => {
+    triggerGlobalLoaders();
+    const newFilters = {
+      ...currentFilters,
+      condition: tempCondition ?? undefined,
+      page: 1,
+    };
+    const slugPath = buildSlugFromFilters(newFilters);
+    const safeSlug = slugPath.endsWith("/") ? slugPath : `${slugPath}/`;
+    router.push(safeSlug);
+    setOpenModal(null);
+  };
+
+  const handleConditionClear = () => {
+    setTempCondition(null);
+    updateFiltersAndURL({ condition: undefined });
+    setOpenModal(null);
+  };
   // ── Price handlers ──
   const handlePriceOpen = () => {
     const f = getEffectiveFilters();
@@ -494,111 +504,111 @@ const handleConditionClear = () => {
 
     setOpenModal(null);
   };
- const handleLocationSuburbOpen = () => {
-  setTempSuburbInput(
-    currentFilters.suburb
-      ? [
-          toTitleCase(currentFilters.suburb),
-          AUS_ABBR[currentFilters.state?.toUpperCase() ?? ""] ??
-            currentFilters.state?.toUpperCase() ?? "",
-          currentFilters.pincode,
-        ]
-          .filter(Boolean)
-          .join(" ")
-      : "",
-  );
-  setTempSuburbSuggestion(null);
-  setSuburbLocationSuggestions([]);
-  setShowSuburbSuggestions(false);
-  setTempSuburbRadius(
-    typeof currentFilters.radius_kms === "number"
-      ? currentFilters.radius_kms
-      : RADIUS_OPTIONS[0],
-  );
-  setOpenModal("suburb");
-};
-
-const formatLocationInput = (s: string) =>
-  s
-    .replace(/_/g, " ")
-    .replace(/\s*-\s*/g, "  ")
-    .replace(/\s{3,}/g, "  ")
-    .trim()
-    .replace(/\b\w/g, (char) => char.toUpperCase());
-
-const formatted = (s: string) =>
-  s.replace(/ - /g, "  ").replace(/\s+/g, " ");
-
-const getValidRegionName = (
-  stateName: string | null | undefined,
-  regionName: string | null | undefined,
-  allStates: StateOption[],
-): string | undefined => {
-  if (!stateName || !regionName) return undefined;
-  const st = allStates.find(
-    (s) =>
-      s.name.toLowerCase() === stateName.toLowerCase() ||
-      s.value.toLowerCase() === stateName.toLowerCase(),
-  );
-  if (!st?.regions?.length) return undefined;
-  const reg = st.regions.find(
-    (r) =>
-      r.name.toLowerCase() === regionName.toLowerCase() ||
-      r.value.toLowerCase() === regionName.toLowerCase(),
-  );
-  return reg?.name;
-};
-  const handleLocationOpen = () => {
-  const f = getEffectiveFilters();
-  
-  const matchedState = states.find(
-    (s) =>
-      s.name?.toLowerCase() === (f.state ?? "").toLowerCase() ||
-      s.value?.toLowerCase() === (f.state ?? "").toLowerCase(),
-  );
-  
-  setTempState(matchedState?.name ?? f.state ?? null);
-
-  // ✅ region dropdown-ல் இருக்கா check பண்ணு
-  const matchedRegion = matchedState?.regions?.find(
-    (r) =>
-      r.name?.toLowerCase() === (f.region ?? "").toLowerCase() ||
-      r.value?.toLowerCase() === (f.region ?? "").toLowerCase(),
-  );
-
-  if (matchedRegion) {
-    setTempRegion(matchedRegion.name);
-    setTempRegionRaw(null);
-  } else if (f.region) {
-    // ✅ dropdown-ல் இல்ல — raw-ஆ store பண்ணு
-    setTempRegion(null);
-    setTempRegionRaw(f.region);
-  } else {
-    setTempRegion(null);
-    setTempRegionRaw(null);
-  }
-
-  setOpenModal("location");
-};
- const handleLocationSearch = () => {
-  triggerGlobalLoaders();
-  const newFilters = {
-    ...currentFilters,
-    state: tempState?.toLowerCase() ?? undefined,
-    region: tempRegion?.toLowerCase() ?? tempRegionRaw?.toLowerCase() ?? undefined,
-    suburb: undefined,
-    pincode: undefined,
-    page: 1,
+  const handleLocationSuburbOpen = () => {
+    setTempSuburbInput(
+      currentFilters.suburb
+        ? [
+            toTitleCase(currentFilters.suburb),
+            AUS_ABBR[currentFilters.state?.toUpperCase() ?? ""] ??
+              currentFilters.state?.toUpperCase() ??
+              "",
+            currentFilters.pincode,
+          ]
+            .filter(Boolean)
+            .join(" ")
+        : "",
+    );
+    setTempSuburbSuggestion(null);
+    setSuburbLocationSuggestions([]);
+    setShowSuburbSuggestions(false);
+    setTempSuburbRadius(
+      typeof currentFilters.radius_kms === "number"
+        ? currentFilters.radius_kms
+        : RADIUS_OPTIONS[0],
+    );
+    setOpenModal("suburb");
   };
-  const slugPath = buildSlugFromFilters(newFilters);
-  const safeSlug = slugPath.endsWith("/") ? slugPath : `${slugPath}/`;
-  router.push(safeSlug);
-  setOpenModal(null);
-};
+
+  const formatLocationInput = (s: string) =>
+    s
+      .replace(/_/g, " ")
+      .replace(/\s*-\s*/g, "  ")
+      .replace(/\s{3,}/g, "  ")
+      .trim()
+      .replace(/\b\w/g, (char) => char.toUpperCase());
+
+  const formatted = (s: string) => s.replace(/ - /g, "  ").replace(/\s+/g, " ");
+
+  const getValidRegionName = (
+    stateName: string | null | undefined,
+    regionName: string | null | undefined,
+    allStates: StateOption[],
+  ): string | undefined => {
+    if (!stateName || !regionName) return undefined;
+    const st = allStates.find(
+      (s) =>
+        s.name.toLowerCase() === stateName.toLowerCase() ||
+        s.value.toLowerCase() === stateName.toLowerCase(),
+    );
+    if (!st?.regions?.length) return undefined;
+    const reg = st.regions.find(
+      (r) =>
+        r.name.toLowerCase() === regionName.toLowerCase() ||
+        r.value.toLowerCase() === regionName.toLowerCase(),
+    );
+    return reg?.name;
+  };
+  const handleLocationOpen = () => {
+    const f = getEffectiveFilters();
+
+    const matchedState = states.find(
+      (s) =>
+        s.name?.toLowerCase() === (f.state ?? "").toLowerCase() ||
+        s.value?.toLowerCase() === (f.state ?? "").toLowerCase(),
+    );
+
+    setTempState(matchedState?.name ?? f.state ?? null);
+
+    // ✅ region dropdown-ல் இருக்கா check பண்ணு
+    const matchedRegion = matchedState?.regions?.find(
+      (r) =>
+        r.name?.toLowerCase() === (f.region ?? "").toLowerCase() ||
+        r.value?.toLowerCase() === (f.region ?? "").toLowerCase(),
+    );
+
+    if (matchedRegion) {
+      setTempRegion(matchedRegion.name);
+      setTempRegionRaw(null);
+    } else if (f.region) {
+      // ✅ dropdown-ல் இல்ல — raw-ஆ store பண்ணு
+      setTempRegion(null);
+      setTempRegionRaw(f.region);
+    } else {
+      setTempRegion(null);
+      setTempRegionRaw(null);
+    }
+
+    setOpenModal("location");
+  };
+  const handleLocationSearch = () => {
+    triggerGlobalLoaders();
+    const newFilters = {
+      ...currentFilters,
+      state: tempState?.toLowerCase() ?? undefined,
+      region:
+        tempRegion?.toLowerCase() ?? tempRegionRaw?.toLowerCase() ?? undefined,
+      suburb: undefined,
+      pincode: undefined,
+      page: 1,
+    };
+    const slugPath = buildSlugFromFilters(newFilters);
+    const safeSlug = slugPath.endsWith("/") ? slugPath : `${slugPath}/`;
+    router.push(safeSlug);
+    setOpenModal(null);
+  };
   const handleLocationClear = () => {
-    
-     if (currentFilters.suburb) {
-       setTempRegionRaw(null);
+    if (currentFilters.suburb) {
+      setTempRegionRaw(null);
       // ✅ Suburb மட்டும் clear — state, region தொடரும்
       updateFiltersAndURL({
         ...currentFilters,
@@ -610,7 +620,7 @@ const getValidRegionName = (
       // ✅ State/region clear
       setTempState(null);
       setTempRegion(null);
-       setTempRegionRaw(null);
+      setTempRegionRaw(null);
       updateFiltersAndURL({
         state: undefined,
         region: undefined,
@@ -621,8 +631,6 @@ const getValidRegionName = (
     }
     setOpenModal(null);
   };
-
-
 
   const filteredRegions =
     states.find((s) => s.name.toLowerCase() === tempState?.toLowerCase())
@@ -786,25 +794,25 @@ const getValidRegionName = (
               " "
             )}
 
-{/* Location SwiperSlide முடிந்த உடனே — suburb slide-க்கு முன்னாடி */}
-<SwiperSlide style={{ width: "auto" }}>
-  <button
-    className={`tag ${currentFilters.condition ? "active" : ""}`}
-    onClick={handleConditionOpen}
-  >
-    {currentFilters.condition ? (
-      <>
-        <small className="selected_label">Condition: </small>
-        {currentFilters.condition === "new" ? "New" : "Used"}
-        <span className="active_filter">
-          <i className="bi bi-circle-fill"></i>
-        </span>
-      </>
-    ) : (
-      "Condition"
-    )}
-  </button>
-</SwiperSlide>
+            {/* Location SwiperSlide முடிந்த உடனே — suburb slide-க்கு முன்னாடி */}
+            <SwiperSlide style={{ width: "auto" }}>
+              <button
+                className={`tag ${currentFilters.condition ? "active" : ""}`}
+                onClick={handleConditionOpen}
+              >
+                {currentFilters.condition ? (
+                  <>
+                    <small className="selected_label">Condition: </small>
+                    {currentFilters.condition === "new" ? "New" : "Used"}
+                    <span className="active_filter">
+                      <i className="bi bi-circle-fill"></i>
+                    </span>
+                  </>
+                ) : (
+                  "Condition"
+                )}
+              </button>
+            </SwiperSlide>
             <SwiperSlide style={{ width: "auto" }}>
               <button
                 className={`tag ${currentFilters.make ? "active" : ""}`}
@@ -888,16 +896,15 @@ const getValidRegionName = (
           </Swiper>
         </div>
       </div>
-   {openModal === "suburb" && (
-  <div className="filter-overlay">
-    <div className="filter-modal">
-      <div className="filter-header">
-           {!tempSuburbSuggestion && currentFilters.suburb && (
+      {openModal === "suburb" && (
+        <div className="filter-overlay">
+          <div className="filter-modal">
+            <div className="filter-header">
+              {!tempSuburbSuggestion && currentFilters.suburb && (
                 <div style={{ marginTop: 12 }}>
                   <p style={{ margin: 0 }}>
                     <strong>
-                      Suburb:  {" "}
-                      {toTitleCase(currentFilters.suburb)}
+                      Suburb: {toTitleCase(currentFilters.suburb)}
                       {currentFilters.state && (
                         <>
                           ,{" "}
@@ -910,211 +917,254 @@ const getValidRegionName = (
                   </p>
                 </div>
               )}
-        {closeBtn}
-      </div>
-      <div className="filter-body">
-        <div className="filter-item search-filter">
-          <div className="search-box">
-            <div className="secrch_icon" style={{ position: "relative" }}>
-              <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
-                <i
-                  className="bi bi-search search-icon"
-                  style={{ position: "absolute", left: 10, zIndex: 1, pointerEvents: "none" }}
-                ></i>
-                <input
-                  type="text"
-                  className="filter-dropdown cfs-select-input"
-                  autoComplete="off"
-                  placeholder="Search suburb, postcode, state, region"
-                  value={formatted(tempSuburbInput)}
-                  onFocus={() => setShowSuburbSuggestions(true)}
-                  onChange={(e) => {
-                    setShowSuburbSuggestions(true);
-                    const rawValue = e.target.value;
-                    setTempSuburbInput(rawValue);
-
-                    const formattedValue = /^\d+$/.test(rawValue)
-                      ? rawValue
-                      : formatLocationInput(rawValue);
-
-                    if (formattedValue.length < 1) {
-                      setSuburbLocationSuggestions([]);
-                      return;
-                    }
-
-                    const suburb = formattedValue.split(" ")[0];
-                    fetchLocations(suburb)
-                      .then((data) => {
-                        const filtered = data.filter((item) => {
-                          const searchValue = formattedValue.toLowerCase();
-                          return (
-                            item.short_address.toLowerCase().includes(searchValue) ||
-                            item.address.toLowerCase().includes(searchValue) ||
-                            (item.postcode &&
-                              item.postcode.toString().includes(searchValue))
-                          );
-                        });
-                        setSuburbLocationSuggestions(filtered);
-                      })
-                      .catch(console.error);
-                  }}
-                  onBlur={() => setTimeout(() => setShowSuburbSuggestions(false), 150)}
-                />
-              </div>
-
-              {showSuburbSuggestions && suburbLocationSuggestions.length > 0 && (
-                <ul className="location-suggestions">
-                  {suburbLocationSuggestions.map((item, i) => {
-                    const isSelected =
-                      tempSuburbSuggestion?.short_address === item.short_address;
-                    return (
-                      <li
-                        key={i}
-                        className={`suggestion-item ${isSelected ? "selected" : ""}`}
-                        onMouseDown={(e) => {
-                          e.preventDefault();
-                          setTempSuburbSuggestion(item);
-                          setTempSuburbInput(item.short_address);
-                          setSuburbLocationSuggestions([]);
-                          setShowSuburbSuggestions(false);
+              {closeBtn}
+            </div>
+            <div className="filter-body">
+              <div className="filter-item search-filter">
+                <div className="search-box">
+                  <div className="secrch_icon" style={{ position: "relative" }}>
+                    <div
+                      style={{
+                        position: "relative",
+                        display: "flex",
+                        alignItems: "center",
+                      }}
+                    >
+                      <i
+                        className="bi bi-search search-icon"
+                        style={{
+                          position: "absolute",
+                          left: 10,
+                          zIndex: 1,
+                          pointerEvents: "none",
                         }}
-                      >
-                        {item.address}
-                      </li>
-                    );
-                  })}
-                </ul>
-              )}
+                      ></i>
+                      <input
+                        type="text"
+                        className="filter-dropdown cfs-select-input"
+                        autoComplete="off"
+                        placeholder="Search suburb, postcode, state, region"
+                        value={formatted(tempSuburbInput)}
+                        onFocus={() => setShowSuburbSuggestions(true)}
+                        onChange={(e) => {
+                          setShowSuburbSuggestions(true);
+                          const rawValue = e.target.value;
+                          setTempSuburbInput(rawValue);
 
-              {tempSuburbSuggestion &&
-                tempSuburbInput === tempSuburbSuggestion.short_address && (
-                  <div style={{ marginTop: 12 }}>
-                    <div style={{ fontWeight: 600, marginBottom: 8 }}>
-                      {tempSuburbSuggestion.address}{" "}
-                      {tempSuburbSuggestion.uri.split("/").length >= 3 && (
-                        <span>+{tempSuburbRadius}km</span>
-                      )}
+                          const formattedValue = /^\d+$/.test(rawValue)
+                            ? rawValue
+                            : formatLocationInput(rawValue);
+
+                          if (formattedValue.length < 1) {
+                            setSuburbLocationSuggestions([]);
+                            return;
+                          }
+
+                          const suburb = formattedValue.split(" ")[0];
+                          fetchLocations(suburb)
+                            .then((data) => {
+                              const filtered = data.filter((item) => {
+                                const searchValue =
+                                  formattedValue.toLowerCase();
+                                return (
+                                  item.short_address
+                                    .toLowerCase()
+                                    .includes(searchValue) ||
+                                  item.address
+                                    .toLowerCase()
+                                    .includes(searchValue) ||
+                                  (item.postcode &&
+                                    item.postcode
+                                      .toString()
+                                      .includes(searchValue))
+                                );
+                              });
+                              setSuburbLocationSuggestions(filtered);
+                            })
+                            .catch(console.error);
+                        }}
+                        onBlur={() =>
+                          setTimeout(() => setShowSuburbSuggestions(false), 150)
+                        }
+                      />
                     </div>
-                    {tempSuburbSuggestion.uri.split("/").length >= 3 && (
-                      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                        <input
-                          type="range"
-                          min={0}
-                          max={RADIUS_OPTIONS.length - 1}
-                          step={1}
-                          value={Math.max(
-                            0,
-                            RADIUS_OPTIONS.indexOf(
-                              tempSuburbRadius as (typeof RADIUS_OPTIONS)[number],
-                            ),
-                          )}
-                          onChange={(e) => {
-                            const idx = parseInt(e.target.value, 10);
-                            setTempSuburbRadius(RADIUS_OPTIONS[idx]);
-                          }}
-                          style={{ flex: 1 }}
-                          aria-label="Search radius in kilometers"
-                        />
-                        <div style={{ minWidth: 60, textAlign: "right" }}>
-                          +{tempSuburbRadius}km
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
 
-            
+                    {showSuburbSuggestions &&
+                      suburbLocationSuggestions.length > 0 && (
+                        <ul className="location-suggestions">
+                          {suburbLocationSuggestions.map((item, i) => {
+                            const isSelected =
+                              tempSuburbSuggestion?.short_address ===
+                              item.short_address;
+                            return (
+                              <li
+                                key={i}
+                                className={`suggestion-item ${isSelected ? "selected" : ""}`}
+                                onMouseDown={(e) => {
+                                  e.preventDefault();
+                                  setTempSuburbSuggestion(item);
+                                  setTempSuburbInput(item.short_address);
+                                  setSuburbLocationSuggestions([]);
+                                  setShowSuburbSuggestions(false);
+                                }}
+                              >
+                                {item.address}
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      )}
+
+                    {tempSuburbSuggestion &&
+                      tempSuburbInput ===
+                        tempSuburbSuggestion.short_address && (
+                        <div style={{ marginTop: 12 }}>
+                          <div style={{ fontWeight: 600, marginBottom: 8 }}>
+                            {tempSuburbSuggestion.address}{" "}
+                            {tempSuburbSuggestion.uri.split("/").length >=
+                              3 && <span>+{tempSuburbRadius}km</span>}
+                          </div>
+                          {tempSuburbSuggestion.uri.split("/").length >= 3 && (
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 12,
+                              }}
+                            >
+                              <input
+                                type="range"
+                                min={0}
+                                max={RADIUS_OPTIONS.length - 1}
+                                step={1}
+                                value={Math.max(
+                                  0,
+                                  RADIUS_OPTIONS.indexOf(
+                                    tempSuburbRadius as (typeof RADIUS_OPTIONS)[number],
+                                  ),
+                                )}
+                                onChange={(e) => {
+                                  const idx = parseInt(e.target.value, 10);
+                                  setTempSuburbRadius(RADIUS_OPTIONS[idx]);
+                                }}
+                                style={{ flex: 1 }}
+                                aria-label="Search radius in kilometers"
+                              />
+                              <div style={{ minWidth: 60, textAlign: "right" }}>
+                                +{tempSuburbRadius}km
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="filter-footer">
+              <button
+                className="clear"
+                onClick={() => {
+                  // ✅ currentFilters.region, states list-ல் இருக்கா check பண்ணு
+                  const currentState = currentFilters.state;
+                  const currentRegion = currentFilters.region;
+
+                  const matchedState = states.find(
+                    (s) =>
+                      s.name?.toLowerCase() === currentState?.toLowerCase(),
+                  );
+                  const isRegionInList = matchedState?.regions?.some(
+                    (r) =>
+                      r.name?.toLowerCase() === currentRegion?.toLowerCase(),
+                  );
+
+                  // ✅ list-ல் இல்லாத region (raw) மட்டும் clear
+                  const shouldClearRegion = currentRegion && !isRegionInList;
+
+                  setTempRegionRaw(null);
+                  setTempSuburbInput("");
+                  setTempSuburbSuggestion(null);
+
+                  updateFiltersAndURL({
+                    suburb: undefined,
+                    pincode: undefined,
+                    radius_kms: undefined,
+                    ...(shouldClearRegion ? { region: undefined } : {}),
+                  });
+
+                  setOpenModal(null);
+                }}
+                style={{
+                  opacity:
+                    currentFilters.suburb || tempSuburbSuggestion ? 1 : 0.4,
+                  cursor:
+                    currentFilters.suburb || tempSuburbSuggestion
+                      ? "pointer"
+                      : "not-allowed",
+                }}
+              >
+                Clear filters
+              </button>
+              <button
+                className={`search ${tempSuburbSuggestion ? "active" : ""}`}
+                onClick={() => {
+                  if (!tempSuburbSuggestion) {
+                    setOpenModal(null);
+                    return;
+                  }
+
+                  triggerGlobalLoaders();
+
+                  const uriParts = tempSuburbSuggestion.uri.split("/");
+                  const stateSlug = uriParts[0] || "";
+                  const regionSlug = uriParts[1] || "";
+                  const suburbSlug = uriParts[2] || "";
+                  let pincode = uriParts[3] || "";
+
+                  const state = stateSlug
+                    .replace(/-state$/, "")
+                    .replace(/-/g, " ")
+                    .trim();
+                  const region = regionSlug
+                    .replace(/-region$/, "")
+                    .replace(/-/g, " ")
+                    .trim();
+                  const suburb = suburbSlug
+                    .replace(/-suburb$/, "")
+                    .replace(/-/g, " ")
+                    .trim();
+
+                  if (!/^\d{4}$/.test(pincode)) {
+                    const m = tempSuburbSuggestion.address.match(/\b\d{4}\b/);
+                    if (m) pincode = m[0];
+                  }
+
+                  const validRegion = getValidRegionName(state, region, states);
+
+                  const newFilters = {
+                    ...currentFilters,
+                    suburb: suburb.toLowerCase(),
+                    pincode: pincode || undefined,
+                    state: state,
+                    region: validRegion || region,
+                    radius_kms: tempSuburbRadius,
+                    page: 1,
+                  };
+
+                  const slugPath = buildSlugFromFilters(newFilters);
+                  const safeSlug = slugPath.endsWith("/")
+                    ? slugPath
+                    : `${slugPath}/`;
+                  router.push(safeSlug);
+                  setOpenModal(null);
+                }}
+              >
+                Search
+              </button>
             </div>
           </div>
         </div>
-      </div>
-      <div className="filter-footer">
-        <button
-          className="clear"
-          onClick={() => {
-  // ✅ currentFilters.region, states list-ல் இருக்கா check பண்ணு
-  const currentState = currentFilters.state;
-  const currentRegion = currentFilters.region;
-  
-  const matchedState = states.find(
-    (s) => s.name?.toLowerCase() === currentState?.toLowerCase()
-  );
-  const isRegionInList = matchedState?.regions?.some(
-    (r) => r.name?.toLowerCase() === currentRegion?.toLowerCase()
-  );
-
-  // ✅ list-ல் இல்லாத region (raw) மட்டும் clear
-  const shouldClearRegion = currentRegion && !isRegionInList;
-
-  setTempRegionRaw(null);
-  setTempSuburbInput("");
-  setTempSuburbSuggestion(null);
-
-  updateFiltersAndURL({
-    suburb: undefined,
-    pincode: undefined,
-    radius_kms: undefined,
-    ...(shouldClearRegion ? { region: undefined } : {}),
-  }); 
-
-  setOpenModal(null);
-}}
-          style={{
-            opacity: currentFilters.suburb || tempSuburbSuggestion ? 1 : 0.4,
-            cursor: currentFilters.suburb || tempSuburbSuggestion ? "pointer" : "not-allowed",
-          }}
-        >
-          Clear filters
-        </button>
-        <button
-          className={`search ${tempSuburbSuggestion ? "active" : ""}`}
-          onClick={() => {
-            if (!tempSuburbSuggestion) {
-              setOpenModal(null);
-              return;
-            }
-
-            triggerGlobalLoaders();
-
-            const uriParts = tempSuburbSuggestion.uri.split("/");
-            const stateSlug = uriParts[0] || "";
-            const regionSlug = uriParts[1] || "";
-            const suburbSlug = uriParts[2] || "";
-            let pincode = uriParts[3] || "";
-
-            const state = stateSlug.replace(/-state$/, "").replace(/-/g, " ").trim();
-            const region = regionSlug.replace(/-region$/, "").replace(/-/g, " ").trim();
-            const suburb = suburbSlug.replace(/-suburb$/, "").replace(/-/g, " ").trim();
-
-            if (!/^\d{4}$/.test(pincode)) {
-              const m = tempSuburbSuggestion.address.match(/\b\d{4}\b/);
-              if (m) pincode = m[0];
-            }
-
-            const validRegion = getValidRegionName(state, region, states);
-
-            const newFilters = {
-              ...currentFilters,
-              suburb: suburb.toLowerCase(),
-              pincode: pincode || undefined,
-              state: state,
-              region: validRegion || region,
-              radius_kms: tempSuburbRadius,
-              page: 1,
-            };
-
-            const slugPath = buildSlugFromFilters(newFilters);
-            const safeSlug = slugPath.endsWith("/") ? slugPath : `${slugPath}/`;
-            router.push(safeSlug);
-            setOpenModal(null);
-          }}
-        >
-          Search
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+      )}
 
       {/* Caravan Type Modal */}
       {openModal === "type" && (
@@ -1232,32 +1282,34 @@ const getValidRegionName = (
                   <div className="col-lg-6">
                     <div className="location-item">
                       <label>Region</label>
-                     <select
-  className="cfs-select-input form-select"
-  value={tempRegion || tempRegionRaw || ""}
-  onChange={(e) => {
-    setTempRegion(e.target.value || null);
-    setTempRegionRaw(null); // user manually changed
-  }}
->
-  <option value="">Any</option>
+                      <select
+                        className="cfs-select-input form-select"
+                        value={tempRegion || tempRegionRaw || ""}
+                        onChange={(e) => {
+                          setTempRegion(e.target.value || null);
+                          setTempRegionRaw(null); // user manually changed
+                        }}
+                      >
+                        <option value="">Any</option>
 
-  {/* ✅ dropdown-ல் இல்லாத region dynamic-ஆ show பண்ணு */}
-  {tempRegionRaw &&
-    !filteredRegions.some(
-      (r) => r.name.toLowerCase() === tempRegionRaw.toLowerCase()
-    ) && (
-      <option value={tempRegionRaw}>{tempRegionRaw}</option>
-    )}
+                        {/* ✅ dropdown-ல் இல்லாத region dynamic-ஆ show பண்ணு */}
+                        {tempRegionRaw &&
+                          !filteredRegions.some(
+                            (r) =>
+                              r.name.toLowerCase() ===
+                              tempRegionRaw.toLowerCase(),
+                          ) && (
+                            <option value={tempRegionRaw}>
+                              {tempRegionRaw}
+                            </option>
+                          )}
 
-  {filteredRegions.map((r, i) => (
-    <option key={i} value={r.name}>
-      {r.name}
-    </option>
-
-  ))}
-</select>
-
+                        {filteredRegions.map((r, i) => (
+                          <option key={i} value={r.name}>
+                            {r.name}
+                          </option>
+                        ))}
+                      </select>
                     </div>
                   </div>
                 )}
@@ -1551,96 +1603,100 @@ const getValidRegionName = (
 
       {/* {condition label} */}
       {/* Condition Modal */}
-{openModal === "condition" && (
-  <div className="filter-overlay">
-    <div className="filter-modal">
-      <div className="filter-header">
-        <h3>Condition</h3>
-        {closeBtn}
-      </div>
-      <div className="filter-body">
-        <div className="filter-item condition-field">
-          <ul className="category-list">
-            <li className="category-item">
-              <label className="category-checkbox-row checkbox">
-                <div className="d-flex align-items-center">
-                  <input
-                    className="checkbox__trigger visuallyhidden"
-                    type="checkbox"
-checked={tempCondition?.toLowerCase() === "new"}    
-                onChange={() =>
-                      setTempCondition(tempCondition === "new" ? null : "new")
-                    }
-                  />
-                  <span className="checkbox__symbol">
-                    <svg
-                      aria-hidden="true"
-                      className="icon-checkbox"
-                      width="28px"
-                      height="28px"
-                      viewBox="0 0 28 28"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path d="M4 14l8 7L24 7"></path>
-                    </svg>
-                  </span>
-                  <span className="category-name">New</span>
-                </div>
-              </label>
-            </li>
+      {openModal === "condition" && (
+        <div className="filter-overlay">
+          <div className="filter-modal">
+            <div className="filter-header">
+              <h3>Condition</h3>
+              {closeBtn}
+            </div>
+            <div className="filter-body">
+              <div className="filter-item condition-field">
+                <ul className="category-list">
+                  <li className="category-item">
+                    <label className="category-checkbox-row checkbox">
+                      <div className="d-flex align-items-center">
+                        <input
+                          className="checkbox__trigger visuallyhidden"
+                          type="checkbox"
+                          checked={tempCondition?.toLowerCase() === "new"}
+                          onChange={() =>
+                            setTempCondition(
+                              tempCondition === "new" ? null : "new",
+                            )
+                          }
+                        />
+                        <span className="checkbox__symbol">
+                          <svg
+                            aria-hidden="true"
+                            className="icon-checkbox"
+                            width="28px"
+                            height="28px"
+                            viewBox="0 0 28 28"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path d="M4 14l8 7L24 7"></path>
+                          </svg>
+                        </span>
+                        <span className="category-name">New</span>
+                      </div>
+                    </label>
+                  </li>
 
-            <li className="category-item">
-              <label className="category-checkbox-row checkbox">
-                <div className="d-flex align-items-center">
-                  <input
-                    className="checkbox__trigger visuallyhidden"
-                    type="checkbox"
-checked={tempCondition?.toLowerCase() === "used"}  
-                  onChange={() =>
-                      setTempCondition(tempCondition === "used" ? null : "used")
-                    }
-                  />
-                  <span className="checkbox__symbol">
-                    <svg
-                      aria-hidden="true"
-                      className="icon-checkbox"
-                      width="28px"
-                      height="28px"
-                      viewBox="0 0 28 28"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path d="M4 14l8 7L24 7"></path>
-                    </svg>
-                  </span>
-                  <span className="category-name">Used</span>
-                </div>
-              </label>
-            </li>
-          </ul>
+                  <li className="category-item">
+                    <label className="category-checkbox-row checkbox">
+                      <div className="d-flex align-items-center">
+                        <input
+                          className="checkbox__trigger visuallyhidden"
+                          type="checkbox"
+                          checked={tempCondition?.toLowerCase() === "used"}
+                          onChange={() =>
+                            setTempCondition(
+                              tempCondition === "used" ? null : "used",
+                            )
+                          }
+                        />
+                        <span className="checkbox__symbol">
+                          <svg
+                            aria-hidden="true"
+                            className="icon-checkbox"
+                            width="28px"
+                            height="28px"
+                            viewBox="0 0 28 28"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path d="M4 14l8 7L24 7"></path>
+                          </svg>
+                        </span>
+                        <span className="category-name">Used</span>
+                      </div>
+                    </label>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="filter-footer">
+              <button
+                className="clear"
+                onClick={handleConditionClear}
+                style={{
+                  opacity: tempCondition ? 1 : 0.4,
+                  cursor: tempCondition ? "pointer" : "not-allowed",
+                }}
+              >
+                Clear filters
+              </button>
+              <button
+                className={`search ${tempCondition ? "active" : ""}`}
+                onClick={handleConditionSearch}
+              >
+                Search
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
-
-      <div className="filter-footer">
-        <button
-          className="clear"
-          onClick={handleConditionClear}
-          style={{
-            opacity: tempCondition ? 1 : 0.4,
-            cursor: tempCondition ? "pointer" : "not-allowed",
-          }}
-        >
-          Clear filters
-        </button>
-        <button
-          className={`search ${tempCondition ? "active" : ""}`}
-          onClick={handleConditionSearch}
-        >
-          Search
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+      )}
     </>
   );
 };
