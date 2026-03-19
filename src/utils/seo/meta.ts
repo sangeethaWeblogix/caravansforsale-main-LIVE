@@ -210,7 +210,9 @@ function getRobotsFromFilters(
   const index   = { index: true };
 
   // ── Always noindex ──
-  if (parsed.model)            return noindex;
+if (parsed.model && (parsed.state || parsed.category )) {
+  return noindex;
+}
   if (parsed.suburb)           return noindex;
   if (parsed.condition)        return noindex;
   if (parsed.acustom_fromyears) return noindex;
