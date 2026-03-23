@@ -583,10 +583,10 @@ export default function ClientLogger({
 
   // ✅ Set active image when productSubImage loads
   useEffect(() => {
-    if (productSubImage.length > 0) {
-      setActiveImage(productSubImage[0]);
+    if (apiImages.length > 0) {
+      setActiveImage(apiImages[0]);
     }
-  }, [productSubImage]);
+  }, [apiImages]);
 
   return (
     <>
@@ -672,7 +672,7 @@ export default function ClientLogger({
                   {/* Thumbnails */}
                   <div className="slider_thumb_vertical image_container">
                     <div className="image_mop">
-                      {productSubImage.slice(0, 4).map((image, i) => (
+                      {apiImages.slice(0, 4).map((image, i) => (
                         <div className="image_item" key={`${image}-${i}`}>
                           <div className="background_thumb">
                             <Image
@@ -701,7 +701,7 @@ export default function ClientLogger({
                       ))}
                       <div>
                         <span className="caravan__image_count">
-                          {productSubImage.length}
+                          {apiImages.length}
                         </span>
                       </div>
                     </div>
@@ -1002,7 +1002,7 @@ export default function ClientLogger({
                 <CaravanDetailModal
                   isOpen={showModal}
                   onClose={() => setShowModal(false)}
-                  images={productSubImage}
+                  images={apiImages}
                   product={{
                     id: productId,
                     slug: productSlug,
