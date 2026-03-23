@@ -376,7 +376,7 @@ export default function HomePage() {
                           <p className="desc">
                             Reach thousands of potential buyers in minutes.
                             <br />
-                            List your caravan for sale on CaravansForSale.com.au,
+                            List your caravan for sale on <a href="https://www.caravansforsale.com.au">CaravansForSale.com.au,</a>
                             <br />
                             the trusted marketplace for Aussie caravan owners.
                           </p>
