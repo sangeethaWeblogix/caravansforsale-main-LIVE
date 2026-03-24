@@ -1,15 +1,17 @@
+
 import { Skeleton } from "@mui/material";
+
 export default function BlogCardSkeleton() {
   return (
     <div className="card border-0 bg-transparent rounded-0 border-bottom brd-gray pb-30 mb-30">
       <div className="row">
         {/* Image skeleton */}
-        <div className="col-lg-5">
+        <div className="col-lg-5 col-sm-6">
           <Skeleton variant="rectangular" width="100%" height={200} />
         </div>
 
         {/* Content skeleton */}
-        <div className="col-lg-7">
+        <div className="col-lg-7 col-sm-6">
           <div className="card-body p-0">
             <Skeleton variant="text" width={120} height={20} />
             <Skeleton variant="text" width="80%" height={28} />
