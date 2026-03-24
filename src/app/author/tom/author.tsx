@@ -6,7 +6,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { fetchBlogs, type BlogPost, type BlogPageResult } from "@/api/blog/api";
+import {  type BlogPost, type BlogPageResult } from "@/api/blog/api";
 import { formatPostDate } from "@/utils/date";
 import { toSlug } from "@/utils/seo/slug";
 import BlogCardSkelton from "../../components/blogCardSkeleton";
@@ -28,55 +28,28 @@ function buildPageList(current: number, total: number, delta = 2) {
   }
   return pages;
 }
-
-export default function BlogPage() {
+interface Props {
+  data: BlogPageResult;
+  currentPage: number;
+}
+export default function BlogListClient({ data, currentPage }: Props) {
   const router = useRouter();
   const params = useParams<{ page?: string }>();
   const initialPage = Math.max(1, Number(params?.page || 1));
   const [navigating, setNavigating] = useState(false);
-  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
-  const [currentPage, setCurrentPage] = useState<number>(initialPage);
-  const [totalPages, setTotalPages] = useState<number>(1);
-  const [loading, setLoading] = useState<boolean>(false);
-  function decodeHTML(str: string = "") {
+    const totalPages = data.total_pages;
+  const blogPosts = data.items;
+// ✅ இதை போடுங்க — data வந்துச்சான்னு check பண்ணு
+const loading = !data || !blogPosts || blogPosts.length === 0 && data.totalPages === 0;
+   function decodeHTML(str: string = "") {
     if (!str) return "";
     if (typeof window === "undefined") return str; // SSR safe
     const doc = new DOMParser().parseFromString(str, "text/html");
     return doc.documentElement.textContent || "";
   }
-  // React to route segment changes (back/forward, manual URL input)
-  useEffect(() => {
-    const urlPage = Math.max(1, Number(params?.page || 1));
-    setCurrentPage((prev) => (prev === urlPage ? prev : urlPage));
-    if (params?.page === "1") router.replace("/blog/", { scroll: false });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params?.page]);
+ 
 
-  // Fetch for currentPage
-  useEffect(() => {
-    let mounted = true;
-    setLoading(true);
-    fetchBlogs(currentPage)
-      .then((res: BlogPageResult) => {
-        if (!mounted) return;
-        setBlogPosts(res.items);
-        setTotalPages(res.totalPages);
-        if (res.currentPage !== currentPage) {
-          // API corrected page bounds (e.g., > totalPages)
-          router.replace(`/blog/page/${res.currentPage}/`, { scroll: false });
-          setCurrentPage(res.currentPage);
-        }
-      })
-      .catch(() => {
-        if (!mounted) return;
-        setBlogPosts([]);
-        setTotalPages(1);
-      })
-      .finally(() => mounted && setLoading(false));
-    return () => {
-      mounted = false;
-    };
-  }, [currentPage, router]);
+ 
 
   const pages = useMemo(
     () => buildPageList(currentPage, totalPages, 2),

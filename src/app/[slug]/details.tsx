@@ -124,7 +124,7 @@ export default function BlogDetailsPage({
       return "desktop";
     };
 
-    const trackBlogLink = async (
+     const trackBlogLink = async (
       linkId: string,
       eventType: "click" | "impression",
     ) => {
@@ -148,6 +148,7 @@ export default function BlogDetailsPage({
         );
       } catch (e) {}
     };
+
 
     // CLICK TRACKING
     const handleClick = (e: MouseEvent) => {

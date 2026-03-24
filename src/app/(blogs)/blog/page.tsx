@@ -1,6 +1,7 @@
-import Blogs from "./page/[page]/page";
+import Blogs from "./page/[page]/BlogListClient";
 import "./blog.css?=1";
 import { Metadata } from "next";
+import { fetchBlogs } from "@/api/blog/api";
 
 export const metadata: Metadata = {
   title: { default: "Latest News, Reviews & Advice", template: "%s " },
@@ -17,6 +18,6 @@ export const metadata: Metadata = {
  export const revalidate = 3600; // ISR: refresh every 60s
 
 export default async function BlogPage() {
-  // Your Blogs component should fetch page=1 by default
-  return <Blogs />;
+  const data = await fetchBlogs(1); // ✅ Server-side fetch
+  return <Blogs data={data} currentPage={1} />;
 }
