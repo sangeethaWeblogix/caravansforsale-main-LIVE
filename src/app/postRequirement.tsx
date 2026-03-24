@@ -11,21 +11,15 @@ import "swiper/css/pagination";
 import { fetchRequirements, Requirement } from "@/api/postRquirements/api";
    import '../app/home/main.css'
 
+interface Props {
+  requirements: Requirement[];
+}
 
-const PostRequirement = () => {
-  const [items, setItems] = useState<Requirement[]>([]);
-  const swiperRef = useRef<SwiperType | null>(null);
+const PostRequirement = ({ requirements }: Props) => {
+   const swiperRef = useRef<SwiperType | null>(null);
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const data = await fetchRequirements();
-        setItems(data);
-      } catch (err) {
-        console.error("Failed to fetch requirements:", err);
-      }
-    })();
-  }, []);
+     const [items] = useState<Requirement[]>(requirements); // ← props-இல் இருந்து
+
 
   // ✅ safely start autoplay after swiper mounts
  useEffect(() => {

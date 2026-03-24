@@ -1,7 +1,18 @@
  import Home from "./home/home";
 import "./globals.css";
 import { Metadata } from "next";
- 
+import { fetchSleepBands } from "@/api/homeApi/sleep/api";
+import { fetchRegion } from "@/api/homeApi/region/api";
+import { fetchManufactures } from "@/api/homeApi/manufacture/api";
+import { fetchPriceBasedCaravans } from "@/api/homeApi/price/api";
+import { fetchAtmBasedCaravans } from "@/api/homeApi/weight/api";
+import { fetchLengthBasedCaravans } from "@/api/homeApi/length/api";
+import { fetchUsedCaravansList } from "@/api/homeApi/usedCaravanList/api";
+import { fetchStateBasedCaravans } from "@/api/homeApi/state/api";
+import { fetchRequirements } from "@/api/postRquirements/api";
+
+ import { fetchHomePage, type HomeBlogPost } from "@/api/home/api";
+
   export const metadata: Metadata = {
     title: {
       default: "Caravans For Sale – Australia’s Marketplace for New & Used Caravans",
@@ -20,11 +31,47 @@ import { Metadata } from "next";
     
   
   };
-const Page = () => (
-  <div>
-    <Home />
-    
-  </div>
-);
+ 
+  export default async function Page() {
+   const [
+     sleepBands,
+     regionBands,
+     manufactureBands,
+     atmBands,
+     lengthBands,
+     priceBands,
+     usedData,
+     stateBands,
+      requirements, 
+            homeblog,
+ 
+   ] = await Promise.all([
+     fetchSleepBands(),
+     fetchRegion(),
+     fetchManufactures(),
+     fetchAtmBasedCaravans(),
+     fetchLengthBasedCaravans(),
+     fetchPriceBasedCaravans(),
+     fetchUsedCaravansList(),
+     fetchStateBasedCaravans(),
+         fetchRequirements(), // ← add
+         fetchHomePage(),
 
-export default Page;
+   ]);
+  console.log("blogPosts:", homeblog.latest_posts);
+   return (
+     <Home
+       sleepBands={sleepBands}
+       regionBands={regionBands}
+       manufactureBands={manufactureBands}
+       atmBands={atmBands}
+       lengthBands={lengthBands}
+       priceBands={priceBands}
+       usedData={usedData}
+       stateBands={stateBands}
+       requirements={requirements}
+      homeblog={homeblog?.latest_posts ?? []}
+
+     />
+   );
+ }

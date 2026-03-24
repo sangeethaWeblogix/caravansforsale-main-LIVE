@@ -63,7 +63,31 @@ type Item = {
   label?: string;
 } & Record<string, unknown>;
 
-export default function SearchSection() {
+
+interface SearchSectionProps {
+  sleepBands: TabsItem[];
+  regionBands: TabsItem[];
+  manufactureBands: TabsItem[];
+  atmBands: TabsItem[];
+  lengthBands: TabsItem[];
+  priceBands: TabsItem[];
+  usedData: {
+    by_category: TabsItem[];
+    by_state: TabsItem[];
+    by_region: TabsItem[];
+  };
+  stateBands: TabsItem[];
+}
+export default function SearchSection({
+  sleepBands = [],
+  regionBands = [],
+  manufactureBands = [],
+  atmBands = [],
+  lengthBands = [],
+  priceBands = [],
+  usedData = { by_category: [], by_state: [], by_region: [] },
+  stateBands = [],
+}: SearchSectionProps) {
   const router = useRouter();
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const [navigating, setNavigating] = useState(false);
@@ -77,8 +101,8 @@ export default function SearchSection() {
   const [category, setCategory] = useState("");
   const [location, setLocation] = useState("");
   const [conditionValue, setConditionValue] = useState("");
-  const [stateBandsLoading, setStateBandsLoading] = useState(true); // ← ADD THIS
-
+ const stateBandsLoading = stateBands.length === 0;
+console.log("homestate", stateBands)
   const isSearchEnabled = category || location || conditionValue;
   const [activeIndex, setActiveIndex] = useState(0);
 
@@ -91,56 +115,11 @@ export default function SearchSection() {
     tasmania: { code: "TAS", image: "/images/tas_map.svg?=1" },
   };
 
-  const [sleepBands, setSleepBands] = useState<TabsItem[]>([]);
-  const [regionBands, setRegionBands] = useState<TabsItem[]>([]);
-  const [manufactureBands, setManufactureBands] = useState<TabsItem[]>([]);
-  const [lengthBands, setLengthBands] = useState<TabsItem[]>([]);
-  const [atmBands, setAtmBands] = useState<TabsItem[]>([]);
-  const [usedCategoryList, setUsedCategoryList] = useState<TabsItem[]>([]);
-  const [priceBands, setPriceBands] = useState<TabsItem[]>([]);
-  const [usedState, setUsedState] = useState<TabsItem[]>([]);
+   const [usedCategoryList, setUsedCategoryList] = useState<TabsItem[]>([]);
+   const [usedState, setUsedState] = useState<TabsItem[]>([]);
   const [usedRegion, setUsedRegion] = useState<TabsItem[]>([]);
-  const [stateBands, setStateBands] = useState<TabsItem[]>([]);
-
-  useEffect(() => {
-    async function loadAll() {
-      // const [sleep, region, weight, length] = await Promise.all([
-      const [
-        sleep,
-        region,
-        manufactures,
-        weight,
-        length,
-        price,
-        usedData,
-        state,
-      ] = await Promise.all([
-        fetchSleepBands(),
-        fetchRegion(),
-        fetchManufactures(),
-        fetchAtmBasedCaravans(),
-        fetchLengthBasedCaravans(),
-        fetchPriceBasedCaravans(),
-        fetchUsedCaravansList(),
-        fetchStateBasedCaravans(),
-        ,
-      ]);
-
-      setSleepBands(sleep);
-      setRegionBands(region);
-      setManufactureBands(manufactures);
-      setAtmBands(weight);
-      setLengthBands(length);
-      setPriceBands(price);
-      setUsedCategoryList(usedData.by_category);
-      setUsedState(usedData.by_state);
-      setUsedRegion(usedData.by_region);
-      setStateBands(state);
-      setStateBandsLoading(false); // ← ADD THIS
-    }
-
-    loadAll();
-  }, []);
+ 
+  
 
   const tabsData: {
     key: string;

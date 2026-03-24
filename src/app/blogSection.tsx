@@ -23,34 +23,20 @@ interface BlogPost extends HomeBlogPost {
   link?: string;
 }
 
-export default function HomeLatestBlogs() {
-  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
-  const [loading, setLoading] = useState(true);
-  useEffect(() => {
-    let mounted = true;
-    fetchHomePage()
-      .then(({ latest_posts }) => {
-        if (!mounted) return;
-        // keep only posts that have essentials
-        const items = (latest_posts ?? []).filter(
-          (p): p is BlogPost => !!p && !!p.id && !!p.title && !!p.slug
-        );
-        setBlogPosts(items);
-      })
-      .catch((err) => {
-        console.error("[home_page] latest_posts error:", err);
-        setBlogPosts([]);
-      })
-      .finally(() => mounted && setLoading(false));
-    return () => {
-      mounted = false;
-    };
-  }, []);
+interface Props {
+  blogPosts : HomeBlogPost[];
+}
 
+export default function HomeLatestBlogs({ blogPosts  }: Props) {
+   const posts = (blogPosts ?? []).filter(
+    (p): p is BlogPost => !!p && !!p.id && !!p.title && !!p.slug
+  ); 
   const getHref = (p: BlogPost) => {
     const slug = p.slug?.trim() || toSlug(p.title || "post");
     return `/${slug}/`;
   };
+    const loading = posts.length === 0;
+
 
   return (
     <section className="related-products latest_blog section-padding blog style-8">
@@ -90,7 +76,7 @@ export default function HomeLatestBlogs() {
           ) : (
             <div className="blog-content">
               
-                {blogPosts.map((post) => {
+                {posts.map((post) => {
                   const href = getHref(post);
                   return (
                     <SwiperSlide key={post.id}>
