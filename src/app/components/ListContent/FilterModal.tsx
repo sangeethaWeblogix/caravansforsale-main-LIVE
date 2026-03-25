@@ -11,17 +11,16 @@ import React, {
 } from "react";
 import { usePathname, useRouter } from "next/navigation";
 // import { useSearchParams } from "next/navigation";
-import { fetchProductList } from "@/api/productList/api";
-import { buildSlugFromFilters } from "../slugBuilter";
+ import { buildSlugFromFilters } from "../slugBuilter";
 import { buildUpdatedFilters } from "../buildUpdatedFilters";
 import {
   fetchKeywordSuggestions,
   fetchHomeSearchList,
 } from "@/api/homeSearch/api";
 import { flushSync } from "react-dom";
-import { fetchMakeDetails } from "@/api/make-new/api";
-import CategorySkeleton from "./CategorySkeleton";
+ import CategorySkeleton from "./CategorySkeleton";
 import SearchSuggestionSkeleton from "../Searchsuggestionskeleton ";
+import { fetchMakeDetails } from "@/api/make-new/api";
 
 type LocationSuggestion = {
   key: string;
@@ -105,6 +104,14 @@ export interface Filters {
   keyword?: string; // <- for keyword search
 }
 
+type ProductListResponse = {
+  data: {
+    all_categories: Category[];
+    states: StateOption[];
+    make_options?: Make[];
+    model_options?: Model[];
+  };
+};
 interface CaravanFilterProps {
   onClose?: () => void;
   categories: Category[];
@@ -119,6 +126,7 @@ interface CaravanFilterProps {
   currentFilters: Filters;
   onFilterChange: (filters: Filters) => void;
   focusSection?: string;
+  productListData?: ProductListResponse;
 }
 
 interface Option {
@@ -157,14 +165,14 @@ const FilterModal: React.FC<CaravanFilterProps> = ({
   setIsMainLoading,
   setIsLoading,
   focusSection,
+  productListData,
 }) => {
   const router = useRouter();
   const pathname = usePathname();
   // const searchParams = useSearchParams();
   const RADIUS_OPTIONS = [50, 100, 250, 500, 1000] as const;
   const [radiusKms, setRadiusKms] = useState<number>(RADIUS_OPTIONS[0]);
-  const [categories, setCategories] = useState<Option[]>([]);
-  const [visibleCount, setVisibleCount] = useState(10);
+   const [visibleCount, setVisibleCount] = useState(10);
   const [modelCounts, setModelCounts] = useState<ModelCount[]>([]);
   const [isCategoryCountLoading, setIsCategoryCountLoading] = useState(true);
   const categoryFirstLoadDoneRef = useRef(false); // ← add this ref
@@ -174,8 +182,15 @@ const FilterModal: React.FC<CaravanFilterProps> = ({
   const [tempRegionName, setTempRegionName] = useState<string | null>(null);
   const [makes, setMakes] = useState<Make[]>([]);
   const [model, setModel] = useState<Model[]>([]);
-  const [states, setStates] = useState<StateOption[]>([]);
-  const [modelOpen, setModelOpen] = useState(false);
+   const [modelOpen, setModelOpen] = useState(false);
+   const [categories, setCategories] = useState<Option[]>(
+  productListData?.data?.all_categories || []
+);
+
+const [states, setStates] = useState<StateOption[]>([]);
+
+    console.log("productstate", productListData )
+
   // const [filteredRegions, setFilteredRegions] = useState<Region[]>([]);
   const [filteredSuburbs, setFilteredSuburbs] = useState<Suburb[]>([]);
   const [filters, setFilters] = useState<Filters>({});
@@ -653,19 +668,26 @@ const FilterModal: React.FC<CaravanFilterProps> = ({
     return out;
   };
 
-  const didFetchRef = useRef(false);
+  // const didFetchRef = useRef(false);
+  // useEffect(() => {
+  //   if (didFetchRef.current) return;
+  //   didFetchRef.current = true;
+  //   const loadFilters = async () => {
+  //     const res = await fetchProductList();
+  //     if (res?.data) {
+  //       setCategories(res.data.all_categories || []);
+  //       setStates(res.data.states || []);
+  //     }
+  //   };
+  //   loadFilters();
+  // }, []);
+
   useEffect(() => {
-    if (didFetchRef.current) return;
-    didFetchRef.current = true;
-    const loadFilters = async () => {
-      const res = await fetchProductList();
-      if (res?.data) {
-        setCategories(res.data.all_categories || []);
-        setStates(res.data.states || []);
-      }
-    };
-    loadFilters();
-  }, []);
+  if (productListData?.data) {
+    setCategories(productListData.data.all_categories || []);
+    setStates(productListData.data.states || []);
+  }
+}, [productListData]);
 
   useEffect(() => {
     const load = async () => {
@@ -698,28 +720,7 @@ const FilterModal: React.FC<CaravanFilterProps> = ({
         typeof (s as UnknownRec).value === "string",
     );
 
-  useEffect(() => {
-    const loadFilters = async () => {
-      const res = await fetchProductList();
-      const d = (res?.data ?? undefined) as UnknownRec | undefined;
-
-      const cats = isOptionArray(d?.["all_categories"])
-        ? (d!["all_categories"] as Option[])
-        : [];
-      // const mks = isOptionArray(d?.["make_options"])
-      //   ? (d!["make_options"] as Option[])
-      //   : [];
-      const sts = isStateOptionArray(d?.["states"])
-        ? (d!["states"] as StateOption[])
-        : [];
-
-      setCategories(cats); // ✅ always Option[]
-      // setMakes(mks); // ✅ always Option[]
-      setStates(sts); // ✅ always StateOption[]
-    };
-    loadFilters();
-  }, []);
-
+ 
   useEffect(() => {
     if (typeof currentFilters.radius_kms === "number") {
       setRadiusKms(currentFilters.radius_kms);
@@ -1903,10 +1904,8 @@ const FilterModal: React.FC<CaravanFilterProps> = ({
     catParams.set("group_by", "category");
     setIsCategoryCountLoading(true); // ← only on first fetch
 
-    fetch(
-      `https://admin.caravansforsale.com.au/wp-json/cfs/v1/params_count?${catParams.toString()}`,
-      { signal },
-    )
+fetch(`/api/params-count?${catParams.toString()}`, { signal })
+
       .then((res) => res.json())
       .then((json) => {
         if (!signal.aborted) {
@@ -1924,10 +1923,8 @@ const FilterModal: React.FC<CaravanFilterProps> = ({
     // ─── MAKE COUNTS ───
     const makeParams = buildCountParamsMulti(activeFilters, ["make", "model"]);
     makeParams.set("group_by", "make");
-    fetch(
-      `https://admin.caravansforsale.com.au/wp-json/cfs/v1/params_count?${makeParams.toString()}`,
-      { signal },
-    )
+    fetch(`/api/params-count?${makeParams.toString()}`, { signal })
+
       .then((res) => res.json())
       .then((json) => {
         if (!signal.aborted) {
@@ -1945,10 +1942,8 @@ const FilterModal: React.FC<CaravanFilterProps> = ({
       const modelParams = buildCountParamsMulti(activeFilters, ["model"]);
       modelParams.set("group_by", "model");
       modelParams.set("make", activeMake);
-      fetch(
-        `https://admin.caravansforsale.com.au/wp-json/cfs/v1/params_count?${modelParams.toString()}`,
-        { signal },
-      )
+     fetch(`/api/params-count?${modelParams.toString()}`, { signal })
+
         .then((res) => res.json())
         .then((json) => {
           if (!signal.aborted) setModelCounts(json.data || []);

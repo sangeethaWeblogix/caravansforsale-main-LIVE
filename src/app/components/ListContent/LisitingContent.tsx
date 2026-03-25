@@ -261,22 +261,28 @@ export default function ListingContent({
 
   console.log("lazy", lazyImages);
   // Remove all the lazy loading state and just load all images immediately
-  const getIP = async () => {
-    try {
-      const res = await fetch("https://api.ipify.org?format=json");
-      const data = await res.json();
-      return data.ip || "";
-    } catch {
-      return "";
-    }
-  };
-
+  // const getIP = async () => {
+  //   try {
+  //     const res = await fetch("https://api.ipify.org?format=json");
+  //     const data = await res.json();
+  //     return data.ip || "";
+  //   } catch {
+  //     return "";
+  //   }
+  // };
+const postTrackClick = async (product_id: number) => {
+  await fetch("/api/track-click", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      product_id,
+    }),
+  });
+};
   const handleProductClick = (id) => {
-    postTrackEvent(
-      "https://admin.caravansforsale.com.au/wp-json/cfs/v1/update-clicks",
-      id,
-    );
-
+      postTrackClick(id); 
     // Allow product page to show "Back to Search"
     sessionStorage.setItem("cameFromListings", "true");
   };
@@ -293,20 +299,16 @@ export default function ListingContent({
     }
   }, []);
 
-  const postTrackEvent = async (url: string, product_id: number) => {
-    const ip = await getIP();
-    const user_agent = navigator.userAgent;
-
-    await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        product_id,
-        ip,
-        user_agent,
-      }),
-    });
-  };
+   const postTrackEvent = async (product_id: number) => {
+  await fetch("/api/track", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          product_id,
+          
+        }),
+      });
+    };
 
   const shuffleArray = <T,>(arr: T[]): T[] => {
     const copy = [...arr];
@@ -385,30 +387,33 @@ export default function ListingContent({
   }, [products, preminumProducts, exculisiveProducts, currentFilters.orderby]);
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const id = Number(entry.target.getAttribute("data-product-id"));
-            postTrackEvent(
-              "https://admin.caravansforsale.com.au/wp-json/cfs/v1/update-impressions",
-              id,
-            );
-            observer.unobserve(entry.target);
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const id = Number(
+            entry.target.getAttribute("data-product-id")
+          );
+
+          if (id) {
+            postTrackEvent(id); // ✅ only id
           }
-        });
-      },
-      { threshold: 0.5 },
-    );
 
-    document
-      .querySelectorAll(".product-card[data-product-id]")
-      .forEach((el) => {
-        observer.observe(el);
+          observer.unobserve(entry.target);
+        }
       });
+    },
+    { threshold: 0.3 }
+  );
 
-    return () => observer.disconnect();
-  }, [mergedProducts]);
+  document
+    .querySelectorAll(".product-card[data-product-id]")
+    .forEach((el) => {
+      observer.observe(el);
+    });
+
+  return () => observer.disconnect();
+}, [mergedProducts]);
 
   // ✅ Disable background scroll when popup is open
   useEffect(() => {

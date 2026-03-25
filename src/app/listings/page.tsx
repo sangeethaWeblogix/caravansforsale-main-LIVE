@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import { ensureValidPage } from "@/utils/seo/validatePage";
 import { notFound } from "next/navigation";
 import ApiErrorFallback from "../components/ApiErrorFallback";
+import { fetchProductList } from "@/api/productList/api";
 
 export const revalidate = 3600;
 
@@ -103,11 +104,16 @@ export default async function ListingsPage({
       // No products found - this is a 404 case
       notFound();
     }
+const [listingsRes, productListRes] = await Promise.all([
+    fetchListings({ page }),
+    fetchProductList(), // 👈 add this
+  ]);
+      console.log("productListRes", productListRes )
 
     // All checks passed - render the listings
     return (
       <Suspense>
-        <Listing initialData={response} page={page} />
+        <Listing initialData={listingsRes} page={page}    productListData={productListRes} />
       </Suspense>
     );
   } catch (error) {

@@ -126,11 +126,18 @@
     from_sleep?: string | number;
     to_sleep?: string | number;
   }
-
+type ProductListResponse = {
+  data: {
+    all_categories: Category[];
+    states: StateOption[];
+    
+  };
+};
   interface Props extends Filters {
     page?: string | number;
     initialData?: ApiResponse;
     linksData?: any;
+    productListData?: ProductListResponse,
   }
 
   /** ------------ Helper Functions ------------ */
@@ -171,9 +178,13 @@
 
   export default function ListingsPage({
     initialData,
+    productListData,
     linksData: serverLinksData,
     ...incomingFilters
   }: Props) {
+
+        console.log("productListData", productListData )
+
     const DEFAULT_RADIUS = 50 as const;
     const [openModal, setOpenModal] = useState(false);
 
@@ -206,6 +217,7 @@
       } catch {}
     };
 
+
     // Update readPage to fallback to extracting page from clickid
     const readPage = (id: string): number | null => {
       try {
@@ -234,57 +246,56 @@
     if (fromYears !== null || toYears !== null) {
       redirect("/404");
     }
+ 
+    // const getIP = async () => {
+    //   try {
+    //     const res = await fetch("https://api.ipify.org?format=json");
+    //     const data = await res.json();
+    //     return data.ip || "";
+    //   } catch {
+    //     return "";
+    //   }
+    // };
 
-    const getIP = async () => {
-      try {
-        const res = await fetch("https://api.ipify.org?format=json");
-        const data = await res.json();
-        return data.ip || "";
-      } catch {
-        return "";
-      }
-    };
-
-    const postTrackEvent = async (url: string, product_id: number) => {
-      const ip = await getIP();
-      const user_agent = navigator.userAgent;
-
-      await fetch(url, {
+  const postTrackEvent = async (product_id: number) => {
+  await fetch("/api/track", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           product_id,
-          ip,
-          user_agent,
+          
         }),
       });
     };
 
-    useEffect(() => {
-      const observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              const id = Number(entry.target.getAttribute("data-product-id"));
-              postTrackEvent(
-                "https://admin.caravansforsale.com.au/wp-json/cfs/v1/update-impressions",
-                id,
-              );
-              observer.unobserve(entry.target);
-            }
-          });
-        },
-        { threshold: 0.3 },
-      );
+ useEffect(() => {
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const id = Number(
+            entry.target.getAttribute("data-product-id")
+          );
 
-      document
-        .querySelectorAll(".product-card[data-product-id]")
-        .forEach((el) => {
-          observer.observe(el);
-        });
+          if (id) {
+            postTrackEvent(id); // ✅ only id
+          }
 
-      return () => observer.disconnect();
-    }, []);
+          observer.unobserve(entry.target);
+        }
+      });
+    },
+    { threshold: 0.3 }
+  );
+
+  document
+    .querySelectorAll(".product-card[data-product-id]")
+    .forEach((el) => {
+      observer.observe(el);
+    });
+
+  return () => observer.disconnect();
+}, []);
 
     // Initialize state with initialData if provided
     const [products, setProducts] = useState<Product[]>(
@@ -1163,158 +1174,8 @@
       import("bootstrap/js/dist/offcanvas").catch(() => {});
     }, []);
 
-    // 1. Add state for client-side links
-    const [clientLinksData, setClientLinksData] = useState<any>(null);
-    const [clientMounted, setClientMounted] = useState(false);
-
-    // 2. Add useEffect to fetch links when filters change
-    useEffect(() => {
-      setClientMounted(true);
-
-      const fetchLinks = async () => {
-        try {
-          const params = new URLSearchParams();
-          Object.entries(filtersRef.current).forEach(([k, v]) => {
-            if (v !== undefined && v !== null && v !== "" && k !== "page") {
-              params.set(k, String(v));
-            }
-          });
-          const res = await fetch(
-            `https://admin.caravansforsale.com.au/wp-json/cfs/v1/links?${params.toString()}`,
-          );
-          const json = await res.json();
-          setClientLinksData(json.data ?? json);
-        } catch (e) {
-          console.error("Links fetch error:", e);
-        }
-      };
-
-      fetchLinks();
-    }, [
-      filters.category,
-      filters.make,
-      filters.model,
-      filters.state,
-      filters.region,
-      filters.suburb,
-      filters.condition,
-      filters.from_price,
-      filters.to_price,
-      filters.minKg,
-      filters.maxKg,
-      filters.acustom_fromyears,
-      filters.acustom_toyears,
-      filters.from_length,
-      filters.to_length,
-      filters.keyword,
-      filters.search,
-    ]);
-
-    // 4. Add buildClientLinkUrl helper in Listings.tsx (simplified version of filter's buildLinkUrl)
-    const buildClientLinkUrl = (type: string, item: { slug: string }) => {
-      const linkFilters: Filters = { ...filtersRef.current };
-
-      switch (type) {
-        case "states":
-          linkFilters.state = item.slug.replace(/-/g, " ");
-          delete linkFilters.region;
-          delete linkFilters.suburb;
-          delete linkFilters.pincode;
-          break;
-        case "regions":
-          linkFilters.region = item.slug.replace(/-/g, " ");
-          delete linkFilters.suburb;
-          delete linkFilters.pincode;
-          break;
-        case "categories":
-          linkFilters.category = item.slug;
-          break;
-        case "makes":
-          linkFilters.make = item.slug;
-          delete linkFilters.model;
-          break;
-        case "models":
-          linkFilters.model = item.slug;
-          break;
-        case "conditions":
-          linkFilters.condition = item.slug;
-          break;
-        case "prices":
-        case "atm_ranges":
-        case "length_ranges":
-        case "sleep_ranges":
-          break;
-      }
-
-      const slugPath = buildSlugFromFilters(linkFilters);
-      const base = slugPath.endsWith("/") ? slugPath.slice(0, -1) : slugPath;
-
-      if (
-        ["prices", "atm_ranges", "length_ranges", "sleep_ranges"].includes(type)
-      ) {
-        return `${base}/${item.slug}/`;
-      }
-
-      return `${base}/` || "/listings/";
-    };
-
-    useEffect(() => {
-      const fetchRelatedLinks = async () => {
-        try {
-          const params = new URLSearchParams();
-          const f = filtersRef.current;
-
-          if (f.category) params.set("category", f.category);
-          if (f.make) params.set("make", f.make);
-          if (f.model) params.set("model", f.model);
-          if (f.state) params.set("state", f.state);
-          if (f.region) params.set("region", f.region);
-          if (f.suburb) params.set("suburb", f.suburb);
-          if (f.condition) params.set("condition", f.condition);
-          if (f.from_price) params.set("from_price", String(f.from_price));
-          if (f.to_price) params.set("to_price", String(f.to_price));
-          if (f.minKg) params.set("from_atm", String(f.minKg));
-          if (f.maxKg) params.set("to_atm", String(f.maxKg));
-          if (f.acustom_fromyears)
-            params.set("acustom_fromyears", String(f.acustom_fromyears));
-          if (f.from_sleep) params.set("from_sleep", String(f.from_sleep));
-          if (f.to_sleep) params.set("to_sleep", String(f.to_sleep));
-          if (f.from_length) params.set("from_length", String(f.from_length));
-          if (f.to_length) params.set("to_length", String(f.to_length));
-          if (f.search) params.set("search", f.search);
-          if (f.keyword) params.set("keyword", f.keyword);
-
-          const res = await fetch(
-            `https://admin.caravansforsale.com.au/wp-json/cfs/v1/related_links?${params.toString()}`,
-          );
-          const json = await res.json();
-          setRelatedChips(json.chips || []);
-        } catch (e) {
-          console.error("Related links error:", e);
-        }
-      };
-
-      fetchRelatedLinks();
-    }, [
-      filters.category,
-      filters.make,
-      filters.model,
-      filters.state,
-      filters.region,
-      filters.suburb,
-      filters.condition,
-      filters.from_price,
-      filters.to_price,
-      filters.minKg,
-      filters.maxKg,
-      filters.acustom_fromyears,
-      filters.from_length,
-      filters.to_length,
-      filters.from_sleep,
-      filters.to_sleep,
-      filters.search,
-      filters.keyword,
-    ]);
+    
+ 
 
     useEffect(() => {
       const controller = new AbortController();
@@ -1346,10 +1207,10 @@
       if (f.keyword) params.set("keyword", f.keyword);
       params.set("group_by", "category");
 
-      fetch(
-        `https://admin.caravansforsale.com.au/wp-json/cfs/v1/params_count?${params.toString()}`,
-        { signal: controller.signal },
-      )
+     fetch(
+  `/api/params-count?${params.toString()}`,
+  { signal: controller.signal },
+)
         .then((r) => r.json())
         .then((json) => {
           if (!controller.signal.aborted) {
@@ -1675,6 +1536,8 @@
                   </div>
                   <div>
                     <FilterSlider
+                        productListData={productListData}
+
                       setIsLoading={setIsLoading}
                       setIsMainLoading={setIsMainLoading}
                       setIsFeaturedLoading={setIsFeaturedLoading}
@@ -1766,6 +1629,7 @@
 
         {openModal && (
           <FilterModal
+    productListData={productListData}
             onClose={() => setOpenModal(false)}
             onClearAll={resetAllFilters}
             categories={categories}

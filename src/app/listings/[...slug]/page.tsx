@@ -15,7 +15,7 @@ import { fetchListings } from "@/api/listings/api";
 import { redirect } from "next/navigation";
 import "../../components/ListContent/newList.css";
 import "../listings.css";
-import { fetchMakeDetails } from "@/api/make-new/api";
+// import { fetchMakeDetails } from "@/api/make-new/api";
 import { fetchLinksData } from "@/api/link/api";
 import { buildSlugFromFilters } from "@/app/components/slugBuilter";
 import {
@@ -23,6 +23,7 @@ import {
   buildStaticLinkUrl,
   SECTION_TITLES,
 } from "@/app/components/ListContent/StaticLinksUtils";
+import { fetchProductList } from "@/api/productList/api";
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
 // ─────────────────────────────────────────────────────────────────────────────
@@ -115,27 +116,27 @@ export default async function Listings({
   }
 
   // ───── Validate MAKE & MODEL only if NOT typed filter ─────
-  const makesData = await fetchMakeDetails();
+  // const makesData = await fetchMakeDetails();
 
-  if (slug.length >= 1 && !isTypedFilter(slug[0])) {
-    const makeSlug = normalizeSlug(slug[0]);
+  // if (slug.length >= 1 && !isTypedFilter(slug[0])) {
+  //   const makeSlug = normalizeSlug(slug[0]);
 
-    const matchedMake = makesData.find(
-      (m) => normalizeSlug(m.slug) === makeSlug,
-    );
+  //   const matchedMake = makesData.find(
+  //     (m) => normalizeSlug(m.slug) === makeSlug,
+  //   );
 
-    if (!matchedMake) redirect("/404");
+  //   if (!matchedMake) redirect("/404");
 
-    if (slug.length >= 2 && !isTypedFilter(slug[1])) {
-      const modelSlug = normalizeSlug(slug[1]);
+  //   if (slug.length >= 2 && !isTypedFilter(slug[1])) {
+  //     const modelSlug = normalizeSlug(slug[1]);
 
-      const matchedModel = matchedMake.models?.some(
-        (mod) => normalizeSlug(mod.slug) === modelSlug,
-      );
+  //     const matchedModel = matchedMake.models?.some(
+  //       (mod) => normalizeSlug(mod.slug) === modelSlug,
+  //     );
 
-      if (!matchedModel) redirect("/404");
-    }
-  }
+  //     if (!matchedModel) redirect("/404");
+  //   }
+  // }
 
   // Block page/feed keywords
   // 🚫 Fully block "page" or "feed" in URL
@@ -313,6 +314,10 @@ export default async function Listings({
     return slugPath.endsWith("/") ? slugPath : `${slugPath}/`;
   }
 
+  const [ productListRes] = await Promise.all([
+      fetchProductList(), // 👈 add this
+    ]);
+        console.log("productListRes", productListRes )
   // ───── Render ─────
   return (
     <>
@@ -373,7 +378,7 @@ export default async function Listings({
     )}
      */}
 
-      <ListingsPage {...filters} initialData={response} linksData={linksData} />
+      <ListingsPage {...filters} initialData={response} linksData={linksData} productListData={productListRes} />
     </>
   );
 }

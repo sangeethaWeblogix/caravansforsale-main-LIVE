@@ -3,8 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
 import { fetchProductList } from "@/api/productList/api";
-import { fetchMakeDetails } from "@/api/make-new/api";
-import "swiper/css";
+ import "swiper/css";
 import "swiper/css/navigation";
 import CategorySkeleton from "./CategorySkeleton";
 import { buildSlugFromFilters } from "../slugBuilter";
@@ -23,7 +22,20 @@ interface CategoryCount {
   slug: string;
   count: number;
 }
+  export interface Category {
+    name: string;
+    slug: string;
+  }
 
+ 
+
+type ProductListResponse = {
+  data: {
+    all_categories: Category[];
+    states: StateOption[];
+    
+  };
+};
 interface StateOption {
   value: string;
   name: string;
@@ -32,6 +44,8 @@ interface StateOption {
     value: string;
   }[];
 }
+
+
 
 interface Filters {
   category?: string;
@@ -72,6 +86,8 @@ interface FilterSliderProps {
   onOpenModal?: (section?: string) => void;
   onPriceSelect?: (from: number | null, to: number | null) => void;
   onAtmSelect?: (min: number | null, max: number | null) => void;
+  productListData?: ProductListResponse;
+  
 }
 
 // ── FilterModal-போல் buildCountParams helper ──
@@ -121,9 +137,11 @@ const FilterSlider = ({
   setIsMainLoading,
   setIsFeaturedLoading,
   setIsPremiumLoading,
+  productListData,
 }: FilterSliderProps) => {
-  const [states, setStates] = useState<StateOption[]>(propStateOptions);
-  const router = useRouter();
+const [states, setStates] = useState<StateOption[]>(
+  productListData?.data?.states || []
+);  const router = useRouter();
   const RADIUS_OPTIONS = [50, 100, 250, 500, 1000] as const;
   const [tempSuburbRadius, setTempSuburbRadius] = useState<number>(
     RADIUS_OPTIONS[0],
@@ -137,21 +155,7 @@ const FilterSlider = ({
   const [showSuburbSuggestions, setShowSuburbSuggestions] = useState(false);
   const [tempRegionRaw, setTempRegionRaw] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (propStateOptions.length > 0) {
-      setStates(propStateOptions);
-      return;
-    }
-    const load = async () => {
-      try {
-        const res = await fetchProductList();
-        setStates(res?.data?.states || []);
-      } catch (e) {
-        console.error("FilterSlider states fetch error:", e);
-      }
-    };
-    load();
-  }, [propStateOptions.length]);
+ 
 
   const priceOptions = [
     10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000,
@@ -195,15 +199,7 @@ const FilterSlider = ({
     if (setIsPremiumLoading) setIsPremiumLoading(true);
   };
 
-  useEffect(() => {
-    if (didFetchMakeRef.current) return;
-    didFetchMakeRef.current = true;
-    setMakeLoading(true);
-    fetchMakeDetails()
-      .then((list) => setMakes(list || []))
-      .catch(console.error)
-      .finally(() => setMakeLoading(false));
-  }, []);
+ 
 
   useEffect(() => {
     if (!tempMake) {
@@ -221,10 +217,10 @@ const FilterSlider = ({
     params.delete("group_by"); // முதல்ல delete
     params.set("group_by", "model"); // model group_by set
 
-    fetch(
-      `https://admin.caravansforsale.com.au/wp-json/cfs/v1/params_count?${params.toString()}`,
-      { signal: controller.signal },
-    )
+     fetch(
+  `/api/params-count?${params.toString()}`,
+  { signal: controller.signal },
+)
       .then((r) => r.json())
       .then((json) => {
         if (!controller.signal.aborted) {
