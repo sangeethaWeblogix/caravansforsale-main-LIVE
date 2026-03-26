@@ -461,16 +461,7 @@ export default function ClientLogger({
   //     img.src = url;
   //   });
   // }
-
-  const getIP = async () => {
-    try {
-      const res = await fetch("https://api.ipify.org?format=json");
-      const data = await res.json();
-      return data.ip || "";
-    } catch {
-      return "";
-    }
-  };
+ 
 
   const postTrackEvent = async (product_id: number) => {
   await fetch("/api/track-product", {

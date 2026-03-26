@@ -174,10 +174,8 @@ export default function ExculisiveContent({
 
   // ✅ Helper: generate up to 5 image URLs from SKU
 
-  const IMAGE_BASE_URL = "https://caravansforsale.imagestack.net/400x300/";
-
-  const IMAGE_EXT = ".avif";
-  const goToProduct = (href: string) => {
+ 
+   const goToProduct = (href: string) => {
     try {
       sessionStorage.setItem("cameFromListings", "true");
       sessionStorage.setItem(
@@ -226,7 +224,7 @@ export default function ExculisiveContent({
 
   const getFirstImage = (item: Product): string | undefined => {
     const img = item.image_format?.[0];
-    return img ? `${IMAGE_BASE_URL}${img}${IMAGE_EXT}` : undefined;
+    return img ? `${img}` : undefined;
   };
 
   const getRemainingImages = (item: Product): string[] => {
@@ -234,7 +232,7 @@ export default function ExculisiveContent({
 
     return item.image_format
       .slice(0, MAX_SWIPER_IMAGES)
-      .map((img) => `${IMAGE_BASE_URL}${img}${IMAGE_EXT}`);
+      .map((img) => `${img}`);
   };
 
   const loadRemaining = (item: Product) => {
@@ -252,6 +250,8 @@ export default function ExculisiveContent({
       [item.id]: true,
     }));
   };
+
+
   const getIP = async () => {
     try {
       const res = await fetch("https://api.ipify.org?format=json");
@@ -262,15 +262,23 @@ export default function ExculisiveContent({
     }
   };
 
-  const handleProductClick = async (id) => {
-    await postTrackEvent(
-      "https://admin.caravansforsale.com.au/wp-json/cfs/v1/update-clicks",
-      id,
-    );
-
+ const postTrackClick = async (product_id: number) => {
+  await fetch("/api/track-click", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      product_id,
+    }),
+  });
+};
+  const handleProductClick = (id: any) => {
+      postTrackClick(id); 
     // Allow product page to show "Back to Search"
     sessionStorage.setItem("cameFromListings", "true");
   };
+
 
   const isRefreshRef = useRef(false);
 
@@ -284,45 +292,46 @@ export default function ExculisiveContent({
     }
   }, []);
 
-  const postTrackEvent = async (url: string, product_id: number) => {
-    const ip = await getIP();
-    const user_agent = navigator.userAgent;
-
-    await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        product_id,
-        ip,
-        user_agent,
-      }),
-    });
-  };
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const id = Number(entry.target.getAttribute("data-product-id"));
-            postTrackEvent(
-              "https://admin.caravansforsale.com.au/wp-json/cfs/v1/update-impressions",
-              id,
-            );
-            observer.unobserve(entry.target);
-          }
-        });
-      },
-      { threshold: 0.5 },
-    );
-
-    document
-      .querySelectorAll(".product-card[data-product-id]")
-      .forEach((el) => {
-        observer.observe(el);
+   const postTrackEvent = async (product_id: number) => {
+  await fetch("/api/track", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          product_id,
+          
+        }),
       });
+    };
 
-    return () => observer.disconnect();
-  }, [data]);
+
+  useEffect(() => {
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const id = Number(
+            entry.target.getAttribute("data-product-id")
+          );
+
+          if (id) {
+            postTrackEvent(id); // ✅ only id
+          }
+
+          observer.unobserve(entry.target);
+        }
+      });
+    },
+    { threshold: 0.3 }
+  );
+
+  document
+    .querySelectorAll(".product-card[data-product-id]")
+    .forEach((el) => {
+      observer.observe(el);
+    });
+
+  return () => observer.disconnect();
+}, [data]);
 
   const activateSwiper = (item: Product) => {
     if (swiperActivated[item.id]) return;
@@ -612,8 +621,10 @@ export default function ExculisiveContent({
                               <button
                                 className="btn"
                                 onClick={(e) => {
-                                  e.preventDefault();
-                                  setShowContact(true);
+                                e.preventDefault();
+                                    e.stopPropagation();
+                                    setSelectedProduct(item);
+                                    setShowContact(true);
                                 }}
                               >
                                 Contact Seller
