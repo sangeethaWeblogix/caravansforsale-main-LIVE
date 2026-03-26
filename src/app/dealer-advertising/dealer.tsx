@@ -252,7 +252,7 @@ const DealerLandingPage = () => {
                   </ul>
 
                   <a
-                    href="https://dealersignup.caravansforsale.com.au/subscription.php"
+                    href="https://seller.caravansforsale.com.au/dealer-subscription/"
                     className="btn white_btn"
                   >
                     Start Dealer Signup
