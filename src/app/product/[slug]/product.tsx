@@ -472,34 +472,20 @@ export default function ClientLogger({
     }
   };
 
-  const postTrackEvent = async (url: string, product_id: number) => {
-    const ip = await getIP();
-    const user_agent = navigator.userAgent;
+  const postTrackEvent = async (product_id: number) => {
+  await fetch("/api/track-product", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ product_id }),
+  });
+};
+ useEffect(() => {
+  if (!productDetails?.id) return;
 
-    await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        product_id,
-        ip,
-        user_agent,
-      }),
-    });
-  };
-
-  useEffect(() => {
-    if (!productDetails?.id) return;
-
-    postTrackEvent(
-      "https://admin.caravansforsale.com.au/wp-json/cfs/v1/update-clicks",
-      Number(productDetails.id),
-    );
-    postTrackEvent(
-      "https://admin.caravansforsale.com.au/wp-json/cfs/v1/update-impressions",
-      Number(productDetails.id),
-    );
-  }, [productDetails?.id]);
-
+  postTrackEvent(Number(productDetails.id));
+}, [productDetails?.id]);
   // ✅ Add these states after allSubs state
 
   // ✅ Update the useEffect where you load gallery
