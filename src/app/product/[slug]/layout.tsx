@@ -31,9 +31,13 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const data = await fetchProductDetail(slug);
-  const sku =  data?.product?.sku || "";
-        const base = `https://caravansforsale.imagestack.net/800x600/${sku}/${slug}`;
-        const ogImage = `${base}main1.avif`;
+  
+   const imageUrlRaw = data?.data?.product_details?.image_url;
+  const ogImage: string = Array.isArray(imageUrlRaw)
+    ? imageUrlRaw.filter(Boolean)[0] ?? ""  // ✅ first image in array
+    : typeof imageUrlRaw === "string"
+    ? imageUrlRaw
+    : "";
 
 console.log("image", ogImage)
   if (!data || Object.keys(data).length === 0) {
@@ -73,14 +77,16 @@ console.log("image", ogImage)
       type: "website",
       url: canonicalUrl,
        siteName: "https://www.caravansforsale.com.au/", 
-      images: [
-        {
-          url: ogImage,
-          width: 800,
-          height: 600,
-          alt: title,
-        },
-      ],
+     images: ogImage
+  ? [
+      {
+        url: ogImage,
+        width: 1200,
+        height: 630,
+        alt: title,
+      },
+    ]
+  : [],
       locale: "en-AU",
     },
     twitter: {

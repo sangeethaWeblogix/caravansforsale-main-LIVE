@@ -31,11 +31,18 @@ async function fetchProductDetail(slug: string) {
  }): Promise<Metadata> {
    const { slug } = await params;
    const data = await fetchProductDetail(slug);
-   const sku =  data?.product?.sku || "";
-         const base = `https://caravansforsale.imagestack.net/800x600/${sku}/${slug}`;
-         const ogImage = `${base}main1.avif`;
+       
+
+   const imageUrlRaw = data?.data?.product_details?.image_url;
+  const ogImage: string = Array.isArray(imageUrlRaw)
+    ? imageUrlRaw.filter(Boolean)[0] ?? ""  // ✅ first image in array
+    : typeof imageUrlRaw === "string"
+    ? imageUrlRaw
+    : "";
+
+  
  
- console.log("image", ogImage)
+ console.log("ogggggoo", ogImage)
    if (!data || Object.keys(data).length === 0) {
      return {
        title: "Product Not Found - Caravans for Sale",
@@ -63,6 +70,7 @@ async function fetchProductDetail(slug: string) {
    return {
      title: { absolute: title },
      robots,
+     
      verification: {
        google: "6tT6MT6AJgGromLaqvdnyyDQouJXq0VHS-7HC194xEo", // ✅ Google site verification
      },

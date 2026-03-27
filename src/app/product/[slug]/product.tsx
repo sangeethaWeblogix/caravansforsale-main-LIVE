@@ -81,8 +81,7 @@ export default function ClientLogger({
   // const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   console.log("datap", data);
   const router = useRouter();
-  const IMAGE_BASE = "https://caravansforsale.imagestack.net/800x600/";
-  const IMAGE_EXT = ".avif";
+ 
 
   // const [activeImage, setActiveImage] = useState<string>("");
   const pd: ApiData = data?.data ?? {};
@@ -405,9 +404,7 @@ export default function ClientLogger({
 
   // keep activeImage in sync with main image from API
 
-  const base = `https://caravansforsale.imagestack.net/800x600/${sku}/${slug}`;
-
-  const main = `${base}main1.avif`;
+ 
 
   // function buildImageCandidates(sku?: string, slug?: string) {
   //   if (!sku || !slug) return [];
@@ -419,9 +416,14 @@ export default function ClientLogger({
   //     ...Array.from({ length: 4 }, (_, i) => `${base}sub${i + 2}.avif`),
   //   ];
   // }
-  const [galleryImages, setGalleryImages] = useState<string[]>([]);
-  const [activeImage, setActiveImage] = useState<string>(main);
-
+ const [activeImage, setActiveImage] = useState<string>(
+  () => {
+    const imgs = Array.isArray(productDetails.image_url)
+      ? productDetails.image_url.filter(Boolean)
+      : [];
+    return imgs[0] || "";
+  }
+);
   // useEffect(() => {
   //   let cancelled = false;
 
@@ -540,23 +542,7 @@ export default function ClientLogger({
 
   // const [activeImage, setActiveImage] = useState(main);
 
-  // ✅ Build image URLs from API image_url array
-  const productSubImage: string[] = useMemo(() => {
-    const raw = productDetails.image_url;
-
-    console.log("API image_url:", raw); // Debug
-
-    if (Array.isArray(raw) && raw.length > 0) {
-      const urls = raw
-        .filter((v) => typeof v === "string" && v.trim() !== "")
-        .map((key) => `${IMAGE_BASE}${key}${IMAGE_EXT}`);
-
-      console.log("Built image URLs:", urls); // Debug
-      return urls;
-    }
-
-    return [];
-  }, [productDetails.image_url]);
+ 
 
   // ✅ Set active image when productSubImage loads
   useEffect(() => {
@@ -687,6 +673,7 @@ export default function ClientLogger({
                   {/* Large Image */}
                   <div className="lager_img_view image_container">
                     <div className="background_thumb">
+                       {activeImage && (
                       <Image
                         src={activeImage}
                         width={800}
@@ -695,8 +682,10 @@ export default function ClientLogger({
                         className="img-fluid"
                         unoptimized
                       />
+                       )}
                     </div>
                     <Link href="#">
+                      {activeImage && (
                       <Image
                         src={activeImage}
                         width={800}
@@ -705,6 +694,7 @@ export default function ClientLogger({
                         className="img-fluid"
                         unoptimized
                       />
+                      )}
                     </Link>
                   </div>
                 </div>
