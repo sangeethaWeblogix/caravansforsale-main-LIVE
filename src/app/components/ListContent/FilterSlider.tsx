@@ -856,7 +856,7 @@ const [states, setStates] = useState<StateOption[]>(
                       ? `${Number(currentFilters.from_price).toLocaleString()} – ${Number(currentFilters.to_price).toLocaleString()}`
                       : currentFilters.from_price
                         ? `From ${Number(currentFilters.from_price).toLocaleString()}`
-                        : `Up to ${Number(currentFilters.to_price).toLocaleString()}`}
+                        : `Upto ${Number(currentFilters.to_price).toLocaleString()}`}
                     <span className="active_filter">
                       <i className="bi bi-circle-fill"></i>
                     </span>
@@ -879,7 +879,7 @@ const [states, setStates] = useState<StateOption[]>(
                       ? `${Number(currentFilters.minKg).toLocaleString()} kg – ${Number(currentFilters.maxKg).toLocaleString()} kg`
                       : currentFilters.minKg
                         ? `From ${Number(currentFilters.minKg).toLocaleString()} kg`
-                        : `Up to ${Number(currentFilters.maxKg).toLocaleString()} kg`}
+                        : `Upto ${Number(currentFilters.maxKg).toLocaleString()} kg`}
                     <span className="active_filter">
                       <i className="bi bi-circle-fill"></i>
                     </span>
