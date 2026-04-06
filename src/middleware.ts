@@ -54,7 +54,8 @@ export async function middleware(request: NextRequest) {
     !url.pathname.endsWith('/') &&
     !url.pathname.includes('.') &&
     !url.pathname.startsWith('/api') &&
-    !url.pathname.startsWith('/_next')
+    !url.pathname.startsWith('/_next') &&
+     !url.pathname.startsWith('/listings')
   ) {
     url.pathname = `${url.pathname}/`;
     return NextResponse.redirect(url, 308);
