@@ -1861,7 +1861,7 @@ const [states, setStates] = useState<StateOption[]>([]);
       const uriParts = selectedSuggestion.uri.split("/");
 
       const suburbSlug = uriParts[2] || "";
-      let pincode = uriParts[3] || "";
+      const pincode = uriParts[3] || "";
 
       const suburb = suburbSlug
         .replace(/-suburb$/, "")

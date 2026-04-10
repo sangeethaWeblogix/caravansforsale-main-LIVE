@@ -1439,7 +1439,7 @@ const CaravanFilter: React.FC<CaravanFilterProps> = ({
     const locationType = selectedSuggestion.location_type;
 
     let state = "";
-    let region: string | undefined = undefined;
+    const region: string | undefined = undefined;
     let suburb = "";
     let pincode = "";
 
