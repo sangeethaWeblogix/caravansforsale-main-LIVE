@@ -528,7 +528,7 @@ console.log("homestate", stateBands)
                         </li>
 
                         <li>
-                          <a href="https://www.caravansforsale.com.au/listings/hybrid-category/">
+                          <a href="/listings/hybrid-category/">
                             <div className="item-image">
                               <Image
                                 src="/images/hybrid.webp"
@@ -543,7 +543,7 @@ console.log("homestate", stateBands)
                         </li>
 
                         <li>
-                          <a href="https://www.caravansforsale.com.au/listings/pop-top-category/">
+                          <a href="/listings/pop-top-category/">
                             <div className="item-image">
                               <Image
                                 src="/images/pop-top.webp"
@@ -558,7 +558,7 @@ console.log("homestate", stateBands)
                         </li>
 
                         <li>
-                          <a href="https://www.caravansforsale.com.au/listings/luxury-category/">
+                          <a href="/listings/luxury-category/">
                             <div className="item-image">
                               <Image
                                 src="/images/luxury.webp"
@@ -573,7 +573,7 @@ console.log("homestate", stateBands)
                         </li>
 
                         <li>
-                          <a href="https://www.caravansforsale.com.au/listings/family-category/">
+                          <a href="/listings/family-category/">
                             <div className="item-image">
                               <Image
                                 src="/images/family.webp"
@@ -588,7 +588,7 @@ console.log("homestate", stateBands)
                         </li>
 
                         <li>
-                          <a href="https://www.caravansforsale.com.au/listings/touring-category/">
+                          <a href="/listings/touring-category/">
                             <div className="item-image">
                               <Image
                                 src="/images/touring.webp"
