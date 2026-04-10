@@ -14,7 +14,7 @@ export default function CookiePolicy() {
 
               <p>
                 This Cookie Policy explains how Marketplace Network Pty Ltd (ABN 70 694 987 052)
-                ("Marketplace Network", "we", "us", or "our") uses cookies and similar technologies
+                (&quot;Marketplace Network&quot;, &quot;we&quot;, &quot;us&quot;, or &quot;our&quot;) uses cookies and similar technologies
                 when you visit our websites.
               </p>
 
@@ -132,5 +132,6 @@ export default function CookiePolicy() {
         </div>
       </div>
     </section>
+    
   )
 }

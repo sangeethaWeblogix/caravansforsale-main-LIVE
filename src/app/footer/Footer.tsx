@@ -1,11 +1,11 @@
 import "./footer.css?=16";
 import Link from "next/link";
-import {
-  FaFacebookF,
-  FaInstagram,
-  FaYoutube,
-  FaPinterestP,
-} from "react-icons/fa";
+// import {
+//   FaFacebookF,
+//   FaInstagram,
+//   FaYoutube,
+//   FaPinterestP,
+// } from "react-icons/fa";
 import { BsChevronUp } from "react-icons/bs";
 
 const Footer = () => {

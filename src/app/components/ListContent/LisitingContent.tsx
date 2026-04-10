@@ -1,6 +1,5 @@
 "use client";
-import Link from "next/link";
-import { Swiper, SwiperSlide } from "swiper/react";
+ import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
@@ -146,10 +145,8 @@ export default function ListingContent({
     setNavigating(false);
   }, [pathname]);
 
-  const IMAGE_BASE_URL = "https://caravansforsale.imagestack.net/";
-
-  const IMAGE_EXT = ".avif";
-
+ 
+ 
   const goToProduct = (href: string) => {
     try {
       sessionStorage.setItem("cameFromListings", "true");

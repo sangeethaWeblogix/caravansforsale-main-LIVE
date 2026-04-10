@@ -5,8 +5,7 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import { Navigation, Pagination } from "swiper/modules";
-import Skelton from "../skelton";
-import Head from "next/head";
+ import Head from "next/head";
 import { useEffect, useRef, useState } from "react";
 import { toSlug } from "@/utils/seo/slug";
 import ImageWithSkeleton from "../ImageWithSkeleton";
@@ -88,8 +87,7 @@ export default function ExculisiveContent({
   pageTitle,
   metaTitle,
   metaDescription,
-  isPremiumLoading,
-}: Props) {
+ }: Props) {
   const [showInfo, setShowInfo] = useState(false);
   const [showContact, setShowContact] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -116,6 +114,7 @@ export default function ExculisiveContent({
     // 🔥 Route finished changing → stop loader
     setNavigating(false);
   }, [pathname]);
+  console.log(navigating);
   const enquiryProduct = selectedProduct
     ? {
         id: selectedProduct.id,
@@ -203,23 +202,23 @@ export default function ExculisiveContent({
     }
   }, []);
 
-  const handleViewDetails = async (
-    e: React.MouseEvent,
-    productId: number,
-    href: string,
-  ) => {
-    e.preventDefault(); // stop <Link> default
-    e.stopPropagation(); // stop bubbling to parent
+  // const handleViewDetails = async (
+  //   e: React.MouseEvent,
+  //   productId: number,
+  //   href: string,
+  // ) => {
+  //   e.preventDefault(); // stop <Link> default
+  //   e.stopPropagation(); // stop bubbling to parent
 
-    // 🔁 show loader
-    setNavigating(true);
+  //   // 🔁 show loader
+  //   setNavigating(true);
 
-    // 🔁 tracking + session flag
-    await handleProductClick(productId);
+  //   // 🔁 tracking + session flag
+  //   await handleProductClick(productId);
 
-    // 🔁 navigate
-    goToProduct(href);
-  };
+  //   // 🔁 navigate
+  //   goToProduct(href);
+  // };
   const MAX_SWIPER_IMAGES = 5;
 
   const getFirstImage = (item: Product): string | undefined => {
@@ -252,15 +251,7 @@ export default function ExculisiveContent({
   };
 
 
-  const getIP = async () => {
-    try {
-      const res = await fetch("https://api.ipify.org?format=json");
-      const data = await res.json();
-      return data.ip || "";
-    } catch {
-      return "";
-    }
-  };
+  
 
  const postTrackClick = async (product_id: number) => {
   await fetch("/api/track-click", {

@@ -1,13 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import Image from "next/image";
+ import Image from "next/image";
 // import Link from "next/link";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
-import { fetchHomePage, type HomeBlogPost } from "@/api/home/api";
+import {  type HomeBlogPost } from "@/api/home/api";
 import { formatPostDate } from "@/utils/date";
 import { toSlug } from "@/utils/seo/slug";
 import BlogCardSkeleton from "./components/homeBlogSkelton";
@@ -118,6 +117,7 @@ export default function HomeLatestBlogs({ blogPosts  }: Props) {
                 })}
                 {!blogPosts.length && (
                   <div className="col-12 py-3 text-muted">No posts found.</div>
+
                 )}
               
             </div>

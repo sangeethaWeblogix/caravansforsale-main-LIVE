@@ -2,11 +2,11 @@
 "use client";
 // export const dynamic = "force-dynamic"
 ;
-import React, { useEffect, useMemo, useState } from "react";
+import React, {  useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
-import { fetchBlogs, type BlogPost, type BlogPageResult } from "@/api/blog/api";
+import { useParams } from "next/navigation";
+import {  type BlogPost, type BlogPageResult } from "@/api/blog/api";
 import { formatPostDate } from "@/utils/date";
 import { toSlug } from "@/utils/seo/slug";
 import BlogCardSkelton from "../../../../components/blogCardSkeleton";
@@ -36,9 +36,8 @@ interface Props {
   currentPage: number;
 }
 export default function BlogListClient({ data, currentPage }: Props) {
-  const router = useRouter();
-  const params = useParams<{ page?: string }>();
-  const initialPage = Math.max(1, Number(params?.page || 1));
+   const params = useParams<{ page?: string }>();
+  // const initialPage = Math.max(1, Number(params?.page || 1));
   const [navigating, setNavigating] = useState(false);
  
   const totalPages = data.total_pages;

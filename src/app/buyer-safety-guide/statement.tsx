@@ -1,7 +1,6 @@
 'use client'
 
-import Link from 'next/link'
-
+ 
 export default function CaravanBuyingSafetyGuide() {
   return (
     <section className="services static_page section-padding pt-30 pb-30 style-1">

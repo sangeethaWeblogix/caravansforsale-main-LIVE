@@ -3,8 +3,7 @@
  // ============================================================
  
  import { filterOptions } from "./filterOptions";
- import { buildSlugFromFilters } from "../slugBuilter";
- 
+  
  export interface Filters {
    category?: string;
    image_format?: string[];
@@ -149,10 +148,10 @@
  
  // ── Helpers ──────────────────────────────────────────────────
  
- const buildFilters = (f: Filters): string => {
-   const result = buildSlugFromFilters(f);
-   return result.endsWith("/") ? result : `${result}/`;
- };
+//  const buildFilters = (f: Filters): string => {
+//    const result = buildSlugFromFilters(f);
+//    return result.endsWith("/") ? result : `${result}/`;
+//  };
   function getNearestAtmLink(filters: Filters): { name: string; slug: string } | null {
   const from = filters.minKg ? Number(filters.minKg) : null;
   const to = filters.maxKg ? Number(filters.maxKg) : null;
@@ -622,8 +621,7 @@ if (hasSearch) {
  export function buildStaticLinkUrl(
    type: string,
    slug: string,
-   currentFilters: Filters,
- ): string {
+  ): string {
    if (type === "home") return "/";
    if (type === "all") return "/listings/";
    if (type === "categories") return slug;
