@@ -1,3 +1,4 @@
+
 "use client";
 
 import "./navbar.css";
@@ -111,7 +112,7 @@ export default function Navbar() {
               <span className="navbar-toggler-icon"></span>
             </button>
 
-            {/* <div
+            <div
               className="collapse navbar-collapse justify-content-end"
               id="navbarSupportedContent"
             >
@@ -132,7 +133,7 @@ export default function Navbar() {
                   </a>
                 </li>
               </ul>
-            </div> */}
+            </div>
 
             {/*<div className="navbar-right" ref={dropdownRef}>
               <button className="profile-btn" onClick={() => setOpen(!open)}>
@@ -177,7 +178,7 @@ export default function Navbar() {
         <div id="mySidenav" className={`sidenav ${isOpen ? "open" : ""}`}>
           <div className="sidebar-navigation">
             <ul>
-              {/* <li>
+              <li>
                 <a href="/sell-my-caravan/"
                   onClick={() => {
                     setNavigating(true); // start loader immediately
@@ -186,9 +187,9 @@ export default function Navbar() {
                 >
                   Sell My Caravan
                 </a>
-              </li> */}
+              </li>
 
-              {/* <li>
+              <li>
                 <a href="/dealer-advertising/"
                   onClick={() => {
                     setNavigating(true); // start loader immediately
@@ -197,7 +198,7 @@ export default function Navbar() {
                 >
                   Dealer Advertising
                 </a>
-              </li> */}
+              </li>
 
               <li>
                 <a

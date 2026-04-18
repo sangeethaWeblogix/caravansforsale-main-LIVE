@@ -1,8 +1,10 @@
+
 // src/app/components/SearchSection.tsx
 "use client";
 import "bootstrap/dist/css/bootstrap.min.css";
 //  import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import React, { useEffect, useRef, useState } from "react";
+import './home/main.css'
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -29,6 +31,8 @@ import CaravansByStateSkeleton from "./components/Caravansbystateskeleton";
 import SearchSuggestionSkeleton from "./components/Searchsuggestionskeleton ";
 import { useBanners } from "@/components/BannerHandler";
 import { useBannerTracking } from "@/hooks/useBannerTracking";
+import PostRequirement from "./postRequirement";
+import { fetchRequirements, Requirement } from "@/api/postRquirements/api";
 
 interface TabsItem {
   label: string;
@@ -65,6 +69,7 @@ type Item = {
 
 
 interface SearchSectionProps {
+  requirements: Requirement[];
   sleepBands: TabsItem[];
   regionBands: TabsItem[];
   manufactureBands: TabsItem[];
@@ -79,6 +84,7 @@ interface SearchSectionProps {
   stateBands: TabsItem[];
 }
 export default function SearchSection({
+  requirements,
   sleepBands = [],
   regionBands = [],
   manufactureBands = [],
@@ -423,7 +429,7 @@ console.log("homestate", stateBands)
   const { bannerRefs, trackClick } = useBannerTracking(matchedBanners);
 
   return (
-    <div>
+     <div>
       <div className="ad_banner">
         <a href="https://www.caravansforsale.com.au/listings/">
           <div className="item-image">
@@ -448,27 +454,21 @@ console.log("homestate", stateBands)
           </div>
         </a>
       </div>
-      <div className="container">
-        <div className="row align-items-center justify-content-center">
-          <div className="col-lg-12">
-            <div className="section-head text-center">
-              <h1 className="divide-orange">
-                Browse New &amp; Used Caravans For Sale
-              </h1>
-              <p>
-                Find your ideal caravan from thousands of new and used listings
-                across Australia’s top brands, dealers, and private sellers.
-                Search by type, condition, location, and budget.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
+
       <div className="search_requirement_area">
         <div className="container">
           <div className="row align-items-center justify-content-start">
             <div className="col-lg-12">
-              <div className="section-head search_home text-center">
+              <div className="section-head search_home">
+                <h1 className="divide-orange">
+                  Browse New &amp; Used Caravans For Sale
+                </h1>
+                <p>
+                  Find your ideal caravan from thousands of new and used listings
+                  across Australia’s top brands, dealers, and private sellers.
+
+                </p>
+
                 {/* Bootstrap Pills Navigation */}
                 <ul className="nav nav-pills" id="pills-tab" role="tablist">
                   <li className="nav-item" role="presentation">
@@ -482,7 +482,7 @@ console.log("homestate", stateBands)
                       aria-controls="pills-find"
                       aria-selected="true"
                     >
-                      <span>Caravan Type</span>
+                      <span>Caravan Listings by Type</span>
                     </button>
                   </li>
                   <li className="nav-item" role="presentation">
@@ -709,7 +709,50 @@ console.log("homestate", stateBands)
                     </div>
                   </div>
                 </div>
+
+
+
+
+
               </div>
+            </div>
+          </div>
+          <div className="explore-boxes">
+            {/* Box 1 */}
+            <div className="explore-box active">
+              <h3>See New Caravan Listings</h3>
+              <p>
+                Browse the latest new caravans from top dealerships in Australia.
+              </p>
+              <a href="/listings/new-condition/" className="btn btn-primary">
+                Browse New Listings <i className="bi bi-chevron-right"></i>
+              </a>
+              <div className="illustration left" />
+            </div>
+
+            {/* Box 2 */}
+            <div className="explore-box">
+              <h3>Used Caravans For Sale</h3>
+              <p>
+                Find great deals on quality used caravans for sale by dealers and
+                private sellers.
+              </p>
+              <a href="/listings/used-condition/" className="btn btn-primary">
+                Search Used Listings <i className="bi bi-chevron-right"></i>
+              </a>
+              <div className="illustration center" />
+            </div>
+
+            {/* Box 3 */}
+            <div className="explore-box">
+              <h3>See All Caravans</h3>
+              <p>
+                Explore the full range of new and used caravans across Australia.
+              </p>
+              <a href="/listings/" className="btn btn-primary">
+                Start Searching <i className="bi bi-chevron-right"></i>
+              </a>
+              <div className="illustration right" />
             </div>
           </div>
           <div className="display_ad">
@@ -726,20 +769,63 @@ console.log("homestate", stateBands)
                 className="banner_ad_now mb-0"
                 onClick={() => trackClick(banner.id)}
               >
-                  <div className={isMobile ? "banner-mobile" : "banner-desktop"}>
-                    <Image
-                      src={banner.image_url}
-                      alt={banner.name}
-                      width={isMobile ? 600 : 1200}
-                      height={isMobile ? 300 : 200}
-                      priority
-                    />
-                  </div>
+                <div className={isMobile ? "banner-mobile" : "banner-desktop"}>
+                  <Image
+                    src={banner.image_url}
+                    alt={banner.name}
+                    width={isMobile ? 600 : 1200}
+                    height={isMobile ? 300 : 200}
+                    priority
+                  />
+                </div>
               </a>
             ))}
           </div>
         </div>
       </div>
+      <section className="caravans_by_state related-products services section-padding pt-2 style-1">
+        <div className="container">
+          <div className="row">
+            <div className="col-lg-12">
+              <div className="sell-banner">
+
+                {/* LEFT CONTENT */}
+                <div className="sell-content">
+                  <h3>List Your Caravan For Sale Today</h3>
+
+                  <p className="subtitle">Reach thousands of caravan buyers daily.</p>
+
+                  <p className="desc">List your caravan on CaravansForSale.com.au — Australia’s trusted marketplace to buy and sell caravans.</p>
+
+                  <div className="btns_two">
+                    <a href="/dealer-advertising/" className="btn primary-btn">
+                      Dealer Sign Up
+                    </a>
+
+                    <a href="/sell-my-caravan/" className="btn secondary-btn">
+                      Private Seller - Click Here
+                    </a>
+                  </div>
+                </div>
+
+                {/* RIGHT IMAGE */}
+                {/* <div className="sell-image">
+                  <Image
+                    src="/images/selling_banner.jpg?=1"
+                    alt="Sell Caravan"
+                    fill
+                    className="image"
+                    priority
+                  />
+                </div> */}
+
+              </div>
+
+                    <PostRequirement requirements={requirements}   />
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Caravans by State Section */}
       <div className="caravans_by_state related-products services section-padding style-1 pt-0">
@@ -822,7 +908,8 @@ console.log("homestate", stateBands)
           )}
         </div>
       </div>
-      <div className="quick_links_tabs">
+
+      <div className="quick_links_tabs pb-5">
         <div className="container">
           <div className="section-head mb-2 py-2">
             <h2>Popular Caravan Searches Across Australia</h2>

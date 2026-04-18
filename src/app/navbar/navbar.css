@@ -1,3 +1,4 @@
+
  .navbar.style-4 {
   position: inherit;
   z-index: 1;
@@ -289,12 +290,11 @@ input[type="checkbox"]:checked ~ .menuIconToggle > .dia.p-2 {
   display: block;
 }
 
-.sidebar-navigation ul li ul li a,
-.sidebar-navigation ul li ul li div {
-  color: #000000;
-  border-color: rgba(255, 255, 255, 0.1);
-  padding: 6px 25px;
-  font-size: 15px;
+.navbar.style-4.header-white .navbar-nav .nav-item.login .nav-link {
+    background-color: #ddd;
+    border-radius: 6px;
+    margin-top: 4px;
+    padding: 6px 10px;
 }
 
 /* .sidebar-navigation ul li ul li a:before,

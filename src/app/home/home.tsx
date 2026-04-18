@@ -1,9 +1,10 @@
+
   "use client";
 
   import { useEffect, useState, useRef } from "react";
   import "bootstrap/dist/css/bootstrap.min.css";
   //  import "bootstrap/dist/js/bootstrap.bundle.min.js";
-  import "./main.css?=12";
+  import "./main.css?=14";
   import { Swiper, SwiperSlide } from "swiper/react";
   import { Navigation } from "swiper/modules";
   import "swiper/css";
@@ -143,7 +144,7 @@ console.log("homestate", stateBands)
  
 
     return (
-      <div>
+       <div>
         {/* Hero Section */}
         <section className="home_top style-1">
           <SearchSection 
@@ -154,6 +155,7 @@ console.log("homestate", stateBands)
     lengthBands={lengthBands}
     priceBands={priceBands}
     usedData={usedData}
+     requirements={requirements}
     stateBands={stateBands}/>
         </section>
 

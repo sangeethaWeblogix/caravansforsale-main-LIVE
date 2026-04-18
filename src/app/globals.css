@@ -1,3 +1,5 @@
+
+
 /* ✅ ALL @import MUST come first */
 /* @import url("https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap"); */
 
@@ -61,19 +63,7 @@ img {
   letter-spacing: 0.3px;
 }
 
-.home_top .btn {
-  display: block;
-  background: transparent;
-  border: 2px solid #333333;
-  text-transform: uppercase;
-  font-size: 18px;
-  color: #333 !important;
-}
 
-.home_top .btn:hover {
-  background: #ec7200;
-  border-color: #ec7200 !important;
-}
 
 .navbar.style-4.header-white .sidenav {
   background-color: #fcfcfc;

@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Autoplay, Pagination } from "swiper/modules";
+import { Autoplay, Pagination, Navigation } from "swiper/modules";
 import type { Swiper as SwiperType } from "swiper";
 import "swiper/css";
 import "swiper/css/navigation";
@@ -81,112 +81,103 @@ useEffect(() => {
 //     .replace(/\s+/g, "-");             // space → hyphen
 // };
   return (
-    <div>
-      
-        <div className="post_bgs">
-          <div className="row align-items-center">
-            {/* LEFT SIDE */}
-            <div className="col-lg-6">
-              <div className="home-post_head">
-                <h3>
-                  <span>Find Your Ideal Caravan</span>
-                  <br />– Post Your Requirements
-                </h3>
-                <p>
-                  Tell us what you&apos;re looking for and we&apos;ll match you
-                  with the right caravan for sale, from trusted dealers at a
-                  fair price. Make sure your budget and expectations are
-                  realistic to help us deliver the best possible outcome. See
-                  some examples of what other caravan buyers are looking for.
-                </p>
-              </div>
-
+     <div>
+      <div className="post_bgs">
+        <div className="row">
+          {/* LEFT SIDE */}
+          <div className="col-lg-6">
+            <div className="home-post_head">
+              <h3>
+                <span>Find Your Ideal Caravan</span>
+                <br />– Post Your Requirements
+              </h3>
+              <p>
+                Tell us what you&apos;re looking for and we&apos;ll match you
+                with the right caravan for sale, from trusted dealers at a
+                fair price. Make sure your budget and expectations are
+                realistic to help us deliver the best possible outcome. See
+                some examples of what other caravan buyers are looking for.
+              </p>
               <div className="final_post_btn">
                 <Link href="/caravan-enquiry-form/" className="btn">
                   Post Your Requirements
                 </Link>
               </div>
             </div>
+          </div>
 
-            {/* RIGHT SIDE - SWIPER */}
-            <div className="col-lg-6">
-              <div
-                className="home-post__items info top_cta_container"
-                onMouseEnter={handleMouseEnter}
-                onMouseLeave={handleMouseLeave}
-              >
-                <div className="top_cta bg-white">
-                  <Swiper
-                    modules={[Autoplay, Pagination]}
-                    spaceBetween={20}
-                    slidesPerView={1}
-                     autoplay={true}
-                    pagination={{ clickable: true }}
-                    // autoplay={{
-                    //   delay: 3000,
-                    //   disableOnInteraction: false,
-                    // }}
-                    loop={true}
-                    breakpoints={{
-                      768: { slidesPerView: 1 },
-                      1024: { slidesPerView: 1 },
-                    }}
-                    onSwiper={(swiper) => (swiperRef.current = swiper)}
-                    className="homepost-swiper"
-                  >
-                    {items.map((item, index) => (
-                      <SwiperSlide key={index}>
-                        <div className="post_flip">
-                          <div className="home-post__item">
-                            <div className="fet_feild">
-                              <div className="type pst_table">
-                                <span className="slugn">Type</span>
-                                
-                                  {item.type}
-                                
-                              </div>
-
-                              <div className="condition pst_table">
-                                <span className="slugn">Condition</span>
-                                
-                                  {item.condition}
-                               </div>
-
-                              <div className="status pst_table">
-                                <span className="slugn">Status</span>{" "}
-                                {item.active === "1" ? "Active" : "Inactive"}
-                              </div>
-
-                              <div className="location pst_table">
-                                <span className="slugn">Location</span>
-                                
-                                {item.location}
-                               </div>
+          {/* RIGHT SIDE - SWIPER */}
+          <div className="col-lg-6">
+            <div
+              className="home-post__items info top_cta_container"
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
+            >
+              <h3>Recent Caravan Requests</h3>
+              <p className="sub-text">
+                See examples of what other caravan buyers are looking for.
+              </p>
+              <div className="top_cta bg-white">
+                <Swiper
+                  modules={[Autoplay, Pagination, Navigation]} // ✅ Navigation added
+                  spaceBetween={20}
+                  slidesPerView={1}
+                  autoplay={{                                   // ✅ object, not boolean
+                    delay: 3000,
+                    disableOnInteraction: false,
+                    pauseOnMouseEnter: false,
+                  }}
+                  pagination={{ clickable: true }}
+                  //navigation={true}                            // ✅ arrows enabled
+                  loop={true}
+                  onSwiper={(swiper) => {
+                    swiperRef.current = swiper;
+                  }}
+                  className="homepost-swiper"
+                >
+                  {items.map((item, index) => (
+                    <SwiperSlide key={index}>
+                      <div className="post_flip">
+                        <div className="home-post__item">
+                          <div className="fet_feild">
+                            <div className="type pst_table">
+                              <span className="slugn">Type</span>
+                              {item.type}
                             </div>
-
-                            <div className="requirements">
-                              {item.requirements}
+                            <div className="condition pst_table">
+                              <span className="slugn">Condition</span>
+                              {item.condition}
                             </div>
-
-                            <div className="budget">
-                              <span className="slugn">Budget</span>
-                              {new Intl.NumberFormat("en-US", {
-                                style: "currency",
-                                currency: "USD",
-                                minimumFractionDigits: 0,
-                              }).format(Number(item.budget))}
+                            <div className="status pst_table">
+                              <span className="slugn">Status</span>
+                              {item.active === "1" ? "Active" : "Inactive"}
+                            </div>
+                            <div className="location pst_table">
+                              <span className="slugn">Location</span>
+                              {item.location}
                             </div>
                           </div>
+                          <div className="requirements">
+                            {item.requirements}
+                          </div>
+                          <div className="budget">
+                            <span className="slugn">Budget</span>
+                            {new Intl.NumberFormat("en-US", {
+                              style: "currency",
+                              currency: "USD",
+                              minimumFractionDigits: 0,
+                            }).format(Number(item.budget))}
+                          </div>
                         </div>
-                      </SwiperSlide>
-                    ))}
-                  </Swiper>
-                </div>
+                      </div>
+                    </SwiperSlide>
+                  ))}
+                </Swiper>
               </div>
             </div>
           </div>
         </div>
-      
+      </div>
     </div>
   );
 };

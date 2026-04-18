@@ -1,8 +1,5 @@
 
 
-export const metadata = {
-  title: "Login Boxes",
-};
 
 export default function LoginPage() {
   return (
@@ -19,9 +16,9 @@ export default function LoginPage() {
             aria-label="Login options"
           >
             {/* Private Seller */}
-            {/* <a
+            <a
               className="login-card private"
-              href="/login"
+              href="https://seller.caravansforsale.com.au/seller-login/"
               aria-label="Private Seller Login"
             >
               <div className="login-icon" aria-hidden="true">
@@ -34,12 +31,12 @@ export default function LoginPage() {
                   Manage or list your caravan for sale
                 </div>
               </div>
-            </a> */}
+            </a>
 
             {/* Dealer */}
             <a
               className="login-card dealer"
-              href="https://dealers.caravansforsale.com.au/subscriber-login/"
+              href="https://seller.caravansforsale.com.au/subscriber-login/"
               aria-label="Dealer Login"
             >
               <div className="login-icon" aria-hidden="true">
