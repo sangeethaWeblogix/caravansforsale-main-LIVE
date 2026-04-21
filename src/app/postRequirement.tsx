@@ -15,6 +15,7 @@ interface Props {
   requirements: Requirement[];
 }
 
+
 const PostRequirement = ({ requirements }: Props) => {
    const swiperRef = useRef<SwiperType | null>(null);
 
