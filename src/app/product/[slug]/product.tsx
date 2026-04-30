@@ -629,8 +629,9 @@ export default function ClientLogger({
   {product.seller_type && (
     <span className="seller_badge">
       <i className="fa-solid fa-circle-info"></i>
-      {product.seller_type}
-    </span>
+          {product.seller_type?.replace(/^\w/, c => c.toUpperCase())}           
+
+     </span>
   )}
 
 </div>
