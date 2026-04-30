@@ -14,7 +14,7 @@
   import FilterModal from "./FilterModal";
   import { flushSync } from "react-dom";
   import { v4 as uuidv4 } from "uuid";
-  import "./newList.css?=279";
+  import "./newList.css?=280";
   import "./top-filters.css?=491";
   import dynamic from "next/dynamic";
   import Image from "next/image";
@@ -73,6 +73,7 @@
     is_exclusive?: boolean;
     is_premium?: boolean;
     image_url?: string[];
+    seller_type?: string;
   }
 
   interface Pagination {
@@ -125,6 +126,7 @@
     radius_kms?: number | string;
     from_sleep?: string | number;
     to_sleep?: string | number;
+    seller_type?: string;
   }
 type ProductListResponse = {
   data: {
@@ -169,6 +171,7 @@ type ProductListResponse = {
       is_premium: item.is_premium,
       image_format: item.image_format || [],
       image_url: item.image_url || [],
+      seller_type: item.seller_type
 
       // keep extra props
     }));

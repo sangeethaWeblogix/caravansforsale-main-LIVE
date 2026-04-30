@@ -1085,3 +1085,35 @@
   border-radius: 4px;
   min-height: 96px;
 }
+
+  .attributes {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap; /* mobile la break aganum */
+}
+
+.location_text {
+  font-size: 14px;
+  color: #333;
+}
+
+.seller_badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  background: #f1f1f1;
+  color: #555;
+
+  padding: 4px 10px;
+  border-radius: 20px;
+
+  font-size: 13px;
+  font-weight: 400;
+}
+
+.seller_badge i {
+  font-size: 12px;
+  color: #666;
+}

@@ -427,33 +427,66 @@ console.log("homestate", stateBands)
 
   const { matchedBanners, isMobile } = useBanners();
   const { bannerRefs, trackClick } = useBannerTracking(matchedBanners);
+  const homeBanners = matchedBanners.filter(b => b.placement === "home");
+  console.log("matched", homeBanners)
+
+
 
   return (
      <div>
       <div className="ad_banner">
-        <a href="https://www.caravansforsale.com.au/listings/">
-          <div className="item-image">
-            <Image
-              src="/images/banner_top_dk.jpg?=1"
-              className="hidden-xs"
-              alt="off-road"
-              width={2000}
-              height={700}
-              style={{ width: "100%", height: "auto" }}
-              unoptimized
-            />
-            <Image
-              src="/images/banner_top_mb.jpg?=1"
-              className="hidden-lg hidden-md hidden-sm"
-              alt="off-road"
-              width={2000}
-              height={700}
-              style={{ width: "100%", height: "auto" }}
-              unoptimized
-            />
-          </div>
-        </a>
+  {homeBanners.length > 0 ? (
+    homeBanners.map((banner, index) => (
+      <a
+        key={banner.id}
+        ref={(el) => { bannerRefs.current[index] = el; }}
+        href={banner.target_url}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={() => trackClick(banner.id)}
+      >
+        <div className="item-image">
+          <Image
+            src={banner.image_url}
+            alt={banner.name}
+            width={isMobile ? 600 : 2000}
+            height={isMobile ? 300 : 700}
+            // ✅ mobile banner → hidden-lg hidden-md hidden-sm (mobile-ல் மட்டும் காட்டு)
+            // ✅ desktop banner → hidden-xs (desktop-ல் மட்டும் காட்டு)
+            className={banner.device_target === "mobile" ? "hidden-lg hidden-md hidden-sm" : "hidden-xs"}
+            style={{ width: "100%", height: "auto" }}
+            priority
+            unoptimized
+          />
+        </div>
+      </a>
+    ))
+  ) : (
+    // Fallback static
+    <a href="https://www.caravansforsale.com.au/listings/">
+      <div className="item-image">
+        <Image
+          src="/images/banner_top_dk.jpg?=1"
+          className="hidden-xs"
+          alt="off-road"
+          width={2000}
+          height={700}
+          style={{ width: "100%", height: "auto" }}
+          unoptimized
+        />
+        <Image
+          src="/images/banner_top_mb.jpg?=1"
+          className="hidden-lg hidden-md hidden-sm"
+          alt="off-road"
+          width={2000}
+          height={700}
+          style={{ width: "100%", height: "auto" }}
+          unoptimized
+        />
       </div>
+    </a>
+  )}
+</div>
 
       <div className="search_requirement_area">
         <div className="container">
@@ -755,32 +788,7 @@ console.log("homestate", stateBands)
               <div className="illustration right" />
             </div>
           </div>
-          <div className="display_ad">
-            {false && matchedBanners.map((banner, index) => (
-              <a
-                key={banner.id}
-                ref={(el) => {
-                  bannerRefs.current[index] = el;
-                }}
-                data-banner-id={banner.id}
-                href={banner.target_href_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="banner_ad_now mb-0"
-                onClick={() => trackClick(banner.id)}
-              >
-                <div className={isMobile ? "banner-mobile" : "banner-desktop"}>
-                  <Image
-                    src={banner.image_url}
-                    alt={banner.name}
-                    width={isMobile ? 600 : 1200}
-                    height={isMobile ? 300 : 200}
-                    priority
-                  />
-                </div>
-              </a>
-            ))}
-          </div>
+     
         </div>
       </div>
       <section className="caravans_by_state related-products services section-padding pt-2 style-1">
