@@ -1497,7 +1497,7 @@ type ProductListResponse = {
                     bannerRefs.current[index] = el;
                   }}
                   data-banner-id={banner.id}
-                  href={banner.target_href_url}
+                  href={banner.target_url}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="banner_ad_now mb-0"
