@@ -1018,3 +1018,18 @@ h1.page-title {
   font-weight: 700;
   font-size: 24px;
 }
+
+.seller_type_text {
+  font-weight: 400;      /* normal text */
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #555;           /* optional */
+}
+
+.seller_type_text i {
+  font-weight: 400;      /* ensure icon not bold */
+  font-size: 14px;       /* adjust if needed */
+}
+
+

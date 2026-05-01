@@ -43,6 +43,8 @@ interface Product {
   pageTitle?: string;
   image_url?: string[];
   image_format?: string[];
+    seller_type?: string;
+
 }
 
 interface Pagination {
@@ -547,6 +549,7 @@ export default function ExculisiveContent({
                               </div>
                             )}
 
+  
                             {/* --- DETAILS LIST --- */}
                             <ul className="vehicleDetailsWithIcons simple">
                               {item.condition && (
@@ -590,7 +593,7 @@ export default function ExculisiveContent({
                             </ul>
 
                             {/* --- CONDITION + LOCATION --- */}
-                            {(item.condition || item.location) && (
+                            {(item.condition || item.location || item.seller_type) && (
                               <div className="bottom_mid">
                                 {item.condition && (
                                   <span>
@@ -604,6 +607,12 @@ export default function ExculisiveContent({
                                     {item.location}
                                   </span>
                                 )}
+                                  {item.seller_type && (
+                                    <span>
+  <i className="fa-solid fa-circle-info"></i>{" "}
+    {item.seller_type?.replace(/^\w/, c => c.toUpperCase())}           
+                           </span>
+                                  )}
                               </div>
                             )}
 

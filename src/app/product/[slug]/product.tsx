@@ -8,7 +8,8 @@ import "swiper/css/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import CaravanDetailModal from "./CaravanDetailModal";
-import "./product.css";
+import "./product.css?=220";
+ 
 import DOMPurify from "dompurify";
 import { type HomeBlogPost } from "@/api/home/api";
 import { toSlug } from "@/utils/seo/slug";
@@ -59,6 +60,7 @@ type ProductData = {
   image?: string[];
   title?: string;
   location_shortcode?: string;
+  seller_type?: string;
   sku?: string;
   image_url?: string[];
 };
@@ -616,14 +618,24 @@ export default function ClientLogger({
                     </div>
                   </div>
 
-                  {product.location_shortcode &&
-                    product.location_shortcode.trim() !== "" && (
-                      <div className="attributes">
-                        <h6 className="category">
-                          Location- {product.location_shortcode}
-                        </h6>
-                      </div>
-                    )}
+                <div className="attributes d-flex align-items-center gap-2 flex-wrap">
+  
+  {product.location_shortcode && (
+    <span className="location_text">
+      Location - {product.location_shortcode}
+    </span>
+  )}
+
+  {product.seller_type && (
+    <span className="seller_badge">
+      <i className="fa-solid fa-circle-info"></i>
+          {product.seller_type?.replace(/^\w/, c => c.toUpperCase())}           
+
+     </span>
+  )}
+
+</div>
+
                 </div>
 
                 <div className="caravan_slider_visible">

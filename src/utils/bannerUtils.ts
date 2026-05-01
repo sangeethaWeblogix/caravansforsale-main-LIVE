@@ -29,16 +29,22 @@ export function shouldShowBanner(
   currentPathname: string,
   banner: Banner,
 ): boolean {
-  const cleanCurrent = currentPathname
-    .replace(/\/$/, "")
-    .replace(/^\/listings/, "");
+  // Normalize current path
+  const cleanCurrent = currentPathname.replace(/\/$/, "") || "/";
 
-  const includePath = extractPathname(banner.page_url)
-    .replace(/\/$/, "")
-    .replace(/^\/listings/, "");
+  const bannerPageUrl = banner.page_url || "";
+  
+  // Extract just the pathname from banner's page_url
+  const includePath = extractPathname(bannerPageUrl).replace(/\/$/, "") || "/";
+  
   const excludedPaths = parseExcludedUrls(banner.excluded_urls);
 
-  if (excludedPaths.some((path) => cleanCurrent.includes(path))) {
+  // Check excluded URLs
+  if (
+    excludedPaths.some((path) =>
+      cleanCurrent === path || cleanCurrent.includes(path)
+    )
+  ) {
     return false;
   }
 
@@ -47,6 +53,10 @@ export function shouldShowBanner(
   }
 
   if (banner.url_match_type === "contains") {
+    // Home page special case: "/" contains everything — so match exactly
+    if (cleanCurrent === "" || cleanCurrent === "/") {
+      return includePath === "" || includePath === "/";
+    }
     return cleanCurrent.includes(includePath);
   }
 

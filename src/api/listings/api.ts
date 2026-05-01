@@ -2,6 +2,7 @@ const API_BASE = process.env.NEXT_PUBLIC_CFS_API_BASE;
 
 interface Filters {
   page?: number;
+  seller_type?: string;
   category?: string;
   make?: string;
   from_price?: string;
@@ -54,6 +55,7 @@ export type Item = {
   model?: string;
   image_format?: string[];
   image_url?: string[];
+  seller_type?: string;
 
 };
 

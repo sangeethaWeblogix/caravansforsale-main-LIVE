@@ -46,6 +46,7 @@ interface Product {
   is_exclusive?: boolean;
   is_premium?: boolean;
   image_url?: string[];
+  seller_type?: string;
 }
 
 interface Pagination {
@@ -144,9 +145,7 @@ export default function ListingContent({
     // 🔥 Route finished changing → stop loader
     setNavigating(false);
   }, [pathname]);
-
- 
- 
+  
   const goToProduct = (href: string) => {
     try {
       sessionStorage.setItem("cameFromListings", "true");
@@ -472,6 +471,8 @@ const postTrackClick = async (product_id: number) => {
   const { bannerRefs, trackClick } = useBannerTracking(matchedBanners);
   const rightBanners = matchedBanners.filter((b) => b.position === "right");
 
+
+  console.log("mergedProducts",mergedProducts)
   return (
     <>
       <Head>
@@ -729,6 +730,7 @@ const postTrackClick = async (product_id: number) => {
                                         </div>
                                       </div>
                                     )}
+                                       
                                   </div>
                                 </div>
                               )}
@@ -778,8 +780,8 @@ const postTrackClick = async (product_id: number) => {
                               </ul>
 
                               {/* --- CONDITION + LOCATION --- */}
-                              {(item.condition || item.location) && (
-                                <div className="bottom_mid">
+                              {(item.condition || item.location || item.seller_type) && (
+                                <div className="bottom_mid" >
                                   {item.condition && (
                                     <span>
                                       <i className="bi bi-check-circle-fill"></i>{" "}
@@ -792,8 +794,15 @@ const postTrackClick = async (product_id: number) => {
                                       {item.location}
                                     </span>
                                   )}
+                                   {item.seller_type && (
+                                    <span>
+  <i className="fa-solid fa-circle-info"></i>{" "}
+    {item.seller_type?.replace(/^\w/, c => c.toUpperCase())}           
+                           </span>
+                                  )}
                                 </div>
                               )}
+
 
                               {/* --- BUTTONS --- */}
                               <div className="bottom_button">
@@ -976,6 +985,7 @@ const postTrackClick = async (product_id: number) => {
                                   </p>
                                 ) : null;
                               })()}
+                              
                               {item.is_premium && (
                                 <div className="more_info">
                                   <div className="informat">
@@ -985,10 +995,21 @@ const postTrackClick = async (product_id: number) => {
                                   </div>
                                 </div>
                               )}
+
+                             
+                           
                             </div>
                           </div>
                         )}
-
+ {item.seller_type && (
+                                  <div className="more_info">
+                                  <div className="informat">
+                                    <span className="premium_van">
+                                      <i className="fa-solid fa-circle-info"></i>{" "}
+  {item.seller_type?.replace(/^\w/, c => c.toUpperCase())}           
+                           </span>
+                           </div></div>
+                                  )}
                         <ul className="vehicleDetailsWithIcons simple">
                           {item.categories && item.categories.length > 0 && (
                             <li className="attribute3_list">
@@ -1016,7 +1037,7 @@ const postTrackClick = async (product_id: number) => {
                           )}
                         </ul>
 
-                        {(item.condition || item.location) && (
+                        {(item.condition || item.location || item.seller_type) && (
                           <div className="bottom_mid">
                             {item.condition && (
                               <span>
@@ -1030,6 +1051,7 @@ const postTrackClick = async (product_id: number) => {
                                 {item.location}
                               </span>
                             )}
+                              
                           </div>
                         )}
 
@@ -1058,7 +1080,7 @@ const postTrackClick = async (product_id: number) => {
                   bannerRefs.current[index] = el;
                 }}
                 data-banner-id={banner.id}
-                href={banner.target_href_url}
+                href={banner.target_url}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="banner_ad_now mb-0"
