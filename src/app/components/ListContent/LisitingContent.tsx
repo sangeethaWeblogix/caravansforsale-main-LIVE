@@ -1,5 +1,5 @@
 "use client";
- import { Swiper, SwiperSlide } from "swiper/react";
+import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
@@ -138,14 +138,14 @@ export default function ListingContent({
         "listingsReturnUrl",
         window.location.pathname + window.location.search,
       );
-    } catch {}
+    } catch { }
   }, []);
 
   useEffect(() => {
     // 🔥 Route finished changing → stop loader
     setNavigating(false);
   }, [pathname]);
-  
+
   const goToProduct = (href: string) => {
     try {
       sessionStorage.setItem("cameFromListings", "true");
@@ -153,7 +153,7 @@ export default function ListingContent({
         "listingsReturnUrl",
         window.location.pathname + window.location.search,
       );
-    } catch {}
+    } catch { }
 
     router.push(href);
   };
@@ -213,15 +213,15 @@ export default function ListingContent({
 
   const enquiryProduct = selectedProduct
     ? {
-        id: selectedProduct.id,
-        slug: selectedProduct.slug,
-        name: selectedProduct.name,
-      }
+      id: selectedProduct.id,
+      slug: selectedProduct.slug,
+      name: selectedProduct.name,
+    }
     : {
-        id: 0,
-        slug: "",
-        name: "",
-      };
+      id: 0,
+      slug: "",
+      name: "",
+    };
 
   const { form, errors, touched, submitting, setField, onBlur, onSubmit } =
     useEnquiryForm(enquiryProduct);
@@ -266,19 +266,19 @@ export default function ListingContent({
   //     return "";
   //   }
   // };
-const postTrackClick = async (product_id: number) => {
-  await fetch("/api/track-click", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      product_id,
-    }),
-  });
-};
+  const postTrackClick = async (product_id: number) => {
+    await fetch("/api/track-click", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        product_id,
+      }),
+    });
+  };
   const handleProductClick = (id) => {
-      postTrackClick(id); 
+    postTrackClick(id);
     // Allow product page to show "Back to Search"
     sessionStorage.setItem("cameFromListings", "true");
   };
@@ -295,16 +295,16 @@ const postTrackClick = async (product_id: number) => {
     }
   }, []);
 
-   const postTrackEvent = async (product_id: number) => {
-  await fetch("/api/track", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          product_id,
-          
-        }),
-      });
-    };
+  const postTrackEvent = async (product_id: number) => {
+    await fetch("/api/track", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        product_id,
+
+      }),
+    });
+  };
 
   const shuffleArray = <T,>(arr: T[]): T[] => {
     const copy = [...arr];
@@ -383,33 +383,33 @@ const postTrackClick = async (product_id: number) => {
   }, [products, preminumProducts, exculisiveProducts, currentFilters.orderby]);
 
   useEffect(() => {
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          const id = Number(
-            entry.target.getAttribute("data-product-id")
-          );
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const id = Number(
+              entry.target.getAttribute("data-product-id")
+            );
 
-          if (id) {
-            postTrackEvent(id); // ✅ only id
+            if (id) {
+              postTrackEvent(id); // ✅ only id
+            }
+
+            observer.unobserve(entry.target);
           }
+        });
+      },
+      { threshold: 0.3 }
+    );
 
-          observer.unobserve(entry.target);
-        }
+    document
+      .querySelectorAll(".product-card[data-product-id]")
+      .forEach((el) => {
+        observer.observe(el);
       });
-    },
-    { threshold: 0.3 }
-  );
 
-  document
-    .querySelectorAll(".product-card[data-product-id]")
-    .forEach((el) => {
-      observer.observe(el);
-    });
-
-  return () => observer.disconnect();
-}, [mergedProducts]);
+    return () => observer.disconnect();
+  }, [mergedProducts]);
 
   // ✅ Disable background scroll when popup is open
   useEffect(() => {
@@ -472,7 +472,7 @@ const postTrackClick = async (product_id: number) => {
   const rightBanners = matchedBanners.filter((b) => b.position === "right");
 
 
-  console.log("mergedProducts",mergedProducts)
+  console.log("mergedProducts", mergedProducts)
   return (
     <>
       <Head>
@@ -665,75 +665,75 @@ const postTrackClick = async (product_id: number) => {
                               {(item.regular_price ||
                                 item.sale_price ||
                                 item.price_difference) && (
-                                <div className="price">
-                                  <div className="metc2">
-                                    {(item.regular_price ||
-                                      item.sale_price) && (
-                                      <h5 className="slog">
-                                        {/* ✅ Stable price rendering: precompute safely */}
-                                        {(() => {
-                                          const rawRegular =
-                                            item.regular_price || "";
-                                          const rawSale = item.sale_price || "";
-                                          const cleanRegular =
-                                            rawRegular.replace(/[^0-9.]/g, "");
-                                          const regNum =
-                                            Number(cleanRegular) || 0;
-                                          const cleanSale = rawSale.replace(
-                                            /[^0-9.]/g,
-                                            "",
-                                          );
-                                          const saleNum =
-                                            Number(cleanSale) || 0;
+                                  <div className="price">
+                                    <div className="metc2">
+                                      {(item.regular_price ||
+                                        item.sale_price) && (
+                                          <h5 className="slog">
+                                            {/* ✅ Stable price rendering: precompute safely */}
+                                            {(() => {
+                                              const rawRegular =
+                                                item.regular_price || "";
+                                              const rawSale = item.sale_price || "";
+                                              const cleanRegular =
+                                                rawRegular.replace(/[^0-9.]/g, "");
+                                              const regNum =
+                                                Number(cleanRegular) || 0;
+                                              const cleanSale = rawSale.replace(
+                                                /[^0-9.]/g,
+                                                "",
+                                              );
+                                              const saleNum =
+                                                Number(cleanSale) || 0;
 
-                                          // If regular price is 0 → show POA
-                                          if (regNum === 0) {
-                                            return <>POA</>;
-                                          }
+                                              // If regular price is 0 → show POA
+                                              if (regNum === 0) {
+                                                return <>POA</>;
+                                              }
 
-                                          // If sale price exists → show sale and strike-through
-                                          if (saleNum > 0) {
-                                            return (
-                                              <>
-                                                <del>{rawRegular}</del>{" "}
-                                                {rawSale}
-                                              </>
-                                            );
-                                          }
+                                              // If sale price exists → show sale and strike-through
+                                              if (saleNum > 0) {
+                                                return (
+                                                  <>
+                                                    <del>{rawRegular}</del>{" "}
+                                                    {rawSale}
+                                                  </>
+                                                );
+                                              }
 
-                                          // Otherwise → show regular price
-                                          return <>{rawRegular}</>;
-                                        })()}
-                                      </h5>
-                                    )}
+                                              // Otherwise → show regular price
+                                              return <>{rawRegular}</>;
+                                            })()}
+                                          </h5>
+                                        )}
 
-                                    {/* ✅ Show SAVE only if > $0 */}
-                                    {(() => {
-                                      const cleanDiff = (
-                                        item.price_difference || ""
-                                      ).replace(/[^0-9.]/g, "");
-                                      const diffNum = Number(cleanDiff) || 0;
-                                      return diffNum > 0 ? (
-                                        <p className="card-price">
-                                          <span>SAVE</span>{" "}
-                                          {item.price_difference}
-                                        </p>
-                                      ) : null;
-                                    })()}
-                                    {item.is_premium && (
-                                      <div className="more_info">
-                                        <div className="informat">
-                                          <span className="premium_van">
-                                            <i className="fa fa-star"></i>{" "}
-                                            Premium
-                                          </span>
+                                      {/* ✅ Show SAVE only if > $0 */}
+                                      {(() => {
+                                        const cleanDiff = (
+                                          item.price_difference || ""
+                                        ).replace(/[^0-9.]/g, "");
+                                        const diffNum = Number(cleanDiff) || 0;
+                                        return diffNum > 0 ? (
+                                          <p className="card-price">
+                                            <span>SAVE</span>{" "}
+                                            {item.price_difference}
+                                          </p>
+                                        ) : null;
+                                      })()}
+                                      {item.is_premium && (
+                                        <div className="more_info">
+                                          <div className="informat">
+                                            <span className="premium_van">
+                                              <i className="fa fa-star"></i>{" "}
+                                              Premium
+                                            </span>
+                                          </div>
                                         </div>
-                                      </div>
-                                    )}
-                                       
+                                      )}
+
+                                    </div>
                                   </div>
-                                </div>
-                              )}
+                                )}
 
                               {/* --- DETAILS LIST --- */}
                               <ul className="vehicleDetailsWithIcons simple">
@@ -782,6 +782,12 @@ const postTrackClick = async (product_id: number) => {
                               {/* --- CONDITION + LOCATION --- */}
                               {(item.condition || item.location || item.seller_type) && (
                                 <div className="bottom_mid" >
+                                  {item.seller_type && (
+                                    <span className="poster_tag">
+                                      {" "}
+                                      {item.seller_type?.replace(/^\w/, c => c.toUpperCase())}
+                                    </span>
+                                  )}
                                   {item.condition && (
                                     <span>
                                       <i className="bi bi-check-circle-fill"></i>{" "}
@@ -794,12 +800,7 @@ const postTrackClick = async (product_id: number) => {
                                       {item.location}
                                     </span>
                                   )}
-                                   {item.seller_type && (
-                                    <span>
-  <i className="fa-solid fa-circle-info"></i>{" "}
-    {item.seller_type?.replace(/^\w/, c => c.toUpperCase())}           
-                           </span>
-                                  )}
+                                  
                                 </div>
                               )}
 
@@ -934,82 +935,82 @@ const postTrackClick = async (product_id: number) => {
                         {(item.regular_price ||
                           item.sale_price ||
                           item.price_difference) && (
-                          <div className="price">
-                            <div className="metc2">
-                              {(item.regular_price || item.sale_price) && (
-                                <h5 className="slog">
-                                  {/* ✅ Stable price rendering: precompute safely */}
-                                  {(() => {
-                                    const rawRegular = item.regular_price || "";
-                                    const rawSale = item.sale_price || "";
-                                    const cleanRegular = rawRegular.replace(
-                                      /[^0-9.]/g,
-                                      "",
-                                    );
-                                    const regNum = Number(cleanRegular) || 0;
-                                    const cleanSale = rawSale.replace(
-                                      /[^0-9.]/g,
-                                      "",
-                                    );
-                                    const saleNum = Number(cleanSale) || 0;
-
-                                    // If regular price is 0 → show POA
-                                    if (regNum === 0) {
-                                      return <>POA</>;
-                                    }
-
-                                    // If sale price exists → show sale and strike-through
-                                    if (saleNum > 0) {
-                                      return (
-                                        <>
-                                          <del>{rawRegular}</del> {rawSale}
-                                        </>
+                            <div className="price">
+                              <div className="metc2">
+                                {(item.regular_price || item.sale_price) && (
+                                  <h5 className="slog">
+                                    {/* ✅ Stable price rendering: precompute safely */}
+                                    {(() => {
+                                      const rawRegular = item.regular_price || "";
+                                      const rawSale = item.sale_price || "";
+                                      const cleanRegular = rawRegular.replace(
+                                        /[^0-9.]/g,
+                                        "",
                                       );
-                                    }
+                                      const regNum = Number(cleanRegular) || 0;
+                                      const cleanSale = rawSale.replace(
+                                        /[^0-9.]/g,
+                                        "",
+                                      );
+                                      const saleNum = Number(cleanSale) || 0;
 
-                                    // Otherwise → show regular price
-                                    return <>{rawRegular}</>;
-                                  })()}
-                                </h5>
-                              )}
+                                      // If regular price is 0 → show POA
+                                      if (regNum === 0) {
+                                        return <>POA</>;
+                                      }
 
-                              {/* ✅ Show SAVE only if > $0 */}
-                              {(() => {
-                                const cleanDiff = (
-                                  item.price_difference || ""
-                                ).replace(/[^0-9.]/g, "");
-                                const diffNum = Number(cleanDiff) || 0;
-                                return diffNum > 0 ? (
-                                  <p className="card-price">
-                                    <span>SAVE</span> {item.price_difference}
-                                  </p>
-                                ) : null;
-                              })()}
-                              
-                              {item.is_premium && (
-                                <div className="more_info">
-                                  <div className="informat">
-                                    <span className="premium_van">
-                                      <i className="fa fa-star"></i> Premium
-                                    </span>
-                                  </div>
-                                </div>
-                              )}
+                                      // If sale price exists → show sale and strike-through
+                                      if (saleNum > 0) {
+                                        return (
+                                          <>
+                                            <del>{rawRegular}</del> {rawSale}
+                                          </>
+                                        );
+                                      }
 
-                             
-                           
-                            </div>
-                          </div>
-                        )}
- {item.seller_type && (
+                                      // Otherwise → show regular price
+                                      return <>{rawRegular}</>;
+                                    })()}
+                                  </h5>
+                                )}
+
+                                {/* ✅ Show SAVE only if > $0 */}
+                                {(() => {
+                                  const cleanDiff = (
+                                    item.price_difference || ""
+                                  ).replace(/[^0-9.]/g, "");
+                                  const diffNum = Number(cleanDiff) || 0;
+                                  return diffNum > 0 ? (
+                                    <p className="card-price">
+                                      <span>SAVE</span> {item.price_difference}
+                                    </p>
+                                  ) : null;
+                                })()}
+
+                                {item.is_premium && (
                                   <div className="more_info">
-                                  <div className="informat">
-                                    <span className="premium_van">
-                                      <i className="fa-solid fa-circle-info"></i>{" "}
-  {item.seller_type?.replace(/^\w/, c => c.toUpperCase())}           
-                           </span>
-                           </div></div>
-                                  )}
+                                    <div className="informat">
+                                      <span className="premium_van">
+                                        <i className="fa fa-star"></i> Premium
+                                      </span>
+                                    </div>
+                                  </div>
+                                )}
+
+
+
+                              </div>
+                            </div>
+                          )}
+                        {item.seller_type && (
+                          <div className="more_info">
+                            <div className="informat">
+                              <span className="premium_van">
+                                {" "}
+                                {item.seller_type?.replace(/^\w/, c => c.toUpperCase())}
+                              </span>
+                            </div></div>
+                        )}
                         <ul className="vehicleDetailsWithIcons simple">
                           {item.categories && item.categories.length > 0 && (
                             <li className="attribute3_list">
@@ -1051,7 +1052,7 @@ const postTrackClick = async (product_id: number) => {
                                 {item.location}
                               </span>
                             )}
-                              
+
                           </div>
                         )}
 

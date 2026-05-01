@@ -9,7 +9,7 @@
 }
 .product-page .product-info .title {
   text-transform: capitalize;
-  margin-bottom: 0;
+  margin-bottom: 5px;
   font-size: 25px;
   font-weight: 700;
   margin-top: 0;
@@ -1099,18 +1099,15 @@
 }
 
 .seller_badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-
-  background: #f1f1f1;
-  color: #555;
-
-  padding: 4px 10px;
-  border-radius: 20px;
-
-  font-size: 13px;
-  font-weight: 400;
+    color: #555;
+    background: #f1f1f1;
+    border-radius: 4px;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    font-size: 13px;
+    font-weight: 400;
+    display: inline-flex;
 }
 
 .seller_badge i {
