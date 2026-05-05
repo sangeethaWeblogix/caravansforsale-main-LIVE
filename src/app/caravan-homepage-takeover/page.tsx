@@ -18,11 +18,14 @@ export default function HomePageTakeOver() {
       <header className="hero-bg text-white d-flex flex-column">
         <div className="container py-5 px-lg-5">
           <div className="col-lg-8">
-            <h1 className="display-4 font-black mb-3 text-uppercase tracking-tight">
+            {/* <h1 className="display-4 font-black mb-3 text-uppercase tracking-tight">
               Become the #1 Caravan <br className="d-none d-md-block" /> Brand Australia-Wide
+            </h1> */}
+            <h1 className="display-4 font-black mb-3 text-uppercase tracking-tight">
+             Get your Brand Across 1000's of Caravan Buyers Daily  
             </h1>
             <p className="h4 fw-medium mb-5">
-              Exclusive Home Page Takeover for <span className="fw-bold">Manufacturers</span> —{' '}
+              Exclusive Home Page Takeover for <span className="fw-bold">Advertisers</span> —{' '}
               <br className="d-none d-md-block" />
               Limited to Just 1 Advertiser Per Month
             </p>
@@ -32,7 +35,7 @@ export default function HomePageTakeOver() {
               </Link>
             </div>
             <p className="small opacity-75">
-              Strictly Limited to 1 Advertiser Per Month | Reserve Your Slot
+              Strictly Limited to 1 Advertiser Per Month | Reserve Your Spot
             </p>
           </div>
         </div>
@@ -225,7 +228,7 @@ export default function HomePageTakeOver() {
       <footer className="footer-bg py-5 text-white">
         <div className="container py-4 text-center">
           <h2 className="h3 font-black mb-5 text-uppercase" style={{ letterSpacing: '0.1em' }}>
-            Only 1 Slot Available Per Month
+            Only 1 Spot Available Per Month
           </h2>
           <div className="row align-items-center justify-content-center g-4">
             <div className="col-auto">

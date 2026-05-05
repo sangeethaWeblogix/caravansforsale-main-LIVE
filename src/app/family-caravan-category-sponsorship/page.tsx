@@ -7,7 +7,7 @@ import './category-take-over.css'
 export const metadata: Metadata = {
   title: 'Family Caravan Category Sponsorship | Australia-Wide Exposure',
   description:
-    "Exclusive category page sponsorship for family caravan manufacturers. Limited to just 1 advertiser per month — maximum exposure, retargeting included, and 100% share of voice in the family caravan category.",
+    "Exclusive Off Road Caravan Listing Page Sponsorship for family caravan advertisers. Limited to just 1 advertiser per month — maximum exposure, retargeting included, and 100% share of voice in the family caravan category.",
 }
 
 export default function OffRoadCategoryTakeOver() {
@@ -21,9 +21,14 @@ export default function OffRoadCategoryTakeOver() {
             <h1 className="display-4 font-black mb-3 text-uppercase tracking-tight">
               DOMINATE THE FAMILY <br className="d-none d-md-block" /> CARAVAN MARKET
             </h1>
-            <p className="h4 fw-medium mb-5">
-              Exclusive Category Page Sponsorship for <span className="fw-bold">Manufacturers</span> —{' '}
+            {/* <p className="h4 fw-medium mb-5">
+              Exclusive Off Road Caravan Listing Page Sponsorship for <span className="fw-bold">Advertisers</span> —{' '}
               <br className="d-none d-md-block" />
+              Limited to Just 1 Spot Per Month
+            </p> */}
+               <p className="h4 fw-medium mb-5">
+              Exclusive Off Road Caravan Listing Page Sponsorship for <span className="fw-bold">Advertisers</span> —{' '}
+              
               Limited to Just 1 Spot Per Month
             </p>
             <div className="mb-4">
@@ -32,7 +37,7 @@ export default function OffRoadCategoryTakeOver() {
               </Link>
             </div>
             <p className="small opacity-75">
-              Strictly Limited to 1 Advertiser Per Month | Reserve Your Slot
+              Strictly Limited to 1 Advertiser Per Month | Reserve Your Spot
             </p>
           </div>
         </div>
@@ -225,7 +230,7 @@ export default function OffRoadCategoryTakeOver() {
       <footer className="footer-bg py-5 text-white">
         <div className="container py-4 text-center">
           <h2 className="h3 font-black mb-5 text-uppercase" style={{ letterSpacing: '0.1em' }}>
-            Only 1 Slot Available Per Month
+            Only 1 Spot Available Per Month
           </h2>
           <div className="row align-items-center justify-content-center g-4">
             <div className="col-auto">
