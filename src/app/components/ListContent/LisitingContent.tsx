@@ -1,5 +1,5 @@
 "use client";
- import { Swiper, SwiperSlide } from "swiper/react";
+import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
@@ -132,6 +132,9 @@ export default function ListingContent({
   const [swiperKey, setSwiperKey] = useState(0);
 
   const pathname = usePathname();
+
+
+  
   useEffect(() => {
     try {
       sessionStorage.setItem(
@@ -145,7 +148,7 @@ export default function ListingContent({
     // 🔥 Route finished changing → stop loader
     setNavigating(false);
   }, [pathname]);
-  
+
   const goToProduct = (href: string) => {
     try {
       sessionStorage.setItem("cameFromListings", "true");
@@ -266,19 +269,19 @@ export default function ListingContent({
   //     return "";
   //   }
   // };
-const postTrackClick = async (product_id: number) => {
-  await fetch("/api/track-click", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      product_id,
-    }),
-  });
-};
+  const postTrackClick = async (product_id: number) => {
+    await fetch("/api/track-click", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        product_id,
+      }),
+    });
+  };
   const handleProductClick = (id) => {
-      postTrackClick(id); 
+    postTrackClick(id);
     // Allow product page to show "Back to Search"
     sessionStorage.setItem("cameFromListings", "true");
   };
@@ -295,16 +298,15 @@ const postTrackClick = async (product_id: number) => {
     }
   }, []);
 
-   const postTrackEvent = async (product_id: number) => {
-  await fetch("/api/track", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          product_id,
-          
-        }),
-      });
-    };
+  const postTrackEvent = async (product_id: number) => {
+    await fetch("/api/track", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        product_id,
+      }),
+    });
+  };
 
   const shuffleArray = <T,>(arr: T[]): T[] => {
     const copy = [...arr];
@@ -315,6 +317,8 @@ const postTrackClick = async (product_id: number) => {
     return copy;
   };
 
+
+  
   // const hasShuffledRef = useRef(false);
 
   const buildMergedProducts = (normal: Product[]) => {
@@ -383,33 +387,31 @@ const postTrackClick = async (product_id: number) => {
   }, [products, preminumProducts, exculisiveProducts, currentFilters.orderby]);
 
   useEffect(() => {
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          const id = Number(
-            entry.target.getAttribute("data-product-id")
-          );
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const id = Number(entry.target.getAttribute("data-product-id"));
 
-          if (id) {
-            postTrackEvent(id); // ✅ only id
+            if (id) {
+              postTrackEvent(id); // ✅ only id
+            }
+
+            observer.unobserve(entry.target);
           }
+        });
+      },
+      { threshold: 0.3 },
+    );
 
-          observer.unobserve(entry.target);
-        }
+    document
+      .querySelectorAll(".product-card[data-product-id]")
+      .forEach((el) => {
+        observer.observe(el);
       });
-    },
-    { threshold: 0.3 }
-  );
 
-  document
-    .querySelectorAll(".product-card[data-product-id]")
-    .forEach((el) => {
-      observer.observe(el);
-    });
-
-  return () => observer.disconnect();
-}, [mergedProducts]);
+    return () => observer.disconnect();
+  }, [mergedProducts]);
 
   // ✅ Disable background scroll when popup is open
   useEffect(() => {
@@ -469,10 +471,22 @@ const postTrackClick = async (product_id: number) => {
 
   const { matchedBanners, isMobile } = useBanners();
   const { bannerRefs, trackClick } = useBannerTracking(matchedBanners);
-  const rightBanners = matchedBanners.filter((b) => b.position === "right");
+   const rightBanners = matchedBanners.filter(
+  (b) => b.position === "right" && b.placement === "listings"
+);
+console.log("rightBanners", rightBanners)
+  console.log("mergedProducts", mergedProducts);
 
+  const [currentBanner, setCurrentBanner] = useState(() => {
+  const shuffled = shuffleArray(rightBanners);
+  return shuffled[0] ?? null;
+});
 
-  console.log("mergedProducts",mergedProducts)
+// rightBanners change ana (route change etc) - reshuffle
+useEffect(() => {
+  const shuffled = shuffleArray(rightBanners);
+  setCurrentBanner(shuffled[0] ?? null);
+}, [rightBanners]);
   return (
     <>
       <Head>
@@ -730,7 +744,6 @@ const postTrackClick = async (product_id: number) => {
                                         </div>
                                       </div>
                                     )}
-                                       
                                   </div>
                                 </div>
                               )}
@@ -780,8 +793,10 @@ const postTrackClick = async (product_id: number) => {
                               </ul>
 
                               {/* --- CONDITION + LOCATION --- */}
-                              {(item.condition || item.location || item.seller_type) && (
-                                <div className="bottom_mid" >
+                              {(item.condition ||
+                                item.location ||
+                                item.seller_type) && (
+                                <div className="bottom_mid">
                                   {item.condition && (
                                     <span>
                                       <i className="bi bi-check-circle-fill"></i>{" "}
@@ -794,15 +809,16 @@ const postTrackClick = async (product_id: number) => {
                                       {item.location}
                                     </span>
                                   )}
-                                   {item.seller_type && (
+                                  {item.seller_type && (
                                     <span>
-  <i className="fa-solid fa-circle-info"></i>{" "}
-    {item.seller_type?.replace(/^\w/, c => c.toUpperCase())}           
-                           </span>
+                                      <i className="fa-solid fa-circle-info"></i>{" "}
+                                      {item.seller_type?.replace(/^\w/, (c) =>
+                                        c.toUpperCase(),
+                                      )}
+                                    </span>
                                   )}
                                 </div>
                               )}
-
 
                               {/* --- BUTTONS --- */}
                               <div className="bottom_button">
@@ -835,7 +851,10 @@ const postTrackClick = async (product_id: number) => {
                   })}
                 </div>
               )}
+
+              
             </div>
+            
           </div>
         </div>
         <div className="pagination-wrapper mt-4">
@@ -985,7 +1004,7 @@ const postTrackClick = async (product_id: number) => {
                                   </p>
                                 ) : null;
                               })()}
-                              
+
                               {item.is_premium && (
                                 <div className="more_info">
                                   <div className="informat">
@@ -995,21 +1014,21 @@ const postTrackClick = async (product_id: number) => {
                                   </div>
                                 </div>
                               )}
-
-                             
-                           
                             </div>
                           </div>
                         )}
- {item.seller_type && (
-                                  <div className="more_info">
-                                  <div className="informat">
-                                    <span className="premium_van">
-                                      <i className="fa-solid fa-circle-info"></i>{" "}
-  {item.seller_type?.replace(/^\w/, c => c.toUpperCase())}           
-                           </span>
-                           </div></div>
-                                  )}
+                        {item.seller_type && (
+                          <div className="more_info">
+                            <div className="informat">
+                              <span className="premium_van">
+                                <i className="fa-solid fa-circle-info"></i>{" "}
+                                {item.seller_type?.replace(/^\w/, (c) =>
+                                  c.toUpperCase(),
+                                )}
+                              </span>
+                            </div>
+                          </div>
+                        )}
                         <ul className="vehicleDetailsWithIcons simple">
                           {item.categories && item.categories.length > 0 && (
                             <li className="attribute3_list">
@@ -1037,7 +1056,9 @@ const postTrackClick = async (product_id: number) => {
                           )}
                         </ul>
 
-                        {(item.condition || item.location || item.seller_type) && (
+                        {(item.condition ||
+                          item.location ||
+                          item.seller_type) && (
                           <div className="bottom_mid">
                             {item.condition && (
                               <span>
@@ -1051,7 +1072,6 @@ const postTrackClick = async (product_id: number) => {
                                 {item.location}
                               </span>
                             )}
-                              
                           </div>
                         )}
 
@@ -1069,34 +1089,34 @@ const postTrackClick = async (product_id: number) => {
                 );
               })}
             </div>
+
           </div>
         </div>
         <div className="display_ad listing_sticky">
           {false &&
-            rightBanners.map((banner, index) => (
+            currentBanner && (
               <a
-                key={banner.id}
-                ref={(el) => {
-                  bannerRefs.current[index] = el;
-                }}
-                data-banner-id={banner.id}
-                href={banner.target_url}
+                key={currentBanner.id}
+                      ref={(el) => { bannerRefs.current[0] = el; }}
+
+                data-banner-id={currentBanner.id}
+                href={currentBanner.target_url}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="banner_ad_now mb-0"
-                onClick={() => trackClick(banner.id)}
+                onClick={() => trackClick(currentBanner.id)}
               >
                 <div className={isMobile ? "banner-mobile" : "banner-desktop"}>
                   <Image
-                    src={banner.image_url}
-                    alt={banner.name}
+                    src={currentBanner.image_url}
+                    alt={currentBanner.name}
                     width={isMobile ? 600 : 1200}
                     height={isMobile ? 300 : 200}
                     priority
                   />
                 </div>
               </a>
-            ))}
+            )}
         </div>
       </div>
       {/* )} */}

@@ -59,6 +59,8 @@ import { fetchRequirements } from "@/api/postRquirements/api";
 
    ]);
   console.log("blogPosts:", homeblog.latest_posts);
+
+  
    return (
      <Home
        sleepBands={sleepBands}

@@ -1520,7 +1520,7 @@ useEffect(() => {
 
         <div className="container">
           <div className="display_ad">
-            {/* {
+            {
               true && currentTopBanner &&  (
                 <a
                   key={currentTopBanner.id}
@@ -1543,7 +1543,7 @@ useEffect(() => {
                     />
                   </div>
                 </a>
-              )} */}
+              )}
           </div>
         </div>
 

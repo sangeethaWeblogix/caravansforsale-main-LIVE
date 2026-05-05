@@ -1,4 +1,3 @@
-
 export function extractPathname(url: string): string {
   try {
     const formatted = url.startsWith("http") ? url : `https://${url}`;
@@ -34,9 +33,6 @@ export function shouldShowBanner(
   const cleanCurrent = currentPathname.replace(/\/$/, "") || "/";
 
   const bannerPageUrl = banner.page_url || "";
-  console.log("finalurl",bannerPageUrl )
-    console.log("finalurls",currentPathname )
-
   
   // Extract just the pathname from banner's page_url
   const includePath = extractPathname(bannerPageUrl).replace(/\/$/, "") || "/";
