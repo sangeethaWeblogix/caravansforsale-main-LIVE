@@ -8,7 +8,7 @@ import "swiper/css/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import CaravanDetailModal from "./CaravanDetailModal";
-import "./product.css?=220";
+import "./product.css?=223";
  
 import DOMPurify from "dompurify";
 import { type HomeBlogPost } from "@/api/home/api";
@@ -628,7 +628,7 @@ export default function ClientLogger({
 
   {product.seller_type && (
     <span className="seller_badge">
-      <i className="fa-solid fa-circle-info"></i>
+      
           {product.seller_type?.replace(/^\w/, c => c.toUpperCase())}           
 
      </span>
