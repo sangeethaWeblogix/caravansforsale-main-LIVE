@@ -33,7 +33,7 @@ export const metadata: Metadata = {
   },
 };
 
- export default async function ListingsPage({
+export default async function ListingsPage({
   searchParams,
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -43,6 +43,7 @@ export const metadata: Metadata = {
   try {
     resolvedSearchParams = await searchParams;
   } catch {
+    // If searchParams resolution fails, use empty object
     resolvedSearchParams = {};
   }
 
@@ -57,15 +58,13 @@ export const metadata: Metadata = {
     page = 1;
   }
 
+  // Wrap API call in try-catch to handle failures gracefully
   try {
-    // ✅ Fetch BOTH in parallel — only ONE fetchListings call
-    const [response, productListRes] = await Promise.all([
-      fetchListings({ page }),
-      fetchProductList(),
-    ]);
+    const response = await fetchListings({ page });
 
-    // Validate response
+    // Check if response is valid
     if (!response) {
+      // API returned nothing - show error fallback
       return (
         <ApiErrorFallback
           title="Unable to load listings"
@@ -75,6 +74,7 @@ export const metadata: Metadata = {
       );
     }
 
+    // Check if API explicitly returned failure
     if (response.success === false) {
       return (
         <ApiErrorFallback
@@ -85,6 +85,7 @@ export const metadata: Metadata = {
       );
     }
 
+    // Check if data structure is valid
     if (!response.data) {
       return (
         <ApiErrorFallback
@@ -95,26 +96,31 @@ export const metadata: Metadata = {
       );
     }
 
+    // Check if products array exists and has items
     if (
       !Array.isArray(response.data.products) ||
       response.data.products.length === 0
     ) {
+      // No products found - this is a 404 case
       notFound();
     }
+const [listingsRes, productListRes] = await Promise.all([
+    fetchListings({ page }),
+    fetchProductList(), // 👈 add this
+  ]);
+      console.log("productListRes", productListRes )
 
-    // ✅ Use `response` (not a second fetch) here
+    // All checks passed - render the listings
     return (
       <Suspense>
-        <Listing
-          initialData={response}
-          page={page}
-          productListData={productListRes}
-        />
+        <Listing initialData={listingsRes} page={page}    productListData={productListRes} />
       </Suspense>
     );
   } catch (error) {
+    // Log the error for debugging
     console.error("Listings page API error:", error);
 
+    // Determine error type and show appropriate message
     const isNetworkError =
       error instanceof Error &&
       (error.message.includes("fetch") ||
@@ -149,6 +155,7 @@ export const metadata: Metadata = {
       );
     }
 
+    // Generic error fallback
     return (
       <ApiErrorFallback
         title="Something went wrong"
