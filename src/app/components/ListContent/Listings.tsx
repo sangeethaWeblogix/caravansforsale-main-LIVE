@@ -202,6 +202,8 @@ type ProductListResponse = {
     const [isMainLoading, setIsMainLoading] = useState(false);
     const [isFeaturedLoading, setIsFeaturedLoading] = useState(false);
     const [isPremiumLoading, setIsPremiumLoading] = useState(false);
+    // true when initialData is provided (non-KV path: noindex/filtered pages)
+    // false when not provided (KV path: cached pages served by worker)
     const [isUsingInitialData, setIsUsingInitialData] = useState(!!initialData);
     const [isNextLoading, setIsNextLoading] = useState(false);
     const [nextPageData, setNextPageData] = useState<ApiResponse | null>(null);
@@ -612,6 +614,10 @@ type ProductListResponse = {
         appliedFilters: Filters = filtersRef.current,
         skipInitialCheck = false,
       ): Promise<ApiResponse | undefined> => {
+        // When initialData is provided (non-KV SSR path), use it on first render
+        // and skip the API call — prevents double-fetch on noindex/filtered pages.
+        // When initialData is undefined (KV cache path), this guard is skipped
+        // and we only fetch on user interaction (filter change, pagination, etc.)
         if (initialData && !skipInitialCheck && isUsingInitialDataRef.current) {
           isUsingInitialDataRef.current = false;
           setIsUsingInitialData(false);
@@ -702,7 +708,7 @@ type ProductListResponse = {
           return undefined;
         }
       },
-      [DEFAULT_RADIUS, router, initialData, isUsingInitialData],
+      [DEFAULT_RADIUS, initialData, isUsingInitialData],
     );
 
     const handleNextPage = useCallback(async () => {
@@ -855,7 +861,7 @@ type ProductListResponse = {
       setFilters(merged);
       setPagination((prev) => ({ ...prev, current_page: pageFromURL }));
 
-      // ✅ Prevent re-fetch on initial load (SSR already has data)
+      // Skip re-fetch on initial load when SSR data is available (non-KV path)
       if (isUsingInitialData && initialData) {
         setIsUsingInitialData(false);
         return;
