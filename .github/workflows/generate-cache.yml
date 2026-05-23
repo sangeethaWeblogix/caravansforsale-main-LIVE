@@ -167,6 +167,7 @@ jobs:
       - name: 🗺️ Generate ${{ matrix.type }}
         env:
           PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
+          VERCEL_BASE_URL: ${{ secrets.VERCEL_BASE_URL }}
           WP_API_BASE: 'https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap'
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
@@ -206,6 +207,7 @@ jobs:
       - name: 🗺️ Generate cat-state
         env:
           PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
+          VERCEL_BASE_URL: ${{ secrets.VERCEL_BASE_URL }}
           WP_API_BASE: 'https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap'
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
@@ -250,6 +252,7 @@ jobs:
       - name: 🗺️ Generate regions (Batch ${{ matrix.batch }}/2)
         env:
           PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
+          VERCEL_BASE_URL: ${{ secrets.VERCEL_BASE_URL }}
           WP_API_BASE: 'https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap'
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
@@ -296,6 +299,7 @@ jobs:
       - name: 🗺️ Generate state-make (Batch ${{ matrix.batch }}/2)
         env:
           PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
+          VERCEL_BASE_URL: ${{ secrets.VERCEL_BASE_URL }}
           WP_API_BASE: 'https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap'
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
@@ -342,6 +346,7 @@ jobs:
       - name: 🗺️ Generate makes (Batch ${{ matrix.batch }}/6)
         env:
           PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
+          VERCEL_BASE_URL: ${{ secrets.VERCEL_BASE_URL }}
           WP_API_BASE: 'https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap'
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
@@ -388,6 +393,7 @@ jobs:
       - name: 🗺️ Generate models (Batch ${{ matrix.batch }}/6)
         env:
           PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
+          VERCEL_BASE_URL: ${{ secrets.VERCEL_BASE_URL }}
           WP_API_BASE: 'https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap'
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
@@ -438,6 +444,7 @@ jobs:
       - name: 🗺️ Generate region-make (Batch ${{ matrix.batch }}/16)
         env:
           PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
+          VERCEL_BASE_URL: ${{ secrets.VERCEL_BASE_URL }}
           WP_API_BASE: 'https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap'
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
@@ -488,6 +495,7 @@ jobs:
       - name: 🗺️ Generate cat-region (Batch ${{ matrix.batch }}/16)
         env:
           PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
+          VERCEL_BASE_URL: ${{ secrets.VERCEL_BASE_URL }}
           WP_API_BASE: 'https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap'
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
@@ -578,6 +586,7 @@ jobs:
       - name: 🎯 Generate ${{ github.event.inputs.target }}
         env:
           PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
+          VERCEL_BASE_URL: ${{ secrets.VERCEL_BASE_URL }}
           WP_API_BASE: 'https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap'
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
