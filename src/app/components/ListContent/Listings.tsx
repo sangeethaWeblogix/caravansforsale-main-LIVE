@@ -1,4 +1,4 @@
-  "use client";
+ "use client";
 
   import {
     Suspense,
@@ -36,7 +36,6 @@
   import StaticLinks from "./StaticLinks";
   import { useBanners } from "@/components/BannerHandler";
   import { useBannerTracking } from "@/hooks/useBannerTracking";
-  // import Link from "next/link";
 
   /* --------- GLOBAL de-dupe across StrictMode remounts --------- */
   // let LAST_GLOBAL_REQUEST_KEY = "";
@@ -204,7 +203,6 @@ type ProductListResponse = {
     const [isFeaturedLoading, setIsFeaturedLoading] = useState(false);
     const [isPremiumLoading, setIsPremiumLoading] = useState(false);
     const [isUsingInitialData, setIsUsingInitialData] = useState(!!initialData);
-    //  const [scrollStarted, setScrollStarted] = useState(false);
     const [isNextLoading, setIsNextLoading] = useState(false);
     const [nextPageData, setNextPageData] = useState<ApiResponse | null>(null);
     const isSliderFetchingRef = useRef(false);
@@ -250,57 +248,50 @@ type ProductListResponse = {
       redirect("/404");
     }
  
-    // const getIP = async () => {
-    //   try {
-    //     const res = await fetch("https://api.ipify.org?format=json");
-    //     const data = await res.json();
-    //     return data.ip || "";
-    //   } catch {
-    //     return "";
-    //   }
-    // };
-
-  const postTrackEvent = async (product_id: number) => {
-  await fetch("/api/track", {
+    const postTrackEvent = async (product_id: number) => {
+      await fetch("/api/track", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           product_id,
-          
         }),
       });
     };
 
- useEffect(() => {
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          const id = Number(
-            entry.target.getAttribute("data-product-id")
-          );
+    useEffect(() => {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              const id = Number(
+                entry.target.getAttribute("data-product-id")
+              );
 
-          if (id) {
-            postTrackEvent(id); // ✅ only id
-          }
+              if (id) {
+                postTrackEvent(id);
+              }
 
-          observer.unobserve(entry.target);
-        }
-      });
-    },
-    { threshold: 0.3 }
-  );
+              observer.unobserve(entry.target);
+            }
+          });
+        },
+        { threshold: 0.3 }
+      );
 
-  document
-    .querySelectorAll(".product-card[data-product-id]")
-    .forEach((el) => {
-      observer.observe(el);
-    });
+      document
+        .querySelectorAll(".product-card[data-product-id]")
+        .forEach((el) => {
+          observer.observe(el);
+        });
 
-  return () => observer.disconnect();
-}, []);
+      return () => observer.disconnect();
+    }, []);
 
     // Initialize state with initialData if provided
+    // NOTE: useState initialisers already set these correctly from SSR data.
+    // The useEffect that previously re-set these from initialData has been
+    // REMOVED — it was overwriting cached HTML variants on every mount,
+    // causing the shuffle effect to be lost after hydration.
     const [products, setProducts] = useState<Product[]>(
       initialData?.data?.products
         ? transformApiItemsToProducts(initialData.data.products)
@@ -439,36 +430,10 @@ type ProductListResponse = {
       return page;
     };
 
-    // const updateURLWithFilters = useCallback(
-    //   (nextFilters: Filters, pageNum: number) => {
-    //     console.log(pageNum);
-    //     const slug = buildSlugFromFilters(nextFilters);
-    //     const query = new URLSearchParams();
-
-    // if (nextFilters.orderby) query.set("orderby", String(nextFilters.orderby));
-
-    //     const r = Number(nextFilters.radius_kms);
-    //     if (!Number.isNaN(r) && r !== DEFAULT_RADIUS) {
-    //       query.set("radius_kms", String(r));
-    //     }
-    //     if (clickid) query.set("clickid", clickid); // only clickid
-
-    //     const safeSlug = slug.endsWith("/") ? slug : `${slug}/`; // 👈 important
-    //     const finalURL = query.toString() ? `${safeSlug}?${query}` : safeSlug;
-    //     console.log("final", finalURL);
-    //     router.push(finalURL, { scroll: false }); // ✅ Prevent auto-scroll
-    //     setTimeout(() => {
-    //       window.scrollTo({ top: 0, behavior: "smooth" });
-    //     }, 150);
-    //   },
-    //   [router, DEFAULT_RADIUS]
-    // );
-    // Add this useEffect near your other effects
-
     const updateURLWithFilters = useCallback(
       (nextFilters: Filters, pageNum: number, clickidParam?: string) => {
         console.log(pageNum);
-        const slug = buildSlugFromFilters(nextFilters); // your slug builder
+        const slug = buildSlugFromFilters(nextFilters);
         const query = new URLSearchParams();
 
         if (nextFilters.orderby)
@@ -477,29 +442,21 @@ type ProductListResponse = {
         if (!Number.isNaN(r) && r !== DEFAULT_RADIUS) {
           query.set("radius_kms", String(r));
         }
-        //  if (clickid) query.set("clickid", clickid);
         const cid =
           clickidParam !== undefined
             ? clickidParam
             : new URLSearchParams(window.location.search).get("clickid");
         if (cid && cid !== "") query.set("clickid", cid);
 
-        // Use current pathname (do not force a route push)
         const path = window.location.pathname;
         const safeSlug = slug ? (slug.endsWith("/") ? slug : `${slug}/`) : path;
         const finalURL = query.toString() ? `${safeSlug}?${query}` : safeSlug;
 
-        // Replace history only — avoids Next.js navigation / redirect
         window.history.pushState({}, "", finalURL);
-        // isSliderFetchingRef.current = true;
-
-        // router.push(finalURL, { scroll: false });
-        // then fetch data client-side
-        //  setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 150);
       },
       [DEFAULT_RADIUS, clickid],
     );
-    // put near your other helpers
+
     const getUrlParams = () => new URLSearchParams(window.location.search);
     const setUrlParams = (params: Record<string, string | undefined>) => {
       const url = new URL(window.location.href);
@@ -516,9 +473,6 @@ type ProductListResponse = {
       if (incoming) setclickid(incoming);
     }, []);
 
-    // tiny util
-    // Replace the existing ensureclickid function with this:
-    // Replace the existing ensureclickid function with this:
     const generateClickidForPage = (pageNum: number): string => {
       if (pageNum <= 1) return "";
 
@@ -528,7 +482,6 @@ type ProductListResponse = {
       let h2 = pageNum * 2246822519;
       let h3 = pageNum * 3266489917;
       let h4 = pageNum * 668265263;
-      // let h1 = 0, h2 = 0, h3 = 0, h4 = 0;
       for (let i = 0; i < str.length; i++) {
         const c = str.charCodeAt(i);
         h1 = ((h1 << 5) - h1 + c) | 0;
@@ -547,33 +500,25 @@ type ProductListResponse = {
     };
 
    const ensureclickid = (pageNum: number): string => {
-  if (pageNum <= 1) {
-    setclickid(null);
-    return "";
-  }
-
-  const id = uuidv4(); // ✅ simple random ID
-  setclickid(id);
-  savePage(id, pageNum); // ✅ page number store பண்ணு
-  return id;
-};
-
-    useEffect(() => {
-      if (initialData?.data?.products) {
-        const transformed = transformApiItemsToProducts(
-          initialData.data.products,
-        );
-        setProducts(transformed);
-        setCategories(initialData.data.all_categories || []);
-        setMakes(initialData.data.make_options || []);
-        setStateOptions(initialData.data.states || []);
-        setModels(initialData.data.model_options || []);
-        setPageTitle(initialData.seo_v2?.h1 || "");
-        setMetaTitle(initialData.seo_v2?.metatitle || "");
-        setMetaDescription(initialData.seo_v2?.metadescription || "");
-        if (initialData.pagination) setPagination(initialData.pagination);
+      if (pageNum <= 1) {
+        setclickid(null);
+        return "";
       }
-    }, [initialData]);
+
+      const id = uuidv4();
+      setclickid(id);
+      savePage(id, pageNum);
+      return id;
+    };
+
+    // ─────────────────────────────────────────────────────────────────
+    // REMOVED: useEffect(() => { ... }, [initialData])
+    //
+    // This effect was re-setting products/categories/etc from initialData
+    // on every mount, which overwrote the shuffled variant served from KV
+    // cache. The useState() initialisers above already correctly seed state
+    // from initialData at first render — the effect was redundant and harmful.
+    // ─────────────────────────────────────────────────────────────────
 
     const sentinelRef = useRef<HTMLDivElement | null>(null);
     useEffect(() => {
@@ -583,7 +528,6 @@ type ProductListResponse = {
         async (entries) => {
           const entry = entries[0];
           if (entry.isIntersecting && !isNextLoading) {
-            //  setScrollStarted(true);
             try {
               const response = await preFetchListings(
                 pagination.current_page + 1,
@@ -675,8 +619,6 @@ type ProductListResponse = {
         }
 
         try {
-          //  window.scrollTo({ top: 0, behavior: "smooth" });
-
           const safeFilters = normalizeSearchFromMake(appliedFilters);
           console.log("appp1", appliedFilters);
           console.log("app", safeFilters.orderby);
@@ -715,8 +657,6 @@ type ProductListResponse = {
             radius_kms: radiusParam,
           });
 
-          // Ignore stale responses so browser back/filter changes don't briefly
-          // paint old results before the latest request completes.
           if (requestId !== latestListingsRequestRef.current) {
             return response;
           }
@@ -768,8 +708,6 @@ type ProductListResponse = {
     const handleNextPage = useCallback(async () => {
       if (pagination.current_page >= pagination.total_pages) return;
 
-      // scrollToTop();
-
       flushSync(() => {
         setIsMainLoading(true);
         setIsFeaturedLoading(true);
@@ -778,13 +716,11 @@ type ProductListResponse = {
 
       const nextPage = pagination.current_page + 1;
 
-      // ✅ always ensure clickid
       const id = ensureclickid(nextPage);
       savePage(id, nextPage);
 
       try {
         if (nextPageData?.data?.products?.length) {
-          // ✅ use prefetched data
           setProducts(transformApiItemsToProducts(nextPageData.data.products));
           setPremiumProducts(
             transformApiItemsToProducts(nextPageData.data.premium_products ?? []),
@@ -804,11 +740,9 @@ type ProductListResponse = {
             setPagination(nextPageData.pagination);
           }
         } else {
-          // ✅ fallback fetch
           await loadListings(nextPage, filtersRef.current, true);
         }
 
-        // ✅ VERY IMPORTANT: URL update using router
         updateURLWithFilters(filtersRef.current, nextPage);
       } catch (error) {
         console.error("Error loading next page:", error);
@@ -817,7 +751,6 @@ type ProductListResponse = {
         setIsFeaturedLoading(false);
         setIsPremiumLoading(false);
 
-        //  setScrollStarted(false);
         setNextPageData(null);
         setIsNextLoading(false);
       }
@@ -829,7 +762,6 @@ type ProductListResponse = {
       updateURLWithFilters,
     ]);
 
-    // ✅ FIXED: Proper handlePrevPage function
     const handlePrevPage = useCallback(async () => {
       if (pagination.current_page <= 1) return;
 
@@ -841,13 +773,11 @@ type ProductListResponse = {
 
       try {
         if (prevPage > 1) {
-          // ✅ ALWAYS generate NEW clickid
           const id = ensureclickid(prevPage);
           if (id) savePage(id, prevPage);
           await loadListings(prevPage, filtersRef.current, true);
           updateURLWithFilters(filtersRef.current, prevPage, id);
         } else {
-          // ✅ first page → remove clickid
           setclickid(null);
           await loadListings(1, filtersRef.current, true);
           updateURLWithFilters(filtersRef.current, 1, "");
@@ -866,11 +796,7 @@ type ProductListResponse = {
       }
     }, [pagination, loadListings]);
 
-    // add near other refs
     const restoredOnceRef = useRef(false);
-    // 3️⃣  restore effect
-
-    // restore effect
 
     console.log("paginationapi", pagination);
     /* ---- SINGLE source of truth: URL -> fetch ---- */
@@ -884,7 +810,6 @@ type ProductListResponse = {
       if (prev !== next) incomingFiltersRef.current = incomingFilters;
     }, [incomingFilters]);
 
-    // Add these refs to track previous values
     const prevFiltersRef = useRef<Filters>({});
     const prevPageRef = useRef(1);
 
@@ -896,14 +821,14 @@ type ProductListResponse = {
         return;
       }
       if (restoredOnceRef.current) {
-        restoredOnceRef.current = false; // reset for future real changes
+        restoredOnceRef.current = false;
         return;
       }
       if (isSliderFetchingRef.current) {
         isSliderFetchingRef.current = false;
         return;
       }
-      if (isPopStateRef.current) return; // ✅ ADD THIS LINE
+      if (isPopStateRef.current) return;
 
       const slugParts = pathKey.split("/listings/")[1]?.split("/") || [];
       const parsedFromURL = parseSlugToFilters(slugParts);
@@ -941,7 +866,6 @@ type ProductListResponse = {
       setIsFeaturedLoading(true);
       setIsPremiumLoading(true);
 
-      // ✅ If client-side navigation happens and no data → 404
       loadListings(pageFromURL, merged, true)
         .then((res) => {
           if (!res?.data?.products?.length) {
@@ -960,7 +884,6 @@ type ProductListResponse = {
 
       Object.entries(next).forEach(([key, value]) => {
         if (value === undefined || value === null || value === "") {
-          // ❌ do nothing → keep previous value
           return;
         }
         merged[key as keyof Filters] = value;
@@ -971,7 +894,6 @@ type ProductListResponse = {
 
     const handleFilterChange = useCallback(
       async (newFilters: Filters) => {
-        // ✅ Show skeleton for ALL sections immediately
         setIsLoading(true);
         setIsMainLoading(true);
         setIsFeaturedLoading(true);
@@ -979,15 +901,12 @@ type ProductListResponse = {
 
         const mergedFilters = mergeFiltersSafely(filtersRef.current, newFilters);
 
-        // cleanup empty values
         if ("orderby" in newFilters && !newFilters.orderby) {
           mergedFilters.orderby = undefined;
         }
-        // ensureclickid();
         filtersRef.current = mergedFilters;
         setFilters(mergedFilters);
 
-        // reset pagination when filters change
         setPagination({
           current_page: 1,
           total_pages: 1,
@@ -997,15 +916,11 @@ type ProductListResponse = {
         });
 
         try {
-          // ✅ update URL
           updateURLWithFilters(mergedFilters, 1);
-
-          // ✅ fetch data immediately
           await loadListings(1, mergedFilters, true);
         } catch (error) {
           console.error("Error applying filters:", error);
         } finally {
-          // ✅ Hide all loaders when done
           setIsLoading(false);
           setIsMainLoading(false);
           setIsFeaturedLoading(false);
@@ -1014,6 +929,7 @@ type ProductListResponse = {
       },
       [updateURLWithFilters, loadListings],
     );
+
     useEffect(() => {
       console.log("Loading state:", {
         isLoading,
@@ -1023,10 +939,8 @@ type ProductListResponse = {
       });
     }, [isLoading, isMainLoading, isFeaturedLoading, isPremiumLoading]);
 
-    // ✅ Add this ref near your other refs
     const isPopStateRef = useRef(false);
 
-    // ✅ Full popstate handler
     useEffect(() => {
       const handlePopState = () => {
         isPopStateRef.current = true;
@@ -1051,7 +965,6 @@ type ProductListResponse = {
         const savedPage = urlClickid ? readPage(urlClickid) : null;
         const pageToLoad = savedPage && savedPage > 0 ? savedPage : 1;
 
-        // ✅ Prevent URL-watcher effect from double-fetching
         prevFiltersRef.current = { ...merged };
         prevPageRef.current = pageToLoad;
         restoredOnceRef.current = true;
@@ -1073,19 +986,16 @@ type ProductListResponse = {
       window.addEventListener("popstate", handlePopState);
       return () => window.removeEventListener("popstate", handlePopState);
     }, [loadListings]);
-    // ✅ Ensure page 1 has a history entry
+
     useEffect(() => {
       if (!searchParams.has("clickid")) {
-        // Page 1 - make sure current URL is in history
         window.history.replaceState({ page: 1 }, "", window.location.href);
       }
     }, []);
-    // ✅ Update your existing clickid restore useEffect
-    // ✅ KEEP ONLY THIS ONE
+
     useEffect(() => {
       if (!clickid) return;
 
-      // ✅ Skip if triggered by popstate - already handled
       if (isPopStateRef.current) {
         isPopStateRef.current = false;
         return;
@@ -1104,7 +1014,7 @@ type ProductListResponse = {
         setIsRestored(true);
       }
     }, [clickid]);
-    // Only check real user filters
+
     const FILTER_KEYS_TO_CHECK: (keyof Filters)[] = [
       "category",
       "make",
@@ -1118,7 +1028,6 @@ type ProductListResponse = {
       "to_price",
       "minKg",
       "maxKg",
-
       "from_sleep",
       "to_sleep",
       "from_length",
@@ -1139,15 +1048,13 @@ type ProductListResponse = {
     const resetAllFilters = async () => {
       if (!hasActiveFilters) return;
 
-      isClearAllRef.current = true; // 🔒 mark clear-all
+      isClearAllRef.current = true;
 
-      // ✅ show skeleton
       setIsLoading(true);
       setIsMainLoading(true);
       setIsFeaturedLoading(true);
       setIsPremiumLoading(true);
 
-      // ✅ HARD CLEAR DATA (IMPORTANT)
       setProducts([]);
       setFeaturedProducts([]);
       setPremiumProducts([]);
@@ -1162,23 +1069,16 @@ type ProductListResponse = {
       });
 
       try {
-        // ✅ update URL only (no duplicate fetch)
         router.replace("/listings", { scroll: false });
-
-        // ❌ DO NOT call loadListings here
       } catch (err) {
         console.error("Clear all failed:", err);
       }
     };
 
-    // Mobile offcanvas filter state
     const mobileFiltersRef = useRef<HTMLDivElement>(null);
     useEffect(() => {
       import("bootstrap/js/dist/offcanvas").catch(() => {});
     }, []);
-
-    
- 
 
     useEffect(() => {
       const controller = new AbortController();
@@ -1186,7 +1086,6 @@ type ProductListResponse = {
 
       const params = new URLSearchParams();
       const f = filtersRef.current;
-      // exclude category itself so all counts are unfiltered by category
       if (f.make) params.set("make", f.make);
       if (f.model) params.set("model", f.model);
       if (f.condition) params.set("condition", f.condition);
@@ -1210,10 +1109,10 @@ type ProductListResponse = {
       if (f.keyword) params.set("keyword", f.keyword);
       params.set("group_by", "category");
 
-     fetch(
-  `/api/params-count?${params.toString()}`,
-  { signal: controller.signal },
-)
+      fetch(
+        `/api/params-count?${params.toString()}`,
+        { signal: controller.signal },
+      )
         .then((r) => r.json())
         .then((json) => {
           if (!controller.signal.aborted) {
@@ -1246,7 +1145,6 @@ type ProductListResponse = {
       filters.search,
       filters.keyword,
     ]);
-    // Listings.tsx — add near your other handlers
 
     const [modalFocusSection, setModalFocusSection] = useState<
       string | undefined
@@ -1256,23 +1154,12 @@ type ProductListResponse = {
       setModalFocusSection(section);
       setOpenModal(true);
     };
-    // ── 3. Handler: category selected from slider dropdown ──
-    // ✅ இந்த function-ஐ மட்டும் replace பண்ணு (handleSliderCategorySelect)
-    // handleFilterChange பயன்படுத்தாம directly loadListings call பண்ணு
-
-    // ✅ handleSliderCategorySelect — loadListings bypass, direct fetchListings call
-    // இந்த function-ஐ Listings.tsx-ல் replace பண்ணு
-
-    // ✅ Generic handler — எந்த filter-க்கும் use பண்ணலாம்
-    // Listings.tsx-ல் handleSliderCategorySelect-ஐ replace பண்ணி இதை மட்டும் வை
 
     const handleSliderFilterSelect = async (newFilters: Partial<Filters>) => {
       console.log("🔥 slider filter change:", newFilters);
 
-      // ✅ Build next filters
       const next: Filters = { ...filtersRef.current };
 
-      // ✅ Apply incoming values — null/undefined = delete that key
       (Object.keys(newFilters) as (keyof Filters)[]).forEach((key) => {
         const val = newFilters[key];
         if (val === null || val === undefined || val === "") {
@@ -1282,22 +1169,18 @@ type ProductListResponse = {
         }
       });
 
-      // ✅ Location hierarchy: state மாறினா region/suburb/pincode clear
       if ("state" in newFilters) {
-        // ✅ Only clear region if it was NOT explicitly passed together
         if (!("region" in newFilters)) {
           delete next.region;
         }
         delete next.suburb;
         delete next.pincode;
       }
-      // ✅ State value capitalize பண்ணு — "new south wales" → "New South Wales"
       if (next.state) {
         next.state = next.state
           .toLowerCase()
           .replace(/\b\w/g, (c) => c.toUpperCase());
       }
-      // ✅ Region value capitalize
       if (next.region) {
         next.region = next.region
           .toLowerCase()
@@ -1308,7 +1191,6 @@ type ProductListResponse = {
         delete next.pincode;
       }
 
-      // ✅ Make மாறினா model clear
       if ("make" in newFilters) {
         if (!("model" in newFilters)) {
           delete next.model;
@@ -1317,16 +1199,13 @@ type ProductListResponse = {
 
       console.log("🔥 next filters:", next);
 
-      // ✅ State + ref update
       filtersRef.current = next;
       setFilters({ ...next });
 
-      // ✅ Loaders ON
       setIsMainLoading(true);
       setIsFeaturedLoading(true);
       setIsPremiumLoading(true);
 
-      // ✅ Pagination reset
       setPagination({
         current_page: 1,
         total_pages: 1,
@@ -1335,7 +1214,6 @@ type ProductListResponse = {
         total_products: 0,
       });
       isSliderFetchingRef.current = true;
-      // ✅ URL update
       updateURLWithFilters(next, 1);
 
       try {
@@ -1350,8 +1228,6 @@ type ProductListResponse = {
           typeof radiusNum === "number" && !isNaN(radiusNum) && radiusNum !== 50
             ? String(radiusNum)
             : undefined;
-
-        // handleSliderFilterSelect-ல் fetchListings call-க்கு முன்னாடி இதை add பண்ணு
 
         console.log("🔥 FINAL next filters before fetch:", {
           make: next.make,
@@ -1386,7 +1262,6 @@ type ProductListResponse = {
           radius_kms: radiusParam,
         });
 
-        // ✅ State update
         const validProducts = (response?.data?.products ?? []).filter(
           (p: any) => p != null,
         );
@@ -1430,14 +1305,14 @@ type ProductListResponse = {
     const activeFilterCount = useMemo(() => {
       let count = 0;
       if (filters.category) count++;
-      if (filters.state) count++; // state + region = 1
-      if (filters.make) count++; // make + model = 1
-      if (filters.minKg || filters.maxKg) count++; // ATM = 1
-      if (filters.from_price || filters.to_price) count++; // Price = 1
+      if (filters.state) count++;
+      if (filters.make) count++;
+      if (filters.minKg || filters.maxKg) count++;
+      if (filters.from_price || filters.to_price) count++;
       if (filters.condition) count++;
       if (filters.acustom_fromyears) count++;
-      if (filters.from_sleep || filters.to_sleep) count++; // Sleep = 1
-      if (filters.from_length || filters.to_length) count++; // Length = 1
+      if (filters.from_sleep || filters.to_sleep) count++;
+      if (filters.from_length || filters.to_length) count++;
       if (filters.search || filters.keyword) count++;
       return count;
     }, [
@@ -1457,6 +1332,7 @@ type ProductListResponse = {
       filters.search,
       filters.keyword,
     ]);
+
   const shuffleArray = <T,>(arr: T[]): T[] => {
     const copy = [...arr];
     for (let i = copy.length - 1; i > 0; i--) {
@@ -1465,33 +1341,34 @@ type ProductListResponse = {
     }
     return copy;
   };
+
     const { matchedBanners, isMobile } = useBanners();
     const { bannerRefs, trackClick } = useBannerTracking(matchedBanners);
-const topBanners = matchedBanners.filter(
-  (b) => b.position === "top" && b.placement === "listings"
-);
-console.log("matched", topBanners)
- const [currentTopBanner, setCurrentTopBanner] = useState<typeof matchedBanners[0] | null>(null);
-const topBannerInitRef = useRef(false);
+    const topBanners = matchedBanners.filter(
+      (b) => b.position === "top" && b.placement === "listings"
+    );
+    console.log("matched", topBanners);
+    const [currentTopBanner, setCurrentTopBanner] = useState<typeof matchedBanners[0] | null>(null);
+    const topBannerInitRef = useRef(false);
 
-useEffect(() => {
-  const top = matchedBanners.filter(
-    (b) => b.position === "top" && b.placement === "listings"
-  );
-  
-  if (top.length === 0) return; // banners load ஆகலன்னா wait பண்ணு
-  
-  if (!topBannerInitRef.current) {
-    // ✅ First time மட்டும் shuffle + set
-    topBannerInitRef.current = true;
-    const shuffled = shuffleArray(top);
-    setCurrentTopBanner(shuffled[0]);
-  }
-}, [matchedBanners]);
-useEffect(() => {
-  const shuffled = shuffleArray(topBanners);
-  setCurrentTopBanner(shuffled[0] ?? null);
-}, [topBanners]);
+    useEffect(() => {
+      const top = matchedBanners.filter(
+        (b) => b.position === "top" && b.placement === "listings"
+      );
+      
+      if (top.length === 0) return;
+      
+      if (!topBannerInitRef.current) {
+        topBannerInitRef.current = true;
+        const shuffled = shuffleArray(top);
+        setCurrentTopBanner(shuffled[0]);
+      }
+    }, [matchedBanners]);
+
+    useEffect(() => {
+      const shuffled = shuffleArray(topBanners);
+      setCurrentTopBanner(shuffled[0] ?? null);
+    }, [topBanners]);
 
     return (
       <>
@@ -1520,30 +1397,6 @@ useEffect(() => {
 
         <div className="container">
           <div className="display_ad">
-            {/* {
-              true && currentTopBanner &&  (
-                <a
-                  key={currentTopBanner.id}
-                       ref={(el) => { bannerRefs.current[0] = el; }}
-
-                  data-banner-id={currentTopBanner.id}
-                  href={currentTopBanner.target_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="banner_ad_now mb-0"
-                  onClick={() => trackClick(currentTopBanner.id)}
-                >
-                  <div className={isMobile ? "banner-mobile" : "banner-desktop"}>
-                    <Image
-                      src={currentTopBanner.image_url}
-                      alt={currentTopBanner.name}
-                      width={isMobile ? 600 : 1200}
-                      height={isMobile ? 300 : 200}
-                      priority
-                    />
-                  </div>
-                </a>
-              )} */}
           </div>
         </div>
 
@@ -1570,7 +1423,6 @@ useEffect(() => {
                   <div>
                     <FilterSlider
                         productListData={productListData}
-
                       setIsLoading={setIsLoading}
                       setIsMainLoading={setIsMainLoading}
                       setIsFeaturedLoading={setIsFeaturedLoading}
@@ -1599,7 +1451,6 @@ useEffect(() => {
                                 .replace(/\b\w/g, (c) => c.toUpperCase())
                             : undefined;
 
-                        // ✅ Always pass both state + region together — never split
                         handleSliderFilterSelect({
                           state: cap(state),
                           region: cap(region),
@@ -1607,17 +1458,15 @@ useEffect(() => {
                       }}
                       onPriceSelect={(from, to) => {
                         const next: Partial<Filters> = {};
-                        // from/to null ஆனா explicitly undefined set பண்ணு (delete ஆகும்)
-                        // value இருந்தா set பண்ணு
                         if (from !== null && from !== undefined) {
                           next.from_price = from;
                         } else {
-                          next.from_price = undefined; // delete
+                          next.from_price = undefined;
                         }
                         if (to !== null && to !== undefined) {
                           next.to_price = to;
                         } else {
-                          next.to_price = undefined; // delete
+                          next.to_price = undefined;
                         }
                         handleSliderFilterSelect(next);
                       }}
@@ -1627,7 +1476,7 @@ useEffect(() => {
                         if (make !== null && make !== undefined) {
                           next.make = make;
                         } else {
-                          next.make = undefined; // delete
+                          next.make = undefined;
                         }
 
                         if (model !== null && model !== undefined) {
@@ -1662,7 +1511,7 @@ useEffect(() => {
 
         {openModal && (
           <FilterModal
-    productListData={productListData}
+            productListData={productListData}
             onClose={() => setOpenModal(false)}
             onClearAll={resetAllFilters}
             categories={categories}
@@ -1678,42 +1527,13 @@ useEffect(() => {
             setIsMainLoading={setIsMainLoading}
             focusSection={modalFocusSection}
           />
-
-          //  <CaravanFilter
-          //                         categories={categories}
-          //                         makes={makes}
-          //                         models={models}
-          //                         states={stateOptions}
-          //                         onFilterChange={(partial) => {
-
-          //                           handleFilterChange(partial);
-          //                         }}
-          //                         currentFilters={filters}
-          //                         setIsFeaturedLoading={setIsFeaturedLoading}
-          //                         setIsPremiumLoading={setIsPremiumLoading}
-          //                         setIsMainLoading={setIsMainLoading}
-          //                         hideSSRLinks={true}
-          //                       />
         )}
 
         <section className="services product_listing new_listing bg-gray-100 section-padding pb-30 style-1">
           <div className="container">
             <div className="content mb-4">
-              {/*<div className="text-sm text-gray-600 header">
-                      <Link href="/" className="hover:underline">
-                        Home
-                      </Link>{" "}
-                      &gt; <span className="font-medium text-black"> Listings</span>
-                    </div>
-        
-                    <h1 className="page-title">{pageTitle}</h1>*/}
               <div ref={sentinelRef} style={{ height: "1px" }} />
               <div className="row">
-                {/* Desktop sidebar */}
-
-                {/* Listings */}
-                {/* Listings */}
-
                 {isLoading ||
                 isMainLoading ||
                 isFeaturedLoading ||
@@ -1723,7 +1543,6 @@ useEffect(() => {
                   </div>
                 ) : (
                   <>
-                    {/** CASE 1: SHOW LISTING PAGE */}
                     {(products.length > 0 ||
                       fetauredProducts.length > 0 ||
                       preminumProducts.length > 0) && (
@@ -1744,11 +1563,9 @@ useEffect(() => {
                         isMainLoading={isMainLoading}
                         isFeaturedLoading={isFeaturedLoading}
                         isPremiumLoading={isPremiumLoading}
-                        // isNextLoading={isNextLoading}
                       />
                     )}
 
-                    {/** CASE 2: SHOW EXCLUSIVE PAGE */}
                     {products.length === 0 &&
                       fetauredProducts.length === 0 &&
                       preminumProducts.length === 0 &&
@@ -1805,22 +1622,6 @@ useEffect(() => {
                   setIsPremiumLoading={setIsPremiumLoading}
                   setIsMainLoading={setIsMainLoading}
                 />
-
-                //  <CaravanFilter
-                //                         categories={categories}
-                //                         makes={makes}
-                //                         models={models}
-                //                         states={stateOptions}
-                //                         onFilterChange={(partial) => {
-
-                //                           handleFilterChange(partial);
-                //                         }}
-                //                         currentFilters={filters}
-                //                         setIsFeaturedLoading={setIsFeaturedLoading}
-                //                         setIsPremiumLoading={setIsPremiumLoading}
-                //                         setIsMainLoading={setIsMainLoading}
-                //                         hideSSRLinks={true}
-                //                       />
               )}
             </Suspense>
           </div>
