@@ -75,8 +75,7 @@ export default async function ListingsPage({
   } catch {
     page = 1;
   }
-
-  try {
+try {
     // productListData (categories + states for filter UI) always needed
     const productListRes = await fetchProductList();
 
@@ -97,7 +96,15 @@ export default async function ListingsPage({
 
     // ── PATH 2: Not from KV (noindex, filtered, uncached, query params) ──────
     // Fetch listings normally for proper SSR on Vercel.
-    const response = await fetchListings({ page });
+    // Extract shuffle_seed for Cloudflare cache variant generation
+    const shuffleSeed = resolvedSearchParams.shuffle_seed
+      ? String(resolvedSearchParams.shuffle_seed)
+      : undefined;
+
+    const response = await fetchListings({
+      page,
+      ...(shuffleSeed ? { shuffle_seed: shuffleSeed } : {}),
+    });
 
     if (!response) {
       return (
