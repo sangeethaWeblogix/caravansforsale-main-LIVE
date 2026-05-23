@@ -37,6 +37,7 @@ const fetch = require('node-fetch');
 
 // Environment variables
 const PRODUCTION_DOMAIN = process.env.PRODUCTION_DOMAIN || 'https://www.caravansforsale.com.au';
+const VERCEL_BASE_URL = process.env.VERCEL_BASE_URL || PRODUCTION_DOMAIN; // Prefer Vercel direct to bypass CF Worker
 const WP_API_BASE = process.env.WP_API_BASE || 'https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap';
 const CF_ACCOUNT_ID = process.env.CF_ACCOUNT_ID;
 const CF_KV_NAMESPACE_ID = process.env.CF_KV_NAMESPACE_ID;
@@ -337,7 +338,10 @@ async function generatePageVariant(urlData, variantNumber) {
   const { path } = urlData;
   const slug = convertPathToSlug(path);
 
-  let fetchUrl = `${PRODUCTION_DOMAIN}${path}`;
+  // Use VERCEL_BASE_URL to bypass Cloudflare Worker (which would serve
+  // existing KV cache and ignore ?shuffle_seed). Hitting Vercel directly
+  // ensures page.tsx receives shuffle_seed and forwards it to the WP API.
+  let fetchUrl = `${VERCEL_BASE_URL}${path}`;
   if (VARIANTS_PER_URL > 1) {
     fetchUrl += fetchUrl.includes('?') ? '&' : '?';
     fetchUrl += `shuffle_seed=${variantNumber}`;
@@ -425,6 +429,7 @@ async function main() {
   console.log('🗺️  API-BASED CACHE GENERATION');
   console.log('█'.repeat(70));
   console.log(`📍 Domain:   ${PRODUCTION_DOMAIN}`);
+  console.log(`🌐 Fetch from: ${VERCEL_BASE_URL}${VERCEL_BASE_URL !== PRODUCTION_DOMAIN ? ' (direct to Vercel)' : ''}`);
   console.log(`🔌 API Base: ${WP_API_BASE}`);
   console.log(`🔢 Variants: ${VARIANTS_PER_URL}`);
   console.log(`🎯 Target:   ${TARGET_SITEMAP}`);
