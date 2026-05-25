@@ -1,4 +1,4 @@
- import React, { Suspense } from "react";
+import React, { Suspense } from "react";
 import Listing from "../components/ListContent/Listings";
 import { fetchListings } from "@/api/listings/api";
 import type { Metadata } from "next";
@@ -6,21 +6,18 @@ import { ensureValidPage } from "@/utils/seo/validatePage";
 import { notFound } from "next/navigation";
 import ApiErrorFallback from "../components/ApiErrorFallback";
 import { fetchProductList } from "@/api/productList/api";
-import { headers } from "next/headers";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// CACHE-AWARE PAGE
+// ALWAYS FETCH FOR HYDRATION CONSISTENCY
 //
-// When the Cloudflare Worker serves this page from KV, it sets:
-//   X-CFS-Cache: HIT-KV
+// Previously the KV path skipped fetchListings and passed initialData={undefined}.
+// This caused a hydration mismatch: the KV HTML had product cards baked in,
+// but the client component initialised with products=[] → React wiped the DOM
+// on hydration → fetch fired → products reappeared → FLASH.
 //
-// In that case we skip fetchListings entirely — the KV HTML already has the
-// correct shuffled variant. Passing initialData would cause React hydration to
-// overwrite the cached variant with the default API order (no shuffle_seed).
-//
-// When Vercel handles the request directly (noindex pages, filtered pages,
-// uncached routes, query-param URLs), X-CFS-Cache is absent, so we fetch
-// normally and pass initialData for proper SSR.
+// Now we always fetch listings so React hydration has matching data.
+// The KV cache still delivers HTML fast for first paint; the server-to-server
+// fetchListings call adds minimal overhead.
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const revalidate = 3600;
@@ -54,10 +51,6 @@ export default async function ListingsPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  // Check if Worker served this from KV cache
-  const headersList = await headers();
-  const servedFromKV = headersList.get("x-cfs-cache") === "HIT-KV";
-
   let resolvedSearchParams: Record<string, string | string[] | undefined>;
   try {
     resolvedSearchParams = await searchParams;
@@ -75,28 +68,14 @@ export default async function ListingsPage({
   } catch {
     page = 1;
   }
-try {
+
+  try {
     // productListData (categories + states for filter UI) always needed
     const productListRes = await fetchProductList();
 
-    // ── PATH 1: Served from KV cache ────────────────────────────────────────
-    // Skip fetchListings — KV HTML already has the shuffled variant.
-    // React will hydrate the existing DOM without replacing listing content.
-    if (servedFromKV) {
-      return (
-        <Suspense>
-          <Listing
-            initialData={undefined}
-            page={1}
-            productListData={productListRes}
-          />
-        </Suspense>
-      );
-    }
-
-    // ── PATH 2: Not from KV (noindex, filtered, uncached, query params) ──────
-    // Fetch listings normally for proper SSR on Vercel.
-    // Extract shuffle_seed for Cloudflare cache variant generation
+    // Always fetch listings — even when KV serves the HTML.
+    // This ensures React hydration has matching data and avoids the flash
+    // where KV HTML shows products but client state starts empty.
     const shuffleSeed = resolvedSearchParams.shuffle_seed
       ? String(resolvedSearchParams.shuffle_seed)
       : undefined;
