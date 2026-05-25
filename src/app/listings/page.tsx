@@ -76,13 +76,14 @@ export default async function ListingsPage({
     // Always fetch listings — even when KV serves the HTML.
     // This ensures React hydration has matching data and avoids the flash
     // where KV HTML shows products but client state starts empty.
-    const shuffleSeed = resolvedSearchParams.shuffle_seed
-      ? String(resolvedSearchParams.shuffle_seed)
-      : undefined;
+   const shuffleSeed = resolvedSearchParams.shuffle_seed
+  ? String(resolvedSearchParams.shuffle_seed)
+  : String(Math.floor(Math.random() * 1_000_000));
 
     const response = await fetchListings({
       page,
-      ...(shuffleSeed ? { shuffle_seed: shuffleSeed } : {}),
+   shuffle_seed: shuffleSeed,
+
     });
 
     if (!response) {
@@ -125,7 +126,7 @@ export default async function ListingsPage({
     return (
       <Suspense>
         <Listing
-          initialData={response}
+          initialData={undefined}
           page={page}
           productListData={productListRes}
         />
