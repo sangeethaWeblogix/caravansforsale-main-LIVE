@@ -192,16 +192,16 @@ export default function ListingsPage({
   const [isFeaturedLoading, setIsFeaturedLoading] = useState(false);
   const [isPremiumLoading, setIsPremiumLoading] = useState(false);
 
-  // true when initialData is provided (non-KV path: noindex/filtered pages)
-  // false when not provided (KV path: cached pages served by worker)
-  const [isUsingInitialData, setIsUsingInitialData] = useState(!!initialData);
-
   const [isNextLoading, setIsNextLoading] = useState(false);
   const [nextPageData, setNextPageData] = useState<ApiResponse | null>(null);
   const isSliderFetchingRef = useRef(false);
   const [clickid, setclickid] = useState<string | null>(null);
   const [isRestored, setIsRestored] = useState(false);
   console.log(isRestored);
+
+  // ✅ FIX: Single ref to track whether we've consumed initialData.
+  // No state variable — avoids circular dep with loadListings/useEffect.
+  const hasConsumedInitialDataRef = useRef(false);
 
   // 1️⃣  persistence helpers
   const PAGE_KEY = (id: string) => `page_${id}`;
@@ -270,7 +270,7 @@ export default function ListingsPage({
     return () => observer.disconnect();
   }, []);
 
-  // Initialize state with initialData if provided
+  // Initialize state with initialData (always provided now — page.tsx always fetches)
   const [products, setProducts] = useState<Product[]>(
     initialData?.data?.products
       ? transformApiItemsToProducts(initialData.data.products)
@@ -488,15 +488,6 @@ export default function ListingsPage({
     return id;
   };
 
-  // ─────────────────────────────────────────────────────────────────
-  // REMOVED: useEffect(() => { ... }, [initialData])
-  //
-  // This effect was re-setting products/categories/etc from initialData
-  // on every mount, which overwrote the shuffled variant served from KV
-  // cache. The useState() initialisers above already correctly seed state
-  // from initialData at first render — the effect was redundant and harmful.
-  // ─────────────────────────────────────────────────────────────────
-
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     if (!sentinelRef.current) return;
@@ -578,7 +569,6 @@ export default function ListingsPage({
     }
   };
 
-  const isUsingInitialDataRef = useRef(!!initialData);
   const latestListingsRequestRef = useRef(0);
 
   const loadListings = useCallback(
@@ -587,13 +577,11 @@ export default function ListingsPage({
       appliedFilters: Filters = filtersRef.current,
       skipInitialCheck = false,
     ): Promise<ApiResponse | undefined> => {
-      // When initialData is provided (non-KV SSR path), use it on first render
-      // and skip the API call — prevents double-fetch on noindex/filtered pages.
-      // When initialData is undefined (KV cache path), this guard is skipped
-      // and we only fetch on user interaction (filter change, pagination, etc.)
-      if (initialData && !skipInitialCheck && isUsingInitialDataRef.current) {
-        isUsingInitialDataRef.current = false;
-        setIsUsingInitialData(false);
+      // On first call, return initialData without fetching.
+      // This prevents a double-fetch on mount — useState already seeded
+      // products from initialData, so we just need to signal "done".
+      if (initialData && !skipInitialCheck && !hasConsumedInitialDataRef.current) {
+        hasConsumedInitialDataRef.current = true;
         return initialData;
       }
 
@@ -681,10 +669,7 @@ export default function ListingsPage({
         return undefined;
       }
     },
-    // ✅ FIX 1: Removed `isUsingInitialData` from deps.
-    // loadListings only reads `isUsingInitialDataRef.current` (the ref),
-    // never the state variable. Having the state here caused a circular loop:
-    //   state flips → loadListings gets new ref → useEffect re-fires → spurious fetch → FLASH
+    // ✅ FIX: Only stable deps. No state variables that flip and cause loops.
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [DEFAULT_RADIUS, initialData],
   );
@@ -832,12 +817,10 @@ export default function ListingsPage({
     setFilters(merged);
     setPagination((prev) => ({ ...prev, current_page: pageFromURL }));
 
-    // ✅ FIX 2: Use ref instead of state for the guard.
-    // Reading the ref avoids closure staleness and prevents the state change
-    // from creating a new loadListings reference that would re-trigger this effect.
-    if (isUsingInitialDataRef.current && initialData) {
-      isUsingInitialDataRef.current = false;
-      setIsUsingInitialData(false);
+    // ✅ FIX: Use ref to guard initial mount. Skip fetch when initialData
+    // was provided — useState already seeded the products.
+    if (!hasConsumedInitialDataRef.current && initialData) {
+      hasConsumedInitialDataRef.current = true;
       return;
     }
 
@@ -1324,10 +1307,8 @@ export default function ListingsPage({
   >(null);
   const topBannerInitRef = useRef(false);
 
-  // ✅ FIX 3: Single useEffect for top banners.
-  // The previous duplicate useEffect used inline `topBanners` (.filter() result)
-  // as a dependency — a new array ref every render — causing it to run every
-  // render and reshuffle the banner constantly.
+  // ✅ FIX: Single useEffect for top banners. Removed the duplicate that
+  // used inline topBanners (.filter() = new ref every render) as a dep.
   useEffect(() => {
     const top = matchedBanners.filter(
       (b) => b.position === "top" && b.placement === "listings",
@@ -1341,12 +1322,6 @@ export default function ListingsPage({
       setCurrentTopBanner(shuffled[0]);
     }
   }, [matchedBanners]);
-
-  // ✅ REMOVED: duplicate topBanners useEffect that ran every render
-  // useEffect(() => {
-  //   const shuffled = shuffleArray(topBanners);
-  //   setCurrentTopBanner(shuffled[0] ?? null);
-  // }, [topBanners]);
 
   return (
     <>
