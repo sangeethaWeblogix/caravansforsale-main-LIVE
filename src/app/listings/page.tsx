@@ -1,4 +1,4 @@
-  import React, { Suspense } from "react";
+import React, { Suspense } from "react";
 import Listing from "../components/ListContent/Listings";
 import { fetchListings } from "@/api/listings/api";
 import type { Metadata } from "next";
@@ -6,6 +6,19 @@ import { ensureValidPage } from "@/utils/seo/validatePage";
 import { notFound } from "next/navigation";
 import ApiErrorFallback from "../components/ApiErrorFallback";
 import { fetchProductList } from "@/api/productList/api";
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ALWAYS FETCH FOR HYDRATION CONSISTENCY
+//
+// Previously the KV path skipped fetchListings and passed initialData={undefined}.
+// This caused a hydration mismatch: the KV HTML had product cards baked in,
+// but the client component initialised with products=[] → React wiped the DOM
+// on hydration → fetch fired → products reappeared → FLASH.
+//
+// Now we always fetch listings so React hydration has matching data.
+// The KV cache still delivers HTML fast for first paint; the server-to-server
+// fetchListings call adds minimal overhead.
+// ─────────────────────────────────────────────────────────────────────────────
 
 export const revalidate = 3600;
 
@@ -58,9 +71,22 @@ export default async function ListingsPage({
     page = 1;
   }
 
-  // Wrap API call in try-catch to handle failures gracefully
   try {
-    const response = await fetchListings({ page });
+    // productListData (categories + states for filter UI) always needed
+    const productListRes = await fetchProductList();
+
+    // Always fetch listings — even when KV serves the HTML.
+    // This ensures React hydration has matching data and avoids the flash
+    // where KV HTML shows products but client state starts empty.
+   const shuffleSeed = resolvedSearchParams.shuffle_seed
+  ? String(resolvedSearchParams.shuffle_seed)
+  : String(Math.floor(Math.random() * 1_000_000));
+
+    const response = await fetchListings({
+      page,
+   shuffle_seed: shuffleSeed,
+
+    });
 
     // Check if response is valid
     if (!response) {
@@ -113,7 +139,11 @@ const [listingsRes, productListRes] = await Promise.all([
     // All checks passed - render the listings
     return (
       <Suspense>
-        <Listing initialData={listingsRes} page={page}    productListData={productListRes} />
+        <Listing
+          initialData={undefined}
+          page={page}
+          productListData={productListRes}
+        />
       </Suspense>
     );
   } catch (error) {

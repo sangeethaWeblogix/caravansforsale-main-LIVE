@@ -151,6 +151,9 @@ function isErrorPage(html) {
     // Image 2: Service error
     "Service error",
     "Our listing service encountered an error",
+    // Image 3: Generic error page (Oops variant)
+    "Oops! Something went wrong",
+    "temporarily unavailable",
     // Next.js unhandled exception
     "Application error: a client-side exception has occurred",
     // Generic fallback
