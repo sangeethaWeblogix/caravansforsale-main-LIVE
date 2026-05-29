@@ -476,11 +476,11 @@ export default function ListingContent({
 );
 console.log("rightBanners", rightBanners)
   console.log("mergedProducts", mergedProducts);
-
-  const [currentBanner, setCurrentBanner] = useState(() => {
+const [currentBanner, setCurrentBanner] = useState<typeof rightBanners[0] | null>(null);
+ useEffect(() => {
   const shuffled = shuffleArray(rightBanners);
-  return shuffled[0] ?? null;
-});
+  setCurrentBanner(shuffled[0] ?? null);
+}, [rightBanners]);
 
 // rightBanners change ana (route change etc) - reshuffle
 useEffect(() => {

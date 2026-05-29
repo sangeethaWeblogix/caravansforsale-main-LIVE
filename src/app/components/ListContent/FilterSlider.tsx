@@ -356,9 +356,10 @@ const [states, setStates] = useState<StateOption[]>(
 
   // ── Condition handlers ──
   const handleConditionOpen = () => {
-    setTempCondition(currentFilters.condition ?? null);
+  setTempCondition(currentFilters.condition?.toLowerCase() ?? null);
     setOpenModal("condition");
   };
+  console.log("connnn", tempCondition)
 
   const handleConditionSearch = () => {
     triggerGlobalLoaders();
@@ -799,7 +800,7 @@ const [states, setStates] = useState<StateOption[]>(
                 {currentFilters.condition ? (
                   <>
                     <small className="selected_label">Condition: </small>
-                    {currentFilters.condition === "new" ? "New" : "Used"}
+{currentFilters.condition?.toLowerCase() === "new" ? "New" : "Used"}
                     <span className="active_filter">
                       <i className="bi bi-circle-fill"></i>
                     </span>
@@ -1618,7 +1619,7 @@ const [states, setStates] = useState<StateOption[]>(
                           checked={tempCondition?.toLowerCase() === "new"}
                           onChange={() =>
                             setTempCondition(
-                              tempCondition === "new" ? null : "new",
+    tempCondition?.toLowerCase() === "new" ? null : "new",
                             )
                           }
                         />
@@ -1648,7 +1649,9 @@ const [states, setStates] = useState<StateOption[]>(
                           checked={tempCondition?.toLowerCase() === "used"}
                           onChange={() =>
                             setTempCondition(
-                              tempCondition === "used" ? null : "used",
+    tempCondition?.toLowerCase() === "used" ? null : "used",
+
+
                             )
                           }
                         />
