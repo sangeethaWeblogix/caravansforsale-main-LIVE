@@ -343,7 +343,8 @@ export async function metaFromSlug(
     res?.seo_v2?.meta_title?.trim() ||
     "Caravans for Sale in Australia - Find Exclusive Deals";
   const title = rawTitle.trim();
-  const description = res?.seo_v2?.meta_description?.trim();
+  // const description = res?.seo_v2?.meta_description?.trim();
+  const description =  "Browse caravans for sale across Australia. Compare prices on off-road, hybrid, pop top, touring, luxury models with size, weight & sleeping capacity.";
 
   const robots = { index: robotsResult.index };
 

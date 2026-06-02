@@ -16,7 +16,7 @@ import { fetchHomePage, type HomeBlogPost } from "@/api/home/api";
  export const metadata: Metadata = {
    title: "Caravans For Sale – Australia’s Marketplace for New & Used Caravans",
    description:
-     "Browse new & used caravans for sale across Australia. Compare prices on off-road, hybrid, pop top, touring, luxury models with size, weight & sleeping capacity.",
+         "Browse caravans for sale across Australia. Compare prices on off-road, hybrid, pop top, touring, luxury models with size, weight & sleeping capacity.",
    robots: "index, follow",
    openGraph: {
      title: "Caravans For Sale – Australia’s Marketplace for New & Used Caravans",

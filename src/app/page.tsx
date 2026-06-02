@@ -19,7 +19,7 @@ import { fetchRequirements } from "@/api/postRquirements/api";
       template: "%s ",
     },
     description:
-      "Browse new & used caravans for sale across Australia. Compare prices on off-road, hybrid, pop top, touring, luxury models with size, weight & sleeping capacity",
+         "Browse caravans for sale across Australia. Compare prices on off-road, hybrid, pop top, touring, luxury models with size, weight & sleeping capacity.",
     icons: { icon: "/favicon.ico" },
     robots: "index, follow",
     verification: {
