@@ -1094,22 +1094,22 @@ useEffect(() => {
         </div>
         <div className="display_ad listing_sticky">
           {false &&
-            currentBanner && (
+  currentBanner != null && (
               <a
-                key={currentBanner.id}
+                key={currentBanner!.id}
                       ref={(el) => { bannerRefs.current[0] = el; }}
 
-                data-banner-id={currentBanner.id}
-                href={currentBanner.target_url}
+                data-banner-id={currentBanner!.id}
+                href={currentBanner!.target_url}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="banner_ad_now mb-0"
-                onClick={() => trackClick(currentBanner.id)}
+                onClick={() => trackClick(currentBanner!.id)}
               >
                 <div className={isMobile ? "banner-mobile" : "banner-desktop"}>
                   <Image
-                    src={currentBanner.image_url}
-                    alt={currentBanner.name}
+                    src={currentBanner!.image_url}
+                    alt={currentBanner!.name}
                     width={isMobile ? 600 : 1200}
                     height={isMobile ? 300 : 200}
                     priority
