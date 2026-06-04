@@ -198,7 +198,6 @@ export default function Navbar() {
                   <li><a className="dropdown-item" href="/listings/essential/" onClick={closeNav}>Essential</a></li>
                   <li><a className="dropdown-item" href="/listings/golf/" onClick={closeNav}>Golf</a></li>
                   <li><a className="dropdown-item" href="/listings/royal-flair/" onClick={closeNav}>Royal Flair</a></li>
-                  <li><a className="dropdown-item" href="/listings/traveller/" onClick={closeNav}>Traveller</a></li>
                   <li><a className="dropdown-item" href="/listings/new-age/" onClick={closeNav}>New Age</a></li>
                   <li><a className="dropdown-item" href="/listings/mdc/" onClick={closeNav}>Mdc</a></li>
                   <li><a className="dropdown-item" href="/listings/jb/" onClick={closeNav}>Jb</a></li>
@@ -275,23 +274,23 @@ export default function Navbar() {
                       Region
                     </div>
                     <ul className={openLocationSub === "region" ? "submenu open" : "submenu"}>
-                      <li><a className="dropdown-item" href="/listings/melbourne-region/" onClick={closeNav}>Melbourne</a></li>
-                      <li><a className="dropdown-item" href="/listings/perth-region/" onClick={closeNav}>Perth</a></li>
-                      <li><a className="dropdown-item" href="/listings/geelong-region/" onClick={closeNav}>Geelong</a></li>
-                      <li><a className="dropdown-item" href="/listings/cairns-region/" onClick={closeNav}>Cairns</a></li>
-                      <li><a className="dropdown-item" href="/listings/ballarat-region/" onClick={closeNav}>Ballarat</a></li>
-                      <li><a className="dropdown-item" href="/listings/launceston-region/" onClick={closeNav}>Launceston</a></li>
-                      <li><a className="dropdown-item" href="/listings/sydney-region/" onClick={closeNav}>Sydney</a></li>
-                      <li><a className="dropdown-item" href="/listings/adelaide-region/" onClick={closeNav}>Adelaide</a></li>
-                      <li><a className="dropdown-item" href="/listings/hobart-region/" onClick={closeNav}>Hobart</a></li>
-                      <li><a className="dropdown-item" href="/listings/toowoomba-region/" onClick={closeNav}>Toowoomba</a></li>
-                      <li><a className="dropdown-item" href="/listings/bendigo-region/" onClick={closeNav}>Bendigo</a></li>
-                      <li><a className="dropdown-item" href="/listings/shepparton-region/" onClick={closeNav}>Shepparton</a></li>
-                      <li><a className="dropdown-item" href="/listings/brisbane-region/" onClick={closeNav}>Brisbane</a></li>
-                      <li><a className="dropdown-item" href="/listings/newcastle-region/" onClick={closeNav}>Newcastle</a></li>
-                      <li><a className="dropdown-item" href="/listings/townsville-region/" onClick={closeNav}>Townsville</a></li>
-                      <li><a className="dropdown-item" href="/listings/darwin-region/" onClick={closeNav}>Darwin</a></li>
-                      <li><a className="dropdown-item" href="/listings/ipswich-region/" onClick={closeNav}>Ipswich</a></li>
+                      <li><a className="dropdown-item" href="/listings/victoria-state/melbourne-region/" onClick={closeNav}>Melbourne</a></li>
+                      <li><a className="dropdown-item" href="/listings/western-australia-state/perth-region/" onClick={closeNav}>Perth</a></li>
+                      <li><a className="dropdown-item" href="/listings/victoria-state/geelong-region/" onClick={closeNav}>Geelong</a></li>
+                      <li><a className="dropdown-item" href="/listings/queensland-state/cairns-region/" onClick={closeNav}>Cairns</a></li>
+                      <li><a className="dropdown-item" href="/listings/victoria-state/ballarat-region/" onClick={closeNav}>Ballarat</a></li>
+                      <li><a className="dropdown-item" href="/listings/tasmania-state/launceston-region/" onClick={closeNav}>Launceston</a></li>
+                      <li><a className="dropdown-item" href="/listings/new-south-wales-state/sydney-region/" onClick={closeNav}>Sydney</a></li>
+                      <li><a className="dropdown-item" href="/listings/south-australia-state/adelaide-region/" onClick={closeNav}>Adelaide</a></li>
+                      <li><a className="dropdown-item" href="/listings/tasmania-state/hobart-region/" onClick={closeNav}>Hobart</a></li>
+                      <li><a className="dropdown-item" href="/listings/queensland-state/toowoomba-region/" onClick={closeNav}>Toowoomba</a></li>
+                      <li><a className="dropdown-item" href="/listings/victoria-state/bendigo-region/" onClick={closeNav}>Bendigo</a></li>
+                      <li><a className="dropdown-item" href="/listings/victoria-state/shepparton-region/" onClick={closeNav}>Shepparton</a></li>
+                      <li><a className="dropdown-item" href="/listings/queensland-state/brisbane-region/" onClick={closeNav}>Brisbane</a></li>
+                      <li><a className="dropdown-item" href="/listings/new-south-wales-state/newcastle-region/" onClick={closeNav}>Newcastle</a></li>
+                      <li><a className="dropdown-item" href="/listings/queensland-state/townsville-region/" onClick={closeNav}>Townsville</a></li>
+                      <li><a className="dropdown-item" href="/listings/northern-territory-state/darwin-region/" onClick={closeNav}>Darwin</a></li>
+                      <li><a className="dropdown-item" href="/listings/queensland-state/ipswich-region/" onClick={closeNav}>Ipswich</a></li>
                     </ul>
                   </li>
                 </ul>
