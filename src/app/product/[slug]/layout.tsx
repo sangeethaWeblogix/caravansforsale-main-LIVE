@@ -10,10 +10,17 @@ type RouteParams = { slug: string };
 
 async function fetchProductDetail(slug: string) {
   const API_BASE = process.env.NEXT_PUBLIC_CFS_API_BASE!;
+  const API_KEY = process.env.CFS_API_KEY;
   try {
     const res = await fetch(
       `${API_BASE}/product-detail-new/?slug=${encodeURIComponent(slug)}`,
-      { cache: "no-store", headers: { Accept: "application/json" } }
+      {
+        cache: "no-store",
+        headers: {
+          Accept: "application/json",
+          ...(API_KEY && { "X-API-Key": API_KEY }),
+        },
+      }
     );
     if (!res.ok) return null;
     return res.json();

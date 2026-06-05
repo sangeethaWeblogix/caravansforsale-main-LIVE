@@ -9,7 +9,6 @@ import "swiper/css/pagination";
 import "./popup.css";
 import Image from "next/image";
 import { useEffect, useState, useRef } from "react";
-import { createProductEnquiry } from "@/api/enquiry/api";
 import { useRouter } from "next/navigation";
 // import Link from "next/link";
 
@@ -110,16 +109,25 @@ export default function CaravanDetailModal({
         ? JSON.parse(navHistory).join(", ")
         : "";
 
-      const data = await createProductEnquiry({
-        product_id: product.id ?? product.slug ?? product.name,
-        email: form.email.trim(),
-        name: form.name.trim(),
-        phone: form.phone.trim(),
-        message: form.message.trim() || "",
-        postcode: form.postcode.trim(),
-        page_url: navigation_path,
-        finance: isFinanceQuoteChecked,
+      const res = await fetch("/api/enquiry", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          product_id: product.id ?? product.slug ?? product.name,
+          email: form.email.trim(),
+          name: form.name.trim(),
+          phone: form.phone.trim(),
+          message: form.message.trim() || "",
+          postcode: form.postcode.trim(),
+          page_url: navigation_path,
+          finance: isFinanceQuoteChecked,
+        }),
       });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error((err as { message?: string }).message || "Failed to send. Try again.");
+      }
+      const data = await res.json();
 
       if (data?.success && data.data?.redirect_slug) {
         router.push(`/${data.data.redirect_slug}`);
