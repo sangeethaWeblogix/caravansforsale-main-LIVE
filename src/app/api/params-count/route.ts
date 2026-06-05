@@ -8,7 +8,8 @@ export async function GET(request: NextRequest) {
 const response = await fetch(url, {
     headers: {
       "Content-Type": "application/json",
-      ...(API_KEY && { "X-API-Key": API_KEY }), // ✅ Added
+      Accept: "application/json",
+      ...(API_KEY && { "X-API-Key": API_KEY }),
     },
     next: { revalidate: 0 },
   });

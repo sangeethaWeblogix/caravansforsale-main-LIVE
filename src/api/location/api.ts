@@ -29,7 +29,8 @@ export const fetchLocations = async (keyword: string) => {
   if (!keyword || keyword.trim().length < 2) return [];
 
   const res = await fetch(
-    `${API_LOCATION}/location-search?keyword=${encodeURIComponent(keyword)}`
+    `/api/location-search?keyword=${encodeURIComponent(keyword)}`,
+    { headers: { Accept: "application/json" } }
   );
 
   if (!res.ok) throw new Error("Location API failed");

@@ -262,10 +262,8 @@ const [states, setStates] = useState<StateOption[]>(
     const params = buildMakeCountParams(currentFilters);
 
     fetch(
-      `https://admin.caravansforsale.com.au/wp-json/cfs/v1/params_count?${params.toString()}`,
-      { signal: controller.signal,  headers: {
-      "X-API-Key": "m@rketplace$2026", // ✅ Added
-    }, },
+      `/api/params-count?${params.toString()}`,
+      { signal: controller.signal },
     )
       .then((r) => r.json())
       .then((json) => {
