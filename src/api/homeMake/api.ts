@@ -1,5 +1,6 @@
 // src/api/products/fetchRangeFeaturedCategories.ts
 const API_BASE = process.env.NEXT_PUBLIC_CFS_API_BASE;
+const API_KEY = process.env.CFS_API_KEY; // ✅ Add this
 
 export interface RangeFeaturedCategory {
   term_id: number;
@@ -37,7 +38,13 @@ export const fetchRangeFeaturedCategories = async (): Promise<
   // if (typeof window !== "undefined") console.log("[Products API] GET", url);
 
   try {
-    const res = await fetch(url, { cache: "no-store" });
+const res = await fetch(url, {
+  cache: "no-store",
+  headers: {
+    Accept: "application/json",
+    ...(API_KEY && { "X-API-Key": API_KEY }), // ✅ Missing — add this
+  },
+});
     if (!res.ok)
       throw new Error(`Products API failed: ${res.status} ${res.statusText}`);
 

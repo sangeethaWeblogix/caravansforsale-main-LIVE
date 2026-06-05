@@ -15,10 +15,7 @@ import { flushSync } from "react-dom";
 import { v4 as uuidv4 } from "uuid";
 import "./newList.css?=284";
 import "./top-filters.css?=491";
-import dynamic from "next/dynamic";
-import Image from "next/image";
-import { filterOptions } from "./filterOptions";
-import ListingSkeleton from "../skelton";
+ import ListingSkeleton from "../skelton";
 import {
   redirect,
   usePathname,
@@ -27,8 +24,7 @@ import {
 } from "next/navigation";
 import { buildSlugFromFilters } from "../slugBuilter";
 import { parseSlugToFilters } from "../../components/urlBuilder";
-import Head from "next/head";
-import "./loader.css";
+ import "./loader.css";
 import FilterSlider from "./FilterSlider";
 import StaticLinks from "./StaticLinks";
 import { useBanners } from "@/components/BannerHandler";
@@ -328,31 +324,26 @@ useEffect(() => {
 }, [products]); // ✅ products state மாறும்போது re-run
 
  
-  const [pagination, setPagination] = useState<Pagination>(() => {
-    if (initialData?.pagination) {
-      return {
-        current_page: initialData.pagination.current_page || 1,
-        total_pages: initialData.pagination.total_pages || 1,
-        per_page: initialData.pagination.per_page || 12,
-        total_products: initialData.pagination.total_products || 0,
-        total_items: initialData.pagination.total_products || 0,
-      };
-    }
-    const fromURL =
-      typeof window !== "undefined"
-        ? parseInt(
-            new URLSearchParams(window.location.search).get("page") || "1",
-            10,
-          )
-        : 1;
+ // ✅ Always use initialData or default — never window in useState
+const [pagination, setPagination] = useState<Pagination>(() => {
+  if (initialData?.pagination) {
     return {
-      current_page: fromURL,
-      total_pages: 1,
-      total_items: 0,
-      per_page: 12,
-      total_products: 0,
+      current_page: initialData.pagination.current_page || 1,
+      total_pages: initialData.pagination.total_pages || 1,
+      per_page: initialData.pagination.per_page || 12,
+      total_products: initialData.pagination.total_products || 0,
+      total_items: initialData.pagination.total_products || 0,
     };
-  });
+  }
+  // ✅ Always default — window access in useEffect மட்டும்
+  return {
+    current_page: 1,
+    total_pages: 1,
+    total_items: 0,
+    per_page: 12,
+    total_products: 0,
+  };
+});
 
   const asNumber = (v: unknown): number | undefined => {
     if (typeof v === "number") return v;
@@ -1303,6 +1294,7 @@ useEffect(() => {
   const [currentTopBanner, setCurrentTopBanner] = useState<
     (typeof matchedBanners)[0] | null
   >(null);
+  
   const topBannerInitRef = useRef(false);
 
   // ✅ FIX: Single useEffect for top banners. Removed the duplicate that
@@ -1325,7 +1317,7 @@ useEffect(() => {
     <>
  
 
-      <div>
+      <div suppressHydrationWarning>
         <div>
           <StaticLinks filters={incomingFilters} />
         </div>

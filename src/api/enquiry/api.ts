@@ -1,6 +1,7 @@
 // src/api/enquiry/api.ts
 const API_BASE = process.env.NEXT_PUBLIC_CFS_API_BASE;
 // e.g. "https://www.dev.caravansforsale.com.au/wp-json/cfs/v1"
+const API_KEY = process.env.CFS_API_KEY;
 
 export type ProductEnquiryPayload = {
   product_id: number | string;
@@ -31,7 +32,10 @@ export async function createProductEnquiry(
 
   const res = await fetch(`${API_BASE}/product_enquiry`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+        Accept: "application/json",
+        ...(API_KEY && { "X-API-Key": API_KEY }), // ✅ API key added
+      },
     body: JSON.stringify(payload),
     // next/image pages usually don't need credentials; add if your API requires:
     // credentials: "include",

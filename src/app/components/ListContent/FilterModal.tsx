@@ -1671,6 +1671,9 @@ const [states, setStates] = useState<StateOption[]>([]);
     fetch(url.toString(), {
       method: "GET",
       keepalive: true,
+       headers: {
+      "X-API-Key": "m@rketplace$2026", // ✅ Added
+    },
     }).catch(() => {});
   };
 

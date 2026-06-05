@@ -1,6 +1,7 @@
 // src/api/home/api.ts
 const API_BASE = process.env.NEXT_PUBLIC_CFS_API_BASE!;
-
+const API_KEY = process.env.CFS_API_KEY; // ✅ Add this
+ 
 export type HomeProduct = {
   id?: number | string;
   title?: string;
@@ -12,7 +13,7 @@ export type HomeProduct = {
   sale_price?: string | number;
   price_difference?: string | number;
 };
-
+ 
 export type HomeBlogPost = {
   id?: number;
   title?: string;
@@ -22,16 +23,16 @@ export type HomeBlogPost = {
   slug?: string;
   date?: string;
 };
-
+ 
 export type HomePageData = {
   featured: HomeProduct[];
   products: HomeProduct[];
   latest_posts: HomeBlogPost[];
 };
-
+ 
 /* ---------------------------- input shapes (typed) ---------------------------- */
 type Wrapper<T> = { items?: T[]; list?: T[]; data?: T[] };
-
+ 
 type ProductRaw = {
   id?: number | string;
   product_id?: number | string;
@@ -49,7 +50,7 @@ type ProductRaw = {
   price_difference?: string | number;
   save?: string | number;
 };
-
+ 
 type BlogRaw = {
   id?: number;
   title?: string;
@@ -59,27 +60,27 @@ type BlogRaw = {
   slug?: string;
   date?: string;
 };
-
+ 
 type HomeRoot = {
   // products buckets
   featured?: ProductRaw[] | Wrapper<ProductRaw>;
   featured_products?: ProductRaw[] | Wrapper<ProductRaw>;
   featured_caravans?: ProductRaw[] | Wrapper<ProductRaw>;
   top?: ProductRaw[] | Wrapper<ProductRaw>;
-
+ 
   products?: ProductRaw[] | Wrapper<ProductRaw>;
   more_products?: ProductRaw[] | Wrapper<ProductRaw>;
   latest_listings?: ProductRaw[] | Wrapper<ProductRaw>;
   recommended?: ProductRaw[] | Wrapper<ProductRaw>;
-
+ 
   // posts buckets
   latest_blog_posts?: BlogRaw[] | Wrapper<BlogRaw>;
   blog?: BlogRaw[] | Wrapper<BlogRaw>;
   posts?: BlogRaw[] | Wrapper<BlogRaw>;
 };
-
+ 
 type ApiEnvelope = HomeRoot & { data?: HomeRoot };
-
+ 
 /* ------------------------------- helpers ----------------------------------- */
 function pickItems<T>(v: T[] | Wrapper<T> | null | undefined): T[] {
   if (!v) return [];
@@ -90,7 +91,7 @@ function pickItems<T>(v: T[] | Wrapper<T> | null | undefined): T[] {
   if (Array.isArray(w.data)) return w.data;
   return [];
 }
-
+ 
 function normalizeProduct(src: ProductRaw = {}): HomeProduct {
   return {
     id: src.id ?? src.product_id,
@@ -104,7 +105,7 @@ function normalizeProduct(src: ProductRaw = {}): HomeProduct {
     price_difference: src.price_difference ?? src.save,
   };
 }
-
+ 
 function normalizeBlog(src: BlogRaw = {}): HomeBlogPost {
   return {
     id: src.id,
@@ -116,38 +117,44 @@ function normalizeBlog(src: BlogRaw = {}): HomeBlogPost {
     date: src.date,
   };
 }
-
+ 
 /* -------------------------------- fetcher ---------------------------------- */
 export async function fetchHomePage(): Promise<HomePageData> {
   const url = `${API_BASE.replace(/\/$/, "")}/home_page`;
+ 
   const res = await fetch(url, {
-    headers: { Accept: "application/json" },
-    cache: "no-store",
-  });
+  headers: {
+    Accept: "application/json",
+    ...(API_KEY && { "X-API-Key": API_KEY }),
+  },
+  cache: "no-store", // ✅ Move outside headers
+});
   if (!res.ok)
     throw new Error(`Home API failed: ${res.status} ${res.statusText}`);
-
+ 
   // `res.json()` is treated as any by TS DOM libs; assert to our envelope
   const json = (await res.json()) as ApiEnvelope;
   const root: HomeRoot = json.data ?? json;
-
+ 
   const featuredRaw =
     root.featured ??
     root.featured_products ??
     root.featured_caravans ??
     root.top;
-
+ 
   const productsRaw =
     root.products ??
     root.more_products ??
     root.latest_listings ??
     root.recommended;
-
+ 
   const postsRaw = root.latest_blog_posts ?? root.blog ?? root.posts;
-
+ 
   const featured = pickItems<ProductRaw>(featuredRaw).map(normalizeProduct);
   const products = pickItems<ProductRaw>(productsRaw).map(normalizeProduct);
   const latest_posts = pickItems<BlogRaw>(postsRaw).map(normalizeBlog);
-
+ 
   return { featured, products, latest_posts };
 }
+ 
+ 

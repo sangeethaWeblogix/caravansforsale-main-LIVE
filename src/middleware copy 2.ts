@@ -1,5 +1,6 @@
  import { NextRequest, NextResponse } from "next/server";
 import { parseSlugToFilters } from "@/app/components/urlBuilder";
+const API_KEY = process.env.CFS_API_KEY;
 
 // Simple in-memory cache (edge-compatible)
 const seoCache = new Map<string, { robots: string; expires: number }>();
@@ -65,8 +66,11 @@ console.log("Detected country:", country);
       const timeoutId = setTimeout(() => controller.abort(), 800); // 800ms timeout
 
       const apiRes = await fetch(apiUrl, {
-        headers: { "User-Agent": "next-middleware" },
-        signal: controller.signal,
+         headers: {
+          "User-Agent": "next-middleware",
+          ...(API_KEY && { "X-API-Key": API_KEY }), // ✅ Added
+        },
+         signal: controller.signal,
         // @ts-ignore - Next.js edge cache
         next: { revalidate: 60 },
       });

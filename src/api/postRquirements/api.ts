@@ -1,5 +1,6 @@
 // src/api/requirements/api.ts
 const API_BASE = process.env.NEXT_PUBLIC_CFS_API_BASE;
+const API_KEY = process.env.CFS_API_KEY; // ✅ Add this
 
 export type Requirement = {
   id?: number; // if the API returns one
@@ -21,8 +22,13 @@ type ListResp = {
 export async function fetchRequirements(): Promise<Requirement[]> {
   if (!API_BASE) throw new Error("Missing NEXT_PUBLIC_CFS_API_BASE");
   const url = `${API_BASE}/cara_req`; // ← from your screenshot
-  const res = await fetch(url, { cache: "no-store" });
-  if (!res.ok) throw new Error(`fetchRequirements failed: ${res.status}`);
+ const res = await fetch(url, {
+    cache: "no-store",
+    headers: {
+      Accept: "application/json",
+      ...(API_KEY && { "X-API-Key": API_KEY }), // ✅ Missing — add this
+    },
+  });  if (!res.ok) throw new Error(`fetchRequirements failed: ${res.status}`);
   const json: ListResp = await res.json();
   return Array.isArray(json?.data) ? json.data : [];
 }
@@ -37,8 +43,10 @@ export async function createRequirement(
   const url = `${API_BASE}/cara_req`;
   const res = await fetch(url, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    // normalize optional booleans to "0"/"1" strings if needed
+headers: {
+        Accept: "application/json",
+        ...(API_KEY && { "X-API-Key": API_KEY }), // ✅ Added
+      },    // normalize optional booleans to "0"/"1" strings if needed
     body: JSON.stringify({
       ...payload,
       featured: payload.featured ?? "0",

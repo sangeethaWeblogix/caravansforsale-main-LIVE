@@ -1,4 +1,6 @@
     import { NextResponse } from "next/server";
+      const API_KEY = process.env.CFS_API_KEY; // ✅ Added
+
   
   const SITE_URL =
     process.env.NEXT_PUBLIC_SITE_URL ||
@@ -8,6 +10,12 @@
     try {
       const res = await fetch(
         "https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap/price",
+         {
+        headers: {
+          Accept: "application/json",
+          ...(API_KEY && { "X-API-Key": API_KEY }), // ✅ Added
+        },
+      }
        
       );
   

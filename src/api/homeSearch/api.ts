@@ -1,5 +1,6 @@
 // src/api/homeSearch/api.ts
 const API_BASE = process.env.NEXT_PUBLIC_CFS_API_BASE;
+const API_KEY = process.env.CFS_API_KEY; // ✅ Add this
 
 export interface KeywordSuggestion {
   keyword: string;
@@ -53,7 +54,10 @@ export async function fetchHomeSearchList(): Promise<HomeSearchItem[]> {
   const url = `${API_BASE}/home_search_new`;
   // if (typeof window !== "undefined") console.log("[HomeSearch API] GET", url);
 
-  const res = await fetch(url, { cache: "no-store" });
+  const res = await fetch(url, {  headers: {
+    Accept: "application/json",
+    ...(API_KEY && { "X-API-Key": API_KEY }), // ✅ Missing — add this
+  }, cache: "no-store" });
   if (!res.ok) throw new Error(`HomeSearch API failed: ${res.status}`);
 
   const json = await res.json();

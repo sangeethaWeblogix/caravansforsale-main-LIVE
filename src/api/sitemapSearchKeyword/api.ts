@@ -1,5 +1,6 @@
 // src/api/sitemapSearchKeyword/api.ts
 const API_BASE = process.env.NEXT_PUBLIC_CFS_API_BASE;
+ const API_KEY = process.env.CFS_API_KEY; // ✅ Add this
 
 export async function fetchSearchkeywords(
   signal?: AbortSignal
@@ -8,7 +9,10 @@ export async function fetchSearchkeywords(
 
   const url = `${API_BASE}/search-keyword`;
 
-  const res = await fetch(url, { cache: "no-store", signal });
+  const res = await fetch(url, {headers: {
+        Accept: "application/json",
+        ...(API_KEY && { "X-API-Key": API_KEY }), // ✅ Added
+      }, cache: "no-store", signal });
   if (!res.ok) throw new Error(`Keyword API failed: ${res.status}`);
 
   const json = (await res.json()) as {

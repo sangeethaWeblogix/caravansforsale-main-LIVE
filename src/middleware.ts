@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { parseSlugToFilters } from "@/app/components/urlBuilder";
+const API_KEY = process.env.CFS_API_KEY;
 
 /* ──────────────────────────────────────────────
    Edge-safe in-memory cache
@@ -107,6 +108,7 @@ export async function middleware(request: NextRequest) {
       const apiRes = await fetch(apiUrl, {
         headers: {
           "User-Agent": "next-middleware",
+          ...(API_KEY && { "X-API-Key": API_KEY }), // ✅ Added
         },
         signal: controller.signal,
         // @ts-ignore - Edge runtime specific

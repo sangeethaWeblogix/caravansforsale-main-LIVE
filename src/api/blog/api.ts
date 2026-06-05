@@ -1,4 +1,5 @@
 const API_BASE = process.env.NEXT_PUBLIC_CFS_API_BASE;
+const API_KEY = process.env.CFS_API_KEY; // ✅ Add this
 
 export interface BlogPost {
   id: number;
@@ -38,7 +39,10 @@ export const fetchBlogs = async (page: number = 1): Promise<BlogPageResult> => {
 
   try {
     const res = await fetch(url, {
-      headers: { Accept: "application/json" },
+      headers: {
+        Accept: "application/json",
+        ...(API_KEY && { "X-API-Key": API_KEY }), // ✅ API key added
+      },
       next: { revalidate: 3600 }, // ✅ cache: no-store எடுத்துட்டேன்
     });
 

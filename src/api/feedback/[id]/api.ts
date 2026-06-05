@@ -1,5 +1,16 @@
 // src/app/api/cf7/[id]/route.ts
 import { NextResponse } from "next/server";
+const API_BASE = process.env.NEXT_PUBLIC_CFS_API_BASE;
+const API_KEY = process.env.CFS_API_KEY; // ✅ Add this
+
+export const fetchCaravanList = async () => {
+  const res = await fetch(`${API_BASE}/get-caravans-by-type`, {
+    cache: "no-store",
+  });
+
+  const json = await res.json();
+  return json?.categories || [];
+};
 
 export async function POST(
   req: Request,
@@ -13,7 +24,10 @@ export async function POST(
   const resp = await fetch(endpoint, {
     method: "POST",
     body: formData,
-    headers: { Accept: "application/json" }, // ask for JSON explicitly
+    headers: {
+        Accept: "application/json",
+        ...(API_KEY && { "X-API-Key": API_KEY }), // ✅ API key added
+      }, // ask for JSON explicitly
   });
 
   // Return whatever CF7 returns; don’t assume JSON blindly

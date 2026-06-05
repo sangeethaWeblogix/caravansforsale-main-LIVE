@@ -263,7 +263,9 @@ const [states, setStates] = useState<StateOption[]>(
 
     fetch(
       `https://admin.caravansforsale.com.au/wp-json/cfs/v1/params_count?${params.toString()}`,
-      { signal: controller.signal },
+      { signal: controller.signal,  headers: {
+      "X-API-Key": "m@rketplace$2026", // ✅ Added
+    }, },
     )
       .then((r) => r.json())
       .then((json) => {

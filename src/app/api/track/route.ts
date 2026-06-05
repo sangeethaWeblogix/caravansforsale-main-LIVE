@@ -1,3 +1,5 @@
+const API_KEY = process.env.CFS_API_KEY; // ✅ Added
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -16,8 +18,9 @@ export async function POST(req: Request) {
       "https://admin.caravansforsale.com.au/wp-json/cfs/v1/update-impressions",
       {
         method: "POST",
-        headers: {
+         headers: {
           "Content-Type": "application/json",
+          ...(API_KEY && { "X-API-Key": API_KEY }), // ✅ Added
         },
         body: JSON.stringify({
           product_id: body.product_id,

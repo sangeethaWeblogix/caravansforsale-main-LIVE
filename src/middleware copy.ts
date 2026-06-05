@@ -1,6 +1,7 @@
   import { NextRequest, NextResponse } from "next/server";
  import { parseSlugToFilters } from "@/app/components/urlBuilder";
- 
+ const API_KEY = process.env.CFS_API_KEY;
+
  /**
   * Middleware – Single Source of Truth = API SEO
   * - No robots meta in HTML
@@ -81,9 +82,10 @@
          new URLSearchParams(filters as Record<string, string>).toString();
  
        const apiRes = await fetch(apiUrl, {
-         headers: {
-           "User-Agent": "next-middleware",
-         },
+        headers: {
+          "User-Agent": "next-middleware",
+          ...(API_KEY && { "X-API-Key": API_KEY }), // ✅ Added
+        },
        });
  
        if (apiRes.ok) {

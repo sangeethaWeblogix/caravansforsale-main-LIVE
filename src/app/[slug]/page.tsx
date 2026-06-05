@@ -8,6 +8,7 @@ import Image from "next/image";
 import { redirect } from "next/navigation"; // ✅ Import notFound
 import Thankyou from './ThankYouClient '
 import { Metadata } from "next";
+const API_KEY = process.env.CFS_API_KEY; // ✅ Add at top of file
 
  type RouteParams = { slug: string };
 type PageProps = { params: Promise<RouteParams> };
@@ -18,7 +19,13 @@ async function fetchBlogDetail(slug: string) {
       `https://admin.caravansforsale.com.au/wp-json/cfs/v1/blog-detail-new/?slug=${encodeURIComponent(
         slug
       )}`,
-      { cache: "no-store", headers: { Accept: "application/json" } }
+      {
+        cache: "no-store",
+        headers: {
+          Accept: "application/json",
+          ...(API_KEY && { "X-API-Key": API_KEY }), // ✅ Added
+        },
+      }
     );
 
     if (!res.ok) {

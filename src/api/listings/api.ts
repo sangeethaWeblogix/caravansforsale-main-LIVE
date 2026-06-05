@@ -187,6 +187,7 @@ export const fetchListings = async (
       headers: {
         "Cache-Control": "no-cache",
         Accept: "application/json",
+        "X-API-Key": process.env.CFS_API_KEY!,
       },
     });
   } catch (err: any) {
