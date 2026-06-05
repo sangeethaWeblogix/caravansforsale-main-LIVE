@@ -1,5 +1,4 @@
   import { FormEvent, useState } from "react";
-import { createProductEnquiry } from "@/api/enquiry/api";
 import { useRouter } from "next/navigation";
 
 interface Product {
@@ -115,16 +114,25 @@ export function useEnquiryForm(product: Product) {
         ? JSON.parse(navHistory).join(", ")
         : "";
 
-      const data = await createProductEnquiry({
-        product_id: product.id ?? product.slug ?? product.name,
-        email: form.email.trim(),
-        name: form.name.trim(),
-        phone: form.phone.trim(),
-        message: form.message.trim(),
-        postcode: form.postcode.trim(),
-        page_url: navigation_path,
-        finance: isFinanceQuoteChecked,
+      const res = await fetch("/api/enquiry", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          product_id: product.id ?? product.slug ?? product.name,
+          email: form.email.trim(),
+          name: form.name.trim(),
+          phone: form.phone.trim(),
+          message: form.message.trim(),
+          postcode: form.postcode.trim(),
+          page_url: navigation_path,
+          finance: isFinanceQuoteChecked,
+        }),
       });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error((err as { message?: string }).message || "Product enquiry failed");
+      }
+      const data = await res.json();
 
       if (data?.success && data.data?.redirect_slug) {
         router.push(`/${data.data.redirect_slug}`);
