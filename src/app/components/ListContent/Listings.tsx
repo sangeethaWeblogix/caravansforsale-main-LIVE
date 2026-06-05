@@ -1,4 +1,4 @@
-"use client";
+ "use client";
 import {
   Suspense,
   useCallback,
@@ -14,7 +14,7 @@ import FilterModal from "./FilterModal";
 import { flushSync } from "react-dom";
 import { v4 as uuidv4 } from "uuid";
 import "./newList.css?=284";
-import "./top-filters.css?=497";
+import "./top-filters.css?=491";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import { filterOptions } from "./filterOptions";
@@ -202,75 +202,7 @@ export default function ListingsPage({
   // ✅ FIX: Single ref to track whether we've consumed initialData.
   // No state variable — avoids circular dep with loadListings/useEffect.
   const hasConsumedInitialDataRef = useRef(false);
-
-  // 1️⃣  persistence helpers
-  const PAGE_KEY = (id: string) => `page_${id}`;
-  const savePage = (id: string, page: number) => {
-    try {
-      localStorage.setItem(PAGE_KEY(id), String(page));
-    } catch {}
-  };
-
-  const readPage = (id: string): number | null => {
-    try {
-      const v = localStorage.getItem(PAGE_KEY(id));
-      if (v) return parseInt(v, 10);
-      const match = id.match(/p(\d+)$/);
-      if (match) return parseInt(match[1], 10);
-      return null;
-    } catch {
-      const match = id.match(/p(\d+)$/);
-      if (match) return parseInt(match[1], 10);
-      return null;
-    }
-  };
-
-  if (searchParams.has("page")) {
-    redirect("/404");
-  }
-
-  const fromYears = searchParams.get("acustom_fromyears");
-  const toYears = searchParams.get("acustom_toyears");
-  if (fromYears !== null || toYears !== null) {
-    redirect("/404");
-  }
-
-  const postTrackEvent = async (product_id: number) => {
-    await fetch("/api/track", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        product_id,
-      }),
-    });
-  };
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const id = Number(entry.target.getAttribute("data-product-id"));
-            if (id) {
-              postTrackEvent(id);
-            }
-            observer.unobserve(entry.target);
-          }
-        });
-      },
-      { threshold: 0.3 },
-    );
-
-    document
-      .querySelectorAll(".product-card[data-product-id]")
-      .forEach((el) => {
-        observer.observe(el);
-      });
-
-    return () => observer.disconnect();
-  }, []);
-
-  // Initialize state with initialData (always provided now — page.tsx always fetches)
+ // Initialize state with initialData (always provided now — page.tsx always fetches)
   const [products, setProducts] = useState<Product[]>(
     initialData?.data?.products
       ? transformApiItemsToProducts(initialData.data.products)
@@ -330,6 +262,72 @@ export default function ListingsPage({
     initialData?.seo_v2?.metadescription || "",
   );
 
+  // 1️⃣  persistence helpers
+  const PAGE_KEY = (id: string) => `page_${id}`;
+  const savePage = (id: string, page: number) => {
+    try {
+      localStorage.setItem(PAGE_KEY(id), String(page));
+    } catch {}
+  };
+
+  const readPage = (id: string): number | null => {
+    try {
+      const v = localStorage.getItem(PAGE_KEY(id));
+      if (v) return parseInt(v, 10);
+      const match = id.match(/p(\d+)$/);
+      if (match) return parseInt(match[1], 10);
+      return null;
+    } catch {
+      const match = id.match(/p(\d+)$/);
+      if (match) return parseInt(match[1], 10);
+      return null;
+    }
+  };
+
+  useEffect(() => {
+  if (searchParams.has("page")) {
+    redirect("/404");
+  }
+  const fromYears = searchParams.get("acustom_fromyears");
+  const toYears = searchParams.get("acustom_toyears");
+  if (fromYears !== null || toYears !== null) {
+    redirect("/404");
+  }
+}, [searchParams]);
+
+  const postTrackEvent = async (product_id: number) => {
+    await fetch("/api/track", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        product_id,
+      }),
+    });
+  };
+
+ // ✅ Fix பண்ணிய code
+useEffect(() => {
+  const cards = document.querySelectorAll(".product-card[data-product-id]");
+  if (!cards.length) return;
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const id = Number(entry.target.getAttribute("data-product-id"));
+          if (id) postTrackEvent(id);
+          observer.unobserve(entry.target);
+        }
+      });
+    },
+    { threshold: 0.3 },
+  );
+
+  cards.forEach((el) => observer.observe(el));
+  return () => observer.disconnect();
+}, [products]); // ✅ products state மாறும்போது re-run
+
+ 
   const [pagination, setPagination] = useState<Pagination>(() => {
     if (initialData?.pagination) {
       return {
@@ -1316,32 +1314,16 @@ export default function ListingsPage({
 
     if (top.length === 0) return;
 
-    if (!topBannerInitRef.current) {
-      topBannerInitRef.current = true;
-      const shuffled = shuffleArray(top);
-      setCurrentTopBanner(shuffled[0]);
-    }
-  }, [matchedBanners]);
+    if (!topBannerInitRef.current && top.length > 0) {
+    topBannerInitRef.current = true;
+    setCurrentTopBanner(shuffleArray(top)[0]); // ✅ already in useEffect, ok
+  }
+}, [matchedBanners]);
 
+  
   return (
     <>
-      <Head>
-        <title>{metaTitle || "Default Title"}</title>
-        <meta
-          name="description"
-          content={metaDescription || "Default Description"}
-        />
-        <meta property="og:title" content={metaTitle || "Default Title"} />
-        <meta
-          property="og:description"
-          content={metaDescription || "Default Description"}
-        />
-        <meta name="twitter:title" content={metaTitle || "Default Title"} />
-        <meta
-          name="twitter:description"
-          content={metaDescription || "Default Description"}
-        />
-      </Head>
+ 
 
       <div>
         <div>

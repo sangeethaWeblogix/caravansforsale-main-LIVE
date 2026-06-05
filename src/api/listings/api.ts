@@ -171,10 +171,42 @@ export const fetchListings = async (
 
   const s = normalizeQuery(search);
   if (s) params.append("search", s);
-
   const url = `${API_BASE}/new_optimize_code?${params.toString()}`;
-  const res = await fetch(url);
-  console.log("[list API] GET", res.url);
+
+  // const url = `${API_BASE}/new_optimize_code?${params.toString()}`;
+  // const res = await fetch(url);
+  // ✅ NEW: AbortController with 15s timeout
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      signal: controller.signal,
+      // ✅ iOS Safari cache fix
+      headers: {
+        "Cache-Control": "no-cache",
+        Accept: "application/json",
+      },
+    });
+  } catch (err: any) {
+    clearTimeout(timeoutId);
+
+    // ✅ Timeout vs network error — differentiate
+    if (err?.name === "AbortError") {
+      console.error("[list API] Timeout after 15s:", url);
+      throw new Error("Request timeout");
+    }
+
+    // iOS Safari "Load failed" — network offline or CORS
+    console.error("[list API] Network error:", err?.message, url);
+    throw new Error("Network error: " + (err?.message ?? "Load failed"));
+  }
+
+  clearTimeout(timeoutId);
+  console.log("[list API] GET", res.url, res.status);
+
+  // console.log("[list API] GET", res.url);
 
   if (!res.ok) {
     const errText = await res.text();
