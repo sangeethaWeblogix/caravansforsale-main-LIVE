@@ -34,14 +34,6 @@ on:
 
 
 # ==========================================
-# NODE.JS 24 OPT-IN
-# Opts the action runner into Node 24 ahead of the forced cutoff (June 2, 2026).
-# Safe to remove once Node 24 is the default on GitHub-hosted runners.
-# ==========================================
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
-# ==========================================
 # API TYPES & BATCH STRATEGY
 #
 # URLs fetched from:
@@ -105,7 +97,7 @@ jobs:
       - name: 🔧 Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
 
       - name: 📦 Install dependencies
         run: |
@@ -159,7 +151,7 @@ jobs:
       - name: 🔧 Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
 
       - name: 📦 Install dependencies
         run: npm install node-fetch@2
@@ -199,7 +191,7 @@ jobs:
       - name: 🔧 Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
 
       - name: 📦 Install dependencies
         run: npm install node-fetch@2
@@ -244,7 +236,7 @@ jobs:
       - name: 🔧 Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
 
       - name: 📦 Install dependencies
         run: npm install node-fetch@2
@@ -291,7 +283,7 @@ jobs:
       - name: 🔧 Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
 
       - name: 📦 Install dependencies
         run: npm install node-fetch@2
@@ -338,7 +330,7 @@ jobs:
       - name: 🔧 Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
 
       - name: 📦 Install dependencies
         run: npm install node-fetch@2
@@ -385,7 +377,7 @@ jobs:
       - name: 🔧 Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
 
       - name: 📦 Install dependencies
         run: npm install node-fetch@2
@@ -436,7 +428,7 @@ jobs:
       - name: 🔧 Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
 
       - name: 📦 Install dependencies
         run: npm install node-fetch@2
@@ -487,7 +479,7 @@ jobs:
       - name: 🔧 Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
 
       - name: 📦 Install dependencies
         run: npm install node-fetch@2
@@ -538,7 +530,7 @@ jobs:
       - name: 🔧 Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
 
       - name: 📦 Install dependencies
         run: npm install node-fetch@2
@@ -578,7 +570,7 @@ jobs:
       - name: 🔧 Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
 
       - name: 📦 Install dependencies
         run: npm install node-fetch@2
