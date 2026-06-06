@@ -29,6 +29,7 @@ import FilterSlider from "./FilterSlider";
 import StaticLinks from "./StaticLinks";
 import { useBanners } from "@/components/BannerHandler";
 import { useBannerTracking } from "@/hooks/useBannerTracking";
+// import ListingBottomSections from "./ListingBottomSections";
 
 /* --------- GLOBAL de-dupe across StrictMode remounts --------- */
 // let LAST_GLOBAL_REQUEST_KEY = "";
@@ -1551,6 +1552,8 @@ const [pagination, setPagination] = useState<Pagination>(() => {
           </Suspense>
         </div>
       </div>
+
+      {/* <ListingBottomSections /> */}
     </>
   );
 }

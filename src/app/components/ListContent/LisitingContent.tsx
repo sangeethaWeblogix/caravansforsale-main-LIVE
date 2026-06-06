@@ -676,50 +676,40 @@ useEffect(() => {
                               </div>
 
                               {/* --- PRICE SECTION --- */}
-                              {(item.regular_price ||
-                                item.sale_price ||
-                                item.price_difference) && (
-                                  <div className="price">
-                                    <div className="metc2">
-                                      {(item.regular_price ||
-                                        item.sale_price) && (
-                                          <h5 className="slog">
-                                            {/* ✅ Stable price rendering: precompute safely */}
-                                            {(() => {
-                                              const rawRegular =
-                                                item.regular_price || "";
-                                              const rawSale = item.sale_price || "";
-                                              const cleanRegular =
-                                                rawRegular.replace(/[^0-9.]/g, "");
-                                              const regNum =
-                                                Number(cleanRegular) || 0;
-                                              const cleanSale = rawSale.replace(
-                                                /[^0-9.]/g,
-                                                "",
-                                              );
-                                              const saleNum =
-                                                Number(cleanSale) || 0;
+                              <div className="price">
+                                <div className="metc2">
+                                  <h5 className="slog">
+                                    {(() => {
+                                      const rawRegular =
+                                        item.regular_price || "";
+                                      const rawSale = item.sale_price || "";
+                                      const cleanRegular =
+                                        rawRegular.replace(/[^0-9.]/g, "");
+                                      const regNum =
+                                        Number(cleanRegular) || 0;
+                                      const cleanSale = rawSale.replace(
+                                        /[^0-9.]/g,
+                                        "",
+                                      );
+                                      const saleNum =
+                                        Number(cleanSale) || 0;
 
-                                              // If regular price is 0 → show POA
-                                              if (regNum === 0) {
-                                                return <>POA</>;
-                                              }
+                                      if (regNum === 0) {
+                                        return <>POA</>;
+                                      }
 
-                                              // If sale price exists → show sale and strike-through
-                                              if (saleNum > 0) {
-                                                return (
-                                                  <>
-                                                    <del>{rawRegular}</del>{" "}
-                                                    {rawSale}
-                                                  </>
-                                                );
-                                              }
+                                      if (saleNum > 0) {
+                                        return (
+                                          <>
+                                            <del>{rawRegular}</del>{" "}
+                                            {rawSale}
+                                          </>
+                                        );
+                                      }
 
-                                              // Otherwise → show regular price
-                                              return <>{rawRegular}</>;
-                                            })()}
-                                          </h5>
-                                        )}
+                                      return <>{rawRegular}</>;
+                                    })()}
+                                  </h5>
 
                                     {/* ✅ Show SAVE only if > $0 */}
                                     {(() => {
@@ -744,9 +734,8 @@ useEffect(() => {
                                         </div>
                                       </div>
                                     )}
-                                  </div>
                                 </div>
-                              )}
+                              </div>
 
                               {/* --- DETAILS LIST --- */}
                               <ul className="vehicleDetailsWithIcons simple">
@@ -950,47 +939,38 @@ useEffect(() => {
                           )}
                         </div>
 
-                        {(item.regular_price ||
-                          item.sale_price ||
-                          item.price_difference) && (
-                            <div className="price">
-                              <div className="metc2">
-                                {(item.regular_price || item.sale_price) && (
-                                  <h5 className="slog">
-                                    {/* ✅ Stable price rendering: precompute safely */}
-                                    {(() => {
-                                      const rawRegular = item.regular_price || "";
-                                      const rawSale = item.sale_price || "";
-                                      const cleanRegular = rawRegular.replace(
-                                        /[^0-9.]/g,
-                                        "",
-                                      );
-                                      const regNum = Number(cleanRegular) || 0;
-                                      const cleanSale = rawSale.replace(
-                                        /[^0-9.]/g,
-                                        "",
-                                      );
-                                      const saleNum = Number(cleanSale) || 0;
+                        <div className="price">
+                          <div className="metc2">
+                            <h5 className="slog">
+                              {(() => {
+                                const rawRegular = item.regular_price || "";
+                                const rawSale = item.sale_price || "";
+                                const cleanRegular = rawRegular.replace(
+                                  /[^0-9.]/g,
+                                  "",
+                                );
+                                const regNum = Number(cleanRegular) || 0;
+                                const cleanSale = rawSale.replace(
+                                  /[^0-9.]/g,
+                                  "",
+                                );
+                                const saleNum = Number(cleanSale) || 0;
 
-                                      // If regular price is 0 → show POA
-                                      if (regNum === 0) {
-                                        return <>POA</>;
-                                      }
+                                if (regNum === 0) {
+                                  return <>POA</>;
+                                }
 
-                                      // If sale price exists → show sale and strike-through
-                                      if (saleNum > 0) {
-                                        return (
-                                          <>
-                                            <del>{rawRegular}</del> {rawSale}
-                                          </>
-                                        );
-                                      }
+                                if (saleNum > 0) {
+                                  return (
+                                    <>
+                                      <del>{rawRegular}</del> {rawSale}
+                                    </>
+                                  );
+                                }
 
-                                      // Otherwise → show regular price
-                                      return <>{rawRegular}</>;
-                                    })()}
-                                  </h5>
-                                )}
+                                return <>{rawRegular}</>;
+                              })()}
+                            </h5>
 
                               {/* ✅ Show SAVE only if > $0 */}
                               {(() => {
@@ -1014,9 +994,8 @@ useEffect(() => {
                                   </div>
                                 </div>
                               )}
-                            </div>
                           </div>
-                        )}
+                        </div>
                         {item.seller_type && (
                           <div className="more_info">
                             <div className="informat">

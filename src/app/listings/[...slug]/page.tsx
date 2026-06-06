@@ -12,7 +12,7 @@ import { parseSlugToFilters } from "../../components/urlBuilder";
 import { metaFromSlug } from "@/utils/seo/meta";
 import type { Metadata } from "next";
 import { fetchListings } from "@/api/listings/api";
-import { redirect } from "next/navigation";
+import { redirect, notFound } from "next/navigation";
 import "../../components/ListContent/newList.css";
 import "../listings.css";
 // import { fetchMakeDetails } from "@/api/make-new/api";
@@ -24,6 +24,7 @@ import {
   SECTION_TITLES,
 } from "@/app/components/ListContent/StaticLinksUtils";
 import { fetchProductList } from "@/api/productList/api";
+import ApiErrorFallback from "@/app/components/ApiErrorFallback";
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
 // ─────────────────────────────────────────────────────────────────────────────
@@ -182,6 +183,14 @@ export default async function Listings({
   // ───── Parse filters (needed for location rules) ─────
   const filters = parseSlugToFilters(slug, resolvedSearchParams);
 
+  // ───── Canonical URL redirect — wrong slug order → 301 to correct order ─────
+  const canonicalPath = buildSlugFromFilters(filters);
+  const incomingPath = `/listings/${slug.join("/")}`;
+  const normalize = (p: string) => p.replace(/\/$/, "").toLowerCase();
+  if (normalize(canonicalPath) !== normalize(incomingPath)) {
+    redirect(canonicalPath.endsWith("/") ? canonicalPath : `${canonicalPath}/`);
+  }
+
   // ───── Location hierarchy validation ─────
   const hasState = !!filters.state;
   const hasRegion = !!filters.region;
@@ -259,8 +268,26 @@ export default async function Listings({
   }
 
   // ───── Fetch listings ─────
-  const response = await fetchListings({ ...filters, page });
-  const linksData = await fetchLinksData(filters);
+  let response;
+  let linksData;
+  try {
+    [response, linksData] = await Promise.all([
+      fetchListings({ ...filters, page }),
+      fetchLinksData(filters),
+    ]);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "";
+    if (msg.includes("400") || msg.includes("404")) {
+      notFound();
+    }
+    return (
+      <ApiErrorFallback
+        title="Unable to load listings"
+        message="We couldn't load this page. Please try again."
+        showRetry={true}
+      />
+    );
+  }
 
   function buildSSRLinkUrl(
     type: string,

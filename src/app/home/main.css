@@ -1007,6 +1007,8 @@ a.ignoretext {
   padding: 30px 0;
 }
 
+.quick_links_tabs {background: #f1f1f1;}
+
 .m_label {
   margin-right: 6px;
   color: #ec7200;
@@ -1053,7 +1055,7 @@ a.ignoretext {
   font-size: 13px;
 }
 
-.search-container {
+.search_requirement_area .search-container {
   z-index: 2;
   width: 100%;
   max-width: 100%;
@@ -1061,11 +1063,11 @@ a.ignoretext {
   position: relative;
 }
 
-.search-wrapper {
+.search_requirement_area .search-wrapper {
   position: relative;
 }
 
-.search-box {
+.search_requirement_area .search-box {
   width: 100%;
   padding: 12px 18px 12px 40px;
   font-size: 16px;
@@ -1077,7 +1079,7 @@ a.ignoretext {
   line-height: 60px;
 }
 
-.search-icon {
+.search_requirement_area .search-icon {
   position: absolute;
   left: 14px;
   top: 50%;
@@ -1086,7 +1088,7 @@ a.ignoretext {
   font-size: 18px;
 }
 
-.overlay_search {
+.search_requirement_area .overlay_search {
   display: none;
   position: fixed;
   top: 0;
@@ -1097,7 +1099,7 @@ a.ignoretext {
   z-index: 2;
 }
 
-.search-container .suggestions {
+.search_requirement_area .search-container .suggestions {
   z-index: 1002;
   background: #fff;
   border: none;
@@ -1112,7 +1114,7 @@ a.ignoretext {
   text-align: left;
 }
 
-.search-container .suggestions h4 {
+.search_requirement_area .search-container .suggestions h4 {
   margin: 0;
   padding: 12px 16px 8px;
   font-size: 14px;
@@ -1120,19 +1122,19 @@ a.ignoretext {
   border-bottom: none;
 }
 
-.search-container .suggestions h4 svg {
+.search_requirement_area .search-container .suggestions h4 svg {
   width: 20px;
   fill: #ec7200;
   margin-right: 5px;
 }
 
-.search-container .suggestions ul {
+.search_requirement_area .search-container .suggestions ul {
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
-.search-container .suggestions li {
+.search_requirement_area .search-container .suggestions li {
   padding: 7px 16px;
   cursor: pointer;
   transition: background 0.2s;
@@ -1141,7 +1143,7 @@ a.ignoretext {
   font-size: 16px;
 }
 
-.search-container .suggestions li:before {
+.search_requirement_area .search-container .suggestions li:before {
   content: "\f52a";
   font-family: bootstrap-icons !important;
   font-style: normal;
@@ -1151,7 +1153,7 @@ a.ignoretext {
   font-size: 13px;
 }
 
-.search-container .suggestions li:hover {
+.search_requirement_area .search-container .suggestions li:hover {
   background: #f9f9f9;
 }
 
@@ -1670,7 +1672,8 @@ a.ignoretext {
 }
 
 .custom-card-title .count {
-  font-weight: 600;
+    font-weight: 600;
+    font-size: 16px;
 }
 
 .custom-card-sub {

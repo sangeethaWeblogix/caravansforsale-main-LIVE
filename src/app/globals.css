@@ -409,6 +409,7 @@ small {
   height: 70px;
   color: #000;
   margin-top: 0;
+  text-align: left;
 }
 
 .product-page .product-card .price {
