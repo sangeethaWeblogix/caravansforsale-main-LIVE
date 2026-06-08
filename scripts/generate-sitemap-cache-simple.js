@@ -295,11 +295,26 @@ async function fetchPathsFromAPI(type) {
       timeout: 30000
     });
 
+    const responseText = await response.text();
+
     if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      const preview = responseText.slice(0, 200).replace(/\s+/g, ' ');
+      throw new Error(`HTTP ${response.status}: ${response.statusText} — body: ${preview}`);
     }
 
-    const data = await response.json();
+    const contentType = response.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) {
+      const preview = responseText.slice(0, 200).replace(/\s+/g, ' ');
+      throw new Error(`Expected JSON but got "${contentType}" (redirected to HTML?). Final URL: ${response.url} — body: ${preview}`);
+    }
+
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch (e) {
+      const preview = responseText.slice(0, 200).replace(/\s+/g, ' ');
+      throw new Error(`JSON parse failed: ${e.message} — body: ${preview}`);
+    }
 
     if (!data.success) {
       throw new Error(`API returned success=false for type "${type}"`);
