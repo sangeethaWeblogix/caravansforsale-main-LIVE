@@ -39,6 +39,7 @@ const fetch = require('node-fetch');
 const PRODUCTION_DOMAIN = process.env.PRODUCTION_DOMAIN || 'https://www.caravansforsale.com.au';
 const VERCEL_BASE_URL = process.env.VERCEL_BASE_URL || PRODUCTION_DOMAIN; // Prefer Vercel direct to bypass CF Worker
 const WP_API_BASE = process.env.WP_API_BASE || 'https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap';
+const WP_API_KEY = process.env.WP_API_KEY || '';
 const CF_ACCOUNT_ID = process.env.CF_ACCOUNT_ID;
 const CF_KV_NAMESPACE_ID = process.env.CF_KV_NAMESPACE_ID;
 const CF_API_TOKEN = process.env.CF_API_TOKEN;
@@ -288,7 +289,8 @@ async function fetchPathsFromAPI(type) {
     const response = await fetch(apiUrl, {
       headers: {
         'User-Agent': 'CFS-CacheGenerator/3.0',
-        'Accept': 'application/json'
+        'Accept': 'application/json',
+        ...(WP_API_KEY && { 'X-API-Key': WP_API_KEY })
       },
       timeout: 30000
     });
