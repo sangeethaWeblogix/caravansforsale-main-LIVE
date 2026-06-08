@@ -161,6 +161,7 @@ jobs:
           PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
           VERCEL_BASE_URL: ${{ secrets.VERCEL_BASE_URL }}
           WP_API_BASE: 'https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap'
+          WP_API_KEY: ${{ secrets.WP_API_KEY }}
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
@@ -201,6 +202,7 @@ jobs:
           PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
           VERCEL_BASE_URL: ${{ secrets.VERCEL_BASE_URL }}
           WP_API_BASE: 'https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap'
+          WP_API_KEY: ${{ secrets.WP_API_KEY }}
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
@@ -246,6 +248,7 @@ jobs:
           PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
           VERCEL_BASE_URL: ${{ secrets.VERCEL_BASE_URL }}
           WP_API_BASE: 'https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap'
+          WP_API_KEY: ${{ secrets.WP_API_KEY }}
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
@@ -293,6 +296,7 @@ jobs:
           PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
           VERCEL_BASE_URL: ${{ secrets.VERCEL_BASE_URL }}
           WP_API_BASE: 'https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap'
+          WP_API_KEY: ${{ secrets.WP_API_KEY }}
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
@@ -340,6 +344,7 @@ jobs:
           PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
           VERCEL_BASE_URL: ${{ secrets.VERCEL_BASE_URL }}
           WP_API_BASE: 'https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap'
+          WP_API_KEY: ${{ secrets.WP_API_KEY }}
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
@@ -387,6 +392,7 @@ jobs:
           PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
           VERCEL_BASE_URL: ${{ secrets.VERCEL_BASE_URL }}
           WP_API_BASE: 'https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap'
+          WP_API_KEY: ${{ secrets.WP_API_KEY }}
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
@@ -438,6 +444,7 @@ jobs:
           PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
           VERCEL_BASE_URL: ${{ secrets.VERCEL_BASE_URL }}
           WP_API_BASE: 'https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap'
+          WP_API_KEY: ${{ secrets.WP_API_KEY }}
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
@@ -489,6 +496,7 @@ jobs:
           PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
           VERCEL_BASE_URL: ${{ secrets.VERCEL_BASE_URL }}
           WP_API_BASE: 'https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap'
+          WP_API_KEY: ${{ secrets.WP_API_KEY }}
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
@@ -580,6 +588,7 @@ jobs:
           PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
           VERCEL_BASE_URL: ${{ secrets.VERCEL_BASE_URL }}
           WP_API_BASE: 'https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap'
+          WP_API_KEY: ${{ secrets.WP_API_KEY }}
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
