@@ -19,7 +19,12 @@
 }
 
 .home_top .ad_banner {
-      margin-bottom: -150px;
+  margin-bottom: -150px;
+}
+.home_top .ad_banner .item-image {
+  aspect-ratio: 2000 / 700;
+  overflow: hidden;
+  background: #e8e8e8;
 }
 
 .search_home {
@@ -1376,7 +1381,10 @@ a.ignoretext {
 
   .home_top .ad_banner {
     margin-bottom: -80px;
-}
+  }
+  .home_top .ad_banner .item-image {
+    aspect-ratio: 2 / 1;
+  }
 
 .btns_two .btn {
     padding: 10px 23px;

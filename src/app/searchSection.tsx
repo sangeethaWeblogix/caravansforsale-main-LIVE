@@ -525,18 +525,22 @@ const BANNER_ENABLED = false;
         <Image
           src="/images/banner_top_dk.jpg"
           className="hidden-xs"
-          alt="off-road"
+          alt="Browse caravans for sale"
           width={2000}
           height={700}
           style={{ width: "100%", height: "auto" }}
+          priority
+          fetchPriority="high"
         />
         <Image
           src="/images/banner_top_mb.jpg"
           className="hidden-lg hidden-md hidden-sm"
-          alt="off-road"
-          width={2000}
-          height={700}
+          alt="Browse caravans for sale"
+          width={600}
+          height={300}
           style={{ width: "100%", height: "auto" }}
+          priority
+          fetchPriority="high"
         />
       </div>
     </a>
