@@ -13,7 +13,7 @@ import ExculsiveContent from "./exculsiveContent";
 import FilterModal from "./FilterModal";
 import { flushSync } from "react-dom";
 import { v4 as uuidv4 } from "uuid";
-import "./newList.css?=284";
+import "./newList.css?=299";
 import "./top-filters.css?=491";
  import ListingSkeleton from "../skelton";
 import {

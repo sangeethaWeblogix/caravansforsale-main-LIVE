@@ -6,50 +6,43 @@ import Image from "next/image";
 
 interface Props {
   src?: string;
-
   alt?: string;
-
   width?: number;
-
   height?: number;
-
   className?: string;
-
   style?: React.CSSProperties;
-
   priority?: boolean;
+  eager?: boolean;
+  objectFit?: "cover" | "contain";
 }
 
 export default function ImageWithSkeleton({
   src,
-
   alt = "",
-
   width = 400,
-
   height = 300,
-
   className,
-
   priority = false,
+  eager = false,
+  objectFit = "cover",
 }: Props) {
-  const [loaded, setLoaded] = useState(priority);
+  const [loaded, setLoaded] = useState(priority || eager);
 
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
-    if (!priority) {
+    if (!priority && !eager) {
       setLoaded(false);
     }
 
     setFailed(false);
-  }, [src, priority]);
+  }, [src, priority, eager]);
 
   // ✅ Use native <img> for priority images (MUCH faster!)
 
   if (priority && src && !failed) {
     return (
-      <div className={className}>
+      <div className={className} style={{ width: "100%", height: "100%" }}>
         <img
           src={src}
           alt={alt}
@@ -64,7 +57,7 @@ export default function ImageWithSkeleton({
 
             height: "100%",
 
-            objectFit: "cover",
+            objectFit: objectFit,
 
             display: "block",
           }}
@@ -76,7 +69,7 @@ export default function ImageWithSkeleton({
   // ✅ Use Next.js Image for lazy-loaded images
 
   return (
-    <div className={className}>
+    <div className={className} style={{ width: "100%", height: "100%" }}>
       {/* Skeleton */}
 
       {!loaded && (
@@ -101,8 +94,7 @@ export default function ImageWithSkeleton({
           alt={alt}
           width={width}
           height={height}
-          unoptimized
-          loading="lazy"
+          loading={eager ? "eager" : "lazy"}
           onLoad={() => setLoaded(true)}
           onError={() => {
             setFailed(true);
@@ -114,7 +106,7 @@ export default function ImageWithSkeleton({
 
             height: "100%",
 
-            objectFit: "cover",
+            objectFit: objectFit,
 
             transition: "opacity .35s ease",
 

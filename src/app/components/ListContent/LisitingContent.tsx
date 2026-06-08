@@ -236,6 +236,11 @@ export default function ListingContent({
     return img ? `${img}` : undefined;
   };
 
+  const getInitialSlides = (item: Product): string[] => {
+    if (!Array.isArray(item.image_format)) return [];
+    return item.image_format.slice(0, 2).filter(Boolean).map((img) => `${img}`);
+  };
+
   const getRemainingImages = (item: Product): string[] => {
     if (!Array.isArray(item.image_format)) return [];
 
@@ -570,11 +575,10 @@ useEffect(() => {
                     // const imgs = lazyImages[item.id] ?? [];
                     const firstImage = getFirstImage(item);
                     const isActive = swiperActivated[item.id];
+                    const initialSlides = getInitialSlides(item);
                     const slides = isActive
                       ? (lazyImages[item.id] ?? [])
-                      : firstImage
-                        ? [firstImage, firstImage]
-                        : [];
+                      : initialSlides;
 
                     console.log("imgs", firstImage);
                     return (
@@ -630,6 +634,11 @@ useEffect(() => {
                                       activateSwiper(item);
                                     }
                                   }}
+                                  onSlideChange={() => {
+                                    if (!swiperActivated[item.id]) {
+                                      activateSwiper(item);
+                                    }
+                                  }}
                                   onNavigationNext={() => {
                                     if (!swiperActivated[item.id]) {
                                       activateSwiper(item);
@@ -650,6 +659,8 @@ useEffect(() => {
                                           alt={`Caravan ${i + 1}`}
                                           width={800}
                                           height={600}
+                                          eager
+                                          objectFit="contain"
                                         />
                                       </div>
                                     </SwiperSlide>
@@ -672,6 +683,12 @@ useEffect(() => {
                                   >
                                     {item.name}
                                   </h3>
+                                )}
+                                {item.location && (
+                                  <p className="listing_location">
+                                    <i className="fa-solid fa-location-dot"></i>{" "}
+                                    {item.location}
+                                  </p>
                                 )}
                               </div>
 
@@ -728,7 +745,7 @@ useEffect(() => {
                                       <div className="more_info">
                                         <div className="informat">
                                           <span className="premium_van">
-                                            <i className="fa fa-star"></i>{" "}
+                                            <i className="fa-solid fa-star"></i>{" "}
                                             Premium
                                           </span>
                                         </div>
@@ -751,7 +768,7 @@ useEffect(() => {
                                   item.categories.length > 0 && (
                                     <li className="attribute3_list">
                                       <span className="attribute3">
-                                        {item.categories.slice(0, 2).join(", ")}
+                                        {item.categories[0]}
                                       </span>
                                     </li>
                                   )}
@@ -781,21 +798,13 @@ useEffect(() => {
                                 )}
                               </ul>
 
-                              {/* --- CONDITION + LOCATION --- */}
-                              {(item.condition ||
-                                item.location ||
-                                item.seller_type) && (
+                              {/* --- CONDITION + SELLER --- */}
+                              {(item.condition || item.seller_type) && (
                                 <div className="bottom_mid">
                                   {item.condition && (
                                     <span>
                                       <i className="bi bi-check-circle-fill"></i>{" "}
                                       Condition {item.condition}
-                                    </span>
-                                  )}
-                                  {item.location && (
-                                    <span>
-                                      <i className="fa fa-map-marker-alt"></i>{" "}
-                                      {item.location}
                                     </span>
                                   )}
                                   {item.seller_type && (
@@ -937,6 +946,12 @@ useEffect(() => {
                               {item.name}
                             </h3>
                           )}
+                          {item.location && (
+                            <p className="listing_location">
+                              <i className="fa-solid fa-location-dot"></i>{" "}
+                              {item.location}
+                            </p>
+                          )}
                         </div>
 
                         <div className="price">
@@ -989,30 +1004,18 @@ useEffect(() => {
                                 <div className="more_info">
                                   <div className="informat">
                                     <span className="premium_van">
-                                      <i className="fa fa-star"></i> Premium
+                                      <i className="fa-solid fa-star"></i> Premium
                                     </span>
                                   </div>
                                 </div>
                               )}
                           </div>
                         </div>
-                        {item.seller_type && (
-                          <div className="more_info">
-                            <div className="informat">
-                              <span className="premium_van">
-                                <i className="fa-solid fa-circle-info"></i>{" "}
-                                {item.seller_type?.replace(/^\w/, (c) =>
-                                  c.toUpperCase(),
-                                )}
-                              </span>
-                            </div>
-                          </div>
-                        )}
                         <ul className="vehicleDetailsWithIcons simple">
                           {item.categories && item.categories.length > 0 && (
                             <li className="attribute3_list">
                               <span className="attribute3">
-                                {item.categories.slice(0, 2).join(", ")}
+                                {item.categories[0]}
                               </span>
                             </li>
                           )}
@@ -1035,9 +1038,7 @@ useEffect(() => {
                           )}
                         </ul>
 
-                        {(item.condition ||
-                          item.location ||
-                          item.seller_type) && (
+                        {(item.condition || item.seller_type) && (
                           <div className="bottom_mid">
                             {item.condition && (
                               <span>
@@ -1045,10 +1046,12 @@ useEffect(() => {
                                 Condition {item.condition}
                               </span>
                             )}
-                            {item.location && (
+                            {item.seller_type && (
                               <span>
-                                <i className="fa fa-map-marker-alt"></i>{" "}
-                                {item.location}
+                                <i className="fa-solid fa-circle-info"></i>{" "}
+                                {item.seller_type?.replace(/^\w/, (c) =>
+                                  c.toUpperCase(),
+                                )}
                               </span>
                             )}
                           </div>

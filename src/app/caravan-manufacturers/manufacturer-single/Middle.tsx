@@ -159,7 +159,7 @@ export default function EverestCaravans() {
                     <div className="product_de">
                       <div className="info">
                         <h6 className="category">
-                          <i className="fa fa-map-marker-alt"></i>
+                          <i className="fa-solid fa-location-dot"></i>
                           <span>Western Australia</span>
                         </h6>
                         <h3 className="title">
@@ -198,7 +198,7 @@ export default function EverestCaravans() {
                     <div className="product_de">
                       <div className="info">
                         <h6 className="category">
-                          <i className="fa fa-map-marker-alt"></i>
+                          <i className="fa-solid fa-location-dot"></i>
                           <span>Tasmania</span>
                         </h6>
                         <h3 className="title">

@@ -113,7 +113,7 @@ const FeaturedProductsSlider = () => {
                     <div className="product_de">
                       <div className="info">
                         <h6 className="category">
-                          <i className="far fa-map-marker-alt"></i>
+                          <i className="fa-solid fa-location-dot"></i>
                           <span>{product.location}</span>
                         </h6>
                         <h3 className="title">{product.title}</h3>

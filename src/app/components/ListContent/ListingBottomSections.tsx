@@ -26,12 +26,12 @@ type TabsItem = {
 };
 
 const stateMeta: Record<string, { code: string; image: string }> = {
-  victoria: { code: "VIC", image: "/images/vic_map.svg?=1" },
-  "new-south-wales": { code: "NSW", image: "/images/nsw_map.svg?=1" },
-  queensland: { code: "QLD", image: "/images/qld_map.svg?=1" },
-  "south-australia": { code: "SA", image: "/images/sa_map.svg?=1" },
-  "western-australia": { code: "WA", image: "/images/wa_map.svg?=1" },
-  tasmania: { code: "TAS", image: "/images/tas_map.svg?=1" },
+  victoria: { code: "VIC", image: "/images/vic_map.svg" },
+  "new-south-wales": { code: "NSW", image: "/images/nsw_map.svg" },
+  queensland: { code: "QLD", image: "/images/qld_map.svg" },
+  "south-australia": { code: "SA", image: "/images/sa_map.svg" },
+  "western-australia": { code: "WA", image: "/images/wa_map.svg" },
+  tasmania: { code: "TAS", image: "/images/tas_map.svg" },
 };
 
 export default function ListingBottomSections() {

@@ -349,7 +349,7 @@
 }
 
 .sell-banner {
-    background: url(/images/selling_banner.jpg?=2);
+    background: url(/images/selling_banner.webp?=2);
     background-position: center;
     background-size: cover;
     border-radius: 12px;
@@ -1852,16 +1852,16 @@ a.ignoretext {
 }
 
 .illustration.left {
-  background: url("/images/illustration-left.png") bottom / 125px no-repeat;
+  background: url("/images/illustration-left.webp") bottom / 125px no-repeat;
 }
 
 .illustration.center {
-  background: url("/images/illustration-center.png") bottom / 125px no-repeat;
+  background: url("/images/illustration-center.webp") bottom / 125px no-repeat;
   width: 140px;
 }
 
 .illustration.right {
-  background: url("/images/illustration-right.png") bottom / 125px no-repeat;
+  background: url("/images/illustration-right.webp") bottom / 125px no-repeat;
 }
 
 /* Responsive */

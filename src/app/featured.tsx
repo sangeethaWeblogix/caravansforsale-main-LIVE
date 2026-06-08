@@ -280,7 +280,7 @@ export default function DealsOnlyCFS() {
                                 <div className="product_de">
                                   <div className="info">
                                     <h6 className="category">
-                                      <i className="fa fa-map-marker-alt" />
+                                      <i className="fa-solid fa-location-dot" />
                                       <span>{it.location ?? ""}</span>
                                     </h6>
                                     <h3 className="title">{it.title ?? "—"}</h3>

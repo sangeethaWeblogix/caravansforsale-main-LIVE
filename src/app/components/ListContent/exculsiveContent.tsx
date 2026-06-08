@@ -603,7 +603,7 @@ export default function ExculisiveContent({
                                 )}
                                 {item.location && (
                                   <span>
-                                    <i className="fa fa-map-marker-alt"></i>{" "}
+                                    <i className="fa-solid fa-location-dot"></i>{" "}
                                     {item.location}
                                   </span>
                                 )}

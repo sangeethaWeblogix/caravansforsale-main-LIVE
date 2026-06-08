@@ -113,12 +113,12 @@
     const [activeIndex, setActiveIndex] = useState(0);
 
     const stateMeta = {
-      victoria: { code: "VIC", image: "/images/vic_map.svg?=1" },
-      "new-south-wales": { code: "NSW", image: "/images/nsw_map.svg?=1" },
-      queensland: { code: "QLD", image: "/images/qld_map.svg?=1" },
-      "south-australia": { code: "SA", image: "/images/sa_map.svg?=1" },
-      "western-australia": { code: "WA", image: "/images/wa_map.svg?=1" },
-      tasmania: { code: "TAS", image: "/images/tas_map.svg?=1" },
+      victoria: { code: "VIC", image: "/images/vic_map.svg" },
+      "new-south-wales": { code: "NSW", image: "/images/nsw_map.svg" },
+      queensland: { code: "QLD", image: "/images/qld_map.svg" },
+      "south-australia": { code: "SA", image: "/images/sa_map.svg" },
+      "western-australia": { code: "WA", image: "/images/wa_map.svg" },
+      tasmania: { code: "TAS", image: "/images/tas_map.svg" },
     };
 
     const [usedCategoryList, setUsedCategoryList] = useState<TabsItem[]>([]);
@@ -466,7 +466,6 @@ const BANNER_ENABLED = false;
               className={activeBanner.device_target === "mobile" ? "hidden-lg hidden-md hidden-sm" : "hidden-xs"}
               style={{ width: "100%", height: "auto" }}
               priority
-              unoptimized
             />
           </div>
         </a>
@@ -476,7 +475,7 @@ const BANNER_ENABLED = false;
       <a href="https://www.caravansforsale.com.au/listings/">
         <div className="item-image">
           <Image
-            src="/images/banner_top_dk.jpg?=1"
+            src="/images/banner_top_dk.jpg"
             className="hidden-xs"
             alt="off-road"
             width={2000}
@@ -485,7 +484,7 @@ const BANNER_ENABLED = false;
             unoptimized
           />
           <Image
-            src="/images/banner_top_mb.jpg?=1"
+            src="/images/banner_top_mb.jpg"
             className="hidden-lg hidden-md hidden-sm"
             alt="off-road"
             width={2000}
@@ -516,7 +515,6 @@ const BANNER_ENABLED = false;
           className={activeBanner.device_target === "mobile" ? "hidden-lg hidden-md hidden-sm" : "hidden-xs"}
           style={{ width: "100%", height: "auto" }}
           priority
-          unoptimized
         />
       </div>
     </a>
@@ -525,22 +523,20 @@ const BANNER_ENABLED = false;
     <a href="https://www.caravansforsale.com.au/listings/">
       <div className="item-image">
         <Image
-          src="/images/banner_top_dk.jpg?=1"
+          src="/images/banner_top_dk.jpg"
           className="hidden-xs"
           alt="off-road"
           width={2000}
           height={700}
           style={{ width: "100%", height: "auto" }}
-          unoptimized
         />
         <Image
-          src="/images/banner_top_mb.jpg?=1"
+          src="/images/banner_top_mb.jpg"
           className="hidden-lg hidden-md hidden-sm"
           alt="off-road"
           width={2000}
           height={700}
           style={{ width: "100%", height: "auto" }}
-          unoptimized
         />
       </div>
     </a>
@@ -611,8 +607,7 @@ const BANNER_ENABLED = false;
                                   alt="off-road"
                                   width={80}
                                   height={80}
-                                  unoptimized
-                                />
+                                                    />
                               </div>
                               <span>Off Road</span>
                             </a>
@@ -626,8 +621,7 @@ const BANNER_ENABLED = false;
                                   alt="hybrid"
                                   width={80}
                                   height={80}
-                                  unoptimized
-                                />
+                                                    />
                               </div>
                               <span>Hybrid</span>
                             </a>
@@ -641,8 +635,7 @@ const BANNER_ENABLED = false;
                                   alt="pop-top"
                                   width={80}
                                   height={80}
-                                  unoptimized
-                                />
+                                                    />
                               </div>
                               <span>Pop Top</span>
                             </a>
@@ -656,8 +649,7 @@ const BANNER_ENABLED = false;
                                   alt="luxury"
                                   width={80}
                                   height={80}
-                                  unoptimized
-                                />
+                                                    />
                               </div>
                               <span>Luxury</span>
                             </a>
@@ -671,8 +663,7 @@ const BANNER_ENABLED = false;
                                   alt="family"
                                   width={80}
                                   height={80}
-                                  unoptimized
-                                />
+                                                    />
                               </div>
                               <span>Family</span>
                             </a>
@@ -686,8 +677,7 @@ const BANNER_ENABLED = false;
                                   alt="touring"
                                   width={80}
                                   height={80}
-                                  unoptimized
-                                />
+                                                    />
                               </div>
                               <span>Touring</span>
                             </a>
@@ -877,7 +867,7 @@ const BANNER_ENABLED = false;
                   {/* RIGHT IMAGE */}
                   {/* <div className="sell-image">
                     <Image
-                      src="/images/selling_banner.jpg?=1"
+                      src="/images/selling_banner.jpg"
                       alt="Sell Caravan"
                       fill
                       className="image"
@@ -1055,7 +1045,7 @@ const BANNER_ENABLED = false;
                 width={80}
                 height={80}
                 unoptimized
-              />{" "}
+                />{" "}
               <div className="mt-2 fw-semibold">Loading…</div>
             </div>
           </div>
