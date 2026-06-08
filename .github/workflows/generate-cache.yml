@@ -215,11 +215,42 @@ jobs:
         run: echo "::notice::✅ cat-state completed!"
 
   # ==========================================
-  # REGIONS (~62 URLs) - 2 batches × 50
+  # REGIONS — fetch paths once, then 2 batches × 50
   # ==========================================
+  fetch-paths-regions:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: |
+      (github.event_name == 'schedule') ||
+      (github.event_name == 'workflow_dispatch' &&
+       (github.event.inputs.target == 'all' || github.event.inputs.target == 'small-types' || github.event.inputs.target == 'regions'))
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: 📦 Install dependencies
+        run: npm install node-fetch@2
+      - name: 📥 Fetch paths from API
+        env:
+          WP_API_BASE: 'https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap'
+          WP_API_KEY: ${{ secrets.WP_API_KEY }}
+          PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
+          TARGET_SITEMAP: regions
+        run: node scripts/fetch-paths-only.js
+      - name: 📤 Upload paths artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: paths-regions
+          path: /tmp/paths-regions.json
+          retention-days: 1
+
   generate-regions:
     runs-on: ubuntu-latest
     timeout-minutes: 90     # 50 URLs × 4 variants × ~10s = ~33 min, 90 is safe
+    needs: fetch-paths-regions
     if: |
       (github.event_name == 'schedule') ||
       (github.event_name == 'workflow_dispatch' &&
@@ -243,16 +274,21 @@ jobs:
       - name: 📦 Install dependencies
         run: npm install node-fetch@2
 
+      - name: 📥 Download paths artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: paths-regions
+          path: /tmp
+
       - name: 🗺️ Generate regions (Batch ${{ matrix.batch }}/2)
         env:
           PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
           VERCEL_BASE_URL: ${{ secrets.VERCEL_BASE_URL }}
-          WP_API_BASE: 'https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap'
-          WP_API_KEY: ${{ secrets.WP_API_KEY }}
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           TARGET_SITEMAP: regions
+          PATHS_FILE: /tmp/paths-regions.json
           BATCH_SIZE: 50
           BATCH_NUMBER: ${{ matrix.batch }}
           SKIP_ROUTES_UPDATE: 'true'
@@ -263,11 +299,42 @@ jobs:
         run: echo "::notice::✅ regions batch ${{ matrix.batch }} completed!"
 
   # ==========================================
-  # STATE-MAKE (~TBD URLs) - 2 batches × 50
+  # STATE-MAKE — fetch paths once, then 2 batches × 50
   # ==========================================
+  fetch-paths-state-make:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: |
+      (github.event_name == 'schedule') ||
+      (github.event_name == 'workflow_dispatch' &&
+       (github.event.inputs.target == 'all' || github.event.inputs.target == 'large-types' || github.event.inputs.target == 'state-make'))
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: 📦 Install dependencies
+        run: npm install node-fetch@2
+      - name: 📥 Fetch paths from API
+        env:
+          WP_API_BASE: 'https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap'
+          WP_API_KEY: ${{ secrets.WP_API_KEY }}
+          PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
+          TARGET_SITEMAP: state-make
+        run: node scripts/fetch-paths-only.js
+      - name: 📤 Upload paths artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: paths-state-make
+          path: /tmp/paths-state-make.json
+          retention-days: 1
+
   generate-state-make:
     runs-on: ubuntu-latest
     timeout-minutes: 90
+    needs: fetch-paths-state-make
     if: |
       (github.event_name == 'schedule') ||
       (github.event_name == 'workflow_dispatch' &&
@@ -291,16 +358,21 @@ jobs:
       - name: 📦 Install dependencies
         run: npm install node-fetch@2
 
+      - name: 📥 Download paths artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: paths-state-make
+          path: /tmp
+
       - name: 🗺️ Generate state-make (Batch ${{ matrix.batch }}/2)
         env:
           PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
           VERCEL_BASE_URL: ${{ secrets.VERCEL_BASE_URL }}
-          WP_API_BASE: 'https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap'
-          WP_API_KEY: ${{ secrets.WP_API_KEY }}
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           TARGET_SITEMAP: state-make
+          PATHS_FILE: /tmp/paths-state-make.json
           BATCH_SIZE: 50
           BATCH_NUMBER: ${{ matrix.batch }}
           SKIP_ROUTES_UPDATE: 'true'
@@ -311,11 +383,42 @@ jobs:
         run: echo "::notice::✅ state-make batch ${{ matrix.batch }} completed!"
 
   # ==========================================
-  # MAKES (~267 URLs) - 6 batches × 50
+  # MAKES — fetch paths once, then 6 batches × 50
   # ==========================================
+  fetch-paths-makes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: |
+      (github.event_name == 'schedule') ||
+      (github.event_name == 'workflow_dispatch' &&
+       (github.event.inputs.target == 'all' || github.event.inputs.target == 'large-types' || github.event.inputs.target == 'makes'))
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: 📦 Install dependencies
+        run: npm install node-fetch@2
+      - name: 📥 Fetch paths from API
+        env:
+          WP_API_BASE: 'https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap'
+          WP_API_KEY: ${{ secrets.WP_API_KEY }}
+          PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
+          TARGET_SITEMAP: makes
+        run: node scripts/fetch-paths-only.js
+      - name: 📤 Upload paths artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: paths-makes
+          path: /tmp/paths-makes.json
+          retention-days: 1
+
   generate-makes:
     runs-on: ubuntu-latest
     timeout-minutes: 90
+    needs: fetch-paths-makes
     if: |
       (github.event_name == 'schedule') ||
       (github.event_name == 'workflow_dispatch' &&
@@ -339,16 +442,21 @@ jobs:
       - name: 📦 Install dependencies
         run: npm install node-fetch@2
 
+      - name: 📥 Download paths artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: paths-makes
+          path: /tmp
+
       - name: 🗺️ Generate makes (Batch ${{ matrix.batch }}/6)
         env:
           PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
           VERCEL_BASE_URL: ${{ secrets.VERCEL_BASE_URL }}
-          WP_API_BASE: 'https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap'
-          WP_API_KEY: ${{ secrets.WP_API_KEY }}
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           TARGET_SITEMAP: makes
+          PATHS_FILE: /tmp/paths-makes.json
           BATCH_SIZE: 50
           BATCH_NUMBER: ${{ matrix.batch }}
           SKIP_ROUTES_UPDATE: 'true'
@@ -359,11 +467,42 @@ jobs:
         run: echo "::notice::✅ makes batch ${{ matrix.batch }} completed!"
 
   # ==========================================
-  # MODELS (~TBD URLs) - 6 batches × 50
+  # MODELS — fetch paths once, then 6 batches × 50
   # ==========================================
+  fetch-paths-models:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: |
+      (github.event_name == 'schedule') ||
+      (github.event_name == 'workflow_dispatch' &&
+       (github.event.inputs.target == 'all' || github.event.inputs.target == 'large-types' || github.event.inputs.target == 'models'))
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: 📦 Install dependencies
+        run: npm install node-fetch@2
+      - name: 📥 Fetch paths from API
+        env:
+          WP_API_BASE: 'https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap'
+          WP_API_KEY: ${{ secrets.WP_API_KEY }}
+          PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
+          TARGET_SITEMAP: models
+        run: node scripts/fetch-paths-only.js
+      - name: 📤 Upload paths artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: paths-models
+          path: /tmp/paths-models.json
+          retention-days: 1
+
   generate-models:
     runs-on: ubuntu-latest
     timeout-minutes: 90
+    needs: fetch-paths-models
     if: |
       (github.event_name == 'schedule') ||
       (github.event_name == 'workflow_dispatch' &&
@@ -387,16 +526,21 @@ jobs:
       - name: 📦 Install dependencies
         run: npm install node-fetch@2
 
+      - name: 📥 Download paths artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: paths-models
+          path: /tmp
+
       - name: 🗺️ Generate models (Batch ${{ matrix.batch }}/6)
         env:
           PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
           VERCEL_BASE_URL: ${{ secrets.VERCEL_BASE_URL }}
-          WP_API_BASE: 'https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap'
-          WP_API_KEY: ${{ secrets.WP_API_KEY }}
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           TARGET_SITEMAP: models
+          PATHS_FILE: /tmp/paths-models.json
           BATCH_SIZE: 50
           BATCH_NUMBER: ${{ matrix.batch }}
           SKIP_ROUTES_UPDATE: 'true'
@@ -407,15 +551,42 @@ jobs:
         run: echo "::notice::✅ models batch ${{ matrix.batch }} completed!"
 
   # ==========================================
-  # REGION-MAKE - 16 batches × 25 URLs
-  # CHANGED: was 8 batches × 50. These are deep combination URLs
-  # (e.g. /listings/nsw-state/sydney-region/jayco/) that take ~26s each to fetch.
-  # Old: 50 URLs × 4 variants × 26s = ~87 min → TIMEOUT
-  # New: 25 URLs × 4 variants × 26s = ~43 min → safe within 90 min
+  # REGION-MAKE — fetch paths once, then 16 batches × 25 URLs
   # ==========================================
+  fetch-paths-region-make:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: |
+      (github.event_name == 'schedule') ||
+      (github.event_name == 'workflow_dispatch' &&
+       (github.event.inputs.target == 'all' || github.event.inputs.target == 'large-types' || github.event.inputs.target == 'region-make'))
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: 📦 Install dependencies
+        run: npm install node-fetch@2
+      - name: 📥 Fetch paths from API
+        env:
+          WP_API_BASE: 'https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap'
+          WP_API_KEY: ${{ secrets.WP_API_KEY }}
+          PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
+          TARGET_SITEMAP: region-make
+        run: node scripts/fetch-paths-only.js
+      - name: 📤 Upload paths artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: paths-region-make
+          path: /tmp/paths-region-make.json
+          retention-days: 1
+
   generate-region-make:
     runs-on: ubuntu-latest
     timeout-minutes: 90     # 25 URLs × 4 variants × ~26s = ~43 min, 90 is safe
+    needs: fetch-paths-region-make
     if: |
       (github.event_name == 'schedule') ||
       (github.event_name == 'workflow_dispatch' &&
@@ -439,16 +610,21 @@ jobs:
       - name: 📦 Install dependencies
         run: npm install node-fetch@2
 
+      - name: 📥 Download paths artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: paths-region-make
+          path: /tmp
+
       - name: 🗺️ Generate region-make (Batch ${{ matrix.batch }}/16)
         env:
           PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
           VERCEL_BASE_URL: ${{ secrets.VERCEL_BASE_URL }}
-          WP_API_BASE: 'https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap'
-          WP_API_KEY: ${{ secrets.WP_API_KEY }}
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           TARGET_SITEMAP: region-make
+          PATHS_FILE: /tmp/paths-region-make.json
           BATCH_SIZE: 25
           BATCH_NUMBER: ${{ matrix.batch }}
           SKIP_ROUTES_UPDATE: 'true'
@@ -459,15 +635,42 @@ jobs:
         run: echo "::notice::✅ region-make batch ${{ matrix.batch }} completed!"
 
   # ==========================================
-  # CAT-REGION (~378 URLs) - 16 batches × 25 URLs
-  # CHANGED: was 8 batches × 50. Same reasoning as region-make:
-  # these are deep combination URLs that can be slow to fetch.
-  # Old: 50 × 4 × ~26s = ~87 min → TIMEOUT
-  # New: 25 × 4 × ~26s = ~43 min → safe within 90 min
+  # CAT-REGION — fetch paths once, then 16 batches × 25 URLs
   # ==========================================
+  fetch-paths-cat-region:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: |
+      (github.event_name == 'schedule') ||
+      (github.event_name == 'workflow_dispatch' &&
+       (github.event.inputs.target == 'all' || github.event.inputs.target == 'large-types' || github.event.inputs.target == 'cat-region'))
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: 📦 Install dependencies
+        run: npm install node-fetch@2
+      - name: 📥 Fetch paths from API
+        env:
+          WP_API_BASE: 'https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap'
+          WP_API_KEY: ${{ secrets.WP_API_KEY }}
+          PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
+          TARGET_SITEMAP: cat-region
+        run: node scripts/fetch-paths-only.js
+      - name: 📤 Upload paths artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: paths-cat-region
+          path: /tmp/paths-cat-region.json
+          retention-days: 1
+
   generate-cat-region:
     runs-on: ubuntu-latest
     timeout-minutes: 90     # 25 URLs × 4 variants × ~26s = ~43 min, 90 is safe
+    needs: fetch-paths-cat-region
     if: |
       (github.event_name == 'schedule') ||
       (github.event_name == 'workflow_dispatch' &&
@@ -491,16 +694,21 @@ jobs:
       - name: 📦 Install dependencies
         run: npm install node-fetch@2
 
+      - name: 📥 Download paths artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: paths-cat-region
+          path: /tmp
+
       - name: 🗺️ Generate cat-region (Batch ${{ matrix.batch }}/16)
         env:
           PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
           VERCEL_BASE_URL: ${{ secrets.VERCEL_BASE_URL }}
-          WP_API_BASE: 'https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap'
-          WP_API_KEY: ${{ secrets.WP_API_KEY }}
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           TARGET_SITEMAP: cat-region
+          PATHS_FILE: /tmp/paths-cat-region.json
           BATCH_SIZE: 25
           BATCH_NUMBER: ${{ matrix.batch }}
           SKIP_ROUTES_UPDATE: 'true'
@@ -520,11 +728,17 @@ jobs:
       - generate-priority
       - generate-small-types
       - generate-cat-state
+      - fetch-paths-regions
       - generate-regions
+      - fetch-paths-state-make
       - generate-state-make
+      - fetch-paths-makes
       - generate-makes
+      - fetch-paths-models
       - generate-models
+      - fetch-paths-region-make
       - generate-region-make
+      - fetch-paths-cat-region
       - generate-cat-region
     if: |
       always() &&
@@ -608,11 +822,17 @@ jobs:
       - generate-priority
       - generate-small-types
       - generate-cat-state
+      - fetch-paths-regions
       - generate-regions
+      - fetch-paths-state-make
       - generate-state-make
+      - fetch-paths-makes
       - generate-makes
+      - fetch-paths-models
       - generate-models
+      - fetch-paths-region-make
       - generate-region-make
+      - fetch-paths-cat-region
       - generate-cat-region
       - update-routes-mapping
     if: always() && github.event_name == 'schedule'
