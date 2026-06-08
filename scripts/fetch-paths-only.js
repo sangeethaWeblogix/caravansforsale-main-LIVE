@@ -89,7 +89,9 @@ async function fetchAndSave(type) {
   fs.writeFileSync(outputFile, JSON.stringify(output, null, 2));
 
   console.log(`✅ Saved ${urls.length} paths → ${outputFile}`);
-  console.log(`::set-output name=path_count::${urls.length}`);
+  if (process.env.GITHUB_OUTPUT) {
+    fs.appendFileSync(process.env.GITHUB_OUTPUT, `path_count=${urls.length}\n`);
+  }
 }
 
 fetchAndSave(TARGET_SITEMAP).catch(err => {
