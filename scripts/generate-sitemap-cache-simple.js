@@ -34,6 +34,7 @@
  */
 
 const fetch = require('node-fetch');
+const fs    = require('fs');
 
 // Environment variables
 const PRODUCTION_DOMAIN = process.env.PRODUCTION_DOMAIN || 'https://www.caravansforsale.com.au';
@@ -44,6 +45,7 @@ const CF_ACCOUNT_ID = process.env.CF_ACCOUNT_ID;
 const CF_KV_NAMESPACE_ID = process.env.CF_KV_NAMESPACE_ID;
 const CF_API_TOKEN = process.env.CF_API_TOKEN;
 const TARGET_SITEMAP = process.env.TARGET_SITEMAP || 'all';
+const PATHS_FILE     = process.env.PATHS_FILE || '';    // If set, load paths from file instead of API
 
 // Configuration
 const VARIANTS_PER_URL = 4;
@@ -281,6 +283,27 @@ function isErrorPage(html) {
  * Each path is relative (e.g. "family-category/") and gets /listings/ prepended.
  * Result: /listings/family-category/
  */
+// ============================================
+// LOAD PATHS FROM PRE-FETCHED FILE (avoids API call in batch jobs)
+// ============================================
+
+function loadPathsFromFile(filePath) {
+  console.log(`\n📂 Loading paths from file: ${filePath}`);
+  try {
+    const raw  = fs.readFileSync(filePath, 'utf8');
+    const data = JSON.parse(raw);
+    if (!Array.isArray(data.paths) || data.paths.length === 0) {
+      console.warn(`   ⚠️  File contained 0 paths`);
+      return [];
+    }
+    console.log(`   ✅ Loaded ${data.paths.length} paths from file`);
+    return data.paths;
+  } catch (err) {
+    console.error(`   ❌ Failed to load paths file: ${err.message}`);
+    return [];
+  }
+}
+
 async function fetchPathsFromAPI(type) {
   const apiUrl = `${WP_API_BASE}/${type}`;
   console.log(`\n📥 Fetching paths from API: ${apiUrl}`);
@@ -493,9 +516,9 @@ async function main() {
   for (let i = 0; i < typesToProcess.length; i++) {
     const type = typesToProcess[i];
     console.log(`\n[${i + 1}/${typesToProcess.length}] Type: ${type}`);
-    const urls = await fetchPathsFromAPI(type);
+    const urls = PATHS_FILE ? loadPathsFromFile(PATHS_FILE) : await fetchPathsFromAPI(type);
     allUrls = allUrls.concat(urls);
-    await new Promise(r => setTimeout(r, 500));
+    if (!PATHS_FILE) await new Promise(r => setTimeout(r, 500));
   }
 
   // Apply batching if specified
