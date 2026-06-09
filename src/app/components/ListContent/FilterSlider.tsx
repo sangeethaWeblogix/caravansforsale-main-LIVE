@@ -536,8 +536,8 @@ const [states, setStates] = useState<StateOption[]>(
     setSuburbLocationSuggestions([]);
     setShowSuburbSuggestions(false);
     setTempSuburbRadius(
-      typeof currentFilters.radius_kms === "number"
-        ? currentFilters.radius_kms
+      currentFilters.radius_kms
+        ? Number(currentFilters.radius_kms)
         : RADIUS_OPTIONS[0],
     );
     setOpenModal("suburb");
@@ -1252,54 +1252,57 @@ const [states, setStates] = useState<StateOption[]>(
               <button
                 className={`search ${tempSuburbSuggestion ? "active" : ""}`}
                 onClick={() => {
-                  if (!tempSuburbSuggestion) {
+                  // No suggestion and no existing suburb → just close
+                  if (!tempSuburbSuggestion && !currentFilters.suburb) {
                     setOpenModal(null);
                     return;
                   }
 
                   triggerGlobalLoaders();
 
-                  const uriParts = tempSuburbSuggestion.uri.split("/");
-                  const stateSlug = uriParts[0] || "";
-                  const regionSlug = uriParts[1] || "";
-                  const suburbSlug = uriParts[2] || "";
-                  let pincode = uriParts[3] || "";
+                  let newFilters: Record<string, any>;
 
-                  const state = stateSlug
-                    .replace(/-state$/, "")
-                    .replace(/-/g, " ")
-                    .trim();
-                  const region = regionSlug
-                    .replace(/-region$/, "")
-                    .replace(/-/g, " ")
-                    .trim();
-                  const suburb = suburbSlug
-                    .replace(/-suburb$/, "")
-                    .replace(/-/g, " ")
-                    .trim();
+                  if (!tempSuburbSuggestion) {
+                    // Radius-only change on existing suburb
+                    newFilters = { ...currentFilters, radius_kms: tempSuburbRadius, page: 1 };
+                  } else {
+                    // New suburb selected
+                    const uriParts = tempSuburbSuggestion.uri.split("/");
+                    const stateSlug = uriParts[0] || "";
+                    const regionSlug = uriParts[1] || "";
+                    const suburbSlug = uriParts[2] || "";
+                    let pincode = uriParts[3] || "";
 
-                  if (!/^\d{4}$/.test(pincode)) {
-                    const m = tempSuburbSuggestion.address.match(/\b\d{4}\b/);
-                    if (m) pincode = m[0];
+                    const state = stateSlug.replace(/-state$/, "").replace(/-/g, " ").trim();
+                    const region = regionSlug.replace(/-region$/, "").replace(/-/g, " ").trim();
+                    const suburb = suburbSlug.replace(/-suburb$/, "").replace(/-/g, " ").trim();
+
+                    if (!/^\d{4}$/.test(pincode)) {
+                      const m = tempSuburbSuggestion.address.match(/\b\d{4}\b/);
+                      if (m) pincode = m[0];
+                    }
+
+                    const validRegion = getValidRegionName(state, region, states);
+
+                    newFilters = {
+                      ...currentFilters,
+                      suburb: suburb.toLowerCase(),
+                      pincode: pincode || undefined,
+                      state,
+                      region: validRegion || region,
+                      radius_kms: tempSuburbRadius,
+                      page: 1,
+                    };
                   }
 
-                  const validRegion = getValidRegionName(state, region, states);
-
-                  const newFilters = {
-                    ...currentFilters,
-                    suburb: suburb.toLowerCase(),
-                    pincode: pincode || undefined,
-                    state: state,
-                    region: validRegion || region,
-                    radius_kms: tempSuburbRadius,
-                    page: 1,
-                  };
-
                   const slugPath = buildSlugFromFilters(newFilters);
-                  const safeSlug = slugPath.endsWith("/")
-                    ? slugPath
-                    : `${slugPath}/`;
-                  router.push(safeSlug);
+                  const safeSlug = slugPath.endsWith("/") ? slugPath : `${slugPath}/`;
+                  const query = new URLSearchParams();
+                  if (tempSuburbRadius !== RADIUS_OPTIONS[0]) {
+                    query.set("radius_kms", String(tempSuburbRadius));
+                  }
+                  const finalURL = query.toString() ? `${safeSlug}?${query}` : safeSlug;
+                  router.push(finalURL);
                   setOpenModal(null);
                 }}
               >

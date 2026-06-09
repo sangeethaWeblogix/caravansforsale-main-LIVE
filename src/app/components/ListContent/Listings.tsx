@@ -789,12 +789,14 @@ const [pagination, setPagination] = useState<Pagination>(() => {
     const slugParts = pathKey.split("/listings/")[1]?.split("/") || [];
     const parsedFromURL = parseSlugToFilters(slugParts);
     const orderbyFromQuery = searchParams.get("orderby") ?? undefined;
+    const radiusFromQuery = searchParams.get("radius_kms") ?? undefined;
     const pageFromURL = validatePage(searchParams.get("page"));
 
     const merged: Filters = {
       ...parsedFromURL,
       ...incomingFiltersRef.current,
       ...(orderbyFromQuery ? { orderby: orderbyFromQuery } : {}),
+      ...(radiusFromQuery ? { radius_kms: radiusFromQuery } : {}),
     };
 
     const filtersChanged =
