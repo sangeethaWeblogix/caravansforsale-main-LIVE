@@ -604,7 +604,7 @@ const BANNER_ENABLED = false;
                       <div className="content-info text-center pb-0">
                         <ul className="category_icon list-unstyled d-flex justify-content-start">
                           <li>
-                            <a href="/listings/off-road-category/">
+                            <a href="/listings/off-road-caravan-category/">
                               <div className="item-image">
                                 <Image
                                   src="/images/off-road.webp"
@@ -619,7 +619,7 @@ const BANNER_ENABLED = false;
                           </li>
 
                           <li>
-                            <a href="/listings/hybrid-category/">
+                            <a href="/listings/hybrid-caravan-category/">
                               <div className="item-image">
                                 <Image
                                   src="/images/hybrid.webp"
@@ -634,7 +634,7 @@ const BANNER_ENABLED = false;
                           </li>
 
                           <li>
-                            <a href="/listings/pop-top-category/">
+                            <a href="/listings/pop-top-caravan-category/">
                               <div className="item-image">
                                 <Image
                                   src="/images/pop-top.webp"
@@ -649,7 +649,7 @@ const BANNER_ENABLED = false;
                           </li>
 
                           <li>
-                            <a href="/listings/luxury-category/">
+                            <a href="/listings/luxury-caravan-category/">
                               <div className="item-image">
                                 <Image
                                   src="/images/luxury.webp"
@@ -664,7 +664,7 @@ const BANNER_ENABLED = false;
                           </li>
 
                           <li>
-                            <a href="/listings/family-category/">
+                            <a href="/listings/family-caravan-category/">
                               <div className="item-image">
                                 <Image
                                   src="/images/family.webp"
@@ -679,7 +679,7 @@ const BANNER_ENABLED = false;
                           </li>
 
                           <li>
-                            <a href="/listings/touring-category/">
+                            <a href="/listings/touring-caravan-category/">
                               <div className="item-image">
                                 <Image
                                   src="/images/touring.webp"
