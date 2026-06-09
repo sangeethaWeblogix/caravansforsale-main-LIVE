@@ -43,6 +43,7 @@ export type Item = {
   link: string;
   condition: string;
   location?: string;
+  region?: string;
   categories?: string[];
   people?: string;
   make?: string;
@@ -56,7 +57,6 @@ export type Item = {
   image_format?: string[];
   image_url?: string[];
   seller_type?: string;
-
 };
 
 export interface ApiSEO {

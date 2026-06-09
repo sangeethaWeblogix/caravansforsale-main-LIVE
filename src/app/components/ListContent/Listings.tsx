@@ -47,6 +47,7 @@ interface Product {
   link: string;
   condition: string;
   location?: string;
+  region?: string;
   categories?: string[];
   people?: string;
   make?: string;
@@ -149,6 +150,7 @@ function transformApiItemsToProducts(items: Item[]): Product[] {
     link: item.link || "",
     condition: item.condition || "",
     location: item.location,
+    region: item.region,
     categories: item.categories,
     people: item.people || "",
     make: item.make || "",

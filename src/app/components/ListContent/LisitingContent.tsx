@@ -27,6 +27,7 @@ interface Product {
   link: string;
   condition: string;
   location?: string;
+  region?: string;
   categories?: string[];
   people?: string;
   make?: string;
@@ -75,6 +76,7 @@ export interface Filters {
   region?: string;
   suburb?: string;
   pincode?: string;
+  radius_kms?: string | number;
   orderby?: string;
   slug?: string | undefined;
 }
@@ -463,6 +465,33 @@ export default function ListingContent({
 
   const { count, text } = splitCountAndTitle(pageTitle);
 
+  const AUS_ABBR: Record<string, string> = {
+    VICTORIA: "VIC",
+    "NEW SOUTH WALES": "NSW",
+    QUEENSLAND: "QLD",
+    "SOUTH AUSTRALIA": "SA",
+    "WESTERN AUSTRALIA": "WA",
+    TASMANIA: "TAS",
+    "NORTHERN TERRITORY": "NT",
+    "AUSTRALIAN CAPITAL TERRITORY": "ACT",
+  };
+
+  const getLocationLabel = (item: Product): string | undefined => {
+    if (currentFilters.suburb) {
+      const radius = currentFilters.radius_kms ?? 50;
+      const suburb = currentFilters.suburb.replace(/\b\w/g, (c) => c.toUpperCase());
+      const stateAbbr =
+        AUS_ABBR[(currentFilters.state ?? "").toUpperCase()] ??
+        (currentFilters.state ?? "").toUpperCase();
+      const pincode = currentFilters.pincode ? ` ${currentFilters.pincode}` : "";
+      return `${radius} kms from ${suburb} ${stateAbbr}${pincode}`;
+    }
+    if (item.region && currentFilters.region) {
+      return `${item.region.replace(/\b\w/g, (c) => c.toUpperCase())}, ${item.location}`;
+    }
+    return item.location;
+  };
+
   const activateSwiper = (item: Product) => {
     if (swiperActivated[item.id]) return;
 
@@ -684,10 +713,10 @@ useEffect(() => {
                                     {item.name}
                                   </h3>
                                 )}
-                                {item.location && (
+                                {getLocationLabel(item) && (
                                   <p className="listing_location">
                                     <i className="fa-solid fa-location-dot"></i>{" "}
-                                    {item.location}
+                                    {getLocationLabel(item)}
                                   </p>
                                 )}
                               </div>
@@ -946,10 +975,10 @@ useEffect(() => {
                               {item.name}
                             </h3>
                           )}
-                          {item.location && (
+                          {getLocationLabel(item) && (
                             <p className="listing_location">
                               <i className="fa-solid fa-location-dot"></i>{" "}
-                              {item.location}
+                              {getLocationLabel(item)}
                             </p>
                           )}
                         </div>
