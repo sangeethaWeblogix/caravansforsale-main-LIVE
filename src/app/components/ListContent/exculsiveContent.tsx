@@ -24,6 +24,7 @@ interface Product {
   link: string;
   condition: string;
   location?: string;
+  region?: string;
   categories?: string[];
   people?: string;
   make?: string;
@@ -73,15 +74,17 @@ export interface Filters {
   region?: string;
   suburb?: string;
   pincode?: string;
+  radius_kms?: string | number;
   orderby?: string;
   slug?: string | undefined;
 }
 interface Props {
   data: Product[];
-  pageTitle: string; // Add pageTitle prop
-  metaTitle: string; // Add metaTitle prop
-  metaDescription: string; // Add metaDescription prop
-  isPremiumLoading: boolean; // Add isMainLoading prop
+  pageTitle: string;
+  metaTitle: string;
+  metaDescription: string;
+  isPremiumLoading: boolean;
+  currentFilters?: Filters;
 }
 
 export default function ExculisiveContent({
@@ -89,7 +92,8 @@ export default function ExculisiveContent({
   pageTitle,
   metaTitle,
   metaDescription,
- }: Props) {
+  currentFilters = {},
+}: Props) {
   const [showInfo, setShowInfo] = useState(false);
   const [showContact, setShowContact] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -326,6 +330,33 @@ export default function ExculisiveContent({
   return () => observer.disconnect();
 }, [data]);
 
+  const AUS_ABBR: Record<string, string> = {
+    VICTORIA: "VIC",
+    "NEW SOUTH WALES": "NSW",
+    QUEENSLAND: "QLD",
+    "SOUTH AUSTRALIA": "SA",
+    "WESTERN AUSTRALIA": "WA",
+    TASMANIA: "TAS",
+    "NORTHERN TERRITORY": "NT",
+    "AUSTRALIAN CAPITAL TERRITORY": "ACT",
+  };
+
+  const getLocationLabel = (item: Product): string | undefined => {
+    if (currentFilters.suburb) {
+      const radius = currentFilters.radius_kms ?? 50;
+      const suburb = currentFilters.suburb.replace(/\b\w/g, (c) => c.toUpperCase());
+      const stateAbbr =
+        AUS_ABBR[(currentFilters.state ?? "").toUpperCase()] ??
+        (currentFilters.state ?? "").toUpperCase();
+      const pincode = currentFilters.pincode ? ` ${currentFilters.pincode}` : "";
+      return `${radius} kms from ${suburb} ${stateAbbr}${pincode}`;
+    }
+    if (item.region && currentFilters.region) {
+      return `${item.region.replace(/\b\w/g, (c) => c.toUpperCase())} Region, ${item.location}`;
+    }
+    return item.location;
+  };
+
   const activateSwiper = (item: Product) => {
     if (swiperActivated[item.id]) return;
 
@@ -485,6 +516,12 @@ export default function ExculisiveContent({
                                   {item.name}
                                 </h3>
                               )}
+ {getLocationLabel(item) && (
+                                  <p className="listing_location">
+                                    <i className="fa-solid fa-location-dot"></i>{" "}
+                                    {getLocationLabel(item)}
+                                  </p>
+                                )}
                             </div>
 
                             {/* --- PRICE SECTION --- */}
@@ -601,12 +638,7 @@ export default function ExculisiveContent({
                                     Condition {item.condition}
                                   </span>
                                 )}
-                                {item.location && (
-                                  <span>
-                                    <i className="fa-solid fa-location-dot"></i>{" "}
-                                    {item.location}
-                                  </span>
-                                )}
+                                
                                   {item.seller_type && (
                                     <span>
   <i className="fa-solid fa-circle-info"></i>{" "}

@@ -487,7 +487,7 @@ export default function ListingContent({
       return `${radius} kms from ${suburb} ${stateAbbr}${pincode}`;
     }
     if (item.region && currentFilters.region) {
-      return `${item.region.replace(/\b\w/g, (c) => c.toUpperCase())}, ${item.location}`;
+      return `${item.region.replace(/\b\w/g, (c) => c.toUpperCase())} Region, ${item.location}`;
     }
     return item.location;
   };

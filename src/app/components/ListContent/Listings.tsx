@@ -1506,6 +1506,7 @@ const [pagination, setPagination] = useState<Pagination>(() => {
                         metaDescription={metaDescription}
                         metaTitle={metaTitle}
                         isPremiumLoading={isPremiumLoading}
+                        currentFilters={filters}
                       />
                     )}
                 </>
