@@ -10,18 +10,18 @@ import { fetchProductList } from "@/api/productList/api";
 export const revalidate = 3600;
 
 export const metadata: Metadata = {
-  title: "Caravans for Sale in Australia | New & Used Caravans",
+  title: "Caravans for Sale in Australia",
   description:
     "Browse new & used caravans for sale across Australia. Compare prices on off-road, hybrid, pop top, touring, luxury models with size, weight & sleeping capacity.",
   robots: "index, follow",
   openGraph: {
-    title: "Caravans for Sale in Australia | New & Used Caravans",
+    title: "Caravans for Sale in Australia",
     description:
         "Browse caravans for sale across Australia. Compare prices on off-road, hybrid, pop top, touring, luxury models with size, weight & sleeping capacity.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Caravans for Sale in Australia | New & Used Caravans",
+    title: "Caravans for Sale in Australia",
     description:
        "Browse new & used caravans for sale across Australia. Compare prices on off-road, hybrid, pop top, touring, luxury models with size, weight & sleeping capacity.",
   },
@@ -58,111 +58,44 @@ export default async function ListingsPage({
     page = 1;
   }
 
-  // Wrap API call in try-catch to handle failures gracefully
+  let response;
+  let productListRes;
   try {
-    const response = await fetchListings({ page });
-
-    // Check if response is valid
-    if (!response) {
-      // API returned nothing - show error fallback
-      return (
-        <ApiErrorFallback
-          title="Unable to load listings"
-          message="We couldn't connect to our servers. Please try again."
-          showRetry={true}
-        />
-      );
-    }
-
-    // Check if API explicitly returned failure
-    if (response.success === false) {
-      return (
-        <ApiErrorFallback
-          title="Service temporarily unavailable"
-          message="Our listing service is currently experiencing issues. Please try again in a few moments."
-          showRetry={true}
-        />
-      );
-    }
-
-    // Check if data structure is valid
-    if (!response.data) {
-      return (
-        <ApiErrorFallback
-          title="No data available"
-          message="We received an incomplete response from our servers. Please try again."
-          showRetry={true}
-        />
-      );
-    }
-
-    // Check if products array exists and has items
-    if (
-      !Array.isArray(response.data.products) ||
-      response.data.products.length === 0
-    ) {
-      // No products found - this is a 404 case
-      notFound();
-    }
-const [listingsRes, productListRes] = await Promise.all([
-    fetchListings({ page }),
-    fetchProductList(), // 👈 add this
-  ]);
-      console.log("productListRes", productListRes )
-
-    // All checks passed - render the listings
-    return (
-      <Suspense>
-        <Listing initialData={listingsRes} page={page}    productListData={productListRes} />
-      </Suspense>
-    );
+    [response, productListRes] = await Promise.all([
+      fetchListings({ page }),
+      fetchProductList(),
+    ]);
   } catch (error) {
-    // Log the error for debugging
     console.error("Listings page API error:", error);
-
-    // Determine error type and show appropriate message
-    const isNetworkError =
-      error instanceof Error &&
-      (error.message.includes("fetch") ||
-        error.message.includes("network") ||
-        error.message.includes("ECONNREFUSED") ||
-        error.message.includes("ETIMEDOUT"));
-
-    const isApiError =
-      error instanceof Error &&
-      (error.message.includes("API failed") ||
-        error.message.includes("Invalid API response"));
-
-    if (isNetworkError) {
-      return (
-        <ApiErrorFallback
-          title="Connection failed"
-          message="We couldn't reach our servers. Please check your internet connection and try again."
-          showRetry={true}
-          errorType="network"
-        />
-      );
-    }
-
-    if (isApiError) {
-      return (
-        <ApiErrorFallback
-          title="Service error"
-          message="Our listing service encountered an error. Our team has been notified and is working on it."
-          showRetry={true}
-          errorType="api"
-        />
-      );
-    }
-
-    // Generic error fallback
     return (
       <ApiErrorFallback
-        title="Something went wrong"
-        message="We're having trouble loading the listings. Please try again or come back later."
+        title="Unable to load listings"
+        message="We couldn't load this page. Please try again."
         showRetry={true}
-        errorType="unknown"
       />
     );
   }
+
+  if (!response || !response.data) {
+    return (
+      <ApiErrorFallback
+        title="Unable to load listings"
+        message="We couldn't connect to our servers. Please try again."
+        showRetry={true}
+      />
+    );
+  }
+
+  if (
+    !Array.isArray(response.data.products) ||
+    response.data.products.length === 0
+  ) {
+    notFound();
+  }
+
+  return (
+    <Suspense>
+      <Listing initialData={response} page={page} productListData={productListRes} />
+    </Suspense>
+  );
 }

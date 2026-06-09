@@ -13,7 +13,7 @@ import ExculsiveContent from "./exculsiveContent";
 import FilterModal from "./FilterModal";
 import { flushSync } from "react-dom";
 import { v4 as uuidv4 } from "uuid";
-import "./newList.css?=284";
+import "./newList.css?=299";
 import "./top-filters.css?=491";
  import ListingSkeleton from "../skelton";
 import {
@@ -29,6 +29,7 @@ import FilterSlider from "./FilterSlider";
 import StaticLinks from "./StaticLinks";
 import { useBanners } from "@/components/BannerHandler";
 import { useBannerTracking } from "@/hooks/useBannerTracking";
+// import ListingBottomSections from "./ListingBottomSections";
 
 /* --------- GLOBAL de-dupe across StrictMode remounts --------- */
 // let LAST_GLOBAL_REQUEST_KEY = "";
@@ -1551,6 +1552,8 @@ const [pagination, setPagination] = useState<Pagination>(() => {
           </Suspense>
         </div>
       </div>
+
+      {/* <ListingBottomSections /> */}
     </>
   );
 }

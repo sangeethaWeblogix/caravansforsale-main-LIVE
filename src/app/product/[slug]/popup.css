@@ -1,340 +1,391 @@
- .custom-model-main {
-  text-align: center;
-  z-index: 0;
-  -webkit-overflow-scrolling: touch;
-  opacity: 1;
-  -webkit-transition: opacity 0.15s linear, z-index 0.15;
-  -o-transition: opacity 0.15s linear, z-index 0.15;
-  transition: opacity 0.15s linear, z-index 0.15;
-  z-index: -1;
-  outline: 0;
+/* ── Modal overlay + full-screen container ─────────────────────────── */
+.cfs-modal {
   position: fixed;
   inset: 0;
-  overflow: hidden;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  margin: 0;
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
   padding: 0;
 }
 
-.show {
-  z-index: 99999;
-  opacity: 1;
+/* ── Close button ────────────────────────────────────────────────────── */
+.cfs-modal-close {
+  position: absolute;
+  top: 10px;
+  right: 20px;
+  z-index: 10;
+  background: none;
+  border: none;
+  color: #222;
+  font-size: 48px;
+  font-weight: 200;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 6px;
+  opacity: 0.7;
+}
+.cfs-modal-close:hover { opacity: 1; }
+
+/* ── Two-column layout ───────────────────────────────────────────────── */
+.cfs-modal-layout {
+  display: flex;
+  height: 100vh;
   overflow: hidden;
 }
 
-.custom-model-inner {
-  -webkit-transform: translate(0, -25%);
-  -ms-transform: translate(0, -25%);
-  transform: translate(0, -25%);
-  -webkit-transition: -webkit-transform 0.3s ease-out;
-  -o-transition: -o-transform 0.3s ease-out;
-  transition: -webkit-transform 0.3s ease-out;
-  -o-transition: transform 0.3s ease-out;
-  transition: transform 0.3s ease-out;
-  transition: transform 0.3s ease-out, -webkit-transform 0.3s ease-out;
-  display: inline-block;
-  vertical-align: middle;
-  width: 100%;
+/* ── Left: image panel ───────────────────────────────────────────────── */
+.cfs-modal-media {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #000000;
+  overflow: hidden;
+  position: relative;
+  
+}
+
+.cfs-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 18px 24px 12px;
+  gap: 12px;
+  flex-shrink: 0;
+  border-bottom: 1px solid #181818;
+}
+.cfs-modal-title-wrap { flex: 1; min-width: 0; }
+.cfs-modal-title {
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0 0 4px;
+  line-height: 1.3;
+}
+.cfs-modal-location {
+  color: #666;
+  font-size: 13px;
   margin: 0;
 }
+.cfs-modal-location i { margin-right: 4px; color: #999; }
 
-.custom-model-wrap {
-  display: block;
-  width: 100%;
-  height: 100%;
-  position: relative;
-  background-color: #2c2c2c;
-  /* border: 1px solid #999; */
-  /* border: 1px solid rgba(0, 0, 0, 0.2); */
-  /* border-radius: 6px; */
-  /* -webkit-box-shadow: 0 3px 9px rgba(0, 0, 0, 0.5); */
-  /* box-shadow: 0 3px 9px rgba(0, 0, 0, 0.5); */
-  /* background-clip: padding-box; */
-  outline: 0;
-  /* text-align: left; */
-  /* padding: 20px; */
-  -webkit-box-sizing: border-box;
-  -moz-box-sizing: border-box;
-  box-sizing: border-box;
-  /* max-height: calc(100vh - 70px); */
-  overflow-y: auto;
-}
-
-.show .custom-model-inner {
-  -webkit-transform: translate(0, 0);
-  -ms-transform: translate(0, 0);
-  transform: translate(0, 0);
-  position: absolute;
-  left: 0;
-  z-index: 999;
-  height: 100%;
-}
-
-.show .bg-overlay {
-  background: rgba(0, 0, 0, 0.6);
-  z-index: 99;
-}
-
-.bg-overlay {
-  background: rgba(0, 0, 0, 0);
-  height: 100%;
-  width: 100%;
-  position: fixed;
-  left: 0;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 0;
-  -webkit-transition: background 0.15s linear;
-  -o-transition: background 0.15s linear;
-  transition: background 0.15s linear;
-}
-
-.close-btn {
-  cursor: pointer;
-  z-index: 99;
-  color: #adadad;
-  font-size: 70px;
-  font-weight: 200;
-  position: absolute;
-  top: -15px;
-  right: 30px;
-  display: block;
-}
-
-.close-btn:hover {
+.cfs-modal-price {
   color: #ffffff;
-}
-
-.pop-up-content-wrap .container {
-  max-width: 1400px;
-}
-
-.pop-top {
-  text-align: left;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 0;
-  display: flex;
-}
-.pop-top h3 {
-  color: #fff;
-  font-size: 23px;
+  font-size: 26px;
   font-weight: 700;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
-.pop-top .vehicleThumbDetails__part__price {
-  text-align: right;
-  width: 300px;
+
+/* Swiper area – fills remaining height */
+.cfs-modal-swiper {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  background: #000000;
 }
-.pop-top .vehicleThumbDetails__part__price span {
-  font-size: 30px;
-  display: block;
-  line-height: initial;
-  color: #fff;
+.cfs-modal-swiper .swiper,
+.cfs-modal-swiper .swiper-wrapper,
+.cfs-modal-swiper .swiper-slide {
+  height: 100%;
 }
-.pop-top .vehicleThumbDetails__part__price.pop_up_price span bdi {
-  display: flex;
-  justify-content: end;
-}
-.carava_details .swiper-wrapper {
-  width: 100%;
-  height: 600px;
-}
-.carava_details .swiper-slide {
-  text-align: center;
-  font-size: 30px;
-  background: transparent;
+.cfs-modal-swiper .swiper-slide {
   display: flex;
   align-items: center;
   justify-content: center;
+  background: #000000;
 }
-.swiper-button-next,
-.swiper-button-prev {
-  width: 40px;
-  height: 40px;
-  border-radius: 5px;
-  background: transparent;
-}
-.swiper-button-next:after,
-.swiper-button-prev:after {
-  color: #fff;
-  font-size: 40px;
-  font-weight: bold;
-}
-.single-product-slider .swiper-pagination-bullet-active {
-  background: #f58333;
-}
-.sidebar-enquiry {
-  position: relative;
-  top: 80px;
+.cfs-modal-swiper .swiper-slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
-.form-item p {
-  margin-bottom: 0;
+/* Nav arrows */
+.cfs-modal-swiper .swiper-button-prev,
+.cfs-modal-swiper .swiper-button-next {
+  color: #ffffff;
+  background: #181818;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
 }
-.cfs-error {
-  color: #bc0505;
-  text-align: left;
-  font-size: 13px;
-  margin-top: 3px;
-}
-.phone_country {
-  position: relative;
-}
-.phone-label {
-  position: absolute;
-  top: 58%;
-  left: 10px;
-  transform: translateY(-50%);
-  color: #000000;
-  pointer-events: none;
+.cfs-modal-swiper .swiper-button-prev:after,
+.cfs-modal-swiper .swiper-button-next:after {
   font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
 }
-.form-item .phone_country input {
-  padding-left: 40px;
-}
-.form {
-  width: 100%;
-  margin: 0 auto;
-  background: #f2f2f2;
-  padding: 22px;
-  border-radius: 4px;
-  height: auto;
-}
-.sidebar-enquiry h4 {
-  font-size: 20px;
-  font-weight: 500;
-  margin-bottom: 15px;
+
+/* Image counter */
+.cfs-modal-counter {
+  flex-shrink: 0;
+  padding: 8px 24px;
+  color: #ffffff;
+  font-size: 13px;
   text-align: left;
+  background: #000000;
+  border-top: 1px solid #181818;
 }
+
+/* ── Right: form panel ───────────────────────────────────────────────── */
+.cfs-modal-sidebar {
+  width: 380px;
+  flex-shrink: 0;
+  background: #fff;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.cfs-modal-form {
+  padding: 28px 24px 32px;
+  flex: 1;
+}
+
+.cfs-modal-form-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0 0 20px;
+  color: #111;
+}
+
+/* ── Form fields ─────────────────────────────────────────────────────── */
 .form-item {
   position: relative;
-  margin-bottom: 15px;
+  margin-bottom: 14px;
 }
-.form-item input,
-.form-item textarea {
-  background: #fff;
-  border: none;
-  border-radius: 0;
-  width: 100%;
-  height: 60px;
-  padding: 10px 15px 0;
-  transition: all 0.3s;
+.cfs-field-label {
   display: block;
-  box-shadow: none !important;
-  outline: none;
+  font-size: 11px;
+  font-weight: 500;
+  color: #888;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
 }
-.form-item textarea {
-  height: 85px;
-  padding-top: 30px;
+.cfs-field {
+  width: 100%;
+  height: 46px;
+  padding: 0 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 15px;
+  color: #111;
+  background: #fafafa;
+  outline: none;
+  box-shadow: none !important;
+  transition: border-color 0.2s, background 0.2s;
+}
+.cfs-field:focus { border-color: #f58333; background: #fff; }
+.cfs-field.is-invalid { border-color: #bc0505; }
+.cfs-field[rows] {
+  height: auto;
+  padding: 10px 12px;
+  resize: vertical;
 }
 
-.form-item input:focus,
-.form-item textarea:focus {
-  border-color: blue;
+/* Phone + Postcode side by side */
+.cfs-field-row {
+  display: flex;
+  gap: 10px;
 }
-.form-item label {
+.cfs-field-row .form-item { flex: 1; min-width: 0; }
+
+/* Phone +61 prefix */
+.cfs-phone-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.cfs-phone-prefix {
   position: absolute;
-  cursor: text;
-  z-index: 2;
-  top: 8px;
-  left: 0;
-  font-size: 11px;
-  font-weight: 400;
-  background: #ffffff;
-  padding: 0 15px;
-  color: #999;
-  transition: all 0.3s ease;
+  left: 10px;
+  font-size: 14px;
+  color: #444;
+  pointer-events: none;
+  z-index: 1;
 }
+.cfs-field-phone { padding-left: 36px; }
+
+.cfs-error {
+  color: #bc0505;
+  font-size: 12px;
+  margin-top: 3px;
+}
+.cfs-success {
+  color: #1a7a1a;
+  font-size: 13px;
+  margin-bottom: 10px;
+}
+
+/* Finance checkbox */
+.cfs-checkbox-wrap {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.cfs-checkbox-wrap input[type="checkbox"] {
+  margin-top: 3px;
+  flex-shrink: 0;
+  accent-color: #f58333;
+}
+.cfs-checkbox-wrap label {
+  font-size: 13px;
+  color: #444;
+  cursor: pointer;
+}
+
 .terms_text {
   font-size: 11px;
-  margin-bottom: 10px;
-  text-align: left;
-  letter-spacing: -0.2px;
+  color: #888;
+  margin-bottom: 16px;
+  line-height: 1.5;
 }
-.terms_text a {
-  color: #f58333;
-}
-.submit-btn button {
-  display: inline-block;
-  margin-top: 0;
-  background: #f58333;
-  border: 1px solid #f58333;
-  color: #fff;
-  padding: 10px 20px;
-  text-transform: uppercase;
-  border-radius: 20px;
-  font-weight: 500;
+.terms_text a { color: #f58333; }
+
+.cfs-modal-submit {
+  display: block;
   width: 100%;
+  padding: 13px;
+  background: #f58333;
+  border: none;
+  border-radius: 24px;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: background 0.2s;
 }
-.submit-btn button:hover {
-  background: #000000;
-  border: 1px solid #000000;
+.cfs-modal-submit:hover { background: #d96d1e; }
+.cfs-modal-submit:disabled { background: #ccc; cursor: not-allowed; }
+
+/* ── Mobile expand button (hidden on desktop) ───────────────────────── */
+.cfs-expand-btn {
+  display: none;
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  z-index: 5;
+  background: rgba(0, 0, 0, 0.45);
+  border: none;
+  border-radius: 6px;
+  color: #fff;
+  width: 38px;
+  height: 38px;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  cursor: pointer;
 }
 
-.new_listing .sidebar-enquiry {
-  top: 0;
+/* ── Fullscreen lightbox overlay ────────────────────────────────────── */
+.cfs-fs-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 999999;
+  background: #000;
+  display: flex;
+  flex-direction: column;
+}
+.cfs-fs-close {
+  position: absolute;
+  top: 8px;
+  right: 16px;
+  z-index: 10;
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 44px;
+  font-weight: 200;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0.85;
+  padding: 0 4px;
+}
+.cfs-fs-close:hover { opacity: 1; }
+.cfs-fs-swiper {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+}
+.cfs-fs-swiper .swiper-wrapper,
+.cfs-fs-swiper .swiper-slide {
+  height: 100%;
+}
+.cfs-fs-swiper .swiper-slide {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+}
+.cfs-fs-swiper .swiper-slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  touch-action: pinch-zoom;
+}
+.cfs-fs-swiper .swiper-button-prev,
+.cfs-fs-swiper .swiper-button-next {
+  color: #fff;
+}
+.cfs-fs-swiper .swiper-button-prev:after,
+.cfs-fs-swiper .swiper-button-next:after {
+  font-size: 22px;
+  font-weight: 700;
+}
+.cfs-fs-counter {
+  flex-shrink: 0;
+  padding: 10px 16px;
+  color: #ccc;
+  font-size: 14px;
+  text-align: left;
+  background: #000;
 }
 
-@media (min-width: 768px) and (max-width: 991px) {
-  .pop-top {
-    display: block;
-    padding-right: 50px;
-  }
-  .sidebar-enquiry {
-    position: relative;
-    top: 10px;
-  }
-}
-
-@media screen and (min-width: 800px) {
-  .custom-model-main:before {
-    content: "";
-    display: inline-block;
-    height: auto;
-    vertical-align: middle;
-    margin-right: -0px;
-    height: 100%;
-  }
-}
-
-@media screen and (max-width: 799px) {
-  .custom-model-inner {
-    margin-top: 0px;
-  }
-  .swiper-button-next {
-    right: 0;
-  }
-
-  .swiper-button-prev {
-    left: 0;
-  }
-    .pop-top {
-    text-align: left;
-    justify-content: space-around;
-    align-items: center;
-    padding: 12px 0;
-    display: block;
-    padding-top: 35px;
-  }
-  .close-btn {
-    top: -25px;
-    right: 8px;
-  }
-  .sidebar-enquiry {
-    position: relative;
-    top: 30px;
-  }
-    .pop-top .vehicleThumbDetails__part__price.pop_up_price span bdi {
-    justify-content: start;
+/* ── Responsive ─────────────────────────────────────────────────────── */
+@media screen and (max-width: 900px) {
+  .cfs-expand-btn {
     display: flex;
   }
-  .carava_details .swiper-wrapper {
-    width: 100%;
+
+  .cfs-modal {
+    overflow-y: auto;
+  }
+  .cfs-modal-layout {
+    flex-direction: column;
     height: auto;
-}
+    min-height: 100vh;
+    overflow: visible;
+  }
+  .cfs-modal-media {
+    height: 55vh;
+    flex: none;
+    border-right: none;
+    border-bottom: 1px solid #e5e5e5;
+    overflow: hidden;
+  }
+  .cfs-modal-sidebar {
+    width: 100%;
+    flex-shrink: 0;
+    overflow: visible;
+    height: auto;
+  }
 }
 
-
+@media screen and (max-width: 600px) {
+  .cfs-modal-header {
+    padding: 14px 16px 8px;
+    display: block;
+    padding-right: 40px;
+}
+  .cfs-modal-title { font-size: 16px; }
+  .cfs-modal-price { font-size: 20px; }
+  .cfs-modal-form { padding: 20px 16px 28px; }
+  .cfs-field-row { flex-direction: column; gap: 0; }
+  .cfs-modal-close { font-size: 36px; top: 8px; right: 12px;     color: #ffffff;}
+}

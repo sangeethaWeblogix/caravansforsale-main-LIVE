@@ -93,7 +93,7 @@ const data = [
     link: "/ausflex-caravans-australia-review-price/",
   },
   {
-    img: "/images/Latitude.png?=1647112222",
+    img: "/images/Latitude.png",
     alt: "Latitude RV Caravans Logo",
     title: "Latitude RV Caravans",
     desc: "Explore our Latitude RV caravans review, featuring rugged builds, luxury touches, pricing and comparisons to help every Australian adventurer.",
@@ -138,7 +138,7 @@ const data = [
     link: "/jayco-journey-outback-review/",
   },
   {
-    img: "/images/urban-caravans.png?=1647112222",
+    img: "/images/urban-caravans.png",
     alt: "Urban Caravans Logo",
     title: "Urban Caravans",
     desc: "Discover our Urban Caravans review with model comparisons, features and pricing to help you choose a durable off-road-ready caravan.",
@@ -174,7 +174,7 @@ const data = [
     link: "/austrack-campers-gibb-14-in-depth-review/",
   },
   {
-    img: "/images/newgen-logo.png?=1647112222",
+    img: "/images/newgen-logo.png",
     alt: "Newgen Caravans Logo",
     title: "Newgen Caravans",
     desc: "Read our Newgen NG15 review exploring layout, premium features and off-road capability, helping you pick this standout hybrid caravan.",

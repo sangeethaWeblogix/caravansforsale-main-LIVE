@@ -1,5 +1,5 @@
  import Home from "./home/home";
-import "./globals.css";
+import "./globals.css?=1";
 import { Metadata } from "next";
 import { fetchSleepBands } from "@/api/homeApi/sleep/api";
 import { fetchRegion } from "@/api/homeApi/region/api";

@@ -60,7 +60,7 @@ h1.page-title {
 
 .new_listing .background_thumb {
   position: absolute;
-  transform: scale(1.5);
+  transform: scale(3);
   background: #464545;
 }
 .new_listing .background_thumb img {
@@ -74,10 +74,17 @@ h1.page-title {
 .main_thumb {
   position: relative;
   align-items: center;
+  height: 350px;
   min-height: 350px;
   max-height: 350px;
   display: flex;
   overflow: hidden;
+}
+.main_thumb .main_thumb_swiper,
+.main_thumb .main_thumb_swiper .swiper-wrapper,
+.main_thumb .main_thumb_swiper .swiper-slide {
+  height: 100%;
+  width: 100%;
 }
 .product-page .other_items .product-card .price .metc2 {
   justify-content: start;
@@ -95,12 +102,23 @@ h1.page-title {
   .main_thumb
   .thumb_img {
   align-items: center;
+  height: 350px;
   min-height: 350px;
   max-height: 350px;
   display: flex;
   position: relative;
   overflow: hidden;
   justify-content: center;
+}
+
+.listing_location {
+    color: #555;
+    margin: 5px 0 5px;
+    font-size: 13px;
+}
+
+.listing_location i {
+    color: #737373;
 }
 
 .bottom_mid span.poster_tag {
@@ -245,14 +263,13 @@ h1.page-title {
 }
 
 .new_listing .vehicleDetailsWithIcons.simple {
-  border-top: 1px solid #ddd;
-  border-bottom: 1px solid #ddd;
-  margin: 10px 0;
-  margin-bottom: 5px;
-  padding: 5px 0;
-  height: 90px;
-  width: 100% !important;
-  display: inline-block !important;
+    border-top: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
+    height: 70px;
+    margin: 10px 0 5px;
+    padding: 5px 0;
+    width: 100% !important;
+    display: inline-block !important;
 }
 
 .new_listing .vehicleDetailsWithIcons.simple li {
@@ -261,7 +278,7 @@ h1.page-title {
   vertical-align: top;
   float: left;
   align-items: center;
-  width: 42%;
+  width: 44%;
   margin-right: 25px;
   padding: 3px;
   font-size: 14px;
@@ -932,6 +949,7 @@ h1.page-title {
     .main_thumb
     .thumb_img,
   .product-page .new_listing .related-products .product-card .img {
+    height: 280px;
     min-height: 280px;
     max-height: 280px;
   }
@@ -946,9 +964,19 @@ h1.page-title {
     .main_thumb
     .thumb_img,
   .product-page .new_listing .related-products .product-card .img {
+    height: 280px;
     min-height: 280px;
     max-height: 280px;
   }
+  .new_listing .vehicleDetailsWithIcons.simple {
+        height: 110px;
+  }
+  .main_thumb {
+        height: 280px;
+    min-height: 280px;
+    max-height: 280px;
+  }
+
 }
 
 @media (max-width: 767px) {
@@ -963,9 +991,21 @@ h1.page-title {
     .main_thumb
     .thumb_img,
   .product-page .new_listing .related-products .product-card .img {
+    height: 250px;
     min-height: 250px;
     max-height: 250px;
   }
+  .main_thumb {
+        height: 250px;
+    min-height: 250px;
+    max-height: 250px;
+  }
+
+  .new_listing .vehicleDetailsWithIcons.simple {
+        height: auto;
+  }
+
+
   .product-page .product-card .info {
     margin-top: 0;
     min-height: 75px;
@@ -974,7 +1014,7 @@ h1.page-title {
     font-size: 18px;
   }
   .product-page .product-card .info .title {
-    height: 75px;
+    height: auto;
   }
   .featured_head {
     font-size: 20px;

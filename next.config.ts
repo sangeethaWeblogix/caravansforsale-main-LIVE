@@ -6,7 +6,6 @@ const nextConfig: NextConfig = {
   reactStrictMode: false,
   //  productionBrowserSourceMaps: false,
   images: {
-    unoptimized: true,
     domains: [
       "media.caravansforsale.com.au",
       "www.caravansforsale.com.au",
@@ -16,26 +15,10 @@ const nextConfig: NextConfig = {
       "caravansforsale.imagestack.net",
     ],
     remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "admin.caravansforsale.com.au",
-        pathname: "/**",
-      },
-      {
-        protocol: "https",
-        hostname: "admin.caravansforsale.com.au",
-        pathname: "/**",
-      },
-      {
-        protocol: "https",
-        hostname: "caravansforsale.b-cdn.net",
-        pathname: "/**",
-      },
-      {
-        protocol: "https",
-        hostname: "media.caravansforsale.com.au",
-        pathname: "/**",
-      },
+      { protocol: "https", hostname: "**.caravansforsale.com.au", pathname: "/**" },
+      { protocol: "https", hostname: "caravansforsale.b-cdn.net", pathname: "/**" },
+      { protocol: "https", hostname: "caravansforsale.imagestack.net", pathname: "/**" },
+      { protocol: "https", hostname: "wb79vudhmjvv4ng6.public.blob.vercel-storage.com", pathname: "/**" },
     ],
     formats: ["image/avif", "image/webp"],
     minimumCacheTTL: 86400,
@@ -182,14 +165,14 @@ const nextConfig: NextConfig = {
       },
 
       // ===========================================
-      // IMAGES - 24 hour cache
+      // IMAGES - 1 year cache (cache-bust via filename/query when changed)
       // ===========================================
       {
         source: "/images/:path*",
         headers: [
           {
             key: "Cache-Control",
-            value: "public, max-age=86400, stale-while-revalidate=604800",
+            value: "public, max-age=31536000, immutable",
           },
         ],
       },

@@ -1053,7 +1053,7 @@ export default function ClientLogger({
                               <div className="product_de">
                                 <div className="info">
                                   <h6 className="category">
-                                    <i className="fa fa-map-marker-alt"></i>{" "}
+                                    <i className="fa-solid fa-location-dot"></i>{" "}
                                     <span>{post.location}</span>
                                   </h6>
                                   <h3 className="title">{post.title}</h3>

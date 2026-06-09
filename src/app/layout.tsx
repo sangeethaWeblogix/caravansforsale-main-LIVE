@@ -1,20 +1,30 @@
 
   // export const dynamic = "force-dynamic"
-  
+
   import "bootstrap/dist/css/bootstrap.min.css";
   import "bootstrap-icons/font/bootstrap-icons.css";
-  import "./globals.css?=32";
-  import "@fortawesome/fontawesome-free/css/all.min.css";
+  import "./globals.css?=36";
+  import "@fortawesome/fontawesome-free/css/fontawesome.min.css";
+  import "@fortawesome/fontawesome-free/css/solid.min.css";
   import Navbar from "./navbar/Navbar";
   import Footer from "./footer/Footer";
   import React, { Suspense } from "react";
   import { Metadata } from "next";
+  import { Montserrat } from "next/font/google";
   import ScrollToTop from "./navigation/ScrollToTopGlobal";
   import UTMTracker from "./UTMTracker";
   // import NextTopLoader from "nextjs-toploader";
 import ThemeRegistry from './components/ThemeRegistry';
 import NavigationHistory from "@/components/NavigationHistory";
 import { BannerProvider } from "@/components/BannerHandler";
+
+  const montserrat = Montserrat({
+    subsets: ["latin"],
+    weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
+    display: "swap",
+    variable: "--font-montserrat",
+    preload: true,
+  });
 
   
   export const metadata: Metadata = {
@@ -47,18 +57,6 @@ const gtmServer = "https://gtm.caravansforsale.com.au";
     return (
       <html lang="en">
         <head>
-          {/* Google Fonts */}
-          <link rel="preconnect" href="https://fonts.googleapis.com" />
-          <link
-            rel="preconnect"
-            href="https://fonts.gstatic.com"
-            crossOrigin="anonymous"
-          />
-          <link
-            href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400;500;600;700;800;900&display=swap"
-            rel="stylesheet"
-          />
-  
           {/* ✅ Google Tag Manager (Head) */}
            <script
   dangerouslySetInnerHTML={{
@@ -81,11 +79,7 @@ const gtmServer = "https://gtm.caravansforsale.com.au";
           
         </head>
         <body
-          className="flex flex-col min-h-screen new_font"
-          style={{
-            fontFamily:
-              "Montserrat, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, 'Apple Color Emoji', 'Segoe UI Emoji'",
-          }}
+          className={`flex flex-col min-h-screen new_font ${montserrat.className}`}
         >
           {/* ✅ Google Tag Manager (noscript) - right after body */}
          <noscript>

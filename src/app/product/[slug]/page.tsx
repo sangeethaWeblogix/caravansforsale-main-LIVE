@@ -2,7 +2,7 @@
 import { Metadata } from "next";
 import ClientLogger from "./product";
 import { redirect } from "next/navigation";
-import './product.css?=2992'
+import './product.css?=30006'
 
 export const revalidate = 3600;
 
@@ -111,18 +111,55 @@ async function fetchProductDetail(slug: string) {
  }
 
 export default async function ProductDetailPage({ params }: PageProps) {
-  const { slug } = await params; // ✅ no await
+  const { slug } = await params;
   const data = await fetchProductDetail(slug);
 
-  // ❌ If no product → 404 page
   if (!data || Object.keys(data).length === 0) {
     redirect("/404");
   }
 
+  const pd = data?.data?.product_details ?? {};
+  const seo = data?.seo ?? data?.product?.seo ?? {};
+  const pdName = seo.metatitle || seo.meta_title || pd.name || data?.name || "";
+  const pdDesc = seo.metadescription || seo.meta_description || pd.short_description || data?.short_description || "";
+  const canonicalUrl = `https://www.caravansforsale.com.au/product/${slug}/`;
+
+  const rawImages = pd.image_url ?? pd.images ?? [];
+  const images: string[] = (Array.isArray(rawImages) ? rawImages : [rawImages]).filter(Boolean);
+
+  const rawPrice = pd.sale_price || pd.regular_price || pd.price;
+  const priceStr = rawPrice ? String(rawPrice).replace(/[^0-9.]/g, "") : null;
+
+  const jsonLd: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: pdName,
+    ...(pdDesc && { description: pdDesc }),
+    ...(images.length > 0 && { image: images }),
+    ...(pd.make && { brand: { "@type": "Brand", name: pd.make } }),
+    ...(pd.condition && {
+      itemCondition:
+        String(pd.condition).toLowerCase() === "new"
+          ? "https://schema.org/NewCondition"
+          : "https://schema.org/UsedCondition",
+    }),
+    offers: {
+      "@type": "Offer",
+      priceCurrency: "AUD",
+      ...(priceStr && { price: priceStr }),
+      availability: "https://schema.org/InStock",
+      url: canonicalUrl,
+      seller: { "@type": "Organization", name: "Caravans For Sale" },
+    },
+  };
+
   return (
     <main className="mx-auto">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <ClientLogger data={data} />
     </main>
-    
   );
 }

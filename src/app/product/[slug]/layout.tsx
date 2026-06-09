@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 
 import { ReactNode } from "react";
 
-import './product.css'
+import './product.css?=12'
  
 
 type RouteParams = { slug: string };

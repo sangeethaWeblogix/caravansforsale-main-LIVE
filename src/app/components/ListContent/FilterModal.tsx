@@ -687,6 +687,9 @@ const [states, setStates] = useState<StateOption[]>([]);
   if (productListData?.data) {
     setCategories(productListData.data.all_categories || []);
     setStates(productListData.data.states || []);
+    if (productListData.data.make_options?.length) {
+      setMakes(productListData.data.make_options);
+    }
   }
 }, [productListData]);
 
@@ -728,12 +731,34 @@ const [states, setStates] = useState<StateOption[]>([]);
     }
   }, [currentFilters.radius_kms]);
 
+  const hasOtherFilters = !!(
+    currentFilters.condition ||
+    currentFilters.category ||
+    currentFilters.state ||
+    currentFilters.region ||
+    currentFilters.suburb ||
+    currentFilters.from_price ||
+    currentFilters.to_price ||
+    currentFilters.minKg ||
+    currentFilters.maxKg ||
+    currentFilters.from_length ||
+    currentFilters.to_length ||
+    currentFilters.from_sleep ||
+    currentFilters.to_sleep ||
+    currentFilters.acustom_fromyears ||
+    currentFilters.acustom_toyears
+  );
+
   const displayedMakes = useMemo(() => {
-    if (!searchText.trim()) return makeCounts; // ✅ full list
-    return makeCounts.filter((m) =>
+    const source: MakeCount[] =
+      hasOtherFilters && makeCounts.length > 0
+        ? makeCounts
+        : makes.map((m) => ({ name: m.name, slug: m.slug, count: 0 }));
+    if (!searchText.trim()) return source;
+    return source.filter((m) =>
       m.name.toLowerCase().includes(searchText.toLowerCase()),
     );
-  }, [makeCounts, searchText, isSearching]);
+  }, [makeCounts, makes, searchText, isSearching, hasOtherFilters]);
 
   // ✅ validate region only if it exists under the given state
   const getValidRegionName = (
@@ -2399,7 +2424,7 @@ fetch(`/api/params-count?${catParams.toString()}`, { signal })
                           <option value="">Any</option>
                           {displayedMakes.map((make, index) => (
                             <option key={index} value={make.slug}>
-                              {make.name} ({make.count})
+                              {make.name}{make.count > 0 ? ` (${make.count})` : ""}
                             </option>
                           ))}
                         </select>

@@ -34,15 +34,18 @@
  */
 
 const fetch = require('node-fetch');
+const fs    = require('fs');
 
 // Environment variables
 const PRODUCTION_DOMAIN = process.env.PRODUCTION_DOMAIN || 'https://www.caravansforsale.com.au';
 const VERCEL_BASE_URL = process.env.VERCEL_BASE_URL || PRODUCTION_DOMAIN; // Prefer Vercel direct to bypass CF Worker
 const WP_API_BASE = process.env.WP_API_BASE || 'https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap';
+const WP_API_KEY = process.env.WP_API_KEY || '';
 const CF_ACCOUNT_ID = process.env.CF_ACCOUNT_ID;
 const CF_KV_NAMESPACE_ID = process.env.CF_KV_NAMESPACE_ID;
 const CF_API_TOKEN = process.env.CF_API_TOKEN;
 const TARGET_SITEMAP = process.env.TARGET_SITEMAP || 'all';
+const PATHS_FILE     = process.env.PATHS_FILE || '';    // If set, load paths from file instead of API
 
 // Configuration
 const VARIANTS_PER_URL = 4;
@@ -280,6 +283,27 @@ function isErrorPage(html) {
  * Each path is relative (e.g. "family-category/") and gets /listings/ prepended.
  * Result: /listings/family-category/
  */
+// ============================================
+// LOAD PATHS FROM PRE-FETCHED FILE (avoids API call in batch jobs)
+// ============================================
+
+function loadPathsFromFile(filePath) {
+  console.log(`\n📂 Loading paths from file: ${filePath}`);
+  try {
+    const raw  = fs.readFileSync(filePath, 'utf8');
+    const data = JSON.parse(raw);
+    if (!Array.isArray(data.paths) || data.paths.length === 0) {
+      console.warn(`   ⚠️  File contained 0 paths`);
+      return [];
+    }
+    console.log(`   ✅ Loaded ${data.paths.length} paths from file`);
+    return data.paths;
+  } catch (err) {
+    console.error(`   ❌ Failed to load paths file: ${err.message}`);
+    return [];
+  }
+}
+
 async function fetchPathsFromAPI(type) {
   const apiUrl = `${WP_API_BASE}/${type}`;
   console.log(`\n📥 Fetching paths from API: ${apiUrl}`);
@@ -288,16 +312,32 @@ async function fetchPathsFromAPI(type) {
     const response = await fetch(apiUrl, {
       headers: {
         'User-Agent': 'CFS-CacheGenerator/3.0',
-        'Accept': 'application/json'
+        'Accept': 'application/json',
+        ...(WP_API_KEY && { 'X-API-Key': WP_API_KEY })
       },
       timeout: 30000
     });
 
+    const responseText = await response.text();
+
     if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      const preview = responseText.slice(0, 200).replace(/\s+/g, ' ');
+      throw new Error(`HTTP ${response.status}: ${response.statusText} — body: ${preview}`);
     }
 
-    const data = await response.json();
+    const contentType = response.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) {
+      const preview = responseText.slice(0, 200).replace(/\s+/g, ' ');
+      throw new Error(`Expected JSON but got "${contentType}" (redirected to HTML?). Final URL: ${response.url} — body: ${preview}`);
+    }
+
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch (e) {
+      const preview = responseText.slice(0, 200).replace(/\s+/g, ' ');
+      throw new Error(`JSON parse failed: ${e.message} — body: ${preview}`);
+    }
 
     if (!data.success) {
       throw new Error(`API returned success=false for type "${type}"`);
@@ -476,9 +516,9 @@ async function main() {
   for (let i = 0; i < typesToProcess.length; i++) {
     const type = typesToProcess[i];
     console.log(`\n[${i + 1}/${typesToProcess.length}] Type: ${type}`);
-    const urls = await fetchPathsFromAPI(type);
+    const urls = PATHS_FILE ? loadPathsFromFile(PATHS_FILE) : await fetchPathsFromAPI(type);
     allUrls = allUrls.concat(urls);
-    await new Promise(r => setTimeout(r, 500));
+    if (!PATHS_FILE) await new Promise(r => setTimeout(r, 500));
   }
 
   // Apply batching if specified

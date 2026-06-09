@@ -89,7 +89,6 @@ export default function HomeLatestBlogs({ blogPosts  }: Props) {
                                 alt={post.title}
                                 width={300}
                                 height={200}
-                                unoptimized
                                 priority
                               />
                             )}
