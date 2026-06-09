@@ -2,11 +2,18 @@
 /**
  * fetch-paths-only.js
  *
- * Fetches all paths for a single sitemap type from the WordPress API
- * and saves them to /tmp/paths-{type}.json.
+ * Fetches all paths for a single sitemap type and saves them to
+ * /tmp/paths-{type}.json.
+ *
+ * Strategy (bot-protection bypass):
+ *   1. Try the static JSON file at WP_STATIC_BASE/{type}.json first.
+ *      These are plain files served by the web server — no /wp-json/ routing,
+ *      no bot-protection challenge.
+ *   2. Fall back to the WordPress REST API if the static file is unavailable
+ *      or WP_STATIC_BASE is not set.
  *
  * Used as the first step in a two-phase cache generation workflow:
- *   1. This script runs ONCE — one IP, one API call, no bot-protection triggers.
+ *   1. This script runs ONCE — one IP, one request, no bot-protection triggers.
  *   2. Batch jobs download the saved artifact and skip the API entirely.
  *
  * Usage:
@@ -20,45 +27,90 @@ const fetch = require('node-fetch');
 const fs    = require('fs');
 const path  = require('path');
 
-const WP_API_BASE      = process.env.WP_API_BASE || 'https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap';
-const WP_API_KEY       = process.env.WP_API_KEY  || '';
+const WP_API_BASE       = process.env.WP_API_BASE       || 'https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap';
+const WP_STATIC_BASE    = process.env.WP_STATIC_BASE    || '';  // e.g. https://admin.caravansforsale.com.au/wp-content/uploads/cfs-paths
+const WP_API_KEY        = process.env.WP_API_KEY        || '';
 const PRODUCTION_DOMAIN = process.env.PRODUCTION_DOMAIN || 'https://www.caravansforsale.com.au';
-const TARGET_SITEMAP   = process.env.TARGET_SITEMAP;
-const OUTPUT_DIR       = process.env.PATHS_OUTPUT_DIR || '/tmp';
+const TARGET_SITEMAP    = process.env.TARGET_SITEMAP;
+const OUTPUT_DIR        = process.env.PATHS_OUTPUT_DIR  || '/tmp';
 
 if (!TARGET_SITEMAP) {
   console.error('❌ TARGET_SITEMAP env var is required');
   process.exit(1);
 }
 
+/**
+ * Try fetching from a URL and return { text, url } on success, or null on any failure.
+ * Does NOT throw — returns null instead so the caller can fall back.
+ */
+async function tryFetch(url, headers, timeoutMs) {
+  try {
+    const response = await fetch(url, { headers, timeout: timeoutMs });
+    if (!response.ok) return null;
+    const text = await response.text();
+    return { text, url: response.url };
+  } catch (e) {
+    return null;
+  }
+}
+
 async function fetchAndSave(type) {
-  const apiUrl    = `${WP_API_BASE}/${type}`;
+  const staticUrl  = WP_STATIC_BASE ? `${WP_STATIC_BASE.replace(/\/$/, '')}/${type}.json` : null;
+  const apiUrl     = `${WP_API_BASE}/${type}`;
   const outputFile = path.join(OUTPUT_DIR, `paths-${type}.json`);
 
-  console.log(`📥 Fetching paths from API: ${apiUrl}`);
+  let responseText = null;
 
-  const response = await fetch(apiUrl, {
-    headers: {
-      'User-Agent': 'CFS-CacheGenerator/3.0',
-      'Accept':     'application/json',
-      ...(WP_API_KEY && { 'X-API-Key': WP_API_KEY })
-    },
-    timeout: 30000
-  });
-
-  const responseText = await response.text();
-
-  if (!response.ok) {
-    const preview = responseText.slice(0, 200).replace(/\s+/g, ' ');
-    throw new Error(`HTTP ${response.status}: ${response.statusText} — body: ${preview}`);
+  // ── 1. Try static file (no bot-protection) ────────────────────────────────
+  if (staticUrl) {
+    console.log(`📥 Trying static file: ${staticUrl}`);
+    const result = await tryFetch(
+      staticUrl,
+      { 'User-Agent': 'CFS-CacheGenerator/3.0', 'Accept': 'application/json, text/plain, */*' },
+      15000
+    );
+    if (result) {
+      // Verify it looks like JSON before accepting
+      const trimmed = result.text.trimStart();
+      if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+        responseText = result.text;
+        console.log(`✅ Static file fetched OK`);
+      } else {
+        console.log(`⚠️ Static file returned non-JSON — falling back to REST API`);
+      }
+    } else {
+      console.log(`⚠️ Static file not available — falling back to REST API`);
+    }
   }
 
-  const contentType = response.headers.get('content-type') || '';
-  if (!contentType.includes('application/json')) {
-    const preview = responseText.slice(0, 200).replace(/\s+/g, ' ');
-    throw new Error(`Expected JSON but got "${contentType}" (bot protection?). Final URL: ${response.url} — body: ${preview}`);
+  // ── 2. Fall back to REST API ───────────────────────────────────────────────
+  if (!responseText) {
+    console.log(`📥 Fetching from REST API: ${apiUrl}`);
+
+    const response = await fetch(apiUrl, {
+      headers: {
+        'User-Agent': 'CFS-CacheGenerator/3.0',
+        'Accept':     'application/json',
+        ...(WP_API_KEY && { 'X-API-Key': WP_API_KEY })
+      },
+      timeout: 30000
+    });
+
+    responseText = await response.text();
+
+    if (!response.ok) {
+      const preview = responseText.slice(0, 200).replace(/\s+/g, ' ');
+      throw new Error(`HTTP ${response.status}: ${response.statusText} — body: ${preview}`);
+    }
+
+    const contentType = response.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) {
+      const preview = responseText.slice(0, 200).replace(/\s+/g, ' ');
+      throw new Error(`Expected JSON but got "${contentType}" (bot protection?). Final URL: ${response.url} — body: ${preview}`);
+    }
   }
 
+  // ── 3. Parse ───────────────────────────────────────────────────────────────
   let data;
   try {
     data = JSON.parse(responseText);
