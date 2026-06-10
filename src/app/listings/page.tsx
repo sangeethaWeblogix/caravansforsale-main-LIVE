@@ -5,7 +5,7 @@ import type { Metadata } from "next";
 import { ensureValidPage } from "@/utils/seo/validatePage";
 import { notFound } from "next/navigation";
 import ApiErrorFallback from "../components/ApiErrorFallback";
-import { fetchProductList } from "@/api/productList/api";
+import { fetchProductList, fetchCategoryCounts, fetchMakeCounts } from "@/api/productList/api";
 
 export const revalidate = 3600;
 
@@ -60,10 +60,14 @@ export default async function ListingsPage({
 
   let response;
   let productListRes;
+  let initialCategoryCounts;
+  let initialMakeCounts;
   try {
-    [response, productListRes] = await Promise.all([
+    [response, productListRes, initialCategoryCounts, initialMakeCounts] = await Promise.all([
       fetchListings({ page }),
       fetchProductList(),
+      fetchCategoryCounts(),
+      fetchMakeCounts(),
     ]);
   } catch (error) {
     console.error("Listings page API error:", error);
@@ -95,7 +99,7 @@ export default async function ListingsPage({
 
   return (
     <Suspense>
-      <Listing initialData={response} page={page} productListData={productListRes} />
+      <Listing initialData={response} page={page} productListData={productListRes} initialCategoryCounts={initialCategoryCounts} initialMakeCounts={initialMakeCounts} />
     </Suspense>
   );
 }

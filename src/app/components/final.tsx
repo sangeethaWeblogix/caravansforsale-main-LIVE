@@ -13,7 +13,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 import { fetchProductList } from "@/api/productList/api";
 import { fetchModelsByMake } from "@/api/model/api";
-import "./filter.css";
+import "./filter.css?=2";
 import { buildSlugFromFilters } from "./slugBuilter";
 import { buildUpdatedFilters } from "./buildUpdatedFilters";
 import {

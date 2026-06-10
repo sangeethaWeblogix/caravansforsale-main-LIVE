@@ -484,7 +484,7 @@ export default function ListingContent({
         AUS_ABBR[(currentFilters.state ?? "").toUpperCase()] ??
         (currentFilters.state ?? "").toUpperCase();
       const pincode = currentFilters.pincode ? ` ${currentFilters.pincode}` : "";
-      return `${radius} kms from ${suburb} ${stateAbbr}${pincode}`;
+      return `Under ${radius} kms from ${suburb} ${stateAbbr}${pincode}`;
     }
     if (item.region && currentFilters.region) {
       return `${item.region.replace(/\b\w/g, (c) => c.toUpperCase())} Region, ${item.location}`;

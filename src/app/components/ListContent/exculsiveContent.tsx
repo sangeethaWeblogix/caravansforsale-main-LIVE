@@ -232,6 +232,11 @@ export default function ExculisiveContent({
     return img ? `${img}` : undefined;
   };
 
+  const getInitialSlides = (item: Product): string[] => {
+    if (!Array.isArray(item.image_format)) return [];
+    return item.image_format.slice(0, 2).filter(Boolean).map((img) => `${img}`);
+  };
+
   const getRemainingImages = (item: Product): string[] => {
     if (!Array.isArray(item.image_format)) return [];
 
@@ -349,7 +354,7 @@ export default function ExculisiveContent({
         AUS_ABBR[(currentFilters.state ?? "").toUpperCase()] ??
         (currentFilters.state ?? "").toUpperCase();
       const pincode = currentFilters.pincode ? ` ${currentFilters.pincode}` : "";
-      return `${radius} kms from ${suburb} ${stateAbbr}${pincode}`;
+      return `Under ${radius} kms from ${suburb} ${stateAbbr}${pincode}`;
     }
     if (item.region && currentFilters.region) {
       return `${item.region.replace(/\b\w/g, (c) => c.toUpperCase())} Region, ${item.location}`;
@@ -420,11 +425,10 @@ export default function ExculisiveContent({
                   const isPriority = index < 5;
                   const firstImage = getFirstImage(item);
                   const isActive = swiperActivated[item.id];
+                  const initialSlides = getInitialSlides(item);
                   const slides = isActive
                     ? (lazyImages[item.id] ?? [])
-                    : firstImage
-                      ? [firstImage, firstImage]
-                      : [];
+                    : initialSlides;
                   return (
                     <div className="col-lg-6 mb-0" key={index}>
                       <Link
@@ -470,6 +474,11 @@ export default function ExculisiveContent({
                                   }
                                 }}
                                 onTouchStart={() => {
+                                  if (!swiperActivated[item.id]) {
+                                    activateSwiper(item);
+                                  }
+                                }}
+                                onSlideChange={() => {
                                   if (!swiperActivated[item.id]) {
                                     activateSwiper(item);
                                   }
@@ -589,19 +598,13 @@ export default function ExculisiveContent({
   
                             {/* --- DETAILS LIST --- */}
                             <ul className="vehicleDetailsWithIcons simple">
-                              {item.condition && (
-                                <li>
-                                  <span className="attribute3">
-                                    {item.condition}
-                                  </span>
-                                </li>
-                              )}
+                              
 
                               {item.categories &&
                                 item.categories.length > 0 && (
                                   <li className="attribute3_list">
                                     <span className="attribute3">
-                                      {item.categories.join(", ")}
+                                      {item.categories[0]}
                                     </span>
                                   </li>
                                 )}

@@ -51,6 +51,8 @@ type ProductData = {
   images?: string[];
   main_image?: string;
   location?: string;
+  region?: { label?: string; value?: string; slug?: string };
+  suburb?: { label?: string; value?: string; slug?: string };
   regular_price?: string | number;
   sale_price?: string | number;
   price_difference?: string | number;
@@ -227,7 +229,7 @@ export default function ClientLogger({
     return slug ? `/product/${slug}/` : "";
   };
   type LinkOut = { href: string; text: string };
-  type SpecItem = { label: string; value: string; url?: string };
+  type SpecItem = { label: string; value: string; url?: string; links?: LinkOut[] };
 
   // ---------- spec fields with API urls ----------
   const specFields: SpecItem[] = [
@@ -257,8 +259,32 @@ export default function ClientLogger({
     { label: "Ball Weight", value: getAttr("Ball Weight") },
     {
       label: "Location",
-      value: getAttr("Location"),
-      url: findAttr("Location")?.url, // e.g. "queensland-state"
+      value: [
+        productDetails.region?.value?.replace(/-/g, " "),
+        getAttr("Location"),
+      ].filter(Boolean).join(", "),
+      links: (() => {
+        const result: LinkOut[] = [];
+        const regionVal = productDetails.region?.value;
+        const regionSlug = productDetails.region?.slug;
+        const state = getAttr("Location");
+        const stateAttr = findAttr("Location");
+        const stateSlug = stateAttr?.url?.trim() || `${slugify(state)}-state`;
+        if (regionVal && regionSlug) {
+          result.push({
+            href: `/listings/${stateSlug}/${regionSlug}/`,
+            text: regionVal.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
+          });
+        }
+        if (state) {
+          result.push(
+            stateAttr?.url
+              ? linkFromApiUrl(stateAttr.url, state)
+              : { href: `/listings/${stateSlug}/`, text: state },
+          );
+        }
+        return result.length > 0 ? result : undefined;
+      })(),
     },
   ];
 
@@ -743,11 +769,13 @@ export default function ClientLogger({
                               {specFields
                                 .filter((f) => f.value)
                                 .map((f) => {
-                                  const links = linksForSpec(
-                                    f.label,
-                                    String(f.value),
-                                    f.url, // ✅ prefer API-provided url
-                                  );
+                                  const links =
+                                    f.links ??
+                                    linksForSpec(
+                                      f.label,
+                                      String(f.value),
+                                      f.url,
+                                    );
                                   return (
                                     <li key={f.label}>
                                       <strong>{f.label}:</strong>{" "}

@@ -149,7 +149,7 @@
 .search-bar input {
   border-radius: 6px;
   outline: none;
-  width: 500px;
+  width: 100%;
   font-weight: 500;
   padding: 6px 10px 6px 30px;
   border: none !important;
@@ -331,7 +331,7 @@
 
 .filter-body {
   max-height: 65vh;
-  padding: 20px;
+  padding: 20px 30px;
   overflow-y: auto;
 }
 

@@ -23,7 +23,7 @@ import {
   buildStaticLinkUrl,
   SECTION_TITLES,
 } from "@/app/components/ListContent/StaticLinksUtils";
-import { fetchProductList } from "@/api/productList/api";
+import { fetchProductList, fetchCategoryCounts, fetchMakeCounts } from "@/api/productList/api";
 import ApiErrorFallback from "@/app/components/ApiErrorFallback";
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -341,9 +341,11 @@ export default async function Listings({
     return slugPath.endsWith("/") ? slugPath : `${slugPath}/`;
   }
 
-  const [ productListRes] = await Promise.all([
-      fetchProductList(), // 👈 add this
-    ]);
+  const [productListRes, initialCategoryCounts, initialMakeCounts] = await Promise.all([
+    fetchProductList(),
+    fetchCategoryCounts(),
+    fetchMakeCounts(),
+  ]);
         console.log("productListRes", productListRes )
   // ───── Render ─────
   return (
@@ -405,7 +407,7 @@ export default async function Listings({
     )}
      */}
 
-      <ListingsPage {...filters} initialData={response} linksData={linksData} productListData={productListRes} />
+      <ListingsPage {...filters} initialData={response} linksData={linksData} productListData={productListRes} initialCategoryCounts={initialCategoryCounts} initialMakeCounts={initialMakeCounts} />
     </>
   );
 }
