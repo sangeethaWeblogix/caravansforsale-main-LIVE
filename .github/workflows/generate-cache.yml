@@ -236,6 +236,7 @@ jobs:
       - name: 📥 Fetch paths from API
         env:
           WP_API_BASE: 'https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap'
+          WP_STATIC_BASE: 'https://admin.caravansforsale.com.au/wp-content/uploads/cfs-paths'
           WP_API_KEY: ${{ secrets.WP_API_KEY }}
           PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
           TARGET_SITEMAP: regions
@@ -320,6 +321,7 @@ jobs:
       - name: 📥 Fetch paths from API
         env:
           WP_API_BASE: 'https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap'
+          WP_STATIC_BASE: 'https://admin.caravansforsale.com.au/wp-content/uploads/cfs-paths'
           WP_API_KEY: ${{ secrets.WP_API_KEY }}
           PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
           TARGET_SITEMAP: state-make
@@ -404,6 +406,7 @@ jobs:
       - name: 📥 Fetch paths from API
         env:
           WP_API_BASE: 'https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap'
+          WP_STATIC_BASE: 'https://admin.caravansforsale.com.au/wp-content/uploads/cfs-paths'
           WP_API_KEY: ${{ secrets.WP_API_KEY }}
           PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
           TARGET_SITEMAP: makes
@@ -488,6 +491,7 @@ jobs:
       - name: 📥 Fetch paths from API
         env:
           WP_API_BASE: 'https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap'
+          WP_STATIC_BASE: 'https://admin.caravansforsale.com.au/wp-content/uploads/cfs-paths'
           WP_API_KEY: ${{ secrets.WP_API_KEY }}
           PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
           TARGET_SITEMAP: models
@@ -572,6 +576,7 @@ jobs:
       - name: 📥 Fetch paths from API
         env:
           WP_API_BASE: 'https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap'
+          WP_STATIC_BASE: 'https://admin.caravansforsale.com.au/wp-content/uploads/cfs-paths'
           WP_API_KEY: ${{ secrets.WP_API_KEY }}
           PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
           TARGET_SITEMAP: region-make
@@ -656,6 +661,7 @@ jobs:
       - name: 📥 Fetch paths from API
         env:
           WP_API_BASE: 'https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap'
+          WP_STATIC_BASE: 'https://admin.caravansforsale.com.au/wp-content/uploads/cfs-paths'
           WP_API_KEY: ${{ secrets.WP_API_KEY }}
           PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
           TARGET_SITEMAP: cat-region
