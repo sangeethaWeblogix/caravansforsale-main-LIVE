@@ -97,9 +97,37 @@ export default async function ListingsPage({
     notFound();
   }
 
+  const BASE_URL = "https://www.caravansforsale.com.au";
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "CollectionPage",
+        "@id": `${BASE_URL}/listings/`,
+        "name": response?.seo_v2?.h1 || "Caravans for Sale in Australia",
+        "url": `${BASE_URL}/listings/`,
+        "inLanguage": "en-AU",
+        ...(response?.pagination?.total_products && { "numberOfItems": response.pagination.total_products }),
+      },
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": `${BASE_URL}/` },
+          { "@type": "ListItem", "position": 2, "name": "Caravans for Sale", "item": `${BASE_URL}/listings/` },
+        ],
+      },
+    ],
+  };
+
   return (
-    <Suspense>
-      <Listing initialData={response} page={page} productListData={productListRes} initialCategoryCounts={initialCategoryCounts} initialMakeCounts={initialMakeCounts} />
-    </Suspense>
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <Suspense>
+        <Listing initialData={response} page={page} productListData={productListRes} initialCategoryCounts={initialCategoryCounts} initialMakeCounts={initialMakeCounts} />
+      </Suspense>
+    </>
   );
 }

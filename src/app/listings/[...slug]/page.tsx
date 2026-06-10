@@ -346,10 +346,63 @@ export default async function Listings({
     fetchCategoryCounts(),
     fetchMakeCounts(),
   ]);
-        console.log("productListRes", productListRes )
+
+  // ───── JSON-LD Schema ─────
+  const BASE_URL = "https://www.caravansforsale.com.au";
+  const pageUrl = `${BASE_URL}/listings/${slug.join("/")}/`;
+  const pageTitle = response?.seo_v2?.h1 || response?.seo_v2?.meta_title || "Caravans for Sale";
+  const totalProducts = response?.pagination?.total_products ?? 0;
+
+  const breadcrumbItems = [
+    { name: "Home", url: `${BASE_URL}/` },
+    { name: "Caravans for Sale", url: `${BASE_URL}/listings/` },
+    ...slug.map((segment, i) => ({
+      name: segment
+        .replace(/-category$/, "")
+        .replace(/-state$/, "")
+        .replace(/-region$/, "")
+        .replace(/-suburb$/, "")
+        .replace(/-condition$/, "")
+        .replace(/-search$/, "")
+        .replace(/-kg-atm$/, "")
+        .replace(/-length-in-feet$/, "")
+        .replace(/-people-sleeping-capacity$/, "")
+        .replace(/[-+]/g, " ")
+        .replace(/\b\w/g, (c) => c.toUpperCase()),
+      url: `${BASE_URL}/listings/${slug.slice(0, i + 1).join("/")}/`,
+    })),
+  ];
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "CollectionPage",
+        "@id": pageUrl,
+        "name": pageTitle,
+        "url": pageUrl,
+        "inLanguage": "en-AU",
+        ...(totalProducts > 0 && { "numberOfItems": totalProducts }),
+      },
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": breadcrumbItems.map((item, idx) => ({
+          "@type": "ListItem",
+          "position": idx + 1,
+          "name": item.name,
+          "item": item.url,
+        })),
+      },
+    ],
+  };
+
   // ───── Render ─────
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* ✅ SSR Links — server component = appears in View Page Source */}
       {/* {linksData && (
       <div
