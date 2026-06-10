@@ -83,13 +83,11 @@ export default function ClientLogger({
   data: ProductDetailResponse;
 }) {
   // const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
-  console.log("datap", data);
   const router = useRouter();
  
 
   // const [activeImage, setActiveImage] = useState<string>("");
   const pd: ApiData = data?.data ?? {};
-  console.log("pd", pd);
   const productDetails: ProductData = pd.product_details ?? {};
   const blogPosts: BlogPost[] = Array.isArray(data?.data?.latest_blog_posts)
     ? data.data.latest_blog_posts!
@@ -102,7 +100,6 @@ export default function ClientLogger({
     ? data.data.related!
     : [];
 
-  console.log("releated", blogPosts);
   const loadedCount = useRef(0);
 
   // const handleImageLoad = () => {
@@ -112,8 +109,6 @@ export default function ClientLogger({
   // };
 
   const [showPopup, setShowPopup] = useState(false);
-
-  console.log("datapb", relatedProducts);
 
   const product: ProductData = productDetails;
   const isBrowser = typeof window !== "undefined";
@@ -421,12 +416,9 @@ export default function ClientLogger({
     product.id ?? pd.id ?? product.name;
 
   const productSlug: string | undefined = product.slug ?? pd.slug;
-  console.log("product", data);
 
   const slug = productSlug || "";
   const sku = productDetails.sku;
-  console.log("slug1", productDetails);
-  console.log("rele", relatedProducts);
 
   // ---- gallery state ----
 

@@ -3,7 +3,7 @@ const API_KEY = process.env.CFS_API_KEY; // ✅ Add this
 
 export const fetchSleepBands = async () => {
   const res = await fetch(`${API_BASE}/sleep-based-caravans-list`, {
-    cache: "no-store",
+    next: { revalidate: 86400 },
      headers: {
         Accept: "application/json",
         ...(API_KEY && { "X-API-Key": API_KEY }), // ✅ API key added

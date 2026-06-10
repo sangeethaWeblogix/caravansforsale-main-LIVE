@@ -6,12 +6,13 @@ function normalizeSlug(v: string = "") {
     .toLowerCase();
 }
 
-// export const dynamic = "force-dynamic"
+export const revalidate = 3600;
+
 import ListingsPage from "@/app/components/ListContent/Listings";
 import { parseSlugToFilters } from "../../components/urlBuilder";
 import { metaFromSlug } from "@/utils/seo/meta";
 import type { Metadata } from "next";
-import { fetchListings } from "@/api/listings/api";
+import { getCachedListings } from "@/api/listings/api";
 import { redirect, notFound } from "next/navigation";
 import "../../components/ListContent/newList.css";
 import "../listings.css";
@@ -59,6 +60,40 @@ const STRICT_ORDER: SegmentType[] = [
   "length",
   "sleeps",
 ];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Static params — pre-build popular pages at deploy time
+// ─────────────────────────────────────────────────────────────────────────────
+export async function generateStaticParams() {
+  const [categories, makes] = await Promise.all([
+    fetchCategoryCounts(),
+    fetchMakeCounts(),
+  ]);
+
+  const paths: { slug: string[] }[] = [];
+
+  // Category pages: /listings/off-road-category/
+  for (const cat of categories) {
+    if (cat.slug) paths.push({ slug: [`${cat.slug}-category`] });
+  }
+
+  // Make pages: /listings/jayco/
+  for (const make of makes) {
+    if (make.slug) paths.push({ slug: [make.slug] });
+  }
+
+  // Australian state pages
+  const states = [
+    "victoria", "new-south-wales", "queensland",
+    "south-australia", "western-australia", "tasmania",
+    "northern-territory", "australian-capital-territory",
+  ];
+  for (const state of states) {
+    paths.push({ slug: [`${state}-state`] });
+  }
+
+  return paths;
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Metadata
@@ -267,13 +302,19 @@ export default async function Listings({
     if (!isNaN(n) && n > 0) page = n;
   }
 
-  // ───── Fetch listings ─────
-  let response;
-  let linksData;
+  // ───── Fetch all data in parallel ─────
+  let response: Awaited<ReturnType<typeof getCachedListings>>;
+  let linksData: Awaited<ReturnType<typeof fetchLinksData>>;
+  let productListRes: Awaited<ReturnType<typeof fetchProductList>>;
+  let initialCategoryCounts: Awaited<ReturnType<typeof fetchCategoryCounts>>;
+  let initialMakeCounts: Awaited<ReturnType<typeof fetchMakeCounts>>;
   try {
-    [response, linksData] = await Promise.all([
-      fetchListings({ ...filters, page }),
+    [response, linksData, productListRes, initialCategoryCounts, initialMakeCounts] = await Promise.all([
+      getCachedListings({ ...filters, page }),
       fetchLinksData(filters),
+      fetchProductList(),
+      fetchCategoryCounts(),
+      fetchMakeCounts(),
     ]);
   } catch (err) {
     const msg = err instanceof Error ? err.message : "";
@@ -288,64 +329,6 @@ export default async function Listings({
       />
     );
   }
-
-  function buildSSRLinkUrl(
-    type: string,
-    item: { slug: string },
-    currentFilters: Record<string, any>,
-  ): string {
-    const linkFilters = { ...currentFilters };
-
-    // Remove page from filters
-    delete linkFilters.page;
-
-    switch (type) {
-      case "states":
-        linkFilters.state = item.slug.replace(/-/g, " ");
-        delete linkFilters.region;
-        delete linkFilters.suburb;
-        delete linkFilters.pincode;
-        break;
-      case "regions":
-        linkFilters.region = item.slug.replace(/-/g, " ");
-        delete linkFilters.suburb;
-        delete linkFilters.pincode;
-        break;
-      case "categories":
-        linkFilters.category = item.slug;
-        break;
-      case "makes":
-        linkFilters.make = item.slug;
-        delete linkFilters.model;
-        break;
-      case "models":
-        linkFilters.model = item.slug;
-        break;
-      case "conditions":
-        linkFilters.condition = item.slug;
-        break;
-      case "prices":
-      case "atm_ranges":
-      case "length_ranges":
-      case "sleep_ranges": {
-        // Range types — append slug directly to current path
-        const basePath = buildSlugFromFilters(linkFilters);
-        const base = basePath.endsWith("/")
-          ? basePath.slice(0, -1)
-          : `${basePath}/`;
-        return `${base}/${item.slug}/`;
-      }
-    }
-
-    const slugPath = buildSlugFromFilters(linkFilters);
-    return slugPath.endsWith("/") ? slugPath : `${slugPath}/`;
-  }
-
-  const [productListRes, initialCategoryCounts, initialMakeCounts] = await Promise.all([
-    fetchProductList(),
-    fetchCategoryCounts(),
-    fetchMakeCounts(),
-  ]);
 
   // ───── JSON-LD Schema ─────
   const BASE_URL = "https://www.caravansforsale.com.au";

@@ -1,5 +1,6 @@
- // app/product-details/[slug]/page.tsx
+// app/product-details/[slug]/page.tsx
 import { Metadata } from "next";
+import { cache } from "react";
 import ClientLogger from "./product";
 import { redirect } from "next/navigation";
 import './product.css?=30006'
@@ -7,15 +8,16 @@ import './product.css?=30006'
 export const revalidate = 3600;
 
 type RouteParams = { slug: string };
-type PageProps = { params: Promise<RouteParams> }; // ✅ params is a Promise
+type PageProps = { params: Promise<RouteParams> };
 
-async function fetchProductDetail(slug: string) {
+const fetchProductDetail = cache(async (slug: string) => {
   const API_BASE = process.env.NEXT_PUBLIC_CFS_API_BASE!;
   const API_KEY = process.env.CFS_API_KEY;
   try {
     const res = await fetch(
       `${API_BASE}/product-detail-new/?slug=${encodeURIComponent(slug)}`,
       {
+        next: { revalidate: 3600 },
         headers: {
           Accept: "application/json",
           ...(API_KEY && { "X-API-Key": API_KEY }),
@@ -28,7 +30,7 @@ async function fetchProductDetail(slug: string) {
     console.error("product fetch error:", error);
     return null;
   }
-}
+});
 
  export async function generateMetadata({
    params,
@@ -48,7 +50,6 @@ async function fetchProductDetail(slug: string) {
 
   
  
- console.log("ogggggoo", ogImage)
    if (!data || Object.keys(data).length === 0) {
      return {
        title: "Product Not Found - Caravans for Sale",
@@ -71,8 +72,7 @@ async function fetchProductDetail(slug: string) {
      "View caravan details.";
    const canonicalUrl = `https://www.caravansforsale.com.au/product/${slug}/`;
    const robots = "index, follow";
-  console.log("og", ogImage)
- 
+
    return {
      title: { absolute: title },
      robots,

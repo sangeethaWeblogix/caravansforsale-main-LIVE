@@ -1,6 +1,6 @@
   import React, { Suspense } from "react";
 import Listing from "../components/ListContent/Listings";
-import { fetchListings } from "@/api/listings/api";
+import { getCachedListings } from "@/api/listings/api";
 import type { Metadata } from "next";
 import { ensureValidPage } from "@/utils/seo/validatePage";
 import { notFound } from "next/navigation";
@@ -64,7 +64,7 @@ export default async function ListingsPage({
   let initialMakeCounts;
   try {
     [response, productListRes, initialCategoryCounts, initialMakeCounts] = await Promise.all([
-      fetchListings({ page }),
+      getCachedListings({ page }),
       fetchProductList(),
       fetchCategoryCounts(),
       fetchMakeCounts(),

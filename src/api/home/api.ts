@@ -127,7 +127,7 @@ export async function fetchHomePage(): Promise<HomePageData> {
     Accept: "application/json",
     ...(API_KEY && { "X-API-Key": API_KEY }),
   },
-  cache: "no-store", // ✅ Move outside headers
+  next: { revalidate: 3600 },
 });
   if (!res.ok)
     throw new Error(`Home API failed: ${res.status} ${res.statusText}`);
