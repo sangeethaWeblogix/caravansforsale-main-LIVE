@@ -1,16 +1,15 @@
 {
     "success": true,
     "type": "states",
-    "count": 8,
+    "count": 7,
     "paths": [
-        "australian-capital-territory-state/",
-        "new-south-wales-state/",
-        "northern-territory-state/",
-        "queensland-state/",
-        "south-australia-state/",
-        "tasmania-state/",
-        "victoria-state/",
-        "western-australia-state/"
+        "-state/",
+        "s-state/",
+        "-state/",
+        "-state/",
+        "-state/",
+        "2-state/",
+        "-state/"
     ],
-    "generated_at": "2026-06-10 19:23:55"
+    "generated_at": "2026-06-10 23:48:34"
 }
