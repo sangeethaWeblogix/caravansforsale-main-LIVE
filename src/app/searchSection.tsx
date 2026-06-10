@@ -475,7 +475,7 @@ const BANNER_ENABLED = false;
       <a href="https://www.caravansforsale.com.au/listings/">
         <div className="item-image">
           <Image
-            src="/images/banner_top_dk.jpg"
+            src="/images/banner_top_dk.webp"
             className="hidden-xs"
             alt="off-road"
             width={2000}
@@ -484,7 +484,7 @@ const BANNER_ENABLED = false;
             unoptimized
           />
           <Image
-            src="/images/banner_top_mb.jpg"
+            src="/images/banner_top_mb.webp"
             className="hidden-lg hidden-md hidden-sm"
             alt="off-road"
             width={2000}
@@ -512,6 +512,7 @@ const BANNER_ENABLED = false;
           alt={activeBanner.name}
           width={isMobile ? 600 : 2000}
           height={isMobile ? 300 : 700}
+          sizes="100vw"
           className={activeBanner.device_target === "mobile" ? "hidden-lg hidden-md hidden-sm" : "hidden-xs"}
           style={{ width: "100%", height: "auto" }}
           priority
@@ -523,21 +524,23 @@ const BANNER_ENABLED = false;
     <a href="https://www.caravansforsale.com.au/listings/">
       <div className="item-image">
         <Image
-          src="/images/banner_top_dk.jpg"
+          src="/images/banner_top_dk.webp"
           className="hidden-xs"
           alt="Browse caravans for sale"
           width={2000}
           height={700}
+          sizes="(max-width: 767px) 1px, 100vw"
           style={{ width: "100%", height: "auto" }}
           priority
           fetchPriority="high"
         />
         <Image
-          src="/images/banner_top_mb.jpg"
+          src="/images/banner_top_mb.webp"
           className="hidden-lg hidden-md hidden-sm"
           alt="Browse caravans for sale"
           width={600}
           height={300}
+          sizes="(max-width: 767px) 100vw, 1px"
           style={{ width: "100%", height: "auto" }}
           priority
           fetchPriority="high"

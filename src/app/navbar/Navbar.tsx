@@ -79,6 +79,7 @@ export default function Navbar() {
                 alt="Caravans For Sale"
                 width={150}
                 height={50}
+                priority
               />
             </a>
           </div>
