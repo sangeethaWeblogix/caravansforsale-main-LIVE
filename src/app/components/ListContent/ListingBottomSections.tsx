@@ -142,7 +142,7 @@ export default function ListingBottomSections({
                 >
                   <div className="custom-card-grid">
                     {section.items.slice(0, visibleCount).map((item, idx) => (
-                      <a href={item.permalink} className="custom-card" key={idx}>
+                      <a href={item.permalink.replace(/^https?:\/\/[^/]+/, "")} className="custom-card" key={idx}>
                         <h4 className="custom-card-title">
                           <span className="count">{item.count}</span>{" "}
                           {item.label}
