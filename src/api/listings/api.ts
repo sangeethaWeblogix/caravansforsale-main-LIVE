@@ -1,5 +1,3 @@
-import { unstable_cache } from "next/cache";
-
 const API_BASE = process.env.NEXT_PUBLIC_CFS_API_BASE;
 
 interface Filters {
@@ -245,9 +243,5 @@ export const fetchListings = async (
   };
 };
 
-// Cached version — 5 min server-side cache per unique filter combination
-export const getCachedListings = unstable_cache(
-  fetchListings,
-  ["listings-data"],
-  { revalidate: 300, tags: ["listings"] }
-);
+// Re-export for page imports
+export { fetchListings as getCachedListings };
