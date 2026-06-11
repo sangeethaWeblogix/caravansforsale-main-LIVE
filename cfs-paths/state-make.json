@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "state-make",
-    "count": 659,
+    "count": 660,
     "paths": [
         "australian-capital-territory-state/carrera/",
         "australian-capital-territory-state/coromal/",
@@ -332,6 +332,7 @@
         "south-australia-state/roadstar/",
         "south-australia-state/roma/",
         "south-australia-state/royal-flair/",
+        "south-australia-state/safari/",
         "south-australia-state/signature/",
         "south-australia-state/slr/",
         "south-australia-state/snowy-river/",
@@ -663,5 +664,5 @@
         "western-australia-state/x-series-rv/",
         "western-australia-state/zone-rv/"
     ],
-    "generated_at": "2026-06-10 23:48:46"
+    "generated_at": "2026-06-11 15:35:33"
 }
