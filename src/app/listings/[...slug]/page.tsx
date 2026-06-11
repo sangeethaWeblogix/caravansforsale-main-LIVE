@@ -25,6 +25,8 @@ import {
   SECTION_TITLES,
 } from "@/app/components/ListContent/StaticLinksUtils";
 import { fetchProductList, fetchCategoryCounts, fetchMakeCounts } from "@/api/productList/api";
+import { fetchBottomLinks } from "@/api/bottomLinks/api";
+import type { BottomLinksData } from "@/api/bottomLinks/api";
 import ApiErrorFallback from "@/app/components/ApiErrorFallback";
 import { reportGitHubIssue } from "@/lib/reportGitHubIssue";
 // ─────────────────────────────────────────────────────────────────────────────
@@ -309,13 +311,15 @@ export default async function Listings({
   let productListRes: Awaited<ReturnType<typeof fetchProductList>>;
   let initialCategoryCounts: Awaited<ReturnType<typeof fetchCategoryCounts>>;
   let initialMakeCounts: Awaited<ReturnType<typeof fetchMakeCounts>>;
+  let bottomLinksData: BottomLinksData | null = null;
   try {
-    [response, linksData, productListRes, initialCategoryCounts, initialMakeCounts] = await Promise.all([
+    [response, linksData, productListRes, initialCategoryCounts, initialMakeCounts, bottomLinksData] = await Promise.all([
       getCachedListings({ ...filters, page }),
       fetchLinksData(filters),
       fetchProductList(),
       fetchCategoryCounts(),
       fetchMakeCounts(),
+      fetchBottomLinks(filters),
     ]);
   } catch (err) {
     const msg = err instanceof Error ? err.message : "";
@@ -456,7 +460,7 @@ export default async function Listings({
     )}
      */}
 
-      <ListingsPage {...filters} initialData={response} linksData={linksData} productListData={productListRes} initialCategoryCounts={initialCategoryCounts} initialMakeCounts={initialMakeCounts} />
+      <ListingsPage {...filters} initialData={response} linksData={linksData} productListData={productListRes} initialCategoryCounts={initialCategoryCounts} initialMakeCounts={initialMakeCounts} initialBottomLinksData={bottomLinksData} />
     </>
   );
 }

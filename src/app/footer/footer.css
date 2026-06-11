@@ -127,6 +127,7 @@ footer.style-8 .content .logo-social .socials a:hover {
   -webkit-transition: all 0.4s ease;
   -o-transition: all 0.4s ease;
   transition: all 0.4s ease;
+  border: 1px solid #000;
 }
 
 .to_top small {

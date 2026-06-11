@@ -29,7 +29,8 @@ import FilterSlider from "./FilterSlider";
 import StaticLinks from "./StaticLinks";
 import { useBanners } from "@/components/BannerHandler";
 import { useBannerTracking } from "@/hooks/useBannerTracking";
-// import ListingBottomSections from "./ListingBottomSections";
+import ListingBottomSections from "./ListingBottomSections";
+import type { BottomLinksData } from "@/api/bottomLinks/api";
 
 /* --------- GLOBAL de-dupe across StrictMode remounts --------- */
 // let LAST_GLOBAL_REQUEST_KEY = "";
@@ -135,6 +136,7 @@ interface Props extends Filters {
   productListData?: ProductListResponse;
   initialCategoryCounts?: { name: string; slug: string; count: number }[];
   initialMakeCounts?: { name: string; slug: string; count: number }[];
+  initialBottomLinksData?: BottomLinksData | null;
 }
 
 /** ------------ Helper Functions ------------ */
@@ -176,6 +178,7 @@ export default function ListingsPage({
   linksData: serverLinksData,
   initialCategoryCounts,
   initialMakeCounts,
+  initialBottomLinksData,
   ...incomingFilters
 }: Props) {
   console.log("productListData", productListData);
@@ -1464,7 +1467,7 @@ const [pagination, setPagination] = useState<Pagination>(() => {
         />
       )}
 
-      <section className="services product_listing new_listing bg-gray-100 section-padding pb-30 style-1">
+      <section className="services product_listing new_listing bg-gray-100 section-padding pb-3 style-1">
         <div className="container">
           <div className="content mb-4">
             <div ref={sentinelRef} style={{ height: "1px" }} />
@@ -1563,7 +1566,7 @@ const [pagination, setPagination] = useState<Pagination>(() => {
         </div>
       </div>
 
-      {/* <ListingBottomSections /> */}
+      <ListingBottomSections filters={filters} initialData={initialBottomLinksData} />
     </>
   );
 }

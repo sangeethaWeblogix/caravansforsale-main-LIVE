@@ -1,4 +1,4 @@
-import "./footer.css?=16";
+import "./footer.css?=17";
 import Link from "next/link";
 // import {
 //   FaFacebookF,
@@ -6,7 +6,7 @@ import Link from "next/link";
 //   FaYoutube,
 //   FaPinterestP,
 // } from "react-icons/fa";
-import { BsChevronUp } from "react-icons/bs";
+import BackToTopButton from "./BackToTopButton";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -203,12 +203,7 @@ Marketplace Network makes no representations or warranties regarding the accurac
       </footer>
 
       {/* To Top Button */}
-      <Link
-        href="#"
-        className="to_top bg-gray rounded-circle icon-40 d-inline-flex align-items-center justify-content-center show"
-      >
-        <BsChevronUp className="fs-6 text-white" />
-      </Link>
+      <BackToTopButton />
     </>
   );
 };

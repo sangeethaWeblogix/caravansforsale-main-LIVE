@@ -88,6 +88,7 @@ img {
 .btn:focus {
   background: #ec7200;
   border-color: transparent !important;
+  color: #fff;
 }
 
 .banner_ad_now {
