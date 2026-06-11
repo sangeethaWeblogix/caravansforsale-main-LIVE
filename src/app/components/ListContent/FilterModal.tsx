@@ -1,4 +1,4 @@
-"use client";
+ "use client";
 import "../filter.css?=11";
 import { fetchLocations } from "@/api/location/api";
 import React, {
@@ -641,7 +641,19 @@ const [states, setStates] = useState<StateOption[]>([]);
     const t = setTimeout(() => {
       const suburb = q.split(" ")[0];
       fetchLocations(suburb)
-        .then((data) => setLocationSuggestions(data))
+        .then((data) => {
+          const normalised = q
+            .replace(/_/g, " ")
+            .replace(/\s*-\s*/g, "  ")
+            .replace(/\s{3,}/g, "  ")
+            .toLowerCase();
+          const filtered = data.filter(
+            (item) =>
+              item.short_address.toLowerCase().includes(normalised) ||
+              item.address.toLowerCase().includes(normalised),
+          );
+          setLocationSuggestions(filtered);
+        })
         .catch(console.error);
     }, 300);
     return () => clearTimeout(t);
@@ -3001,6 +3013,7 @@ fetch(`/api/params-count?${catParams.toString()}`, { signal })
           </div>
         </div>
       </div>
+      
     </>
   );
 };

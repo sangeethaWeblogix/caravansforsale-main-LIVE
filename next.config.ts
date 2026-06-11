@@ -45,8 +45,11 @@ const nextConfig: NextConfig = {
     },
   },
 
+  
   compiler: {
-    removeConsole: true,
+    removeConsole: {
+      exclude: ["error"],
+    },
   },
 
   // ✅ Redirect malformed URLs like /feedfeedfeedfeed → clean version

@@ -13,7 +13,6 @@ export async function GET() {
         const res = await fetch(url, {
           headers: { "User-Agent": "Mozilla/5.0" },
           next: { revalidate: 300 },
-          cache: "no-store",
         });
 
         if (!res.ok) {

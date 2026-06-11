@@ -171,7 +171,12 @@ export const fetchListings = async (
 
   const s = normalizeQuery(search);
   if (s) params.append("search", s);
-  const url = `${API_BASE}/new_optimize_code?${params.toString()}`;
+
+  // Client-side: use internal proxy to avoid CORS. Server-side: call admin API directly.
+  const isClient = typeof window !== "undefined";
+  const url = isClient
+    ? `/api/listings?${params.toString()}`
+    : `${API_BASE}/new_optimize_code?${params.toString()}`;
 
   // ✅ NEW: AbortController with 15s timeout
   const controller = new AbortController();
@@ -182,11 +187,12 @@ export const fetchListings = async (
   try {
     res = await fetch(url, {
       signal: controller.signal,
-      // ✅ iOS Safari cache fix
       headers: {
         "Cache-Control": "no-cache",
         Accept: "application/json",
-        "X-API-Key": process.env.CFS_API_KEY!,
+        ...(!isClient && process.env.CFS_API_KEY
+          ? { "X-API-Key": process.env.CFS_API_KEY }
+          : {}),
       },
     });
   } catch (err: any) {
