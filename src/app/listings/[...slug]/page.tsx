@@ -6,12 +6,13 @@ function normalizeSlug(v: string = "") {
     .toLowerCase();
 }
 
-// export const dynamic = "force-dynamic"
+export const revalidate = 3600;
+
 import ListingsPage from "@/app/components/ListContent/Listings";
 import { parseSlugToFilters } from "../../components/urlBuilder";
 import { metaFromSlug } from "@/utils/seo/meta";
 import type { Metadata } from "next";
-import { fetchListings } from "@/api/listings/api";
+import { getCachedListings } from "@/api/listings/api";
 import { redirect, notFound } from "next/navigation";
 import "../../components/ListContent/newList.css";
 import "../listings.css";
@@ -23,7 +24,7 @@ import {
   buildStaticLinkUrl,
   SECTION_TITLES,
 } from "@/app/components/ListContent/StaticLinksUtils";
-import { fetchProductList } from "@/api/productList/api";
+import { fetchProductList, fetchCategoryCounts, fetchMakeCounts } from "@/api/productList/api";
 import ApiErrorFallback from "@/app/components/ApiErrorFallback";
 import { reportGitHubIssue } from "@/lib/reportGitHubIssue";
 // ─────────────────────────────────────────────────────────────────────────────
@@ -60,6 +61,40 @@ const STRICT_ORDER: SegmentType[] = [
   "length",
   "sleeps",
 ];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Static params — pre-build popular pages at deploy time
+// ─────────────────────────────────────────────────────────────────────────────
+export async function generateStaticParams() {
+  const [categories, makes] = await Promise.all([
+    fetchCategoryCounts(),
+    fetchMakeCounts(),
+  ]);
+
+  const paths: { slug: string[] }[] = [];
+
+  // Category pages: /listings/off-road-category/
+  for (const cat of categories) {
+    if (cat.slug) paths.push({ slug: [`${cat.slug}-category`] });
+  }
+
+  // Make pages: /listings/jayco/
+  for (const make of makes) {
+    if (make.slug) paths.push({ slug: [make.slug] });
+  }
+
+  // Australian state pages
+  const states = [
+    "victoria", "new-south-wales", "queensland",
+    "south-australia", "western-australia", "tasmania",
+    "northern-territory", "australian-capital-territory",
+  ];
+  for (const state of states) {
+    paths.push({ slug: [`${state}-state`] });
+  }
+
+  return paths;
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Metadata
@@ -268,13 +303,19 @@ export default async function Listings({
     if (!isNaN(n) && n > 0) page = n;
   }
 
-  // ───── Fetch listings ─────
-  let response;
-  let linksData;
+  // ───── Fetch all data in parallel ─────
+  let response: Awaited<ReturnType<typeof getCachedListings>>;
+  let linksData: Awaited<ReturnType<typeof fetchLinksData>>;
+  let productListRes: Awaited<ReturnType<typeof fetchProductList>>;
+  let initialCategoryCounts: Awaited<ReturnType<typeof fetchCategoryCounts>>;
+  let initialMakeCounts: Awaited<ReturnType<typeof fetchMakeCounts>>;
   try {
-    [response, linksData] = await Promise.all([
-      fetchListings({ ...filters, page }),
+    [response, linksData, productListRes, initialCategoryCounts, initialMakeCounts] = await Promise.all([
+      getCachedListings({ ...filters, page }),
       fetchLinksData(filters),
+      fetchProductList(),
+      fetchCategoryCounts(),
+      fetchMakeCounts(),
     ]);
   } catch (err) {
     const msg = err instanceof Error ? err.message : "";
@@ -302,65 +343,62 @@ export default async function Listings({
     );
   }
 
-  function buildSSRLinkUrl(
-    type: string,
-    item: { slug: string },
-    currentFilters: Record<string, any>,
-  ): string {
-    const linkFilters = { ...currentFilters };
+  // ───── JSON-LD Schema ─────
+  const BASE_URL = "https://www.caravansforsale.com.au";
+  const pageUrl = `${BASE_URL}/listings/${slug.join("/")}/`;
+  const pageTitle = response?.seo_v2?.h1 || response?.seo_v2?.meta_title || "Caravans for Sale";
+  const totalProducts = response?.pagination?.total_products ?? 0;
 
-    // Remove page from filters
-    delete linkFilters.page;
+  const breadcrumbItems = [
+    { name: "Home", url: `${BASE_URL}/` },
+    { name: "Caravans for Sale", url: `${BASE_URL}/listings/` },
+    ...slug.map((segment, i) => ({
+      name: segment
+        .replace(/-category$/, "")
+        .replace(/-state$/, "")
+        .replace(/-region$/, "")
+        .replace(/-suburb$/, "")
+        .replace(/-condition$/, "")
+        .replace(/-search$/, "")
+        .replace(/-kg-atm$/, "")
+        .replace(/-length-in-feet$/, "")
+        .replace(/-people-sleeping-capacity$/, "")
+        .replace(/[-+]/g, " ")
+        .replace(/\b\w/g, (c) => c.toUpperCase()),
+      url: `${BASE_URL}/listings/${slug.slice(0, i + 1).join("/")}/`,
+    })),
+  ];
 
-    switch (type) {
-      case "states":
-        linkFilters.state = item.slug.replace(/-/g, " ");
-        delete linkFilters.region;
-        delete linkFilters.suburb;
-        delete linkFilters.pincode;
-        break;
-      case "regions":
-        linkFilters.region = item.slug.replace(/-/g, " ");
-        delete linkFilters.suburb;
-        delete linkFilters.pincode;
-        break;
-      case "categories":
-        linkFilters.category = item.slug;
-        break;
-      case "makes":
-        linkFilters.make = item.slug;
-        delete linkFilters.model;
-        break;
-      case "models":
-        linkFilters.model = item.slug;
-        break;
-      case "conditions":
-        linkFilters.condition = item.slug;
-        break;
-      case "prices":
-      case "atm_ranges":
-      case "length_ranges":
-      case "sleep_ranges": {
-        // Range types — append slug directly to current path
-        const basePath = buildSlugFromFilters(linkFilters);
-        const base = basePath.endsWith("/")
-          ? basePath.slice(0, -1)
-          : `${basePath}/`;
-        return `${base}/${item.slug}/`;
-      }
-    }
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "CollectionPage",
+        "@id": pageUrl,
+        "name": pageTitle,
+        "url": pageUrl,
+        "inLanguage": "en-AU",
+        ...(totalProducts > 0 && { "numberOfItems": totalProducts }),
+      },
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": breadcrumbItems.map((item, idx) => ({
+          "@type": "ListItem",
+          "position": idx + 1,
+          "name": item.name,
+          "item": item.url,
+        })),
+      },
+    ],
+  };
 
-    const slugPath = buildSlugFromFilters(linkFilters);
-    return slugPath.endsWith("/") ? slugPath : `${slugPath}/`;
-  }
-
-  const [ productListRes] = await Promise.all([
-      fetchProductList(), // 👈 add this
-    ]);
-        console.log("productListRes", productListRes )
   // ───── Render ─────
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* ✅ SSR Links — server component = appears in View Page Source */}
       {/* {linksData && (
       <div
@@ -418,7 +456,7 @@ export default async function Listings({
     )}
      */}
 
-      <ListingsPage {...filters} initialData={response} linksData={linksData} productListData={productListRes} />
+      <ListingsPage {...filters} initialData={response} linksData={linksData} productListData={productListRes} initialCategoryCounts={initialCategoryCounts} initialMakeCounts={initialMakeCounts} />
     </>
   );
 }

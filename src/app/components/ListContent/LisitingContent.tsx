@@ -197,14 +197,6 @@ export default function ListingContent({
     goToProduct(href);
   };
 
-  console.log(
-    "data-main",
-    fetauredProducts,
-    isPremiumLoading,
-    isFeaturedLoading,
-    isMainLoading,
-    onFilterChange,
-  );
   // console.log("data-prod", products);
 
   // console.log("data-product", exculisiveProducts);
@@ -265,7 +257,6 @@ export default function ListingContent({
     }));
   };
 
-  console.log("lazy", lazyImages);
   // Remove all the lazy loading state and just load all images immediately
   // const getIP = async () => {
   //   try {
@@ -441,8 +432,6 @@ export default function ListingContent({
     return slug ? `/product/${slug}/` : ""; // trailing slash optional
   };
 
-  console.log("data", exculisiveProducts);
-
   const orderby = currentFilters.orderby ?? "featured";
   useEffect(() => {
     if (products && products.length > 0) {
@@ -484,7 +473,7 @@ export default function ListingContent({
         AUS_ABBR[(currentFilters.state ?? "").toUpperCase()] ??
         (currentFilters.state ?? "").toUpperCase();
       const pincode = currentFilters.pincode ? ` ${currentFilters.pincode}` : "";
-      return `${radius} kms from ${suburb} ${stateAbbr}${pincode}`;
+      return `Under ${radius} kms from ${suburb} ${stateAbbr}${pincode}`;
     }
     if (item.region && currentFilters.region) {
       return `${item.region.replace(/\b\w/g, (c) => c.toUpperCase())} Region, ${item.location}`;
@@ -508,8 +497,6 @@ export default function ListingContent({
    const rightBanners = matchedBanners.filter(
   (b) => b.position === "right" && b.placement === "listings"
 );
-console.log("rightBanners", rightBanners)
-  console.log("mergedProducts", mergedProducts);
 const [currentBanner, setCurrentBanner] = useState<typeof rightBanners[0] | null>(null);
  useEffect(() => {
   const shuffled = shuffleArray(rightBanners);
@@ -609,7 +596,6 @@ useEffect(() => {
                       ? (lazyImages[item.id] ?? [])
                       : initialSlides;
 
-                    console.log("imgs", firstImage);
                     return (
                       <div
                         className="col-lg-6 col-sm-6 col-md-6 mb-0"

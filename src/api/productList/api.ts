@@ -10,6 +10,43 @@ const API_BASE = process.env.NEXT_PUBLIC_CFS_API_BASE;
 
 
 
+export const fetchMakeCounts = async (): Promise<{ name: string; slug: string; count: number }[]> => {
+  try {
+    const res = await fetch(`${API_BASE}/params_count?group_by=make`, {
+      headers: {
+        Accept: "application/json",
+        ...(API_KEY && { "X-API-Key": API_KEY }),
+      },
+      next: { revalidate: 3600 },
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data?.data ?? [];
+  } catch {
+    return [];
+  }
+};
+
+export const fetchCategoryCounts = async (): Promise<{ name: string; slug: string; count: number }[]> => {
+  try {
+    const res = await fetch(`${API_BASE}/params_count?group_by=category`, {
+      headers: {
+        Accept: "application/json",
+        ...(API_KEY && { "X-API-Key": API_KEY }),
+      },
+      next: { revalidate: 3600 },
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return (data?.data ?? []).map((c: { name: string; slug: string; count: number }) => ({
+      ...c,
+      slug: c.slug.replace(/-category$/, ""),
+    }));
+  } catch {
+    return [];
+  }
+};
+
 export const fetchProductList = async () => {
   try {
 const res = await fetch(`${API_BASE}/params-product-list`, {

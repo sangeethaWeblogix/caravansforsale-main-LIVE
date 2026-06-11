@@ -14,6 +14,7 @@ interface Props {
   priority?: boolean;
   eager?: boolean;
   objectFit?: "cover" | "contain";
+  sizes?: string;
 }
 
 export default function ImageWithSkeleton({
@@ -25,6 +26,7 @@ export default function ImageWithSkeleton({
   priority = false,
   eager = false,
   objectFit = "cover",
+  sizes = "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 400px",
 }: Props) {
   const [loaded, setLoaded] = useState(priority || eager);
 
@@ -94,6 +96,7 @@ export default function ImageWithSkeleton({
           alt={alt}
           width={width}
           height={height}
+          sizes={sizes}
           loading={eager ? "eager" : "lazy"}
           onLoad={() => setLoaded(true)}
           onError={() => {

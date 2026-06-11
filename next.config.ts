@@ -1,6 +1,8 @@
 import { withSentryConfig } from "@sentry/nextjs";
 import type { NextConfig } from "next";
 
+const farFuture = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toUTCString();
+
 const nextConfig: NextConfig = {
   trailingSlash: true,
   reactStrictMode: false,
@@ -157,10 +159,8 @@ const nextConfig: NextConfig = {
       {
         source: "/_next/static/:path*",
         headers: [
-          {
-            key: "Cache-Control",
-            value: "public, max-age=31536000, immutable",
-          },
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+          { key: "Expires", value: farFuture },
         ],
       },
 
@@ -170,10 +170,37 @@ const nextConfig: NextConfig = {
       {
         source: "/images/:path*",
         headers: [
-          {
-            key: "Cache-Control",
-            value: "public, max-age=31536000, immutable",
-          },
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+          { key: "Expires", value: farFuture },
+        ],
+      },
+
+      // ===========================================
+      // FONTS - 1 year cache
+      // ===========================================
+      {
+        source: "/fonts/:path*",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+          { key: "Expires", value: farFuture },
+        ],
+      },
+
+      // ===========================================
+      // FAVICON & ROOT STATIC FILES
+      // ===========================================
+      {
+        source: "/favicon.ico",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=86400" },
+          { key: "Expires", value: farFuture },
+        ],
+      },
+      {
+        source: "/:file*.svg",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+          { key: "Expires", value: farFuture },
         ],
       },
 

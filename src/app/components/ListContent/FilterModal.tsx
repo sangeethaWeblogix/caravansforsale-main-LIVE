@@ -1,4 +1,5 @@
 "use client";
+import "../filter.css?=11";
 import { fetchLocations } from "@/api/location/api";
 import React, {
   useState,
@@ -250,6 +251,7 @@ const [states, setStates] = useState<StateOption[]>([]);
   const hydratedKeyRef = useRef("");
   const [searchText, setSearchText] = useState("");
   const suburbClickedRef = useRef(false);
+  const locationReqIdRef = useRef(0);
   const [selectedConditionName, setSelectedConditionName] = useState<
     string | null
   >(null);
@@ -324,6 +326,7 @@ const [states, setStates] = useState<StateOption[]>([]);
   const sleep = [1, 2, 3, 4, 5, 6, 7];
   const [selectedRegion, setSelectedRegion] = useState<string>();
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [locLoading, setLocLoading] = useState(false);
   // put near other utils
   const AUS_ABBR: Record<string, string> = {
     Victoria: "VIC",
@@ -726,9 +729,8 @@ const [states, setStates] = useState<StateOption[]>([]);
 
  
   useEffect(() => {
-    if (typeof currentFilters.radius_kms === "number") {
-      setRadiusKms(currentFilters.radius_kms);
-    }
+    const kms = Number(currentFilters.radius_kms);
+    if (kms > 0) setRadiusKms(kms);
   }, [currentFilters.radius_kms]);
 
   const hasOtherFilters = !!(
@@ -988,7 +990,8 @@ const [states, setStates] = useState<StateOption[]>([]);
         category: selectedCategory ?? filters.category,
       };
 
-      const updated = buildUpdatedFilters(base, { radius_kms: radiusKms });
+      const effectiveRadius = Number(currentFilters.radius_kms) || radiusKms;
+      const updated = buildUpdatedFilters(base, { radius_kms: effectiveRadius });
 
       setFilters(updated);
       filtersInitialized.current = true;
@@ -1002,7 +1005,6 @@ const [states, setStates] = useState<StateOption[]>([]);
       if (radiusDebounceRef.current) clearTimeout(radiusDebounceRef.current);
     };
   }, [
-    radiusKms,
     selectedStateName,
     selectedRegion,
     selectedRegionName,
@@ -1269,6 +1271,15 @@ const [states, setStates] = useState<StateOption[]>([]);
         region: validRegion || region, // ✅ fallback to raw region
         radius_kms: radiusKms,
       };
+    } else if (selectedSuggestion && currentFilters.suburb) {
+      // Chip was hydrated from existing filter (not re-selected) — preserve suburb + updated radius
+      suburbFilters = {
+        suburb: currentFilters.suburb,
+        pincode: currentFilters.pincode,
+        state: currentFilters.state,
+        region: currentFilters.region,
+        radius_kms: radiusKms,
+      };
     }
 
     const updatedFilters: Filters = {
@@ -1320,7 +1331,7 @@ const [states, setStates] = useState<StateOption[]>([]);
 
     if (selectedSuggestion) {
       setLocationInput(selectedSuggestion.short_address || "");
-      setModalInput(selectedSuggestion.short_address || "");
+      setModalInput("");
     }
 
     setShowSuggestions(false);
@@ -1641,25 +1652,36 @@ const [states, setStates] = useState<StateOption[]>([]);
     });
   }, [selectedSuburbName, selectedStateName, selectedRegionName, states]);
 
-  // ✅ Modal open ஆகும்போது suburb/location input sync
-  // ✅ Modal open ஆகும்போது suburb இருந்தா மட்டும் location input sync
+  // ✅ Modal open ஆகும்போது suburb இருந்தா chip-style-ல காட்டு
   useEffect(() => {
     if (currentFilters.suburb && currentFilters.state) {
       const capitalizedSuburb = currentFilters.suburb.replace(/\b\w/g, (c) =>
         c.toUpperCase(),
       );
-
-      // ✅ case-insensitive AUS_ABBR lookup
       const stateAbbr =
         Object.entries(AUS_ABBR).find(
           ([key]) => key.toLowerCase() === currentFilters.state?.toLowerCase(),
         )?.[1] || currentFilters.state;
+      const fullStateName = currentFilters.state.replace(/\b\w/g, (c) => c.toUpperCase());
 
       const shortAddr = [capitalizedSuburb, stateAbbr, currentFilters.pincode]
         .filter(Boolean)
         .join(" ");
+      const fullAddr = [capitalizedSuburb, fullStateName, currentFilters.pincode]
+        .filter(Boolean)
+        .join(" ");
 
-      setModalInput(shortAddr);
+      const stateSlug = currentFilters.state.toLowerCase().replace(/\s+/g, "-") + "-state";
+      const regionSlug = currentFilters.region
+        ? currentFilters.region.toLowerCase().replace(/\s+/g, "-") + "-region"
+        : "unknown-region";
+      const suburbSlug = currentFilters.suburb.toLowerCase().replace(/\s+/g, "-") + "-suburb";
+      const uri = [stateSlug, regionSlug, suburbSlug, currentFilters.pincode]
+        .filter(Boolean)
+        .join("/");
+
+      setSelectedSuggestion({ key: `hydrated`, uri, address: fullAddr, short_address: shortAddr });
+      setModalInput("");
       setLocationInput(shortAddr);
     }
   }, [currentFilters.suburb, currentFilters.state, currentFilters.pincode]);
@@ -2155,16 +2177,16 @@ fetch(`/api/params-count?${catParams.toString()}`, { signal })
                         </select>
                       </div>
                     </div>
-                    {!!tempStateName && (
-                      <div className="col-lg-6">
+                    <div className="col-lg-6">
                         <div className="location-item">
                           <label>Region</label>
                           <select
                             className="cfs-select-input form-select"
                             value={tempRegionName || tempRegionNameRaw || ""}
+                            disabled={!tempStateName}
                             onChange={(e) => {
                               setTempRegionName(e.target.value || null);
-                              setTempRegionNameRaw(null); // user manually changed, raw clear பண்ணு
+                              setTempRegionNameRaw(null);
                             }}
                           >
                             <option value="">Any</option>
@@ -2201,7 +2223,6 @@ fetch(`/api/params-count?${catParams.toString()}`, { signal })
                           </select>
                         </div>
                       </div>
-                    )}
                   </div>
                 </div>
               </div>
@@ -2236,6 +2257,7 @@ fetch(`/api/params-count?${catParams.toString()}`, { signal })
                         onChange={(e) => {
                           // isUserTypingRef.current = true;
                           setShowSuggestions(true);
+                          setSelectedSuggestion(null);
 
                           const rawValue = e.target.value;
                           // Format for filtering suggestions only
@@ -2255,35 +2277,50 @@ fetch(`/api/params-count?${catParams.toString()}`, { signal })
 
                           // Use the same API call logic as in your useEffect
                           const suburb = formattedValue.split(" ")[0];
+                          const reqId = ++locationReqIdRef.current;
+                          setLocLoading(true);
                           fetchLocations(suburb)
                             .then((data) => {
-                              // Filter the API results based on the formatted input
-                              const filtered = data.filter((item) => {
-                                const searchValue =
-                                  formattedValue.toLowerCase();
-                                return (
-                                  item.short_address
-                                    .toLowerCase()
-                                    .includes(searchValue) ||
-                                  item.address
-                                    .toLowerCase()
-                                    .includes(searchValue) ||
-                                  (item.postcode &&
-                                    item.postcode
-                                      .toString()
-                                      .includes(searchValue)) // ✅ added
-                                );
-                              });
+                              if (reqId !== locationReqIdRef.current) return;
+                              const searchValue = formattedValue.toLowerCase();
+                              const isPostcode = /^\d+$/.test(formattedValue);
+                              const filtered = data.filter((item) =>
+                                item.short_address.toLowerCase().includes(searchValue) ||
+                                item.address.toLowerCase().includes(searchValue) ||
+                                (item.postcode && item.postcode.toString().includes(searchValue))
+                              );
+                              if (isPostcode) {
+                                filtered.sort((a, b) => {
+                                  const aExact = a.short_address.endsWith(formattedValue) || a.address.endsWith(formattedValue);
+                                  const bExact = b.short_address.endsWith(formattedValue) || b.address.endsWith(formattedValue);
+                                  if (aExact && !bExact) return -1;
+                                  if (!aExact && bExact) return 1;
+                                  return 0;
+                                });
+                              }
                               setLocationSuggestions(filtered);
+                              setLocLoading(false);
                             })
-                            .catch(console.error);
+                            .catch(() => setLocLoading(false));
                         }}
                         onBlur={() =>
                           setTimeout(() => setShowSuggestions(false), 150)
                         }
                       />
                     </div>
-                    {showSuggestions && locationSuggestions.length > 0 && (
+                    {showSuggestions && locLoading && modalInput && (
+                      <ul className="location-suggestions">
+                        {[1, 2, 3].map((i) => (
+                          <li key={i} className="suggestion-skeleton">
+                            <div className="skeleton-line" />
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                    {showSuggestions && !locLoading && modalInput && locationSuggestions.length === 0 && (
+                      <p className="suggestions-no-results">No results found</p>
+                    )}
+                    {showSuggestions && !locLoading && locationSuggestions.length > 0 && (
                       <ul className="location-suggestions">
                         {locationSuggestions.map((item, i) => {
                           const isSelected =
@@ -2301,7 +2338,7 @@ fetch(`/api/params-count?${catParams.toString()}`, { signal })
                                 isUserTypingRef.current = false;
                                 setSelectedSuggestion(item);
                                 setLocationInput(item.short_address);
-                                setModalInput(item.short_address);
+                                setModalInput("");
                                 setLocationSuggestions([]);
                                 setShowSuggestions(false);
                                 suburbClickedRef.current = true;
@@ -2360,48 +2397,68 @@ fetch(`/api/params-count?${catParams.toString()}`, { signal })
                       </ul>
                     )}
 
-                    {selectedSuggestion &&
-                      modalInput === selectedSuggestion.short_address && (
-                        <div style={{ marginTop: 12 }}>
-                          <div style={{ fontWeight: 600, marginBottom: 8 }}>
-                            {selectedSuggestion.address}{" "}
-                            {selectedSuggestion.uri.split("/").length >= 3 && (
-                              <span>+{radiusKms}km</span>
-                            )}
-                          </div>
-                          {selectedSuggestion.uri.split("/").length >= 3 && (
-                            <div
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 12,
-                              }}
-                            >
-                              <input
-                                type="range"
-                                min={0}
-                                max={RADIUS_OPTIONS.length - 1}
-                                step={1}
-                                value={Math.max(
-                                  0,
-                                  RADIUS_OPTIONS.indexOf(
-                                    radiusKms as (typeof RADIUS_OPTIONS)[number],
-                                  ),
-                                )}
-                                onChange={(e) => {
-                                  const idx = parseInt(e.target.value, 10);
-                                  setRadiusKms(RADIUS_OPTIONS[idx]);
-                                }}
-                                style={{ flex: 1 }}
-                                aria-label="Search radius in kilometers"
-                              />
-                              <div style={{ minWidth: 60, textAlign: "right" }}>
-                                +{radiusKms}km
-                              </div>
-                            </div>
-                          )}
+                    {selectedSuggestion && !modalInput && (
+                      <div style={{ marginTop: 8 }}>
+                        <div className="filter-chip">
+                          <span>{selectedSuggestion.address}</span>
+                          <button
+                            type="button"
+                            className="filter-chip-close"
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              setSelectedSuggestion(null);
+                              setLocationInput("");
+                              setModalInput("");
+                              setTempStateName(null);
+                              setTempRegionName(null);
+                              setTempRegionNameRaw(null);
+                            }}
+                            aria-label="Remove location"
+                          >
+                            ×
+                          </button>
                         </div>
-                      )}
+                        {selectedSuggestion.uri.split("/").length >= 3 && (
+                          <div style={{ marginTop: 14 }}>
+                            <div className="cfs-radius-label">Search surrounding area</div>
+                            <div className="cfs-radius-wrap">
+                              {(() => {
+                                const idx = Math.max(0, RADIUS_OPTIONS.indexOf(radiusKms as (typeof RADIUS_OPTIONS)[number]));
+                                const pct = (idx / (RADIUS_OPTIONS.length - 1)) * 100;
+                                return (
+                                  <>
+                                    <div
+                                      className="cfs-radius-tooltip"
+                                      style={{ left: `calc(${pct}% + ${9 - 0.18 * pct}px)` }}
+                                    >
+                                      {radiusKms}km
+                                    </div>
+                                    <input
+                                      type="range"
+                                      className="cfs-radius-slider"
+                                      min={0}
+                                      max={RADIUS_OPTIONS.length - 1}
+                                      step={1}
+                                      value={idx}
+                                      list="radius-datalist"
+                                      onChange={(e) => setRadiusKms(RADIUS_OPTIONS[parseInt(e.target.value, 10)])}
+                                      aria-label="Search radius in kilometers"
+                                    />
+                                    <datalist id="radius-datalist">
+                                      {RADIUS_OPTIONS.map((_, i) => <option key={i} value={i} />)}
+                                    </datalist>
+                                    <div className="cfs-radius-range">
+                                      <span>{RADIUS_OPTIONS[0]}km</span>
+                                      <span>{RADIUS_OPTIONS[RADIUS_OPTIONS.length - 1].toLocaleString()}km</span>
+                                    </div>
+                                  </>
+                                );
+                              })()}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -2430,13 +2487,13 @@ fetch(`/api/params-count?${catParams.toString()}`, { signal })
                         </select>
                       </div>
                     </div>
-                    {selectedMakeTemp && (
-                      <div className="col-lg-6">
+                    <div className="col-lg-6">
                         <div className="location-item">
                           <label>Model</label>
                           <select
                             className="cfs-select-input form-select"
                             value={tempModel || ""}
+                            disabled={!selectedMakeTemp}
                             onChange={(e) => {
                               const slug = e.target.value || null;
                               setTempModel(slug);
@@ -2452,7 +2509,6 @@ fetch(`/api/params-count?${catParams.toString()}`, { signal })
                           </select>
                         </div>
                       </div>
-                    )}
                   </div>
                 </div>
               </div>

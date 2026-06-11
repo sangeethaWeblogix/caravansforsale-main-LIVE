@@ -61,6 +61,22 @@ async function fetchAndSave(type) {
 
   let responseText = null;
 
+  // ── 0. Try local repo file (committed by WordPress via GitHub API) ─────────
+  // When WordPress regenerates paths it pushes cfs-paths/{type}.json to this
+  // repo. After checkout the file is already on disk — no HTTP needed at all,
+  // completely bypassing any server-side bot protection.
+  const localFile = path.join(process.cwd(), 'cfs-paths', `${type}.json`);
+  if (fs.existsSync(localFile)) {
+    const localText = fs.readFileSync(localFile, 'utf8');
+    const trimmed = localText.trimStart();
+    if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+      responseText = localText;
+      console.log(`✅ Local repo file used: cfs-paths/${type}.json`);
+    } else {
+      console.log(`⚠️ Local repo file exists but isn't JSON — skipping`);
+    }
+  }
+
   // ── 1. Try static file (no bot-protection) ────────────────────────────────
   if (staticUrl) {
     console.log(`📥 Trying static file: ${staticUrl}`);

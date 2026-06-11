@@ -1,4 +1,5 @@
 "use client";
+import "../filter.css";
 import { useState, useEffect, useRef, useTransition } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
@@ -87,7 +88,7 @@ interface FilterSliderProps {
   onPriceSelect?: (from: number | null, to: number | null) => void;
   onAtmSelect?: (min: number | null, max: number | null) => void;
   productListData?: ProductListResponse;
-  
+  initialMakeOptions?: { name: string; slug: string }[];
 }
 
 // ── FilterModal-போல் buildCountParams helper ──
@@ -138,6 +139,7 @@ const FilterSlider = ({
   setIsFeaturedLoading,
   setIsPremiumLoading,
   productListData,
+  initialMakeOptions,
 }: FilterSliderProps) => {
 const [states, setStates] = useState<StateOption[]>(
   productListData?.data?.states || []
@@ -153,6 +155,7 @@ const [states, setStates] = useState<StateOption[]>(
     LocationSuggestion[]
   >([]);
   const [showSuburbSuggestions, setShowSuburbSuggestions] = useState(false);
+  const [suburbLocLoading, setSuburbLocLoading] = useState(false);
   const [tempRegionRaw, setTempRegionRaw] = useState<string | null>(null);
   const [removingChip, setRemovingChip] = useState<string | null>(null);
   const [clearingAll, setClearingAll] = useState(false);
@@ -172,7 +175,7 @@ const [states, setStates] = useState<StateOption[]>(
   // ── Make & Model states ──
   const [makes, setMakes] = useState<
     { name: string; slug: string; models?: { name: string; slug: string }[] }[]
-  >([]);
+  >(initialMakeOptions ?? []);
   const [makeCounts, setMakeCounts] = useState<
     { name: string; slug: string; count: number }[]
   >([]);
@@ -190,6 +193,7 @@ const [states, setStates] = useState<StateOption[]>(
   const [modelCountLoading, setModelCountLoading] = useState(false);
 
   const didFetchMakeRef = useRef(false);
+  const suburbReqIdRef = useRef(0);
 
   const toTitleCase = (str: string): string =>
     str.replace(/\b\w/g, (c) => c.toUpperCase());
@@ -519,27 +523,32 @@ const [states, setStates] = useState<StateOption[]>(
     setOpenModal(null);
   };
   const handleLocationSuburbOpen = () => {
-    setTempSuburbInput(
-      currentFilters.suburb
-        ? [
-            toTitleCase(currentFilters.suburb),
-            AUS_ABBR[currentFilters.state?.toUpperCase() ?? ""] ??
-              currentFilters.state?.toUpperCase() ??
-              "",
-            currentFilters.pincode,
-          ]
-            .filter(Boolean)
-            .join(" ")
-        : "",
-    );
-    setTempSuburbSuggestion(null);
+    if (currentFilters.suburb && currentFilters.state) {
+      const shortAddr = [
+        toTitleCase(currentFilters.suburb),
+        AUS_ABBR[currentFilters.state?.toUpperCase() ?? ""] ?? currentFilters.state?.toUpperCase() ?? "",
+        currentFilters.pincode,
+      ].filter(Boolean).join(" ");
+      const fullAddr = [
+        toTitleCase(currentFilters.suburb),
+        currentFilters.state.replace(/\b\w/g, (c) => c.toUpperCase()),
+        currentFilters.pincode,
+      ].filter(Boolean).join(" ");
+      const stateSlug = currentFilters.state.toLowerCase().replace(/\s+/g, "-") + "-state";
+      const regionSlug = currentFilters.region
+        ? currentFilters.region.toLowerCase().replace(/\s+/g, "-") + "-region"
+        : "unknown-region";
+      const suburbSlug = currentFilters.suburb.toLowerCase().replace(/\s+/g, "-") + "-suburb";
+      const uri = [stateSlug, regionSlug, suburbSlug, currentFilters.pincode].filter(Boolean).join("/");
+      setTempSuburbSuggestion({ key: "hydrated", uri, address: fullAddr, short_address: shortAddr });
+      setTempSuburbInput("");
+    } else {
+      setTempSuburbInput("");
+      setTempSuburbSuggestion(null);
+    }
     setSuburbLocationSuggestions([]);
     setShowSuburbSuggestions(false);
-    setTempSuburbRadius(
-      currentFilters.radius_kms
-        ? Number(currentFilters.radius_kms)
-        : RADIUS_OPTIONS[0],
-    );
+    setTempSuburbRadius(currentFilters.radius_kms ? Number(currentFilters.radius_kms) : RADIUS_OPTIONS[0]);
     setOpenModal("suburb");
   };
 
@@ -660,8 +669,8 @@ const [states, setStates] = useState<StateOption[]>(
     <button className="filter-close" onClick={() => setOpenModal(null)}>
       <svg
         xmlns="http://www.w3.org/2000/svg"
-        width="100"
-        height="100"
+        width="18"
+        height="18"
         viewBox="0 0 64 64"
       >
         <path d="M 16 14 C 15.488 14 14.976938 14.194937 14.585938 14.585938 C 13.804937 15.366937 13.804937 16.633063 14.585938 17.414062 L 29.171875 32 L 14.585938 46.585938 C 13.804938 47.366938 13.804937 48.633063 14.585938 49.414062 C 14.976937 49.805062 15.488 50 16 50 C 16.512 50 17.023062 49.805062 17.414062 49.414062 L 32 34.828125 L 46.585938 49.414062 C 47.366938 50.195063 48.633063 50.195062 49.414062 49.414062 C 50.195063 48.633062 50.195062 47.366937 49.414062 46.585938 L 34.828125 32 L 49.414062 17.414062 C 50.195063 16.633063 50.195062 15.366938 49.414062 14.585938 C 48.633062 13.804938 47.366937 13.804938 46.585938 14.585938 L 32 29.171875 L 17.414062 14.585938 C 17.023062 14.194938 16.512 14 16 14 z"></path>
@@ -887,10 +896,16 @@ const [states, setStates] = useState<StateOption[]>(
               className={`active-chip${removingChip === "category" ? " chip-removing" : ""}`}
               onClick={() => removeChip("category", { category: undefined })}
             >
-              {toTitleCase(
-                categoryCounts.find((c) => c.slug === currentFilters.category)
-                  ?.name ?? currentFilters.category,
-              )}
+              {(() => {
+                const slug = currentFilters.category!;
+                const allCats = productListData?.data?.all_categories ?? [];
+                return toTitleCase(
+                  categoryCounts.find((c) => c.slug === slug)?.name ??
+                  cachedCategoryCountsRef.current.find((c) => c.slug === slug)?.name ??
+                  allCats.find((c) => c.slug === slug || c.slug === slug + "-category" || c.slug.replace(/-category$/, "") === slug)?.name ??
+                  slug.replace(/-/g, " "),
+                );
+              })()}
               <span className="chip-close">×</span>
             </span>
           )}
@@ -1044,23 +1059,7 @@ const [states, setStates] = useState<StateOption[]>(
         <div className="filter-overlay">
           <div className="filter-modal">
             <div className="filter-header">
-              {!tempSuburbSuggestion && currentFilters.suburb && (
-                <div style={{ marginTop: 12 }}>
-                  <p style={{ margin: 0 }}>
-                    <strong>
-                      Suburb: {toTitleCase(currentFilters.suburb)}
-                      {currentFilters.state && (
-                        <>
-                          ,{" "}
-                          {AUS_ABBR[currentFilters.state.toUpperCase()] ??
-                            currentFilters.state.toUpperCase()}
-                        </>
-                      )}
-                      {currentFilters.pincode && <> {currentFilters.pincode}</>}
-                    </strong>
-                  </p>
-                </div>
-              )}
+              <span style={{ fontWeight: 600, fontSize: 16 }}>Suburb/Postcode</span>
               {closeBtn}
             </div>
             <div className="filter-body">
@@ -1092,6 +1091,7 @@ const [states, setStates] = useState<StateOption[]>(
                         onFocus={() => setShowSuburbSuggestions(true)}
                         onChange={(e) => {
                           setShowSuburbSuggestions(true);
+                          setTempSuburbSuggestion(null);
                           const rawValue = e.target.value;
                           setTempSuburbInput(rawValue);
 
@@ -1105,8 +1105,11 @@ const [states, setStates] = useState<StateOption[]>(
                           }
 
                           const suburb = formattedValue.split(" ")[0];
+                          const reqId = ++suburbReqIdRef.current;
+                          setSuburbLocLoading(true);
                           fetchLocations(suburb)
                             .then((data) => {
+                              if (reqId !== suburbReqIdRef.current) return;
                               const filtered = data.filter((item) => {
                                 const searchValue =
                                   formattedValue.toLowerCase();
@@ -1124,8 +1127,9 @@ const [states, setStates] = useState<StateOption[]>(
                                 );
                               });
                               setSuburbLocationSuggestions(filtered);
+                              setSuburbLocLoading(false);
                             })
-                            .catch(console.error);
+                            .catch(() => setSuburbLocLoading(false));
                         }}
                         onBlur={() =>
                           setTimeout(() => setShowSuburbSuggestions(false), 150)
@@ -1133,7 +1137,19 @@ const [states, setStates] = useState<StateOption[]>(
                       />
                     </div>
 
-                    {showSuburbSuggestions &&
+                    {showSuburbSuggestions && suburbLocLoading && tempSuburbInput && (
+                      <ul className="location-suggestions">
+                        {[1, 2, 3].map((i) => (
+                          <li key={i} className="suggestion-skeleton">
+                            <div className="skeleton-line" />
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                    {showSuburbSuggestions && !suburbLocLoading && tempSuburbInput && suburbLocationSuggestions.length === 0 && (
+                      <p className="suggestions-no-results">No results found</p>
+                    )}
+                    {showSuburbSuggestions && !suburbLocLoading &&
                       suburbLocationSuggestions.length > 0 && (
                         <ul className="location-suggestions">
                           {suburbLocationSuggestions.map((item, i) => {
@@ -1147,7 +1163,7 @@ const [states, setStates] = useState<StateOption[]>(
                                 onMouseDown={(e) => {
                                   e.preventDefault();
                                   setTempSuburbSuggestion(item);
-                                  setTempSuburbInput(item.short_address);
+                                  setTempSuburbInput("");
                                   setSuburbLocationSuggestions([]);
                                   setShowSuburbSuggestions(false);
                                 }}
@@ -1159,48 +1175,64 @@ const [states, setStates] = useState<StateOption[]>(
                         </ul>
                       )}
 
-                    {tempSuburbSuggestion &&
-                      tempSuburbInput ===
-                        tempSuburbSuggestion.short_address && (
-                        <div style={{ marginTop: 12 }}>
-                          <div style={{ fontWeight: 600, marginBottom: 8 }}>
-                            {tempSuburbSuggestion.address}{" "}
-                            {tempSuburbSuggestion.uri.split("/").length >=
-                              3 && <span>+{tempSuburbRadius}km</span>}
-                          </div>
-                          {tempSuburbSuggestion.uri.split("/").length >= 3 && (
-                            <div
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 12,
-                              }}
-                            >
-                              <input
-                                type="range"
-                                min={0}
-                                max={RADIUS_OPTIONS.length - 1}
-                                step={1}
-                                value={Math.max(
-                                  0,
-                                  RADIUS_OPTIONS.indexOf(
-                                    tempSuburbRadius as (typeof RADIUS_OPTIONS)[number],
-                                  ),
-                                )}
-                                onChange={(e) => {
-                                  const idx = parseInt(e.target.value, 10);
-                                  setTempSuburbRadius(RADIUS_OPTIONS[idx]);
-                                }}
-                                style={{ flex: 1 }}
-                                aria-label="Search radius in kilometers"
-                              />
-                              <div style={{ minWidth: 60, textAlign: "right" }}>
-                                +{tempSuburbRadius}km
-                              </div>
-                            </div>
-                          )}
+                    {tempSuburbSuggestion && !tempSuburbInput && (
+                      <div style={{ marginTop: 8 }}>
+                        <div className="filter-chip">
+                          <span>{tempSuburbSuggestion.address}</span>
+                          <button
+                            type="button"
+                            className="filter-chip-close"
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              setTempSuburbSuggestion(null);
+                              setTempSuburbInput("");
+                            }}
+                            aria-label="Remove location"
+                          >
+                            ×
+                          </button>
                         </div>
-                      )}
+                        {tempSuburbSuggestion.uri.split("/").length >= 3 && (
+                          <div style={{ marginTop: 14 }}>
+                            <div className="cfs-radius-label">Search surrounding area</div>
+                            <div className="cfs-radius-wrap">
+                              {(() => {
+                                const idx = Math.max(0, RADIUS_OPTIONS.indexOf(tempSuburbRadius as (typeof RADIUS_OPTIONS)[number]));
+                                const pct = (idx / (RADIUS_OPTIONS.length - 1)) * 100;
+                                return (
+                                  <>
+                                    <div
+                                      className="cfs-radius-tooltip"
+                                      style={{ left: `calc(${pct}% + ${9 - 0.18 * pct}px)` }}
+                                    >
+                                      {tempSuburbRadius}km
+                                    </div>
+                                    <input
+                                      type="range"
+                                      className="cfs-radius-slider"
+                                      min={0}
+                                      max={RADIUS_OPTIONS.length - 1}
+                                      step={1}
+                                      value={idx}
+                                      list="suburb-radius-datalist"
+                                      onChange={(e) => setTempSuburbRadius(RADIUS_OPTIONS[parseInt(e.target.value, 10)])}
+                                      aria-label="Search radius in kilometers"
+                                    />
+                                    <datalist id="suburb-radius-datalist">
+                                      {RADIUS_OPTIONS.map((_, i) => <option key={i} value={i} />)}
+                                    </datalist>
+                                    <div className="cfs-radius-range">
+                                      <span>{RADIUS_OPTIONS[0]}km</span>
+                                      <span>{RADIUS_OPTIONS[RADIUS_OPTIONS.length - 1].toLocaleString()}km</span>
+                                    </div>
+                                  </>
+                                );
+                              })()}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -1425,12 +1457,12 @@ const [states, setStates] = useState<StateOption[]>(
                     </select>
                   </div>
                 </div>
-                {tempState && filteredRegions.length > 0 && (
-                  <div className="col-lg-6">
+                <div className="col-lg-6">
                     <div className="location-item">
                       <label>Region</label>
                       <select
                         className="cfs-select-input form-select"
+                        disabled={!tempState}
                         value={tempRegion || tempRegionRaw || ""}
                         onChange={(e) => {
                           setTempRegion(e.target.value || null);
@@ -1459,7 +1491,6 @@ const [states, setStates] = useState<StateOption[]>(
                       </select>
                     </div>
                   </div>
-                )}
               </div>
             </div>
             <div className="filter-footer">
@@ -1532,12 +1563,12 @@ const [states, setStates] = useState<StateOption[]>(
                     </select>
                   </div>
                 </div>
-                {tempMake && (
-                  <div className="col-lg-6">
+                <div className="col-lg-6">
                     <div className="location-item">
                       <label>Model</label>
                       <select
                         className="cfs-select-input form-select"
+                        disabled={!tempMake}
                         value={tempModel ?? ""}
                         onChange={(e) => setTempModel(e.target.value || null)}
                       >
@@ -1566,7 +1597,6 @@ const [states, setStates] = useState<StateOption[]>(
                       </select>
                     </div>
                   </div>
-                )}
               </div>
             </div>
             <div className="filter-footer">

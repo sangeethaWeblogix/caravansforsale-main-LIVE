@@ -14,7 +14,7 @@ import FilterModal from "./FilterModal";
 import { flushSync } from "react-dom";
 import { v4 as uuidv4 } from "uuid";
 import "./newList.css?=299";
-import "./top-filters.css?=491";
+import "./top-filters.css?=496";
  import ListingSkeleton from "../skelton";
 import {
   redirect,
@@ -133,6 +133,8 @@ interface Props extends Filters {
   initialData?: ApiResponse;
   linksData?: any;
   productListData?: ProductListResponse;
+  initialCategoryCounts?: { name: string; slug: string; count: number }[];
+  initialMakeCounts?: { name: string; slug: string; count: number }[];
 }
 
 /** ------------ Helper Functions ------------ */
@@ -172,6 +174,8 @@ export default function ListingsPage({
   initialData,
   productListData,
   linksData: serverLinksData,
+  initialCategoryCounts,
+  initialMakeCounts,
   ...incomingFilters
 }: Props) {
   console.log("productListData", productListData);
@@ -234,7 +238,7 @@ export default function ListingsPage({
 
   const [sliderCategoryCounts, setSliderCategoryCounts] = useState<
     { name: string; slug: string; count: number }[]
-  >([]);
+  >(initialCategoryCounts ?? []);
   const [sliderCatLoading, setSliderCatLoading] = useState(false);
 
   const [categories, setCategories] = useState<Category[]>(
@@ -1362,6 +1366,7 @@ const [pagination, setPagination] = useState<Pagination>(() => {
                     currentFilters={filters}
                     categoryCounts={sliderCategoryCounts}
                     isCategoryCountLoading={sliderCatLoading}
+                    initialMakeOptions={initialMakeCounts ?? makes}
                     stateOptions={stateOptions}
                     onOpenModal={handleOpenModal}
                     onCategorySelect={(slug) =>

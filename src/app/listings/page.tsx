@@ -1,11 +1,11 @@
   import React, { Suspense } from "react";
 import Listing from "../components/ListContent/Listings";
-import { fetchListings } from "@/api/listings/api";
+import { getCachedListings } from "@/api/listings/api";
 import type { Metadata } from "next";
 import { ensureValidPage } from "@/utils/seo/validatePage";
 import { notFound } from "next/navigation";
 import ApiErrorFallback from "../components/ApiErrorFallback";
-import { fetchProductList } from "@/api/productList/api";
+import { fetchProductList, fetchCategoryCounts, fetchMakeCounts } from "@/api/productList/api";
 import { reportGitHubIssue } from "@/lib/reportGitHubIssue";
 
 export const revalidate = 3600;
@@ -61,10 +61,14 @@ export default async function ListingsPage({
 
   let response;
   let productListRes;
+  let initialCategoryCounts;
+  let initialMakeCounts;
   try {
-    [response, productListRes] = await Promise.all([
-      fetchListings({ page }),
+    [response, productListRes, initialCategoryCounts, initialMakeCounts] = await Promise.all([
+      getCachedListings({ page }),
       fetchProductList(),
+      fetchCategoryCounts(),
+      fetchMakeCounts(),
     ]);
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
@@ -107,9 +111,37 @@ export default async function ListingsPage({
     notFound();
   }
 
+  const BASE_URL = "https://www.caravansforsale.com.au";
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "CollectionPage",
+        "@id": `${BASE_URL}/listings/`,
+        "name": response?.seo_v2?.h1 || "Caravans for Sale in Australia",
+        "url": `${BASE_URL}/listings/`,
+        "inLanguage": "en-AU",
+        ...(response?.pagination?.total_products && { "numberOfItems": response.pagination.total_products }),
+      },
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": `${BASE_URL}/` },
+          { "@type": "ListItem", "position": 2, "name": "Caravans for Sale", "item": `${BASE_URL}/listings/` },
+        ],
+      },
+    ],
+  };
+
   return (
-    <Suspense>
-      <Listing initialData={response} page={page} productListData={productListRes} />
-    </Suspense>
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <Suspense>
+        <Listing initialData={response} page={page} productListData={productListRes} initialCategoryCounts={initialCategoryCounts} initialMakeCounts={initialMakeCounts} />
+      </Suspense>
+    </>
   );
 }
