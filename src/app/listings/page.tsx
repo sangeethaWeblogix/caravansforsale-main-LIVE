@@ -9,6 +9,7 @@ import { fetchProductList, fetchCategoryCounts, fetchMakeCounts } from "@/api/pr
 import { reportGitHubIssue } from "@/lib/reportGitHubIssue";
 
 export const revalidate = 3600;
+export const maxDuration = 30;
 
 export const metadata: Metadata = {
   title: "Caravans for Sale in Australia",
