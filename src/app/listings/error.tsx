@@ -10,8 +10,17 @@ interface ErrorProps {
 
 export default function ListingsError({ error, reset }: ErrorProps) {
   useEffect(() => {
-    // Log error to console for debugging
-    console.error("Listings page error:", error);
+    console.error("[FRONTEND ERROR] Listings page JS crash:", error.message, error.digest ?? "");
+    fetch("/api/report-error", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        errorSource: "FRONTEND",
+        errorType: "JS crash: " + error.message,
+        message: error.message,
+        digest: error.digest,
+      }),
+    }).catch(() => {});
   }, [error]);
 
   return (

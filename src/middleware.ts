@@ -103,7 +103,7 @@ export async function middleware(request: NextRequest) {
 
       /* 🔹 AbortController with safe timeout */
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 1200);
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
 
       const apiRes = await fetch(apiUrl, {
         headers: {

@@ -25,6 +25,7 @@ import {
 } from "@/app/components/ListContent/StaticLinksUtils";
 import { fetchProductList } from "@/api/productList/api";
 import ApiErrorFallback from "@/app/components/ApiErrorFallback";
+import { reportGitHubIssue } from "@/lib/reportGitHubIssue";
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
 // ─────────────────────────────────────────────────────────────────────────────
@@ -280,11 +281,23 @@ export default async function Listings({
     if (msg.includes("400") || msg.includes("404")) {
       notFound();
     }
+    const isBackend =
+      msg.startsWith("Request timeout") ||
+      msg.startsWith("API failed:") ||
+      msg.startsWith("Invalid API response");
+    const errorSource = isBackend ? "BACKEND" : "FRONTEND";
+    console.error(`[${errorSource} ERROR] Slug listings page failed:`, msg);
+    reportGitHubIssue({
+      errorSource,
+      errorType: msg,
+      message: `Slug listings page failed: ${msg}`,
+    }).catch(() => {});
     return (
       <ApiErrorFallback
         title="Unable to load listings"
         message="We couldn't load this page. Please try again."
         showRetry={true}
+        errorSource={errorSource}
       />
     );
   }

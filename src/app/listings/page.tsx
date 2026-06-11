@@ -6,6 +6,7 @@ import { ensureValidPage } from "@/utils/seo/validatePage";
 import { notFound } from "next/navigation";
 import ApiErrorFallback from "../components/ApiErrorFallback";
 import { fetchProductList } from "@/api/productList/api";
+import { reportGitHubIssue } from "@/lib/reportGitHubIssue";
 
 export const revalidate = 3600;
 
@@ -66,12 +67,25 @@ export default async function ListingsPage({
       fetchProductList(),
     ]);
   } catch (error) {
-    console.error("Listings page API error:", error);
+    const msg = error instanceof Error ? error.message : String(error);
+    const isBackend =
+      msg.startsWith("Request timeout") ||
+      msg.startsWith("API failed:") ||
+      msg.startsWith("Invalid API response");
+    const errorSource = isBackend ? "BACKEND" : "FRONTEND";
+    console.error(`[${errorSource} ERROR] Listings page failed:`, msg);
+    reportGitHubIssue({
+      errorSource,
+      errorType: msg,
+      message: `Listings page failed: ${msg}`,
+      pageUrl: "/listings",
+    }).catch(() => {});
     return (
       <ApiErrorFallback
         title="Unable to load listings"
         message="We couldn't load this page. Please try again."
         showRetry={true}
+        errorSource={errorSource}
       />
     );
   }

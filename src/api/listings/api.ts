@@ -173,11 +173,10 @@ export const fetchListings = async (
   if (s) params.append("search", s);
   const url = `${API_BASE}/new_optimize_code?${params.toString()}`;
 
-  // const url = `${API_BASE}/new_optimize_code?${params.toString()}`;
-  // const res = await fetch(url);
   // ✅ NEW: AbortController with 15s timeout
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 15000);
+  const timeoutMs = Number(process.env.CFS_API_TIMEOUT_MS) || 30000;
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
   let res: Response;
   try {
@@ -195,12 +194,12 @@ export const fetchListings = async (
 
     // ✅ Timeout vs network error — differentiate
     if (err?.name === "AbortError") {
-      console.error("[list API] Timeout after 15s:", url);
+      console.error("[BACKEND ERROR] Timeout after 15s — server did not respond:", url);
       throw new Error("Request timeout");
     }
 
     // iOS Safari "Load failed" — network offline or CORS
-    console.error("[list API] Network error:", err?.message, url);
+    console.error("[FRONTEND ERROR] Network error — client cannot reach server:", err?.message, url);
     throw new Error("Network error: " + (err?.message ?? "Load failed"));
   }
 
@@ -211,7 +210,7 @@ export const fetchListings = async (
 
   if (!res.ok) {
     const errText = await res.text();
-    console.error("API Error:", res.status, errText);
+    console.error(`[BACKEND ERROR] HTTP ${res.status} from API:`, errText.substring(0, 300));
     throw new Error(`API failed: ${res.status}`);
   }
 
@@ -220,7 +219,7 @@ export const fetchListings = async (
   try {
     json = JSON.parse(raw);
   } catch {
-    console.error("Invalid JSON response:", raw);
+    console.error("[BACKEND ERROR] Invalid JSON from API:", raw.substring(0, 300));
     throw new Error("Invalid API response");
   }
 
