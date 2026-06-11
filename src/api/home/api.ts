@@ -119,22 +119,22 @@ function normalizeBlog(src: BlogRaw = {}): HomeBlogPost {
 }
  
 /* -------------------------------- fetcher ---------------------------------- */
+const EMPTY_HOME: HomePageData = { featured: [], products: [], latest_posts: [] };
+
 export async function fetchHomePage(): Promise<HomePageData> {
   const url = `${API_BASE.replace(/\/$/, "")}/home_page`;
- 
-  const res = await fetch(url, {
-  headers: {
-    Accept: "application/json",
-    ...(API_KEY && { "X-API-Key": API_KEY }),
-  },
-  next: { revalidate: 3600 },
-});
-  if (!res.ok)
-    throw new Error(`Home API failed: ${res.status} ${res.statusText}`);
- 
-  // `res.json()` is treated as any by TS DOM libs; assert to our envelope
-  const json = (await res.json()) as ApiEnvelope;
-  const root: HomeRoot = json.data ?? json;
+  try {
+    const res = await fetch(url, {
+      headers: {
+        Accept: "application/json",
+        ...(API_KEY && { "X-API-Key": API_KEY }),
+      },
+      next: { revalidate: 3600 },
+    });
+    if (!res.ok) return EMPTY_HOME;
+
+    const json = (await res.json()) as ApiEnvelope;
+    const root: HomeRoot = json.data ?? json;
  
   const featuredRaw =
     root.featured ??
@@ -150,11 +150,14 @@ export async function fetchHomePage(): Promise<HomePageData> {
  
   const postsRaw = root.latest_blog_posts ?? root.blog ?? root.posts;
  
-  const featured = pickItems<ProductRaw>(featuredRaw).map(normalizeProduct);
-  const products = pickItems<ProductRaw>(productsRaw).map(normalizeProduct);
-  const latest_posts = pickItems<BlogRaw>(postsRaw).map(normalizeBlog);
- 
-  return { featured, products, latest_posts };
+    const featured = pickItems<ProductRaw>(featuredRaw).map(normalizeProduct);
+    const products = pickItems<ProductRaw>(productsRaw).map(normalizeProduct);
+    const latest_posts = pickItems<BlogRaw>(postsRaw).map(normalizeBlog);
+
+    return { featured, products, latest_posts };
+  } catch {
+    return EMPTY_HOME;
+  }
 }
  
  

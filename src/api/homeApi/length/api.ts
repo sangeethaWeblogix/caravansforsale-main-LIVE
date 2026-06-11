@@ -3,14 +3,18 @@ const API_KEY = process.env.CFS_API_KEY; // ✅ Add this
 
 
 export const fetchLengthBasedCaravans = async () => {
-  const res = await fetch(`${API_BASE}/length-based-caravans-list`, {
-    next: { revalidate: 86400 },
-     headers: {
+  try {
+    const res = await fetch(`${API_BASE}/length-based-caravans-list`, {
+      next: { revalidate: 86400 },
+      headers: {
         Accept: "application/json",
-        ...(API_KEY && { "X-API-Key": API_KEY }), // ✅ API key added
+        ...(API_KEY && { "X-API-Key": API_KEY }),
       },
-  });
-
-  const json = await res.json();
-  return json?.bands || [];
+    });
+    if (!res.ok) return [];
+    const json = await res.json();
+    return json?.bands || [];
+  } catch {
+    return [];
+  }
 };

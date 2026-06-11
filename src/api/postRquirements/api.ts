@@ -20,17 +20,22 @@ type ListResp = {
 };
 
 export async function fetchRequirements(): Promise<Requirement[]> {
-  if (!API_BASE) throw new Error("Missing NEXT_PUBLIC_CFS_API_BASE");
-  const url = `${API_BASE}/cara_req`; // ← from your screenshot
- const res = await fetch(url, {
-    next: { revalidate: 86400 },
-    headers: {
-      Accept: "application/json",
-      ...(API_KEY && { "X-API-Key": API_KEY }),
-    },
-  });  if (!res.ok) throw new Error(`fetchRequirements failed: ${res.status}`);
-  const json: ListResp = await res.json();
-  return Array.isArray(json?.data) ? json.data : [];
+  if (!API_BASE) return [];
+  const url = `${API_BASE}/cara_req`;
+  try {
+    const res = await fetch(url, {
+      next: { revalidate: 86400 },
+      headers: {
+        Accept: "application/json",
+        ...(API_KEY && { "X-API-Key": API_KEY }),
+      },
+    });
+    if (!res.ok) return [];
+    const json: ListResp = await res.json();
+    return Array.isArray(json?.data) ? json.data : [];
+  } catch {
+    return [];
+  }
 }
 
 // If your backend accepts JSON POST at same endpoint.

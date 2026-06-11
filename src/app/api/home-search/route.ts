@@ -13,21 +13,30 @@ export async function GET(req: NextRequest) {
     ? `${API_BASE}/home_search_new?keyword=${encodeURIComponent(keyword)}`
     : `${API_BASE}/home_search_new`;
 
-  const res = await fetch(url, {
-    headers: {
-      Accept: "application/json",
-      ...(API_KEY && { "X-API-Key": API_KEY }),
-    },
-    cache: "no-store",
-  });
+  try {
+    const res = await fetch(url, {
+      headers: {
+        Accept: "application/json",
+        ...(API_KEY && { "X-API-Key": API_KEY }),
+      },
+      cache: "no-store",
+    });
 
-  if (!res.ok) {
-    return NextResponse.json(
-      { error: `Upstream API failed: ${res.status}` },
-      { status: res.status }
-    );
+    if (!res.ok) {
+      return NextResponse.json(
+        { error: `Upstream API failed: ${res.status}` },
+        { status: res.status }
+      );
+    }
+
+    const text = await res.text();
+    try {
+      const data = JSON.parse(text);
+      return NextResponse.json(data);
+    } catch {
+      return NextResponse.json({ error: "Invalid upstream response" }, { status: 502 });
+    }
+  } catch {
+    return NextResponse.json({ error: "Network error" }, { status: 502 });
   }
-
-  const data = await res.json();
-  return NextResponse.json(data);
 }

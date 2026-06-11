@@ -2,14 +2,18 @@ const API_BASE = process.env.NEXT_PUBLIC_CFS_API_BASE;
 const API_KEY = process.env.CFS_API_KEY; // ✅ Add this
 
 export const fetchUsedCaravansList = async () => {
-  const res = await fetch(`${API_BASE}/used-caravans-list`, {
-    next: { revalidate: 86400 },
-     headers: {
+  try {
+    const res = await fetch(`${API_BASE}/used-caravans-list`, {
+      next: { revalidate: 86400 },
+      headers: {
         Accept: "application/json",
-        ...(API_KEY && { "X-API-Key": API_KEY }), // ✅ API key added
+        ...(API_KEY && { "X-API-Key": API_KEY }),
       },
-  });
-
-  const json = await res.json();
-  return json;
+    });
+    if (!res.ok) return null;
+    const json = await res.json();
+    return json;
+  } catch {
+    return null;
+  }
 };

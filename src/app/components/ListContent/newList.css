@@ -279,7 +279,7 @@ h1.page-title {
   float: left;
   align-items: center;
   width: 44%;
-  margin-right: 25px;
+  margin-right: 0;
   padding: 3px;
   font-size: 14px;
   line-height: 19px;
@@ -362,7 +362,12 @@ h1.page-title {
 }
 
 .new_listing .sticky_spot .vehicleDetailsWithIcons.simple li {
-  width: 40%;
+  width: 100%;
+  float: none;
+}
+
+.new_listing .sticky_spot .vehicleDetailsWithIcons.simple {
+height: auto;
 }
 
 .sticky_spot .other_items {

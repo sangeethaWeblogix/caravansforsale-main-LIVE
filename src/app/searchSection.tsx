@@ -521,7 +521,7 @@ const BANNER_ENABLED = false;
     </a>
   ) : (
     // ✅ BANNER_ENABLED=false ஆனாலும் fallback எப்பவும் காட்டும்
-    <a href="https://www.caravansforsale.com.au/listings/">
+    
       <div className="item-image">
         <Image
           src="/images/banner_top_dk.webp"
@@ -546,7 +546,7 @@ const BANNER_ENABLED = false;
           fetchPriority="high"
         />
       </div>
-    </a>
+    
   )}
 </div>
         <div className="search_requirement_area">
