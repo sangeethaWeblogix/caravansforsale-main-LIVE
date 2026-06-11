@@ -180,7 +180,7 @@ export const fetchListings = async (
 
   // ✅ NEW: AbortController with 15s timeout
   const controller = new AbortController();
-  const timeoutMs = Number(process.env.CFS_API_TIMEOUT_MS) || 8000;
+  const timeoutMs = Number(process.env.CFS_API_TIMEOUT_MS) || 6000;
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
   let res: Response;

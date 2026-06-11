@@ -7,7 +7,6 @@ function normalizeSlug(v: string = "") {
 }
 
 export const revalidate = 3600;
-export const maxDuration = 30;
 
 import ListingsPage from "@/app/components/ListContent/Listings";
 import { parseSlugToFilters } from "../../components/urlBuilder";
