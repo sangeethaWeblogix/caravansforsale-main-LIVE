@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "region-make",
-    "count": 1157,
+    "count": 1158,
     "paths": [
         "australian-capital-territory-state/australian-capital-territory-region/carrera/",
         "australian-capital-territory-state/australian-capital-territory-region/coromal/",
@@ -617,6 +617,7 @@
         "south-australia-state/adelaide-region/roadstar/",
         "south-australia-state/adelaide-region/roma/",
         "south-australia-state/adelaide-region/royal-flair/",
+        "south-australia-state/adelaide-region/safari/",
         "south-australia-state/adelaide-region/slr/",
         "south-australia-state/adelaide-region/snowy-river/",
         "south-australia-state/adelaide-region/spaceline/",
@@ -1161,5 +1162,5 @@
         "western-australia-state/western-australia-outback-south-region/vanguard/",
         "western-australia-state/western-australia-outback-south-region/western/"
     ],
-    "generated_at": "2026-06-10 23:48:48"
+    "generated_at": "2026-06-11 15:35:35"
 }
