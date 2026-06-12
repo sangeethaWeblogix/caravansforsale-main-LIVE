@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import "bootstrap/dist/css/bootstrap.min.css";
-//  import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import "./main.css?=20";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
@@ -60,51 +58,8 @@ export default function HomePage({
   const [usedRegion, setUsedRegion] = useState<Item[]>([]);
   const [adIndex, setAdIndex] = useState<number>(0);
 
-  console.log("add", adIndex);
   const bannerSectionRef = useRef<HTMLDivElement | null>(null);
 
-  //  useEffect(() => {
-  //   async function loadBands() {
-  //     const data = await fetchSleepBands();
-  //     setBands(data);
-  //   }
-  //   loadBands();
-  // }, []);
-  console.log("homestate", stateBands);
-
-  useEffect(() => {
-    if (typeof window === "undefined" || typeof document === "undefined")
-      return;
-
-    const storedIndex = Number.parseInt(
-      window.localStorage.getItem("ad_index") || "0",
-      10,
-    );
-    setAdIndex(Number.isFinite(storedIndex) ? storedIndex : 0);
-
-    const container = bannerSectionRef.current;
-    if (container) {
-      const items = container.querySelectorAll<HTMLElement>(".items");
-      const safeIndex =
-        items.length > 0 ? Math.min(storedIndex, items.length - 1) : 0;
-
-      items.forEach((item, i) => {
-        item.style.display = i === safeIndex ? "block" : "none";
-      });
-
-      const modulo = items.length || 4;
-      const next = (safeIndex + 1) % modulo;
-      window.localStorage.setItem("ad_index", String(next));
-    }
-
-    return () => {
-      if (typeof document !== "undefined") {
-        document.body.style.overflow = "auto";
-      }
-    };
-  }, []);
-
-  // Handle banner ad rotation
   useEffect(() => {
     const storedIndex = Number.parseInt(
       localStorage.getItem("ad_index") || "0",
@@ -122,13 +77,11 @@ export default function HomePage({
         item.style.display = i === safeIndex ? "block" : "none";
       });
 
-      // Increment for next load (wrap at items.length or 4 as fallback)
       const modulo = items.length || 4;
       const next = (safeIndex + 1) % modulo;
       localStorage.setItem("ad_index", String(next));
     }
 
-    // Cleanup to restore scroll
     return () => {
       document.body.style.overflow = "auto";
     };
