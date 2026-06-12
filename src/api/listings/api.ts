@@ -44,6 +44,8 @@ export type Item = {
   condition: string;
   location?: string;
   region?: string;
+  suburb?: string;
+  pincode?: string;
   categories?: string[];
   people?: string;
   make?: string;

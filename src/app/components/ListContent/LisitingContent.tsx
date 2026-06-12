@@ -6,7 +6,8 @@ import "swiper/css/pagination";
 import { Navigation, Pagination } from "swiper/modules";
 import Skelton from "../skelton";
 import Head from "next/head";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { haversineKm } from "@/utils/distanceCalc";
 import { toSlug } from "@/utils/seo/slug";
 import ImageWithSkeleton from "../ImageWithSkeleton";
 import { useEnquiryForm } from "./enquiryform";
@@ -28,6 +29,8 @@ interface Product {
   condition: string;
   location?: string;
   region?: string;
+  suburb?: string;
+  pincode?: string;
   categories?: string[];
   people?: string;
   make?: string;
@@ -98,6 +101,57 @@ interface Props {
   isPremiumLoading: boolean;
   // isNextLoading: boolean;
   pageTitle: string;
+  initialDistances?: Record<string, number>;
+}
+
+function useProductDistances(
+  searchPincode: string | undefined,
+  products: Product[],
+  initialDistances?: Record<string, number>
+): Map<string, number | null> {
+  const [coordsCache, setCoordsCache] = useState<Record<string, [number, number] | null>>({});
+  const [fetchedDistances, setFetchedDistances] = useState<Record<string, number> | null>(null);
+
+  const pincodeKey = useMemo(
+    () =>
+      [...new Set(products.map((p) => p.pincode).filter(Boolean))].sort().join(","),
+    [products]
+  );
+
+  useEffect(() => {
+    if (!searchPincode) return;
+    const productPincodes = products.map((p) => p.pincode).filter((p): p is string => !!p && /^\d{4}$/.test(p));
+    const uniquePincodes = [...new Set([searchPincode, ...productPincodes])];
+    if (uniquePincodes.length === 0) return;
+
+    fetch(`/api/coords?p=${uniquePincodes.join(",")}`)
+      .then((r) => r.json())
+      .then((data: Record<string, [number, number] | null>) => {
+        setCoordsCache(data);
+        const fromCoords = data[searchPincode];
+        if (!fromCoords) return;
+        const computed: Record<string, number> = {};
+        for (const pincode of productPincodes) {
+          const toCoords = data[pincode];
+          if (toCoords) computed[pincode] = haversineKm(fromCoords[0], fromCoords[1], toCoords[0], toCoords[1]);
+        }
+        setFetchedDistances(computed);
+      })
+      .catch(() => {});
+  }, [searchPincode, pincodeKey]);
+
+  return useMemo(() => {
+    const map = new Map<string, number | null>();
+    if (!searchPincode) return map;
+    const source = fetchedDistances ?? initialDistances;
+    if (!source) return map;
+    for (const product of products) {
+      if (!product.pincode) continue;
+      const dist = source[product.pincode];
+      map.set(product.pincode, dist != null ? dist : null);
+    }
+    return map;
+  }, [searchPincode, fetchedDistances, initialDistances, pincodeKey]);
 }
 
 export default function ListingContent({
@@ -117,6 +171,7 @@ export default function ListingContent({
   isMainLoading,
   // isNextLoading,
   pageTitle,
+  initialDistances,
 }: Props) {
   const [swiperActivated, setSwiperActivated] = useState<
     Record<number, boolean>
@@ -135,8 +190,17 @@ export default function ListingContent({
 
   const pathname = usePathname();
 
+  const allProducts = useMemo(
+    () => [...products, ...preminumProducts, ...fetauredProducts, ...exculisiveProducts],
+    [products, preminumProducts, fetauredProducts, exculisiveProducts]
+  );
+  const distanceMap = useProductDistances(
+    currentFilters.suburb ? (currentFilters.pincode as string | undefined) : undefined,
+    allProducts,
+    initialDistances
+  );
 
-  
+
   useEffect(() => {
     try {
       sessionStorage.setItem(
@@ -467,16 +531,15 @@ export default function ListingContent({
 
   const getLocationLabel = (item: Product): string | undefined => {
     if (currentFilters.suburb) {
-      const radius = currentFilters.radius_kms ?? 50;
-      const suburb = currentFilters.suburb.replace(/\b\w/g, (c) => c.toUpperCase());
-      const stateAbbr =
-        AUS_ABBR[(currentFilters.state ?? "").toUpperCase()] ??
-        (currentFilters.state ?? "").toUpperCase();
+      const searchSuburb = (currentFilters.suburb as string).replace(/\b\w/g, (c) => c.toUpperCase());
+      const stateAbbr = AUS_ABBR[(currentFilters.state ?? "").toUpperCase()] ?? (currentFilters.state ?? "").toUpperCase();
       const pincode = currentFilters.pincode ? ` ${currentFilters.pincode}` : "";
-      return `Under ${radius} kms from ${suburb} ${stateAbbr}${pincode}`;
+      const dist = item.pincode ? distanceMap.get(item.pincode) : undefined;
+      const distLabel = dist != null && dist > 0 ? `Under ${dist} kms from ` : "";
+      return `${distLabel}${searchSuburb} ${stateAbbr}${pincode}`;
     }
     if (item.region && currentFilters.region) {
-      return `${item.region.replace(/\b\w/g, (c) => c.toUpperCase())} Region, ${item.location}`;
+      return `${item.region.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())} Region, ${item.location}`;
     }
     return item.location;
   };
@@ -705,6 +768,9 @@ useEffect(() => {
                                     {getLocationLabel(item)}
                                   </p>
                                 )}
+                                <div style={{ display: "none" }} data-suburb={item.suburb}>
+                                  suburb: {item.suburb}
+                                </div>
                               </div>
 
                               {/* --- PRICE SECTION --- */}
@@ -967,6 +1033,9 @@ useEffect(() => {
                               {getLocationLabel(item)}
                             </p>
                           )}
+                          <div style={{ display: "none" }} data-suburb={item.suburb}>
+                            suburb: {item.suburb}
+                          </div>
                         </div>
 
                         <div className="price">

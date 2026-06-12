@@ -65,12 +65,37 @@
   box-shadow: 0 1px 4px rgba(0,0,0,0.2);
   cursor: pointer;
 }
+.cfs-radius-track-wrap {
+  position: relative;
+  padding: 0 9px;
+  box-sizing: border-box;
+}
+.cfs-radius-tick {
+    pointer-events: none;
+    background: #ddd;
+    border: 2px solid #ddd;
+    border-radius: 50%;
+    width: 10px;
+    height: 10px;
+    transition: border-color .15s;
+    display: block;
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
+.cfs-radius-tick.active {
+    border-color: #f37920;
+    background: #f37920;
+}
+.cfs-radius-tick.current {
+    opacity: 0;
+}
 .cfs-radius-range {
   display: flex;
   justify-content: space-between;
   font-size: 12px;
-  color: #666;
-  margin-top: 6px;
+  color: #999;
+  margin-top: 8px;
 }
 
 /* ── Location suggestions ── */

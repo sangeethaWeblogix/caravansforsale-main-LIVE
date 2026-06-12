@@ -6,6 +6,8 @@ import { ensureValidPage } from "@/utils/seo/validatePage";
 import { notFound } from "next/navigation";
 import ApiErrorFallback from "../components/ApiErrorFallback";
 import { fetchProductList, fetchCategoryCounts, fetchMakeCounts } from "@/api/productList/api";
+import { fetchBottomLinks } from "@/api/bottomLinks/api";
+import type { BottomLinksData } from "@/api/bottomLinks/api";
 import { reportGitHubIssue } from "@/lib/reportGitHubIssue";
 
 export const revalidate = 3600;
@@ -63,12 +65,14 @@ export default async function ListingsPage({
   let productListRes;
   let initialCategoryCounts;
   let initialMakeCounts;
+  let bottomLinksData: BottomLinksData | null = null;
   try {
-    [response, productListRes, initialCategoryCounts, initialMakeCounts] = await Promise.all([
+    [response, productListRes, initialCategoryCounts, initialMakeCounts, bottomLinksData] = await Promise.all([
       getCachedListings({ page }),
       fetchProductList(),
       fetchCategoryCounts(),
       fetchMakeCounts(),
+      fetchBottomLinks({}),
     ]);
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
@@ -143,7 +147,7 @@ export default async function ListingsPage({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <Suspense>
-        <Listing initialData={response} page={page} productListData={productListRes} initialCategoryCounts={initialCategoryCounts} initialMakeCounts={initialMakeCounts} />
+        <Listing initialData={response} page={page} productListData={productListRes} initialCategoryCounts={initialCategoryCounts} initialMakeCounts={initialMakeCounts} initialBottomLinksData={bottomLinksData} />
       </Suspense>
     </>
   );
