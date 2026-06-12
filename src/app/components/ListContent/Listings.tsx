@@ -1468,6 +1468,7 @@ const [pagination, setPagination] = useState<Pagination>(() => {
           setIsPremiumLoading={setIsPremiumLoading}
           setIsMainLoading={setIsMainLoading}
           focusSection={modalFocusSection}
+          initialCategoryCounts={sliderCategoryCounts}
         />
       )}
 
@@ -1565,6 +1566,7 @@ const [pagination, setPagination] = useState<Pagination>(() => {
                 setIsFeaturedLoading={setIsFeaturedLoading}
                 setIsPremiumLoading={setIsPremiumLoading}
                 setIsMainLoading={setIsMainLoading}
+                initialCategoryCounts={sliderCategoryCounts}
               />
             )}
           </Suspense>

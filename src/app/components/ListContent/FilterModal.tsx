@@ -128,6 +128,7 @@ interface CaravanFilterProps {
   onFilterChange: (filters: Filters) => void;
   focusSection?: string;
   productListData?: ProductListResponse;
+  initialCategoryCounts?: CategoryCount[];
 }
 
 interface Option {
@@ -167,6 +168,7 @@ const FilterModal: React.FC<CaravanFilterProps> = ({
   setIsLoading,
   focusSection,
   productListData,
+  initialCategoryCounts,
 }) => {
   const router = useRouter();
   const pathname = usePathname();
@@ -223,7 +225,7 @@ const [states, setStates] = useState<StateOption[]>([]);
   const [selectedModelName, setSelectedModelName] = useState<string | null>(
     null,
   );
-  const [categoryCounts, setCategoryCounts] = useState<CategoryCount[]>([]);
+  const [categoryCounts, setCategoryCounts] = useState<CategoryCount[]>(initialCategoryCounts ?? []);
   // ATM modal states
 
   const [tempAtmFrom, setTempAtmFrom] = useState<number | null>(null);
