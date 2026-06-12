@@ -1,18 +1,14 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import "./main.css?=20";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation } from "swiper/modules";
-import "swiper/css";
-import "swiper/css/navigation";
-import Link from "next/link";
+import dynamic from "next/dynamic";
 import Image from "next/image";
-import BlogSection from "../blogSection";
-import PostRequirement from "../postRequirement";
-import Manufactures from "../manufacture";
 import SearchSection from "../searchSection";
 import { type HomeBlogPost } from "@/api/home/api";
+import "./main.css?=20";
+
+const Manufactures = dynamic(() => import("../manufacture"), { ssr: false });
+const BlogSection = dynamic(() => import("../blogSection"), { ssr: false });
 
 interface Item {
   label: string;
