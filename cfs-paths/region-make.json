@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "region-make",
-    "count": 1158,
+    "count": 1159,
     "paths": [
         "australian-capital-territory-state/australian-capital-territory-region/carrera/",
         "australian-capital-territory-state/australian-capital-territory-region/coromal/",
@@ -24,6 +24,7 @@
         "new-south-wales-state/central-coast-region/jayco/",
         "new-south-wales-state/central-coast-region/new-age/",
         "new-south-wales-state/central-coast-region/newlands/",
+        "new-south-wales-state/central-coast-region/olympic/",
         "new-south-wales-state/central-west-region/aussie-fivestar/",
         "new-south-wales-state/central-west-region/ezytrail/",
         "new-south-wales-state/central-west-region/franklin/",
@@ -1162,5 +1163,5 @@
         "western-australia-state/western-australia-outback-south-region/vanguard/",
         "western-australia-state/western-australia-outback-south-region/western/"
     ],
-    "generated_at": "2026-06-12 21:19:52"
+    "generated_at": "2026-06-12 21:36:44"
 }
