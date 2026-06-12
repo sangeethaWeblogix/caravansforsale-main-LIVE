@@ -227,7 +227,8 @@ export default async function Listings({
   const incomingPath = `/listings/${slug.join("/")}`;
   const normalize = (p: string) => p.replace(/\/$/, "").toLowerCase();
   if (normalize(canonicalPath) !== normalize(incomingPath)) {
-    redirect(canonicalPath.endsWith("/") ? canonicalPath : `${canonicalPath}/`);
+    // Any mismatch (dropped segments or wrong order) → 404
+    notFound();
   }
 
   // ───── Location hierarchy validation ─────
