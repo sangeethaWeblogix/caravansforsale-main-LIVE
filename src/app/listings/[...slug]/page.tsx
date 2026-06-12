@@ -25,6 +25,7 @@ import {
   SECTION_TITLES,
 } from "@/app/components/ListContent/StaticLinksUtils";
 import { fetchProductList, fetchCategoryCounts, fetchMakeCounts } from "@/api/productList/api";
+import { calculateDistances } from "@/utils/postcodeCoords";
 import { fetchBottomLinks } from "@/api/bottomLinks/api";
 import type { BottomLinksData } from "@/api/bottomLinks/api";
 import ApiErrorFallback from "@/app/components/ApiErrorFallback";
@@ -460,7 +461,28 @@ export default async function Listings({
     )}
      */}
 
-      <ListingsPage {...filters} initialData={response} linksData={linksData} productListData={productListRes} initialCategoryCounts={initialCategoryCounts} initialMakeCounts={initialMakeCounts} initialBottomLinksData={bottomLinksData} />
+      <ListingsPage
+        {...filters}
+        initialData={response}
+        linksData={linksData}
+        productListData={productListRes}
+        initialCategoryCounts={initialCategoryCounts}
+        initialMakeCounts={initialMakeCounts}
+        initialBottomLinksData={bottomLinksData}
+        initialDistances={await (async () => {
+          if (!filters.suburb || !filters.pincode) return {};
+          const allItems = [
+            ...(response.data?.products ?? []),
+            ...(response.data?.exclusive_products ?? []),
+            ...(response.data?.featured_products ?? []),
+            ...(response.data?.premium_products ?? []),
+          ];
+          const pincodes = allItems
+            .map((p: any) => p.pincode)
+            .filter((p: any): p is string => typeof p === "string" && /^\d{4}$/.test(p));
+          return calculateDistances(filters.pincode as string, pincodes);
+        })()}
+      />
     </>
   );
 }

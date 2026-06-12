@@ -310,13 +310,13 @@ export default function Navbar() {
                 </div>
                 <ul className={openDropdown === "price" ? "submenu open" : "submenu"}>
                   <li><a className="dropdown-item" href="/listings/under-20000/" onClick={closeNav}>Under $20k</a></li>
-                  <li><a className="dropdown-item" href="/listings/between-20000-30000/" onClick={closeNav}>Under $30k</a></li>
-                  <li><a className="dropdown-item" href="/listings/between-30000-40000/" onClick={closeNav}>Under $40k</a></li>
-                  <li><a className="dropdown-item" href="/listings/between-40000-50000/" onClick={closeNav}>Under $50k</a></li>
-                  <li><a className="dropdown-item" href="/listings/between-50000-70000/" onClick={closeNav}>Under $70k</a></li>
-                  <li><a className="dropdown-item" href="/listings/between-70000-100000/" onClick={closeNav}>Under $100k</a></li>
-                  <li><a className="dropdown-item" href="/listings/between-100000-150000/" onClick={closeNav}>Under $150k</a></li>
-                  <li><a className="dropdown-item" href="/listings/between-150000-200000/" onClick={closeNav}>Under $200k</a></li>
+                  <li><a className="dropdown-item" href="/listings/under-30000/" onClick={closeNav}>Under $30k</a></li>
+                  <li><a className="dropdown-item" href="/listings/under-40000/" onClick={closeNav}>Under $40k</a></li>
+                  <li><a className="dropdown-item" href="/listings/under-50000/" onClick={closeNav}>Under $50k</a></li>
+                  <li><a className="dropdown-item" href="/listings/under-70000/" onClick={closeNav}>Under $70k</a></li>
+                  <li><a className="dropdown-item" href="/listings/under-100000/" onClick={closeNav}>Under $100k</a></li>
+                  <li><a className="dropdown-item" href="/listings/under-150000/" onClick={closeNav}>Under $150k</a></li>
+                  <li><a className="dropdown-item" href="/listings/under-200000/" onClick={closeNav}>Under $200k</a></li>
                   <li><a className="dropdown-item" href="/listings/over-200000/" onClick={closeNav}>Over $200k</a></li>
                 </ul>
               </li>
@@ -334,9 +334,9 @@ export default function Navbar() {
                 </div>
                 <ul className={openDropdown === "weight" ? "submenu open" : "submenu"}>
                   <li><a className="dropdown-item" href="/listings/under-1500-kg-atm/" onClick={closeNav}>Under 1500 Kgs</a></li>
-                  <li><a className="dropdown-item" href="/listings/between-1500-kg-to-2500-kg-atm/" onClick={closeNav}>Under 2500 Kgs</a></li>
-                  <li><a className="dropdown-item" href="/listings/between-2500-kg-to-3500-kg-atm/" onClick={closeNav}>Under 3500 Kgs</a></li>
-                  <li><a className="dropdown-item" href="/listings/between-3500-kg-to-4500-kg-atm/" onClick={closeNav}>Under 4500 Kgs</a></li>
+                  <li><a className="dropdown-item" href="/listings/under-2500-kg-atm/" onClick={closeNav}>Under 2500 Kgs</a></li>
+                  <li><a className="dropdown-item" href="/listings/under-3500-kg-atm/" onClick={closeNav}>Under 3500 Kgs</a></li>
+                  <li><a className="dropdown-item" href="/listings/under-4500-kg-atm/" onClick={closeNav}>Under 4500 Kgs</a></li>
                 </ul>
               </li>
 
@@ -352,9 +352,9 @@ export default function Navbar() {
                   By People
                 </div>
                 <ul className={openDropdown === "people" ? "submenu open" : "submenu"}>
-                  <li><a className="dropdown-item" href="/listings/between-1-2-people-sleeping-capacity/" onClick={closeNav}>Under 2 People</a></li>
-                  <li><a className="dropdown-item" href="/listings/between-3-4-people-sleeping-capacity/" onClick={closeNav}>Under 4 People</a></li>
-                  <li><a className="dropdown-item" href="/listings/between-4-6-people-sleeping-capacity/" onClick={closeNav}>Under 6 People</a></li>
+                  <li><a className="dropdown-item" href="/listings/under-2-people-sleeping-capacity/" onClick={closeNav}>Under 2 People</a></li>
+                  <li><a className="dropdown-item" href="/listings/under-4-people-sleeping-capacity/" onClick={closeNav}>Under 4 People</a></li>
+                  <li><a className="dropdown-item" href="/listings/under-6-people-sleeping-capacity/" onClick={closeNav}>Under 6 People</a></li>
                   <li><a className="dropdown-item" href="/listings/over-6-people-sleeping-capacity/" onClick={closeNav}>Over 6 People</a></li>
                 </ul>
               </li>
@@ -372,10 +372,10 @@ export default function Navbar() {
                 </div>
                 <ul className={openDropdown === "length" ? "submenu open" : "submenu"}>
                   <li><a className="dropdown-item" href="/listings/under-12-length-in-feet/" onClick={closeNav}>Under 12ft</a></li>
-                  <li><a className="dropdown-item" href="/listings/between-12-14-length-in-feet/" onClick={closeNav}>Under 14ft</a></li>
-                  <li><a className="dropdown-item" href="/listings/between-15-17-length-in-feet/" onClick={closeNav}>Under 17ft</a></li>
-                  <li><a className="dropdown-item" href="/listings/between-18-20-length-in-feet/" onClick={closeNav}>Under 20ft</a></li>
-                  <li><a className="dropdown-item" href="/listings/between-21-23-length-in-feet/" onClick={closeNav}>Under 23ft</a></li>
+                  <li><a className="dropdown-item" href="/listings/under-14-length-in-feet/" onClick={closeNav}>Under 14ft</a></li>
+                  <li><a className="dropdown-item" href="/listings/under-17-length-in-feet/" onClick={closeNav}>Under 17ft</a></li>
+                  <li><a className="dropdown-item" href="/listings/under-20-length-in-feet/" onClick={closeNav}>Under 20ft</a></li>
+                  <li><a className="dropdown-item" href="/listings/under-23-length-in-feet/" onClick={closeNav}>Under 23ft</a></li>
                   <li><a className="dropdown-item" href="/listings/over-24-length-in-feet/" onClick={closeNav}>Over 24ft</a></li>
                 </ul>
               </li>

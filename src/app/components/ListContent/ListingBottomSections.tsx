@@ -55,6 +55,16 @@ export default function ListingBottomSections({
     if (initialData !== undefined || !inView || !API_BASE) return;
     const params = getBottomLinksParams(filters);
 
+    const hasFilters = !!(
+      filters.make || filters.model || filters.category || filters.condition ||
+      filters.state || filters.region || filters.suburb ||
+      filters.minKg || filters.maxKg ||
+      filters.from_length || filters.to_length ||
+      filters.from_sleep || filters.to_sleep ||
+      filters.from_price || filters.to_price
+    );
+    if (params.toString() === "" && hasFilters) { setData(null); return; }
+
     setIsLoading(true);
     setData(null);
 
@@ -91,6 +101,8 @@ export default function ListingBottomSections({
     setActiveTab(key);
     setVisibleCount(PAGE_SIZE);
   }
+
+  if (!isLoading && sections.length === 0) return null;
 
   return (
     <div ref={sectionRef} className="quick_links_tabs section-padding pt-4">

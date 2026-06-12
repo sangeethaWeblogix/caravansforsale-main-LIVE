@@ -23,6 +23,7 @@ interface Filters {
   region?: string;
   suburb?: string;
   category?: string;
+  condition?: string;
   minKg?: string | number;
   maxKg?: string | number;
   from_length?: string | number;
@@ -34,93 +35,83 @@ interface Filters {
 }
 
 export function getBottomLinksParams(filters: Filters): URLSearchParams {
-  const hasMake    = !!filters.make;
-  const hasModel   = !!filters.model;
-  const hasState   = !!filters.state;
-  const hasRegion  = !!filters.region;
-  const hasSuburb  = !!filters.suburb;
-  const hasCat     = !!filters.category;
-  const hasWeight  = !!(filters.minKg || filters.maxKg);
-  const hasLength  = !!(filters.from_length || filters.to_length);
-  const hasSleep   = !!(filters.from_sleep || filters.to_sleep);
-  const hasPrice   = !!(filters.from_price || filters.to_price);
+  if (filters.suburb) return new URLSearchParams();
 
-  if (hasSuburb) return new URLSearchParams();
+  const hasMake   = !!filters.make;
+  const hasModel  = !!filters.model;
+  const hasState  = !!filters.state;
+  const hasRegion = !!filters.region;
+  const hasCat    = !!filters.category;
+  const hasCond   = !!filters.condition;
+  const hasWeight = !!(filters.minKg || filters.maxKg);
+  const hasLength = !!(filters.from_length || filters.to_length);
+  const hasSleep  = !!(filters.from_sleep || filters.to_sleep);
+  const hasPrice  = !!(filters.from_price || filters.to_price);
 
-  const dims = [hasMake, hasModel, hasState, hasRegion, hasCat, hasWeight, hasLength, hasSleep, hasPrice].filter(Boolean).length;
+  const dims = [hasMake, hasModel, hasState, hasRegion, hasCat, hasCond, hasWeight, hasLength, hasSleep, hasPrice].filter(Boolean).length;
   const p = new URLSearchParams();
 
   if (hasMake && hasModel && dims === 2) {
-    p.set("page_type", "model"); p.set("make", filters.make!); p.set("model", filters.model!);
-    return p;
+    p.set("make", filters.make!); p.set("model", filters.model!); return p;
   }
   if (hasMake && dims === 1) {
-    p.set("page_type", "make"); p.set("make", filters.make!);
-    return p;
+    p.set("make", filters.make!); return p;
   }
   if (hasCat && hasState && hasRegion && dims === 3) {
-    p.set("page_type", "category_region"); p.set("category", filters.category!); p.set("state", filters.state!); p.set("region", filters.region!);
-    return p;
+    p.set("category", filters.category!); p.set("state", filters.state!); p.set("region", filters.region!); return p;
   }
-  if (hasCat && hasState && !hasRegion && dims === 2) {
-    p.set("page_type", "category_state"); p.set("category", filters.category!); p.set("state", filters.state!);
-    return p;
+  if (hasCat && hasState && dims === 2) {
+    p.set("category", filters.category!); p.set("state", filters.state!); return p;
   }
   if (hasCat && dims === 1) {
-    p.set("page_type", "category"); p.set("category", filters.category!);
-    return p;
+    p.set("category", filters.category!); return p;
   }
   if (hasState && hasRegion && dims === 2) {
-    p.set("page_type", "region"); p.set("state", filters.state!); p.set("region", filters.region!);
-    return p;
+    p.set("state", filters.state!); p.set("region", filters.region!); return p;
   }
   if (hasState && dims === 1) {
-    p.set("page_type", "state"); p.set("state", filters.state!);
-    return p;
+    p.set("state", filters.state!); return p;
   }
   if (hasWeight && dims === 1) {
-    p.set("page_type", "weight");
-    const min = filters.minKg ? String(filters.minKg) : "";
-    const max = filters.maxKg ? String(filters.maxKg) : "";
-    if (min && max) { p.set("atm_type", "between"); p.set("min_kg", min); p.set("max_kg", max); }
-    else if (min)   { p.set("atm_type", "over");    p.set("min_kg", min); }
-    else            { p.set("atm_type", "under");   p.set("max_kg", max); }
+    if (filters.minKg) p.set("from_atm", String(filters.minKg));
+    if (filters.maxKg) p.set("to_atm",   String(filters.maxKg));
     return p;
   }
   if (hasLength && dims === 1) {
-    p.set("page_type", "length");
-    const min = filters.from_length ? String(filters.from_length) : "";
-    const max = filters.to_length   ? String(filters.to_length)   : "";
-    if (min && max) { p.set("length_type", "between"); p.set("min_length", min); p.set("max_length", max); }
-    else if (min)   { p.set("length_type", "over");    p.set("min_length", min); }
-    else            { p.set("length_type", "under");   p.set("max_length", max); }
+    if (filters.from_length) p.set("from_length", String(filters.from_length));
+    if (filters.to_length)   p.set("to_length",   String(filters.to_length));
     return p;
   }
   if (hasSleep && dims === 1) {
-    p.set("page_type", "sleep");
-    const min = filters.from_sleep ? String(filters.from_sleep) : "";
-    const max = filters.to_sleep   ? String(filters.to_sleep)   : "";
-    if (min && max) { p.set("sleep_type", "between"); p.set("min_sleep", min); p.set("max_sleep", max); }
-    else if (min)   { p.set("sleep_type", "over");    p.set("min_sleep", min); }
-    else            { p.set("sleep_type", "under");   p.set("max_sleep", max); }
+    if (filters.from_sleep) p.set("from_sleep", String(filters.from_sleep));
+    if (filters.to_sleep)   p.set("to_sleep",   String(filters.to_sleep));
     return p;
   }
   if (hasPrice && dims === 1) {
-    p.set("page_type", "price");
-    const min = filters.from_price ? String(filters.from_price) : "";
-    const max = filters.to_price   ? String(filters.to_price)   : "";
-    if (min && max) { p.set("price_type", "between"); p.set("min_price", min); p.set("max_price", max); }
-    else if (min)   { p.set("price_type", "over");    p.set("min_price", min); }
-    else            { p.set("price_type", "under");   p.set("max_price", max); }
+    if (filters.from_price) p.set("from_price", String(filters.from_price));
+    if (filters.to_price)   p.set("to_price",   String(filters.to_price));
     return p;
   }
 
   return new URLSearchParams();
 }
 
+function hasAnyFilter(filters: Filters): boolean {
+  return !!(
+    filters.make || filters.model || filters.category || filters.condition ||
+    filters.state || filters.region || filters.suburb ||
+    filters.minKg || filters.maxKg ||
+    filters.from_length || filters.to_length ||
+    filters.from_sleep || filters.to_sleep ||
+    filters.from_price || filters.to_price
+  );
+}
+
 export async function fetchBottomLinks(filters: Filters): Promise<BottomLinksData | null> {
   if (!API_BASE) return null;
   const params = getBottomLinksParams(filters);
+  // If params are empty but filters are active, it's an unsupported combo — hide section
+  if (params.toString() === "" && hasAnyFilter(filters)) return null;
   try {
     const res = await fetch(
       `${API_BASE}/listing-internal-links?${params.toString()}`,

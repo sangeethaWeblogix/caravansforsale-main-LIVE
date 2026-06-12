@@ -137,6 +137,7 @@ interface Props extends Filters {
   initialCategoryCounts?: { name: string; slug: string; count: number }[];
   initialMakeCounts?: { name: string; slug: string; count: number }[];
   initialBottomLinksData?: BottomLinksData | null;
+  initialDistances?: Record<string, number>;
 }
 
 /** ------------ Helper Functions ------------ */
@@ -155,6 +156,8 @@ function transformApiItemsToProducts(items: Item[]): Product[] {
     condition: item.condition || "",
     location: item.location,
     region: item.region,
+    suburb: item.suburb,
+    pincode: item.pincode,
     categories: item.categories,
     people: item.people || "",
     make: item.make || "",
@@ -179,6 +182,7 @@ export default function ListingsPage({
   initialCategoryCounts,
   initialMakeCounts,
   initialBottomLinksData,
+  initialDistances,
   ...incomingFilters
 }: Props) {
   console.log("productListData", productListData);
@@ -1501,6 +1505,7 @@ const [pagination, setPagination] = useState<Pagination>(() => {
                       isMainLoading={isMainLoading}
                       isFeaturedLoading={isFeaturedLoading}
                       isPremiumLoading={isPremiumLoading}
+                      initialDistances={initialDistances}
                     />
                   )}
 

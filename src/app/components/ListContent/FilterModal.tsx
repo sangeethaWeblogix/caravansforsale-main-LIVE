@@ -2441,24 +2441,34 @@ fetch(`/api/params-count?${catParams.toString()}`, { signal })
                                   <>
                                     <div
                                       className="cfs-radius-tooltip"
-                                      style={{ left: `calc(${pct}% + ${9 - 0.18 * pct}px)` }}
+                                      style={{ left: `calc(${pct}% + ${18 - 0.36 * pct}px)` }}
                                     >
                                       {radiusKms}km
                                     </div>
-                                    <input
-                                      type="range"
-                                      className="cfs-radius-slider"
-                                      min={0}
-                                      max={RADIUS_OPTIONS.length - 1}
-                                      step={1}
-                                      value={idx}
-                                      list="radius-datalist"
-                                      onChange={(e) => setRadiusKms(RADIUS_OPTIONS[parseInt(e.target.value, 10)])}
-                                      aria-label="Search radius in kilometers"
-                                    />
-                                    <datalist id="radius-datalist">
-                                      {RADIUS_OPTIONS.map((_, i) => <option key={i} value={i} />)}
-                                    </datalist>
+                                    <div className="cfs-radius-track-wrap">
+                                      <input
+                                        type="range"
+                                        className="cfs-radius-slider"
+                                        min={0}
+                                        max={RADIUS_OPTIONS.length - 1}
+                                        step={1}
+                                        value={idx}
+                                        style={{ background: `linear-gradient(to right, #f37920 0%, #f37920 ${pct}%, #ddd ${pct}%, #ddd 100%)` }}
+                                        onChange={(e) => setRadiusKms(RADIUS_OPTIONS[parseInt(e.target.value, 10)])}
+                                        aria-label="Search radius in kilometers"
+                                      />
+                                      {RADIUS_OPTIONS.map((km, i) => {
+                                        const tickPct = (i / (RADIUS_OPTIONS.length - 1)) * 100;
+                                        return (
+                                          <span
+                                            key={i}
+                                            className={`cfs-radius-tick${i < idx ? " active" : i === idx ? " current" : ""}`}
+                                            style={{ left: `calc(${tickPct}% + ${9 - 0.18 * tickPct}px)` }}
+                                            title={`${km}km`}
+                                          />
+                                        );
+                                      })}
+                                    </div>
                                     <div className="cfs-radius-range">
                                       <span>{RADIUS_OPTIONS[0]}km</span>
                                       <span>{RADIUS_OPTIONS[RADIUS_OPTIONS.length - 1].toLocaleString()}km</span>

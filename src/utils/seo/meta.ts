@@ -1,6 +1,9 @@
- import { fetchListings } from "@/api/listings/api";
+import { fetchListings } from "@/api/listings/api";
 import { parseSlugToFilters } from "@/app/components/urlBuilder";
 import type { Metadata } from "next";
+import extraIndexedData from "../../../cfs-paths/extra-indexed.json";
+
+const EXTRA_INDEXED_PATHS = new Set<string>(extraIndexedData.paths);
 
 // ─── Ordered allowed bands (low → high) ───
 
@@ -209,12 +212,9 @@ function getRobotsFromFilters(
   const noindex = { index: false };
   const index   = { index: true };
 
-  // ── Always noindex ──
-if (parsed.model && (parsed.state || parsed.category )) {
-  return noindex;
-}
-  if (parsed.suburb)           return noindex;
-  if (parsed.condition)        return noindex;
+  // ── Always noindex regardless of other filters ──
+  if (parsed.suburb)            return noindex;
+  if (parsed.condition)         return noindex;
   if (parsed.acustom_fromyears) return noindex;
   if (parsed.search ?? parsed.keyword) {
     const hasOtherFilters = !!(
@@ -227,37 +227,43 @@ if (parsed.model && (parsed.state || parsed.category )) {
     return hasOtherFilters ? noindex : index;
   }
 
-  // ── Resolve band ──
+  // ── Static whitelist: 406 extra indexed paths ──
+  const slugPath = slugSegments.join("/") + (slugSegments.length > 0 ? "/" : "");
+  if (EXTRA_INDEXED_PATHS.has(slugPath)) return index;
+
+  // ── Band pages (weight / price / sleep / length) ──
   const band = resolveBand(slugSegments, BASE_URL);
-
   if (band.hasBand) {
-    const hasOtherFilters = !!(parsed.state || parsed.make || parsed.category);
-
-    if (hasOtherFilters) {
-      // band + other filters → always noindex, no canonical override
-      return noindex;
-    }
-
-    // Single band only
-    if (band.allowed) {
-      // Allowed band alone → index ✅
-      return index;
-    } else {
-      // NOT allowed band alone → noindex + canonical to nearest lower allowed band
-      return { index: false, overrideCanonical: band.canonical };
-    }
+    const hasOtherFilters = !!(parsed.make || parsed.model || parsed.state || parsed.region || parsed.category);
+    if (hasOtherFilters) return noindex; // band + anything else → noindex
+    return index;                        // any single band page → index ✅
   }
 
-  if (parsed.category && parsed.make) return noindex;
+  // ── Non-band pages: explicit whitelist ──
+  const hasMake   = !!parsed.make;
+  const hasModel  = !!parsed.model;
+  const hasState  = !!parsed.state;
+  const hasRegion = !!parsed.region;
+  const hasCat    = !!parsed.category;
+  const dims      = [hasMake, hasModel, hasState, hasRegion, hasCat].filter(Boolean).length;
 
-  // ── No band filter — count remaining filters ──
-  let filterCount = 0;
-  if (parsed.state)    filterCount += 1;
-  if (parsed.category) filterCount += 1;
+  // Single filter → index
+  if (dims === 1) return index; // state | region | category | make (model alone not a real URL)
 
-  if (filterCount > 2) return noindex;
+  // Make + Model (specific model page) → index
+  if (dims === 2 && hasMake && hasModel) return index;
 
-  return index;
+  // Category + State → index
+  if (dims === 2 && hasCat && hasState && !hasRegion) return index;
+
+  // State + Region → index
+  if (dims === 2 && hasState && hasRegion && !hasCat) return index;
+
+  // Category + State + Region → index
+  if (dims === 3 && hasCat && hasState && hasRegion) return index;
+
+  // Everything else → noindex
+  return noindex;
 }
 
 export async function metaFromSlug(
