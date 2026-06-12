@@ -39,14 +39,7 @@
   padding: 10px 0px;
 }
 .dropdown-toggle::after {
-  position: relative;
-  top: 3px;
-  opacity: 1;
-  content: "";
-  font-weight: 900;
-  font-family: "Font Awesome 6 Free";
-  border: 0;
-  font-size: 80%;
+  display: none;
 }
 .sidenav {
   height: 100%;
@@ -243,15 +236,17 @@ input[type="checkbox"]:checked ~ .menuIconToggle > .dia.p-2 {
 
 .sidebar-navigation ul li a.drop_down:after,
 .sidebar-navigation ul li div.drop_down:after {
-  opacity: 1;
-  content: "";
-  border: 0;
-  font-family: "Font Awesome 6 Free";
-  font-size: 80%;
-  font-weight: 900;
+  content: "";
+  display: block;
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid #555;
+  border-bottom: 2px solid #555;
+  transform: rotate(45deg);
   position: absolute;
-  top: 30%;
-  right: 20px;
+  top: 36%;
+  right: 22px;
+  transition: transform 0.3s ease;
 }
 
 .sidebar-navigation ul li .drop_down {
@@ -259,7 +254,7 @@ input[type="checkbox"]:checked ~ .menuIconToggle > .dia.p-2 {
 }
 
 .sidebar-navigation ul li.selected a.drop_down::after {
-  transform: rotate(180deg);
+  transform: rotate(-135deg);
 }
 
 .sidebar-navigation ul li a em,
@@ -393,16 +388,7 @@ input[type="checkbox"]:checked ~ .menuIconToggle > .dia.p-2 {
   display: block;
 }
 
-.sidebar-navigation ul li .drop_down::after {
-  content: ""; /* ▼ */
-  font-family: "Font Awesome 6 Free";
-  font-weight: 900;
-  font-size: 80%;
-  position: absolute;
-  top: 30%;
-  right: 20px;
-  transition: transform 0.3s ease;
-}
+/* drop_down arrow handled above */
 
 .mobile_cta {
   border-top: 1px solid #bebebe;
@@ -431,7 +417,7 @@ input[type="checkbox"]:checked ~ .menuIconToggle > .dia.p-2 {
 
 /* Rotate arrow — only the direct drop_down child of a selected li */
 .sidebar-navigation ul li.selected > .drop_down::after {
-  transform: rotate(180deg);
+  transform: rotate(-135deg);
 }
 
 /* ── Submenu level 1 (makes, types, State/Region headers, price, etc.) ── */

@@ -4,8 +4,6 @@
   import "bootstrap/dist/css/bootstrap.min.css";
   import "bootstrap-icons/font/bootstrap-icons.css";
   import "./globals.css?=37";
-  import "@fortawesome/fontawesome-free/css/fontawesome.min.css";
-  import "@fortawesome/fontawesome-free/css/solid.min.css";
   import Navbar from "./navbar/Navbar";
   import NavbarSkeleton from "./navbar/NavbarSkeleton";
   import Footer from "./footer/Footer";
