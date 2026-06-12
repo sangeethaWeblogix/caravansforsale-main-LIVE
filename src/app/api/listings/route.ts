@@ -7,8 +7,12 @@ export async function GET(request: NextRequest) {
   const params = request.nextUrl.searchParams.toString();
   const url = `${API_BASE}/new_optimize_code?${params}`;
 
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 30000);
+
   try {
     const res = await fetch(url, {
+      signal: controller.signal,
       headers: {
         "Cache-Control": "no-cache",
         Accept: "application/json",
@@ -16,13 +20,17 @@ export async function GET(request: NextRequest) {
       },
     });
 
+    clearTimeout(timeoutId);
+
     if (!res.ok) {
       return NextResponse.json({ success: false }, { status: res.status });
     }
 
     const data = await res.json();
     return NextResponse.json(data);
-  } catch {
-    return NextResponse.json({ success: false }, { status: 500 });
+  } catch (err: any) {
+    clearTimeout(timeoutId);
+    const status = err?.name === "AbortError" ? 504 : 500;
+    return NextResponse.json({ success: false }, { status });
   }
 }

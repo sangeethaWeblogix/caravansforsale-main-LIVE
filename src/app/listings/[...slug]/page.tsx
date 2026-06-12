@@ -327,9 +327,12 @@ export default async function Listings({
       notFound();
     }
     const isBackend =
-      msg.startsWith("Request timeout") ||
-      msg.startsWith("API failed:") ||
-      msg.startsWith("Invalid API response");
+      msg.startsWith("API no response") ||
+      msg.startsWith("Backend server error") ||
+      msg.startsWith("Missing or invalid API key") ||
+      msg.startsWith("API endpoint not found") ||
+      msg.startsWith("Invalid API response") ||
+      msg.startsWith("API failed:");
     const errorSource = isBackend ? "BACKEND" : "FRONTEND";
     console.error(`[${errorSource} ERROR] Slug listings page failed:`, msg);
     reportGitHubIssue({

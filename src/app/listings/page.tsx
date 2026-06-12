@@ -73,9 +73,12 @@ export default async function ListingsPage({
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
     const isBackend =
-      msg.startsWith("Request timeout") ||
-      msg.startsWith("API failed:") ||
-      msg.startsWith("Invalid API response");
+      msg.startsWith("API no response") ||
+      msg.startsWith("Backend server error") ||
+      msg.startsWith("Missing or invalid API key") ||
+      msg.startsWith("API endpoint not found") ||
+      msg.startsWith("Invalid API response") ||
+      msg.startsWith("API failed:");
     const errorSource = isBackend ? "BACKEND" : "FRONTEND";
     console.error(`[${errorSource} ERROR] Listings page failed:`, msg);
     reportGitHubIssue({

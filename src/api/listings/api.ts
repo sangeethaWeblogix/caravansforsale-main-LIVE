@@ -178,9 +178,8 @@ export const fetchListings = async (
     ? `/api/listings?${params.toString()}`
     : `${API_BASE}/new_optimize_code?${params.toString()}`;
 
-  // ✅ NEW: AbortController with 15s timeout
   const controller = new AbortController();
-  const timeoutMs = Number(process.env.CFS_API_TIMEOUT_MS) || 6000;
+  const timeoutMs = Number(process.env.CFS_API_TIMEOUT_MS) || 30000;
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
   let res: Response;
@@ -198,26 +197,33 @@ export const fetchListings = async (
   } catch (err: any) {
     clearTimeout(timeoutId);
 
-    // ✅ Timeout vs network error — differentiate
     if (err?.name === "AbortError") {
-      console.error("[BACKEND ERROR] Timeout after 15s — server did not respond:", url);
-      throw new Error("Request timeout");
+      console.error("[BACKEND ERROR] API no response — timed out after 30s:", url);
+      throw new Error("API no response — timed out after 30s");
     }
 
     // iOS Safari "Load failed" — network offline or CORS
-    console.error("[FRONTEND ERROR] Network error — client cannot reach server:", err?.message, url);
-    throw new Error("Network error: " + (err?.message ?? "Load failed"));
+    console.error("[FRONTEND ERROR] Fetch failed — client cannot reach server:", err?.message, url);
+    throw new Error("Fetch failed: " + (err?.message ?? "Load failed"));
   }
 
   clearTimeout(timeoutId);
   console.log("[list API] GET", res.url, res.status);
 
-  // console.log("[list API] GET", res.url);
-
   if (!res.ok) {
     const errText = await res.text();
     console.error(`[BACKEND ERROR] HTTP ${res.status} from API:`, errText.substring(0, 300));
-    throw new Error(`API failed: ${res.status}`);
+
+    if (res.status === 401 || res.status === 403) {
+      throw new Error("Missing or invalid API key");
+    }
+    if (res.status === 404) {
+      throw new Error("API endpoint not found (404)");
+    }
+    if (res.status >= 500) {
+      throw new Error(`Backend server error (HTTP ${res.status})`);
+    }
+    throw new Error(`API failed: HTTP ${res.status}`);
   }
 
   const raw = await res.text();
@@ -226,7 +232,7 @@ export const fetchListings = async (
     json = JSON.parse(raw);
   } catch {
     console.error("[BACKEND ERROR] Invalid JSON from API:", raw.substring(0, 300));
-    throw new Error("Invalid API response");
+    throw new Error("Invalid API response — unexpected non-JSON reply");
   }
 
   // Return all useful sections from API

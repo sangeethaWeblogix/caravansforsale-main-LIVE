@@ -1722,17 +1722,12 @@ const [states, setStates] = useState<StateOption[]>([]);
     if (lastOptimizeRef.current[type] === value) return;
     lastOptimizeRef.current[type] = value;
 
-    const url = new URL(
-      "https://admin.caravansforsale.com.au/wp-json/cfs/v1/new_optimize_code",
-    );
-    url.searchParams.set(type, value);
+    const params = new URLSearchParams();
+    params.set(type, value);
 
-    fetch(url.toString(), {
+    fetch(`/api/listings?${params.toString()}`, {
       method: "GET",
       keepalive: true,
-       headers: {
-      "X-API-Key": "m@rketplace$2026", // ✅ Added
-    },
     }).catch(() => {});
   };
 
