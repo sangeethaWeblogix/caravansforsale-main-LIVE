@@ -21,6 +21,14 @@ export const metadata: Metadata = {
     title: "Caravans for Sale in Australia",
     description:
         "Browse caravans for sale across Australia. Compare prices on off-road, hybrid, pop top, touring, luxury models with size, weight & sleeping capacity.",
+    images: [
+      {
+        url: "https://www.caravansforsale.com.au/images/cfs-logo.png",
+        width: 800,
+        height: 600,
+        alt: "Caravans for Sale Australia",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",

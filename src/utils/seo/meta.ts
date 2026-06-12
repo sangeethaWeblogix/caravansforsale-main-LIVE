@@ -293,6 +293,16 @@ export async function metaFromSlug(
       robots: { index: robotsResult.index },
       verification: { google: "6tT6MT6AJgGromLaqvdnyyDQouJXq0VHS-7HC194xEo" },
       alternates: { canonical, languages: {}, media: {} },
+      openGraph: {
+        images: [
+          {
+            url: "https://www.caravansforsale.com.au/images/cfs-logo.png",
+            width: 800,
+            height: 600,
+            alt: "Caravans for Sale Australia",
+          },
+        ],
+      },
     };
   }
 
@@ -362,7 +372,19 @@ export async function metaFromSlug(
       google: "6tT6MT6AJgGromLaqvdnyyDQouJXq0VHS-7HC194xEo",
     },
     alternates: { canonical: finalCanonical, languages: {}, media: {} },
-    openGraph: { title, description, url: canonical },
-    twitter: { title, description },
+    openGraph: {
+      title,
+      description,
+      url: canonical,
+      images: [
+        {
+          url: "https://www.caravansforsale.com.au/images/cfs-logo.png",
+          width: 800,
+          height: 600,
+          alt: "Caravans for Sale Australia",
+        },
+      ],
+    },
+    twitter: { card: "summary_large_image", title, description },
   };
 }

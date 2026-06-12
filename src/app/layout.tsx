@@ -13,7 +13,6 @@
   import ScrollToTop from "./navigation/ScrollToTopGlobal";
   import UTMTracker from "./UTMTracker";
   // import NextTopLoader from "nextjs-toploader";
-import ThemeRegistry from './components/ThemeRegistry';
 import NavigationHistory from "@/components/NavigationHistory";
 import { BannerProvider } from "@/components/BannerHandler";
 
@@ -110,11 +109,9 @@ const gtmServer = "https://gtm.caravansforsale.com.au";
           height={3}
           showSpinner={false}
         /> */}
- <ThemeRegistry>
           <BannerProvider>
           {children}
           </BannerProvider>
-        </ThemeRegistry>
                     </main>
           <Footer />
         </body>

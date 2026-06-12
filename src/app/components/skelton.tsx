@@ -1,5 +1,5 @@
 "use client";
-import "./skeleton.css?=1";
+import "./skeleton.css?=4";
 
 export default function ListingSkeleton({ count = 8 }: { count?: number }) {
   return (

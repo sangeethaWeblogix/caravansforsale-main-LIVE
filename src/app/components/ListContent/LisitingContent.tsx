@@ -645,7 +645,7 @@ const [currentBanner, setCurrentBanner] = useState<typeof rightBanners[0] | null
                 <div className="row g-3">
                   {mergedProducts.map((item, index) => {
                     const href = getHref(item);
-                    const isPriority = index < 5;
+                    const isPriority = index === 0;
                     // const resizedBase = getResizedBase(item);
                     // const imgs = lazyImages[item.id] ?? [];
                     const firstImage = getFirstImage(item);
@@ -972,7 +972,7 @@ const [currentBanner, setCurrentBanner] = useState<typeof rightBanners[0] | null
             <div className="other_items">
               {exculisiveProducts.map((item, index) => {
                 const href = getHref(item);
-                const isPriority = index < 5;
+                const isPriority = index === 0;
                 // const resizedBase = getResizedBase(item);
                 // const imgs = lazyImages[item.id] ?? [];
                 const firstImage = getFirstImage(item);
