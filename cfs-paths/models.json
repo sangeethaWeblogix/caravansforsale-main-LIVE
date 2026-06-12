@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "models",
-    "count": 2856,
+    "count": 2857,
     "paths": [
         "active/storm/",
         "adria/action/",
@@ -1602,6 +1602,7 @@
         "network-rv/touring-terrain-22-family/",
         "network-rv/victory-196/",
         "network-rv/victory-trophy-series/",
+        "new-age/19ft-manta-ray/",
         "new-age/big-red/",
         "new-age/big-red-br20e-slider-my25/",
         "new-age/big-red-21/",
@@ -2860,5 +2861,5 @@
         "zone-rv/venture-20-6/",
         "zone-rv/znu004/"
     ],
-    "generated_at": "2026-06-12 16:55:32"
+    "generated_at": "2026-06-12 20:19:22"
 }
