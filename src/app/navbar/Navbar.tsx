@@ -147,13 +147,11 @@ export default function Navbar() {
                 onChange={toggleNav}
               />
 
-              {mounted && (
-                <label htmlFor="openSideMenu" className="menuIconToggle">
-                  <div className="hamb-line dia p-1"></div>
-                  <div className="hamb-line hor"></div>
-                  <div className="hamb-line dia p-2"></div>
-                </label>
-              )}
+              <label htmlFor="openSideMenu" className="menuIconToggle">
+                <div className="hamb-line dia p-1"></div>
+                <div className="hamb-line hor"></div>
+                <div className="hamb-line dia p-2"></div>
+              </label>
             </div>
           </div>
         </div>

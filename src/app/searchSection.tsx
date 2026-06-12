@@ -1,10 +1,7 @@
 
   // src/app/components/SearchSection.tsx
   "use client";
-  import "bootstrap/dist/css/bootstrap.min.css";
-  //  import "bootstrap/dist/js/bootstrap.bundle.min.js";
   import React, { useEffect, useRef, useState } from "react";
-  import './home/main.css'
   import Link from "next/link";
   import Image from "next/image";
   import { useRouter } from "next/navigation";
@@ -17,7 +14,6 @@
     fetchHomeSearchList, // GET /home_search (base list)
     fetchKeywordSuggestions, // GET /home_search/?keyword=<q> (typed list)
   } from "@/api/homeSearch/api";
-  import "../app/home/main.css";
   import { fetchSleepBands } from "@/api/homeApi/sleep/api";
   import { fetchRegion } from "@/api/homeApi/region/api";
   import { fetchManufactures } from "@/api/homeApi/manufacture/api";
@@ -108,7 +104,6 @@
     const [location, setLocation] = useState("");
     const [conditionValue, setConditionValue] = useState("");
   const stateBandsLoading = stateBands.length === 0;
-  console.log("homestate", stateBands)
     const isSearchEnabled = category || location || conditionValue;
     const [activeIndex, setActiveIndex] = useState(0);
 
@@ -282,7 +277,6 @@
       }, 50);
     };
 
-    console.log("navigating ", navigateBySelect);
 
     // ------------- base list (first click) -------------
     const loadBaseOnce = async () => {
@@ -432,8 +426,6 @@
     homeBanners.length > 0
       ? homeBanners[currentHomeBannerIndex % homeBanners.length]
       : null;
-    console.log("homeBanners", homeBanners)
-      console.log("matchedBanners", matchedBanners)
 
 const BANNER_ENABLED = false;
 

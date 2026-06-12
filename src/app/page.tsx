@@ -13,6 +13,8 @@ import { fetchRequirements } from "@/api/postRquirements/api";
 
  import { fetchHomePage, type HomeBlogPost } from "@/api/home/api";
 
+export const revalidate = 86400;
+
   export const metadata: Metadata = {
     title: {
       default: "Caravans For Sale – Australia’s Marketplace for New & Used Caravans",
@@ -98,9 +100,6 @@ export default async function Page() {
          fetchHomePage(),
 
    ]);
-  console.log("blogPosts:", homeblog.latest_posts);
-
-  
    return (
      <>
        <script

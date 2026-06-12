@@ -7,6 +7,7 @@
   import "@fortawesome/fontawesome-free/css/fontawesome.min.css";
   import "@fortawesome/fontawesome-free/css/solid.min.css";
   import Navbar from "./navbar/Navbar";
+  import NavbarSkeleton from "./navbar/NavbarSkeleton";
   import Footer from "./footer/Footer";
   import React, { Suspense } from "react";
   import { Metadata } from "next";
@@ -98,7 +99,7 @@ const gtmServer = "https://gtm.caravansforsale.com.au";
 <Suspense fallback={null}>
   <NavigationHistory />
 </Suspense>
-<Suspense fallback={null}>
+<Suspense fallback={<NavbarSkeleton />}>
   <Navbar />
 </Suspense>
                   <Suspense fallback={null}>
