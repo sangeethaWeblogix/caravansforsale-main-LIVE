@@ -567,12 +567,6 @@ const [currentBanner, setCurrentBanner] = useState<typeof rightBanners[0] | null
   const shuffled = shuffleArray(rightBanners);
   setCurrentBanner(shuffled[0] ?? null);
 }, [rightBanners]);
-
-// rightBanners change ana (route change etc) - reshuffle
-useEffect(() => {
-  const shuffled = shuffleArray(rightBanners);
-  setCurrentBanner(shuffled[0] ?? null);
-}, [rightBanners]);
   return (
     <>
       <Head>
@@ -989,7 +983,6 @@ useEffect(() => {
                     ? [firstImage, firstImage]
                     : [];
 
-                console.log("imgs", firstImage);
                 return (
                   <a
                     key={index}

@@ -15,7 +15,7 @@ import { flushSync } from "react-dom";
 import { v4 as uuidv4 } from "uuid";
 import "./newList.css?=301";
 import "./top-filters.css?=496";
- import ListingSkeleton from "../skelton";
+import ListingSkeleton, { SidebarListingSkeleton } from "../skelton";
 import {
   redirect,
   usePathname,
@@ -185,8 +185,6 @@ export default function ListingsPage({
   initialDistances,
   ...incomingFilters
 }: Props) {
-  console.log("productListData", productListData);
-
   const DEFAULT_RADIUS = 50 as const;
   const [openModal, setOpenModal] = useState(false);
   const [filters, setFilters] = useState<Filters>({});
@@ -206,8 +204,6 @@ export default function ListingsPage({
   const [nextPageData, setNextPageData] = useState<ApiResponse | null>(null);
   const isSliderFetchingRef = useRef(false);
   const [clickid, setclickid] = useState<string | null>(null);
-  const [isRestored, setIsRestored] = useState(false);
-  console.log(isRestored);
 
   // ✅ FIX: Single ref to track whether we've consumed initialData.
   // No state variable — avoids circular dep with loadListings/useEffect.
@@ -414,8 +410,7 @@ const [pagination, setPagination] = useState<Pagination>(() => {
   };
 
   const updateURLWithFilters = useCallback(
-    (nextFilters: Filters, pageNum: number, clickidParam?: string) => {
-      console.log(pageNum);
+    (nextFilters: Filters, _pageNum: number, clickidParam?: string) => {
       const slug = buildSlugFromFilters(nextFilters);
       const query = new URLSearchParams();
 
@@ -504,11 +499,6 @@ const [pagination, setPagination] = useState<Pagination>(() => {
               filtersRef.current,
             );
             if (response?.success) {
-              console.log(
-                "Prefetch success for page:",
-                pagination.current_page + 1,
-              );
-              console.log("responsepre", response);
               setNextPageData(response);
               setIsNextLoading(true);
             } else {
@@ -590,8 +580,6 @@ const [pagination, setPagination] = useState<Pagination>(() => {
 
       try {
         const safeFilters = normalizeSearchFromMake(appliedFilters);
-        console.log("appp1", appliedFilters);
-        console.log("app", safeFilters.orderby);
 
         const radiusNum = asNumber(safeFilters.radius_kms);
         const radiusParam =
@@ -765,7 +753,6 @@ const [pagination, setPagination] = useState<Pagination>(() => {
   }, [pagination, loadListings]);
 
   const restoredOnceRef = useRef(false);
-  console.log("paginationapi", pagination);
 
   /* ---- SINGLE source of truth: URL -> fetch ---- */
   const searchKey = searchParams.toString();
@@ -861,10 +848,12 @@ const [pagination, setPagination] = useState<Pagination>(() => {
 
   const handleFilterChange = useCallback(
     async (newFilters: Filters) => {
-      setIsLoading(true);
-      setIsMainLoading(true);
-      setIsFeaturedLoading(true);
-      setIsPremiumLoading(true);
+      flushSync(() => {
+        setIsLoading(true);
+        setIsMainLoading(true);
+        setIsFeaturedLoading(true);
+        setIsPremiumLoading(true);
+      });
 
       const mergedFilters = mergeFiltersSafely(filtersRef.current, newFilters);
       if ("orderby" in newFilters && !newFilters.orderby) {
@@ -895,15 +884,6 @@ const [pagination, setPagination] = useState<Pagination>(() => {
     },
     [updateURLWithFilters, loadListings],
   );
-
-  useEffect(() => {
-    console.log("Loading state:", {
-      isLoading,
-      isMainLoading,
-      isFeaturedLoading,
-      isPremiumLoading,
-    });
-  }, [isLoading, isMainLoading, isFeaturedLoading, isPremiumLoading]);
 
   const isPopStateRef = useRef(false);
 
@@ -967,12 +947,9 @@ const [pagination, setPagination] = useState<Pagination>(() => {
       restoredOnceRef.current = true;
       setPagination((p) => ({ ...p, current_page: savedPage }));
       setUrlParams({ clickid });
-      loadListings(savedPage, filtersRef.current, true).finally(() => {
-        setIsRestored(true);
-      });
+      loadListings(savedPage, filtersRef.current, true);
     } else {
       setUrlParams({ clickid });
-      setIsRestored(true);
     }
   }, [clickid]);
 
@@ -1116,8 +1093,6 @@ const [pagination, setPagination] = useState<Pagination>(() => {
   };
 
   const handleSliderFilterSelect = async (newFilters: Partial<Filters>) => {
-    console.log("🔥 slider filter change:", newFilters);
-
     const next: Filters = { ...filtersRef.current };
     (Object.keys(newFilters) as (keyof Filters)[]).forEach((key) => {
       const val = newFilters[key];
@@ -1158,14 +1133,14 @@ const [pagination, setPagination] = useState<Pagination>(() => {
       }
     }
 
-    console.log("🔥 next filters:", next);
-
     filtersRef.current = next;
     setFilters({ ...next });
 
-    setIsMainLoading(true);
-    setIsFeaturedLoading(true);
-    setIsPremiumLoading(true);
+    flushSync(() => {
+      setIsMainLoading(true);
+      setIsFeaturedLoading(true);
+      setIsPremiumLoading(true);
+    });
     setPagination({
       current_page: 1,
       total_pages: 1,
@@ -1188,17 +1163,6 @@ const [pagination, setPagination] = useState<Pagination>(() => {
         typeof radiusNum === "number" && !isNaN(radiusNum) && radiusNum !== 50
           ? String(radiusNum)
           : undefined;
-
-      console.log("🔥 FINAL next filters before fetch:", {
-        make: next.make,
-        model: next.model,
-        category: next.category,
-        state: next.state,
-        from_price: next.from_price,
-        to_price: next.to_price,
-        minKg: next.minKg,
-        maxKg: next.maxKg,
-      });
 
       const response: ApiResponse = await fetchListings({
         ...next,
@@ -1260,9 +1224,6 @@ const [pagination, setPagination] = useState<Pagination>(() => {
       setIsPremiumLoading(false);
     }
   };
-
-  console.log("initialData states:", initialData?.data?.states?.length);
-  console.log("stateOptions state:", stateOptions?.length);
 
   const activeFilterCount = useMemo(() => {
     let count = 0;
@@ -1481,9 +1442,14 @@ const [pagination, setPagination] = useState<Pagination>(() => {
               isMainLoading ||
               isFeaturedLoading ||
               isPremiumLoading ? (
-                <div className="col-lg-8">
-                  <ListingSkeleton count={8} />
-                </div>
+                <>
+                  <div className="col-lg-9">
+                    <ListingSkeleton count={8} />
+                  </div>
+                  <div className="col-lg-3 d-none d-lg-block">
+                    <SidebarListingSkeleton />
+                  </div>
+                </>
               ) : (
                 <>
                   {(products.length > 0 ||
