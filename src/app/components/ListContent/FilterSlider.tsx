@@ -194,6 +194,7 @@ const [states, setStates] = useState<StateOption[]>(
 
   const didFetchMakeRef = useRef(false);
   const suburbReqIdRef = useRef(0);
+  const suburbDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const toTitleCase = (str: string): string =>
     str.replace(/\b\w/g, (c) => c.toUpperCase());
@@ -1105,31 +1106,26 @@ const [states, setStates] = useState<StateOption[]>(
                           }
 
                           const suburb = formattedValue.split(" ")[0];
-                          const reqId = ++suburbReqIdRef.current;
                           setSuburbLocLoading(true);
-                          fetchLocations(suburb)
-                            .then((data) => {
-                              if (reqId !== suburbReqIdRef.current) return;
-                              const filtered = data.filter((item) => {
-                                const searchValue =
-                                  formattedValue.toLowerCase();
-                                return (
-                                  item.short_address
-                                    .toLowerCase()
-                                    .includes(searchValue) ||
-                                  item.address
-                                    .toLowerCase()
-                                    .includes(searchValue) ||
-                                  (item.postcode &&
-                                    item.postcode
-                                      .toString()
-                                      .includes(searchValue))
-                                );
-                              });
-                              setSuburbLocationSuggestions(filtered);
-                              setSuburbLocLoading(false);
-                            })
-                            .catch(() => setSuburbLocLoading(false));
+                          if (suburbDebounceRef.current) clearTimeout(suburbDebounceRef.current);
+                          suburbDebounceRef.current = setTimeout(() => {
+                            const reqId = ++suburbReqIdRef.current;
+                            fetchLocations(suburb)
+                              .then((data) => {
+                                if (reqId !== suburbReqIdRef.current) return;
+                                const filtered = data.filter((item) => {
+                                  const searchValue = formattedValue.toLowerCase();
+                                  return (
+                                    item.short_address.toLowerCase().includes(searchValue) ||
+                                    item.address.toLowerCase().includes(searchValue) ||
+                                    (item.postcode && item.postcode.toString().includes(searchValue))
+                                  );
+                                });
+                                setSuburbLocationSuggestions(filtered);
+                                setSuburbLocLoading(false);
+                              })
+                              .catch(() => setSuburbLocLoading(false));
+                          }, 300);
                         }}
                         onBlur={() =>
                           setTimeout(() => setShowSuburbSuggestions(false), 150)
