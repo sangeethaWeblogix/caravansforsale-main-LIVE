@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "slug or all required" }, { status: 400 });
     }
 
-    const path = `/product/${slug}`;
+    const path = `/product/${slug}/`;
     revalidatePath(path, "page");
     return NextResponse.json({ revalidated: true, path });
   } catch {
