@@ -17,7 +17,7 @@ const fetchProductDetail = cache(async (slug: string) => {
     const res = await fetch(
       `${API_BASE}/product-detail-new/?slug=${encodeURIComponent(slug)}`,
       {
-        next: { revalidate: 3600, tags: [`product-detail-${slug}`] },
+        next: { revalidate: 3600 },
         headers: {
           Accept: "application/json",
           ...(API_KEY && { "X-API-Key": API_KEY }),

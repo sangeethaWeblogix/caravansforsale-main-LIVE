@@ -1,4 +1,4 @@
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 
 // Called by backend admin when a product is updated/created.
@@ -35,9 +35,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "slug or all required" }, { status: 400 });
     }
 
-    const path = `/product/${slug}/`;
-    revalidatePath(path);
-    revalidateTag(`product-detail-${slug}`);
+    const path = `/product/${slug}`;
+    revalidatePath(path, "page");
     return NextResponse.json({ revalidated: true, path });
   } catch {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
