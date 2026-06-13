@@ -208,6 +208,10 @@ export default function ListingsPage({
   // ✅ FIX: Single ref to track whether we've consumed initialData.
   // No state variable — avoids circular dep with loadListings/useEffect.
   const hasConsumedInitialDataRef = useRef(false);
+  // Track the last initialData reference we applied — used to detect server re-renders on filter navigation.
+  const prevInitialDataRef = useRef<ApiResponse | null>(initialData ?? null);
+  // When set true, the URL-change effect skips the client fetch (initialData sync already applied).
+  const shouldSkipFetchRef = useRef(false);
  // Initialize state with initialData (always provided now — page.tsx always fetches)
   const [products, setProducts] = useState<Product[]>(
     initialData?.data?.products
@@ -765,6 +769,31 @@ const [pagination, setPagination] = useState<Pagination>(() => {
     if (prev !== next) incomingFiltersRef.current = incomingFilters;
   }, [incomingFilters]);
 
+  // Sync state from server when initialData changes (ISR provided new data on filter navigation).
+  // This eliminates the duplicate client-side fetch after router.push().
+  useEffect(() => {
+    if (!initialData || initialData === prevInitialDataRef.current) return;
+    if (!hasConsumedInitialDataRef.current) return; // First mount — useState handles it
+    prevInitialDataRef.current = initialData;
+    shouldSkipFetchRef.current = true;
+
+    const productsList = initialData.data?.products ?? [];
+    const validProducts = Array.isArray(productsList) ? productsList.filter((p) => p != null) : [];
+    setProducts(validProducts.length > 0 ? transformApiItemsToProducts(validProducts) : []);
+    setFeaturedProducts(transformApiItemsToProducts(initialData.data?.featured_products ?? []));
+    setPremiumProducts(transformApiItemsToProducts(initialData.data?.premium_products ?? []));
+    setExculisiveProducts(transformApiItemsToProducts(initialData.data?.exclusive_products ?? []));
+    setEmptyProduct(transformApiItemsToProducts(initialData.data?.emp_exclusive_products ?? []));
+    setCategories(initialData.data?.all_categories ?? []);
+    setMakes(initialData.data?.make_options ?? []);
+    setStateOptions(initialData.data?.states ?? []);
+    setModels(initialData.data?.model_options ?? []);
+    setMetaDescription(initialData.seo_v2?.metadescription ?? "");
+    setMetaTitle(initialData.seo_v2?.metatitle ?? "");
+    if (initialData.pagination) setPagination(initialData.pagination);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialData]);
+
   const prevFiltersRef = useRef<Filters>({});
   const prevPageRef = useRef(1);
 
@@ -813,6 +842,13 @@ const [pagination, setPagination] = useState<Pagination>(() => {
     // was provided — useState already seeded the products.
     if (!hasConsumedInitialDataRef.current && initialData) {
       hasConsumedInitialDataRef.current = true;
+      return;
+    }
+
+    // Server already returned fresh data via ISR (initialData sync effect applied it).
+    // Skip the duplicate client fetch.
+    if (shouldSkipFetchRef.current) {
+      shouldSkipFetchRef.current = false;
       return;
     }
 

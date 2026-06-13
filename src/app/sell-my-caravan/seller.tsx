@@ -22,7 +22,7 @@ const SellYourCaravan = () => {
                 <h1 className="mb-2">
                   Sell Your Caravan
                   <article>
-                    <span> $35 </span>
+                    <span> $49 </span>
                     <span style={{ color: "#f58333", fontSize: "20px" }}>
                       (inc. GST)
                     </span>
@@ -70,7 +70,7 @@ const SellYourCaravan = () => {
                 {
                   img: "/images/dollar.png",
                   title: "Keep 100% of Your Sale",
-                  desc: "Pay only $35 Inc GST per listing. No commissions or hidden costs."
+                  desc: "Pay only $49 Inc GST per listing. No commissions or hidden costs."
                 }
               ].map((item, index) => (
                 <div className="col-md-6 col-lg-3" key={index}>
@@ -119,7 +119,7 @@ const SellYourCaravan = () => {
 
               <div className="price-box">
                 <div className="price">
-                  <sup><small>$</small></sup>35{" "}
+                  <sup><small>$</small></sup>49{" "}
                   <span style={{ fontSize: "20px" }}>(Inc. GST)</span>
                 </div>
                 <span className="special_tag">One-Time Listing Fee</span>
@@ -191,7 +191,7 @@ const SellYourCaravan = () => {
                       exterior)
                       to attract
                       buyers.</li>
-                    <li><b>4. Pay & Publish:</b> Pay the one-time $35 listing fee and publish your ad.
+                    <li><b>4. Pay & Publish:</b> Pay the one-time $49 listing fee and publish your ad.
                       Once
                       submitted,
                       your listing goes live on our site and is visible to thousands of caravan buyers
@@ -220,10 +220,10 @@ const SellYourCaravan = () => {
 
               <div className={`collapse ${activeFaq === 2 ? "show" : ""}`}>
                 <div className="card-body">
-                  <p> It costs just $35 to list your caravan on CaravansForSale as a private seller. This
+                  <p> It costs just $49 to list your caravan on CaravansForSale as a private seller. This
                     is a one-time listing fee – no subscriptions and no ongoing monthly charges. We do
                     not take any commission on your sale, so you keep 100% of the sale price. There are
-                    no hidden fees or success fees; one flat $35 and your ad stays up until your caravan
+                    no hidden fees or success fees; one flat $49 and your ad stays up until your caravan
                     is sold.</p>
                 </div>
               </div>
