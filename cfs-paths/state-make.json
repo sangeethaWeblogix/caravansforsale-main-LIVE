@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "state-make",
-    "count": 660,
+    "count": 659,
     "paths": [
         "australian-capital-territory-state/carrera/",
         "australian-capital-territory-state/coromal/",
@@ -456,7 +456,6 @@
         "victoria-state/first-class/",
         "victoria-state/franklin/",
         "victoria-state/freebirds/",
-        "victoria-state/galaxy/",
         "victoria-state/golden-eagle/",
         "victoria-state/goldfields-campers/",
         "victoria-state/goldstar-rv/",
@@ -664,5 +663,5 @@
         "western-australia-state/x-series-rv/",
         "western-australia-state/zone-rv/"
     ],
-    "generated_at": "2026-06-13 20:51:57"
+    "generated_at": "2026-06-14 00:55:19"
 }
