@@ -10,6 +10,26 @@ const API_BASE = process.env.NEXT_PUBLIC_CFS_API_BASE;
 
 
 
+export const fetchModelCounts = async (make: string): Promise<{ name: string; slug: string; count: number }[]> => {
+  try {
+    const res = await fetch(
+      `${API_BASE}/params_count?group_by=model&make=${encodeURIComponent(make)}`,
+      {
+        headers: {
+          Accept: "application/json",
+          ...(API_KEY && { "X-API-Key": API_KEY }),
+        },
+        next: { revalidate: 3600 },
+      }
+    );
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data?.data ?? [];
+  } catch {
+    return [];
+  }
+};
+
 export const fetchMakeCounts = async (): Promise<{ name: string; slug: string; count: number }[]> => {
   try {
     const res = await fetch(`${API_BASE}/params_count?group_by=make`, {

@@ -1,4 +1,5 @@
 import { fetchListings } from "@/api/listings/api";
+import { fetchModelCounts } from "@/api/productList/api";
 import { parseSlugToFilters } from "@/app/components/urlBuilder";
 import type { Metadata } from "next";
 import extraIndexedData from "../../../cfs-paths/extra-indexed.json";
@@ -283,7 +284,17 @@ export async function metaFromSlug(
   let res: any = null;
   try {
     const page = parsed.page ? Number(parsed.page) : 1;
-    const finalFilters = { ...parsed, page };
+    let resolvedParsed = parsed;
+    if (parsed.model && parsed.make) {
+      const modelCounts = await fetchModelCounts(parsed.make);
+      const matched = modelCounts.find(
+        (m) =>
+          m.slug === parsed.model ||
+          m.slug.toLowerCase().replace(/[^a-z0-9]/g, "-").replace(/-+/g, "-") === parsed.model
+      );
+      if (matched) resolvedParsed = { ...parsed, model: matched.slug };
+    }
+    const finalFilters = { ...resolvedParsed, page };
     res = await fetchListings(finalFilters);
   } catch (e) {
     console.error("❌ fetchListings error in metaFromSlug:", e);

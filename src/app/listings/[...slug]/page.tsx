@@ -24,7 +24,7 @@ import {
   buildStaticLinkUrl,
   SECTION_TITLES,
 } from "@/app/components/ListContent/StaticLinksUtils";
-import { fetchProductList, fetchCategoryCounts, fetchMakeCounts } from "@/api/productList/api";
+import { fetchProductList, fetchCategoryCounts, fetchMakeCounts, fetchModelCounts } from "@/api/productList/api";
 import { calculateDistances } from "@/utils/postcodeCoords";
 import { fetchBottomLinks } from "@/api/bottomLinks/api";
 import type { BottomLinksData } from "@/api/bottomLinks/api";
@@ -307,6 +307,18 @@ export default async function Listings({
     if (!isNaN(n) && n > 0) page = n;
   }
 
+  // ───── Resolve model slug (URL has s-c-o-t-a but API needs s.c.o.t.a) ─────
+  let apiFilters = filters;
+  if (filters.model && filters.make) {
+    const modelCounts = await fetchModelCounts(filters.make);
+    const matched = modelCounts.find(
+      (m) =>
+        m.slug === filters.model ||
+        m.slug.toLowerCase().replace(/[^a-z0-9]/g, "-").replace(/-+/g, "-") === filters.model
+    );
+    if (matched) apiFilters = { ...filters, model: matched.slug };
+  }
+
   // ───── Fetch all data in parallel ─────
   let response: Awaited<ReturnType<typeof getCachedListings>>;
   let linksData: Awaited<ReturnType<typeof fetchLinksData>>;
@@ -316,12 +328,12 @@ export default async function Listings({
   let bottomLinksData: BottomLinksData | null = null;
   try {
     [response, linksData, productListRes, initialCategoryCounts, initialMakeCounts, bottomLinksData] = await Promise.all([
-      getCachedListings({ ...filters, page }),
-      fetchLinksData(filters),
+      getCachedListings({ ...apiFilters, page }),
+      fetchLinksData(apiFilters),
       fetchProductList(),
       fetchCategoryCounts(),
       fetchMakeCounts(),
-      fetchBottomLinks(filters),
+      fetchBottomLinks(apiFilters),
     ]);
   } catch (err) {
     const msg = err instanceof Error ? err.message : "";
@@ -466,7 +478,7 @@ export default async function Listings({
      */}
 
       <ListingsPage
-        {...filters}
+        {...apiFilters}
         initialData={response}
         linksData={linksData}
         productListData={productListRes}

@@ -1,27 +1,16 @@
 import { NextResponse } from "next/server";
+import statesData from "../../../../cfs-paths/states.json";
 
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL ||
   "https://www.caravansforsale.com.au/listings/";
 
-    const API_KEY = process.env.CFS_API_KEY; // ✅ Added
-
 export async function GET() {
   try {
-    const res = await fetch(
-      "https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap/states",
-       {
-        headers: {
-          Accept: "application/json",
-          ...(API_KEY && { "X-API-Key": API_KEY }), // ✅ Added
-        },
-      }
-    );
-
-    const data = await res.json();
+    const data = statesData as { success: boolean; paths: string[] };
 
     if (!data?.success || !Array.isArray(data.paths)) {
-      throw new Error("Invalid sitemap API response");
+      throw new Error("Invalid sitemap data");
     }
 
     const urls = data.paths

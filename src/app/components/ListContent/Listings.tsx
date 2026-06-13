@@ -263,6 +263,21 @@ export default function ListingsPage({
   const [models, setModels] = useState<MakeOption[]>(
     initialData?.data?.model_options || [],
   );
+  const modelsRef = useRef<MakeOption[]>(initialData?.data?.model_options || []);
+  const resolveModelSlug = (urlSlug: string | undefined): string | undefined => {
+    if (!urlSlug) return urlSlug;
+    const found = modelsRef.current.find(
+      (m) =>
+        m.slug === urlSlug ||
+        m.slug.toLowerCase().replace(/[^a-z0-9]/g, "-").replace(/-+/g, "-") === urlSlug
+    );
+    return found?.slug ?? urlSlug;
+  };
+  const withResolvedModel = (f: Filters): Filters => {
+    if (!f.model) return f;
+    const resolved = resolveModelSlug(f.model);
+    return resolved && resolved !== f.model ? { ...f, model: resolved } : f;
+  };
 
   const [pageTitle, setPageTitle] = useState(initialData?.seo_v2?.h1 || " ");
   const [metaTitle, setMetaTitle] = useState(
@@ -377,7 +392,7 @@ const [pagination, setPagination] = useState<Pagination>(() => {
     const path = pathname;
     const slugParts = path.split("/listings/")[1]?.split("/") || [];
     const parsed = parseSlugToFilters(slugParts);
-    const merged = { ...parsed, ...incomingFilters };
+    const merged = withResolvedModel({ ...parsed, ...incomingFilters });
     filtersRef.current = merged;
     setFilters(merged);
   }, [incomingFilters, pathname]);
@@ -547,7 +562,7 @@ const [pagination, setPagination] = useState<Pagination>(() => {
         from_length: safeFilters.from_length?.toString(),
         to_length: safeFilters.to_length?.toString(),
         make: safeFilters.make,
-        model: safeFilters.model,
+        model: resolveModelSlug(safeFilters.model),
         state: safeFilters.state,
         region: safeFilters.region,
         suburb: safeFilters.suburb,
@@ -607,7 +622,7 @@ const [pagination, setPagination] = useState<Pagination>(() => {
           from_length: safeFilters.from_length?.toString(),
           to_length: safeFilters.to_length?.toString(),
           make: safeFilters.make,
-          model: safeFilters.model,
+          model: resolveModelSlug(safeFilters.model),
           state: safeFilters.state,
           region: safeFilters.region,
           suburb: safeFilters.suburb,
@@ -653,6 +668,7 @@ const [pagination, setPagination] = useState<Pagination>(() => {
         setCategories(response?.data?.all_categories ?? []);
         setMakes(response?.data?.make_options ?? []);
         setStateOptions(response?.data?.states ?? []);
+        modelsRef.current = response?.data?.model_options ?? [];
         setModels(response?.data?.model_options ?? []);
         setMetaDescription(response?.seo_v2?.metadescription ?? "");
         setMetaTitle(response?.seo_v2?.metatitle ?? "");
@@ -787,6 +803,7 @@ const [pagination, setPagination] = useState<Pagination>(() => {
     setCategories(initialData.data?.all_categories ?? []);
     setMakes(initialData.data?.make_options ?? []);
     setStateOptions(initialData.data?.states ?? []);
+    modelsRef.current = initialData.data?.model_options ?? [];
     setModels(initialData.data?.model_options ?? []);
     setMetaDescription(initialData.seo_v2?.metadescription ?? "");
     setMetaTitle(initialData.seo_v2?.metatitle ?? "");
@@ -819,12 +836,12 @@ const [pagination, setPagination] = useState<Pagination>(() => {
     const radiusFromQuery = searchParams.get("radius_kms") ?? undefined;
     const pageFromURL = validatePage(searchParams.get("page"));
 
-    const merged: Filters = {
+    const merged: Filters = withResolvedModel({
       ...parsedFromURL,
       ...incomingFiltersRef.current,
       ...(orderbyFromQuery ? { orderby: orderbyFromQuery } : {}),
       ...(radiusFromQuery ? { radius_kms: radiusFromQuery } : {}),
-    };
+    });
 
     const filtersChanged =
       JSON.stringify(merged) !== JSON.stringify(prevFiltersRef.current);
@@ -933,10 +950,10 @@ const [pagination, setPagination] = useState<Pagination>(() => {
       const orderby = sp.get("orderby") ?? undefined;
       const urlClickid = sp.get("clickid") || null;
 
-      const merged: Filters = {
+      const merged: Filters = withResolvedModel({
         ...parsed,
         ...(orderby ? { orderby } : {}),
-      };
+      });
 
       filtersRef.current = merged;
       setFilters(merged);
@@ -1061,7 +1078,7 @@ const [pagination, setPagination] = useState<Pagination>(() => {
     const params = new URLSearchParams();
     const f = filtersRef.current;
     if (f.make) params.set("make", f.make);
-    if (f.model) params.set("model", f.model);
+    if (f.model) params.set("model", resolveModelSlug(f.model) ?? f.model);
     if (f.condition) params.set("condition", f.condition);
     if (f.state) params.set("state", f.state.toLowerCase());
     if (f.region) params.set("region", f.region);
@@ -1205,7 +1222,7 @@ const [pagination, setPagination] = useState<Pagination>(() => {
         page: 1,
         category: next.category,
         make: next.make,
-        model: next.model,
+        model: resolveModelSlug(next.model),
         condition: next.condition,
         region: next.region,
         state: next.state,
