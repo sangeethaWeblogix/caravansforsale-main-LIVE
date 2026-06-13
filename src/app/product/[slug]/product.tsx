@@ -317,8 +317,10 @@ export default function ClientLogger({
 
     if (L === "make") return [{ href: `/listings/${slugify(v)}/`, text: v }];
 
-    if (L === "model")
-      return [{ href: `/listings/${makeValue}/${slugify(v)}/`, text: v }];
+    if (L === "model") {
+      const makeSlug = findAttr("Make")?.url?.trim().replace(/^\/+|\/+$/g, "") || slugify(makeValue);
+      return [{ href: `/listings/${makeSlug}/${slugify(v)}/`, text: v }];
+    }
 
     if (L === "location" || L === "state")
       return [{ href: `/listings/${slugify(v)}-state/`, text: v }];
@@ -409,8 +411,10 @@ export default function ClientLogger({
   };
 
 
-  const makeHref =
-    makeValue && makeValue.trim()
+  const makeAttrUrl = findAttr("Make")?.url?.trim().replace(/^\/+|\/+$/g, "");
+  const makeHref = makeAttrUrl
+    ? `/listings/${makeAttrUrl}/`
+    : makeValue?.trim()
       ? `/listings/${slugify(makeValue)}/`
       : "/listings/";
 
