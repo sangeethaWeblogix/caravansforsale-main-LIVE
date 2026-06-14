@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "regions",
-    "count": 49,
+    "count": 50,
     "paths": [
         "australian-capital-territory-state/australian-capital-territory-region/",
         "new-south-wales-state/capital-region/",
@@ -22,6 +22,7 @@
         "northern-territory-state/darwin-region/",
         "queensland-state/brisbane-region/",
         "queensland-state/cairns-region/",
+        "queensland-state/central-queensland-region/",
         "queensland-state/gold-coast-region/",
         "queensland-state/ipswich-region/",
         "queensland-state/logan-beaudesert-region/",
@@ -53,5 +54,5 @@
         "western-australia-state/perth-region/",
         "western-australia-state/western-australia-outback-south-region/"
     ],
-    "generated_at": "2026-06-14 00:55:10"
+    "generated_at": "2026-06-14 15:56:52"
 }
