@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "cat-region",
-    "count": 273,
+    "count": 274,
     "paths": [
         "family-category/australian-capital-territory-state/australian-capital-territory-region/",
         "family-category/new-south-wales-state/capital-region/",
@@ -21,6 +21,7 @@
         "family-category/northern-territory-state/darwin-region/",
         "family-category/queensland-state/brisbane-region/",
         "family-category/queensland-state/cairns-region/",
+        "family-category/queensland-state/central-queensland-region/",
         "family-category/queensland-state/gold-coast-region/",
         "family-category/queensland-state/ipswich-region/",
         "family-category/queensland-state/logan-beaudesert-region/",
@@ -277,5 +278,5 @@
         "touring-category/western-australia-state/perth-region/",
         "touring-category/western-australia-state/western-australia-outback-south-region/"
     ],
-    "generated_at": "2026-06-14 00:55:24"
+    "generated_at": "2026-06-14 15:57:05"
 }
