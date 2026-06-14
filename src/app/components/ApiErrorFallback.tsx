@@ -1,6 +1,7 @@
- "use client";
+"use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 interface ApiErrorFallbackProps {
   title?: string;
@@ -19,6 +20,23 @@ export default function ApiErrorFallback({
   onClearFilters,
   errorSource,
 }: ApiErrorFallbackProps) {
+  const [countdown, setCountdown] = useState(10);
+
+  useEffect(() => {
+    if (errorSource !== "BACKEND") return;
+    const interval = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          window.location.reload();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [errorSource]);
+
   const handleRetry = () => {
     window.location.reload();
   };
@@ -40,6 +58,9 @@ export default function ApiErrorFallback({
 
   // ✅ Dynamic message based on error type
   const getMessage = () => {
+    if (errorSource === "BACKEND") {
+      return "Our servers are temporarily busy. We'll reload the page automatically.";
+    }
     if (message) return message;
     switch (errorType) {
       case "network":
@@ -55,6 +76,13 @@ export default function ApiErrorFallback({
 
   // ✅ Dynamic suggestions based on error type
   const getSuggestions = () => {
+    if (errorSource === "BACKEND") {
+      return [
+        "We're automatically retrying for you",
+        "Or click Try Again to reload now",
+        "Contact support if the issue keeps happening",
+      ];
+    }
     switch (errorType) {
       case "network":
         return [
@@ -76,9 +104,9 @@ export default function ApiErrorFallback({
         ];
       default:
         return [
-          "Checking your internet connection",
-          "Refreshing the page",
-          "Coming back in a few minutes",
+          "Refresh the page",
+          "Come back in a few minutes",
+          "Contact support if the issue persists",
         ];
     }
   };
@@ -262,28 +290,28 @@ export default function ApiErrorFallback({
           {getTitle()}
         </h2>
 
-        {/* Error source badge */}
-        {errorSource && (
+        {/* Auto-retry countdown for backend errors */}
+        {errorSource === "BACKEND" && countdown > 0 && (
           <div style={{ marginBottom: "14px" }}>
             <span
               style={{
                 display: "inline-flex",
                 alignItems: "center",
-                gap: "5px",
-                padding: "4px 12px",
+                gap: "6px",
+                padding: "5px 14px",
                 borderRadius: "20px",
-                fontSize: "12px",
-                fontWeight: 600,
-                letterSpacing: "0.4px",
-                background: errorSource === "BACKEND" ? "#fee2e2" : "#fff3cd",
-                color: errorSource === "BACKEND" ? "#b91c1c" : "#92400e",
-                border: `1px solid ${errorSource === "BACKEND" ? "#fca5a5" : "#fcd34d"}`,
+                fontSize: "13px",
+                fontWeight: 500,
+                background: "#eff6ff",
+                color: "#1d4ed8",
+                border: "1px solid #bfdbfe",
               }}
             >
-              <span style={{ fontSize: "10px" }}>
-                {errorSource === "BACKEND" ? "⚙️" : "📡"}
-              </span>
-              {errorSource === "BACKEND" ? "Server Error" : "Network / Client Error"}
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="23 4 23 10 17 10" />
+                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+              </svg>
+              Retrying in {countdown}s…
             </span>
           </div>
         )}
