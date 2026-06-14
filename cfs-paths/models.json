@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "models",
-    "count": 2857,
+    "count": 2859,
     "paths": [
         "active/storm/",
         "adria/action/",
@@ -679,6 +679,7 @@
         "empire/s-n-1765/",
         "empire/solitaire/",
         "equalizer-rv/rebel/",
+        "essential/216-club-lounge/",
         "essential/a-class-186r-1/",
         "essential/a-class-196r/",
         "essential/a-class-f2/",
@@ -1135,6 +1136,7 @@
         "jawa/sirocco/",
         "jawa/sirocco-15/",
         "jawa/stealth-16/",
+        "jayco-2/silverline/",
         "jayco/15ft-hard-top/",
         "jayco/17-55/",
         "jayco/22-68-5-sl/",
@@ -2861,5 +2863,5 @@
         "zone-rv/venture-20-6/",
         "zone-rv/znu004/"
     ],
-    "generated_at": "2026-06-14 15:57:25"
+    "generated_at": "2026-06-14 16:01:10"
 }
