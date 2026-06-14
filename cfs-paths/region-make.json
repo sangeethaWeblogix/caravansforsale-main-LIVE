@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "region-make",
-    "count": 1159,
+    "count": 1161,
     "paths": [
         "australian-capital-territory-state/australian-capital-territory-region/carrera/",
         "australian-capital-territory-state/australian-capital-territory-region/coromal/",
@@ -466,6 +466,7 @@
         "queensland-state/sunshine-coast-region/hike/",
         "queensland-state/sunshine-coast-region/hinterland/",
         "queensland-state/sunshine-coast-region/jayco/",
+        "queensland-state/sunshine-coast-region/jayco-2/",
         "queensland-state/sunshine-coast-region/jb/",
         "queensland-state/sunshine-coast-region/legend/",
         "queensland-state/sunshine-coast-region/marvel-rv/",
@@ -843,6 +844,7 @@
         "victoria-state/latrobe-gippsland-region/eagle/",
         "victoria-state/latrobe-gippsland-region/ecotourer/",
         "victoria-state/latrobe-gippsland-region/empire/",
+        "victoria-state/latrobe-gippsland-region/essential/",
         "victoria-state/latrobe-gippsland-region/evolution/",
         "victoria-state/latrobe-gippsland-region/fantasy/",
         "victoria-state/latrobe-gippsland-region/golden-eagle/",
@@ -1163,5 +1165,5 @@
         "western-australia-state/western-australia-outback-south-region/vanguard/",
         "western-australia-state/western-australia-outback-south-region/western/"
     ],
-    "generated_at": "2026-06-14 15:57:33"
+    "generated_at": "2026-06-14 16:01:18"
 }
