@@ -131,7 +131,7 @@ export default async function Listings({
   //     (m) => normalizeSlug(m.slug) === makeSlug,
   //   );
 
-  //   if (!matchedMake) notFound();
+  //   if (!matchedMake) redirect("/404");
 
   //   if (slug.length >= 2 && !isTypedFilter(slug[1])) {
   //     const modelSlug = normalizeSlug(slug[1]);
@@ -140,7 +140,7 @@ export default async function Listings({
   //       (mod) => normalizeSlug(mod.slug) === modelSlug,
   //     );
 
-  //     if (!matchedModel) notFound();
+  //     if (!matchedModel) redirect("/404");
   //   }
   // }
 
@@ -183,7 +183,7 @@ export default async function Listings({
     return (isPureNumber || isWeirdSymbols) && !allowed;
   });
 
-  if (hasGibberish) notFound();
+  if (hasGibberish) redirect("/404");
 
   // ───── Parse filters (needed for location rules) ─────
   const filters = parseSlugToFilters(slug, resolvedSearchParams);
@@ -194,7 +194,7 @@ export default async function Listings({
   const normalize = (p: string) => p.replace(/\/$/, "").toLowerCase();
   if (normalize(canonicalPath) !== normalize(incomingPath)) {
     // Any mismatch (dropped segments or wrong order) → 404
-    notFound();
+    redirect("/404");
   }
 
   // ───── Location hierarchy validation ─────
@@ -203,8 +203,8 @@ export default async function Listings({
 
   const hasSuburb = !!filters.suburb;
 
-  if ((hasRegion || hasSuburb) && !hasState) notFound();
-  if (hasSuburb && !hasRegion) notFound();
+  if ((hasRegion || hasSuburb) && !hasState) redirect("/404");
+  if (hasSuburb && !hasRegion) redirect("/404");
 
   // ───── Segment type detection + order validation ─────
   const seenTypes = new Set<SegmentType>();
@@ -251,14 +251,14 @@ export default async function Listings({
 
     if (detectedType) {
       // Duplicate type → 404
-      if (seenTypes.has(detectedType)) notFound();
+      if (seenTypes.has(detectedType)) redirect("/404");
       seenTypes.add(detectedType);
 
       // Enforce strict order for non-flexible types
       if (!FLEXIBLE_TYPES.includes(detectedType)) {
         const currentStrictIndex = STRICT_ORDER.indexOf(detectedType);
         if (currentStrictIndex !== -1 && currentStrictIndex < lastStrictIndex) {
-          notFound(); // Out of order
+          redirect("/404"); // Out of order
         }
         lastStrictIndex = Math.max(lastStrictIndex, currentStrictIndex);
       }
@@ -305,7 +305,7 @@ export default async function Listings({
   } catch (err) {
     const msg = err instanceof Error ? err.message : "";
     if (msg.includes("400") || msg.includes("404")) {
-      notFound();
+      redirect("/404");
     }
     const isBackend =
       msg.startsWith("API no response") ||
@@ -333,7 +333,7 @@ export default async function Listings({
 
   // ───── Empty results → 404 (URL unchanged) ─────
   if (!response?.data || !Array.isArray(response.data.products) || response.data.products.length === 0) {
-    notFound();
+    redirect("/404");
   }
 
   // ───── JSON-LD Schema ─────
