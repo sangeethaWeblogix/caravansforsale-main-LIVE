@@ -1,10 +1,12 @@
-"use client";
-
-// export const dynamic = "force-dynamic"
-;
 import Link from "next/link";
 import "./not-found.css";
 import Notfound from "./searchError";
+
+export const metadata = {
+  title: "404 - Page Not Found | Caravans For Sale",
+  description: "The page you're looking for doesn't exist or has been moved. Browse our range of caravans for sale across Australia.",
+  robots: "noindex, nofollow",
+};
 
 export default function NotFoundPage() {
   const categories = [

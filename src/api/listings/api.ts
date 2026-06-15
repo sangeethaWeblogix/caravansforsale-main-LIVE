@@ -214,16 +214,16 @@ export const fetchListings = async (
 
   if (!res.ok) {
     const errText = await res.text();
-    console.error(`[BACKEND ERROR] HTTP ${res.status} from API:`, errText.substring(0, 300));
 
+    if (res.status >= 500) {
+      console.error(`[BACKEND ERROR] HTTP ${res.status} from API:`, errText.substring(0, 300));
+      throw new Error(`Backend server error (HTTP ${res.status})`);
+    }
     if (res.status === 401 || res.status === 403) {
       throw new Error("Missing or invalid API key");
     }
     if (res.status === 404) {
       throw new Error("API endpoint not found (404)");
-    }
-    if (res.status >= 500) {
-      throw new Error(`Backend server error (HTTP ${res.status})`);
     }
     throw new Error(`API failed: HTTP ${res.status}`);
   }

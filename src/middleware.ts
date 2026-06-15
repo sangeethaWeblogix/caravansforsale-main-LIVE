@@ -42,6 +42,17 @@ export async function middleware(request: NextRequest) {
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set('x-pathname', url.pathname);
 
+  /* 🚫 page/feed in path, key, or value → 410 (URL stays unchanged, HTTP 410) */
+  if (url.pathname.startsWith('/listings')) {
+    const segments = url.pathname.split('/').filter(Boolean);
+    const hasForbiddenSegment = segments.some(s => /(page|feed)/i.test(s));
+    const hasForbiddenKey = Array.from(url.searchParams.keys()).some(k => /(page|feed)/i.test(k));
+    const hasForbiddenValue = Array.from(url.searchParams.values()).some(v => /(page|feed)/i.test(v));
+    if (hasForbiddenSegment || hasForbiddenKey || hasForbiddenValue) {
+      return NextResponse.rewrite(new URL('/410', request.url), { status: 410 });
+    }
+  }
+
   /* 🤖 STEP 1: Bot Detection - Let Cloudflare Worker Handle It */
   if (isBot(userAgent)) {
     console.log(`🤖 Bot detected: ${userAgent.substring(0, 50)}...`);

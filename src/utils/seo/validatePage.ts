@@ -53,6 +53,7 @@ export function getValidPage(param: unknown, fullQuery: string): number | null {
 }
 
 export function ensureValidPage(param: unknown, fullQuery: string): number {
+  if (param !== undefined) redirect("/410");
   const valid = getValidPage(param, fullQuery);
   if (!valid) redirect("/410");
   return valid;

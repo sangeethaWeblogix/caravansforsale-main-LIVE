@@ -131,7 +131,7 @@ export default async function Listings({
   //     (m) => normalizeSlug(m.slug) === makeSlug,
   //   );
 
-  //   if (!matchedMake) redirect("/404");
+  //   if (!matchedMake) notFound();
 
   //   if (slug.length >= 2 && !isTypedFilter(slug[1])) {
   //     const modelSlug = normalizeSlug(slug[1]);
@@ -140,7 +140,7 @@ export default async function Listings({
   //       (mod) => normalizeSlug(mod.slug) === modelSlug,
   //     );
 
-  //     if (!matchedModel) redirect("/404");
+  //     if (!matchedModel) notFound();
   //   }
   // }
 
@@ -155,7 +155,7 @@ export default async function Listings({
       forbiddenPattern.test(String(v)),
     )
   ) {
-    redirect("/404");
+    redirect("/410");
   }
 
   // Reject gibberish / pin-code spam
@@ -183,7 +183,7 @@ export default async function Listings({
     return (isPureNumber || isWeirdSymbols) && !allowed;
   });
 
-  if (hasGibberish) redirect("/404");
+  if (hasGibberish) notFound();
 
   // ───── Parse filters (needed for location rules) ─────
   const filters = parseSlugToFilters(slug, resolvedSearchParams);
@@ -203,8 +203,8 @@ export default async function Listings({
 
   const hasSuburb = !!filters.suburb;
 
-  if ((hasRegion || hasSuburb) && !hasState) redirect("/404");
-  if (hasSuburb && !hasRegion) redirect("/404");
+  if ((hasRegion || hasSuburb) && !hasState) notFound();
+  if (hasSuburb && !hasRegion) notFound();
 
   // ───── Segment type detection + order validation ─────
   const seenTypes = new Set<SegmentType>();
@@ -243,21 +243,22 @@ export default async function Listings({
     } else if (
       /^[0-9]+$/.test(lower) ||
       /^[0-9]+\+$/.test(lower) ||
-      /^[a-z]+\+$/.test(lower)
+      /^[a-z]+\+$/.test(lower) ||
+      /^[0-9]+[a-z]/.test(lower) // number-first + letter (e.g. 58d, 123abc)
     ) {
-      redirect("/404"); // block bad patterns: only numbers, number+, or string+ without number
+      redirect("/404"); // block bad patterns → redirect to /404
     }
 
     if (detectedType) {
       // Duplicate type → 404
-      if (seenTypes.has(detectedType)) redirect("/404");
+      if (seenTypes.has(detectedType)) notFound();
       seenTypes.add(detectedType);
 
       // Enforce strict order for non-flexible types
       if (!FLEXIBLE_TYPES.includes(detectedType)) {
         const currentStrictIndex = STRICT_ORDER.indexOf(detectedType);
         if (currentStrictIndex !== -1 && currentStrictIndex < lastStrictIndex) {
-          redirect("/404"); // Out of order
+          notFound(); // Out of order
         }
         lastStrictIndex = Math.max(lastStrictIndex, currentStrictIndex);
       }
@@ -328,6 +329,11 @@ export default async function Listings({
         errorSource={errorSource}
       />
     );
+  }
+
+  // ───── Empty results → 404 (URL unchanged) ─────
+  if (!response?.data || !Array.isArray(response.data.products) || response.data.products.length === 0) {
+    notFound();
   }
 
   // ───── JSON-LD Schema ─────
