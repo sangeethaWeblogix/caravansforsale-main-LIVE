@@ -42,13 +42,19 @@ export async function middleware(request: NextRequest) {
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set('x-pathname', url.pathname);
 
-  /* 🚫 page/feed in path, key, or value → 410 (URL stays unchanged, HTTP 410) */
+  /* 🚫 Listings: forbidden path segments OR unknown query params → 410 (URL unchanged) */
   if (url.pathname.startsWith('/listings')) {
     const segments = url.pathname.split('/').filter(Boolean);
     const hasForbiddenSegment = segments.some(s => /(page|feed)/i.test(s));
-    const hasForbiddenKey = Array.from(url.searchParams.keys()).some(k => /(page|feed)/i.test(k));
+
+    // Only these query params are valid on listing pages
+    const ALLOWED_PARAMS = new Set(['clickid', 'orderby', 'search', 'keyword', 'radius_kms']);
+    const hasUnknownParam = Array.from(url.searchParams.keys()).some(k => !ALLOWED_PARAMS.has(k.toLowerCase()));
+
+    // Even allowed params must not carry page/feed in their values (e.g. ?clickid=uuid/page)
     const hasForbiddenValue = Array.from(url.searchParams.values()).some(v => /(page|feed)/i.test(v));
-    if (hasForbiddenSegment || hasForbiddenKey || hasForbiddenValue) {
+
+    if (hasForbiddenSegment || hasUnknownParam || hasForbiddenValue) {
       return NextResponse.rewrite(new URL('/410', request.url), { status: 410 });
     }
   }
