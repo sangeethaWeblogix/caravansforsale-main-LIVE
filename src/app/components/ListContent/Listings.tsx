@@ -694,6 +694,7 @@ const [pagination, setPagination] = useState<Pagination>(() => {
           response?.seo_v2?.list_page_metatitle ??
           computeTitleFromFilters(safeFilters)
         );
+        if (response?.seo_v2?.h1) setPageTitle(response.seo_v2.h1);
         if (response.pagination) setPagination(response.pagination);
 
         return response;
@@ -835,6 +836,7 @@ const [pagination, setPagination] = useState<Pagination>(() => {
       const slugParts = window.location.pathname.replace(/^\/listings\//, "").replace(/\/$/, "").split("/").filter(Boolean);
       setMetaTitle(computeTitleFromFilters(parseSlugToFilters(slugParts, {})));
     }
+    if (initialData.seo_v2?.h1) setPageTitle(initialData.seo_v2.h1);
     if (initialData.pagination) setPagination(initialData.pagination);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialData, computeTitleFromFilters]);

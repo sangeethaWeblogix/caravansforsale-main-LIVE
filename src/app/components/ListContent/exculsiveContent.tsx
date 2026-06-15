@@ -368,16 +368,27 @@ export default function ExculisiveContent({
     loadRemaining(item);
   };
 
+  const splitCountAndTitle = (title: string) => {
+    const match = title.match(/^(\d+)\s+(.*)$/);
+    if (!match) return { count: null, text: title };
+    return { count: match[1], text: match[2] };
+  };
+
+  const { count, text } = splitCountAndTitle(pageTitle);
+
   return (
     <>
 
       <div className="col-lg-9 ">
         <div className="top-filter mb-10">
           <div className="row align-items-center">
-            <div className="col-lg-12">
-              <h1 className="show_count text-center d-block mb-3">
-                <strong>{pageTitle}</strong>
-              </h1>
+            <div className="col-lg-12 col-md-12 col-sm-12 col-12 show_count_wrapper text-center">
+              {count !== null && (
+                <span className="show_count mb-2 d-inline">
+                  <strong>{count} </strong>
+                </span>
+              )}
+              <h1 className="show_count d-inline fw-bolder">{text}</h1>
             </div>
             <div className="row align-items-center">
               <div className="flex flex-col items-center justify-center text-center py-10 search-icon">
