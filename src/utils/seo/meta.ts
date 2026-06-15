@@ -1,5 +1,3 @@
-import { fetchListings } from "@/api/listings/api";
-import { fetchModelCounts } from "@/api/productList/api";
 import { parseSlugToFilters } from "@/app/components/urlBuilder";
 import type { Metadata } from "next";
 import extraIndexedData from "../../../cfs-paths/extra-indexed.json";
@@ -267,6 +265,49 @@ function getRobotsFromFilters(
   return noindex;
 }
 
+// ─── Title generation from parsed filters (no API call needed) ───
+const STATE_NAMES: Record<string, string> = {
+  "victoria": "Victoria",
+  "new-south-wales": "New South Wales",
+  "queensland": "Queensland",
+  "south-australia": "South Australia",
+  "western-australia": "Western Australia",
+  "tasmania": "Tasmania",
+  "northern-territory": "Northern Territory",
+  "australian-capital-territory": "Australian Capital Territory",
+};
+
+function titleCase(s: string): string {
+  return s.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function generateTitleFromFilters(
+  parsed: ReturnType<typeof parseSlugToFilters>
+): string {
+  const parts: string[] = [];
+
+  if (parsed.condition === "New" || parsed.condition === "new") parts.push("New");
+  else if (parsed.condition === "Used" || parsed.condition === "used") parts.push("Used");
+
+  if (parsed.make) parts.push(titleCase(parsed.make));
+  if (parsed.model) parts.push(titleCase(parsed.model));
+  if (parsed.category) parts.push(titleCase(parsed.category));
+
+  const baseNoun = parts.length > 0 ? `${parts.join(" ")} Caravans` : "Caravans";
+
+  if (parsed.state) {
+    const stateKey = parsed.state.toLowerCase().replace(/\s+/g, "-");
+    const stateName = STATE_NAMES[stateKey] ?? titleCase(parsed.state);
+    if (parsed.region) {
+      const regionName = titleCase(parsed.region);
+      return `${baseNoun} for Sale in ${regionName}, ${stateName}`;
+    }
+    return `${baseNoun} for Sale in ${stateName}, Australia`;
+  }
+
+  return `${baseNoun} for Sale in Australia`;
+}
+
 export async function metaFromSlug(
   filters: string[] = [],
   searchParams: Record<string, string | string[] | undefined> = {}
@@ -274,51 +315,13 @@ export async function metaFromSlug(
   const BASE_URL = "https://www.caravansforsale.com.au";
 
   const parsed = parseSlugToFilters(filters, searchParams);
-  
+
   const slugPath = filters.length > 0 ? filters.join("/") : "";
   const canonicalUrl = `${BASE_URL}/listings/${slugPath ? slugPath + "/" : ""}`;
   const robotsResult = getRobotsFromFilters(parsed, filters, BASE_URL);
-  const canonical = robotsResult.overrideCanonical ?? canonicalUrl;
-
-  // ── fetchListings — error வந்தாலும் robots return பண்ணு ──
-  let res: any = null;
-  try {
-    const page = parsed.page ? Number(parsed.page) : 1;
-    let resolvedParsed = parsed;
-    if (parsed.model && parsed.make) {
-      const modelCounts = await fetchModelCounts(parsed.make);
-      const matched = modelCounts.find(
-        (m) =>
-          m.slug === parsed.model ||
-          m.slug.toLowerCase().replace(/[^a-z0-9]/g, "-").replace(/-+/g, "-") === parsed.model
-      );
-      if (matched) resolvedParsed = { ...parsed, model: matched.slug };
-    }
-    const finalFilters = { ...resolvedParsed, page };
-    res = await fetchListings(finalFilters);
-  } catch (e) {
-    console.error("❌ fetchListings error in metaFromSlug:", e);
-    // API fail ஆனாலும் robots tag கண்டிப்பா return ஆகும்
-    return {
-      title: { absolute: "Caravans for Sale in Australia - Find Exclusive Deals" },
-      robots: { index: robotsResult.index },
-      verification: { google: "6tT6MT6AJgGromLaqvdnyyDQouJXq0VHS-7HC194xEo" },
-      alternates: { canonical, languages: {}, media: {} },
-      openGraph: {
-        images: [
-          {
-            url: "https://www.caravansforsale.com.au/images/cfs-logo.png",
-            width: 800,
-            height: 600,
-            alt: "Caravans for Sale Australia",
-          },
-        ],
-      },
-    };
-  }
 
   // ── suburb canonical fix ──
-  let finalCanonical = canonical;
+  let canonical = robotsResult.overrideCanonical ?? canonicalUrl;
   if (parsed.suburb) {
     const locationSegments = filters.filter(
       (seg) =>
@@ -326,63 +329,34 @@ export async function metaFromSlug(
         seg.endsWith("-region") ||
         seg.endsWith("-suburb")
     );
-    finalCanonical = `${BASE_URL}/listings/${locationSegments.join("/")}/`;
+    canonical = `${BASE_URL}/listings/${locationSegments.join("/")}/`;
   }
 
-
-  // const page = parsed.page ? Number(parsed.page) : 1;
-  // const finalFilters = { ...parsed, page };
-
-  // const res = await fetchListings(finalFilters);
-
-  // // ─── Build canonical from slug + searchParams ───
-  // let canonicalUrl = "";
-
-  // if (parsed.suburb) {
-  //   const locationSegments = filters.filter(
-  //     (seg) =>
-  //       seg.endsWith("-state") ||
-  //       seg.endsWith("-region") ||
-  //       seg.endsWith("-suburb")
-  //   );
-  //   canonicalUrl = `${BASE_URL}/listings/${locationSegments.join("/")}/`;
-  // } else {
-  //   const slugPath = filters.length > 0 ? filters.join("/") : "";
-  //   canonicalUrl = `${BASE_URL}/listings/${slugPath ? slugPath + "/" : ""}`;
-  // }
-
-  // Append searchParams (except page=1)
-   const spEntries = Object.entries(searchParams).filter(([k, v]) => {
+  // Append searchParams (except page=1 and shuffle_seed)
+  const spEntries = Object.entries(searchParams).filter(([k, v]) => {
     if (k === "page" && String(v) === "1") return false;
-     if (k === "shuffle_seed") return false; // ← ADD THIS
+    if (k === "shuffle_seed") return false;
     return true;
   });
   if (spEntries.length > 0) {
     const qs = spEntries
       .map(([k, v]) => `${k}=${Array.isArray(v) ? v[0] : v}`)
       .join("&");
-    finalCanonical += `?${qs}`;
+    canonical += `?${qs}`;
   }
 
- 
-
-  const rawTitle =
-    res?.seo_v2?.meta_title?.trim() ||
-    "Caravans for Sale in Australia - Find Exclusive Deals";
-  const title = rawTitle.trim();
-  // const description = res?.seo_v2?.meta_description?.trim();
-  const description =  "Browse caravans for sale across Australia. Compare prices on off-road, hybrid, pop top, touring, luxury models with size, weight & sleeping capacity.";
-
-  const hasProducts = (res?.pagination?.total_products ?? 1) > 0;
+  const title = generateTitleFromFilters(parsed);
+  const description =
+    "Browse caravans for sale across Australia. Compare prices on off-road, hybrid, pop top, touring, luxury models with size, weight & sleeping capacity.";
 
   return {
     title: { absolute: title },
     description,
-    robots: { index: robotsResult.index && hasProducts },
+    robots: { index: robotsResult.index },
     verification: {
       google: "6tT6MT6AJgGromLaqvdnyyDQouJXq0VHS-7HC194xEo",
     },
-    alternates: { canonical: finalCanonical, languages: {}, media: {} },
+    alternates: { canonical, languages: {}, media: {} },
     openGraph: {
       title,
       description,

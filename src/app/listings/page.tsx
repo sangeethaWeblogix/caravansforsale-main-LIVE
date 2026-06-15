@@ -154,7 +154,7 @@ export default async function ListingsPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <Suspense>
+      <Suspense fallback={null}>
         <Listing initialData={response} page={page} productListData={productListRes} initialCategoryCounts={initialCategoryCounts} initialMakeCounts={initialMakeCounts} initialBottomLinksData={bottomLinksData} />
       </Suspense>
     </>

@@ -281,11 +281,16 @@ export default function ListingsPage({
 
   const [pageTitle, setPageTitle] = useState(initialData?.seo_v2?.h1 || " ");
   const [metaTitle, setMetaTitle] = useState(
-    initialData?.seo_v2?.metatitle || "",
+    initialData?.seo_v2?.meta_title ?? initialData?.seo_v2?.metatitle ?? "",
   );
   const [metaDescription, setMetaDescription] = useState(
     initialData?.seo_v2?.metadescription || "",
   );
+
+  // Update browser tab title whenever metaTitle state changes (filter navigation, initialData update)
+  useEffect(() => {
+    if (metaTitle) document.title = metaTitle;
+  }, [metaTitle]);
 
   // 1️⃣  persistence helpers
   const PAGE_KEY = (id: string) => `page_${id}`;
@@ -583,6 +588,18 @@ const [pagination, setPagination] = useState<Pagination>(() => {
 
   const latestListingsRequestRef = useRef(0);
 
+  // Mirror of generateTitleFromFilters in meta.ts — used when seo_v2 returns no title (e.g. year filter pages)
+  const computeTitleFromFilters = useCallback((f: Filters): string => {
+    const titleCase = (s: string) => s.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+    const parts: string[] = [];
+    if (f.condition) parts.push(titleCase(String(f.condition)));
+    if (f.make) parts.push(titleCase(String(f.make)));
+    if (f.category) parts.push(titleCase(String(f.category).replace(/-category$/, "")));
+    const noun = parts.length ? `${parts.join(" ")} Caravans` : "Caravans";
+    const stateStr = f.state ? ` in ${titleCase(String(f.state))}, Australia` : " in Australia";
+    return `${noun} for Sale${stateStr}`;
+  }, []);
+
   const loadListings = useCallback(
     async (
       pageNum = 1,
@@ -671,7 +688,12 @@ const [pagination, setPagination] = useState<Pagination>(() => {
         modelsRef.current = response?.data?.model_options ?? [];
         setModels(response?.data?.model_options ?? []);
         setMetaDescription(response?.seo_v2?.metadescription ?? "");
-        setMetaTitle(response?.seo_v2?.metatitle ?? "");
+        setMetaTitle(
+          response?.seo_v2?.meta_title ??
+          response?.seo_v2?.metatitle ??
+          response?.seo_v2?.list_page_metatitle ??
+          computeTitleFromFilters(safeFilters)
+        );
         if (response.pagination) setPagination(response.pagination);
 
         return response;
@@ -682,7 +704,7 @@ const [pagination, setPagination] = useState<Pagination>(() => {
     },
     // ✅ FIX: Only stable deps. No state variables that flip and cause loops.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [DEFAULT_RADIUS, initialData],
+    [DEFAULT_RADIUS, initialData, computeTitleFromFilters],
   );
 
   const handleNextPage = useCallback(async () => {
@@ -806,10 +828,16 @@ const [pagination, setPagination] = useState<Pagination>(() => {
     modelsRef.current = initialData.data?.model_options ?? [];
     setModels(initialData.data?.model_options ?? []);
     setMetaDescription(initialData.seo_v2?.metadescription ?? "");
-    setMetaTitle(initialData.seo_v2?.metatitle ?? "");
+    const apiTitle = initialData.seo_v2?.meta_title ?? initialData.seo_v2?.metatitle ?? initialData.seo_v2?.list_page_metatitle ?? "";
+    if (apiTitle) {
+      setMetaTitle(apiTitle);
+    } else {
+      const slugParts = window.location.pathname.replace(/^\/listings\//, "").replace(/\/$/, "").split("/").filter(Boolean);
+      setMetaTitle(computeTitleFromFilters(parseSlugToFilters(slugParts, {})));
+    }
     if (initialData.pagination) setPagination(initialData.pagination);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialData]);
+  }, [initialData, computeTitleFromFilters]);
 
   const prevFiltersRef = useRef<Filters>({});
   const prevPageRef = useRef(1);
@@ -1264,8 +1292,8 @@ const [pagination, setPagination] = useState<Pagination>(() => {
       );
 
       if (response?.pagination) setPagination(response.pagination);
-      if (response?.seo_v2?.metatitle)
-        setMetaTitle(response.seo_v2.metatitle);
+      const sliderTitle = response?.seo_v2?.meta_title ?? response?.seo_v2?.metatitle ?? "";
+      if (sliderTitle) setMetaTitle(sliderTitle);
       if (response?.seo_v2?.metadescription)
         setMetaDescription(response.seo_v2.metadescription);
       if (response?.seo_v2?.h1) setPageTitle(response.seo_v2?.h1);
@@ -1515,8 +1543,6 @@ const [pagination, setPagination] = useState<Pagination>(() => {
                       pagination={pagination}
                       onNext={handleNextPage}
                       onPrev={handlePrevPage}
-                      metaDescription={metaDescription}
-                      metaTitle={metaTitle}
                       onFilterChange={handleFilterChange}
                       currentFilters={filters}
                       preminumProducts={preminumProducts}
@@ -1536,8 +1562,6 @@ const [pagination, setPagination] = useState<Pagination>(() => {
                       <ExculsiveContent
                         data={emptyProduct}
                         pageTitle={pageTitle}
-                        metaDescription={metaDescription}
-                        metaTitle={metaTitle}
                         isPremiumLoading={isPremiumLoading}
                         currentFilters={filters}
                       />

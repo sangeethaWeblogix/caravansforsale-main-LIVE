@@ -1,18 +1,9 @@
 // app/(listings)/[[...slug]]/page.tsx
-function normalizeSlug(v: string = "") {
-  return decodeURIComponent(v)
-    .replace(/\s+/g, "+") // convert spaces back to +
-    .trim()
-    .toLowerCase();
-}
-
-export const revalidate = 3600;
-
+import type { Metadata } from "next";
 import ListingsPage from "@/app/components/ListContent/Listings";
 import { parseSlugToFilters } from "../../components/urlBuilder";
-import { metaFromSlug } from "@/utils/seo/meta";
-import type { Metadata } from "next";
 import { getCachedListings } from "@/api/listings/api";
+import { metaFromSlug } from "@/utils/seo/meta";
 import { redirect, notFound } from "next/navigation";
 import "../../components/ListContent/newList.css";
 import "../listings.css";
@@ -30,11 +21,34 @@ import { fetchBottomLinks } from "@/api/bottomLinks/api";
 import type { BottomLinksData } from "@/api/bottomLinks/api";
 import ApiErrorFallback from "@/app/components/ApiErrorFallback";
 import { reportGitHubIssue } from "@/lib/reportGitHubIssue";
+
+export const revalidate = 3600;
+
+// generateMetadata — pure slug computation, NO API call.
+// Instant title on client-side navigation (no loading flash).
+// Root layout <head> JSX handles og/twitter with API title (SSR only).
+export async function generateMetadata({ params }: { params: Promise<{ slug?: string[] }> }): Promise<Metadata> {
+  const { slug = [] } = await params;
+  const meta = await metaFromSlug(slug, {});
+  const title =
+    meta.title && typeof meta.title === "object" && "absolute" in meta.title
+      ? (meta.title as { absolute: string }).absolute
+      : "Caravans for Sale in Australia";
+  return { title: { absolute: title } };
+}
+
+function normalizeSlug(v: string = "") {
+  return decodeURIComponent(v)
+    .replace(/\s+/g, "+") // convert spaces back to +
+    .trim()
+    .toLowerCase();
+}
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
 // ─────────────────────────────────────────────────────────────────────────────
 type Params = Promise<{ slug?: string[] }>;
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
+
 
 type SegmentType =
   | "make"
@@ -64,54 +78,6 @@ const STRICT_ORDER: SegmentType[] = [
   "length",
   "sleeps",
 ];
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Static params — pre-build popular pages at deploy time
-// ─────────────────────────────────────────────────────────────────────────────
-export async function generateStaticParams() {
-  const [categories, makes] = await Promise.all([
-    fetchCategoryCounts(),
-    fetchMakeCounts(),
-  ]);
-
-  const paths: { slug: string[] }[] = [];
-
-  // Category pages: /listings/off-road-category/
-  for (const cat of categories) {
-    if (cat.slug) paths.push({ slug: [`${cat.slug}-category`] });
-  }
-
-  // Make pages: /listings/jayco/
-  for (const make of makes) {
-    if (make.slug) paths.push({ slug: [make.slug] });
-  }
-
-  // Australian state pages
-  const states = [
-    "victoria", "new-south-wales", "queensland",
-    "south-australia", "western-australia", "tasmania",
-    "northern-territory", "australian-capital-territory",
-  ];
-  for (const state of states) {
-    paths.push({ slug: [`${state}-state`] });
-  }
-
-  return paths;
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Metadata
-// ─────────────────────────────────────────────────────────────────────────────
-export async function generateMetadata({
-  params,
-  searchParams,
-}: {
-  params: Params;
-  searchParams: SearchParams;
-}): Promise<Metadata> {
-  const [p, sp] = await Promise.all([params, searchParams]);
-  return metaFromSlug(p.slug || [], sp);
-}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Page Component
@@ -478,27 +444,27 @@ export default async function Listings({
      */}
 
       <ListingsPage
-        {...apiFilters}
-        initialData={response}
-        linksData={linksData}
-        productListData={productListRes}
-        initialCategoryCounts={initialCategoryCounts}
-        initialMakeCounts={initialMakeCounts}
-        initialBottomLinksData={bottomLinksData}
-        initialDistances={await (async () => {
-          if (!filters.suburb || !filters.pincode) return {};
-          const allItems = [
-            ...(response.data?.products ?? []),
-            ...(response.data?.exclusive_products ?? []),
-            ...(response.data?.featured_products ?? []),
-            ...(response.data?.premium_products ?? []),
-          ];
-          const pincodes = allItems
-            .map((p: any) => p.pincode)
-            .filter((p: any): p is string => typeof p === "string" && /^\d{4}$/.test(p));
-          return calculateDistances(filters.pincode as string, pincodes);
-        })()}
-      />
+          {...apiFilters}
+          initialData={response}
+          linksData={linksData}
+          productListData={productListRes}
+          initialCategoryCounts={initialCategoryCounts}
+          initialMakeCounts={initialMakeCounts}
+          initialBottomLinksData={bottomLinksData}
+          initialDistances={await (async () => {
+            if (!filters.suburb || !filters.pincode) return {};
+            const allItems = [
+              ...(response.data?.products ?? []),
+              ...(response.data?.exclusive_products ?? []),
+              ...(response.data?.featured_products ?? []),
+              ...(response.data?.premium_products ?? []),
+            ];
+            const pincodes = allItems
+              .map((p: any) => p.pincode)
+              .filter((p: any): p is string => typeof p === "string" && /^\d{4}$/.test(p));
+            return calculateDistances(filters.pincode as string, pincodes);
+          })()}
+        />
     </>
   );
 }

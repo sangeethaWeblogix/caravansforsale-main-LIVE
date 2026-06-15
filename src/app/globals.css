@@ -20,6 +20,13 @@ body {
   background: #ffffff;
   color: #000000;
   font-family: "Montserrat", Arial, Helvetica, sans-serif !important;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+body > main {
+  flex: 1 1 0%;
 }
 
 a,

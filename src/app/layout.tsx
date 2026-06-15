@@ -3,7 +3,7 @@
 
   import "bootstrap/dist/css/bootstrap.min.css";
   import "bootstrap-icons/font/bootstrap-icons.css";
-  import "./globals.css?=37";
+  import "./globals.css?=38";
   import Navbar from "./navbar/Navbar";
   import NavbarSkeleton from "./navbar/NavbarSkeleton";
   import Footer from "./footer/Footer";
@@ -15,6 +15,10 @@
   // import NextTopLoader from "nextjs-toploader";
 import NavigationHistory from "@/components/NavigationHistory";
 import { BannerProvider } from "@/components/BannerHandler";
+import { headers } from "next/headers";
+import { metaFromSlug } from "@/utils/seo/meta";
+import { parseSlugToFilters } from "@/app/components/urlBuilder";
+import { getCachedListings } from "@/api/listings/api";
 
   const montserrat = Montserrat({
     subsets: ["latin"],
@@ -45,16 +49,83 @@ import { BannerProvider } from "@/components/BannerHandler";
   };
   
   
-  export default function RootLayout({
+  export default async function RootLayout({
     children,
   }: {
     children: React.ReactNode;
   }) {
-  const gtmId = "GTM-N3362FGQ";
-const gtmServer = "https://gtm.caravansforsale.com.au";
+    // Per-slug metadata for /listings/* pages — injected directly into <head> JSX
+    // (avoids async generateMetadata + streaming = metadata-in-body issue in Next.js 15)
+    const h = await headers();
+    const pathname = h.get("x-pathname") ?? "";
+    const isListingSlug =
+      pathname.startsWith("/listings/") &&
+      pathname !== "/listings/" &&
+      pathname !== "/listings";
+
+    let slugTitle = "";
+    let slugDescription = "";
+    let slugCanonical = "";
+    let slugRobots = "";
+
+    if (isListingSlug) {
+      const slugString = pathname.replace(/^\/listings\//, "").replace(/\/$/, "");
+      const slugParts = slugString.split("/").filter(Boolean);
+
+      try {
+        // canonical + robots from metaFromSlug (no API call — pure computation)
+        const meta = await metaFromSlug(slugParts, {});
+        slugCanonical = (meta.alternates?.canonical as string) ?? "";
+        if (meta.robots && typeof meta.robots === "object" && "index" in meta.robots) {
+          slugRobots = (meta.robots as { index: boolean }).index ? "index, follow" : "noindex";
+        } else {
+          slugRobots = "index, follow";
+        }
+
+        // title + description from the same API call as page.tsx
+        // Next.js deduplicates this fetch within the same request
+        const filters = parseSlugToFilters(slugParts, {});
+        const listingRes = await getCachedListings({ ...filters, page: 1 });
+        const seo = listingRes?.seo_v2;
+        slugTitle = String(seo?.meta_title ?? seo?.metatitle ?? seo?.list_page_metatitle ?? "").trim();
+        slugDescription = "Browse caravans for sale across Australia. Compare prices on off-road, hybrid, pop top, touring, luxury models with size, weight & sleeping capacity.";
+
+        // fallback title if API returned nothing
+        if (!slugTitle) {
+          if (meta.title && typeof meta.title === "object" && "absolute" in meta.title) {
+            slugTitle = (meta.title as { absolute: string }).absolute;
+          }
+        }
+      } catch {
+        const parts = slugParts
+          .map((p: string) =>
+            p.replace(/-(category|state|region|condition|search|suburb)$/, "")
+             .replace(/-/g, " ")
+             .replace(/\b\w/g, (c: string) => c.toUpperCase())
+          )
+          .filter(Boolean);
+        slugTitle = parts.length
+          ? `${parts.join(" ")} Caravans for Sale in Australia`
+          : "Caravans for Sale in Australia";
+        slugCanonical = `https://www.caravansforsale.com.au/listings/${slugParts.join("/")}/`;
+        slugDescription = "Browse caravans for sale across Australia. Compare prices on off-road, hybrid, pop top, touring, luxury models with size, weight & sleeping capacity.";
+        slugRobots = "index, follow";
+      }
+    }
+
     return (
       <html lang="en">
         <head>
+          {/* Per-slug SEO tags for /listings/* — rendered before streaming starts */}
+          {/* <title> is handled by generateMetadata in [...slug]/page.tsx (enables auto document.title on client nav) */}
+          {isListingSlug && slugDescription && <meta name="description" content={slugDescription} />}
+          {isListingSlug && slugCanonical && <link rel="canonical" href={slugCanonical} />}
+          {isListingSlug && <meta name="robots" content={slugRobots} />}
+          {isListingSlug && slugTitle && <meta property="og:title" content={slugTitle} />}
+          {isListingSlug && slugDescription && <meta property="og:description" content={slugDescription} />}
+          {isListingSlug && slugCanonical && <meta property="og:url" content={slugCanonical} />}
+          {isListingSlug && slugTitle && <meta name="twitter:title" content={slugTitle} />}
+          {isListingSlug && slugDescription && <meta name="twitter:description" content={slugDescription} />}
           {/* ✅ Google Tag Manager (Head) */}
            <script
   dangerouslySetInnerHTML={{
@@ -73,8 +144,8 @@ const gtmServer = "https://gtm.caravansforsale.com.au";
   }}
 />
 
-        
-          
+
+
         </head>
         <body
           className={`flex flex-col min-h-screen new_font ${montserrat.className}`}
@@ -103,7 +174,7 @@ const gtmServer = "https://gtm.caravansforsale.com.au";
 
           <ScrollToTop />
           </Suspense>
-          <main className="product-page style-5">
+          <main className="product-page style-5 flex-1">
             {/* <NextTopLoader
           color="#ff6600"
           height={3}

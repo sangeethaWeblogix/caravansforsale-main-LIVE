@@ -7,7 +7,6 @@ import "swiper/css/navigation";
 import "swiper/css/pagination";
 import { Navigation, Pagination } from "swiper/modules";
 import Skelton from "../skelton";
-import Head from "next/head";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { haversineKm } from "@/utils/distanceCalc";
 import { toSlug } from "@/utils/seo/slug";
@@ -91,8 +90,6 @@ interface Props {
   pagination: Pagination;
   onNext: () => void;
   onPrev: () => void;
-  metaTitle: string; // Add metaTitle prop
-  metaDescription: string; // Add metaDescription prop
   onFilterChange: (filters: Filters) => void;
   currentFilters: Filters;
   preminumProducts: Product[];
@@ -161,8 +158,6 @@ export default function ListingContent({
   pagination,
   onNext,
   onPrev,
-  metaTitle,
-  metaDescription,
   onFilterChange,
   currentFilters,
   preminumProducts,
@@ -569,16 +564,6 @@ const [currentBanner, setCurrentBanner] = useState<typeof rightBanners[0] | null
 }, [rightBanners]);
   return (
     <>
-      <Head>
-        <title>{metaTitle}</title> {/* Dynamically set title */}
-        <meta name="description" content={metaDescription} />
-        <meta property="og:type" content="website" />
-        <meta property="robot" content="index, follow" />
-        <meta property="og:title" content={metaTitle} />
-        <meta property="og:description" content={metaDescription} />
-        <meta name="twitter:title" content={metaTitle} />
-        <meta name="twitter:description" content={metaDescription} />
-      </Head>
 
       <div className="col-lg-9">
         <div className="top-filter mb-10">
