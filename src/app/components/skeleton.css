@@ -1,13 +1,9 @@
 /* ================================
-   Base shimmer animation
+   Base pulse animation
 ================================ */
-@keyframes skeleton-shimmer {
-  0% {
-    background-position: -500px 0;
-  }
-  100% {
-    background-position: 500px 0;
-  }
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.55; }
 }
 
 /* ================================
@@ -16,14 +12,8 @@
 .skeleton {
   position: relative;
   overflow: hidden;
-  background: linear-gradient(
-    90deg,
-    #eeeeee 25%,
-    #f5f5f5 37%,
-    #eeeeee 63%
-  );
-  background-size: 400% 100%;
-  animation: skeleton-shimmer 1.4s ease infinite;
+  background: #e8e8e8;
+  animation: skeleton-pulse 1.8s ease-in-out infinite;
   border-radius: 6px;
 }
 
@@ -102,3 +92,68 @@
 .mt-3 { margin-top: 12px; }
 .mt-4 { margin-top: 16px; }
 .mt-5 { margin-top: 20px; }
+
+/* ================================
+   Listing card skeleton
+================================ */
+.skel-listing-img {
+  width: 100%;
+  height: 220px;
+  border-radius: 0;
+}
+
+.skel-listing-body {
+  padding: 14px 16px 16px;
+}
+
+.skel-listing-title {
+  height: 18px;
+  width: 78%;
+  margin-bottom: 8px;
+}
+
+.skel-listing-loc {
+  height: 13px;
+  width: 52%;
+  margin-bottom: 12px;
+}
+
+.skel-listing-price {
+  height: 22px;
+  width: 36%;
+}
+
+.skel-listing-tag {
+  height: 24px;
+  width: 66px;
+  border-radius: 4px;
+}
+
+.skel-listing-cond {
+  height: 13px;
+  width: 58%;
+}
+
+/* ================================
+   Sidebar (Spotlight Van) skeleton
+================================ */
+.skel-sidebar-img {
+  width: 100%;
+  height: 240px;
+  border-radius: 0;
+}
+
+.skel-sidebar-badge {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 30px;
+  border-radius: 0;
+}
+
+.skel-sidebar-btn {
+  width: 100%;
+  height: 38px;
+  border-radius: 6px;
+}

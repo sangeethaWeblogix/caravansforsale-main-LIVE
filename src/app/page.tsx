@@ -25,13 +25,31 @@ export const revalidate = 86400;
     icons: { icon: "/favicon.ico" },
     robots: "index, follow",
     verification: {
-      google: "6tT6MT6AJgGromLaqvdnyyDQouJXq0VHS-7HC194xEo", // ✅ this auto generates <meta name="google-site-verification" />
+      google: "6tT6MT6AJgGromLaqvdnyyDQouJXq0VHS-7HC194xEo",
     },
     alternates: {
       canonical: "https://www.caravansforsale.com.au",
     },
-    
-  
+    openGraph: {
+      title: "Caravans For Sale – Australia’s Marketplace for New & Used Caravans",
+      description: "Browse caravans for sale across Australia. Compare prices on off-road, hybrid, pop top, touring, luxury models with size, weight & sleeping capacity.",
+      url: "https://www.caravansforsale.com.au",
+      siteName: "Caravans for Sale",
+      images: [
+        {
+          url: "https://www.caravansforsale.com.au/images/cfs-logo.png",
+          width: 800,
+          height: 600,
+          alt: "Caravans for Sale Australia",
+        },
+      ],
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: "Caravans For Sale – Australia’s Marketplace for New & Used Caravans",
+      description: "Browse caravans for sale across Australia. Compare prices on off-road, hybrid, pop top, touring, luxury models with size, weight & sleeping capacity.",
+    },
   };
  
 const BASE_URL = "https://www.caravansforsale.com.au";

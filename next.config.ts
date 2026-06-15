@@ -75,6 +75,23 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       // ===========================================
+      // HOME PAGE
+      // ===========================================
+      {
+        source: "/",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, s-maxage=86400, stale-while-revalidate=604800",
+          },
+          {
+            key: "CDN-Cache-Control",
+            value: "public, max-age=86400",
+          },
+        ],
+      },
+
+      // ===========================================
       // LISTINGS PAGES - Main caching targets
       // ===========================================
 

@@ -424,7 +424,7 @@ const formatBlogDate = (dateString: string) => {
               <div key={i} className="shop-card">
                 <h3>{cat.title}</h3>
                 <ul>
-                  {cat.items.map((item, j) => (
+                  {(cat.items || []).map((item, j) => (
                     <li key={j}>
                       <a href={item.url}>
                         {item.label} <span>({item.count})</span>

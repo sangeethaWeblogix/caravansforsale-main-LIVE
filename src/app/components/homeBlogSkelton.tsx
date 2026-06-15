@@ -1,18 +1,16 @@
-import { Skeleton } from "@mui/material";
+import "./skeleton.css?=1";
+
 export default function BlogCardSkeleton() {
   return (
     <div className="col-lg-4">
       <div className="side-posts">
         <div className="item">
-          {/* Image placeholder */}
           <div className="img img-cover">
-            <Skeleton variant="rectangular" width="100%" height={200} />
+            <div className="skeleton skeleton-image" style={{ borderRadius: 0 }} />
           </div>
-
-          {/* Text placeholders */}
           <div className="info mt-2">
-            <Skeleton variant="text" width="80%" height={28} />
-            <Skeleton variant="text" width="40%" height={20} />
+            <div className="skeleton skeleton-title" />
+            <div className="skeleton skeleton-badge mt-1" />
           </div>
         </div>
       </div>

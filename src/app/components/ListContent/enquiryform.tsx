@@ -111,7 +111,7 @@ export function useEnquiryForm(product: Product) {
     try {
       const navHistory = sessionStorage.getItem("nav_history");
       const navigation_path = navHistory
-        ? JSON.parse(navHistory).join(", ")
+        ? (() => { try { return JSON.parse(navHistory).join(", "); } catch { return ""; } })()
         : "";
 
       const res = await fetch("/api/enquiry", {

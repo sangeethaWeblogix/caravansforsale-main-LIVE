@@ -38,17 +38,16 @@ export async function middleware(request: NextRequest) {
   const fullPath = url.pathname + url.search;
   const userAgent = request.headers.get('user-agent') || '';
 
+  // Forward pathname to server components (for per-slug metadata injection in root layout)
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set('x-pathname', url.pathname);
+
   /* 🤖 STEP 1: Bot Detection - Let Cloudflare Worker Handle It */
   if (isBot(userAgent)) {
     console.log(`🤖 Bot detected: ${userAgent.substring(0, 50)}...`);
-    
-    // Just pass through - Cloudflare Worker will serve from KV
-    // Don't try to fetch from KV API here - let the Worker do it
-    const response = NextResponse.next();
-    
-    // Add header to help Worker identify bot traffic
+
+    const response = NextResponse.next({ request: { headers: requestHeaders } });
     response.headers.set('X-Is-Bot', 'true');
-    
     return response;
   }
  if (
@@ -72,85 +71,81 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url, { status: 301 });
   }
 
-  /* 3️⃣ Default response */
-  const response = NextResponse.next();
+  /* 3️⃣ SEO Middleware (LISTINGS ONLY) — set all requestHeaders BEFORE creating response */
+  let robotsHeader = "index, follow";
 
-  /* 4️⃣ SEO Middleware (LISTINGS ONLY) */
   if (url.pathname.startsWith("/listings")) {
     const cacheKey = fullPath;
 
     /* 🔹 Cache hit */
     const cached = seoCache.get(cacheKey);
     if (cached && cached.expires > Date.now()) {
-      response.headers.set("X-Robots-Tag", cached.robots);
-      return response;
-    }
+      robotsHeader = cached.robots;
+    } else {
+      try {
+        const slugParts = url.pathname
+          .replace("/listings", "")
+          .split("/")
+          .filter(Boolean);
 
-    try {
-      const slugParts = url.pathname
-        .replace("/listings", "")
-        .split("/")
-        .filter(Boolean);
+        const filters = parseSlugToFilters(
+          slugParts,
+          Object.fromEntries(url.searchParams)
+        );
 
-      const filters = parseSlugToFilters(
-        slugParts,
-        Object.fromEntries(url.searchParams)
-      );
+        const apiUrl =
+          "https://admin.caravansforsale.com.au/wp-json/cfs/v1/new_optimize_code?" +
+          new URLSearchParams(filters as Record<string, string>).toString();
 
-      const apiUrl =
-        "https://admin.caravansforsale.com.au/wp-json/cfs/v1/new_optimize_code?" +
-        new URLSearchParams(filters as Record<string, string>).toString();
+        /* 🔹 AbortController with safe timeout */
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000);
 
-      /* 🔹 AbortController with safe timeout */
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000);
+        const apiRes = await fetch(apiUrl, {
+          headers: {
+            "User-Agent": "next-middleware",
+            ...(API_KEY && { "X-API-Key": API_KEY }),
+          },
+          signal: controller.signal,
+          // @ts-ignore - Edge runtime specific
+          next: { revalidate: 60 },
+        });
 
-      const apiRes = await fetch(apiUrl, {
-        headers: {
-          "User-Agent": "next-middleware",
-          ...(API_KEY && { "X-API-Key": API_KEY }), // ✅ Added
-        },
-        signal: controller.signal,
-        // @ts-ignore - Edge runtime specific
-        next: { revalidate: 60 },
-      });
+        clearTimeout(timeoutId);
 
-      clearTimeout(timeoutId);
+        if (apiRes.ok) {
+          const data = await apiRes.json();
+          const seo = data?.seo_v2 ?? data?.seo ?? {};
 
-      let robotsHeader = "index, follow";
+          const rawIndex = String(seo?.index ?? "").toLowerCase().trim();
+          const rawFollow = String(seo?.follow ?? "").toLowerCase().trim();
 
-      if (apiRes.ok) {
-        const data = await apiRes.json();
+          robotsHeader =
+            (rawIndex === "noindex" ? "noindex" : "index") +
+            ", " +
+            (rawFollow === "nofollow" ? "nofollow" : "follow");
+        }
 
-        const rawIndex = String(data?.seo?.index ?? "")
-          .toLowerCase()
-          .trim();
-
-        const rawFollow = String(data?.seo?.follow ?? "")
-          .toLowerCase()
-          .trim();
-
-        robotsHeader =
-          (rawIndex === "noindex" ? "noindex" : "index") +
-          ", " +
-          (rawFollow === "nofollow" ? "nofollow" : "follow");
+        /* 🔹 Save to cache */
+        seoCache.set(cacheKey, {
+          robots: robotsHeader,
+          expires: Date.now() + CACHE_TTL,
+        });
+      } catch (error: any) {
+        /* ✅ AbortError is EXPECTED → ignore silently */
+        if (error?.name !== "AbortError") {
+          console.error("Middleware SEO error:", error);
+        }
+        // robotsHeader stays "index, follow"
       }
-
-      /* 🔹 Save to cache */
-      seoCache.set(cacheKey, {
-        robots: robotsHeader,
-        expires: Date.now() + CACHE_TTL,
-      });
-
-      response.headers.set("X-Robots-Tag", robotsHeader);
-    } catch (error: any) {
-      /* ✅ AbortError is EXPECTED → ignore silently */
-      if (error?.name !== "AbortError") {
-        console.error("Middleware SEO error:", error);
-      }
-
-      response.headers.set("X-Robots-Tag", "index, follow");
     }
+  }
+
+  /* 4️⃣ Create response AFTER all requestHeaders mutations are complete */
+  const response = NextResponse.next({ request: { headers: requestHeaders } });
+
+  if (url.pathname.startsWith("/listings")) {
+    response.headers.set("X-Robots-Tag", robotsHeader);
   }
 
   return response;

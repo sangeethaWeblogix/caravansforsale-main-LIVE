@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useTransition } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
 import { fetchProductList } from "@/api/productList/api";
- import "swiper/css";
+import "swiper/css";
 import "swiper/css/navigation";
 import CategorySkeleton from "./CategorySkeleton";
 import { buildSlugFromFilters } from "../slugBuilter";

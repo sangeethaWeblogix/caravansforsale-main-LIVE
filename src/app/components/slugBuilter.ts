@@ -18,7 +18,10 @@ function modelSlug(model: string): string {
   return model
     .trim()
     .toLowerCase()
-    .replace(/\s+/g, "-"); // space → hyphen (keep +)
+    .replace(/\./g, "-")  // dots → hyphens (prevents Next.js treating as file extension)
+    .replace(/\s+/g, "-") // spaces → hyphens
+    .replace(/-+/g, "-")  // collapse multiple hyphens
+    .replace(/^-+|-+$/g, ""); // trim
 }
 export function buildSlugFromFilters(f: Filters): string {
   const segments: string[] = [];

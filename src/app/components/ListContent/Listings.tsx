@@ -15,7 +15,7 @@ import { flushSync } from "react-dom";
 import { v4 as uuidv4 } from "uuid";
 import "./newList.css?=301";
 import "./top-filters.css?=496";
- import ListingSkeleton from "../skelton";
+import ListingSkeleton, { SidebarListingSkeleton } from "../skelton";
 import {
   redirect,
   usePathname,
@@ -185,8 +185,6 @@ export default function ListingsPage({
   initialDistances,
   ...incomingFilters
 }: Props) {
-  console.log("productListData", productListData);
-
   const DEFAULT_RADIUS = 50 as const;
   const [openModal, setOpenModal] = useState(false);
   const [filters, setFilters] = useState<Filters>({});
@@ -206,12 +204,14 @@ export default function ListingsPage({
   const [nextPageData, setNextPageData] = useState<ApiResponse | null>(null);
   const isSliderFetchingRef = useRef(false);
   const [clickid, setclickid] = useState<string | null>(null);
-  const [isRestored, setIsRestored] = useState(false);
-  console.log(isRestored);
 
   // ✅ FIX: Single ref to track whether we've consumed initialData.
   // No state variable — avoids circular dep with loadListings/useEffect.
   const hasConsumedInitialDataRef = useRef(false);
+  // Track the last initialData reference we applied — used to detect server re-renders on filter navigation.
+  const prevInitialDataRef = useRef<ApiResponse | null>(initialData ?? null);
+  // When set true, the URL-change effect skips the client fetch (initialData sync already applied).
+  const shouldSkipFetchRef = useRef(false);
  // Initialize state with initialData (always provided now — page.tsx always fetches)
   const [products, setProducts] = useState<Product[]>(
     initialData?.data?.products
@@ -263,14 +263,34 @@ export default function ListingsPage({
   const [models, setModels] = useState<MakeOption[]>(
     initialData?.data?.model_options || [],
   );
+  const modelsRef = useRef<MakeOption[]>(initialData?.data?.model_options || []);
+  const resolveModelSlug = (urlSlug: string | undefined): string | undefined => {
+    if (!urlSlug) return urlSlug;
+    const found = modelsRef.current.find(
+      (m) =>
+        m.slug === urlSlug ||
+        m.slug.toLowerCase().replace(/[^a-z0-9]/g, "-").replace(/-+/g, "-") === urlSlug
+    );
+    return found?.slug ?? urlSlug;
+  };
+  const withResolvedModel = (f: Filters): Filters => {
+    if (!f.model) return f;
+    const resolved = resolveModelSlug(f.model);
+    return resolved && resolved !== f.model ? { ...f, model: resolved } : f;
+  };
 
   const [pageTitle, setPageTitle] = useState(initialData?.seo_v2?.h1 || " ");
   const [metaTitle, setMetaTitle] = useState(
-    initialData?.seo_v2?.metatitle || "",
+    initialData?.seo_v2?.meta_title ?? initialData?.seo_v2?.metatitle ?? "",
   );
   const [metaDescription, setMetaDescription] = useState(
     initialData?.seo_v2?.metadescription || "",
   );
+
+  // Update browser tab title whenever metaTitle state changes (filter navigation, initialData update)
+  useEffect(() => {
+    if (metaTitle) document.title = metaTitle;
+  }, [metaTitle]);
 
   // 1️⃣  persistence helpers
   const PAGE_KEY = (id: string) => `page_${id}`;
@@ -377,7 +397,7 @@ const [pagination, setPagination] = useState<Pagination>(() => {
     const path = pathname;
     const slugParts = path.split("/listings/")[1]?.split("/") || [];
     const parsed = parseSlugToFilters(slugParts);
-    const merged = { ...parsed, ...incomingFilters };
+    const merged = withResolvedModel({ ...parsed, ...incomingFilters });
     filtersRef.current = merged;
     setFilters(merged);
   }, [incomingFilters, pathname]);
@@ -414,8 +434,7 @@ const [pagination, setPagination] = useState<Pagination>(() => {
   };
 
   const updateURLWithFilters = useCallback(
-    (nextFilters: Filters, pageNum: number, clickidParam?: string) => {
-      console.log(pageNum);
+    (nextFilters: Filters, _pageNum: number, clickidParam?: string) => {
       const slug = buildSlugFromFilters(nextFilters);
       const query = new URLSearchParams();
 
@@ -504,11 +523,6 @@ const [pagination, setPagination] = useState<Pagination>(() => {
               filtersRef.current,
             );
             if (response?.success) {
-              console.log(
-                "Prefetch success for page:",
-                pagination.current_page + 1,
-              );
-              console.log("responsepre", response);
               setNextPageData(response);
               setIsNextLoading(true);
             } else {
@@ -553,7 +567,7 @@ const [pagination, setPagination] = useState<Pagination>(() => {
         from_length: safeFilters.from_length?.toString(),
         to_length: safeFilters.to_length?.toString(),
         make: safeFilters.make,
-        model: safeFilters.model,
+        model: resolveModelSlug(safeFilters.model),
         state: safeFilters.state,
         region: safeFilters.region,
         suburb: safeFilters.suburb,
@@ -574,6 +588,18 @@ const [pagination, setPagination] = useState<Pagination>(() => {
 
   const latestListingsRequestRef = useRef(0);
 
+  // Mirror of generateTitleFromFilters in meta.ts — used when seo_v2 returns no title (e.g. year filter pages)
+  const computeTitleFromFilters = useCallback((f: Filters): string => {
+    const titleCase = (s: string) => s.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+    const parts: string[] = [];
+    if (f.condition) parts.push(titleCase(String(f.condition)));
+    if (f.make) parts.push(titleCase(String(f.make)));
+    if (f.category) parts.push(titleCase(String(f.category).replace(/-category$/, "")));
+    const noun = parts.length ? `${parts.join(" ")} Caravans` : "Caravans";
+    const stateStr = f.state ? ` in ${titleCase(String(f.state))}, Australia` : " in Australia";
+    return `${noun} for Sale${stateStr}`;
+  }, []);
+
   const loadListings = useCallback(
     async (
       pageNum = 1,
@@ -590,8 +616,6 @@ const [pagination, setPagination] = useState<Pagination>(() => {
 
       try {
         const safeFilters = normalizeSearchFromMake(appliedFilters);
-        console.log("appp1", appliedFilters);
-        console.log("app", safeFilters.orderby);
 
         const radiusNum = asNumber(safeFilters.radius_kms);
         const radiusParam =
@@ -615,7 +639,7 @@ const [pagination, setPagination] = useState<Pagination>(() => {
           from_length: safeFilters.from_length?.toString(),
           to_length: safeFilters.to_length?.toString(),
           make: safeFilters.make,
-          model: safeFilters.model,
+          model: resolveModelSlug(safeFilters.model),
           state: safeFilters.state,
           region: safeFilters.region,
           suburb: safeFilters.suburb,
@@ -661,9 +685,15 @@ const [pagination, setPagination] = useState<Pagination>(() => {
         setCategories(response?.data?.all_categories ?? []);
         setMakes(response?.data?.make_options ?? []);
         setStateOptions(response?.data?.states ?? []);
+        modelsRef.current = response?.data?.model_options ?? [];
         setModels(response?.data?.model_options ?? []);
         setMetaDescription(response?.seo_v2?.metadescription ?? "");
-        setMetaTitle(response?.seo_v2?.metatitle ?? "");
+        setMetaTitle(
+          response?.seo_v2?.meta_title ??
+          response?.seo_v2?.metatitle ??
+          response?.seo_v2?.list_page_metatitle ??
+          computeTitleFromFilters(safeFilters)
+        );
         if (response.pagination) setPagination(response.pagination);
 
         return response;
@@ -674,7 +704,7 @@ const [pagination, setPagination] = useState<Pagination>(() => {
     },
     // ✅ FIX: Only stable deps. No state variables that flip and cause loops.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [DEFAULT_RADIUS, initialData],
+    [DEFAULT_RADIUS, initialData, computeTitleFromFilters],
   );
 
   const handleNextPage = useCallback(async () => {
@@ -765,7 +795,6 @@ const [pagination, setPagination] = useState<Pagination>(() => {
   }, [pagination, loadListings]);
 
   const restoredOnceRef = useRef(false);
-  console.log("paginationapi", pagination);
 
   /* ---- SINGLE source of truth: URL -> fetch ---- */
   const searchKey = searchParams.toString();
@@ -777,6 +806,38 @@ const [pagination, setPagination] = useState<Pagination>(() => {
     const next = JSON.stringify(incomingFilters);
     if (prev !== next) incomingFiltersRef.current = incomingFilters;
   }, [incomingFilters]);
+
+  // Sync state from server when initialData changes (ISR provided new data on filter navigation).
+  // This eliminates the duplicate client-side fetch after router.push().
+  useEffect(() => {
+    if (!initialData || initialData === prevInitialDataRef.current) return;
+    if (!hasConsumedInitialDataRef.current) return; // First mount — useState handles it
+    prevInitialDataRef.current = initialData;
+    shouldSkipFetchRef.current = true;
+
+    const productsList = initialData.data?.products ?? [];
+    const validProducts = Array.isArray(productsList) ? productsList.filter((p) => p != null) : [];
+    setProducts(validProducts.length > 0 ? transformApiItemsToProducts(validProducts) : []);
+    setFeaturedProducts(transformApiItemsToProducts(initialData.data?.featured_products ?? []));
+    setPremiumProducts(transformApiItemsToProducts(initialData.data?.premium_products ?? []));
+    setExculisiveProducts(transformApiItemsToProducts(initialData.data?.exclusive_products ?? []));
+    setEmptyProduct(transformApiItemsToProducts(initialData.data?.emp_exclusive_products ?? []));
+    setCategories(initialData.data?.all_categories ?? []);
+    setMakes(initialData.data?.make_options ?? []);
+    setStateOptions(initialData.data?.states ?? []);
+    modelsRef.current = initialData.data?.model_options ?? [];
+    setModels(initialData.data?.model_options ?? []);
+    setMetaDescription(initialData.seo_v2?.metadescription ?? "");
+    const apiTitle = initialData.seo_v2?.meta_title ?? initialData.seo_v2?.metatitle ?? initialData.seo_v2?.list_page_metatitle ?? "";
+    if (apiTitle) {
+      setMetaTitle(apiTitle);
+    } else {
+      const slugParts = window.location.pathname.replace(/^\/listings\//, "").replace(/\/$/, "").split("/").filter(Boolean);
+      setMetaTitle(computeTitleFromFilters(parseSlugToFilters(slugParts, {})));
+    }
+    if (initialData.pagination) setPagination(initialData.pagination);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialData, computeTitleFromFilters]);
 
   const prevFiltersRef = useRef<Filters>({});
   const prevPageRef = useRef(1);
@@ -803,12 +864,12 @@ const [pagination, setPagination] = useState<Pagination>(() => {
     const radiusFromQuery = searchParams.get("radius_kms") ?? undefined;
     const pageFromURL = validatePage(searchParams.get("page"));
 
-    const merged: Filters = {
+    const merged: Filters = withResolvedModel({
       ...parsedFromURL,
       ...incomingFiltersRef.current,
       ...(orderbyFromQuery ? { orderby: orderbyFromQuery } : {}),
       ...(radiusFromQuery ? { radius_kms: radiusFromQuery } : {}),
-    };
+    });
 
     const filtersChanged =
       JSON.stringify(merged) !== JSON.stringify(prevFiltersRef.current);
@@ -826,6 +887,13 @@ const [pagination, setPagination] = useState<Pagination>(() => {
     // was provided — useState already seeded the products.
     if (!hasConsumedInitialDataRef.current && initialData) {
       hasConsumedInitialDataRef.current = true;
+      return;
+    }
+
+    // Server already returned fresh data via ISR (initialData sync effect applied it).
+    // Skip the duplicate client fetch.
+    if (shouldSkipFetchRef.current) {
+      shouldSkipFetchRef.current = false;
       return;
     }
 
@@ -861,10 +929,12 @@ const [pagination, setPagination] = useState<Pagination>(() => {
 
   const handleFilterChange = useCallback(
     async (newFilters: Filters) => {
-      setIsLoading(true);
-      setIsMainLoading(true);
-      setIsFeaturedLoading(true);
-      setIsPremiumLoading(true);
+      flushSync(() => {
+        setIsLoading(true);
+        setIsMainLoading(true);
+        setIsFeaturedLoading(true);
+        setIsPremiumLoading(true);
+      });
 
       const mergedFilters = mergeFiltersSafely(filtersRef.current, newFilters);
       if ("orderby" in newFilters && !newFilters.orderby) {
@@ -896,15 +966,6 @@ const [pagination, setPagination] = useState<Pagination>(() => {
     [updateURLWithFilters, loadListings],
   );
 
-  useEffect(() => {
-    console.log("Loading state:", {
-      isLoading,
-      isMainLoading,
-      isFeaturedLoading,
-      isPremiumLoading,
-    });
-  }, [isLoading, isMainLoading, isFeaturedLoading, isPremiumLoading]);
-
   const isPopStateRef = useRef(false);
 
   useEffect(() => {
@@ -917,10 +978,10 @@ const [pagination, setPagination] = useState<Pagination>(() => {
       const orderby = sp.get("orderby") ?? undefined;
       const urlClickid = sp.get("clickid") || null;
 
-      const merged: Filters = {
+      const merged: Filters = withResolvedModel({
         ...parsed,
         ...(orderby ? { orderby } : {}),
-      };
+      });
 
       filtersRef.current = merged;
       setFilters(merged);
@@ -967,12 +1028,9 @@ const [pagination, setPagination] = useState<Pagination>(() => {
       restoredOnceRef.current = true;
       setPagination((p) => ({ ...p, current_page: savedPage }));
       setUrlParams({ clickid });
-      loadListings(savedPage, filtersRef.current, true).finally(() => {
-        setIsRestored(true);
-      });
+      loadListings(savedPage, filtersRef.current, true);
     } else {
       setUrlParams({ clickid });
-      setIsRestored(true);
     }
   }, [clickid]);
 
@@ -1048,7 +1106,7 @@ const [pagination, setPagination] = useState<Pagination>(() => {
     const params = new URLSearchParams();
     const f = filtersRef.current;
     if (f.make) params.set("make", f.make);
-    if (f.model) params.set("model", f.model);
+    if (f.model) params.set("model", resolveModelSlug(f.model) ?? f.model);
     if (f.condition) params.set("condition", f.condition);
     if (f.state) params.set("state", f.state.toLowerCase());
     if (f.region) params.set("region", f.region);
@@ -1116,8 +1174,6 @@ const [pagination, setPagination] = useState<Pagination>(() => {
   };
 
   const handleSliderFilterSelect = async (newFilters: Partial<Filters>) => {
-    console.log("🔥 slider filter change:", newFilters);
-
     const next: Filters = { ...filtersRef.current };
     (Object.keys(newFilters) as (keyof Filters)[]).forEach((key) => {
       const val = newFilters[key];
@@ -1158,14 +1214,14 @@ const [pagination, setPagination] = useState<Pagination>(() => {
       }
     }
 
-    console.log("🔥 next filters:", next);
-
     filtersRef.current = next;
     setFilters({ ...next });
 
-    setIsMainLoading(true);
-    setIsFeaturedLoading(true);
-    setIsPremiumLoading(true);
+    flushSync(() => {
+      setIsMainLoading(true);
+      setIsFeaturedLoading(true);
+      setIsPremiumLoading(true);
+    });
     setPagination({
       current_page: 1,
       total_pages: 1,
@@ -1189,23 +1245,12 @@ const [pagination, setPagination] = useState<Pagination>(() => {
           ? String(radiusNum)
           : undefined;
 
-      console.log("🔥 FINAL next filters before fetch:", {
-        make: next.make,
-        model: next.model,
-        category: next.category,
-        state: next.state,
-        from_price: next.from_price,
-        to_price: next.to_price,
-        minKg: next.minKg,
-        maxKg: next.maxKg,
-      });
-
       const response: ApiResponse = await fetchListings({
         ...next,
         page: 1,
         category: next.category,
         make: next.make,
-        model: next.model,
+        model: resolveModelSlug(next.model),
         condition: next.condition,
         region: next.region,
         state: next.state,
@@ -1247,8 +1292,8 @@ const [pagination, setPagination] = useState<Pagination>(() => {
       );
 
       if (response?.pagination) setPagination(response.pagination);
-      if (response?.seo_v2?.metatitle)
-        setMetaTitle(response.seo_v2.metatitle);
+      const sliderTitle = response?.seo_v2?.meta_title ?? response?.seo_v2?.metatitle ?? "";
+      if (sliderTitle) setMetaTitle(sliderTitle);
       if (response?.seo_v2?.metadescription)
         setMetaDescription(response.seo_v2.metadescription);
       if (response?.seo_v2?.h1) setPageTitle(response.seo_v2?.h1);
@@ -1260,9 +1305,6 @@ const [pagination, setPagination] = useState<Pagination>(() => {
       setIsPremiumLoading(false);
     }
   };
-
-  console.log("initialData states:", initialData?.data?.states?.length);
-  console.log("stateOptions state:", stateOptions?.length);
 
   const activeFilterCount = useMemo(() => {
     let count = 0;
@@ -1481,9 +1523,14 @@ const [pagination, setPagination] = useState<Pagination>(() => {
               isMainLoading ||
               isFeaturedLoading ||
               isPremiumLoading ? (
-                <div className="col-lg-8">
-                  <ListingSkeleton count={8} />
-                </div>
+                <>
+                  <div className="col-lg-9">
+                    <ListingSkeleton count={8} />
+                  </div>
+                  <div className="col-lg-3 d-none d-lg-block">
+                    <SidebarListingSkeleton />
+                  </div>
+                </>
               ) : (
                 <>
                   {(products.length > 0 ||
@@ -1496,8 +1543,6 @@ const [pagination, setPagination] = useState<Pagination>(() => {
                       pagination={pagination}
                       onNext={handleNextPage}
                       onPrev={handlePrevPage}
-                      metaDescription={metaDescription}
-                      metaTitle={metaTitle}
                       onFilterChange={handleFilterChange}
                       currentFilters={filters}
                       preminumProducts={preminumProducts}
@@ -1517,8 +1562,6 @@ const [pagination, setPagination] = useState<Pagination>(() => {
                       <ExculsiveContent
                         data={emptyProduct}
                         pageTitle={pageTitle}
-                        metaDescription={metaDescription}
-                        metaTitle={metaTitle}
                         isPremiumLoading={isPremiumLoading}
                         currentFilters={filters}
                       />

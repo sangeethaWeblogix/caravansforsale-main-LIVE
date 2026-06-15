@@ -5,7 +5,6 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import { Navigation, Pagination } from "swiper/modules";
- import Head from "next/head";
 import { useEffect, useRef, useState } from "react";
 import { toSlug } from "@/utils/seo/slug";
 import ImageWithSkeleton from "../ImageWithSkeleton";
@@ -81,8 +80,6 @@ export interface Filters {
 interface Props {
   data: Product[];
   pageTitle: string;
-  metaTitle: string;
-  metaDescription: string;
   isPremiumLoading: boolean;
   currentFilters?: Filters;
 }
@@ -90,8 +87,6 @@ interface Props {
 export default function ExculisiveContent({
   data,
   pageTitle,
-  metaTitle,
-  metaDescription,
   currentFilters = {},
 }: Props) {
   const [showInfo, setShowInfo] = useState(false);
@@ -375,16 +370,6 @@ export default function ExculisiveContent({
 
   return (
     <>
-      <Head>
-        <title>{metaTitle}</title> {/* Dynamically set title */}
-        <meta name="description" content={metaDescription} />
-        <meta property="og:type" content="website" />
-        <meta property="robot" content="index, follow" />
-        <meta property="og:title" content={metaTitle} />
-        <meta property="og:description" content={metaDescription} />
-        <meta name="twitter:title" content={metaTitle} />
-        <meta name="twitter:description" content={metaDescription} />
-      </Head>
 
       <div className="col-lg-9 ">
         <div className="top-filter mb-10">

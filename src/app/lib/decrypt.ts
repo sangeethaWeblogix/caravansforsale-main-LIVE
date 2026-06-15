@@ -25,5 +25,9 @@
   );
 
   const text = new TextDecoder().decode(decrypted);
-  return JSON.parse(text);
+  try {
+    return JSON.parse(text);
+  } catch {
+    return null;
+  }
 }

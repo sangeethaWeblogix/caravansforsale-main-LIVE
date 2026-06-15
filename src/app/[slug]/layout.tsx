@@ -1,6 +1,4 @@
- // export const dynamic = "force-dynamic"
-;
-
+import ThemeRegistry from "../components/ThemeRegistry";
 import { Metadata } from "next";
 import "./details.css";
 import { ReactNode } from "react";
@@ -88,9 +86,11 @@ export default async function Layout({
 
   /** 🛑 STOP BLOG FETCH FOR THANK-YOU PAGES **/
   if (slug.startsWith("thank-you-")) {
-    return <div>
-      <Thankyou  />
-    </div>;
+    return (
+      <ThemeRegistry>
+        <Thankyou />
+      </ThemeRegistry>
+    );
   }
 
   /** ✅ SAFE BLOG FETCH FOR NORMAL PAGES **/
@@ -138,14 +138,12 @@ export default async function Layout({
   };
 
   return (
-    <>
-      {/* JSON-LD FOR BLOG ONLY */}
-     <script
+    <ThemeRegistry>
+      <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: safeJsonLdString(jsonLd),
-        }}
+        dangerouslySetInnerHTML={{ __html: safeJsonLdString(jsonLd) }}
       />
- <div>{children}</div>    </>
+      <div>{children}</div>
+    </ThemeRegistry>
   );
 }

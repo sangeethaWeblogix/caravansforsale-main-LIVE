@@ -5,7 +5,8 @@ import { Metadata } from "next";
 export const revalidate = 3600;
 
 export const metadata: Metadata = {
-  title: "Caravans for Sale in Australia",
+  // title intentionally omitted — listings/page.tsx sets it for /listings/,
+  // and [...slug]/layout.tsx uses title:null to let root layout JSX inject per-slug title
   description:
       "Browse caravans for sale across Australia. Compare prices on off-road, hybrid, pop top, touring, luxury models with size, weight & sleeping capacity.",
   robots: "index, follow",
