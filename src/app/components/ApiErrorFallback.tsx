@@ -21,13 +21,26 @@ export default function ApiErrorFallback({
   errorSource,
 }: ApiErrorFallbackProps) {
   const [countdown, setCountdown] = useState(10);
+  const [autoRetryEnabled, setAutoRetryEnabled] = useState(false);
+
+  const RETRY_KEY = "api_error_retry_count";
+  const MAX_RETRIES = 3;
 
   useEffect(() => {
     if (errorSource !== "BACKEND") return;
+    const retries = parseInt(sessionStorage.getItem(RETRY_KEY) || "0", 10);
+    if (retries >= MAX_RETRIES) return; // stop after 3 attempts
+    setAutoRetryEnabled(true);
+  }, [errorSource]);
+
+  useEffect(() => {
+    if (!autoRetryEnabled) return;
     const interval = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
           clearInterval(interval);
+          const retries = parseInt(sessionStorage.getItem(RETRY_KEY) || "0", 10);
+          sessionStorage.setItem(RETRY_KEY, String(retries + 1));
           window.location.reload();
           return 0;
         }
@@ -35,7 +48,7 @@ export default function ApiErrorFallback({
       });
     }, 1000);
     return () => clearInterval(interval);
-  }, [errorSource]);
+  }, [autoRetryEnabled]);
 
   const handleRetry = () => {
     window.location.reload();
@@ -291,7 +304,7 @@ export default function ApiErrorFallback({
         </h2>
 
         {/* Auto-retry countdown for backend errors */}
-        {errorSource === "BACKEND" && countdown > 0 && (
+        {errorSource === "BACKEND" && autoRetryEnabled && countdown > 0 && (
           <div style={{ marginBottom: "14px" }}>
             <span
               style={{
