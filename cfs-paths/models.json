@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "models",
-    "count": 2859,
+    "count": 2860,
     "paths": [
         "active/storm/",
         "adria/action/",
@@ -1513,6 +1513,7 @@
         "mdc/xt10e/",
         "mdc/xt10e-lp-low-profile/",
         "mdc/xt12/",
+        "mdc/xt12-db/",
         "mdc/xt12hr-mkii/",
         "mdc/xt12hr-mkiii/",
         "mdc/xt14e/",
@@ -2863,5 +2864,5 @@
         "zone-rv/venture-20-6/",
         "zone-rv/znu004/"
     ],
-    "generated_at": "2026-06-15 16:54:55"
+    "generated_at": "2026-06-15 23:01:05"
 }
