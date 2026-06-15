@@ -21,6 +21,7 @@ import { fetchBottomLinks } from "@/api/bottomLinks/api";
 import type { BottomLinksData } from "@/api/bottomLinks/api";
 import ApiErrorFallback from "@/app/components/ApiErrorFallback";
 import { reportGitHubIssue } from "@/lib/reportGitHubIssue";
+import { unstable_noStore } from "next/cache";
 
 export const revalidate = 3600;
 
@@ -303,6 +304,8 @@ export default async function Listings({
       fetchBottomLinks(apiFilters),
     ]);
   } catch (err) {
+    // Prevent ISR from caching this error response — next request will retry fresh
+    unstable_noStore();
     const msg = err instanceof Error ? err.message : "";
     if (msg.includes("400") || msg.includes("404")) {
       redirect("/404");
