@@ -62,12 +62,7 @@ export default async function ListingsPage({
     .map(([k, v]) => `${k}=${Array.isArray(v) ? v.join(",") : (v ?? "")}`)
     .join("&");
 
-  let page: number;
-  try {
-    page = ensureValidPage(resolvedSearchParams.page, fullQuery);
-  } catch {
-    page = 1;
-  }
+  const page = ensureValidPage(resolvedSearchParams.page, fullQuery);
 
   let response;
   let productListRes;

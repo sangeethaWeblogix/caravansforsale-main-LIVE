@@ -316,7 +316,7 @@ export default function ListingsPage({
 
   useEffect(() => {
   if (searchParams.has("page")) {
-    redirect("/404");
+    redirect("/410");
   }
   const fromYears = searchParams.get("acustom_fromyears");
   const toYears = searchParams.get("acustom_toyears");
@@ -428,7 +428,7 @@ const [pagination, setPagination] = useState<Pagination>(() => {
     }
     const page = parseInt(raw, 10);
     if (!Number.isInteger(page) || page < 1) {
-      redirect("/404");
+      redirect("/410");
     }
     return page;
   };
