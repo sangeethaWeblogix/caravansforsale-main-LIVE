@@ -7,6 +7,7 @@ import { metaFromSlug } from "@/utils/seo/meta";
 import { redirect, notFound } from "next/navigation";
 import "../../components/ListContent/newList.css";
 import "../listings.css";
+import GonePage from "@/app/410/page";
 // import { fetchMakeDetails } from "@/api/make-new/api";
 import { fetchLinksData } from "@/api/link/api";
 import { buildSlugFromFilters } from "@/app/components/slugBuilter";
@@ -25,11 +26,38 @@ import { unstable_noStore } from "next/cache";
 
 export const revalidate = 3600;
 
-// generateMetadata — pure slug computation, NO API call.
-// Instant title on client-side navigation (no loading flash).
-// Root layout <head> JSX handles og/twitter with API title (SSR only).
-export async function generateMetadata({ params }: { params: Promise<{ slug?: string[] }> }): Promise<Metadata> {
-  const { slug = [] } = await params;
+export async function generateMetadata({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug?: string[] }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}): Promise<Metadata> {
+  const [{ slug = [] }, resolvedSearchParams] = await Promise.all([params, searchParams]);
+
+  // Check product count — if 0, return noindex so page is de-listed from search engines.
+  // When products return on the next ISR cycle, metadata reverts to indexable automatically.
+  try {
+    const filters = parseSlugToFilters(slug, resolvedSearchParams);
+    const pageParam = resolvedSearchParams.page;
+    let page = 1;
+    if (pageParam) {
+      const val = Array.isArray(pageParam) ? pageParam[0] : pageParam;
+      const n = parseInt(val as string, 10);
+      if (!isNaN(n) && n > 0) page = n;
+    }
+    const data = await getCachedListings({ ...filters, page });
+    const hasProducts = (data?.data?.products?.length ?? 0) > 0;
+    if (!hasProducts) {
+      return {
+        title: { absolute: "410 - Page Permanently Removed | Caravans For Sale" },
+        robots: { index: false, follow: false },
+      };
+    }
+  } catch {
+    // On API error, fall through to normal metadata
+  }
+
   const meta = await metaFromSlug(slug, {});
   const title =
     meta.title && typeof meta.title === "object" && "absolute" in meta.title
@@ -334,9 +362,9 @@ export default async function Listings({
     );
   }
 
-  // ───── Empty results → 404 (URL unchanged) ─────
+  // ───── Empty results → render 410 inline (URL unchanged, noindex already set in generateMetadata) ─────
   if (!response?.data || !Array.isArray(response.data.products) || response.data.products.length === 0) {
-    redirect("/404");
+    return <GonePage />;
   }
 
   // ───── JSON-LD Schema ─────

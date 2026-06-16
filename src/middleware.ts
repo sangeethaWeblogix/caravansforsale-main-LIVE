@@ -5,7 +5,7 @@ const API_KEY = process.env.CFS_API_KEY;
 /* ──────────────────────────────────────────────
    Edge-safe in-memory cache
 ────────────────────────────────────────────── */
-const seoCache = new Map<string, { robots: string; expires: number }>();
+const seoCache = new Map<string, { robots: string; isEmpty: boolean; expires: number }>();
 const CACHE_TTL = 60 * 1000; // 1 minute
 
 /* ──────────────────────────────────────────────
@@ -59,14 +59,15 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  /* 🤖 STEP 1: Bot Detection - Let Cloudflare Worker Handle It */
-  if (isBot(userAgent)) {
+  /* 🤖 Bot Detection — listing pages are NOT early-returned so bots also get the
+     0-product → 410 check below. All other pages exit here for bots. */
+  if (isBot(userAgent) && !url.pathname.startsWith('/listings')) {
     console.log(`🤖 Bot detected: ${userAgent.substring(0, 50)}...`);
-
     const response = NextResponse.next({ request: { headers: requestHeaders } });
     response.headers.set('X-Is-Bot', 'true');
     return response;
   }
+
  if (
     !url.pathname.endsWith('/') &&
     !url.pathname.includes('.') &&
@@ -97,6 +98,10 @@ export async function middleware(request: NextRequest) {
     /* 🔹 Cache hit */
     const cached = seoCache.get(cacheKey);
     if (cached && cached.expires > Date.now()) {
+      if (cached.isEmpty) {
+        // 0 products cached → 410 immediately (URL unchanged)
+        return NextResponse.rewrite(new URL('/410', request.url), { status: 410 });
+      }
       robotsHeader = cached.robots;
     } else {
       try {
@@ -132,6 +137,14 @@ export async function middleware(request: NextRequest) {
 
         if (apiRes.ok) {
           const data = await apiRes.json();
+
+          // 0 products → render /410 page at same URL with HTTP 410 status
+          const products = data?.data?.products ?? [];
+          if (products.length === 0) {
+            seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty: true, expires: Date.now() + CACHE_TTL });
+            return NextResponse.rewrite(new URL('/410', request.url), { status: 410 });
+          }
+
           const seo = data?.seo_v2 ?? data?.seo ?? {};
 
           const rawIndex = String(seo?.index ?? "").toLowerCase().trim();
@@ -146,6 +159,7 @@ export async function middleware(request: NextRequest) {
         /* 🔹 Save to cache */
         seoCache.set(cacheKey, {
           robots: robotsHeader,
+          isEmpty: false,
           expires: Date.now() + CACHE_TTL,
         });
       } catch (error: any) {
@@ -163,6 +177,11 @@ export async function middleware(request: NextRequest) {
 
   if (url.pathname.startsWith("/listings")) {
     response.headers.set("X-Robots-Tag", robotsHeader);
+  }
+
+  // Bot header for listing-page bots (non-listing bots exited early above)
+  if (isBot(userAgent)) {
+    response.headers.set('X-Is-Bot', 'true');
   }
 
   return response;
