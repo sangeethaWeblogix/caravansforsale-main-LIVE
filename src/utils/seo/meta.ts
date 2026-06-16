@@ -281,10 +281,71 @@ function titleCase(s: string): string {
   return s.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
+function fmtPrice(n: string): string {
+  return `$${parseInt(n, 10).toLocaleString("en-AU")}`;
+}
+
+function fmtKg(n: string): string {
+  return `${parseInt(n, 10).toLocaleString("en-AU")}kg`;
+}
+
+function getBandText(parsed: ReturnType<typeof parseSlugToFilters>): string {
+  // Price
+  const from = parsed.from_price ? String(parsed.from_price) : null;
+  const to   = parsed.to_price   ? String(parsed.to_price)   : null;
+  if (from && to) return `${fmtPrice(from)} - ${fmtPrice(to)}`;
+  if (to)         return `Under ${fmtPrice(to)}`;
+  if (from)       return `Over ${fmtPrice(from)}`;
+
+  // ATM (weight)
+  const minKg = parsed.minKg ? String(parsed.minKg) : null;
+  const maxKg = parsed.maxKg ? String(parsed.maxKg) : null;
+  if (minKg && maxKg) return `${fmtKg(minKg)} - ${fmtKg(maxKg)} ATM`;
+  if (maxKg)          return `Under ${fmtKg(maxKg)} ATM`;
+  if (minKg)          return `Over ${fmtKg(minKg)} ATM`;
+
+  // Sleep (berths)
+  const fromSleep = parsed.from_sleep ? String(parsed.from_sleep) : null;
+  const toSleep   = parsed.to_sleep   ? String(parsed.to_sleep)   : null;
+  if (fromSleep && toSleep) return `Sleeping ${fromSleep}-${toSleep} Berths`;
+  if (toSleep)              return `Sleeping Up to ${toSleep} Berths`;
+  if (fromSleep)            return `Sleeping ${fromSleep}+ Berths`;
+
+  // Length (feet)
+  const fromLen = parsed.from_length ? String(parsed.from_length) : null;
+  const toLen   = parsed.to_length   ? String(parsed.to_length)   : null;
+  if (fromLen && toLen) return `${fromLen}ft - ${toLen}ft`;
+  if (toLen)            return `Under ${toLen}ft`;
+  if (fromLen)          return `Over ${fromLen}ft`;
+
+  return "";
+}
+
 function generateTitleFromFilters(
   parsed: ReturnType<typeof parseSlugToFilters>
 ): string {
+  // Build location suffix (shared)
+  const locationSuffix = parsed.state
+    ? (() => {
+        const sk = parsed.state.toLowerCase().replace(/\s+/g, "-");
+        const sn = STATE_NAMES[sk] ?? titleCase(parsed.state);
+        return parsed.region
+          ? ` in ${titleCase(parsed.region)}, ${sn}`
+          : ` in ${sn}, Australia`;
+      })()
+    : " in Australia";
+
+  // Keyword search: treat search term as the primary noun
+  if (parsed.search) {
+    const kw = titleCase(parsed.search);
+    const noun = /caravans?$/i.test(kw) ? kw : `${kw} Caravans`;
+    return `${noun} for Sale${locationSuffix}`;
+  }
+
   const parts: string[] = [];
+
+  // Year prefix
+  if (parsed.acustom_fromyears) parts.push(String(parsed.acustom_fromyears));
 
   if (parsed.condition === "New" || parsed.condition === "new") parts.push("New");
   else if (parsed.condition === "Used" || parsed.condition === "used") parts.push("Used");
@@ -294,18 +355,10 @@ function generateTitleFromFilters(
   if (parsed.category) parts.push(titleCase(parsed.category));
 
   const baseNoun = parts.length > 0 ? `${parts.join(" ")} Caravans` : "Caravans";
+  const band = getBandText(parsed);
+  const bandPart = band ? ` ${band}` : "";
 
-  if (parsed.state) {
-    const stateKey = parsed.state.toLowerCase().replace(/\s+/g, "-");
-    const stateName = STATE_NAMES[stateKey] ?? titleCase(parsed.state);
-    if (parsed.region) {
-      const regionName = titleCase(parsed.region);
-      return `${baseNoun} for Sale in ${regionName}, ${stateName}`;
-    }
-    return `${baseNoun} for Sale in ${stateName}, Australia`;
-  }
-
-  return `${baseNoun} for Sale in Australia`;
+  return `${baseNoun} for Sale${bandPart}${locationSuffix}`;
 }
 
 export async function metaFromSlug(

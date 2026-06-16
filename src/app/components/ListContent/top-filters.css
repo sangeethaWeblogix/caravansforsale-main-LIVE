@@ -74,6 +74,11 @@
 
 .filter-swiper {
   width: 100%;
+  min-height: 38px;
+}
+
+.filter-swiper .swiper-wrapper {
+  height: auto;
 }
 
 .slider {
@@ -124,6 +129,7 @@
   background: #fff;
   position: relative;
   box-shadow: rgba(0, 0, 0, 0.2) 0px 1px 3px;
+  min-height: 62px;
 }
 
 .search_flex {

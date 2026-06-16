@@ -12,6 +12,8 @@ const staticUrls = [
   "blog",
   "about-us",
   "contact",
+  "dealer-advertising",
+  "sell-my-caravan",
 ];
 
 export async function GET() {

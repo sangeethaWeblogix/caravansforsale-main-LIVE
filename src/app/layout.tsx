@@ -17,8 +17,6 @@ import NavigationHistory from "@/components/NavigationHistory";
 import { BannerProvider } from "@/components/BannerHandler";
 import { headers } from "next/headers";
 import { metaFromSlug } from "@/utils/seo/meta";
-import { parseSlugToFilters } from "@/app/components/urlBuilder";
-import { getCachedListings } from "@/api/listings/api";
 
   const montserrat = Montserrat({
     subsets: ["latin"],
@@ -73,7 +71,7 @@ import { getCachedListings } from "@/api/listings/api";
       const slugParts = slugString.split("/").filter(Boolean);
 
       try {
-        // canonical + robots from metaFromSlug (no API call — pure computation)
+        // All SEO from metaFromSlug — pure computation, no API call
         const meta = await metaFromSlug(slugParts, {});
         slugCanonical = (meta.alternates?.canonical as string) ?? "";
         if (meta.robots && typeof meta.robots === "object" && "index" in meta.robots) {
@@ -81,21 +79,10 @@ import { getCachedListings } from "@/api/listings/api";
         } else {
           slugRobots = "index, follow";
         }
-
-        // title + description from the same API call as page.tsx
-        // Next.js deduplicates this fetch within the same request
-        const filters = parseSlugToFilters(slugParts, {});
-        const listingRes = await getCachedListings({ ...filters, page: 1 });
-        const seo = listingRes?.seo_v2;
-        slugTitle = String(seo?.meta_title ?? seo?.metatitle ?? seo?.list_page_metatitle ?? "").trim();
-        slugDescription = "Browse caravans for sale across Australia. Compare prices on off-road, hybrid, pop top, touring, luxury models with size, weight & sleeping capacity.";
-
-        // fallback title if API returned nothing
-        if (!slugTitle) {
-          if (meta.title && typeof meta.title === "object" && "absolute" in meta.title) {
-            slugTitle = (meta.title as { absolute: string }).absolute;
-          }
+        if (meta.title && typeof meta.title === "object" && "absolute" in meta.title) {
+          slugTitle = (meta.title as { absolute: string }).absolute;
         }
+        slugDescription = "Browse caravans for sale across Australia. Compare prices on off-road, hybrid, pop top, touring, luxury models with size, weight & sleeping capacity.";
       } catch {
         const parts = slugParts
           .map((p: string) =>

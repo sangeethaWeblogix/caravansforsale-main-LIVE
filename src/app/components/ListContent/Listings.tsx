@@ -14,7 +14,7 @@ import FilterModal from "./FilterModal";
 import { flushSync } from "react-dom";
 import { v4 as uuidv4 } from "uuid";
 import "./newList.css?=301";
-import "./top-filters.css?=496";
+import "./top-filters.css?=501";
 import ListingSkeleton, { SidebarListingSkeleton } from "../skelton";
 import {
   redirect,
@@ -187,7 +187,7 @@ export default function ListingsPage({
 }: Props) {
   const DEFAULT_RADIUS = 50 as const;
   const [openModal, setOpenModal] = useState(false);
-  const [filters, setFilters] = useState<Filters>({});
+  const [filters, setFilters] = useState<Filters>(incomingFilters);
   const filtersRef = useRef<Filters>({});
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -904,18 +904,21 @@ const [pagination, setPagination] = useState<Pagination>(() => {
     setIsFeaturedLoading(true);
     setIsPremiumLoading(true);
 
-    loadListings(pageFromURL, merged, true)
-      .then((res) => {
-        if (!res?.data?.products?.length) {
-          // no products
-        }
-      })
-      .finally(() => {
-        setIsLoading(false);
-        setIsMainLoading(false);
-        setIsFeaturedLoading(false);
-        setIsPremiumLoading(false);
-      });
+    if (filterDebounceRef.current) clearTimeout(filterDebounceRef.current);
+    filterDebounceRef.current = setTimeout(() => {
+      loadListings(pageFromURL, merged, true)
+        .then((res) => {
+          if (!res?.data?.products?.length) {
+            // no products
+          }
+        })
+        .finally(() => {
+          setIsLoading(false);
+          setIsMainLoading(false);
+          setIsFeaturedLoading(false);
+          setIsPremiumLoading(false);
+        });
+    }, 300);
   }, [searchKey, pathKey, loadListings, DEFAULT_RADIUS, searchParams]);
 
   const mergeFiltersSafely = (prev: Filters, next: Filters): Filters => {
@@ -969,6 +972,7 @@ const [pagination, setPagination] = useState<Pagination>(() => {
   );
 
   const isPopStateRef = useRef(false);
+  const filterDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const handlePopState = () => {
@@ -1516,15 +1520,35 @@ const [pagination, setPagination] = useState<Pagination>(() => {
         />
       )}
 
-      <section className="services product_listing new_listing bg-gray-100 section-padding pb-3 style-1">
+      <section className={`services product_listing new_listing bg-gray-100 section-padding pb-3 style-1${isLoading || isMainLoading ? " listings-loading" : ""}`}>
         <div className="container">
           <div className="content mb-4">
             <div ref={sentinelRef} style={{ height: "1px" }} />
             <div className="row">
-              {isLoading ||
-              isMainLoading ||
-              isFeaturedLoading ||
-              isPremiumLoading ? (
+              {products.length > 0 ||
+              fetauredProducts.length > 0 ||
+              preminumProducts.length > 0 ? (
+                <Listing
+                  pageTitle={pageTitle}
+                  products={products}
+                  data={products}
+                  pagination={pagination}
+                  onNext={handleNextPage}
+                  onPrev={handlePrevPage}
+                  onFilterChange={handleFilterChange}
+                  currentFilters={filters}
+                  preminumProducts={preminumProducts}
+                  fetauredProducts={fetauredProducts}
+                  exculisiveProducts={exculisiveProducts}
+                  isMainLoading={isMainLoading}
+                  isFeaturedLoading={isFeaturedLoading}
+                  isPremiumLoading={isPremiumLoading}
+                  initialDistances={initialDistances}
+                />
+              ) : isLoading ||
+                isMainLoading ||
+                isFeaturedLoading ||
+                isPremiumLoading ? (
                 <>
                   <div className="col-lg-9">
                     <ListingSkeleton count={8} />
@@ -1533,43 +1557,14 @@ const [pagination, setPagination] = useState<Pagination>(() => {
                     <SidebarListingSkeleton />
                   </div>
                 </>
-              ) : (
-                <>
-                  {(products.length > 0 ||
-                    fetauredProducts.length > 0 ||
-                    preminumProducts.length > 0) && (
-                    <Listing
-                      pageTitle={pageTitle}
-                      products={products}
-                      data={products}
-                      pagination={pagination}
-                      onNext={handleNextPage}
-                      onPrev={handlePrevPage}
-                      onFilterChange={handleFilterChange}
-                      currentFilters={filters}
-                      preminumProducts={preminumProducts}
-                      fetauredProducts={fetauredProducts}
-                      exculisiveProducts={exculisiveProducts}
-                      isMainLoading={isMainLoading}
-                      isFeaturedLoading={isFeaturedLoading}
-                      isPremiumLoading={isPremiumLoading}
-                      initialDistances={initialDistances}
-                    />
-                  )}
-
-                  {products.length === 0 &&
-                    fetauredProducts.length === 0 &&
-                    preminumProducts.length === 0 &&
-                    emptyProduct.length > 0 && (
-                      <ExculsiveContent
-                        data={emptyProduct}
-                        pageTitle={pageTitle}
-                        isPremiumLoading={isPremiumLoading}
-                        currentFilters={filters}
-                      />
-                    )}
-                </>
-              )}
+              ) : emptyProduct.length > 0 ? (
+                <ExculsiveContent
+                  data={emptyProduct}
+                  pageTitle={pageTitle}
+                  isPremiumLoading={isPremiumLoading}
+                  currentFilters={filters}
+                />
+              ) : null}
             </div>
           </div>
         </div>

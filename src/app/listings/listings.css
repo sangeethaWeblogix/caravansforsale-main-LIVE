@@ -1,3 +1,9 @@
+.listings-loading {
+  opacity: 0.45;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
 .list-container {
   padding: 15px 0px;
 }
