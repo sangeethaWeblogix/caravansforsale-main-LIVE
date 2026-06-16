@@ -23,9 +23,9 @@ export default function GonePage() {
           The page you requested has been permanently removed and is no longer
           available.
         </p>
-        <Link className="btn-410" href="/listings/">
+        {/* <Link className="btn-410" href="/listings/">
           Browse Caravans
-        </Link>
+        </Link> */}
       </div>
     </div>
   );
