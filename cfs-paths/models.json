@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "models",
-    "count": 2860,
+    "count": 2861,
     "paths": [
         "active/storm/",
         "adria/action/",
@@ -1383,6 +1383,7 @@
         "lotus/offgrid-og199cl/",
         "lotus/offgrid-og206kd/",
         "lotus/platinum/",
+        "lotus/ranger/",
         "lotus/sprint/",
         "lotus/transformer/",
         "lotus/trooper/",
@@ -2864,5 +2865,5 @@
         "zone-rv/venture-20-6/",
         "zone-rv/znu004/"
     ],
-    "generated_at": "2026-06-16 18:17:49"
+    "generated_at": "2026-06-16 22:38:19"
 }
