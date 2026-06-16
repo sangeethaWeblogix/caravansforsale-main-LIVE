@@ -4,7 +4,7 @@
 import Header from "./Header";
 import Middle from "./Middle";
 import FaqSection from "./FaqSection";
-import "./comman.css";
+import "./comman.css?=1";
 import { Metadata } from "next";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -19,9 +19,13 @@ export async function generateMetadata(): Promise<Metadata> {
     title: metaTitle,
     description: metaDescription,
     robots: robots,
+    alternates: {
+      canonical: "https://www.caravansforsale.com.au/caravan-manufacturers/",
+    },
     openGraph: {
       title: metaTitle,
       description: metaDescription,
+      url: "https://www.caravansforsale.com.au/caravan-manufacturers/",
     },
     twitter: {
       card: "summary_large_image",

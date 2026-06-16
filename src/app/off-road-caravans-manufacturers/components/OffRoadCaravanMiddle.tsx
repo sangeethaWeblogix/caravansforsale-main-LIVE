@@ -17,15 +17,17 @@ export default function OffRoadCaravanMiddle() {
                   className="hidden-xs"
                   src="/images/Best-Off-Road-Caravan-Manufacturers-You-Havent-Heard-Of.jpg"
                   alt="Best Off Road Caravan Manufacturers"
-                  width={100}
-                  height={100}
+                  width={800}
+                  height={250}
+                  style={{ width: "100%", height: "auto" }}
                 />
                 <Image
                   className="hidden-lg hidden-md hidden-sm br-m-8"
                   src="/images/Best-Off-Road-Caravan-Manufacturers-You-Havent-Heard-Of-Mob.jpg"
                   alt="Best Off Road Caravan Manufacturers"
-                  width={100}
-                  height={100}
+                  width={400}
+                  height={250}
+                  style={{ width: "100%", height: "auto" }}
                 />
               </div>
               <h2 className="divide-orange pb-20">
@@ -155,14 +157,16 @@ export default function OffRoadCaravanMiddle() {
               <div className="advertisement">
                 <Image
                   className="hidden-xs"
-                  width={100}
-                  height={100}
+                  width={800}
+                  height={250}
+                  style={{ width: "100%", height: "auto" }}
                   src="/images/Orbit-tig-welded-aluminium-frame-off-road-caravan-manufacturer.jpg"
                   alt="Orbit Caravans - tig welded aluminium frame off road caravan manufacturer"
                 />
                 <Image
-                  width={100}
-                  height={100}
+                  width={800}
+                  height={250}
+                  style={{ width: "100%", height: "auto" }}
                   className="hidden-lg hidden-md hidden-sm br-m-8"
                   src="/images/tig-welded-aluminium-frame-off-road-caravan-manufacturer-Orbit.jpg"
                   alt="Orbit Caravans - tig welded aluminium frame off road caravan manufacturer"
@@ -182,15 +186,17 @@ export default function OffRoadCaravanMiddle() {
                   className="hidden-xs"
                   src="/images/index_link_dk.jpg"
                   alt=""
-                  width={100}
-                  height={100}
+                  width={800}
+                  height={250}
+                  style={{ width: "100%", height: "auto" }}
                 />
                 <Image
                   className="hidden-lg hidden-md hidden-sm"
                   src="/images/index_link_m.jpg"
                   alt=""
-                  width={100}
-                  height={100}
+                  width={800}
+                  height={250}
+                  style={{ width: "100%", height: "auto" }}
                 />
               </Link>
               <h3>
@@ -289,16 +295,18 @@ export default function OffRoadCaravanMiddle() {
               <div className="advertisement">
                 <Image
                   className="hidden-xs"
-                  width={100}
-                  height={100}
+                  width={800}
+                  height={250}
+                  style={{ width: "100%", height: "auto" }}
                   src="/images/Grand-City-luxury-off-road-caravan-manufacturer.jpg"
                   alt="Grand City Caravans - luxury off road caravan manufacturer"
                 />
 
                 <Image
                   className="hidden-lg hidden-md hidden-sm br-m-8"
-                  width={100}
-                  height={100}
+                  width={800}
+                  height={250}
+                  style={{ width: "100%", height: "auto" }}
                   src="/images/luxury-off-road-caravan-manufacturer-Grand-City.jpg"
                   alt="Grand City Caravans - luxury off road caravan manufacturer"
                 />
@@ -401,15 +409,17 @@ export default function OffRoadCaravanMiddle() {
               <div className="advertisement">
                 <Image
                   className="hidden-xs"
-                  width={100}
-                  height={100}
+                  width={800}
+                  height={250}
+                  style={{ width: "100%", height: "auto" }}
                   src="/images/Everest-extreme-off-road-caravan-manufacturer.jpg"
                   alt="Everest Caravans - extreme off road caravan manufacturer"
                 />
                 <Image
                   className="hidden-lg hidden-md hidden-sm br-m-8"
-                  width={100}
-                  height={100}
+                  width={800}
+                  height={250}
+                  style={{ width: "100%", height: "auto" }}
                   src="/images/extreme-off-road-caravan-manufacturer-Everest.jpg"
                   alt="Everest Caravans - extreme off road caravan manufacturer"
                 />
@@ -499,14 +509,16 @@ export default function OffRoadCaravanMiddle() {
               <div className="advertisement">
                 <Image
                   className="hidden-xs"
-                  width={100}
-                  height={100}
+                  width={800}
+                  height={250}
+                  style={{ width: "100%", height: "auto" }}
                   src="/images/Red-Center-leading-extreme-off-road-caravan-manufacturer.jpg"
                   alt="Red Center Caravans - leading extreme off road caravan manufacturer"
                 />
                 <Image
-                  width={100}
-                  height={100}
+                  width={800}
+                  height={250}
+                  style={{ width: "100%", height: "auto" }}
                   className="hidden-lg hidden-md hidden-sm br-m-8"
                   src="/images/leading-extreme-off-road-caravan-manufacturer-Red-Centre.jpg"
                   alt="Red Center Caravans - leading extreme off road caravan manufacturer"
@@ -612,15 +624,17 @@ export default function OffRoadCaravanMiddle() {
               <div className="advertisement">
                 <Image
                   className="hidden-xs"
-                  width={100}
-                  height={100}
+                  width={800}
+                  height={250}
+                  style={{ width: "100%", height: "auto" }}
                   src="/images/Coronet-RV-family-friendy-off-road-caravan-manufacturer.jpg"
                   alt="Coronet RV - family friendy off road caravan manufacturer"
                 />
                 <Image
                   className="hidden-lg hidden-md hidden-sm br-m-8"
-                  width={100}
-                  height={100}
+                  width={800}
+                  height={250}
+                  style={{ width: "100%", height: "auto" }}
                   src="/images/family-friendy-off-road-caravan-manufacturer-Coronet-RV.jpg"
                   alt="Coronet RV - family friendy off road caravan manufacturer"
                 />
@@ -716,15 +730,17 @@ export default function OffRoadCaravanMiddle() {
               <div className="advertisement">
                 <Image
                   className="hidden-xs"
-                  width={100}
-                  height={100}
+                  width={800}
+                  height={250}
+                  style={{ width: "100%", height: "auto" }}
                   src="/images/Masterpiece-extreme-off-road-caravan-manufacturer.jpg"
                   alt="Masterpiece Caravans - extreme off road caravan manufacturer"
                 />
                 <Image
                   className="hidden-lg hidden-md hidden-sm br-m-8"
-                  width={100}
-                  height={100}
+                  width={800}
+                  height={250}
+                  style={{ width: "100%", height: "auto" }}
                   src="/images/extreme-off-road-caravan-manufacturer-Masterpiece.jpg"
                   alt="Masterpiece Caravans - extreme off road caravan manufacturer"
                 />
@@ -823,15 +839,17 @@ export default function OffRoadCaravanMiddle() {
                   className="hidden-xs"
                   src="/images/Apache-hybrid-off-road-caravan-manufacturer.jpg"
                   alt="Apache Caravans - hybrid off road caravan manufacturer"
-                  width={100}
-                  height={100}
+                  width={800}
+                  height={250}
+                  style={{ width: "100%", height: "auto" }}
                 />
                 <Image
                   className="hidden-lg hidden-md hidden-sm br-m-8"
                   src="/images/hybrid-off-road-caravan-manufacturer-Apache.jpg"
                   alt="Apache Caravans - hybrid off road caravan manufacturer"
-                  width={100}
-                  height={100}
+                  width={800}
+                  height={250}
+                  style={{ width: "100%", height: "auto" }}
                 />
               </div>
               <h3>8. Villa Caravans</h3>
@@ -920,15 +938,17 @@ export default function OffRoadCaravanMiddle() {
                   className="hidden-xs"
                   src="/images/Villa-best-semi-off-road-caravan-manufacturer.jpg"
                   alt="Villa Caravans - best semi off road caravan manufacturer"
-                  width={100}
-                  height={100}
+                  width={800}
+                  height={250}
+                  style={{ width: "100%", height: "auto" }}
                 />
                 <Image
                   className="hidden-lg hidden-md hidden-sm br-m-8"
                   src="/images/best-semi-off-road-caravan-manufacturer-Villa.jpg"
                   alt="Villa Caravans - best semi off road caravan manufacturer"
-                  width={100}
-                  height={100}
+                  width={800}
+                  height={250}
+                  style={{ width: "100%", height: "auto" }}
                 />
               </div>
               <Link
@@ -945,15 +965,17 @@ export default function OffRoadCaravanMiddle() {
                   className="hidden-xs"
                   alt="forsale_link_offroad_dk-3"
                   src="/images/forsale_link_offroad_dk-3.jpg"
-                  width={100}
-                  height={100}
+                  width={800}
+                  height={250}
+                  style={{ width: "100%", height: "auto" }}
                 />
                 <Image
                   className="hidden-lg hidden-md hidden-sm"
                   alt="forsale_link_offroad_mb-1"
                   src="/images/forsale_link_offroad_mb-1.jpg"
-                  width={100}
-                  height={100}
+                  width={800}
+                  height={250}
+                  style={{ width: "100%", height: "auto" }}
                 />
               </Link>
               <h3>
@@ -1038,15 +1060,17 @@ export default function OffRoadCaravanMiddle() {
               <div className="advertisement">
                 <Image
                   className="hidden-xs"
-                  width={100}
-                  height={100}
+                  width={800}
+                  height={250}
+                  style={{ width: "100%", height: "auto" }}
                   src="/images/X-Series-RV-Hybrid-Off-Road-Caravan-Manufacturer-for-the-Wild-at-Heart.jpg"
                   alt="X Series RV Hybrid Off-Road Caravan Manufacturer for the Wild at Heart"
                 />
                 <Image
                   className="hidden-lg hidden-md hidden-sm br-m-8"
-                  width={100}
-                  height={100}
+                  width={800}
+                  height={250}
+                  style={{ width: "100%", height: "auto" }}
                   src="/images/X-Series-RV-Hybrid-Off-Road-Caravan-Manufacturer-for-the-Wild-at-Heart-Mob.jpg"
                   alt="X Series RV Hybrid Off-Road Caravan Manufacturer for the Wild at Heart"
                 />
@@ -1144,15 +1168,17 @@ export default function OffRoadCaravanMiddle() {
               <div className="advertisement">
                 <Image
                   className="hidden-xs"
-                  width={100}
-                  height={100}
+                  width={800}
+                  height={250}
+                  style={{ width: "100%", height: "auto" }}
                   src="/images/Titanium-Caravans-Off-Road-Caravan-Manufacturer.jpg"
                   alt="Titanium Caravans - Off Road Caravan Manufacturer"
                 />
                 <Image
                   className="hidden-lg hidden-md hidden-sm br-m-8"
-                  width={100}
-                  height={100}
+                  width={800}
+                  height={250}
+                  style={{ width: "100%", height: "auto" }}
                   src="/images/Titanium-Caravans-Off-Road-Caravan-Manufacturer - Mobile.jpg"
                   alt="Titanium Caravans - Off Road Caravan Manufacturer"
                 />

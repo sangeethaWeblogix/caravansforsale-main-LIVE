@@ -382,12 +382,19 @@ main .manufacture_content_area h3 {
 }
 
 .key_features ul li:before {
-    content: "\f058";
-    font-family: "Font Awesome 5 Free";
+    content: "✔";
+    font-family: inherit;
     font-weight: 900;
     position: absolute;
     left: 0;
     color: #bb4a03;
+}
+
+.manufacture_content_area .advertisement img,
+.manufacture_content_area .banner_ad_now img,
+.manufacture_content_area a > img {
+    width: 100%;
+    height: auto;
 }
 
 .key_features ul {
