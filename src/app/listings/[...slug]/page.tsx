@@ -184,7 +184,7 @@ export default async function Listings({
       forbiddenPattern.test(String(v)),
     )
   ) {
-    redirect("/410");
+    return <GonePage />;
   }
 
   // Reject gibberish / pin-code spam
@@ -212,7 +212,7 @@ export default async function Listings({
     return (isPureNumber || isWeirdSymbols) && !allowed;
   });
 
-  if (hasGibberish) redirect("/410");
+  if (hasGibberish) return <GonePage />;
 
   // ───── Parse filters (needed for location rules) ─────
   const filters = parseSlugToFilters(slug, resolvedSearchParams);
@@ -222,8 +222,7 @@ export default async function Listings({
   const incomingPath = `/listings/${slug.join("/")}`;
   const normalize = (p: string) => p.replace(/\/$/, "").toLowerCase();
   if (normalize(canonicalPath) !== normalize(incomingPath)) {
-    // Any mismatch (dropped segments or wrong order) → 410
-    redirect("/410");
+    return <GonePage />;
   }
 
   // ───── Location hierarchy validation ─────
@@ -232,8 +231,8 @@ export default async function Listings({
 
   const hasSuburb = !!filters.suburb;
 
-  if ((hasRegion || hasSuburb) && !hasState) redirect("/410");
-  if (hasSuburb && !hasRegion) redirect("/410");
+  if ((hasRegion || hasSuburb) && !hasState) return <GonePage />;
+  if (hasSuburb && !hasRegion) return <GonePage />;
 
   // ───── Segment type detection + order validation ─────
   const seenTypes = new Set<SegmentType>();
@@ -275,19 +274,18 @@ export default async function Listings({
       /^[a-z]+\+$/.test(lower) ||
       /^[0-9]+[a-z]/.test(lower) // number-first + letter (e.g. 58d, 123abc)
     ) {
-      redirect("/410"); // block bad patterns → redirect to /410
+      return <GonePage />; // block bad patterns
     }
 
     if (detectedType) {
-      // Duplicate type → 410
-      if (seenTypes.has(detectedType)) redirect("/410");
+      if (seenTypes.has(detectedType)) return <GonePage />;
       seenTypes.add(detectedType);
 
       // Enforce strict order for non-flexible types
       if (!FLEXIBLE_TYPES.includes(detectedType)) {
         const currentStrictIndex = STRICT_ORDER.indexOf(detectedType);
         if (currentStrictIndex !== -1 && currentStrictIndex < lastStrictIndex) {
-          redirect("/410"); // Out of order
+          return <GonePage />; // Out of order
         }
         lastStrictIndex = Math.max(lastStrictIndex, currentStrictIndex);
       }
