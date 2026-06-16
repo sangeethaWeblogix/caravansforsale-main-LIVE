@@ -19,7 +19,10 @@ export default function robots(): MetadataRoute.Robots {
          "/*?*page=",
           // "/*feedfeed*",
           // "/*feedfeedfeed*",
-"/listings/404"
+"/listings/404",
+          // Block keyword search + any other filter (state/make/region/band combos)
+          // Direct /listings/*-search/ stays crawlable; only combinations are blocked
+          "/listings/*/*-search/"
          
           
         ],

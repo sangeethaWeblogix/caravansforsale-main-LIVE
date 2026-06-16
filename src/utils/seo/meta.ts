@@ -385,6 +385,15 @@ export async function metaFromSlug(
     canonical = `${BASE_URL}/listings/${locationSegments.join("/")}/`;
   }
 
+  // ── keyword combination canonical fix ──
+  // For /listings/victoria-state/.../keyword-search/ → canonical = /listings/keyword-search/
+  const searchSeg = (parsed.search ?? parsed.keyword)
+    ? filters.find((seg) => seg.endsWith("-search"))
+    : null;
+  if (searchSeg && !robotsResult.index) {
+    canonical = `${BASE_URL}/listings/${searchSeg}/`;
+  }
+
   // Append searchParams (except page=1 and shuffle_seed)
   const spEntries = Object.entries(searchParams).filter(([k, v]) => {
     if (k === "page" && String(v) === "1") return false;
