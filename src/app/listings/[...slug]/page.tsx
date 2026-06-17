@@ -362,9 +362,13 @@ export default async function Listings({
     );
   }
 
-  // ───── Empty results → 410 (valid URL, no products) ─────
+  // ───── Empty results → show GonePage only if emp_exclusive_products is also empty ─────
   if (!response?.data || !Array.isArray(response.data.products) || response.data.products.length === 0) {
-    return <GonePage />;
+    const hasEmpExclusive = Array.isArray(response?.data?.emp_exclusive_products) && response.data.emp_exclusive_products.length > 0;
+    if (!hasEmpExclusive) {
+      return <GonePage />;
+    }
+    // emp_exclusive_products available — fall through to render page with exclusive content
   }
 
   // ───── JSON-LD Schema ─────

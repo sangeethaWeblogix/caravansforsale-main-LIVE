@@ -39,9 +39,16 @@ function gone404(request: NextRequest): NextResponse {
   return NextResponse.redirect(new URL('/404', request.url), { status: 302 });
 }
 
-/* Helper: rewrite to /410 page with HTTP 410 status + noindex header (valid URL, 0 products) */
+/* Helper: rewrite to /410 page with HTTP 410 status + noindex header */
 function gone410(request: NextRequest): NextResponse {
   const res = NextResponse.rewrite(new URL('/410', request.url), { status: 410 });
+  res.headers.set('X-Robots-Tag', 'noindex, nofollow');
+  return res;
+}
+
+/* Helper: serve the actual page with HTTP 410 status + noindex (0 products — page exists but is empty) */
+function empty410(request: NextRequest): NextResponse {
+  const res = NextResponse.rewrite(request.nextUrl, { status: 410 });
   res.headers.set('X-Robots-Tag', 'noindex, nofollow');
   return res;
 }
@@ -135,7 +142,7 @@ export async function middleware(request: NextRequest) {
     const cached = seoCache.get(cacheKey);
     if (cached && cached.expires > Date.now()) {
       if (cached.isEmpty) {
-        return gone410(request);
+        return empty410(request);
       }
       robotsHeader = cached.robots;
     } else {
@@ -176,7 +183,7 @@ export async function middleware(request: NextRequest) {
           const products = data?.data?.products ?? [];
           if (products.length === 0) {
             seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty: true, expires: Date.now() + CACHE_TTL });
-            return gone410(request);
+            return empty410(request);
           }
 
           const seo = data?.seo_v2 ?? data?.seo ?? {};

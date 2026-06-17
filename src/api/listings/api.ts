@@ -100,6 +100,7 @@ export type ApiResponse = {
   seo_v2?: ApiSEO;
   pagination?: ApiPagination;
   data?: ApiData;
+  emp_exclusive_products?: Item[]; // top-level in 0-product (410) responses
   message?: string;
   errors?: string[];
   msid?: string | null;
@@ -216,6 +217,32 @@ export const fetchListings = async (
   if (!res.ok) {
     const errText = await res.text();
 
+    // WordPress returns HTTP 410 for 0-product pages — parse body and return data normally
+    if (res.status === 410) {
+      try {
+        const json: ApiResponse = JSON.parse(errText);
+        return {
+          success: json.success,
+          list_page_title: json.h1,
+          seo_v2: json.seo_v2,
+          pagination: json.pagination,
+          data: {
+            products: json.data?.products ?? [],
+            exclusive_products: json.data?.exclusive_products ?? [],
+            emp_exclusive_products: json.emp_exclusive_products ?? json.data?.emp_exclusive_products ?? [],
+            featured_products: json.data?.featured_products ?? [],
+            premium_products: json.data?.premium_products ?? [],
+            make_options: json.data?.make_options ?? [],
+            model_options: json.data?.model_options ?? [],
+            all_categories: json.data?.all_categories ?? [],
+            states: json.data?.states ?? [],
+          },
+        };
+      } catch {
+        // JSON parse failed — fall through to error handling
+      }
+    }
+
     if (res.status >= 500) {
       console.error(`[BACKEND ERROR] HTTP ${res.status} from API:`, errText.substring(0, 300));
       throw new Error(`Backend server error (HTTP ${res.status})`);
@@ -247,7 +274,7 @@ export const fetchListings = async (
     data: {
       products: json.data?.products ?? [],
       exclusive_products: json.data?.exclusive_products ?? [],
-      emp_exclusive_products: json.data?.emp_exclusive_products ?? [],
+      emp_exclusive_products: json.emp_exclusive_products ?? json.data?.emp_exclusive_products ?? [],
       featured_products: json.data?.featured_products ?? [],
       premium_products: json.data?.premium_products ?? [],
       make_options: json.data?.make_options ?? [],
