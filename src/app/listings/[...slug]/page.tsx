@@ -5,9 +5,9 @@ import { parseSlugToFilters } from "../../components/urlBuilder";
 import { getCachedListings } from "@/api/listings/api";
 import { metaFromSlug } from "@/utils/seo/meta";
 import { redirect, notFound } from "next/navigation";
+import GonePage from "@/app/410/page";
 import "../../components/ListContent/newList.css";
 import "../listings.css";
-import GonePage from "@/app/410/page";
 // import { fetchMakeDetails } from "@/api/make-new/api";
 import { fetchLinksData } from "@/api/link/api";
 import { buildSlugFromFilters } from "@/app/components/slugBuilter";
@@ -184,7 +184,7 @@ export default async function Listings({
       forbiddenPattern.test(String(v)),
     )
   ) {
-    return <GonePage />;
+    return redirect('/404');
   }
 
   // Reject gibberish / pin-code spam
@@ -212,7 +212,7 @@ export default async function Listings({
     return (isPureNumber || isWeirdSymbols) && !allowed;
   });
 
-  if (hasGibberish) return <GonePage />;
+  if (hasGibberish) return redirect('/404');
 
   // ───── Parse filters (needed for location rules) ─────
   const filters = parseSlugToFilters(slug, resolvedSearchParams);
@@ -222,7 +222,7 @@ export default async function Listings({
   const incomingPath = `/listings/${slug.join("/")}`;
   const normalize = (p: string) => p.replace(/\/$/, "").toLowerCase();
   if (normalize(canonicalPath) !== normalize(incomingPath)) {
-    return <GonePage />;
+    return redirect('/404');
   }
 
   // ───── Location hierarchy validation ─────
@@ -231,8 +231,8 @@ export default async function Listings({
 
   const hasSuburb = !!filters.suburb;
 
-  if ((hasRegion || hasSuburb) && !hasState) return <GonePage />;
-  if (hasSuburb && !hasRegion) return <GonePage />;
+  if ((hasRegion || hasSuburb) && !hasState) return redirect('/404');
+  if (hasSuburb && !hasRegion) return redirect('/404');
 
   // ───── Segment type detection + order validation ─────
   const seenTypes = new Set<SegmentType>();
@@ -274,18 +274,18 @@ export default async function Listings({
       /^[a-z]+\+$/.test(lower) ||
       /^[0-9]+[a-z]/.test(lower) // number-first + letter (e.g. 58d, 123abc)
     ) {
-      return <GonePage />; // block bad patterns
+      return redirect('/404'); // block bad patterns
     }
 
     if (detectedType) {
-      if (seenTypes.has(detectedType)) return <GonePage />;
+      if (seenTypes.has(detectedType)) return redirect('/404');
       seenTypes.add(detectedType);
 
       // Enforce strict order for non-flexible types
       if (!FLEXIBLE_TYPES.includes(detectedType)) {
         const currentStrictIndex = STRICT_ORDER.indexOf(detectedType);
         if (currentStrictIndex !== -1 && currentStrictIndex < lastStrictIndex) {
-          return <GonePage />; // Out of order
+          return redirect('/404'); // Out of order
         }
         lastStrictIndex = Math.max(lastStrictIndex, currentStrictIndex);
       }
@@ -362,7 +362,7 @@ export default async function Listings({
     );
   }
 
-  // ───── Empty results → render 410 inline (URL unchanged, noindex already set in generateMetadata) ─────
+  // ───── Empty results → 410 (valid URL, no products) ─────
   if (!response?.data || !Array.isArray(response.data.products) || response.data.products.length === 0) {
     return <GonePage />;
   }

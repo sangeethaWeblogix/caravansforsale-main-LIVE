@@ -34,7 +34,12 @@ function isBot(userAgent: string): boolean {
   return BOT_USER_AGENTS.some(bot => ua.includes(bot));
 }
 
-/* Helper: rewrite to /410 page with HTTP 410 status + noindex header */
+/* Helper: redirect to /404 */
+function gone404(request: NextRequest): NextResponse {
+  return NextResponse.redirect(new URL('/404', request.url), { status: 302 });
+}
+
+/* Helper: rewrite to /410 page with HTTP 410 status + noindex header (valid URL, 0 products) */
 function gone410(request: NextRequest): NextResponse {
   const res = NextResponse.rewrite(new URL('/410', request.url), { status: 410 });
   res.headers.set('X-Robots-Tag', 'noindex, nofollow');
@@ -60,7 +65,7 @@ export async function middleware(request: NextRequest) {
     const hasForbiddenValue = Array.from(url.searchParams.values()).some(v => /(page|feed)/i.test(v));
 
     if (hasForbiddenSegment || hasUnknownParam || hasForbiddenValue) {
-      return gone410(request);
+      return gone404(request);
     }
 
     // Wrong URL order → 410 (URL unchanged, no redirect)
@@ -72,7 +77,7 @@ export async function middleware(request: NextRequest) {
         const incomingPath = `/listings/${slugParts.join('/')}`;
         const norm = (p: string) => p.replace(/\/$/, '').toLowerCase();
         if (norm(canonicalPath) !== norm(incomingPath)) {
-          return gone410(request);
+          return gone404(request);
         }
       } catch {
         // parse error → let page component handle it
