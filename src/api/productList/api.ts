@@ -77,8 +77,9 @@ export const fetchProductList = async () => {
 const res = await fetch(`${API_BASE}/params-product-list`, {
       headers: {
         Accept: "application/json",
-        ...(API_KEY && { "X-API-Key": API_KEY }), // ✅ Added
+        ...(API_KEY && { "X-API-Key": API_KEY }),
       },
+      next: { revalidate: 3600 },
     });
     if (!res.ok) {
       throw new Error("Failed to fetch product list");

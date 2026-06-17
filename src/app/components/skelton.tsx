@@ -18,10 +18,6 @@ export default function ListingSkeleton({ count = 8 }: { count?: number }) {
                 <div className="skeleton skel-listing-tag" />
               </div>
               <div className="skeleton skel-listing-cond mt-2" />
-              <div className="skeleton-row mt-3">
-                <div className="skeleton skeleton-button" />
-                <div className="skeleton skeleton-button" />
-              </div>
             </div>
           </div>
         </div>

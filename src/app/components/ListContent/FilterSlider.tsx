@@ -1,11 +1,7 @@
 "use client";
 import "../filter.css?=10";
 import { useState, useEffect, useRef, useTransition } from "react";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation } from "swiper/modules";
 import { fetchProductList } from "@/api/productList/api";
-import "swiper/css";
-import "swiper/css/navigation";
 import CategorySkeleton from "./CategorySkeleton";
 import { buildSlugFromFilters } from "../slugBuilter";
 import { useRouter } from "next/navigation";
@@ -723,111 +719,91 @@ const [states, setStates] = useState<StateOption[]>(
     <>
       <div className="filter-row">
         <div className="slider-wrapper">
-          <Swiper
-            modules={[Navigation]}
-            spaceBetween={10}
-            slidesPerView="auto"
-            navigation
-            className="filter-swiper"
-          >
-            <SwiperSlide style={{ width: "auto" }}>
-              <button
-                className={`tag ${currentFilters.category ? "active" : ""}`}
-                onClick={handleTypeOpen}
-              >
-                Caravan Type
-                {currentFilters.category && (
-                  <span className="active_filter">
-                    <i className="bi bi-circle-fill"></i>
-                  </span>
-                )}
-              </button>
-            </SwiperSlide>
+          <div className="filter-swiper">
+            <button
+              className={`tag ${currentFilters.category ? "active" : ""}`}
+              onClick={handleTypeOpen}
+            >
+              Caravan Type
+              {currentFilters.category && (
+                <span className="active_filter">
+                  <i className="bi bi-circle-fill"></i>
+                </span>
+              )}
+            </button>
 
-            <SwiperSlide style={{ width: "auto" }}>
+            <button
+              className={`tag ${currentFilters.state || currentFilters.suburb ? "active" : ""}`}
+              onClick={handleLocationOpen}
+            >
+              Location
+              {(currentFilters.state || currentFilters.suburb) && (
+                <span className="active_filter">
+                  <i className="bi bi-circle-fill"></i>
+                </span>
+              )}
+            </button>
+
+            {currentFilters.suburb && (
               <button
-                className={`tag ${currentFilters.state || currentFilters.suburb ? "active" : ""}`}
-                onClick={handleLocationOpen}
+                className="tag active"
+                onClick={handleLocationSuburbOpen}
               >
-                Location
-                {(currentFilters.state || currentFilters.suburb) && (
-                  <span className="active_filter">
-                    <i className="bi bi-circle-fill"></i>
-                  </span>
-                )}
+                Suburb
+                <span className="active_filter">
+                  <i className="bi bi-circle-fill"></i>
+                </span>
               </button>
-            </SwiperSlide>
-            {currentFilters.suburb ? (
-              <SwiperSlide style={{ width: "auto" }}>
-                <button
-                  className="tag active"
-                  onClick={handleLocationSuburbOpen}
-                >
-                  Suburb
-                  <span className="active_filter">
-                    <i className="bi bi-circle-fill"></i>
-                  </span>
-                </button>
-              </SwiperSlide>
-            ) : (
-              " "
             )}
 
-            <SwiperSlide style={{ width: "auto" }}>
-              <button
-                className={`tag ${currentFilters.condition ? "active" : ""}`}
-                onClick={handleConditionOpen}
-              >
-                Condition
-                {currentFilters.condition && (
-                  <span className="active_filter">
-                    <i className="bi bi-circle-fill"></i>
-                  </span>
-                )}
-              </button>
-            </SwiperSlide>
-            <SwiperSlide style={{ width: "auto" }}>
-              <button
-                className={`tag ${currentFilters.make ? "active" : ""}`}
-                onClick={handleMakeOpen}
-              >
-                Make
-                {currentFilters.make && (
-                  <span className="active_filter">
-                    <i className="bi bi-circle-fill"></i>
-                  </span>
-                )}
-              </button>
-            </SwiperSlide>
+            <button
+              className={`tag ${currentFilters.condition ? "active" : ""}`}
+              onClick={handleConditionOpen}
+            >
+              Condition
+              {currentFilters.condition && (
+                <span className="active_filter">
+                  <i className="bi bi-circle-fill"></i>
+                </span>
+              )}
+            </button>
 
-            <SwiperSlide style={{ width: "auto" }}>
-              <button
-                className={`tag ${currentFilters.from_price || currentFilters.to_price ? "active" : ""}`}
-                onClick={handlePriceOpen}
-              >
-                Price
-                {(currentFilters.from_price || currentFilters.to_price) && (
-                  <span className="active_filter">
-                    <i className="bi bi-circle-fill"></i>
-                  </span>
-                )}
-              </button>
-            </SwiperSlide>
+            <button
+              className={`tag ${currentFilters.make ? "active" : ""}`}
+              onClick={handleMakeOpen}
+            >
+              Make
+              {currentFilters.make && (
+                <span className="active_filter">
+                  <i className="bi bi-circle-fill"></i>
+                </span>
+              )}
+            </button>
 
-            <SwiperSlide style={{ width: "auto" }}>
-              <button
-                className={`tag ${currentFilters.minKg || currentFilters.maxKg ? "active" : ""}`}
-                onClick={handleAtmOpen}
-              >
-                ATM
-                {(currentFilters.minKg || currentFilters.maxKg) && (
-                  <span className="active_filter">
-                    <i className="bi bi-circle-fill"></i>
-                  </span>
-                )}
-              </button>
-            </SwiperSlide>
-          </Swiper>
+            <button
+              className={`tag ${currentFilters.from_price || currentFilters.to_price ? "active" : ""}`}
+              onClick={handlePriceOpen}
+            >
+              Price
+              {(currentFilters.from_price || currentFilters.to_price) && (
+                <span className="active_filter">
+                  <i className="bi bi-circle-fill"></i>
+                </span>
+              )}
+            </button>
+
+            <button
+              className={`tag ${currentFilters.minKg || currentFilters.maxKg ? "active" : ""}`}
+              onClick={handleAtmOpen}
+            >
+              ATM
+              {(currentFilters.minKg || currentFilters.maxKg) && (
+                <span className="active_filter">
+                  <i className="bi bi-circle-fill"></i>
+                </span>
+              )}
+            </button>
+          </div>
         </div>
       </div>
 

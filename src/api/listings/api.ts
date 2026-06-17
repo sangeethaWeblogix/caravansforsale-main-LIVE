@@ -195,6 +195,7 @@ export const fetchListings = async (
           ? { "X-API-Key": process.env.CFS_API_KEY }
           : {}),
       },
+      ...(!isClient && { next: { revalidate: 3600 } }),
     });
   } catch (err: any) {
     clearTimeout(timeoutId);

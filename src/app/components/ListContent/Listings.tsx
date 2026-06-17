@@ -14,7 +14,7 @@ import FilterModal from "./FilterModal";
 import { flushSync } from "react-dom";
 import { v4 as uuidv4 } from "uuid";
 import "./newList.css?=301";
-import "./top-filters.css?=501";
+import "./top-filters.css?=504";
 import ListingSkeleton, { SidebarListingSkeleton } from "../skelton";
 import {
   redirect,
@@ -899,13 +899,12 @@ const [pagination, setPagination] = useState<Pagination>(() => {
       return;
     }
 
-    setIsLoading(true);
-    setIsMainLoading(true);
-    setIsFeaturedLoading(true);
-    setIsPremiumLoading(true);
-
     if (filterDebounceRef.current) clearTimeout(filterDebounceRef.current);
     filterDebounceRef.current = setTimeout(() => {
+      setIsLoading(true);
+      setIsMainLoading(true);
+      setIsFeaturedLoading(true);
+      setIsPremiumLoading(true);
       loadListings(pageFromURL, merged, true)
         .then((res) => {
           if (!res?.data?.products?.length) {
@@ -1075,16 +1074,11 @@ const [pagination, setPagination] = useState<Pagination>(() => {
     if (!hasActiveFilters) return;
 
     isClearAllRef.current = true;
+    // Keep stale products visible (dimmed via listings-loading) until new results arrive
     setIsLoading(true);
     setIsMainLoading(true);
     setIsFeaturedLoading(true);
     setIsPremiumLoading(true);
-
-    setProducts([]);
-    setFeaturedProducts([]);
-    setPremiumProducts([]);
-    setExculisiveProducts([]);
-    setEmptyProduct([]);
 
     const clearedFilters: Filters = {};
     flushSync(() => {
@@ -1520,7 +1514,7 @@ const [pagination, setPagination] = useState<Pagination>(() => {
         />
       )}
 
-      <section className={`services product_listing new_listing bg-gray-100 section-padding pb-3 style-1${isLoading || isMainLoading ? " listings-loading" : ""}`}>
+      <section className="services product_listing new_listing bg-gray-100 section-padding pb-3 style-1">
         <div className="container">
           <div className="content mb-4">
             <div ref={sentinelRef} style={{ height: "1px" }} />

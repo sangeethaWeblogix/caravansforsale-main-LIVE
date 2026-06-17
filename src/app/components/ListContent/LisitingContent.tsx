@@ -621,7 +621,7 @@ const [currentBanner, setCurrentBanner] = useState<typeof rightBanners[0] | null
           </div>
         </div>
 
-        <div className="dealers-section product-type">
+        <div className={`dealers-section product-type${isMainLoading ? " listings-loading" : ""}`}>
           <div className="other_items">
             <div className="related-products">
               {mergedProducts.length === 0 || isOrderbyLoading ? (
@@ -720,6 +720,8 @@ const [currentBanner, setCurrentBanner] = useState<typeof rightBanners[0] | null
                                           height={600}
                                           eager
                                           objectFit="contain"
+                                          priority={i === 0 && isPriority}
+                                          sizes="(max-width: 576px) 100vw, (max-width: 992px) 50vw, 400px"
                                         />
                                       </div>
                                     </SwiperSlide>

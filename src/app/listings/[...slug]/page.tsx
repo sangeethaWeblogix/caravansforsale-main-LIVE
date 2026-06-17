@@ -320,15 +320,17 @@ export default async function Listings({
   let initialCategoryCounts: Awaited<ReturnType<typeof fetchCategoryCounts>>;
   let initialMakeCounts: Awaited<ReturnType<typeof fetchMakeCounts>>;
   let bottomLinksData: BottomLinksData | null = null;
+  const _t = Date.now();
   try {
     [response, linksData, productListRes, initialCategoryCounts, initialMakeCounts, bottomLinksData] = await Promise.all([
-      getCachedListings({ ...apiFilters, page }),
-      fetchLinksData(apiFilters),
-      fetchProductList(),
-      fetchCategoryCounts(),
-      fetchMakeCounts(),
-      fetchBottomLinks(apiFilters),
+      getCachedListings({ ...apiFilters, page }).then(r => { console.log(`[PERF] getCachedListings: ${Date.now()-_t}ms`); return r; }),
+      fetchLinksData(apiFilters).then(r => { console.log(`[PERF] fetchLinksData: ${Date.now()-_t}ms`); return r; }),
+      fetchProductList().then(r => { console.log(`[PERF] fetchProductList: ${Date.now()-_t}ms`); return r; }),
+      fetchCategoryCounts().then(r => { console.log(`[PERF] fetchCategoryCounts: ${Date.now()-_t}ms`); return r; }),
+      fetchMakeCounts().then(r => { console.log(`[PERF] fetchMakeCounts: ${Date.now()-_t}ms`); return r; }),
+      fetchBottomLinks(apiFilters).then(r => { console.log(`[PERF] fetchBottomLinks: ${Date.now()-_t}ms`); return r; }),
     ]);
+    console.log(`[PERF] total Promise.all: ${Date.now()-_t}ms`);
   } catch (err) {
     // Prevent ISR from caching this error response — next request will retry fresh
     unstable_noStore();

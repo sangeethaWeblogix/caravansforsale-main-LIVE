@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import { headers } from "next/headers";
 
 const SKEL: CSSProperties = {
   background: "#e8e8e8",
@@ -10,7 +11,16 @@ function Skel({ w, h, style }: { w?: number | string; h: number; style?: CSSProp
   return <div style={{ ...SKEL, width: w ?? "100%", height: h, ...style }} />;
 }
 
-export default function ProductLoading() {
+function slugToTitle(slug: string): string {
+  return slug.replace(/-/g, " ").replace(/\b(\d+)ft(\d+)\b/gi, "$1'$2");
+}
+
+export default async function ProductLoading() {
+  const h = await headers();
+  const pathname = h.get("x-pathname") ?? "";
+  const slug = pathname.replace(/^\/product\//, "").replace(/\/$/, "");
+  const title = slugToTitle(slug);
+
   return (
     <>
     <style>{`@keyframes skeleton-pulse{0%,100%{opacity:1}50%{opacity:.55}}`}</style>
@@ -23,7 +33,11 @@ export default function ProductLoading() {
               {/* Left column — image gallery + details */}
               <div className="col-xl-8 col-lg-8 col-md-12">
                 <div className="product-info left-info">
-                  <div style={{ marginTop: 12 }}><Skel h={28} w="70%" style={{ borderRadius: 4 }} /></div>
+                  <h1 className="title">{title}</h1>
+                  <div className="attributes d-flex align-items-center gap-2 flex-wrap" style={{ marginBottom: 8 }}>
+                    <Skel h={16} w={110} style={{ borderRadius: 4 }} />
+                    <Skel h={22} w={60} style={{ borderRadius: 10 }} />
+                  </div>
                   <div style={{ marginTop: 12 }}><Skel h={420} style={{ borderRadius: 8 }} /></div>
 
                   {/* Thumbnails */}

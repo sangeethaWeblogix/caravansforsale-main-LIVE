@@ -290,38 +290,43 @@ function fmtKg(n: string): string {
 }
 
 function getBandText(parsed: ReturnType<typeof parseSlugToFilters>): string {
-  // Price
-  const from = parsed.from_price ? String(parsed.from_price) : null;
-  const to   = parsed.to_price   ? String(parsed.to_price)   : null;
-  if (from && to) return `${fmtPrice(from)} - ${fmtPrice(to)}`;
-  if (to)         return `Under ${fmtPrice(to)}`;
-  if (from)       return `Over ${fmtPrice(from)}`;
-
   // ATM (weight)
   const minKg = parsed.minKg ? String(parsed.minKg) : null;
   const maxKg = parsed.maxKg ? String(parsed.maxKg) : null;
-  if (minKg && maxKg) return `${fmtKg(minKg)} - ${fmtKg(maxKg)} ATM`;
-  if (maxKg)          return `Under ${fmtKg(maxKg)} ATM`;
-  if (minKg)          return `Over ${fmtKg(minKg)} ATM`;
+  let atmPart = "";
+  if (minKg && maxKg) atmPart = `${fmtKg(minKg)} - ${fmtKg(maxKg)} ATM`;
+  else if (maxKg)     atmPart = `Under ${fmtKg(maxKg)} ATM`;
+  else if (minKg)     atmPart = `Over ${fmtKg(minKg)} ATM`;
+
+  // Price
+  const from = parsed.from_price ? String(parsed.from_price) : null;
+  const to   = parsed.to_price   ? String(parsed.to_price)   : null;
+  let pricePart = "";
+  if (from && to) pricePart = `${fmtPrice(from)} - ${fmtPrice(to)}`;
+  else if (to)    pricePart = `Under ${fmtPrice(to)}`;
+  else if (from)  pricePart = `Over ${fmtPrice(from)}`;
 
   // Sleep (berths)
   const fromSleep = parsed.from_sleep ? String(parsed.from_sleep) : null;
   const toSleep   = parsed.to_sleep   ? String(parsed.to_sleep)   : null;
-  if (fromSleep && toSleep) return `Sleeping ${fromSleep}-${toSleep} Berths`;
-  if (toSleep)              return `Sleeping Up to ${toSleep} Berths`;
-  if (fromSleep)            return `Sleeping ${fromSleep}+ Berths`;
+  let sleepPart = "";
+  if (fromSleep && toSleep) sleepPart = `Sleeping ${fromSleep}-${toSleep} Berths`;
+  else if (toSleep)         sleepPart = `Sleeping Up to ${toSleep} Berths`;
+  else if (fromSleep)       sleepPart = `Sleeping ${fromSleep}+ Berths`;
 
   // Length (feet)
   const fromLen = parsed.from_length ? String(parsed.from_length) : null;
   const toLen   = parsed.to_length   ? String(parsed.to_length)   : null;
-  if (fromLen && toLen) return `${fromLen}ft - ${toLen}ft`;
-  if (toLen)            return `Under ${toLen}ft`;
-  if (fromLen)          return `Over ${fromLen}ft`;
+  let lengthPart = "";
+  if (fromLen && toLen) lengthPart = `${fromLen}ft - ${toLen}ft`;
+  else if (toLen)       lengthPart = `Under ${toLen}ft`;
+  else if (fromLen)     lengthPart = `Over ${fromLen}ft`;
 
-  return "";
+  // Combine all parts — ATM before price, matching API seo_v2.h1 format
+  return [atmPart, pricePart, sleepPart, lengthPart].filter(Boolean).join(" ");
 }
 
-function generateTitleFromFilters(
+export function generateTitleFromFilters(
   parsed: ReturnType<typeof parseSlugToFilters>
 ): string {
   // Build location suffix (shared)

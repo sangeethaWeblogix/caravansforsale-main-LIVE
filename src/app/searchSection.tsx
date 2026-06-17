@@ -1,4 +1,4 @@
-
+﻿
   // src/app/components/SearchSection.tsx
   "use client";
   import React, { useEffect, useRef, useState } from "react";
@@ -599,7 +599,7 @@ const BANNER_ENABLED = false;
                       <div className="content-info text-center pb-0">
                         <ul className="category_icon list-unstyled d-flex justify-content-start">
                           <li>
-                            <a href="/listings/off-road-category/">
+                            <Link href="/listings/off-road-category/">
                               <div className="item-image">
                                 <Image
                                   src="/images/off-road.webp"
@@ -609,11 +609,11 @@ const BANNER_ENABLED = false;
                                                     />
                               </div>
                               <span>Off Road</span>
-                            </a>
+                            </Link>
                           </li>
 
                           <li>
-                            <a href="/listings/hybrid-category/">
+                            <Link href="/listings/hybrid-category/">
                               <div className="item-image">
                                 <Image
                                   src="/images/hybrid.webp"
@@ -623,11 +623,11 @@ const BANNER_ENABLED = false;
                                                     />
                               </div>
                               <span>Hybrid</span>
-                            </a>
+                            </Link>
                           </li>
 
                           <li>
-                            <a href="/listings/pop-top-category/">
+                            <Link href="/listings/pop-top-category/">
                               <div className="item-image">
                                 <Image
                                   src="/images/pop-top.webp"
@@ -637,11 +637,11 @@ const BANNER_ENABLED = false;
                                                     />
                               </div>
                               <span>Pop Top</span>
-                            </a>
+                            </Link>
                           </li>
 
                           <li>
-                            <a href="/listings/luxury-category/">
+                            <Link href="/listings/luxury-category/">
                               <div className="item-image">
                                 <Image
                                   src="/images/luxury.webp"
@@ -651,11 +651,11 @@ const BANNER_ENABLED = false;
                                                     />
                               </div>
                               <span>Luxury</span>
-                            </a>
+                            </Link>
                           </li>
 
                           <li>
-                            <a href="/listings/family-category/">
+                            <Link href="/listings/family-category/">
                               <div className="item-image">
                                 <Image
                                   src="/images/family.webp"
@@ -665,11 +665,11 @@ const BANNER_ENABLED = false;
                                                     />
                               </div>
                               <span>Family</span>
-                            </a>
+                            </Link>
                           </li>
 
                           <li>
-                            <a href="/listings/touring-category/">
+                            <Link href="/listings/touring-category/">
                               <div className="item-image">
                                 <Image
                                   src="/images/touring.webp"
@@ -679,7 +679,7 @@ const BANNER_ENABLED = false;
                                                     />
                               </div>
                               <span>Touring</span>
-                            </a>
+                            </Link>
                           </li>
                         </ul>
                       </div>
@@ -804,9 +804,9 @@ const BANNER_ENABLED = false;
                 <p>
                   Browse the latest new caravans from top dealerships in Australia.
                 </p>
-                <a href="/listings/new-condition/" className="btn btn-primary">
+                <Link href="/listings/new-condition/" className="btn btn-primary">
                   Browse New Listings <i className="bi bi-chevron-right"></i>
-                </a>
+                </Link>
                 <div className="illustration left" />
               </div>
 
@@ -817,9 +817,9 @@ const BANNER_ENABLED = false;
                   Find great deals on quality used caravans for sale by dealers and
                   private sellers.
                 </p>
-                <a href="/listings/used-condition/" className="btn btn-primary">
+                <Link href="/listings/used-condition/" className="btn btn-primary">
                   Search Used Listings <i className="bi bi-chevron-right"></i>
-                </a>
+                </Link>
                 <div className="illustration center" />
               </div>
 
@@ -829,9 +829,9 @@ const BANNER_ENABLED = false;
                 <p>
                   Explore the full range of new and used caravans across Australia.
                 </p>
-                <a href="/listings/" className="btn btn-primary">
+                <Link href="/listings/" className="btn btn-primary">
                   Start Searching <i className="bi bi-chevron-right"></i>
-                </a>
+                </Link>
                 <div className="illustration right" />
               </div>
             </div>

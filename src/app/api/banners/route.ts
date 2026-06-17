@@ -2,7 +2,7 @@
 // src/app/api/banners/route.ts
 import { NextResponse } from "next/server";
 
-const PLACEMENTS = ["listings", "home", "sidebar", "header", "footer"];
+const PLACEMENTS = ["listings", "home"];
 
 export async function GET() {
   try {
