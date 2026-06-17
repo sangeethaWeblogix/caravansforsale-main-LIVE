@@ -46,9 +46,13 @@ function gone410(request: NextRequest): NextResponse {
   return res;
 }
 
-/* Helper: serve the actual page with HTTP 410 status + noindex (0 products — page exists but is empty) */
+/* Helper: serve the actual page with HTTP 410 status + noindex (0 products — page exists but is empty).
+   We add ?_s=410 to the rewrite destination so Next.js doesn't treat it as a self-rewrite
+   (self-rewrites silently drop the custom status and return 200). */
 function empty410(request: NextRequest): NextResponse {
-  const res = NextResponse.rewrite(request.nextUrl, { status: 410 });
+  const targetUrl = request.nextUrl.clone();
+  targetUrl.searchParams.set('_s', '410');
+  const res = NextResponse.rewrite(targetUrl, { status: 410 });
   res.headers.set('X-Robots-Tag', 'noindex, nofollow');
   return res;
 }
@@ -157,9 +161,12 @@ export async function middleware(request: NextRequest) {
           Object.fromEntries(url.searchParams)
         );
 
+        // Include page=1 so the middleware call matches exactly what the page component sends.
+        // WordPress returns different results (e.g. 410) for explicit page=1 vs. no page param.
+        const apiParams = new URLSearchParams({ ...filters as Record<string, string>, page: '1' });
         const apiUrl =
           "https://admin.caravansforsale.com.au/wp-json/cfs/v1/new_optimize_code?" +
-          new URLSearchParams(filters as Record<string, string>).toString();
+          apiParams.toString();
 
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 30000);
@@ -194,13 +201,17 @@ export async function middleware(request: NextRequest) {
             (rawIndex === "noindex" ? "noindex" : "index") +
             ", " +
             (rawFollow === "nofollow" ? "nofollow" : "follow");
-        }
 
-        seoCache.set(cacheKey, {
-          robots: robotsHeader,
-          isEmpty: false,
-          expires: Date.now() + CACHE_TTL,
-        });
+          seoCache.set(cacheKey, {
+            robots: robotsHeader,
+            isEmpty: false,
+            expires: Date.now() + CACHE_TTL,
+          });
+        } else if (apiRes.status === 410) {
+          // WordPress returns 410 when the listing page has 0 products
+          seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty: true, expires: Date.now() + CACHE_TTL });
+          return empty410(request);
+        }
       } catch (error: any) {
         if (error?.name !== "AbortError") {
           console.error("Middleware SEO error:", error);

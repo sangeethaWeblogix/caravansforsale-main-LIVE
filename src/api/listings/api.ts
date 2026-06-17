@@ -240,7 +240,21 @@ export const fetchListings = async (
           },
         };
       } catch {
-        // JSON parse failed — fall through to error handling
+        // JSON parse failed — still return empty data so noindex is set correctly
+        return {
+          success: false,
+          data: {
+            products: [],
+            exclusive_products: [],
+            emp_exclusive_products: [],
+            featured_products: [],
+            premium_products: [],
+            make_options: [],
+            model_options: [],
+            all_categories: [],
+            states: [],
+          },
+        };
       }
     }
 

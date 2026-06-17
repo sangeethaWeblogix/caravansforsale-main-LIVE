@@ -35,6 +35,24 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const [{ slug = [] }, resolvedSearchParams] = await Promise.all([params, searchParams]);
 
+  // Middleware signals 0 products via ?_s=410 (added to the rewrite destination to force
+  // HTTP 410 status — Next.js drops custom status on self-rewrites so we change the URL).
+  // When this signal is present we know with certainty the page is empty: return noindex
+  // immediately and still try to fetch the real meta title from the API.
+  if (resolvedSearchParams._s === '410') {
+    try {
+      const filters = parseSlugToFilters(slug, resolvedSearchParams);
+      const data = await getCachedListings({ ...filters, page: 1 }, { noCache: true });
+      const apiTitle = data?.seo_v2?.meta_title;
+      return {
+        title: { absolute: apiTitle ? `${apiTitle} | Caravans For Sale` : "Caravans for Sale in Australia" },
+        robots: { index: false, follow: false },
+      };
+    } catch {
+      return { robots: { index: false, follow: false } };
+    }
+  }
+
   // Check product count — if 0, return noindex so page is de-listed from search engines.
   // When products return on the next ISR cycle, metadata reverts to indexable automatically.
   try {
