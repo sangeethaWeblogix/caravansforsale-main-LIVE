@@ -55,6 +55,14 @@ export async function middleware(request: NextRequest) {
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set('x-pathname', url.pathname);
 
+  /* 🚫 Block /page/N/ path segments OR ?page= query param → HTTP 410 Gone (no redirect) */
+  if (
+    (/\/page\/\d+/i.test(url.pathname) && !url.pathname.startsWith('/blog/')) ||
+    url.searchParams.has('page')
+  ) {
+    return gone410(request);
+  }
+
   /* 🚫 Listings: forbidden segments, unknown params, OR wrong URL order → 410 */
   if (url.pathname.startsWith('/listings')) {
     const segments = url.pathname.split('/').filter(Boolean);
@@ -64,8 +72,11 @@ export async function middleware(request: NextRequest) {
     const hasUnknownParam = Array.from(url.searchParams.keys()).some(k => !ALLOWED_PARAMS.has(k.toLowerCase()));
     const hasForbiddenValue = Array.from(url.searchParams.values()).some(v => /(page|feed)/i.test(v));
 
-    if (hasForbiddenSegment || hasUnknownParam || hasForbiddenValue) {
+    if (hasForbiddenSegment) {
       return gone404(request);
+    }
+    if (hasUnknownParam || hasForbiddenValue) {
+      return gone410(request);
     }
 
     // Wrong URL order → 410 (URL unchanged, no redirect)
