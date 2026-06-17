@@ -16,7 +16,7 @@
             j.async=true;
             j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl+
                   '&gtm_url=${gtmServer}';
-            f.parentNode.insertBefore(j,f);
+            f?f.parentNode.insertBefore(j,f):document.head.appendChild(j);
           })(window,document,'script','dataLayer','${gtmId}');
         `,
       }}

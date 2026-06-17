@@ -329,15 +329,13 @@ export default function ListingContent({
   //   }
   // };
   const postTrackClick = async (product_id: number) => {
-    await fetch("/api/track-click", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        product_id,
-      }),
-    });
+    try {
+      await fetch("/api/track-click", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ product_id }),
+      });
+    } catch {}
   };
   const handleProductClick = (id) => {
     postTrackClick(id);
@@ -358,13 +356,13 @@ export default function ListingContent({
   }, []);
 
   const postTrackEvent = async (product_id: number) => {
-    await fetch("/api/track", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        product_id,
-      }),
-    });
+    try {
+      await fetch("/api/track", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ product_id }),
+      });
+    } catch {}
   };
 
   const shuffleArray = <T,>(arr: T[]): T[] => {

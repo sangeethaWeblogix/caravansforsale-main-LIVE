@@ -326,13 +326,13 @@ export default function ListingsPage({
 }, [searchParams]);
 
   const postTrackEvent = async (product_id: number) => {
-    await fetch("/api/track", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        product_id,
-      }),
-    });
+    try {
+      await fetch("/api/track", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ product_id }),
+      });
+    } catch {}
   };
 
  // ✅ Fix பண்ணிய code
