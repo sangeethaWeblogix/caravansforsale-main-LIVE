@@ -46,11 +46,12 @@ export async function generateMetadata({
       const n = parseInt(val as string, 10);
       if (!isNaN(n) && n > 0) page = n;
     }
-    const data = await getCachedListings({ ...filters, page });
+    const data = await getCachedListings({ ...filters, page }, { noCache: true });
     const hasProducts = (data?.data?.products?.length ?? 0) > 0;
     if (!hasProducts) {
+      const apiTitle = data?.seo_v2?.meta_title;
       return {
-        title: { absolute: "410 - Page Permanently Removed | Caravans For Sale" },
+        title: { absolute: apiTitle ? `${apiTitle} | Caravans For Sale` : "Caravans for Sale in Australia" },
         robots: { index: false, follow: false },
       };
     }

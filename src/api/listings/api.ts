@@ -113,7 +113,8 @@ const normalizeQuery = (s?: string) =>
   (s ?? "").replace(/\+/g, " ").trim().replace(/\s+/g, " ");
 
 export const fetchListings = async (
-  filters: Filters = {}
+  filters: Filters = {},
+  options?: { noCache?: boolean }
 ): Promise<ApiResponse> => {
   const {
     page = 1,
@@ -196,7 +197,7 @@ export const fetchListings = async (
           ? { "X-API-Key": process.env.CFS_API_KEY }
           : {}),
       },
-      ...(!isClient && { next: { revalidate: 3600 } }),
+      ...(!isClient && (options?.noCache ? { cache: 'no-store' } : { next: { revalidate: 3600 } })),
     });
   } catch (err: any) {
     clearTimeout(timeoutId);
