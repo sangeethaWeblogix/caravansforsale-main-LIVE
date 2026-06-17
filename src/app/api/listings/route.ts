@@ -23,6 +23,15 @@ export async function GET(request: NextRequest) {
     clearTimeout(timeoutId);
 
     if (!res.ok) {
+      // For 410, forward the full body (contains emp_exclusive_products for 0-product pages)
+      if (res.status === 410) {
+        try {
+          const body = await res.json();
+          return NextResponse.json(body, { status: 410 });
+        } catch {
+          return NextResponse.json({ success: false }, { status: 410 });
+        }
+      }
       return NextResponse.json({ success: false }, { status: res.status });
     }
 

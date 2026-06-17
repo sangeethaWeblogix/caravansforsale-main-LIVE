@@ -65,7 +65,7 @@ export async function middleware(request: NextRequest) {
   /* 🚫 Block /page/N/ path segments OR ?page= query param → HTTP 410 Gone (no redirect) */
   if (
     (/\/page\/\d+/i.test(url.pathname) && !url.pathname.startsWith('/blog/')) ||
-    url.searchParams.has('page')
+    (url.searchParams.has('page') && !url.pathname.startsWith('/api'))
   ) {
     return gone410(request);
   }
