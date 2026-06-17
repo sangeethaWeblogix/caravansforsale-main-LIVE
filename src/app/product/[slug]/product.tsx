@@ -310,7 +310,7 @@ export default function ClientLogger({
     // ---- fallback logic ----
     if (L === "category" || L === "type") {
       return v.split(",").map((c) => ({
-        href: `/listings/${slugify(c)}-category/`,
+        href: `/listings/${slugify(c.replace(/\s*caravan\s*/gi, " ").trim())}-category/`,
         text: c.trim(),
       }));
     }
