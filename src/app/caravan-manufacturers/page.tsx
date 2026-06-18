@@ -5,30 +5,6 @@ import Header from "./Header";
 import Middle from "./Middle";
 import FaqSection from "./FaqSection";
 import "./comman.css?=1";
-import { Metadata } from "next";
-
-const metaTitle = "Top 10 Caravan Manufacturers in Australia: Best Brands of 2024";
-const metaDescription =
-  "See how top Australian caravan manufacturers excel with the best in innovative designs, quality construction, cost efficiency, and expert craftsmanship.";
-
-export const metadata: Metadata = {
-  title: metaTitle,
-  description: metaDescription,
-  robots: "index, follow",
-  alternates: {
-    canonical: "https://www.caravansforsale.com.au/caravan-manufacturers/",
-  },
-  openGraph: {
-    title: metaTitle,
-    description: metaDescription,
-    url: "https://www.caravansforsale.com.au/caravan-manufacturers/",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: metaTitle,
-    description: metaDescription,
-  },
-};
 
 export default function Home() {
   return (
