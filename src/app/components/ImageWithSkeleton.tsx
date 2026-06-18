@@ -98,6 +98,7 @@ export default function ImageWithSkeleton({
           height={height}
           sizes={sizes}
           loading={eager ? "eager" : "lazy"}
+          unoptimized={src.includes("imagestack.net")}
           onLoad={() => setLoaded(true)}
           onError={() => {
             setFailed(true);
