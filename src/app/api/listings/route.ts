@@ -14,10 +14,10 @@ export async function GET(request: NextRequest) {
     const res = await fetch(url, {
       signal: controller.signal,
       headers: {
-        "Cache-Control": "no-cache",
         Accept: "application/json",
         ...(API_KEY && { "X-API-Key": API_KEY }),
       },
+      next: { revalidate: 300 }, // Cache in Next.js data cache for 5 min (shared across all users)
     });
 
     clearTimeout(timeoutId);
@@ -36,7 +36,9 @@ export async function GET(request: NextRequest) {
     }
 
     const data = await res.json();
-    return NextResponse.json(data);
+    return NextResponse.json(data, {
+      headers: { "Cache-Control": "public, max-age=300, s-maxage=300" },
+    });
   } catch (err: any) {
     clearTimeout(timeoutId);
     const status = err?.name === "AbortError" ? 504 : 500;

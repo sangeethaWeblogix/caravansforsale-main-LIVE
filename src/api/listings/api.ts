@@ -191,7 +191,6 @@ export const fetchListings = async (
     res = await fetch(url, {
       signal: controller.signal,
       headers: {
-        "Cache-Control": "no-cache",
         Accept: "application/json",
         ...(!isClient && process.env.CFS_API_KEY
           ? { "X-API-Key": process.env.CFS_API_KEY }
