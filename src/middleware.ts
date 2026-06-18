@@ -213,13 +213,19 @@ export async function middleware(request: NextRequest) {
         if (apiRes.ok) {
           const data = await apiRes.json();
 
-          // 0 regular products → always 410; page renders emp_exclusive_products if any exist
+          // 0 regular products:
+          //   - empExclusive also empty → true 410 Gone (Vercel shows own error page)
+          //   - empExclusive has items  → noindex 200, page renders exclusive content
           const products = data?.data?.products ?? [];
           const empExclusive = data?.emp_exclusive_products ?? [];
           if (products.length === 0) {
-            const isEmpty = empExclusive.length === 0;
-            seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty, expires: Date.now() + CACHE_TTL });
-            return render410(request);
+            if (empExclusive.length === 0) {
+              seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty: true, expires: Date.now() + CACHE_TTL });
+              return render410(request);
+            }
+            // Has emp_exclusive_products — serve page with noindex (Vercel intercepts 410+rewrite and shows own error page)
+            seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty: false, expires: Date.now() + CACHE_TTL });
+            robotsHeader = "noindex, nofollow";
           }
 
           const seo = data?.seo_v2 ?? data?.seo ?? {};
