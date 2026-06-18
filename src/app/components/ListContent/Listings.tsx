@@ -13,7 +13,7 @@ import ExculsiveContent from "./exculsiveContent";
 import FilterModal from "./FilterModal";
 import { flushSync } from "react-dom";
 import { v4 as uuidv4 } from "uuid";
-import "./newList.css?=302";
+import "./newList.css?=303";
 import "./top-filters.css?=514";
 import ListingSkeleton, { SidebarListingSkeleton } from "../skelton";
 import {
@@ -200,8 +200,6 @@ export default function ListingsPage({
   const [isFeaturedLoading, setIsFeaturedLoading] = useState(false);
   const [isPremiumLoading, setIsPremiumLoading] = useState(false);
 
-  const [isNextLoading, setIsNextLoading] = useState(false);
-  const [nextPageData, setNextPageData] = useState<ApiResponse | null>(null);
   const isSliderFetchingRef = useRef(false);
   const [clickid, setclickid] = useState<string | null>(null);
 
@@ -294,11 +292,6 @@ export default function ListingsPage({
 
   // 1️⃣  persistence helpers
   const PAGE_KEY = (id: string) => `page_${id}`;
-  const savePage = (id: string, page: number) => {
-    try {
-      localStorage.setItem(PAGE_KEY(id), String(page));
-    } catch {}
-  };
 
   const readPage = (id: string): number | null => {
     try {
@@ -499,93 +492,6 @@ const [pagination, setPagination] = useState<Pagination>(() => {
     return `${hash.slice(0, 25 - suffix.length)}${suffix}`;
   };
 
-  const ensureclickid = (pageNum: number): string => {
-    if (pageNum <= 1) {
-      setclickid(null);
-      return "";
-    }
-    const id = uuidv4();
-    setclickid(id);
-    savePage(id, pageNum);
-    return id;
-  };
-
-  const sentinelRef = useRef<HTMLDivElement | null>(null);
-  useEffect(() => {
-    if (!sentinelRef.current) return;
-    const observer = new IntersectionObserver(
-      async (entries) => {
-        const entry = entries[0];
-        if (entry.isIntersecting && !isNextLoading) {
-          try {
-            const response = await preFetchListings(
-              pagination.current_page + 1,
-              filtersRef.current,
-            );
-            if (response?.success) {
-              setNextPageData(response);
-              setIsNextLoading(true);
-            } else {
-              setNextPageData(null);
-            }
-          } catch (err) {
-            console.error("Prefetch failed:", err);
-          }
-        }
-      },
-      { threshold: 0.1 },
-    );
-
-    observer.observe(sentinelRef.current);
-    return () => observer.disconnect();
-  }, [pagination.current_page, isNextLoading]);
-
-  const preFetchListings = async (
-    pageNum: number,
-    appliedFilters: Filters = filtersRef.current,
-  ): Promise<ApiResponse | undefined> => {
-    try {
-      console.log("pageNumpageNum", pageNum);
-      const safeFilters = normalizeSearchFromMake(appliedFilters);
-      const radiusNum = asNumber(safeFilters.radius_kms);
-      const radiusParam =
-        typeof radiusNum === "number" && radiusNum !== DEFAULT_RADIUS
-          ? String(radiusNum)
-          : undefined;
-
-      const response: ApiResponse = await fetchListings({
-        ...safeFilters,
-        page: pageNum,
-        condition: safeFilters.condition,
-        minKg: safeFilters.minKg?.toString(),
-        maxKg: safeFilters.maxKg?.toString(),
-        sleeps: safeFilters.sleeps,
-        from_price: safeFilters.from_price?.toString(),
-        to_price: safeFilters.to_price?.toString(),
-        acustom_fromyears: safeFilters.acustom_fromyears?.toString(),
-        acustom_toyears: safeFilters.acustom_toyears?.toString(),
-        from_length: safeFilters.from_length?.toString(),
-        to_length: safeFilters.to_length?.toString(),
-        make: safeFilters.make,
-        model: resolveModelSlug(safeFilters.model),
-        state: safeFilters.state,
-        region: safeFilters.region,
-        suburb: safeFilters.suburb,
-        pincode: safeFilters.pincode,
-        orderby: safeFilters.orderby,
-        search: safeFilters.search,
-        keyword: safeFilters.keyword,
-        from_sleep: safeFilters.from_sleep?.toString(),
-        to_sleep: safeFilters.to_sleep?.toString(),
-        radius_kms: radiusParam,
-      });
-
-      return response;
-    } catch (err) {
-      console.error("Failed to prefetch Next data", err);
-    }
-  };
-
   const latestListingsRequestRef = useRef(0);
 
   // Mirror of generateTitleFromFilters in meta.ts — used when seo_v2 returns no title (e.g. year filter pages)
@@ -708,92 +614,30 @@ const [pagination, setPagination] = useState<Pagination>(() => {
     [DEFAULT_RADIUS, initialData, computeTitleFromFilters],
   );
 
-  const handleNextPage = useCallback(async () => {
+  const handleNextPage = useCallback(() => {
     if (pagination.current_page >= pagination.total_pages) return;
-
-    flushSync(() => {
-      setIsMainLoading(true);
-      setIsFeaturedLoading(true);
-      setIsPremiumLoading(true);
-    });
-
     const nextPage = pagination.current_page + 1;
-    const id = ensureclickid(nextPage);
-    savePage(id, nextPage);
+    const id = uuidv4();
+    try { localStorage.setItem(`page_${id}`, String(nextPage)); } catch {}
+    const url = new URL(window.location.href);
+    url.searchParams.set("clickid", id);
+    window.location.href = url.toString();
+  }, [pagination.current_page, pagination.total_pages]);
 
-    try {
-      if (nextPageData?.data?.products?.length) {
-        setProducts(transformApiItemsToProducts(nextPageData.data.products));
-        setPremiumProducts(
-          transformApiItemsToProducts(
-            nextPageData.data.premium_products ?? [],
-          ),
-        );
-        setFeaturedProducts(
-          transformApiItemsToProducts(
-            nextPageData.data.featured_products ?? [],
-          ),
-        );
-        setExculisiveProducts(
-          transformApiItemsToProducts(
-            nextPageData.data.exclusive_products ?? [],
-          ),
-        );
-        if (nextPageData.pagination) {
-          setPagination(nextPageData.pagination);
-        }
-      } else {
-        await loadListings(nextPage, filtersRef.current, true);
-      }
-      updateURLWithFilters(filtersRef.current, nextPage);
-    } catch (error) {
-      console.error("Error loading next page:", error);
-    } finally {
-      setIsMainLoading(false);
-      setIsFeaturedLoading(false);
-      setIsPremiumLoading(false);
-      setNextPageData(null);
-      setIsNextLoading(false);
-    }
-  }, [
-    pagination.current_page,
-    pagination.total_pages,
-    nextPageData,
-    loadListings,
-    updateURLWithFilters,
-  ]);
-
-  const handlePrevPage = useCallback(async () => {
+  const handlePrevPage = useCallback(() => {
     if (pagination.current_page <= 1) return;
-
     const prevPage = pagination.current_page - 1;
-    setIsMainLoading(true);
-    setIsFeaturedLoading(true);
-    setIsPremiumLoading(true);
-
-    try {
-      if (prevPage > 1) {
-        const id = ensureclickid(prevPage);
-        if (id) savePage(id, prevPage);
-        await loadListings(prevPage, filtersRef.current, true);
-        updateURLWithFilters(filtersRef.current, prevPage, id);
-      } else {
-        setclickid(null);
-        await loadListings(1, filtersRef.current, true);
-        updateURLWithFilters(filtersRef.current, 1, "");
-        const url = new URL(window.location.href);
-        url.searchParams.delete("clickid");
-        window.history.pushState({}, "", url.toString());
-      }
-      await loadListings(prevPage, filtersRef.current, true);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsMainLoading(false);
-      setIsFeaturedLoading(false);
-      setIsPremiumLoading(false);
+    const url = new URL(window.location.href);
+    if (prevPage <= 1) {
+      url.searchParams.delete("clickid");
+      window.location.href = url.toString();
+    } else {
+      const id = uuidv4();
+      try { localStorage.setItem(`page_${id}`, String(prevPage)); } catch {}
+      url.searchParams.set("clickid", id);
+      window.location.href = url.toString();
     }
-  }, [pagination, loadListings]);
+  }, [pagination.current_page]);
 
   const restoredOnceRef = useRef(false);
 
@@ -1489,6 +1333,7 @@ const [pagination, setPagination] = useState<Pagination>(() => {
                       }
                       handleSliderFilterSelect(next);
                     }}
+                    onFilterChange={(f) => handleSliderFilterSelect(f)}
                   />
                 </div>
               </div>
@@ -1521,7 +1366,6 @@ const [pagination, setPagination] = useState<Pagination>(() => {
       <section className="services product_listing new_listing bg-gray-100 section-padding pb-3 style-1">
         <div className="container">
           <div className="content mb-4">
-            <div ref={sentinelRef} style={{ height: "1px" }} />
             <div className="row">
               {products.length > 0 ||
               fetauredProducts.length > 0 ||

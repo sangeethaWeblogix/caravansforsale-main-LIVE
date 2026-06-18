@@ -1,6 +1,6 @@
 "use client";
 import "../filter.css?=27";
-import { useState, useEffect, useRef, useTransition } from "react";
+import { useState, useEffect, useRef } from "react";
 import { fetchProductList } from "@/api/productList/api";
 import CategorySkeleton from "./CategorySkeleton";
 import { buildSlugFromFilters } from "../slugBuilter";
@@ -83,6 +83,7 @@ interface FilterSliderProps {
   onOpenModal?: (section?: string) => void;
   onPriceSelect?: (from: number | null, to: number | null) => void;
   onAtmSelect?: (min: number | null, max: number | null) => void;
+  onFilterChange?: (filters: Filters) => void;
   productListData?: ProductListResponse;
   initialMakeOptions?: { name: string; slug: string }[];
 }
@@ -139,6 +140,7 @@ const FilterSlider = ({
   onPriceSelect,
   onAtmSelect,
   onMakeSelect,
+  onFilterChange,
   setIsLoading,
   setIsMainLoading,
   setIsFeaturedLoading,
@@ -164,10 +166,8 @@ const [states, setStates] = useState<StateOption[]>(
   const [tempRegionRaw, setTempRegionRaw] = useState<string | null>(null);
   const [removingChip, setRemovingChip] = useState<string | null>(null);
   const [clearingAll, setClearingAll] = useState(false);
-  const [isPending, startTransition] = useTransition();
 
- 
-
+  useEffect(() => { setRemovingChip(null); }, [currentFilters]);
 
   // ── Make & Model states ──
   const [makes, setMakes] = useState<
@@ -198,13 +198,6 @@ const [states, setStates] = useState<StateOption[]>(
   const toTitleCase = (str: string): string =>
     str.replace(/\b\w/g, (c) => c.toUpperCase());
 
-  // FilterSlider-ல் இதை add பண்ணு
-  const triggerGlobalLoaders = () => {
-    if (setIsLoading) setIsLoading(true);
-    if (setIsMainLoading) setIsMainLoading(true);
-    if (setIsFeaturedLoading) setIsFeaturedLoading(true);
-    if (setIsPremiumLoading) setIsPremiumLoading(true);
-  };
 
  
 
@@ -336,18 +329,8 @@ const [states, setStates] = useState<StateOption[]>(
   const handleMakeSearch = () => {
     delete localOverrideRef.current.make;
     delete localOverrideRef.current.model;
-    triggerGlobalLoaders();
-    // onMakeSelect?.(tempMake, tempModel);
-    const newFilters = {
-      ...currentFilters,
-      make: tempMake ?? undefined,
-      model: tempModel ?? undefined,
-      page: 1,
-    };
-    const slugPath = buildSlugFromFilters(newFilters);
-    const safeSlug = slugPath.endsWith("/") ? slugPath : `${slugPath}/`;
-    router.push(safeSlug);
-
+    const newFilters = { ...currentFilters, make: tempMake ?? undefined, model: tempModel ?? undefined, page: 1 };
+    updateFiltersAndURL(newFilters);
     setOpenModal(null);
   };
   const handleMakeClear = () => {
@@ -397,15 +380,7 @@ const [states, setStates] = useState<StateOption[]>(
   console.log("connnn", tempCondition)
 
   const handleConditionSearch = () => {
-    triggerGlobalLoaders();
-    const newFilters = {
-      ...currentFilters,
-      condition: tempCondition ?? undefined,
-      page: 1,
-    };
-    const slugPath = buildSlugFromFilters(newFilters);
-    const safeSlug = slugPath.endsWith("/") ? slugPath : `${slugPath}/`;
-    router.push(safeSlug);
+    updateFiltersAndURL({ condition: tempCondition ?? undefined });
     setOpenModal(null);
   };
 
@@ -429,18 +404,7 @@ const [states, setStates] = useState<StateOption[]>(
   const handlePriceSearch = () => {
     delete localOverrideRef.current.from_price;
     delete localOverrideRef.current.to_price;
-    triggerGlobalLoaders();
-    // onPriceSelect?.(tempPriceFrom, tempPriceTo);
-    const newFilters = {
-      ...currentFilters,
-      from_price: tempPriceFrom ?? undefined,
-      to_price: tempPriceTo ?? undefined,
-      page: 1,
-    };
-    const slugPath = buildSlugFromFilters(newFilters);
-    const safeSlug = slugPath.endsWith("/") ? slugPath : `${slugPath}/`;
-    router.push(safeSlug);
-
+    updateFiltersAndURL({ from_price: tempPriceFrom ?? undefined, to_price: tempPriceTo ?? undefined });
     setOpenModal(null);
   };
   const handlePriceClear = () => {
@@ -465,18 +429,7 @@ const [states, setStates] = useState<StateOption[]>(
   const handleAtmSearch = () => {
     delete localOverrideRef.current.minKg;
     delete localOverrideRef.current.maxKg;
-    triggerGlobalLoaders();
-    // onAtmSelect?.(tempAtmFrom, tempAtmTo);
-    const newFilters = {
-      ...currentFilters,
-      minKg: tempAtmFrom ?? undefined,
-      maxKg: tempAtmTo ?? undefined,
-      page: 1,
-    };
-    const slugPath = buildSlugFromFilters(newFilters);
-    const safeSlug = slugPath.endsWith("/") ? slugPath : `${slugPath}/`;
-    router.push(safeSlug);
-
+    updateFiltersAndURL({ minKg: tempAtmFrom ?? undefined, maxKg: tempAtmTo ?? undefined });
     setOpenModal(null);
   };
   const handleAtmClear = () => {
@@ -500,39 +453,27 @@ const [states, setStates] = useState<StateOption[]>(
   const [stateCountsLoading, setStateCountsLoading] = useState(false);
   const [regionCountsLoading, setRegionCountsLoading] = useState(false);
   const updateFiltersAndURL = (updates: Partial<Filters>) => {
-    triggerGlobalLoaders();
-
-    const newFilters = {
-      ...currentFilters,
-      ...updates,
-      page: 1,
-    };
-
-    // remove empty filters
-    Object.keys(newFilters).forEach((k) => {
-      if (newFilters[k] === undefined || newFilters[k] === null) {
-        delete newFilters[k];
-      }
-    });
-
-    const slugPath = buildSlugFromFilters(newFilters);
-    const safeSlug = slugPath.endsWith("/") ? slugPath : `${slugPath}/`;
-
-    router.push(safeSlug);
+    const newFilters = { ...currentFilters, ...updates, page: 1 };
+    if (onFilterChange) {
+      // Pass with undefined values intact — handleSliderFilterSelect uses them to delete keys
+      onFilterChange(newFilters as Filters);
+    } else {
+      Object.keys(newFilters).forEach((k) => {
+        if (newFilters[k] === undefined || newFilters[k] === null) delete newFilters[k];
+      });
+      const slugPath = buildSlugFromFilters(newFilters);
+      router.push(slugPath.endsWith("/") ? slugPath : `${slugPath}/`);
+    }
   };
 
   const removeChip = (key: string, updates: Partial<Filters>) => {
     setRemovingChip(key);
-    triggerGlobalLoaders();
     updateFiltersAndURL(updates);
   };
 
   const handleClearAll = () => {
     setClearingAll(true);
-    triggerGlobalLoaders();
-    startTransition(() => {
-      router.push("/listings/");
-    });
+    window.location.href = "/listings/";
   };
   const handleTypeOpen = () => {
     const f = getEffectiveFilters();
@@ -653,19 +594,12 @@ const [states, setStates] = useState<StateOption[]>(
     setOpenModal("location");
   };
   const handleLocationSearch = () => {
-    triggerGlobalLoaders();
-    const newFilters = {
-      ...currentFilters,
+    updateFiltersAndURL({
       state: tempState?.toLowerCase() ?? undefined,
-      region:
-        tempRegion?.toLowerCase() ?? tempRegionRaw?.toLowerCase() ?? undefined,
+      region: tempRegion?.toLowerCase() ?? tempRegionRaw?.toLowerCase() ?? undefined,
       suburb: undefined,
       pincode: undefined,
-      page: 1,
-    };
-    const slugPath = buildSlugFromFilters(newFilters);
-    const safeSlug = slugPath.endsWith("/") ? slugPath : `${slugPath}/`;
-    router.push(safeSlug);
+    });
     setOpenModal(null);
   };
   const handleRegionViewOpen = (stateName?: string) => {
@@ -989,10 +923,10 @@ const [states, setStates] = useState<StateOption[]>(
           )}
           <button
             className="chip-clear-all"
-            disabled={clearingAll || isPending}
+            disabled={clearingAll}
             onClick={handleClearAll}
           >
-            {clearingAll || isPending ? "Clearing…" : "Clear all"}
+            {clearingAll ? "Clearing…" : "Clear all"}
           </button>
         </div>
       )}
@@ -1266,8 +1200,7 @@ const [states, setStates] = useState<StateOption[]>(
                 className={`search ${(hasLocationChange || tempSuburbSuggestion) ? "active" : ""}`}
                 onClick={() => {
                   if (tempSuburbSuggestion) {
-                    triggerGlobalLoaders();
-                    const uriParts = tempSuburbSuggestion.uri.split("/");
+                                    const uriParts = tempSuburbSuggestion.uri.split("/");
                     const stateSlug = uriParts[0] || "";
                     const regionSlug = uriParts[1] || "";
                     const suburbSlug = uriParts[2] || "";
@@ -1280,12 +1213,7 @@ const [states, setStates] = useState<StateOption[]>(
                       if (m) pincode = m[0];
                     }
                     const validRegion = getValidRegionName(state, region, states);
-                    const newFilters = { ...currentFilters, suburb: suburb.toLowerCase(), pincode: pincode || undefined, state, region: validRegion || region, radius_kms: tempSuburbRadius, page: 1 };
-                    const slugPath = buildSlugFromFilters(newFilters);
-                    const safeSlug = slugPath.endsWith("/") ? slugPath : `${slugPath}/`;
-                    const query = new URLSearchParams();
-                    if (tempSuburbRadius !== RADIUS_OPTIONS[0]) query.set("radius_kms", String(tempSuburbRadius));
-                    router.push(query.toString() ? `${safeSlug}?${query}` : safeSlug);
+                    updateFiltersAndURL({ suburb: suburb.toLowerCase(), pincode: pincode || undefined, state, region: validRegion || region, radius_kms: tempSuburbRadius });
                   } else {
                     handleLocationSearch();
                   }

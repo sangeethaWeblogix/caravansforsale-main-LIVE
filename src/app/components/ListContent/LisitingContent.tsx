@@ -602,13 +602,13 @@ const [currentBanner, setCurrentBanner] = useState<typeof rightBanners[0] | null
           </div>
         </div>
 
-        <div className={`dealers-section product-type${isMainLoading ? " listings-loading" : ""}`}>
+        <div className="dealers-section product-type">
           <div className="other_items">
             <div className="related-products">
-              {mergedProducts.length === 0 || isOrderbyLoading ? (
-                <Skelton count={6} />
+              {isMainLoading || mergedProducts.length === 0 || isOrderbyLoading ? (
+                <div className="skeleton-appear"><Skelton count={6} /></div>
               ) : (
-                <div className="row g-3">
+                <div className="row g-3 cards-loaded">
                   {mergedProducts.map((item, index) => {
                     const href = getHref(item);
                     const isPriority = index === 0;

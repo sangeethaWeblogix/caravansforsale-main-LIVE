@@ -1492,7 +1492,7 @@ const [states, setStates] = useState<StateOption[]>([]);
       // window.history.replaceState(null, "", finalURL);
 
       if (mountedRef.current) {
-        router.push(finalURL, { scroll: false }); // ✅
+        router.push(finalURL, { scroll: false });
       }
     }
   };

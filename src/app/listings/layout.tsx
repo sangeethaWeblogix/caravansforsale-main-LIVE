@@ -1,5 +1,5 @@
 import React, { ReactNode } from "react";
-import "./listings.css?=4";
+import "./listings.css?=7";
 import { Metadata } from "next";
 
 export const revalidate = 3600;

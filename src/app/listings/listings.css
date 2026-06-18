@@ -4,6 +4,19 @@
   transition: opacity 0.15s ease;
 }
 
+.skeleton-appear {
+  animation: fadeIn 0.2s ease-in;
+}
+
+.cards-loaded {
+  animation: cardsFade 0.3s ease-out;
+}
+
+@keyframes cardsFade {
+  0%   { opacity: 0.4; }
+  100% { opacity: 1; }
+}
+
 .list-container {
   padding: 15px 0px;
 }
