@@ -17,6 +17,7 @@ import NavigationHistory from "@/components/NavigationHistory";
 import { BannerProvider } from "@/components/BannerHandler";
 import { headers } from "next/headers";
 import { metaFromSlug } from "@/utils/seo/meta";
+import { fetchProductMeta } from "@/utils/fetchProductMeta";
 
   const montserrat = Montserrat({
     subsets: ["latin"],
@@ -67,6 +68,18 @@ import { metaFromSlug } from "@/utils/seo/meta";
     let slugCanonical = "";
     let slugRobots = "";
 
+    const isProductPage =
+      pathname.startsWith("/product/") &&
+      pathname !== "/product/" &&
+      pathname !== "/product";
+
+    let productMeta = { title: "", description: "", canonical: "", ogImage: "" };
+
+    if (isProductPage) {
+      const slug = pathname.replace(/^\/product\//, "").replace(/\/$/, "");
+      productMeta = await fetchProductMeta(slug);
+    }
+
     if (isListingSlug) {
       const slugString = pathname.replace(/^\/listings\//, "").replace(/\/$/, "");
       const slugParts = slugString.split("/").filter(Boolean);
@@ -111,6 +124,17 @@ import { metaFromSlug } from "@/utils/seo/meta";
     return (
       <html lang="en">
         <head>
+          {/* Product page SEO — injected here to avoid metadata-in-body streaming issue */}
+          {isProductPage && productMeta.title && <title>{productMeta.title}</title>}
+          {isProductPage && productMeta.description && <meta name="description" content={productMeta.description} />}
+          {isProductPage && productMeta.canonical && <link rel="canonical" href={productMeta.canonical} />}
+          {isProductPage && <meta name="robots" content="index, follow" />}
+          {isProductPage && productMeta.title && <meta property="og:title" content={productMeta.title} />}
+          {isProductPage && productMeta.description && <meta property="og:description" content={productMeta.description} />}
+          {isProductPage && productMeta.ogImage && <meta property="og:image" content={productMeta.ogImage} />}
+          {isProductPage && productMeta.canonical && <meta property="og:url" content={productMeta.canonical} />}
+          {isProductPage && productMeta.title && <meta name="twitter:title" content={productMeta.title} />}
+          {isProductPage && productMeta.description && <meta name="twitter:description" content={productMeta.description} />}
           {/* Per-slug SEO tags for /listings/* — rendered before streaming starts */}
           {/* <title> is set by generateMetadata in [...slug]/page.tsx via fast metaFromSlug (no API call) */}
           {isListingSlug && slugDescription && <meta name="description" content={slugDescription} />}
