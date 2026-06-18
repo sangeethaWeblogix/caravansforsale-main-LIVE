@@ -43,10 +43,12 @@ function gone404(request: NextRequest): NextResponse {
 function gone410(request: NextRequest): NextResponse {
   const res = NextResponse.rewrite(new URL('/410/', request.url), { status: 410 });
   res.headers.set('X-Robots-Tag', 'noindex, nofollow');
+  res.headers.set('Cache-Control', 'no-store');
   return res;
 }
 
-/* Helper: serve the listing page with HTTP 410 — self-rewrite with skip header to prevent re-entry */
+/* Helper: render the listing page itself with HTTP 410 — used when 0 regular products exist
+   (listing page handles exclusive-products check and renders content if any are found) */
 function render410(request: NextRequest): NextResponse {
   const url = request.nextUrl.clone();
   const newHeaders = new Headers(request.headers);
@@ -54,6 +56,7 @@ function render410(request: NextRequest): NextResponse {
   newHeaders.set('x-pathname', url.pathname);
   const res = NextResponse.rewrite(url, { status: 410, request: { headers: newHeaders } });
   res.headers.set('X-Robots-Tag', 'noindex, nofollow');
+  res.headers.set('Cache-Control', 'no-store');
   return res;
 }
 
@@ -88,11 +91,6 @@ export async function middleware(request: NextRequest) {
   const url = request.nextUrl.clone();
   const fullPath = url.pathname + url.search;
   const userAgent = request.headers.get('user-agent') || '';
-
-  // Second pass from render410() self-rewrite — skip all processing, just render the page
-  if (request.headers.get('x-skip-middleware') === '1') {
-    return NextResponse.next({ request: { headers: request.headers } });
-  }
 
   // Forward pathname to server components (for per-slug metadata injection in root layout)
   const requestHeaders = new Headers(request.headers);
@@ -178,7 +176,7 @@ export async function middleware(request: NextRequest) {
     const cached = seoCache.get(cacheKey);
     if (cached && cached.expires > Date.now()) {
       if (cached.isEmpty) {
-        return render410(request);
+        return gone410(request);
       }
       robotsHeader = cached.robots;
     } else {
@@ -218,12 +216,11 @@ export async function middleware(request: NextRequest) {
         if (apiRes.ok) {
           const data = await apiRes.json();
 
-          // 0 products AND 0 exclusive → 410; if exclusive products exist, fall through and render page
+          // 0 regular products → 410 (regardless of exclusive products)
           const products = data?.data?.products ?? [];
-          const empExclusiveProducts = data?.data?.emp_exclusive_products ?? [];
-          if (products.length === 0 && empExclusiveProducts.length === 0) {
+          if (products.length === 0) {
             seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty: true, expires: Date.now() + CACHE_TTL });
-            return render410(request);
+            return gone410(request);
           }
 
           const seo = data?.seo_v2 ?? data?.seo ?? {};
@@ -249,9 +246,9 @@ export async function middleware(request: NextRequest) {
             expires: Date.now() + CACHE_TTL,
           });
         } else if (apiRes.status === 410) {
-          // WordPress returns 410 for 0 products — render listing page with 410 status
+          // WordPress returns 410 for 0 products — show custom 410 page
           seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty: true, expires: Date.now() + CACHE_TTL });
-          return render410(request);
+          return gone410(request);
         }
       } catch (error: any) {
         if (error?.name !== "AbortError") {
