@@ -52,9 +52,9 @@ export default function NotFoundPage() {
           <Link className="btn btn-primary" href="/">
             Go to Homepage
           </Link>
-          <Link className="btn btn-outline" href="/listings/">
+          <a className="btn btn-outline" href="/listings/">
             Browse Caravans
-          </Link>
+          </a>
         </div>
 
         {/* ✅ Browse by Type & State Side by Side */}
@@ -65,7 +65,7 @@ export default function NotFoundPage() {
             <ul>
               {categories.map((cat) => (
                 <li key={cat.slug}>
-                  <Link href={`/listings/${cat.slug}/`}>{cat.name}</Link>
+                  <a href={`/listings/${cat.slug}/`}>{cat.name}</a>
                 </li>
               ))}
             </ul>
@@ -77,9 +77,9 @@ export default function NotFoundPage() {
             <ul>
               {states.map((state) => (
                 <li key={state.slug}>
-                  <Link href={`/listings/${state.slug}/`}>
+                  <a href={`/listings/${state.slug}/`}>
                     {state.name}
-                  </Link>
+                  </a>
                 </li>
               ))}
             </ul>

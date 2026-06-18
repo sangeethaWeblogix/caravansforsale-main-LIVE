@@ -112,7 +112,7 @@ import { metaFromSlug } from "@/utils/seo/meta";
       <html lang="en">
         <head>
           {/* Per-slug SEO tags for /listings/* — rendered before streaming starts */}
-          {/* <title> is handled by generateMetadata in [...slug]/page.tsx (enables auto document.title on client nav) */}
+          {/* <title> is set by generateMetadata in [...slug]/page.tsx via fast metaFromSlug (no API call) */}
           {isListingSlug && slugDescription && <meta name="description" content={slugDescription} />}
           {isListingSlug && slugCanonical && <link rel="canonical" href={slugCanonical} />}
           {isListingSlug && <meta name="robots" content={slugRobots} />}

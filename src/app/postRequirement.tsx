@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState, useRef } from "react";
-import Link from "next/link";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Pagination, Navigation } from "swiper/modules";
 import type { Swiper as SwiperType } from "swiper";
@@ -100,9 +99,9 @@ useEffect(() => {
                 some examples of what other caravan buyers are looking for.
               </p>
               <div className="final_post_btn">
-                <Link href="/caravan-enquiry-form/" className="btn">
+                <a href="/caravan-enquiry-form/" className="btn">
                   Post Your Requirements
-                </Link>
+                </a>
               </div>
             </div>
           </div>

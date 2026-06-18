@@ -76,7 +76,7 @@ export default function RootError({ error, reset }: ErrorProps) {
           >
             Try Again
           </button>
-          <Link
+          <a
             href="/listings/"
             style={{
               padding: "11px 24px",
@@ -90,7 +90,7 @@ export default function RootError({ error, reset }: ErrorProps) {
             }}
           >
             Browse Caravans
-          </Link>
+          </a>
         </div>
 
         <p style={{ marginTop: "24px", fontSize: "13px", color: "#adb5bd" }}>

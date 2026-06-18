@@ -3,7 +3,6 @@ import type { Metadata } from "next";
 import ListingsPage from "@/app/components/ListContent/Listings";
 import { parseSlugToFilters } from "../../components/urlBuilder";
 import { getCachedListings } from "@/api/listings/api";
-import { metaFromSlug } from "@/utils/seo/meta";
 import { redirect, notFound } from "next/navigation";
 import GonePage from "@/app/410/page";
 import "../../components/ListContent/newList.css";
@@ -23,42 +22,17 @@ import type { BottomLinksData } from "@/api/bottomLinks/api";
 import ApiErrorFallback from "@/app/components/ApiErrorFallback";
 import { reportGitHubIssue } from "@/lib/reportGitHubIssue";
 import { unstable_noStore } from "next/cache";
+import { metaFromSlug } from "@/utils/seo/meta";
 
 export const revalidate = 3600;
 
 export async function generateMetadata({
   params,
-  searchParams,
 }: {
   params: Promise<{ slug?: string[] }>;
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }): Promise<Metadata> {
-  const [{ slug = [] }, resolvedSearchParams] = await Promise.all([params, searchParams]);
-
-  // Check product count — if 0, return noindex so page is de-listed from search engines.
-  // When products return on the next ISR cycle, metadata reverts to indexable automatically.
-  try {
-    const filters = parseSlugToFilters(slug, resolvedSearchParams);
-    const pageParam = resolvedSearchParams.page;
-    let page = 1;
-    if (pageParam) {
-      const val = Array.isArray(pageParam) ? pageParam[0] : pageParam;
-      const n = parseInt(val as string, 10);
-      if (!isNaN(n) && n > 0) page = n;
-    }
-    const data = await getCachedListings({ ...filters, page }, { noCache: true });
-    const hasProducts = (data?.data?.products?.length ?? 0) > 0;
-    if (!hasProducts) {
-      const apiTitle = data?.seo_v2?.meta_title;
-      return {
-        title: { absolute: apiTitle ? `${apiTitle} | Caravans For Sale` : "Caravans for Sale in Australia" },
-        robots: { index: false, follow: false },
-      };
-    }
-  } catch {
-    // On API error, fall through to normal metadata
-  }
-
+  const { slug = [] } = await params;
+  // metaFromSlug is pure computation (no API call) → fast, title lands inside <head>
   const meta = await metaFromSlug(slug, {});
   const title =
     meta.title && typeof meta.title === "object" && "absolute" in meta.title

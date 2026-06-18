@@ -38,8 +38,6 @@ interface Props {
 export default function BlogListClient({ data, currentPage }: Props) {
    const params = useParams<{ page?: string }>();
   // const initialPage = Math.max(1, Number(params?.page || 1));
-  const [navigating, setNavigating] = useState(false);
- 
   const totalPages = data.total_pages;
   const blogPosts = data.items;
 // ✅ இதை போடுங்க — data வந்துச்சான்னு check பண்ணு
@@ -175,7 +173,6 @@ const loading = !data || !blogPosts || blogPosts.length === 0 && data.totalPages
                             <p>{decodeHTML(post.excerpt)}</p>{" "}
                             <a
                               href={href}
-                              onClick={() => setNavigating(true)}
                               className="btn rounded-pill bg-blue4 fw-bold text-white mt-10"
                             >
                               <small> Read More </small>
@@ -278,22 +275,6 @@ const loading = !data || !blogPosts || blogPosts.length === 0 && data.totalPages
           </div>
         </div>
       </section>
-      {navigating && (
-        <div
-          className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
-          style={{
-            background: "rgba(255,255,255,0.6)",
-            backdropFilter: "blur(2px)",
-            zIndex: 9999,
-          }}
-          aria-live="polite"
-        >
-          <div className="text-center">
-            <div className="spinner-border" role="status" />
-            <div className="mt-2 fw-semibold">Loading…</div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
