@@ -10,7 +10,7 @@ import "swiper/css/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import CaravanDetailModal from "./CaravanDetailModal";
-import "./product.css?=223";
+import "./product.css?=226";
  
 import DOMPurify from "dompurify";
 import { type HomeBlogPost } from "@/api/home/api";

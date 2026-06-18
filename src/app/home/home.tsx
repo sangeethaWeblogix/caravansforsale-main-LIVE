@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import Image from "next/image";
 import SearchSection from "../searchSection";
 import { type HomeBlogPost } from "@/api/home/api";
-import "./main.css?=20";
+import "./main.css?=23";
 
 const Manufactures = dynamic(() => import("../manufacture"), { ssr: false });
 const BlogSection = dynamic(() => import("../blogSection"), { ssr: false });

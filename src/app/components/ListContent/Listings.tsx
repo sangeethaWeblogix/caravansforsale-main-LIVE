@@ -14,7 +14,7 @@ import FilterModal from "./FilterModal";
 import { flushSync } from "react-dom";
 import { v4 as uuidv4 } from "uuid";
 import "./newList.css?=302";
-import "./top-filters.css?=508";
+import "./top-filters.css?=514";
 import ListingSkeleton, { SidebarListingSkeleton } from "../skelton";
 import {
   redirect,
@@ -1409,7 +1409,7 @@ const [pagination, setPagination] = useState<Pagination>(() => {
                     Filters
                   </button>
                 </div>
-                <div>
+                <div className="filter-slider-wrap">
                   <FilterSlider
                     productListData={productListData}
                     setIsLoading={setIsLoading}
@@ -1549,6 +1549,16 @@ const [pagination, setPagination] = useState<Pagination>(() => {
                 isPremiumLoading ? (
                 <>
                   <div className="col-lg-9">
+                    <div className="top-filter mb-10">
+                      <div className="row align-items-center">
+                        <div className="col-md-8 col-12 mb-2 mb-md-0">
+                          <div className="skeleton skel-page-title" />
+                        </div>
+                        <div className="col-md-4 col-12">
+                          <div className="skeleton skel-sort-select" />
+                        </div>
+                      </div>
+                    </div>
                     <ListingSkeleton count={8} />
                   </div>
                   <div className="col-lg-3 d-none d-lg-block">

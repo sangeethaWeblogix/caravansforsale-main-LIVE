@@ -1098,3 +1098,18 @@ input[type="number"]::-webkit-outer-spin-button {
     opacity: 1;
   }
 }
+
+@media (min-width: 1440px) {
+  .vehicleSearch {
+    max-width: 780px;
+  }
+}
+
+@media (min-width: 1920px) {
+  .vehicleSearch {
+    max-width: 900px;
+  }
+  h1.page-title {
+    font-size: 2.2rem;
+  }
+}

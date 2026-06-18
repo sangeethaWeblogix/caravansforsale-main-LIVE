@@ -173,6 +173,12 @@ const FilterModal: React.FC<CaravanFilterProps> = ({
   const router = useRouter();
   const pathname = usePathname();
   // const searchParams = useSearchParams();
+
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = ""; };
+  }, []);
+
   const RADIUS_OPTIONS = [25, 50, 100, 250, 500, 1000] as const;
   const [radiusKms, setRadiusKms] = useState<number>(RADIUS_OPTIONS[0]);
    const [visibleCount, setVisibleCount] = useState(10);

@@ -3,7 +3,9 @@
   gap: 10px;
   display: flex;
   overflow: hidden;
-  padding-left: 122px;
+  padding-left: 0;
+  flex: 1;
+  min-width: 0;
 }
 
 .filter-row .label {
@@ -53,6 +55,15 @@
 
 .filter_left {
   position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.filter_btn_top {
+  flex-shrink: 0;
+  width: 110px;
+  padding-top: 0px;
 }
 
 .filter-toggle {
@@ -227,10 +238,10 @@
   height: 30px;
 }
 
-.filter_btn_top {
-  position: absolute;
-  left: 0;
-  top: 0;
+.filter-slider-wrap {
+  flex: 1;
+  min-width: 0;
+  overflow: visible;
 }
 
 .location-suggestions {
@@ -418,7 +429,7 @@ border-bottom: none;
   margin-left: 4px;
 }
 
-@media (min-width: 768px) and (max-width: 991px) {
+@media (min-width: 768px) and (max-width: 1023px) {
   .search-bar input {
     width: 100%;
   }
@@ -458,9 +469,6 @@ border-bottom: none;
   .filter-header {
     padding: 12px 16px;
   }
-  .filter_btn_top {
-    display: inline-block;
-  }
   .filter-row .swiper-button-next,
   .filter-row .swiper-button-prev {
     display: none;
@@ -471,8 +479,7 @@ border-bottom: none;
     display: grid;
   }
   .filter-row {
-    display: block;
-    padding-left: 115px;
+    display: flex;
   }
   .filter-row .label {
     font-weight: 600;
@@ -487,11 +494,13 @@ border-bottom: none;
 
 /* ── Active filter chips row ── */
 .active-chips-row {
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px;
-    padding: 12px 0 0px;
-    display: flex;
+  margin-left: calc(-1 * (110px + 12px));
+  width: calc(100% + 110px + 12px);
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 0 0;
+  display: flex;
 }
 
 .active-chip {
