@@ -2,7 +2,6 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Autoplay } from "swiper/modules";
 import "swiper/css";
@@ -297,9 +296,9 @@ const formatBlogDate = (dateString: string) => {
             <p>
               Whether you’re searching by price, weight, length, caravan type, sleeping capacity, manufacturer, or location, CaravansForSale.com.au makes it easy to compare options and find the right caravan for your lifestyle. Browse Australia-wide used caravan listings, explore popular categories, and access expert buying guides to help you make a confident decision.
             </p>
-            <Link href="/listings/used-condition/" className="btn">
+            <a href="/listings/used-condition/" className="btn">
               Browse Used Caravans
-            </Link>
+            </a>
           </div>
         </div>
       </div>

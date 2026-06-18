@@ -22,7 +22,7 @@ const Footer = () => {
                 <h6 className="foot-title hidden-lg hidden-md hidden-sm foot_xs">Marketplace Network</h6>
                 <ul className="footer_menu footer_xs">
                   <li>
-                    <Link href="/listings/">For Sale</Link>
+                    <a href="/listings/">For Sale</a>
                   </li>
                   <li>
                     <a href="/blog/">Blog</a>
@@ -75,7 +75,7 @@ Marketplace Network makes no representations or warranties regarding the accurac
                 <h6 className="foot-title foot_xs">Company</h6>
                 <ul className="menu footer_xs">
                   <li>
-                    <Link href="/listings/">For Sale</Link>
+                    <a href="/listings/">For Sale</a>
                   </li>
                   <li>
                     <a href="/blog/">Blog</a>

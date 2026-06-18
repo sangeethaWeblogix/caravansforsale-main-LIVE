@@ -951,7 +951,7 @@ export default function OffRoadCaravanMiddle() {
                   style={{ width: "100%", height: "auto" }}
                 />
               </div>
-              <Link
+              <a
                 className="banner_ad_now"
                 href="/listings/off-road-category/"
                 style={{
@@ -977,7 +977,7 @@ export default function OffRoadCaravanMiddle() {
                   height={250}
                   style={{ width: "100%", height: "auto" }}
                 />
-              </Link>
+              </a>
               <h3>
                 9.
                 <Link href="https://xseriesrv.au/" target="_blank">

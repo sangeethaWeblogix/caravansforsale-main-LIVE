@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect } from "react";
-import Link from "next/link";
 
 interface ErrorProps {
   error: Error & { digest?: string };
@@ -75,7 +74,7 @@ export default function ProductError({ error, reset }: ErrorProps) {
           >
             Try Again
           </button>
-          <Link
+          <a
             href="/listings/"
             style={{
               padding: "11px 24px",
@@ -89,7 +88,7 @@ export default function ProductError({ error, reset }: ErrorProps) {
             }}
           >
             Browse All Caravans
-          </Link>
+          </a>
         </div>
       </div>
     </div>

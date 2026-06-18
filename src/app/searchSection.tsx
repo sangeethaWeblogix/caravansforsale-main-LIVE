@@ -2,10 +2,7 @@
   // src/app/components/SearchSection.tsx
   "use client";
   import React, { useEffect, useRef, useState } from "react";
-  import Link from "next/link";
   import Image from "next/image";
-  import { useRouter } from "next/navigation";
-  import { flushSync } from "react-dom";
   import { Swiper, SwiperSlide } from "swiper/react";
   import { Navigation } from "swiper/modules";
   import "swiper/css";
@@ -90,9 +87,7 @@
     usedData = { by_category: [], by_state: [], by_region: [] },
     stateBands = [],
   }: SearchSectionProps) {
-    const router = useRouter();
     const searchInputRef = useRef<HTMLInputElement | null>(null);
-    const [navigating, setNavigating] = useState(false);
 
     const [isSuggestionBoxOpen, setIsSuggestionBoxOpen] = useState(false);
     const [query, setQuery] = useState("");
@@ -236,9 +231,8 @@
         alert("Select at least one filter");
         return;
       }
-      setNavigating(true);
       if (conditionValue === "All") {
-        router.push("/listings");
+        window.location.href = "/listings";
         return;
       }
       const parts: string[] = [];
@@ -262,19 +256,14 @@
       }
 
       const finalUrl = `/listings/${parts.join("/")}`;
-      router.push(finalUrl);
+      window.location.href = finalUrl;
     };
 
     const navigateBySelect = (value: string, suffix: string) => {
       if (!value) return;
 
-      setNavigating(true);
-
       const slug = value.toLowerCase().replace(/\s+/g, "-") + suffix;
-
-      setTimeout(() => {
-        router.push(`/listings/${slug}`, { scroll: true });
-      }, 50);
+      window.location.href = `/listings/${slug}`;
     };
 
 
@@ -385,32 +374,25 @@
       const human = s.label?.trim();
       if (!human) return;
 
-      flushSync(() => {
-        setQuery(human);
-        setNavigating(true); // ✅ show loader immediately
-      });
+      setQuery(human);
       setIsSuggestionBoxOpen(false);
 
-      // Small delay ensures loader renders before navigation
-      setTimeout(() => {
-        if (s.url && s.url.trim().length > 0) {
-          router.push(s.url, { scroll: true });
-        } else {
-          const slug = human
-            .toLowerCase()
-            .trim()
-            .replace(/[^a-z0-9]+/g, "-")
-            .replace(/^-+|-+$/g, "");
-          router.push(`/listings/${slug}-search`, { scroll: true });
-        }
-      }, 50);
+      if (s.url && s.url.trim().length > 0) {
+        window.location.href = s.url;
+      } else {
+        const slug = human
+          .toLowerCase()
+          .trim()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-+|-+$/g, "");
+        window.location.href = `/listings/${slug}-search`;
+      }
     };
 
     const handleKeyDown: React.KeyboardEventHandler<HTMLInputElement> = (e) => {
       if (e.key === "Enter") {
         const kw = (e.currentTarget as HTMLInputElement).value.trim();
         if (kw) {
-          setNavigating(true);
           navigateWithKeyword({ label: kw });
         }
       }
@@ -599,7 +581,7 @@ const BANNER_ENABLED = false;
                       <div className="content-info text-center pb-0">
                         <ul className="category_icon list-unstyled d-flex justify-content-start">
                           <li>
-                            <Link href="/listings/off-road-category/">
+                            <a href="/listings/off-road-category/">
                               <div className="item-image">
                                 <Image
                                   src="/images/off-road.webp"
@@ -609,11 +591,11 @@ const BANNER_ENABLED = false;
                                                     />
                               </div>
                               <span>Off Road</span>
-                            </Link>
+                            </a>
                           </li>
 
                           <li>
-                            <Link href="/listings/hybrid-category/">
+                            <a href="/listings/hybrid-category/">
                               <div className="item-image">
                                 <Image
                                   src="/images/hybrid.webp"
@@ -623,11 +605,11 @@ const BANNER_ENABLED = false;
                                                     />
                               </div>
                               <span>Hybrid</span>
-                            </Link>
+                            </a>
                           </li>
 
                           <li>
-                            <Link href="/listings/pop-top-category/">
+                            <a href="/listings/pop-top-category/">
                               <div className="item-image">
                                 <Image
                                   src="/images/pop-top.webp"
@@ -637,11 +619,11 @@ const BANNER_ENABLED = false;
                                                     />
                               </div>
                               <span>Pop Top</span>
-                            </Link>
+                            </a>
                           </li>
 
                           <li>
-                            <Link href="/listings/luxury-category/">
+                            <a href="/listings/luxury-category/">
                               <div className="item-image">
                                 <Image
                                   src="/images/luxury.webp"
@@ -651,11 +633,11 @@ const BANNER_ENABLED = false;
                                                     />
                               </div>
                               <span>Luxury</span>
-                            </Link>
+                            </a>
                           </li>
 
                           <li>
-                            <Link href="/listings/family-category/">
+                            <a href="/listings/family-category/">
                               <div className="item-image">
                                 <Image
                                   src="/images/family.webp"
@@ -665,11 +647,11 @@ const BANNER_ENABLED = false;
                                                     />
                               </div>
                               <span>Family</span>
-                            </Link>
+                            </a>
                           </li>
 
                           <li>
-                            <Link href="/listings/touring-category/">
+                            <a href="/listings/touring-category/">
                               <div className="item-image">
                                 <Image
                                   src="/images/touring.webp"
@@ -679,7 +661,7 @@ const BANNER_ENABLED = false;
                                                     />
                               </div>
                               <span>Touring</span>
-                            </Link>
+                            </a>
                           </li>
                         </ul>
                       </div>
@@ -804,9 +786,9 @@ const BANNER_ENABLED = false;
                 <p>
                   Browse the latest new caravans from top dealerships in Australia.
                 </p>
-                <Link href="/listings/new-condition/" className="btn btn-primary">
+                <a href="/listings/new-condition/" className="btn btn-primary">
                   Browse New Listings <i className="bi bi-chevron-right"></i>
-                </Link>
+                </a>
                 <div className="illustration left" />
               </div>
 
@@ -817,9 +799,9 @@ const BANNER_ENABLED = false;
                   Find great deals on quality used caravans for sale by dealers and
                   private sellers.
                 </p>
-                <Link href="/listings/used-condition/" className="btn btn-primary">
+                <a href="/listings/used-condition/" className="btn btn-primary">
                   Search Used Listings <i className="bi bi-chevron-right"></i>
-                </Link>
+                </a>
                 <div className="illustration center" />
               </div>
 
@@ -829,9 +811,9 @@ const BANNER_ENABLED = false;
                 <p>
                   Explore the full range of new and used caravans across Australia.
                 </p>
-                <Link href="/listings/" className="btn btn-primary">
+                <a href="/listings/" className="btn btn-primary">
                   Start Searching <i className="bi bi-chevron-right"></i>
-                </Link>
+                </a>
                 <div className="illustration right" />
               </div>
             </div>
@@ -941,7 +923,7 @@ const BANNER_ENABLED = false;
 
                                   <a
                                     className="view_all"
-                                    href={`/listings${item.permalink}`}
+                                    href={`/listings${item.permalink}/`}
                                   >
                                     View All Caravans for Sale in {stateCode}{" "}
                                     <i className="bi bi-chevron-right"></i>
@@ -1026,29 +1008,6 @@ const BANNER_ENABLED = false;
             </div>
           </div>
         </div>
-        {navigating && (
-          <div
-            className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
-            style={{
-              background: "rgba(255,255,255,0.6)",
-              backdropFilter: "blur(2px)",
-              zIndex: 9999,
-            }}
-            aria-live="polite"
-          >
-            <div className="text-center">
-              <Image
-                className="loader_image"
-                src="/images/loader.gif" // place inside public/images
-                alt="Loading..."
-                width={80}
-                height={80}
-                unoptimized
-                />{" "}
-              <div className="mt-2 fw-semibold">Loading…</div>
-            </div>
-          </div>
-        )}
       </div>
     );
   }

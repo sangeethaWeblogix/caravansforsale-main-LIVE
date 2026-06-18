@@ -5,7 +5,6 @@ import "./navbar.css?=7";
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname, useSearchParams } from "next/navigation";
 
 type DropdownType =
   | "manufacturers"
@@ -29,15 +28,19 @@ export default function Navbar() {
     document.body.style.overflow = isOpen ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
   }, [isOpen]);
-  const [navigating, setNavigating] = useState(false);
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
+  const sidenavRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   // Close dropdown on outside click
   useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setOpen(false);
       }
     };
@@ -45,23 +48,27 @@ export default function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Force full-page load for listing links so browser tab shows native loading indicator
+  // re-runs after mounted=true so sidenavRef.current is not null
   useEffect(() => {
-    if (navigating) {
-      // When URL changes → navigation is completed
-      setNavigating(false);
-    }
-  }, [pathname, searchParams]);
+    const el = sidenavRef.current;
+    if (!el) return;
+    const handler = (e: MouseEvent) => {
+      const a = (e.target as HTMLElement).closest("a[href]") as HTMLAnchorElement | null;
+      if (!a) return;
+      const href = a.getAttribute("href");
+      if (!href || !href.startsWith("/listings/")) return;
+      window.location.href = href;
+    };
+    el.addEventListener("click", handler);
+    return () => el.removeEventListener("click", handler);
+  }, [mounted]);
 
   const closeNav = () => {
     setIsOpen(false);
     setOpenDropdown(null);
     setOpenLocationSub(null);
   };
-
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const toggleDropdown = (name: Exclude<DropdownType, null>) => {
     setOpenDropdown((prev) => (prev === name ? null : name));
@@ -164,7 +171,7 @@ export default function Navbar() {
 
       {/* Sidebar */}
       {mounted && (
-        <div id="mySidenav" className={`sidenav ${isOpen ? "open" : ""}`}>
+        <div id="mySidenav" ref={sidenavRef} className={`sidenav ${isOpen ? "open" : ""}`}>
           <div className="sidebar-navigation">
             <ul>
               <li>
@@ -409,10 +416,7 @@ export default function Navbar() {
       {/* Overlay */}
       <div
         className={`overlay-close ${isOpen ? "active" : ""}`}
-        onClick={() => {
-          setNavigating(true); // start loader immediately
-          closeNav();
-        }}
+        onClick={closeNav}
       ></div>
       <div
         id="overlay"
@@ -422,28 +426,6 @@ export default function Navbar() {
         }}
       ></div>
 
-      {navigating && (
-        <div
-          className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
-          style={{
-            background: "rgba(255,255,255,0.6)",
-            backdropFilter: "blur(2px)",
-            zIndex: 9999,
-          }}
-          aria-live="polite"
-        >
-          <div className="text-center">
-            <Image
-              className="loader_image"
-              src="/images/loader.gif" // place inside public/images
-              alt="Loading..."
-              width={80}
-              height={80}
-            />{" "}
-            <div className="mt-2 fw-semibold">Loading…</div>
-          </div>
-        </div>
-      )}
     </>
   );
 }
