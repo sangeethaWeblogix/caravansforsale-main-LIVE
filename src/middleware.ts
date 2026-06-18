@@ -89,6 +89,11 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next({ request: { headers: request.headers } });
   }
 
+  // Internal fetch from /api/listings-410/ route handler — skip all checks
+  if (request.headers.get('x-internal-render') === '1') {
+    return NextResponse.next({ request: { headers: request.headers } });
+  }
+
   // Forward pathname to server components (for per-slug metadata injection in root layout)
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set('x-pathname', url.pathname);
@@ -175,6 +180,12 @@ export async function middleware(request: NextRequest) {
       if (cached.isEmpty) {
         return render410(request);
       }
+      if (cached.hasExclusiveOnly) {
+        const rawSlug = url.pathname.replace(/^\/listings\/?/, '').replace(/\/$/, '');
+        const rewriteUrl = new URL(`/api/listings-410/${rawSlug}/`, request.url);
+        url.searchParams.forEach((v, k) => rewriteUrl.searchParams.set(k, v));
+        return NextResponse.rewrite(rewriteUrl);
+      }
       robotsHeader = cached.robots;
     } else {
       try {
@@ -223,8 +234,9 @@ export async function middleware(request: NextRequest) {
               seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty: true, hasExclusiveOnly: false, expires: Date.now() + CACHE_TTL });
               return render410(request);
             }
-            seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty: false, hasExclusiveOnly: false, expires: Date.now() + CACHE_TTL });
-            robotsHeader = "noindex, nofollow";
+            seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty: false, hasExclusiveOnly: true, expires: Date.now() + CACHE_TTL });
+            const rewriteUrl = new URL(`/api/listings-410/${slugParts.join('/')}${url.search}`, request.url);
+            return NextResponse.rewrite(rewriteUrl);
           }
 
           const seo = data?.seo_v2 ?? data?.seo ?? {};
@@ -259,8 +271,9 @@ export async function middleware(request: NextRequest) {
               seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty: true, hasExclusiveOnly: false, expires: Date.now() + CACHE_TTL });
               return render410(request);
             }
-            seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty: false, hasExclusiveOnly: false, expires: Date.now() + CACHE_TTL });
-            robotsHeader = "noindex, nofollow";
+            seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty: false, hasExclusiveOnly: true, expires: Date.now() + CACHE_TTL });
+            const rewriteUrl410 = new URL(`/api/listings-410/${slugParts.join('/')}${url.search}`, request.url);
+            return NextResponse.rewrite(rewriteUrl410);
           } catch {
             seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty: true, hasExclusiveOnly: false, expires: Date.now() + CACHE_TTL });
             return render410(request);
