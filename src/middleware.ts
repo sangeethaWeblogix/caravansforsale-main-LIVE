@@ -172,7 +172,7 @@ export async function middleware(request: NextRequest) {
     /* 🔹 Cache hit */
     const cached = seoCache.get(cacheKey);
     if (cached && cached.expires > Date.now()) {
-      if (cached.isEmpty || cached.hasExclusiveOnly) {
+      if (cached.isEmpty) {
         return render410(request);
       }
       robotsHeader = cached.robots;
@@ -213,16 +213,18 @@ export async function middleware(request: NextRequest) {
         if (apiRes.ok) {
           const data = await apiRes.json();
 
-          // 0 regular products → 410 in all cases; page renders exclusive content if present
+          // 0 regular products:
+          //   - empExclusive also empty → 410 (Vercel shows its own Gone page — no content anyway)
+          //   - empExclusive has items  → 200 noindex (Vercel intercepts 410+rewrite, page must show exclusive content)
           const products = data?.data?.products ?? [];
           const empExclusive = data?.emp_exclusive_products ?? [];
           if (products.length === 0) {
             if (empExclusive.length === 0) {
               seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty: true, hasExclusiveOnly: false, expires: Date.now() + CACHE_TTL });
-            } else {
-              seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty: false, hasExclusiveOnly: true, expires: Date.now() + CACHE_TTL });
+              return render410(request);
             }
-            return render410(request);
+            seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty: false, hasExclusiveOnly: false, expires: Date.now() + CACHE_TTL });
+            robotsHeader = "noindex, nofollow";
           }
 
           const seo = data?.seo_v2 ?? data?.seo ?? {};
@@ -255,10 +257,10 @@ export async function middleware(request: NextRequest) {
             const empExclusive410 = data410?.emp_exclusive_products ?? [];
             if (empExclusive410.length === 0) {
               seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty: true, hasExclusiveOnly: false, expires: Date.now() + CACHE_TTL });
-            } else {
-              seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty: false, hasExclusiveOnly: true, expires: Date.now() + CACHE_TTL });
+              return render410(request);
             }
-            return render410(request);
+            seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty: false, hasExclusiveOnly: false, expires: Date.now() + CACHE_TTL });
+            robotsHeader = "noindex, nofollow";
           } catch {
             seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty: true, hasExclusiveOnly: false, expires: Date.now() + CACHE_TTL });
             return render410(request);
