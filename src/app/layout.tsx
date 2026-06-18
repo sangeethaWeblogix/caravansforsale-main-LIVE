@@ -29,9 +29,6 @@ import { fetchProductMeta } from "@/utils/fetchProductMeta";
 
   
   export const metadata: Metadata = {
-    title: {
-      template: "%s ",
-    },
     icons: { icon: "/favicon.ico" },
     // robots: "index, follow",
     verification: {
