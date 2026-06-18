@@ -174,7 +174,7 @@ h1.page-title {
 }
 .lab {
   position: absolute;
-  z-index: 99;
+  z-index: 1;
   top: -5px;
   /* left: -5px; */
   /* width: 220px; */
@@ -642,7 +642,7 @@ h1.page-title {
   margin: 8% auto;
   overflow: hidden;
 }
-.cfs-modal-header {
+.cfs-modal-content .cfs-modal-header {
   background: #ffffff;
   border-bottom: 1px solid #d6d6d6;
   justify-content: space-between;
@@ -652,34 +652,34 @@ h1.page-title {
   display: flex;
   position: relative;
 }
-.cfs-modal-header .cfs-filter-label {
+.cfs-modal-content .cfs-modal-header .cfs-filter-label {
   color: #000;
   margin: 0;
   font-size: 17px;
   font-weight: 600;
 }
-.cfs-modal-body {
+.cfs-modal-content .cfs-modal-body {
   padding: 20px;
   min-height: 300px;
 }
-.cfs-modal-search-section {
+.cfs-modal-content .cfs-modal-search-section {
   max-width: 100%;
   margin: 0 auto;
 }
-.cfs-modal-footer {
+.cfs-modal-content .cfs-modal-footer {
   text-align: center;
   padding: 10px;
   padding-bottom: 25px;
 }
-.cfs-modal-footer .cfs-btn {
+.cfs-modal-content .cfs-modal-footer .cfs-btn {
   background: #ec7200;
   width: 300px;
   border-color: #ec7200;
   color: #fff;
 }
 
-.cfs-modal-footer .cfs-btn:hover,
-.cfs-modal-footer .cfs-btn:focus {
+.cfs-modal-content .cfs-modal-footer .cfs-btn:hover,
+.cfs-modal-content .cfs-modal-footer .cfs-btn:focus {
   background: #ef7a0d;
   color: #ffffff;
 }

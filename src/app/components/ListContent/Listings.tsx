@@ -13,8 +13,8 @@ import ExculsiveContent from "./exculsiveContent";
 import FilterModal from "./FilterModal";
 import { flushSync } from "react-dom";
 import { v4 as uuidv4 } from "uuid";
-import "./newList.css?=301";
-import "./top-filters.css?=504";
+import "./newList.css?=302";
+import "./top-filters.css?=508";
 import ListingSkeleton, { SidebarListingSkeleton } from "../skelton";
 import {
   redirect,
@@ -893,9 +893,13 @@ const [pagination, setPagination] = useState<Pagination>(() => {
     }
 
     // Server already returned fresh data via ISR (initialData sync effect applied it).
-    // Skip the duplicate client fetch.
+    // Skip the duplicate client fetch but still clear any loading states FilterSlider may have set.
     if (shouldSkipFetchRef.current) {
       shouldSkipFetchRef.current = false;
+      setIsLoading(false);
+      setIsMainLoading(false);
+      setIsFeaturedLoading(false);
+      setIsPremiumLoading(false);
       return;
     }
 

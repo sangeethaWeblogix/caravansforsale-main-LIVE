@@ -173,7 +173,7 @@ const FilterModal: React.FC<CaravanFilterProps> = ({
   const router = useRouter();
   const pathname = usePathname();
   // const searchParams = useSearchParams();
-  const RADIUS_OPTIONS = [50, 100, 250, 500, 1000] as const;
+  const RADIUS_OPTIONS = [25, 50, 100, 250, 500, 1000] as const;
   const [radiusKms, setRadiusKms] = useState<number>(RADIUS_OPTIONS[0]);
    const [visibleCount, setVisibleCount] = useState(10);
   const [modelCounts, setModelCounts] = useState<ModelCount[]>([]);
@@ -328,6 +328,7 @@ const [states, setStates] = useState<StateOption[]>([]);
   const sleep = [1, 2, 3, 4, 5, 6, 7];
   const [selectedRegion, setSelectedRegion] = useState<string>();
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [showKeywordSuggestions, setShowKeywordSuggestions] = useState(false);
   const [locLoading, setLocLoading] = useState(false);
   // put near other utils
   const AUS_ABBR: Record<string, string> = {
@@ -2057,23 +2058,14 @@ fetch(`/api/params-count?${catParams.toString()}`, { signal })
     filters.to_sleep,
     filters.search,
     filters.keyword,
-    // ✅ NEW: temp values - இவை change ஆனவுடனே count re-fetch ஆகும்
+    // Only stable selections trigger re-fetch — not live slider values
     tempCategory,
     selectedMakeTemp,
     tempModel,
     tempCondition,
     tempStateName,
     tempRegionName,
-    tempAtmFrom,
-    tempAtmTo,
-    tempPriceFrom,
-    tempPriceTo,
-    tempSleepFrom,
-    tempSleepTo,
-    tempLengthFrom,
-    tempLengthTo,
-    tempYear,
-    modalKeyword, // 🔥 add this
+    modalKeyword,
     selectedSuggestion,
   ]);
 
@@ -2113,48 +2105,26 @@ fetch(`/api/params-count?${catParams.toString()}`, { signal })
             <>
               <div className="filter-item pt-0" ref={categoryRef}>
                 <h4>Caravan Type</h4>
-                <ul className="category-list">
+                <ul className="loc-state-list">
                   {categoryCounts.length === 0 ? (
-                    // ✅ Skeleton - data வரும் வரை காட்டு
                     <CategorySkeleton />
                   ) : (
                     categoryCounts.map((cat) => (
-                      <li key={cat.slug} className="category-item">
-                        <label className="category-checkbox-row checkbox">
-                          <div className="d-flex align-items-center">
-                            <input
-                              className="checkbox__trigger visuallyhidden"
-                              type="checkbox"
-                              checked={tempCategory === cat.slug}
-                              onChange={() => {
-                                setTempCategory((prev) =>
-                                  prev === cat.slug ? null : cat.slug,
-                                ); // ← toggle
-                                triggerOptimizeApi("category", cat.slug); // ✅
-                              }}
-                            />
-                            <span className="checkbox__symbol">
-                              <svg
-                                aria-hidden="true"
-                                className="icon-checkbox"
-                                width="28px"
-                                height="28px"
-                                viewBox="0 0 28 28"
-                                version="1"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <path d="M4 14l8 7L24 7"></path>
-                              </svg>
-                            </span>
-                            <span className="category-name"> {cat.name}</span>
-                          </div>
-                          <div>
-                            <span className="category-count">
-                              {" "}
-                              ({cat.count})
-                            </span>
-                          </div>
-                        </label>
+                      <li
+                        key={cat.slug}
+                        className="loc-state-item"
+                        onClick={() => {
+                          setTempCategory((prev) =>
+                            prev === cat.slug ? null : cat.slug,
+                          );
+                          triggerOptimizeApi("category", cat.slug);
+                        }}
+                      >
+                        <span className={`loc-checkbox${tempCategory === cat.slug ? " checked" : ""}`}>
+                          {tempCategory === cat.slug && <i className="bi bi-check" style={{ color: "#fff", fontSize: 14, lineHeight: 1 }}></i>}
+                        </span>
+                        <span className="loc-state-name">{cat.name}</span>
+                        <span className="loc-count">({cat.count.toLocaleString()})</span>
                       </li>
                     ))
                   )}
@@ -2643,68 +2613,22 @@ fetch(`/api/params-count?${catParams.toString()}`, { signal })
               </div>
               <div className="filter-item condition-field">
                 <h4>Condition</h4>
-                <ul className="category-list">
-                  <li className="category-item">
-                    <label className="category-checkbox-row checkbox">
-                      <div className="d-flex align-items-center">
-                        <input
-                          className="checkbox__trigger visuallyhidden"
-                          type="checkbox"
-                          checked={tempCondition?.toLowerCase() === "new"}
-                          onChange={() =>
-                            setTempCondition(
-                              tempCondition === "new" ? null : "new",
-                            )
-                          }
-                        />
-                        <span className="checkbox__symbol">
-                          <svg
-                            aria-hidden="true"
-                            className="icon-checkbox"
-                            width="28px"
-                            height="28px"
-                            viewBox="0 0 28 28"
-                            version="1"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path d="M4 14l8 7L24 7"></path>
-                          </svg>
+                <ul className="loc-state-list">
+                  {(["New", "Used"] as const).map((cond) => {
+                    const isSelected = tempCondition?.toLowerCase() === cond.toLowerCase();
+                    return (
+                      <li
+                        key={cond}
+                        className="loc-state-item"
+                        onClick={() => setTempCondition(isSelected ? null : cond.toLowerCase())}
+                      >
+                        <span className={`loc-checkbox${isSelected ? " checked" : ""}`}>
+                          {isSelected && <i className="bi bi-check" style={{ color: "#fff", fontSize: 14, lineHeight: 1 }}></i>}
                         </span>
-                        <span className="category-name">New</span>
-                      </div>
-                    </label>
-                  </li>
-
-                  <li className="category-item">
-                    <label className="category-checkbox-row checkbox">
-                      <div className="d-flex align-items-center">
-                        <input
-                          className="checkbox__trigger visuallyhidden"
-                          type="checkbox"
-                          checked={tempCondition?.toLowerCase() === "used"}
-                          onChange={() =>
-                            setTempCondition(
-                              tempCondition === "used" ? null : "used",
-                            )
-                          }
-                        />
-                        <span className="checkbox__symbol">
-                          <svg
-                            aria-hidden="true"
-                            className="icon-checkbox"
-                            width="28px"
-                            height="28px"
-                            viewBox="0 0 28 28"
-                            version="1"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path d="M4 14l8 7L24 7"></path>
-                          </svg>
-                        </span>
-                        <span className="category-name">Used</span>
-                      </div>
-                    </label>
-                  </li>
+                        <span className="loc-state-name">{cond}</span>
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
               <div className="filter-item">
@@ -2857,7 +2781,8 @@ fetch(`/api/params-count?${catParams.toString()}`, { signal })
                       className="filter-dropdown cfs-select-input"
                       autoComplete="off"
                       value={modalKeyword}
-                      onFocus={() => setShowSuggestions(true)} // ✅ only show when focusing
+                      onFocus={() => setShowKeywordSuggestions(true)}
+                      onBlur={() => setTimeout(() => setShowKeywordSuggestions(false), 200)}
                       onChange={(e) => {
                         pickedSourceRef.current = "typed";
                         setModalKeyword(e.target.value);
@@ -2867,7 +2792,7 @@ fetch(`/api/params-count?${catParams.toString()}`, { signal })
                       }}
                     />
                   </div>
-                  {showSuggestions && (
+                  {showKeywordSuggestions && (
                     <>
                       {/* Show base list when field is empty (<2 chars) */}
                       {modalKeyword.trim().length < 2 &&
@@ -2879,20 +2804,20 @@ fetch(`/api/params-count?${catParams.toString()}`, { signal })
                             />
                           </div>
                         ) : (
-                          <div style={{ marginTop: 8 }}>
+                          <div
+                            style={{ marginTop: 8 }}
+                            ref={(el) => { if (el) el.scrollIntoView({ behavior: "smooth", block: "nearest" }); }}
+                          >
                             {/* 🏷 Title for base list */}
                             <h6 className="cfs-suggestion-title">
                               Popular searches
                             </h6>
-                            <ul
-                              className="location-suggestions"
-                              style={{ marginTop: 8 }}
-                            >
+                            <ul style={{ listStyle: "none", padding: 0, margin: "8px 0 0 0", display: "block" }}>
                               {baseKeywords.length ? (
                                 baseKeywords.map((k, i) => (
                                   <li
                                     key={`${k.label}-${i}`}
-                                    className="suggestion-item lowercase"
+                                    style={{ padding: "10px 4px", borderBottom: "1px solid #f0f0f0", cursor: "pointer", fontSize: 14, color: "#333" }}
                                     onMouseDown={(e) => {
                                       e.preventDefault();
                                       pickedSourceRef.current = "base";
@@ -2903,9 +2828,7 @@ fetch(`/api/params-count?${catParams.toString()}`, { signal })
                                   </li>
                                 ))
                               ) : (
-                                <li className="suggestion-item">
-                                  No popular items
-                                </li>
+                                <li style={{ padding: "10px 4px", color: "#888", fontSize: 14 }}>No popular items</li>
                               )}
                             </ul>
                           </div>
@@ -2921,27 +2844,27 @@ fetch(`/api/params-count?${catParams.toString()}`, { signal })
                             />
                           </div>
                         ) : (
-                          <div style={{ marginTop: 8 }}>
+                          <div
+                            style={{ marginTop: 8 }}
+                            ref={(el) => { if (el) el.scrollIntoView({ behavior: "smooth", block: "nearest" }); }}
+                          >
                             {/* 🏷 Title for typed suggestions */}
                             <h6 className="cfs-suggestion-title">
                               Suggested searches
                             </h6>
-                            <ul
-                              className="location-suggestions"
-                              style={{ marginTop: 8 }}
-                            >
+                            <ul style={{ listStyle: "none", padding: 0, margin: "8px 0 0 0", display: "block" }}>
                               {keywordSuggestions.length ? (
                                 keywordSuggestions.map((k, i) => (
                                   <li
                                     key={`${k.label}-${i}`}
-                                    className="suggestion-item"
+                                    style={{ padding: "10px 4px", borderBottom: "1px solid #f0f0f0", cursor: "pointer", fontSize: 14, color: "#333" }}
                                     onMouseDown={() => {
                                       pickedSourceRef.current = "typed";
                                       const keyword = k.label;
                                       setModalKeyword(keyword);
                                       setKeywordSuggestions([]);
                                       setBaseKeywords([]);
-                                      setShowSuggestions(false);
+                                      setShowKeywordSuggestions(false);
 
                                       // ✅ Prevent re-trigger of fetch
                                       setKeywordLoading(false);
@@ -2955,7 +2878,7 @@ fetch(`/api/params-count?${catParams.toString()}`, { signal })
                                   </li>
                                 ))
                               ) : (
-                                <li className="suggestion-item">No matches</li>
+                                <li style={{ padding: "10px 4px", color: "#888", fontSize: 14 }}>No matches</li>
                               )}
                             </ul>
                           </div>

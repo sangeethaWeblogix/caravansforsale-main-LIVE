@@ -98,26 +98,55 @@
   margin-top: 8px;
 }
 
-/* ── Location suggestions ── */
- .location-suggestions {
-    background: transparent;
-    border: none;
-    border-radius: 0;
-    margin-top: 8px;
-    padding: 0;
-    list-style: none;
-    overflow-y: visible;
-    box-shadow: none;
+/* ── Location suggestions dropdown (inside filter modal) ── */
+.filter-modal .location-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.10);
+  margin-top: 4px;
+  padding: 4px 0;
+  list-style: none;
+  max-height: 220px;
+  overflow-y: auto;
 }
-.location-suggestions li {
-    cursor: pointer;
-    padding: 8px 0px;
-    padding-right: 15px;
-    color: #000;
+.filter-modal .location-suggestions .suggestion-item {
+  padding: 11px 16px;
+  cursor: pointer;
+  font-size: 16px;
+  color: #222;
+  border-bottom: 1px solid #f2f2f2;
 }
-.location-suggestions li:hover {
-  color: #000;
-  background: transparent;
+.filter-modal .location-suggestions .suggestion-item:last-child {
+  border-bottom: none;
+}
+.filter-modal .location-suggestions .suggestion-item:hover,
+.filter-modal .location-suggestions .suggestion-item.selected {
+  background: #fff7f2;
+  color: #ec7200;
+}
+.filter-modal .location-suggestions .suggestion-skeleton {
+  padding: 11px 16px;
+}
+/* fallback for plain <li> inside modal suggestions */
+.filter-modal .location-suggestions li {
+  padding: 11px 16px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #222;
+  border-bottom: 1px solid #f2f2f2;
+}
+.filter-modal .location-suggestions li:last-child {
+  border-bottom: none;
+}
+.filter-modal .location-suggestions li:hover {
+  background: #fff7f2;
+  color: #ec7200;
 }
 /* For selected filter chip */
 /* Selected filter pill */
@@ -201,6 +230,150 @@
 
 
 
+/* ── Location modal — state-list design ── */
+.loc-search-wrap {
+  position: relative;
+  margin-bottom: 16px;
+}
+.loc-search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #888;
+  font-size: 15px;
+  pointer-events: none;
+  z-index: 1;
+}
+.search-bar input.loc-search-input,
+input.loc-search-input {
+    color: #000000;
+    box-sizing: border-box;
+    background: #fff;
+    border-radius: 4px;
+    outline: none;
+    width: 100%;
+    height: 46px;
+    padding: 0 16px 0 40px;
+    font-size: 16px;
+    transition: border-color .15s;
+    display: block;
+    box-shadow: 0 0 0 1.5px #d9d9d9 !important;
+}
+.search-bar input.loc-search-input:focus,
+input.loc-search-input:focus {
+  box-shadow: 0 0 0 1.5px #7e7e7e !important;
+}
+
+.loc-state-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.loc-state-item {
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 4px;
+    transition: background .1s;
+    display: flex;
+}
+.loc-state-item:last-child { border-bottom: none; }
+
+.search-bar button.loc-arrow-btn {
+    background: transparent;
+    border-color: transparent;
+    color: #000;
+}
+
+
+.loc-checkbox {
+  width: 22px;
+  height: 22px;
+  border: 2px solid #ccc;
+  border-radius: 5px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.15s, background 0.15s;
+  background: #fff;
+}
+.loc-checkbox.checked {
+  border-color: #ec7200;
+  background: #ec7200;
+}
+
+.loc-state-name {
+  flex: 1;
+  font-size: 16px;
+  font-weight: 500;
+  color: #222;
+}
+
+.loc-count {
+  color: #000000;
+  font-size: 14px;
+  font-weight: 600;
+  min-width: 40px;
+  text-align: right;
+}
+
+.loc-arrow-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #1a73e8;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s;
+  padding: 0;
+}
+.loc-arrow-btn:hover { background: #1558b0; }
+.loc-arrow-btn svg { display: block; }
+
+.search-bar button.loc-region-pill {
+  background: #ec7200;
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.loc-region-pill:hover { background: #cf6503; }
+
+.search-bar button.loc-back-btn {
+  background: none;
+  border: none;
+  color: #ec7200;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.search-bar button.loc-back-btn:hover { color: #cf6503; }
+
+.loc-region-heading {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #333;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
 .cfs-links-section {
   display: none;
   background: #fff;
@@ -250,4 +423,11 @@
   padding: 12px;
   color: #888;
   font-size: 13px;
+}
+
+@media (max-width: 767px) { 
+  .loc-state-name, .search-bar input.loc-search-input,  
+.filter-modal .location-suggestions .suggestion-item  {
+    font-size: 15px;
+  }
 }

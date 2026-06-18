@@ -342,17 +342,10 @@ export default function ExculisiveContent({
   };
 
   const getLocationLabel = (item: Product): string | undefined => {
-    if (currentFilters.suburb) {
-      const radius = currentFilters.radius_kms ?? 50;
-      const suburb = currentFilters.suburb.replace(/\b\w/g, (c) => c.toUpperCase());
-      const stateAbbr =
-        AUS_ABBR[(currentFilters.state ?? "").toUpperCase()] ??
-        (currentFilters.state ?? "").toUpperCase();
-      const pincode = currentFilters.pincode ? ` ${currentFilters.pincode}` : "";
-      return `Under ${radius} kms from ${suburb} ${stateAbbr}${pincode}`;
-    }
-    if (item.region && currentFilters.region) {
-      return `${item.region.replace(/\b\w/g, (c) => c.toUpperCase())} Region, ${item.location}`;
+    const stateAbbr = AUS_ABBR[(currentFilters.state ?? "").toUpperCase()] ?? (currentFilters.state ?? "").toUpperCase();
+    if (currentFilters.region) {
+      const regionName = (currentFilters.region as string).replace(/\b\w/g, (c) => c.toUpperCase());
+      return `${regionName} Region, ${stateAbbr}`;
     }
     return item.location;
   };

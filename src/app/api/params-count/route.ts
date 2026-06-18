@@ -11,7 +11,7 @@ const response = await fetch(url, {
       Accept: "application/json",
       ...(API_KEY && { "X-API-Key": API_KEY }),
     },
-    next: { revalidate: 0 },
+    next: { revalidate: 60 },
   });
 
   const data = await response.json();

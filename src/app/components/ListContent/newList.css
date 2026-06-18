@@ -241,6 +241,7 @@ h1.page-title {
   background-color: #ec7200;
   border-color: #ec7200;
   color: #ffffff;
+      border-radius: 6px;
 }
 
 .product-page .other_items .product-card .btn:hover,

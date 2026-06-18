@@ -525,16 +525,10 @@ export default function ListingContent({
   };
 
   const getLocationLabel = (item: Product): string | undefined => {
-    if (currentFilters.suburb) {
-      const searchSuburb = (currentFilters.suburb as string).replace(/\b\w/g, (c) => c.toUpperCase());
-      const stateAbbr = AUS_ABBR[(currentFilters.state ?? "").toUpperCase()] ?? (currentFilters.state ?? "").toUpperCase();
-      const pincode = currentFilters.pincode ? ` ${currentFilters.pincode}` : "";
-      const dist = item.pincode ? distanceMap.get(item.pincode) : undefined;
-      const distLabel = dist != null && dist > 0 ? `Under ${dist} kms from ` : "";
-      return `${distLabel}${searchSuburb} ${stateAbbr}${pincode}`;
-    }
-    if (item.region && currentFilters.region) {
-      return `${item.region.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())} Region, ${item.location}`;
+    const stateAbbr = AUS_ABBR[(currentFilters.state ?? "").toUpperCase()] ?? (currentFilters.state ?? "").toUpperCase();
+    if (currentFilters.region) {
+      const regionName = (currentFilters.region as string).replace(/\b\w/g, (c) => c.toUpperCase());
+      return `${regionName} Region, ${stateAbbr}`;
     }
     return item.location;
   };
