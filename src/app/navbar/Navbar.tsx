@@ -1,7 +1,7 @@
 ﻿
 "use client";
 
-import "./navbar.css?=5";
+import "./navbar.css?=7";
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -24,6 +24,11 @@ export default function Navbar() {
   const [openDropdown, setOpenDropdown] = useState<DropdownType>(null);
   const [openLocationSub, setOpenLocationSub] = useState<LocationSubType>(null);
   const toggleNav = () => setIsOpen(!isOpen);
+
+  useEffect(() => {
+    document.body.style.overflow = isOpen ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [isOpen]);
   const [navigating, setNavigating] = useState(false);
   const pathname = usePathname();
   const searchParams = useSearchParams();

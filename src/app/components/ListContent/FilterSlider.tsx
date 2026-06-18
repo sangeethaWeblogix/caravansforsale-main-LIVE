@@ -378,6 +378,15 @@ const [states, setStates] = useState<StateOption[]>(
     | null
   >(null);
 
+  useEffect(() => {
+    if (openModal) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [openModal]);
+
   // condition handlers
 
   // ── Condition handlers ──
@@ -859,51 +868,36 @@ const [states, setStates] = useState<StateOption[]>(
         <div className="active-chips-row">
           {/* 1. Make */}
           {currentFilters.make && (
-            <span
-              className={`active-chip${removingChip === "make" ? " chip-removing" : ""}`}
-              onClick={() =>
-                removeChip("make", { make: undefined, model: undefined })
-              }
-            >
+            <span className={`active-chip${removingChip === "make" ? " chip-removing" : ""}`}>
               {toTitleCase(
                 makeCounts.find((m) => m.slug === currentFilters.make)?.name ??
                   makes.find((m) => m.slug === currentFilters.make)?.name ??
                   currentFilters.make,
               )}
-              <span className="chip-close">×</span>
+              <span className="chip-close" onClick={() => removeChip("make", { make: undefined, model: undefined })}>×</span>
             </span>
           )}
           {/* 2. Model */}
           {currentFilters.model && (
-            <span
-              className={`active-chip${removingChip === "model" ? " chip-removing" : ""}`}
-              onClick={() => removeChip("model", { model: undefined })}
-            >
+            <span className={`active-chip${removingChip === "model" ? " chip-removing" : ""}`}>
               {toTitleCase(
                 lastModelName ??
-                  modelCounts.find((m) => m.slug === currentFilters.model)
-                    ?.name ??
+                  modelCounts.find((m) => m.slug === currentFilters.model)?.name ??
                   currentFilters.model.replace(/-/g, " "),
               )}
-              <span className="chip-close">×</span>
+              <span className="chip-close" onClick={() => removeChip("model", { model: undefined })}>×</span>
             </span>
           )}
           {/* 3. Condition */}
           {currentFilters.condition && (
-            <span
-              className={`active-chip${removingChip === "condition" ? " chip-removing" : ""}`}
-              onClick={() => removeChip("condition", { condition: undefined })}
-            >
+            <span className={`active-chip${removingChip === "condition" ? " chip-removing" : ""}`}>
               {currentFilters.condition?.toLowerCase() === "new" ? "New" : "Used"}
-              <span className="chip-close">×</span>
+              <span className="chip-close" onClick={() => removeChip("condition", { condition: undefined })}>×</span>
             </span>
           )}
           {/* 4. Category */}
           {currentFilters.category && (
-            <span
-              className={`active-chip${removingChip === "category" ? " chip-removing" : ""}`}
-              onClick={() => removeChip("category", { category: undefined })}
-            >
+            <span className={`active-chip${removingChip === "category" ? " chip-removing" : ""}`}>
               {(() => {
                 const slug = currentFilters.category!;
                 const allCats = productListData?.data?.all_categories ?? [];
@@ -914,143 +908,83 @@ const [states, setStates] = useState<StateOption[]>(
                   slug.replace(/-/g, " "),
                 );
               })()}
-              <span className="chip-close">×</span>
+              <span className="chip-close" onClick={() => removeChip("category", { category: undefined })}>×</span>
             </span>
           )}
           {/* 5. State */}
           {currentFilters.state && (
-            <span
-              className={`active-chip${removingChip === "state" ? " chip-removing" : ""}`}
-              onClick={() =>
-                removeChip("state", {
-                  state: undefined,
-                  region: undefined,
-                  suburb: undefined,
-                  pincode: undefined,
-                  radius_kms: undefined,
-                })
-              }
-            >
+            <span className={`active-chip${removingChip === "state" ? " chip-removing" : ""}`}>
               {toTitleCase(currentFilters.state)}
-              <span className="chip-close">×</span>
+              <span className="chip-close" onClick={() => removeChip("state", { state: undefined, region: undefined, suburb: undefined, pincode: undefined, radius_kms: undefined })}>×</span>
             </span>
           )}
           {/* 6. Region */}
           {currentFilters.region && (
-            <span
-              className={`active-chip${removingChip === "region" ? " chip-removing" : ""}`}
-              onClick={() => removeChip("region", { region: undefined })}
-            >
+            <span className={`active-chip${removingChip === "region" ? " chip-removing" : ""}`}>
               {toTitleCase(currentFilters.region)}
-              <span className="chip-close">×</span>
+              <span className="chip-close" onClick={() => removeChip("region", { region: undefined })}>×</span>
             </span>
           )}
           {/* 7. Suburb */}
           {currentFilters.suburb && (
-            <span
-              className={`active-chip${removingChip === "suburb" ? " chip-removing" : ""}`}
-              onClick={() =>
-                removeChip("suburb", {
-                  suburb: undefined,
-                  pincode: undefined,
-                  radius_kms: undefined,
-                })
-              }
-            >
+            <span className={`active-chip${removingChip === "suburb" ? " chip-removing" : ""}`}>
               {toTitleCase(currentFilters.suburb)}
-              <span className="chip-close">×</span>
+              <span className="chip-close" onClick={() => removeChip("suburb", { suburb: undefined, pincode: undefined, radius_kms: undefined })}>×</span>
             </span>
           )}
           {/* 8. Price */}
           {(currentFilters.from_price || currentFilters.to_price) && (
-            <span
-              className={`active-chip${removingChip === "price" ? " chip-removing" : ""}`}
-              onClick={() =>
-                removeChip("price", {
-                  from_price: undefined,
-                  to_price: undefined,
-                })
-              }
-            >
+            <span className={`active-chip${removingChip === "price" ? " chip-removing" : ""}`}>
               {currentFilters.from_price && currentFilters.to_price
                 ? `$${Number(currentFilters.from_price).toLocaleString()} – $${Number(currentFilters.to_price).toLocaleString()}`
                 : currentFilters.from_price
                   ? `From $${Number(currentFilters.from_price).toLocaleString()}`
                   : `Upto $${Number(currentFilters.to_price).toLocaleString()}`}
-              <span className="chip-close">×</span>
+              <span className="chip-close" onClick={() => removeChip("price", { from_price: undefined, to_price: undefined })}>×</span>
             </span>
           )}
           {/* 9. ATM */}
           {(currentFilters.minKg || currentFilters.maxKg) && (
-            <span
-              className={`active-chip${removingChip === "atm" ? " chip-removing" : ""}`}
-              onClick={() =>
-                removeChip("atm", { minKg: undefined, maxKg: undefined })
-              }
-            >
+            <span className={`active-chip${removingChip === "atm" ? " chip-removing" : ""}`}>
               {currentFilters.minKg && currentFilters.maxKg
                 ? `${Number(currentFilters.minKg).toLocaleString()} kg – ${Number(currentFilters.maxKg).toLocaleString()} kg`
                 : currentFilters.minKg
                   ? `From ${Number(currentFilters.minKg).toLocaleString()} kg`
                   : `Upto ${Number(currentFilters.maxKg).toLocaleString()} kg`}
-              <span className="chip-close">×</span>
+              <span className="chip-close" onClick={() => removeChip("atm", { minKg: undefined, maxKg: undefined })}>×</span>
             </span>
           )}
           {/* 10. Length */}
           {(currentFilters.from_length || currentFilters.to_length) && (
-            <span
-              className={`active-chip${removingChip === "length" ? " chip-removing" : ""}`}
-              onClick={() =>
-                removeChip("length", {
-                  from_length: undefined,
-                  to_length: undefined,
-                })
-              }
-            >
+            <span className={`active-chip${removingChip === "length" ? " chip-removing" : ""}`}>
               {currentFilters.from_length && currentFilters.to_length
                 ? `${currentFilters.from_length}ft – ${currentFilters.to_length}ft`
                 : currentFilters.from_length
                   ? `From ${currentFilters.from_length}ft`
                   : `Upto ${currentFilters.to_length}ft`}
-              <span className="chip-close">×</span>
+              <span className="chip-close" onClick={() => removeChip("length", { from_length: undefined, to_length: undefined })}>×</span>
             </span>
           )}
           {/* 11. Sleep */}
           {(currentFilters.from_sleep || currentFilters.to_sleep) && (
-            <span
-              className={`active-chip${removingChip === "sleep" ? " chip-removing" : ""}`}
-              onClick={() =>
-                removeChip("sleep", {
-                  from_sleep: undefined,
-                  to_sleep: undefined,
-                })
-              }
-            >
+            <span className={`active-chip${removingChip === "sleep" ? " chip-removing" : ""}`}>
               {currentFilters.from_sleep && currentFilters.to_sleep
                 ? `${currentFilters.from_sleep} – ${currentFilters.to_sleep} Berths`
                 : currentFilters.from_sleep
                   ? `From ${currentFilters.from_sleep} Berths`
                   : `Upto ${currentFilters.to_sleep} Berths`}
-              <span className="chip-close">×</span>
+              <span className="chip-close" onClick={() => removeChip("sleep", { from_sleep: undefined, to_sleep: undefined })}>×</span>
             </span>
           )}
           {/* 12. Year */}
           {(currentFilters.acustom_fromyears || currentFilters.acustom_toyears) && (
-            <span
-              className={`active-chip${removingChip === "year" ? " chip-removing" : ""}`}
-              onClick={() =>
-                removeChip("year", {
-                  acustom_fromyears: undefined,
-                  acustom_toyears: undefined,
-                })
-              }
-            >
+            <span className={`active-chip${removingChip === "year" ? " chip-removing" : ""}`}>
               {currentFilters.acustom_fromyears && currentFilters.acustom_toyears
                 ? `${currentFilters.acustom_fromyears} – ${currentFilters.acustom_toyears}`
                 : currentFilters.acustom_fromyears
                   ? `From ${currentFilters.acustom_fromyears}`
                   : `${currentFilters.acustom_toyears}`}
-              <span className="chip-close">×</span>
+              <span className="chip-close" onClick={() => removeChip("year", { acustom_fromyears: undefined, acustom_toyears: undefined })}>×</span>
             </span>
           )}
           <button

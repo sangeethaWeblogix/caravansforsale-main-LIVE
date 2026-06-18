@@ -1342,6 +1342,13 @@ a.ignoretext {
   font-size: 14px;
 }
 
+@media (min-width: 768px) and (max-width: 991px) {
+  .product_data .img_b {
+    max-height: 280px;
+    min-height: 280px;
+  }
+}
+
 @media (max-width: 767px) {
   .home_top h1 {
     line-height: 30px;
@@ -2096,7 +2103,30 @@ main .section-head .category_icon li img {
    .blog.style-8 .side-posts .item .info h4.title {
     height: 85px;
   }
- 
+}
+
+@media only screen and (min-width: 1440px) {
+  .sell-content {
+    width: 50%;
+    padding: 40px 60px;
+  }
+  .product_data .img_b {
+    max-height: 440px;
+    min-height: 440px;
+  }
+}
+
+@media only screen and (min-width: 1920px) {
+  .sell-content {
+    padding: 50px 80px;
+  }
+  .sell-content h3 {
+    font-size: 32px;
+  }
+  .product_data .img_b {
+    max-height: 500px;
+    min-height: 500px;
+  }
 }
 
 @media only screen and (min-width: 998px) and (max-width: 1300px) {
@@ -2154,6 +2184,9 @@ main .section-head .category_icon li img {
   .search_home .nav-pills .nav-link {
     font-size: 14px;
     padding: 12px 10px;
+  }
+  .search_requirement_area .search-container {
+    margin-top: 15px;
   }
   .search_home .nav-pills {
     padding-bottom: 0;

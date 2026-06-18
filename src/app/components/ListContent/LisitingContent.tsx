@@ -560,7 +560,7 @@ const [currentBanner, setCurrentBanner] = useState<typeof rightBanners[0] | null
       <div className="col-lg-9">
         <div className="top-filter mb-10">
           <div className="row align-items-center">
-            <div className="col-lg-8 col-md-8 col-sm-8 col-12 show_count_wrapper ">
+            <div className="col-lg-8 col-md-8 col-12 show_count_wrapper mb-2 mb-md-0">
               {count && (
                 <span className="show_count mb-2 d-inline">
                   <strong>{count} </strong>
@@ -569,18 +569,7 @@ const [currentBanner, setCurrentBanner] = useState<typeof rightBanners[0] | null
               <h1 className="show_count d-inline fw-bolder">{text}</h1>
             </div>
 
-            {/* <div className="col-4 d-lg-none d-md-none">
-                <button
-                  type="button"
-                  className="mobile_fltn navbar-toggler mytogglebutton"
-                  data-bs-toggle="offcanvas"
-                  data-bs-target="#mobileFilters"
-                  aria-controls="mobileFilters"
-                >
-                  <i className="bi bi-search" /> &nbsp;Filter
-                </button>
-              </div> */}
-            <div className="col-lg-4 col-md-4 col-sm-4 col-12">
+            <div className="col-lg-4 col-md-4 col-12">
               <div className="r-side">
                 <form className="woocommerce-ordering" method="get">
                   <div className="form-group shot-buy">

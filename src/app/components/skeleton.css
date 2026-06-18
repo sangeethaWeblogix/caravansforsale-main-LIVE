@@ -110,3 +110,15 @@
   width: 45%;
   border-radius: 8px;
 }
+
+.skel-page-title {
+  height: 28px;
+  width: 65%;
+  border-radius: 6px;
+}
+
+.skel-sort-select {
+  height: 38px;
+  width: 100%;
+  border-radius: 6px;
+}

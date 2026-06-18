@@ -565,3 +565,21 @@ input[type="checkbox"]:checked ~ .menuIconToggle > .dia.p-2 {
     width: 35px;
   }
 }
+
+@media screen and (max-width: 374px) {
+  .sidenav {
+    width: 280px;
+  }
+  .navbar.style-4 .navbar-brand {
+    width: 200px;
+  }
+}
+
+@media screen and (min-width: 1920px) {
+  .navbar.style-4 .navbar-brand {
+    width: 380px;
+  }
+  .navbar.style-4 {
+    padding: 6px 0;
+  }
+}
