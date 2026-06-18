@@ -92,6 +92,11 @@ export async function middleware(request: NextRequest) {
   const fullPath = url.pathname + url.search;
   const userAgent = request.headers.get('user-agent') || '';
 
+  // Second pass from render410() — listing page renders its own exclusive-products check
+  if (request.headers.get('x-skip-middleware') === '1') {
+    return NextResponse.next({ request: { headers: request.headers } });
+  }
+
   // Forward pathname to server components (for per-slug metadata injection in root layout)
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set('x-pathname', url.pathname);
@@ -101,7 +106,7 @@ export async function middleware(request: NextRequest) {
     (/\/page\/\d+/i.test(url.pathname) && !url.pathname.startsWith('/blog/')) ||
     (url.searchParams.has('page') && !url.pathname.startsWith('/api'))
   ) {
-    return gone410(request);
+    return render410(request);
   }
 
   /* 🚫 Listings: forbidden segments, unknown params, OR wrong URL order → 410 */
@@ -117,7 +122,7 @@ export async function middleware(request: NextRequest) {
       return gone404(request);
     }
     if (hasUnknownParam || hasForbiddenValue) {
-      return gone410(request);
+      return render410(request);
     }
 
     // Wrong URL order → 410 (URL unchanged, no redirect)
@@ -176,7 +181,7 @@ export async function middleware(request: NextRequest) {
     const cached = seoCache.get(cacheKey);
     if (cached && cached.expires > Date.now()) {
       if (cached.isEmpty) {
-        return gone410(request);
+        return render410(request);
       }
       robotsHeader = cached.robots;
     } else {
@@ -220,7 +225,7 @@ export async function middleware(request: NextRequest) {
           const products = data?.data?.products ?? [];
           if (products.length === 0) {
             seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty: true, expires: Date.now() + CACHE_TTL });
-            return gone410(request);
+            return render410(request);
           }
 
           const seo = data?.seo_v2 ?? data?.seo ?? {};
@@ -246,9 +251,9 @@ export async function middleware(request: NextRequest) {
             expires: Date.now() + CACHE_TTL,
           });
         } else if (apiRes.status === 410) {
-          // WordPress returns 410 for 0 products — show custom 410 page
+          // WordPress returns 410 for 0 products — let listing page handle exclusive-products check
           seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty: true, expires: Date.now() + CACHE_TTL });
-          return gone410(request);
+          return render410(request);
         }
       } catch (error: any) {
         if (error?.name !== "AbortError") {
