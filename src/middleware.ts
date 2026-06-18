@@ -6,7 +6,7 @@ const API_KEY = process.env.CFS_API_KEY;
 /* ──────────────────────────────────────────────
    Edge-safe in-memory cache
 ────────────────────────────────────────────── */
-const seoCache = new Map<string, { robots: string; isEmpty: boolean; expires: number }>();
+const seoCache = new Map<string, { robots: string; isEmpty: boolean; hasExclusiveOnly: boolean; expires: number }>();
 const CACHE_TTL = 60 * 1000; // 1 minute
 
 /* ──────────────────────────────────────────────
@@ -172,7 +172,7 @@ export async function middleware(request: NextRequest) {
     /* 🔹 Cache hit */
     const cached = seoCache.get(cacheKey);
     if (cached && cached.expires > Date.now()) {
-      if (cached.isEmpty) {
+      if (cached.isEmpty || cached.hasExclusiveOnly) {
         return render410(request);
       }
       robotsHeader = cached.robots;
@@ -213,19 +213,16 @@ export async function middleware(request: NextRequest) {
         if (apiRes.ok) {
           const data = await apiRes.json();
 
-          // 0 regular products:
-          //   - empExclusive also empty → true 410 Gone (Vercel shows own error page)
-          //   - empExclusive has items  → noindex 200, page renders exclusive content
+          // 0 regular products → 410 in all cases; page renders exclusive content if present
           const products = data?.data?.products ?? [];
           const empExclusive = data?.emp_exclusive_products ?? [];
           if (products.length === 0) {
             if (empExclusive.length === 0) {
-              seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty: true, expires: Date.now() + CACHE_TTL });
-              return render410(request);
+              seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty: true, hasExclusiveOnly: false, expires: Date.now() + CACHE_TTL });
+            } else {
+              seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty: false, hasExclusiveOnly: true, expires: Date.now() + CACHE_TTL });
             }
-            // Has emp_exclusive_products — serve page with noindex (Vercel intercepts 410+rewrite and shows own error page)
-            seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty: false, expires: Date.now() + CACHE_TTL });
-            robotsHeader = "noindex, nofollow";
+            return render410(request);
           }
 
           const seo = data?.seo_v2 ?? data?.seo ?? {};
@@ -248,6 +245,7 @@ export async function middleware(request: NextRequest) {
           seoCache.set(cacheKey, {
             robots: robotsHeader,
             isEmpty: false,
+            hasExclusiveOnly: false,
             expires: Date.now() + CACHE_TTL,
           });
         } else if (apiRes.status === 410) {
@@ -256,14 +254,13 @@ export async function middleware(request: NextRequest) {
             const data410 = await apiRes.json();
             const empExclusive410 = data410?.emp_exclusive_products ?? [];
             if (empExclusive410.length === 0) {
-              seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty: true, expires: Date.now() + CACHE_TTL });
-              return render410(request);
+              seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty: true, hasExclusiveOnly: false, expires: Date.now() + CACHE_TTL });
+            } else {
+              seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty: false, hasExclusiveOnly: true, expires: Date.now() + CACHE_TTL });
             }
-            // emp_exclusive_products exist — serve page with noindex (200, Vercel won't intercept)
-            seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty: false, expires: Date.now() + CACHE_TTL });
-            robotsHeader = "noindex, nofollow";
+            return render410(request);
           } catch {
-            seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty: true, expires: Date.now() + CACHE_TTL });
+            seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty: true, hasExclusiveOnly: false, expires: Date.now() + CACHE_TTL });
             return render410(request);
           }
         }
