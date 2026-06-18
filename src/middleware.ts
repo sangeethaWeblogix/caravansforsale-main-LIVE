@@ -39,14 +39,14 @@ function gone404(request: NextRequest): NextResponse {
   return NextResponse.redirect(new URL('/404', request.url), { status: 302 });
 }
 
-/* Helper: rewrite to /410 page with HTTP 410 status + noindex header */
+/* Helper: rewrite to /410/ page (trailing slash avoids the 308 redirect loop on Vercel) */
 function gone410(request: NextRequest): NextResponse {
-  const res = NextResponse.rewrite(new URL('/410', request.url), { status: 410 });
+  const res = NextResponse.rewrite(new URL('/410/', request.url), { status: 410 });
   res.headers.set('X-Robots-Tag', 'noindex, nofollow');
   return res;
 }
 
-/* Helper: serve the actual listing page with HTTP 410 status + noindex header */
+/* Helper: serve the listing page with HTTP 410 — self-rewrite with skip header to prevent re-entry */
 function render410(request: NextRequest): NextResponse {
   const url = request.nextUrl.clone();
   const newHeaders = new Headers(request.headers);
@@ -89,7 +89,7 @@ export async function middleware(request: NextRequest) {
   const fullPath = url.pathname + url.search;
   const userAgent = request.headers.get('user-agent') || '';
 
-  // Second pass from render410() — skip all middleware processing
+  // Second pass from render410() self-rewrite — skip all processing, just render the page
   if (request.headers.get('x-skip-middleware') === '1') {
     return NextResponse.next({ request: { headers: request.headers } });
   }
@@ -218,9 +218,10 @@ export async function middleware(request: NextRequest) {
         if (apiRes.ok) {
           const data = await apiRes.json();
 
-          // 0 products → 410 (render listing page, not /410 error page)
+          // 0 products AND 0 exclusive → 410; if exclusive products exist, fall through and render page
           const products = data?.data?.products ?? [];
-          if (products.length === 0) {
+          const empExclusiveProducts = data?.data?.emp_exclusive_products ?? [];
+          if (products.length === 0 && empExclusiveProducts.length === 0) {
             seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty: true, expires: Date.now() + CACHE_TTL });
             return render410(request);
           }
