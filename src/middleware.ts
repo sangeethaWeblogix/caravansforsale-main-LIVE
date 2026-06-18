@@ -39,18 +39,20 @@ function gone404(request: NextRequest): NextResponse {
   return NextResponse.redirect(new URL('/404', request.url), { status: 302 });
 }
 
-/* Helper: rewrite to /410 page with noindex header (status not set — Vercel blocks 4xx in rewrites) */
+/* Helper: rewrite to /410/ page (trailing slash avoids the 308 redirect loop on Vercel) */
 function gone410(request: NextRequest): NextResponse {
-  const res = NextResponse.rewrite(new URL('/410', request.url));
+  const res = NextResponse.rewrite(new URL('/410/', request.url), { status: 410 });
   res.headers.set('X-Robots-Tag', 'noindex, nofollow');
   return res;
 }
 
-/* Helper: render the listing page normally with noindex (Vercel blocks 4xx in rewrites) */
+/* Helper: serve the listing page with HTTP 410 — self-rewrite with skip header to prevent re-entry */
 function render410(request: NextRequest): NextResponse {
-  const headers = new Headers(request.headers);
-  headers.set('x-pathname', request.nextUrl.pathname);
-  const res = NextResponse.next({ request: { headers } });
+  const url = request.nextUrl.clone();
+  const newHeaders = new Headers(request.headers);
+  newHeaders.set('x-skip-middleware', '1');
+  newHeaders.set('x-pathname', url.pathname);
+  const res = NextResponse.rewrite(url, { status: 410, request: { headers: newHeaders } });
   res.headers.set('X-Robots-Tag', 'noindex, nofollow');
   return res;
 }
@@ -86,6 +88,11 @@ export async function middleware(request: NextRequest) {
   const url = request.nextUrl.clone();
   const fullPath = url.pathname + url.search;
   const userAgent = request.headers.get('user-agent') || '';
+
+  // Second pass from render410() self-rewrite — skip all processing, just render the page
+  if (request.headers.get('x-skip-middleware') === '1') {
+    return NextResponse.next({ request: { headers: request.headers } });
+  }
 
   // Forward pathname to server components (for per-slug metadata injection in root layout)
   const requestHeaders = new Headers(request.headers);
