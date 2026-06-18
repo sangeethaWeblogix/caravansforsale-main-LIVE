@@ -285,7 +285,8 @@ const [states, setStates] = useState<StateOption[]>([]);
     [],
   );
 
-  const [tempYear, setTempYear] = useState<number | null>(null);
+  const [tempYearFrom, setTempYearFrom] = useState<number | null>(null);
+  const [tempYearTo, setTempYearTo] = useState<number | null>(null);
 
   const [isMakeModalOpen, setIsMakeModalOpen] = useState(false);
   const [searchMake, setSearchMake] = useState("");
@@ -1329,8 +1330,8 @@ const [states, setStates] = useState<StateOption[]>([]);
       search: modalKeyword.trim()
         ? toQueryPlus(modalKeyword.trim())
         : currentFilters.search,
-      acustom_fromyears: tempYear !== null ? tempYear : undefined,
-      acustom_toyears: tempYear !== null ? tempYear : undefined,
+      acustom_fromyears: tempYearFrom !== null ? tempYearFrom : undefined,
+      acustom_toyears: tempYearTo !== null ? tempYearTo : undefined,
 
       page: 1,
     };
@@ -1794,11 +1795,8 @@ const [states, setStates] = useState<StateOption[]>([]);
     );
     setTempAtmFrom(currentFilters.minKg ? Number(currentFilters.minKg) : null);
     setTempAtmTo(currentFilters.maxKg ? Number(currentFilters.maxKg) : null);
-    setTempYear(
-      currentFilters.acustom_fromyears
-        ? Number(currentFilters.acustom_fromyears)
-        : null,
-    );
+    setTempYearFrom(currentFilters.acustom_fromyears ? Number(currentFilters.acustom_fromyears) : null);
+    setTempYearTo(currentFilters.acustom_toyears ? Number(currentFilters.acustom_toyears) : null);
     const existingKeyword = currentFilters.search
       ? toHumanFromQuery(currentFilters.search)
       : currentFilters.keyword
@@ -1850,7 +1848,8 @@ const [states, setStates] = useState<StateOption[]>([]);
       tempPriceTo ||
       tempSleepFrom ||
       tempSleepTo ||
-      tempYear ||
+      tempYearFrom ||
+      tempYearTo ||
       tempLengthFrom ||
       tempLengthTo ||
       tempStateName ||
@@ -1886,7 +1885,8 @@ const [states, setStates] = useState<StateOption[]>([]);
     tempPriceTo,
     tempSleepFrom,
     tempSleepTo,
-    tempYear,
+    tempYearFrom,
+    tempYearTo,
     tempLengthFrom,
     tempLengthTo,
     tempStateName,
@@ -1946,10 +1946,8 @@ const [states, setStates] = useState<StateOption[]>([]);
     if (tempSleepTo) tempFilters.to_sleep = tempSleepTo;
     if (tempLengthFrom) tempFilters.from_length = tempLengthFrom;
     if (tempLengthTo) tempFilters.to_length = tempLengthTo;
-    if (tempYear) {
-      tempFilters.acustom_fromyears = tempYear;
-      tempFilters.acustom_toyears = tempYear;
-    }
+    if (tempYearFrom) tempFilters.acustom_fromyears = tempYearFrom;
+    if (tempYearTo) tempFilters.acustom_toyears = tempYearTo;
 
     // tempFilters build பண்ற section-ல், கீழே add பண்ணு:
     if (modalKeyword.trim().length < 2) {
@@ -2679,7 +2677,7 @@ fetch(`/api/params-count?${catParams.toString()}`, { signal })
                         >
                           <option value="">Any</option>
                           {sleep
-                            .filter((v) => !tempSleepFrom || v > tempSleepFrom)
+                            .filter((v) => !tempSleepFrom || v >= tempSleepFrom)
                             .map((v, i) => (
                               <option key={i} value={v}>
                                 {v}
@@ -2697,24 +2695,39 @@ fetch(`/api/params-count?${catParams.toString()}`, { signal })
                   <div className="row">
                     <div className="col-lg-6">
                       <div className="location-item">
+                        <label>From</label>
                         <select
                           className="cfs-select-input form-select"
-                          value={tempYear ?? ""}
+                          value={tempYearFrom ?? ""}
                           onChange={(e) => {
-                            const val = e.target.value
-                              ? Number(e.target.value)
-                              : null;
-                            setTempYear(val);
-                            // 🔥 background only – no commit
+                            const val = e.target.value ? Number(e.target.value) : null;
+                            setTempYearFrom(val);
                           }}
                         >
                           <option value="">Any</option>
-
                           {years.map((y) => (
-                            <option key={y} value={y}>
-                              {y}
-                            </option>
+                            <option key={y} value={y}>{y}</option>
                           ))}
+                        </select>
+                      </div>
+                    </div>
+                    <div className="col-lg-6">
+                      <div className="location-item">
+                        <label>To</label>
+                        <select
+                          className="cfs-select-input form-select"
+                          value={tempYearTo ?? ""}
+                          onChange={(e) => {
+                            const val = e.target.value ? Number(e.target.value) : null;
+                            setTempYearTo(val);
+                          }}
+                        >
+                          <option value="">Any</option>
+                          {years
+                            .filter((y) => !tempYearFrom || y >= tempYearFrom)
+                            .map((y) => (
+                              <option key={y} value={y}>{y}</option>
+                            ))}
                         </select>
                       </div>
                     </div>
@@ -2918,7 +2931,8 @@ fetch(`/api/params-count?${catParams.toString()}`, { signal })
                 setTempPriceTo(null);
                 setTempSleepFrom(null);
                 setTempSleepTo(null);
-                setTempYear(null);
+                setTempYearFrom(null);
+                setTempYearTo(null);
                 setTempLengthFrom(null);
                 setTempLengthTo(null);
                 setTempStateName(null);

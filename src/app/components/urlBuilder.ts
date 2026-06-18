@@ -204,12 +204,22 @@ export function parseSlugToFilters(
       }
       return;
     }
-    // Year (single-year range only)
+    // Year range: 2020-2025-caravans-range, year-from-2025-caravans-range, year-to-2025-caravans-range
     if (part.includes("-caravans-range")) {
-      const yearMatch = part.match(/^(\d{4})-caravans-range$/);
-      if (yearMatch) {
-        filters.acustom_fromyears = yearMatch[1];
-        filters.acustom_toyears = yearMatch[1];
+      const bothMatch = part.match(/^(\d{4})-(\d{4})-caravans-range$/);
+      if (bothMatch) {
+        filters.acustom_fromyears = bothMatch[1];
+        filters.acustom_toyears = bothMatch[2];
+        return;
+      }
+      const fromMatch = part.match(/^year-from-(\d{4})-caravans-range$/);
+      if (fromMatch) {
+        filters.acustom_fromyears = fromMatch[1];
+        return;
+      }
+      const toMatch = part.match(/^year-to-(\d{4})-caravans-range$/);
+      if (toMatch) {
+        filters.acustom_toyears = toMatch[1];
         return;
       }
     }

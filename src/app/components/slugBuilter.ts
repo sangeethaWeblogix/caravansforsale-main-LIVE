@@ -110,16 +110,11 @@ export function buildSlugFromFilters(f: Filters): string {
 const toYear = asNum(f.acustom_toyears);
 
 if (fromYear !== undefined && toYear !== undefined) {
-  if (fromYear === toYear) {
-    segments.push(`${fromYear}-caravans-range`);
-  } else {
-    // two different years → ignore or skip adding year slug
-    // just don’t add anything or fallback
-  }
+  segments.push(`${fromYear}-${toYear}-caravans-range`);
 } else if (fromYear !== undefined) {
-  segments.push(`${fromYear}-caravans-range`);
+  segments.push(`year-from-${fromYear}-caravans-range`);
 } else if (toYear !== undefined) {
-  segments.push(`${toYear}-caravans-range`);
+  segments.push(`year-to-${toYear}-caravans-range`);
 }
   const query = new URLSearchParams();
 
