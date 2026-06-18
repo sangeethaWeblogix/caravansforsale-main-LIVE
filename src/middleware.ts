@@ -251,9 +251,21 @@ export async function middleware(request: NextRequest) {
             expires: Date.now() + CACHE_TTL,
           });
         } else if (apiRes.status === 410) {
-          // WordPress returns 410 for 0 products — show custom 410 page
-          seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty: true, expires: Date.now() + CACHE_TTL });
-          return render410(request);
+          // WordPress returns 410 for 0 products — check body for emp_exclusive_products before deciding
+          try {
+            const data410 = await apiRes.json();
+            const empExclusive410 = data410?.emp_exclusive_products ?? [];
+            if (empExclusive410.length === 0) {
+              seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty: true, expires: Date.now() + CACHE_TTL });
+              return render410(request);
+            }
+            // emp_exclusive_products exist — serve page with noindex (200, Vercel won't intercept)
+            seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty: false, expires: Date.now() + CACHE_TTL });
+            robotsHeader = "noindex, nofollow";
+          } catch {
+            seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty: true, expires: Date.now() + CACHE_TTL });
+            return render410(request);
+          }
         }
       } catch (error: any) {
         if (error?.name !== "AbortError") {
