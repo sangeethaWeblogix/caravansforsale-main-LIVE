@@ -1,5 +1,8 @@
-import Link from "next/link";
+
 import "./page.css";
+import ListingsPage from "@/app/components/ListContent/Listings";
+import "../listings/listings.css";
+import "../components/ListContent/newList.css";
 
 export const metadata = {
   title: "410 - Page Permanently Removed | Caravans For Sale",
@@ -11,7 +14,34 @@ export const metadata = {
   },
 };
 
-export default function GonePage() {
+export default function GonePage({
+  response,
+  linksData,
+  productListData,
+  initialCategoryCounts,
+  initialMakeCounts,
+  initialBottomLinksData,
+  apiFilters,
+} = {}) {
+  const empExclusiveProducts = response?.data?.emp_exclusive_products;
+  const hasEmpExclusive =
+    Array.isArray(empExclusiveProducts) && empExclusiveProducts.length > 0;
+
+  if (hasEmpExclusive && apiFilters) {
+    return (
+      <ListingsPage
+        {...apiFilters}
+        initialData={response}
+        linksData={linksData}
+        productListData={productListData}
+        initialCategoryCounts={initialCategoryCounts}
+        initialMakeCounts={initialMakeCounts}
+        initialBottomLinksData={initialBottomLinksData}
+        initialDistances={{}}
+      />
+    );
+  }
+
   return (
     <div className="page-wrap-410">
       <div className="card-410">
@@ -23,9 +53,6 @@ export default function GonePage() {
           The page you requested has been permanently removed and is no longer
           available.
         </p>
-        {/* <Link className="btn-410" href="/listings/">
-          Browse Caravans
-        </Link> */}
       </div>
     </div>
   );
