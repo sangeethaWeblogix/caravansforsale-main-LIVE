@@ -218,9 +218,10 @@ export async function middleware(request: NextRequest) {
         if (apiRes.ok) {
           const data = await apiRes.json();
 
-          // 0 products → 410 (render listing page, not /410 error page)
+          // 0 products AND 0 exclusive → 410; if exclusive products exist, fall through and render page
           const products = data?.data?.products ?? [];
-          if (products.length === 0) {
+          const empExclusiveProducts = data?.data?.emp_exclusive_products ?? [];
+          if (products.length === 0 && empExclusiveProducts.length === 0) {
             seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty: true, expires: Date.now() + CACHE_TTL });
             return render410(request);
           }
