@@ -39,14 +39,6 @@ function gone404(request: NextRequest): NextResponse {
   return NextResponse.redirect(new URL('/404', request.url), { status: 302 });
 }
 
-/* Helper: rewrite to /410/ page (trailing slash avoids the 308 redirect loop on Vercel) */
-function gone410(request: NextRequest): NextResponse {
-  const res = NextResponse.rewrite(new URL('/410/', request.url), { status: 410 });
-  res.headers.set('X-Robots-Tag', 'noindex, nofollow');
-  res.headers.set('Cache-Control', 'no-store');
-  return res;
-}
-
 /* Helper: render the listing page itself with HTTP 410 — used when 0 regular products exist
    (listing page handles exclusive-products check and renders content if any are found) */
 function render410(request: NextRequest): NextResponse {
@@ -251,7 +243,7 @@ export async function middleware(request: NextRequest) {
             expires: Date.now() + CACHE_TTL,
           });
         } else if (apiRes.status === 410) {
-          // WordPress returns 410 for 0 products — let listing page handle exclusive-products check
+          // WordPress returns 410 for 0 products — show custom 410 page
           seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty: true, expires: Date.now() + CACHE_TTL });
           return render410(request);
         }
