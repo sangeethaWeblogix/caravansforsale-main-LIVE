@@ -63,6 +63,21 @@ import { fetchProductMeta } from "@/utils/fetchProductMeta";
       pathname !== "/product/" &&
       pathname !== "/product";
 
+    // Static pages whose metadata ends up after </head> due to streaming — inject directly
+    const STATIC_META: Record<string, { title: string; description: string; canonical: string }> = {
+      "/caravan-manufacturers/": {
+        title: "Top 10 Caravan Manufacturers in Australia: Best Brands of 2024",
+        description: "See how top Australian caravan manufacturers excel with the best in innovative designs, quality construction, cost efficiency, and expert craftsmanship.",
+        canonical: "https://www.caravansforsale.com.au/caravan-manufacturers/",
+      },
+      "/off-road-caravans-manufacturers/": {
+        title: "Top Off-Road Caravan Manufacturers in Australia: Best Brands 2024",
+        description: "Discover Australia's leading off-road caravan manufacturers. Compare top brands known for rugged build quality, innovative design, and outback-ready performance.",
+        canonical: "https://www.caravansforsale.com.au/off-road-caravans-manufacturers/",
+      },
+    };
+    const staticMeta = STATIC_META[pathname] ?? null;
+
     let productMeta = { title: "", description: "", canonical: "", ogImage: "" };
 
     if (isProductPage) {
@@ -114,6 +129,16 @@ import { fetchProductMeta } from "@/utils/fetchProductMeta";
     return (
       <html lang="en">
         <head>
+          {/* Static pages SEO — injected here to avoid metadata-in-body streaming issue */}
+          {staticMeta && <title>{staticMeta.title}</title>}
+          {staticMeta && <meta name="description" content={staticMeta.description} />}
+          {staticMeta && <link rel="canonical" href={staticMeta.canonical} />}
+          {staticMeta && <meta name="robots" content="index, follow" />}
+          {staticMeta && <meta property="og:title" content={staticMeta.title} />}
+          {staticMeta && <meta property="og:description" content={staticMeta.description} />}
+          {staticMeta && <meta property="og:url" content={staticMeta.canonical} />}
+          {staticMeta && <meta name="twitter:title" content={staticMeta.title} />}
+          {staticMeta && <meta name="twitter:description" content={staticMeta.description} />}
           {/* Product page SEO — injected here to avoid metadata-in-body streaming issue */}
           {isProductPage && productMeta.title && <title>{productMeta.title}</title>}
           {isProductPage && productMeta.description && <meta name="description" content={productMeta.description} />}
