@@ -213,9 +213,10 @@ export async function middleware(request: NextRequest) {
         if (apiRes.ok) {
           const data = await apiRes.json();
 
-          // 0 regular products → 410 (regardless of exclusive products)
+          // 410 only when both regular products AND emp_exclusive_products are empty
           const products = data?.data?.products ?? [];
-          if (products.length === 0) {
+          const empExclusive = data?.emp_exclusive_products ?? [];
+          if (products.length === 0 && empExclusive.length === 0) {
             seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty: true, expires: Date.now() + CACHE_TTL });
             return render410(request);
           }
