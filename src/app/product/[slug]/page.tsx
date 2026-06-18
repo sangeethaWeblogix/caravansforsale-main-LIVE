@@ -1,5 +1,4 @@
 // app/product-details/[slug]/page.tsx
-import { Metadata } from "next";
 import { cache } from "react";
 import ClientLogger from "./product";
 import { redirect } from "next/navigation";
@@ -32,83 +31,6 @@ const fetchProductDetail = cache(async (slug: string) => {
   }
 });
 
- export async function generateMetadata({
-   params,
- }: {
-   params: Promise<RouteParams>;
- }): Promise<Metadata> {
-   const { slug } = await params;
-   const data = await fetchProductDetail(slug);
-       
-
-   const imageUrlRaw = data?.data?.product_details?.image_url;
-  const ogImage: string = Array.isArray(imageUrlRaw)
-    ? imageUrlRaw.filter(Boolean)[0] ?? ""  // ✅ first image in array
-    : typeof imageUrlRaw === "string"
-    ? imageUrlRaw
-    : "";
-
-  
- 
-   if (!data || Object.keys(data).length === 0) {
-     return {
-       title: "Product Not Found - Caravans for Sale",
-       description: "",
-     };
-   }
-  
-   const seo = data?.seo ?? data?.product?.seo ?? {};
-   const title =
-     seo.metatitle ||
-     seo.meta_title ||
-     data?.title ||
-     data?.name ||
-     "Product - Caravans for Sale";
- 
-   const description =
-     seo.metadescription ||
-     seo.meta_description ||
-     data?.short_description ||
-     "View caravan details.";
-   const canonicalUrl = `https://www.caravansforsale.com.au/product/${slug}/`;
-   const robots = "index, follow";
-
-   return {
-     title: { absolute: title },
-     robots,
-     
-     verification: {
-       google: "6tT6MT6AJgGromLaqvdnyyDQouJXq0VHS-7HC194xEo", // ✅ Google site verification
-     },
-     description,
-       openGraph: {
-       title,
-       description,
-       type: "website",
-       url: canonicalUrl,
-        siteName: "https://www.caravansforsale.com.au/", 
-       images: [
-         {
-           url: ogImage,
-           width: 800,
-           height: 600,
-           alt: title,
-         },
-       ],
-       locale: "en-AU",
-     },
-     twitter: {
-       card: "summary",
-       title,
-       description,
-     },
-     alternates: {
-       canonical: canonicalUrl, // ✅ canonical link
-     },
- 
-     other: { "og:type": "product" },
-   };
- }
 
 export default async function ProductDetailPage({ params }: PageProps) {
   const { slug } = await params;
