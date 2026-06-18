@@ -89,9 +89,11 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next({ request: { headers: request.headers } });
   }
 
-  // Internal fetch from /api/listings-410/ route handler — skip all checks
+  // Internal fetch from /api/listings-410/ route handler — skip all checks, set x-pathname
   if (request.headers.get('x-internal-render') === '1') {
-    return NextResponse.next({ request: { headers: request.headers } });
+    const bypassHeaders = new Headers(request.headers);
+    bypassHeaders.set('x-pathname', url.pathname);
+    return NextResponse.next({ request: { headers: bypassHeaders } });
   }
 
   // Forward pathname to server components (for per-slug metadata injection in root layout)
