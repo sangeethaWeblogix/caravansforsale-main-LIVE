@@ -39,14 +39,11 @@ function gone404(request: NextRequest): NextResponse {
   return NextResponse.redirect(new URL('/404', request.url), { status: 302 });
 }
 
-/* Helper: render the listing page itself with HTTP 410 — used when 0 regular products exist
-   (listing page handles exclusive-products check and renders content if any are found) */
+/* Helper: serve the /410/ page content with HTTP 410 status — URL stays unchanged in browser */
 function render410(request: NextRequest): NextResponse {
-  const url = request.nextUrl.clone();
   const newHeaders = new Headers(request.headers);
   newHeaders.set('x-skip-middleware', '1');
-  newHeaders.set('x-pathname', url.pathname);
-  const res = NextResponse.rewrite(url, { status: 410, request: { headers: newHeaders } });
+  const res = NextResponse.rewrite(new URL('/410/', request.url), { status: 410, request: { headers: newHeaders } });
   res.headers.set('X-Robots-Tag', 'noindex, nofollow');
   res.headers.set('Cache-Control', 'no-store');
   return res;
