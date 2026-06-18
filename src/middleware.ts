@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { parseSlugToFilters } from "@/app/components/urlBuilder";
+import { parseSlugToFilters, type Filters } from "@/app/components/urlBuilder";
 import { buildSlugFromFilters } from "@/app/components/slugBuilter";
 const API_KEY = process.env.CFS_API_KEY;
 
@@ -46,15 +46,31 @@ function gone410(request: NextRequest): NextResponse {
   return res;
 }
 
-/* Helper: serve the actual page with HTTP 410 status + noindex (0 products — page exists but is empty).
-   We add ?_s=410 to the rewrite destination so Next.js doesn't treat it as a self-rewrite
-   (self-rewrites silently drop the custom status and return 200). */
-function empty410(request: NextRequest): NextResponse {
-  const targetUrl = request.nextUrl.clone();
-  targetUrl.searchParams.set('_s', '410');
-  const res = NextResponse.rewrite(targetUrl, { status: 410 });
-  res.headers.set('X-Robots-Tag', 'noindex, nofollow');
-  return res;
+
+/** Convert parsed Filters to API query params (mirrors the logic in api/listings/api.ts). */
+function buildApiParams(filters: Filters): URLSearchParams {
+  const p = new URLSearchParams();
+  p.set('page', '1');
+  if (filters.category) p.set('category', filters.category);
+  if (filters.make) p.set('make', filters.make);
+  if (filters.model) p.set('model', filters.model);
+  if (filters.state) p.set('state', filters.state);
+  if (filters.region) p.set('region', filters.region);
+  if (filters.suburb) p.set('suburb', filters.suburb);
+  if (filters.pincode) p.set('pincode', filters.pincode);
+  if (filters.from_price) p.set('from_price', `${filters.from_price}`);
+  if (filters.to_price) p.set('to_price', `${filters.to_price}`);
+  if (filters.minKg) p.set('from_atm', `${filters.minKg}`);
+  if (filters.maxKg) p.set('to_atm', `${filters.maxKg}`);
+  if (filters.from_length) p.set('from_length', `${filters.from_length}`);
+  if (filters.to_length) p.set('to_length', `${filters.to_length}`);
+  if (filters.condition) p.set('condition', filters.condition.toLowerCase().replace(/\s+/g, '-'));
+  if (filters.sleeps) p.set('sleep', `${filters.sleeps}`);
+  if (filters.from_sleep) p.set('from_sleep', `${filters.from_sleep}`);
+  if (filters.to_sleep) p.set('to_sleep', `${filters.to_sleep}`);
+  if (filters.acustom_fromyears) p.set('acustom_fromyears', `${filters.acustom_fromyears}`);
+  if (filters.acustom_toyears) p.set('acustom_toyears', `${filters.acustom_toyears}`);
+  return p;
 }
 
 export async function middleware(request: NextRequest) {
@@ -146,7 +162,7 @@ export async function middleware(request: NextRequest) {
     const cached = seoCache.get(cacheKey);
     if (cached && cached.expires > Date.now()) {
       if (cached.isEmpty) {
-        return empty410(request);
+        return gone410(request);
       }
       robotsHeader = cached.robots;
     } else {
@@ -161,9 +177,9 @@ export async function middleware(request: NextRequest) {
           Object.fromEntries(url.searchParams)
         );
 
-        // Include page=1 so the middleware call matches exactly what the page component sends.
-        // WordPress returns different results (e.g. 410) for explicit page=1 vs. no page param.
-        const apiParams = new URLSearchParams({ ...filters as Record<string, string>, page: '1' });
+        // Build API params using the same mapping as fetchListings (api/listings/api.ts).
+        // Raw filter keys (minKg, maxKg, sleeps) must be converted to API names (from_atm, to_atm, sleep).
+        const apiParams = buildApiParams(filters);
         const apiUrl =
           "https://admin.caravansforsale.com.au/wp-json/cfs/v1/new_optimize_code?" +
           apiParams.toString();
@@ -186,11 +202,12 @@ export async function middleware(request: NextRequest) {
         if (apiRes.ok) {
           const data = await apiRes.json();
 
-          // 0 products → 410 (URL unchanged)
+          // 0 products → 410
           const products = data?.data?.products ?? [];
-          if (products.length === 0) {
+          const empExclusive = data?.data?.emp_exclusive_products ?? [];
+          if (products.length === 0 && empExclusive.length === 0) {
             seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty: true, expires: Date.now() + CACHE_TTL });
-            return empty410(request);
+            return gone410(request);
           }
 
           const seo = data?.seo_v2 ?? data?.seo ?? {};
@@ -202,15 +219,39 @@ export async function middleware(request: NextRequest) {
             ", " +
             (rawFollow === "nofollow" ? "nofollow" : "follow");
 
+          // Band-only pages (range filter with no other filters) → always noindex.
+          // Mirrors the meta.ts rule: all band pages are noindex.
+          const hasBand = !!(filters.maxKg || filters.minKg || filters.to_price || filters.from_price ||
+            filters.to_length || filters.from_length || filters.to_sleep || filters.from_sleep);
+          if (hasBand) {
+            robotsHeader = "noindex, nofollow";
+          }
+
           seoCache.set(cacheKey, {
             robots: robotsHeader,
             isEmpty: false,
             expires: Date.now() + CACHE_TTL,
           });
         } else if (apiRes.status === 410) {
-          // WordPress returns 410 when the listing page has 0 products
-          seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty: true, expires: Date.now() + CACHE_TTL });
-          return empty410(request);
+          // WordPress returns 410 for 0 products — but body may contain emp_exclusive_products.
+          // If exclusive products exist, let the page render (just noindex); otherwise 410.
+          try {
+            const body410 = await apiRes.json();
+            const empExclusive410: unknown[] =
+              body410?.emp_exclusive_products ??
+              body410?.data?.emp_exclusive_products ??
+              [];
+            if (Array.isArray(empExclusive410) && empExclusive410.length > 0) {
+              robotsHeader = "noindex, nofollow";
+              seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty: false, expires: Date.now() + CACHE_TTL });
+            } else {
+              seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty: true, expires: Date.now() + CACHE_TTL });
+              return gone410(request);
+            }
+          } catch {
+            seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty: true, expires: Date.now() + CACHE_TTL });
+            return gone410(request);
+          }
         }
       } catch (error: any) {
         if (error?.name !== "AbortError") {

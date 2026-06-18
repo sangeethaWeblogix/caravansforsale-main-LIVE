@@ -56,6 +56,7 @@ import { metaFromSlug } from "@/utils/seo/meta";
     // (avoids async generateMetadata + streaming = metadata-in-body issue in Next.js 15)
     const h = await headers();
     const pathname = h.get("x-pathname") ?? "";
+    const xRobots = h.get("x-robots") ?? "";
     const isListingSlug =
       pathname.startsWith("/listings/") &&
       pathname !== "/listings/" &&
@@ -70,33 +71,40 @@ import { metaFromSlug } from "@/utils/seo/meta";
       const slugString = pathname.replace(/^\/listings\//, "").replace(/\/$/, "");
       const slugParts = slugString.split("/").filter(Boolean);
 
-      try {
-        // All SEO from metaFromSlug — pure computation, no API call
-        const meta = await metaFromSlug(slugParts, {});
-        slugCanonical = (meta.alternates?.canonical as string) ?? "";
-        if (meta.robots && typeof meta.robots === "object" && "index" in meta.robots) {
-          slugRobots = (meta.robots as { index: boolean }).index ? "index, follow" : "noindex";
-        } else {
-          slugRobots = "index, follow";
-        }
-        if (meta.title && typeof meta.title === "object" && "absolute" in meta.title) {
-          slugTitle = (meta.title as { absolute: string }).absolute;
-        }
-        slugDescription = "Browse caravans for sale across Australia. Compare prices on off-road, hybrid, pop top, touring, luxury models with size, weight & sleeping capacity.";
-      } catch {
-        const parts = slugParts
-          .map((p: string) =>
-            p.replace(/-(category|state|region|condition|search|suburb)$/, "")
-             .replace(/-/g, " ")
-             .replace(/\b\w/g, (c: string) => c.toUpperCase())
-          )
-          .filter(Boolean);
-        slugTitle = parts.length
-          ? `${parts.join(" ")} Caravans for Sale in Australia`
-          : "Caravans for Sale in Australia";
+      // Middleware signals 0 products via x-robots: noindex — use it directly, no API call needed
+      if (xRobots === "noindex") {
+        slugRobots = "noindex";
         slugCanonical = `https://www.caravansforsale.com.au/listings/${slugParts.join("/")}/`;
         slugDescription = "Browse caravans for sale across Australia. Compare prices on off-road, hybrid, pop top, touring, luxury models with size, weight & sleeping capacity.";
-        slugRobots = "index, follow";
+      } else {
+        try {
+          // All SEO from metaFromSlug — pure computation, no API call
+          const meta = await metaFromSlug(slugParts, {});
+          slugCanonical = (meta.alternates?.canonical as string) ?? "";
+          if (meta.robots && typeof meta.robots === "object" && "index" in meta.robots) {
+            slugRobots = (meta.robots as { index: boolean }).index ? "index, follow" : "noindex";
+          } else {
+            slugRobots = "index, follow";
+          }
+          if (meta.title && typeof meta.title === "object" && "absolute" in meta.title) {
+            slugTitle = (meta.title as { absolute: string }).absolute;
+          }
+          slugDescription = "Browse caravans for sale across Australia. Compare prices on off-road, hybrid, pop top, touring, luxury models with size, weight & sleeping capacity.";
+        } catch {
+          const parts = slugParts
+            .map((p: string) =>
+              p.replace(/-(category|state|region|condition|search|suburb)$/, "")
+               .replace(/-/g, " ")
+               .replace(/\b\w/g, (c: string) => c.toUpperCase())
+            )
+            .filter(Boolean);
+          slugTitle = parts.length
+            ? `${parts.join(" ")} Caravans for Sale in Australia`
+            : "Caravans for Sale in Australia";
+          slugCanonical = `https://www.caravansforsale.com.au/listings/${slugParts.join("/")}/`;
+          slugDescription = "Browse caravans for sale across Australia. Compare prices on off-road, hybrid, pop top, touring, luxury models with size, weight & sleeping capacity.";
+          slugRobots = "index, follow";
+        }
       }
     }
 

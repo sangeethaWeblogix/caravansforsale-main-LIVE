@@ -234,8 +234,7 @@ function getRobotsFromFilters(
   const band = resolveBand(slugSegments, BASE_URL);
   if (band.hasBand) {
     const hasOtherFilters = !!(parsed.make || parsed.model || parsed.state || parsed.region || parsed.category);
-    if (hasOtherFilters) return noindex; // band + anything else → noindex
-    return index;                        // any single band page → index ✅
+    return noindex; // all band pages (range filters) → noindex
   }
 
   // ── Non-band pages: explicit whitelist ──
