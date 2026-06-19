@@ -180,7 +180,10 @@ const FilterModal: React.FC<CaravanFilterProps> = ({
   }, []);
 
   const RADIUS_OPTIONS = [25, 50, 100, 250, 500, 1000] as const;
-  const [radiusKms, setRadiusKms] = useState<number>(RADIUS_OPTIONS[0]);
+  const [radiusKms, setRadiusKms] = useState<number>(() => {
+    const kms = Number(currentFilters.radius_kms);
+    return kms > 0 ? kms : RADIUS_OPTIONS[0];
+  });
    const [visibleCount, setVisibleCount] = useState(10);
   const [modelCounts, setModelCounts] = useState<ModelCount[]>([]);
   const [isCategoryCountLoading, setIsCategoryCountLoading] = useState(true);
@@ -248,7 +251,11 @@ const [states, setStates] = useState<StateOption[]>([]);
 
   const makeInitializedRef = useRef(false); // ✅ add at top of component
 
-  const lastPushedURLRef = useRef<string>("");
+  const lastPushedURLRef = useRef<string>(
+    typeof window !== "undefined"
+      ? window.location.pathname + window.location.search
+      : ""
+  );
   const mountedRef = useRef(false);
 
   const lastSentFiltersRef = useRef<Filters | null>(null);
@@ -1032,9 +1039,6 @@ const [states, setStates] = useState<StateOption[]>([]);
     selectedRegionName,
     selectedSuburbName,
     selectedpincode,
-    selectedMake,
-    selectedModel,
-    selectedCategory,
   ]);
 
   const statesKey = useMemo(() => {
@@ -1259,12 +1263,17 @@ const [states, setStates] = useState<StateOption[]>([]);
     }
     let suburbFilters: Partial<Filters> = {};
 
-    if (suburbClickedRef.current && selectedSuggestion) {
-      const uriParts = selectedSuggestion.uri.split("/");
+    // Use URI length (not suburbClickedRef) so chip from previous selection also works after modal reopen
+    const suggestionUriParts = selectedSuggestion
+      ? selectedSuggestion.uri.split("/").filter(Boolean)
+      : [];
+    if (selectedSuggestion && suggestionUriParts.length >= 3) {
+      // filter(Boolean) handles trailing slashes: "victoria-state/melbourne-region/" → 2 parts, not 3
+      const uriParts = suggestionUriParts;
       const stateSlug = uriParts[0] || ""; // ← state first
       const regionSlug = uriParts[1] || ""; // ← region second
       const suburbSlug = uriParts[2] || ""; // ← suburb third
-      let pincode = uriParts[3] || ""; // ← pincode fourth
+      let pincode = uriParts[3] || ""; // ← pincode fourth (old API format)
 
       const state = stateSlug
         .replace(/-state$/, "")
@@ -1274,10 +1283,18 @@ const [states, setStates] = useState<StateOption[]>([]);
         .replace(/-region$/, "")
         .replace(/-/g, " ")
         .trim();
-      const suburb = suburbSlug
-        .replace(/-suburb$/, "")
-        .replace(/-/g, " ")
-        .trim();
+
+      // Handle both URI formats:
+      // Old: state/region/suburb-suburb/pincode  → pincode in uriParts[3]
+      // New: state/region/suburb-pincode-suburb  → pincode embedded in slug
+      const suburbWithPinMatch = suburbSlug.match(/^([a-z0-9-]+)-(\d{4})-suburb$/i);
+      let suburb: string;
+      if (suburbWithPinMatch) {
+        suburb = suburbWithPinMatch[1].replace(/-/g, " ").trim();
+        if (!pincode) pincode = suburbWithPinMatch[2];
+      } else {
+        suburb = suburbSlug.replace(/-suburb$/, "").replace(/-/g, " ").trim();
+      }
 
       if (!/^\d{4}$/.test(pincode)) {
         const m = selectedSuggestion.address.match(/\b\d{4}\b/);
@@ -1483,11 +1500,12 @@ const [states, setStates] = useState<StateOption[]>([]);
     const slugPath = buildSlugFromFilters(next);
     const query = new URLSearchParams();
 
-    if (next.radius_kms && next.radius_kms !== DEFAULT_RADIUS)
+    if (next.radius_kms && (next.suburb || next.radius_kms !== DEFAULT_RADIUS))
       query.set("radius_kms", String(next.radius_kms));
 
     const safeSlugPath = slugPath.endsWith("/") ? slugPath : `${slugPath}/`;
-    const finalURL = query.toString() ? `${slugPath}?${query}` : safeSlugPath;
+    const finalURL = query.toString() ? `${safeSlugPath}?${query}` : safeSlugPath;
+    console.log("🏁 finalURL:", finalURL, "| suburb:", next.suburb, "| region:", next.region, "| pincode:", next.pincode);
     if (lastPushedURLRef.current !== finalURL) {
       lastPushedURLRef.current = finalURL;
       // window.history.replaceState(null, "", finalURL);
@@ -2401,7 +2419,7 @@ fetch(`/api/params-count?${catParams.toString()}`, { signal })
                             ×
                           </button>
                         </div>
-                        {selectedSuggestion.uri.split("/").length >= 3 && (
+                        {selectedSuggestion.uri.split("/").filter(Boolean).length >= 3 && (
                           <div style={{ marginTop: 14 }}>
                             <div className="cfs-radius-label">Search surrounding area</div>
                             <div className="cfs-radius-wrap">

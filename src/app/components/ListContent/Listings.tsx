@@ -434,7 +434,7 @@ const [pagination, setPagination] = useState<Pagination>(() => {
       if (nextFilters.orderby)
         query.set("orderby", String(nextFilters.orderby));
       const r = Number(nextFilters.radius_kms);
-      if (!Number.isNaN(r) && r !== DEFAULT_RADIUS) {
+      if (!Number.isNaN(r) && (nextFilters.suburb || r !== DEFAULT_RADIUS)) {
         query.set("radius_kms", String(r));
       }
 
@@ -525,7 +525,7 @@ const [pagination, setPagination] = useState<Pagination>(() => {
 
         const radiusNum = asNumber(safeFilters.radius_kms);
         const radiusParam =
-          typeof radiusNum === "number" && radiusNum !== DEFAULT_RADIUS
+          typeof radiusNum === "number" && (safeFilters.suburb || radiusNum !== DEFAULT_RADIUS)
             ? String(radiusNum)
             : undefined;
 
@@ -1036,8 +1036,10 @@ const [pagination, setPagination] = useState<Pagination>(() => {
       if (!("region" in newFilters)) {
         delete next.region;
       }
-      delete next.suburb;
-      delete next.pincode;
+      if (!("suburb" in newFilters)) {
+        delete next.suburb;
+        delete next.pincode;
+      }
     }
 
     if (next.state) {
@@ -1051,7 +1053,7 @@ const [pagination, setPagination] = useState<Pagination>(() => {
         .replace(/\b\w/g, (c) => c.toUpperCase());
     }
 
-    if ("region" in newFilters) {
+    if ("region" in newFilters && !("suburb" in newFilters)) {
       delete next.suburb;
       delete next.pincode;
     }
@@ -1089,7 +1091,7 @@ const [pagination, setPagination] = useState<Pagination>(() => {
             ? parseInt(next.radius_kms, 10)
             : undefined;
       const radiusParam =
-        typeof radiusNum === "number" && !isNaN(radiusNum) && radiusNum !== 50
+        typeof radiusNum === "number" && !isNaN(radiusNum) && (next.suburb || radiusNum !== DEFAULT_RADIUS)
           ? String(radiusNum)
           : undefined;
 

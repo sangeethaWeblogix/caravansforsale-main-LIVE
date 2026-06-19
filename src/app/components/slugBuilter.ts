@@ -49,7 +49,7 @@ export function buildSlugFromFilters(f: Filters): string {
   if (state) {
     segments.push(`${state}-state`);
 
-    // ✅ Region only if suburb is NOT selected
+    // Region is always included when present (page requires region when suburb is set)
     if (region) {
       segments.push(region.endsWith("-region") ? region : `${region}-region`);
     }
