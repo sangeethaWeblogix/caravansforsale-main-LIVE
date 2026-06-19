@@ -113,151 +113,208 @@ export default function SellerDemo() {
   return (
     <div className="page_wrapper demo-page">
 
-      {/* ── Banner ── */}
-      <section className="banner_section">
+      {/* ── Hero ── */}
+      <section className="demo-hero">
         <div className="container">
-          <div className="row justify-content-center">
-            <div className="col-lg-8 col-md-10 col-12">
-              <div className="banner_text text-center">
-                <h1 className="mb-2">
-                  Sell Your Caravan
-                  <article>
-                    <span>$49 </span>
-                    <span style={{ color: "#f58333", fontSize: "20px" }}>(inc. GST)</span>
-                    <span style={{ fontSize: "33px", color: "black" }}>Until Sold.</span>
-                  </article>
-                </h1>
-                <p className="mb-4">No subscriptions. No commissions. No ongoing fees.</p>
-                <a href="https://seller.caravansforsale.com.au/seller-signup/" className="btn white_btn">
-                  List Your Caravan
-                </a>
-              </div>
-            </div>
+          <h1 className="demo-hero__title">
+            Best Place To Sell Your Caravan In Australia
+          </h1>
+          <div className="demo-hero__divider">
+            <span className="demo-hero__divider-line" />
+            <i className="fa-solid fa-shield-halved demo-hero__divider-icon" />
+            <span className="demo-hero__divider-line" />
           </div>
-        </div>
-      </section>
 
-      {/* ── Two info boxes ── */}
-      <section className="demo-info-section">
-        <div className="container">
-          <div className="row g-4">
-            <div className="col-md-6">
-              <div className="demo-info-box demo-info-box--accent">
-                <h2>Looking to sell your caravan in Australia?</h2>
-                <p>
-                  CaravansForSale.com.au connects private sellers with caravan buyers across
-                  Melbourne, Sydney, Brisbane, Perth, Adelaide and regional Australia.
-                </p>
-                <p>List your caravan once for $49 (Inc. GST) and keep your ad live until sold.</p>
-                <a href="https://seller.caravansforsale.com.au/seller-signup/" className="btn white_btn mt-2">
-                  List Your Caravan
-                </a>
+          {/* Pricing card + CTA wrapper — one seamless unit */}
+          <div className="demo-price-wrapper">
+          <div className="demo-price-card">
+            <div className="demo-price-card__header">
+              <h3>Looking to sell your caravan in Australia?</h3>
+            </div>
+            {/* Left: Australia info */}
+            <div className="demo-price-card__left">
+              <div className="demo-price-card__aus-circle">
+                <img src="/images/australia.png" alt="Australia" />
+              </div>
+              <p className="demo-price-card__desc">
+                CaravansForSale.com.au connects private sellers with caravan buyers across
+                Victoria, New South Wales, Queensland, Western Australia, South Australia and Tasmania.
+              </p>
+              <div className="demo-price-card__trust">
+                <span className="demo-price-card__trust-icon">
+                  <i className="fa-solid fa-shield-halved" />
+                </span>
+                <span className="demo-price-card__trust-text">
+                  Trusted by thousands<br />of sellers Australia-wide.
+                </span>
               </div>
             </div>
-            <div className="col-md-6">
-              <div className="demo-info-box">
-                <h2>Sell Your Caravan Across Australia</h2>
-                <p>
-                  Whether you're selling an off-road caravan, family caravan, hybrid caravan, pop-top
-                  caravan or luxury caravan, CaravansForSale.com.au helps connect private sellers with
-                  buyers across Australia.
-                </p>
-                <p>Your listing reaches thousands of genuine buyers every day, wherever they are.</p>
-                <div className="demo-check-grid">
-                  {["Australia-wide exposure", "Direct buyer enquiries", "Live until sold", "One low upfront fee"].map((t) => (
-                    <span key={t} className="demo-check-item">
-                      <i className="fa-solid fa-circle-check"></i> {t}
-                    </span>
-                  ))}
-                </div>
+
+            {/* Center: Price highlight */}
+            <div className="demo-price-card__center">
+              <div className="demo-price-card__badge">ONE-TIME PRICE</div>
+              <div className="demo-price-card__price-box">
+                <div className="demo-price-card__only">ONLY</div>
+                <div className="demo-price-card__amount"><sup>$</sup>49</div>
+                <hr className="demo-price-card__hr" />
+                <div className="demo-price-card__fee">One-Time Listing Fee (Inc. GST)</div>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
 
-      {/* ── Feature icons (black bg) ── */}
-      <section className="row_am free_app_section" id="getstarted">
-        <div className="container">
-          <div className="free_app_inner">
-            <div className="row">
+            {/* Right: Features */}
+            <div className="demo-price-card__right">
               {[
-                { img: "/images/chat2.png", title: "Direct Buyer Contact", desc: "Connect directly with interested buyers." },
-                { img: "/images/calendar.png", title: "Live Until Sold", desc: "Your listing stays online until your caravan is sold." },
-                { img: "/images/caravan.png", title: "Caravan-Only Marketplace", desc: "Reach a targeted audience of caravan buyers." },
-                { img: "/images/dollar.png", title: "Keep 100% of Your Sale", desc: "Pay only $49 Inc GST per listing. No commissions or hidden costs." },
+                { icon: "fa-calendar-days", label: "No Subscriptions" },
+                { icon: "fa-percent", label: "No Commissions" },
+                { icon: "fa-circle-dollar-to-slot", label: "No Ongoing Fees" },
+                { icon: "fa-bullhorn", label: "Ad Live Until Sold" },
               ].map((item, i) => (
-                <div className="col-md-6 col-lg-3" key={i}>
-                  <div className="why_box">
-                    <div className="icon"><img src={item.img} alt={item.title} /></div>
-                    <div className="text"><h4>{item.title}</h4><p>{item.desc}</p></div>
-                  </div>
+                <div key={item.label} className={`demo-price-card__feature${i < 3 ? " demo-price-card__feature--border" : ""}`}>
+                  <span className="demo-price-card__feature-icon">
+                    <i className={`fa-solid ${item.icon}`} />
+                  </span>
+                  <span className="demo-price-card__feature-label">{item.label}</span>
                 </div>
               ))}
             </div>
           </div>
+
+          {/* CTA — inside wrapper so it attaches seamlessly to card bottom */}
+          <a href="https://seller.caravansforsale.com.au/seller-signup/" className="demo-hero__cta">
+            List Your Caravan Now <i className="fa-solid fa-arrow-right" />
+          </a>
+          </div>{/* end demo-price-wrapper */}
+
+          
         </div>
       </section>
 
-      {/* ── Device image ── */}
-      <section className="bottom_layout_section">
+      {/* ── Feature cards ── */}
+      <section className="demo-features-section">
         <div className="container">
-          <div className="comparison">
-            <h2>Reach caravan buyers across Australia</h2>
-            <img src="/images/your-caravan-desktop-seller.jpg" className="img-fluid d-none d-lg-block" alt="Caravan For Sale Desktop" />
-            <img src="/images/your-caravan-mobile.png" className="img-fluid d-block d-lg-none caravan-mobile-img" alt="Caravan For Sale Mobile" />
+          <div className="demo-features-grid">
+            {[
+              { img: "/images/chat2.png", title: "Direct Buyer Contact", desc: "Connect directly with genuine buyers. No middleman." },
+              { img: "/images/calendar.png", title: "Live Until Sold", desc: "Your listing stays online and visible until your caravan is sold." },
+              { img: "/images/caravan.png", title: "Caravan-Only Marketplace", desc: "Reach a targeted audience actively looking to buy caravans." },
+              { img: "/images/dollar.png", title: "Keep 100% of Your Sale", desc: "Pay only $49 Inc GST per listing. No commissions or hidden costs." },
+            ].map((item, i) => (
+              <div className="demo-feature-card" key={i}>
+                <div className="demo-feature-card__icon">
+                  <img src={item.img} alt={item.title} />
+                </div>
+                <h4 className="demo-feature-card__title">{item.title}</h4>
+                <p className="demo-feature-card__desc">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Reach section ── */}
+      <section className="demo-reach-section">
+        <div className="container">
+
+          {/* Heading */}
+          <div className="demo-reach-heading">
+            <h2>Reach Caravan Buyers Across Australia</h2>
+            <p>Your listing is seen by thousands of active buyers Australia-wide.</p>
           </div>
 
-          {/* ── Pricing ── */}
-          <div className="pricing">
-            <div className="pricing-grid">
-              <div className="price-box">
-                <div className="price"><sup><small>$</small></sup>49 <span style={{ fontSize: "20px" }}>(Inc. GST)</span></div>
-                <span className="special_tag">One-Time Listing Fee</span>
-                <ul>
-                  <li>1 caravan listed until sold</li>
-                  <li>Edit your listing anytime</li>
-                  <li>No expiration or monthly fees</li>
-                </ul>
-                <a href="https://seller.caravansforsale.com.au/seller-signup/" className="btn white_btn">List My Caravan Now</a>
+          {/* Device image */}
+          <div className="demo-reach-device">
+            <img src="/images/your-caravan-desktop-seller.jpg" className="img-fluid d-none d-lg-block" alt="Caravan For Sale Desktop" />
+            <img src="/images/your-caravan-mobile.png" className="img-fluid d-block d-lg-none" alt="Caravan For Sale Mobile" />
+          </div>
+
+          {/* Pricing + FAQ card */}
+          <div className="demo-reach-card">
+            {/* Left: Pricing */}
+            <div className="demo-reach-card__left">
+              <span className="demo-reach-card__badge">BEST VALUE</span>
+              <div className="demo-reach-card__price">
+                <span className="demo-reach-card__dollar">$</span>
+                <span className="demo-reach-card__amount">49</span>
+                <span className="demo-reach-card__gst">(Inc. GST)</span>
               </div>
-              <div className="price-box">
-                <div className="faq">
-                  <h3>How long does the listing stay up?</h3>
-                  <ul className="mb-4">
-                    <li>Your ad stays live until it sells.</li>
-                    <li>You can update details, photos, and price anytime.</li>
-                    <li>Mark as sold or remove anytime — no penalties.</li>
-                  </ul>
-                  <h3>Can I edit my listing after posting?</h3>
+              <p className="demo-reach-card__fee-label">One-Time Listing Fee</p>
+              <ul className="demo-reach-card__list">
+                {[
+                  "1 Caravan listed until sold",
+                  "Edit your listing anytime",
+                  "No expiration or monthly fees",
+                ].map((item) => (
+                  <li key={item}>
+                    <i className="fa-solid fa-circle-check" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <a href="https://seller.caravansforsale.com.au/seller-signup/" className="demo-reach-card__cta">
+                List My Caravan Now <i className="fa-solid fa-arrow-right" />
+              </a>
+            </div>
+
+            {/* Divider */}
+            <div className="demo-reach-card__divider" />
+
+            {/* Right: FAQ items */}
+            <div className="demo-reach-card__right">
+              <div className="demo-reach-faq">
+                
+                <div className="demo-reach-faq__body">
+                  <h4>How long does the listing stay up?</h4>
                   <ul>
-                    <li>Yes, updates are allowed anytime.</li>
-                    <li>No penalties or restrictions.</li>
+                    <li><i className="fa-solid fa-circle-check" />Your ad stays live until it sells.</li>
+                    <li><i className="fa-solid fa-circle-check" />You can update details, photos, and price anytime.</li>
+                    <li><i className="fa-solid fa-circle-check" />Mark as sold or remove anytime — no penalties.</li>
+                  </ul>
+                </div>
+              </div>
+              <div className="demo-reach-faq demo-reach-faq--border">
+                
+                <div className="demo-reach-faq__body">
+                  <h4>Can I edit my listing after posting?</h4>
+                  <ul>
+                    <li><i className="fa-solid fa-circle-check" />Yes, updates are allowed anytime.</li>
+                    <li><i className="fa-solid fa-circle-check" />No penalties or restrictions.</li>
                   </ul>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* ── Main FAQ accordion ── */}
-          <h2 className="demo-section-title">FAQ</h2>
-          <div className="accordion mb-5" id="accordionFaq">
+         
+
+        </div>
+      </section>
+
+      {/* ── Main FAQ accordion ── */}
+      <section className="demo-faq-section">
+        <div className="container">
+          <div className="demo-faq-head">
+            <span className="demo-faq-head__tag">FAQ</span>
+            <h2>Frequently Asked Questions</h2>
+            <p>Everything you need to know about selling your caravan on CaravansForSale.com.au</p>
+          </div>
+          <div className="demo-faq-list">
             {MAIN_FAQS.map((faq, i) => (
-              <div className="card" key={i}>
-                <div className="card-header p-0">
-                  <h3 className="mb-0">
-                    <button className="btn btn-link btn-block text-left py-2" onClick={() => setActiveFaq(activeFaq === i ? null : i)}>
-                      {faq.q}
-                      <span className="accordion-icon">
-                        <i className={`fa-solid fa-angle-down ${activeFaq === i ? "d-none" : ""}`}></i>
-                        <i className={`fa-solid fa-angle-up ${activeFaq === i ? "" : "d-none"}`}></i>
-                      </span>
-                    </button>
-                  </h3>
-                </div>
-                <div className={`collapse ${activeFaq === i ? "show" : ""}`}>
-                  <div className="card-body">{faq.a}</div>
-                </div>
+              <div
+                key={i}
+                className={`demo-faq-item${activeFaq === i ? " demo-faq-item--open" : ""}`}
+              >
+                <button
+                  className="demo-faq-item__q"
+                  onClick={() => setActiveFaq(activeFaq === i ? null : i)}
+                >
+                  <span>{faq.q}</span>
+                  <span className="demo-faq-item__icon">
+                    <i className={`fa-solid ${activeFaq === i ? "fa-minus" : "fa-plus"}`} />
+                  </span>
+                </button>
+                {activeFaq === i && (
+                  <div className="demo-faq-item__a">{faq.a}</div>
+                )}
               </div>
             ))}
           </div>
