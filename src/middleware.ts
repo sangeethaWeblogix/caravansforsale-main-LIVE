@@ -11,6 +11,43 @@ const productCache = new Map<string, { exists: boolean; expires: number }>();
 const CACHE_TTL = 10 * 60 * 1000;       // 10 min fresh
 const CACHE_STALE_TTL = 60 * 60 * 1000; // 1 hr stale-while-revalidate window
 
+/* Make slug validation cache (1 hr TTL) */
+const makeSlugCache: { slugs: Set<string>; expires: number } = { slugs: new Set(), expires: 0 };
+
+/* Valid Australian state slug parts (the bit before -state in the URL) */
+const VALID_AU_STATES = new Set([
+  'queensland', 'new-south-wales', 'victoria', 'south-australia',
+  'western-australia', 'tasmania', 'northern-territory', 'australian-capital-territory',
+  'nsw', 'vic', 'qld', 'sa', 'wa', 'tas', 'nt', 'act',
+]);
+
+async function getValidMakeSlugs(apiKey: string | undefined): Promise<Set<string>> {
+  if (makeSlugCache.expires > Date.now() && makeSlugCache.slugs.size > 0) {
+    return makeSlugCache.slugs;
+  }
+  try {
+    const base = 'https://admin.caravansforsale.com.au/wp-json/cfs/v1';
+    const controller = new AbortController();
+    const tid = setTimeout(() => controller.abort(), 5000);
+    const res = await fetch(`${base}/make_details`, {
+      headers: { 'User-Agent': 'next-middleware', ...(apiKey && { 'X-API-Key': apiKey }) },
+      signal: controller.signal,
+    });
+    clearTimeout(tid);
+    if (res.ok) {
+      const data = await res.json();
+      const makes: { slug: string }[] = data?.data?.make_options ?? [];
+      const slugs = new Set(makes.map((m: { slug: string }) => m.slug));
+      if (slugs.size > 0) {
+        makeSlugCache.slugs = slugs;
+        makeSlugCache.expires = Date.now() + 60 * 60 * 1000;
+      }
+      return slugs;
+    }
+  } catch {}
+  return makeSlugCache.slugs; // return stale on error
+}
+
 /* ──────────────────────────────────────────────
    Bot Detection
 ────────────────────────────────────────────── */
@@ -155,7 +192,7 @@ export async function middleware(request: NextRequest) {
       return render410(request);
     }
 
-    // Wrong URL order → 410 (URL unchanged, no redirect)
+    // Wrong URL order + value validation → 410 (URL unchanged, no redirect)
     const slugParts = url.pathname.replace('/listings', '').split('/').filter(Boolean);
     if (slugParts.length > 0) {
       try {
@@ -164,12 +201,39 @@ export async function middleware(request: NextRequest) {
         const incomingPath = `/listings/${slugParts.join('/')}`;
         const norm = (p: string) => p.replace(/\/$/, '').toLowerCase();
         if (norm(canonicalPath) !== norm(incomingPath)) {
-          return gone404(request);
+          return render410(request);
+        }
+
+        // State value validation — check the slug part before -state suffix
+        const stateSegment = slugParts.find(s => s.endsWith('-state'));
+        if (stateSegment) {
+          const stateSlug = stateSegment.replace(/-state$/, '');
+          if (!VALID_AU_STATES.has(stateSlug)) {
+            return render410(request);
+          }
+        }
+
+        // Make value validation — check against make_details API (cached 1 hr)
+        if (filters.make) {
+          const validMakes = await getValidMakeSlugs(API_KEY);
+          if (validMakes.size > 0 && !validMakes.has(filters.make)) {
+            return render410(request);
+          }
         }
       } catch {
         // parse error → let page component handle it
       }
     }
+  }
+
+  /* 🚫 Unknown multi-segment paths → 410 (e.g. /queensland-state/stoney-creek/ without /listings/ prefix) */
+  const KNOWN_MULTI_SEGMENT = new Set([
+    'listings', 'product', 'api', '_next', 'blog', 'author', 'caravan-manufacturers',
+    '410', '404', '410-new',
+  ]);
+  const pathSegments = url.pathname.split('/').filter(Boolean);
+  if (pathSegments.length >= 2 && !KNOWN_MULTI_SEGMENT.has(pathSegments[0])) {
+    return render410(request);
   }
 
   /* 🤖 Bot Detection — listing and product pages not early-returned so they get 0-product/410 check */

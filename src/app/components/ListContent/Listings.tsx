@@ -314,7 +314,7 @@ export default function ListingsPage({
   const fromYears = searchParams.get("acustom_fromyears");
   const toYears = searchParams.get("acustom_toyears");
   if (fromYears !== null || toYears !== null) {
-    redirect("/404");
+    redirect("/410");
   }
 }, [searchParams]);
 
@@ -434,10 +434,10 @@ const [pagination, setPagination] = useState<Pagination>(() => {
       return 1;
     }
     if (raw.trim() === "") {
-      redirect("/404");
+      redirect("/410");
     }
     if (!/^\d+$/.test(raw)) {
-      redirect("/404");
+      redirect("/410");
     }
     const page = parseInt(raw, 10);
     if (!Number.isInteger(page) || page < 1) {
