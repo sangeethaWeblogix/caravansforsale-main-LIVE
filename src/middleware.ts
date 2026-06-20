@@ -21,15 +21,16 @@ const VALID_AU_STATES = new Set([
   'nsw', 'vic', 'qld', 'sa', 'wa', 'tas', 'nt', 'act',
 ]);
 
+const API_WP = 'https://admin.caravansforsale.com.au/wp-json/cfs/v1';
+
 async function getValidMakeSlugs(apiKey: string | undefined): Promise<Set<string>> {
   if (makeSlugCache.expires > Date.now() && makeSlugCache.slugs.size > 0) {
     return makeSlugCache.slugs;
   }
   try {
-    const base = 'https://admin.caravansforsale.com.au/wp-json/cfs/v1';
     const controller = new AbortController();
     const tid = setTimeout(() => controller.abort(), 5000);
-    const res = await fetch(`${base}/make_details`, {
+    const res = await fetch(`${API_WP}/make_details`, {
       headers: { 'User-Agent': 'next-middleware', ...(apiKey && { 'X-API-Key': apiKey }) },
       signal: controller.signal,
     });
@@ -45,7 +46,75 @@ async function getValidMakeSlugs(apiKey: string | undefined): Promise<Set<string
       return slugs;
     }
   } catch {}
-  return makeSlugCache.slugs; // return stale on error
+  return makeSlugCache.slugs;
+}
+
+/* Region slug validation cache (all regions fetched once, 1 hr TTL) */
+const regionSlugCache: { slugs: Set<string>; expires: number } = { slugs: new Set(), expires: 0 };
+
+async function getValidRegionSlugs(apiKey: string | undefined): Promise<Set<string>> {
+  if (regionSlugCache.expires > Date.now() && regionSlugCache.slugs.size > 0) {
+    return regionSlugCache.slugs;
+  }
+  try {
+    const controller = new AbortController();
+    const tid = setTimeout(() => controller.abort(), 8000);
+    const res = await fetch(`${API_WP}/location-search-all`, {
+      headers: { 'User-Agent': 'next-middleware', ...(apiKey && { 'X-API-Key': apiKey }) },
+      signal: controller.signal,
+    });
+    clearTimeout(tid);
+    if (res.ok) {
+      const data = await res.json();
+      const items: { uri?: string }[] = data?.region_state ?? [];
+      const slugs = new Set<string>();
+      for (const item of items) {
+        if (!item.uri) continue;
+        const parts = item.uri.split('/').filter(Boolean);
+        const regionPart = parts.find((p: string) => p.endsWith('-region'));
+        if (regionPart) slugs.add(regionPart.replace(/-region$/, ''));
+      }
+      if (slugs.size > 0) {
+        regionSlugCache.slugs = slugs;
+        regionSlugCache.expires = Date.now() + 60 * 60 * 1000;
+      }
+      return slugs;
+    }
+  } catch {}
+  return regionSlugCache.slugs;
+}
+
+/* Per-suburb validation cache (search API, 1 hr TTL per suburb:pincode key) */
+const suburbValidCache = new Map<string, { valid: boolean; expires: number }>();
+
+async function isValidSuburb(suburb: string, pincode: string | undefined, apiKey: string | undefined): Promise<boolean> {
+  const cacheKey = `${suburb}:${pincode ?? ''}`;
+  const cached = suburbValidCache.get(cacheKey);
+  if (cached && cached.expires > Date.now()) return cached.valid;
+  try {
+    const controller = new AbortController();
+    const tid = setTimeout(() => controller.abort(), 5000);
+    const res = await fetch(`${API_WP}/location-search?keyword=${encodeURIComponent(suburb)}`, {
+      headers: { 'User-Agent': 'next-middleware', ...(apiKey && { 'X-API-Key': apiKey }) },
+      signal: controller.signal,
+    });
+    clearTimeout(tid);
+    if (res.ok) {
+      const data = await res.json();
+      const results: { uri?: string }[] = data?.pincode_location_region_state ?? [];
+      const suburbSlug = suburb.replace(/\s+/g, '-').toLowerCase();
+      const valid = results.some(r => {
+        if (!r.uri) return false;
+        const u = r.uri.toLowerCase();
+        return pincode
+          ? u.includes(`${suburbSlug}-${pincode}-suburb`) || u.includes(`/${suburbSlug}-suburb/${pincode}`)
+          : u.includes(`${suburbSlug}-suburb`);
+      });
+      suburbValidCache.set(cacheKey, { valid, expires: Date.now() + 60 * 60 * 1000 });
+      return valid;
+    }
+  } catch {}
+  return true; // allow through on API error — don't block valid requests
 }
 
 /* ──────────────────────────────────────────────
@@ -217,6 +286,24 @@ export async function middleware(request: NextRequest) {
         if (filters.make) {
           const validMakes = await getValidMakeSlugs(API_KEY);
           if (validMakes.size > 0 && !validMakes.has(filters.make)) {
+            return render410(request);
+          }
+        }
+
+        // Region value validation — check against location-search-all API (cached 1 hr)
+        const regionSegment = slugParts.find(s => s.endsWith('-region'));
+        if (regionSegment) {
+          const regionSlug = regionSegment.replace(/-region$/, '');
+          const validRegions = await getValidRegionSlugs(API_KEY);
+          if (validRegions.size > 0 && !validRegions.has(regionSlug)) {
+            return render410(request);
+          }
+        }
+
+        // Suburb value validation — check against location-search API (cached per suburb)
+        if (filters.suburb) {
+          const suburbOk = await isValidSuburb(filters.suburb, filters.pincode, API_KEY);
+          if (!suburbOk) {
             return render410(request);
           }
         }
