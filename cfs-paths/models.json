@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "models",
-    "count": 2859,
+    "count": 2860,
     "paths": [
         "active/storm/",
         "adria/action/",
@@ -330,6 +330,7 @@
         "coromal/lifestyle-f616/",
         "coromal/lifesyle-615/",
         "coromal/magnum/",
+        "coromal/magnum-615s/",
         "coromal/magnum-pop-top/",
         "coromal/pioneer-xc-632/",
         "coromal/pop-top/",
@@ -990,6 +991,7 @@
         "golf/tourer-650-3-2-bunk/",
         "golf/tourer-720-2-hardtop/",
         "goodlife-rv/extreme-196/",
+        "grand/dreamer-family/",
         "grand/halo/",
         "grand/nomad/",
         "grand/peak/",
@@ -1136,7 +1138,6 @@
         "jawa/sirocco/",
         "jawa/sirocco-15/",
         "jawa/stealth-16/",
-        "jayco-2/silverline/",
         "jayco/15ft-hard-top/",
         "jayco/17-55/",
         "jayco/22-68-5-sl/",
@@ -2863,5 +2864,5 @@
         "zone-rv/venture-20-6/",
         "zone-rv/znu004/"
     ],
-    "generated_at": "2026-06-18 15:48:18"
+    "generated_at": "2026-06-20 15:27:43"
 }

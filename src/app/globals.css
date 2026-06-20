@@ -65,10 +65,15 @@ img {
   background-color: #333333;
 }
 .navbar.style-4.header-white .navbar-nav .nav-item .nav-link {
-  color: #333;
+  color: #000000;
   text-transform: capitalize;
   letter-spacing: 0.3px;
 }
+
+.navbar.style-4.header-white .navbar-nav .nav-item .nav-link:hover {
+  color: #000000;
+}
+
 
 
 

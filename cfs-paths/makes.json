@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "makes",
-    "count": 261,
+    "count": 260,
     "paths": [
         "active/",
         "adria/",
@@ -121,7 +121,6 @@
         "inspired-rv/",
         "island-star/",
         "jawa/",
-        "jayco-2/",
         "jayco/",
         "jb/",
         "jollyrover/",
@@ -265,5 +264,5 @@
         "york/",
         "zone-rv/"
     ],
-    "generated_at": "2026-06-18 15:48:17"
+    "generated_at": "2026-06-20 15:27:42"
 }

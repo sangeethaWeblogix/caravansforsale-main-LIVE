@@ -1089,7 +1089,7 @@ const [states, setStates] = useState<StateOption[]>(
                         <span>{tempSuburbSuggestion.address}</span>
                         <button type="button" className="filter-chip-close" onMouseDown={(e) => { e.preventDefault(); setTempSuburbSuggestion(null); setTempSuburbInput(""); }} aria-label="Remove location">×</button>
                       </div>
-                      {tempSuburbSuggestion.uri.split("/").length >= 3 && (
+                      {tempSuburbSuggestion.uri.split("/").filter(Boolean).length >= 3 && (
                         <div style={{ marginTop: 14 }}>
                           <div className="cfs-radius-label">Search surrounding area</div>
                           <div className="cfs-radius-wrap">
@@ -1200,14 +1200,24 @@ const [states, setStates] = useState<StateOption[]>(
                 className={`search ${(hasLocationChange || tempSuburbSuggestion) ? "active" : ""}`}
                 onClick={() => {
                   if (tempSuburbSuggestion) {
-                                    const uriParts = tempSuburbSuggestion.uri.split("/");
+                    const uriParts = tempSuburbSuggestion.uri.split("/").filter(Boolean);
                     const stateSlug = uriParts[0] || "";
                     const regionSlug = uriParts[1] || "";
                     const suburbSlug = uriParts[2] || "";
                     let pincode = uriParts[3] || "";
                     const state = stateSlug.replace(/-state$/, "").replace(/-/g, " ").trim();
                     const region = regionSlug.replace(/-region$/, "").replace(/-/g, " ").trim();
-                    const suburb = suburbSlug.replace(/-suburb$/, "").replace(/-/g, " ").trim();
+                    // Handle both URI formats:
+                    // Old: state/region/suburb-suburb/pincode  → pincode in uriParts[3]
+                    // New: state/region/suburb-pincode-suburb  → pincode embedded in slug
+                    const suburbWithPinMatch = suburbSlug.match(/^([a-z0-9-]+)-(\d{4})-suburb$/i);
+                    let suburb: string;
+                    if (suburbWithPinMatch) {
+                      suburb = suburbWithPinMatch[1].replace(/-/g, " ").trim();
+                      if (!pincode) pincode = suburbWithPinMatch[2];
+                    } else {
+                      suburb = suburbSlug.replace(/-suburb$/, "").replace(/-/g, " ").trim();
+                    }
                     if (!/^\d{4}$/.test(pincode)) {
                       const m = tempSuburbSuggestion.address.match(/\b\d{4}\b/);
                       if (m) pincode = m[0];

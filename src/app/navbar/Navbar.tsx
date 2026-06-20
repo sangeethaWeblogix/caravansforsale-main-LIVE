@@ -1,27 +1,15 @@
 ﻿
 "use client";
 
-import "./navbar.css?=7";
+import "./navbar.css?=56";
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 
-type DropdownType =
-  | "manufacturers"
-  | "category"
-  | "locations"
-  | "price"
-  | "weight"
-  | "people"
-  | "length"
-  | null;
-
-type LocationSubType = "state" | "region" | null;
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
 
-  const [openDropdown, setOpenDropdown] = useState<DropdownType>(null);
-  const [openLocationSub, setOpenLocationSub] = useState<LocationSubType>(null);
+  const [activePanel, setActivePanel] = useState<null | "buynow">(null);
   const toggleNav = () => setIsOpen(!isOpen);
 
   useEffect(() => {
@@ -32,6 +20,15 @@ export default function Navbar() {
   const [mounted, setMounted] = useState(false);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   const sidenavRef = useRef<HTMLDivElement | null>(null);
+  const [megaMenuOpen, setMegaMenuOpen] = useState(false);
+  const megaMenuTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const openMegaMenu = () => {
+    if (megaMenuTimer.current) clearTimeout(megaMenuTimer.current);
+    setMegaMenuOpen(true);
+  };
+  const closeMegaMenu = () => {
+    megaMenuTimer.current = setTimeout(() => setMegaMenuOpen(false), 120);
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -66,17 +63,7 @@ export default function Navbar() {
 
   const closeNav = () => {
     setIsOpen(false);
-    setOpenDropdown(null);
-    setOpenLocationSub(null);
-  };
-
-  const toggleDropdown = (name: Exclude<DropdownType, null>) => {
-    setOpenDropdown((prev) => (prev === name ? null : name));
-    setOpenLocationSub(null);
-  };
-
-  const toggleLocationSub = (name: Exclude<LocationSubType, null>) => {
-    setOpenLocationSub((prev) => (prev === name ? null : name));
+    setActivePanel(null);
   };
 
   return (
@@ -102,7 +89,7 @@ export default function Navbar() {
             </button> */}
 
             <button
-              className="navbar-toggler hidden-xs hidden-sm"
+              className="navbar-toggler d-none"
               type="button"
               data-bs-toggle="collapse"
               data-bs-target="#navbarSupportedContent"
@@ -111,20 +98,119 @@ export default function Navbar() {
             </button>
 
             <div
-              className="collapse navbar-collapse justify-content-end"
+              className="collapse navbar-collapse justify-content-end align-items-center"
               id="navbarSupportedContent"
             >
               <ul className="navbar-nav mb-2 mb-lg-0">
-                <li className="nav-item">
-                  <a className="nav-link" href="/sell-my-caravan/">
-                    Sell My Caravan
-                  </a>
+                <li className="nav-item desktop-buynow-item" onMouseEnter={openMegaMenu} onMouseLeave={closeMegaMenu}>
+                  <span className="nav-link desktop-buynow-trigger">
+                    Buy
+                    
+                  </span>
+                  <div className={`desktop-mega-menu${megaMenuOpen ? " mega-open" : ""}`} onMouseEnter={openMegaMenu} onMouseLeave={closeMegaMenu}>
+                    <div className="desktop-mega-menu-inner">
+                    <div className="mega-col">
+                      <div className="mega-col-title">Browse</div>
+                      <a href="/listings/" className="mega-link-bold">All Caravans</a>
+                      <a href="/listings/new-condition/" className="mega-link-bold">New Caravans</a>
+                      <a href="/listings/used-condition/" className="mega-link-bold">Used Caravans</a>
+                      <div className="mega-col-title mega-col-title-mt">Caravan Type</div>
+                      <a href="/listings/off-road-category/">Off Road</a>
+                      <a href="/listings/hybrid-category/">Hybrid</a>
+                      <a href="/listings/pop-top-category/">Pop Top</a>
+                      <a href="/listings/luxury-category/">Luxury</a>
+                      <a href="/listings/family-category/">Family</a>
+                      <a href="/listings/touring-category/">Touring</a>
+                      <div className="mega-col-title mega-col-title-mt">By State</div>
+                      <a href="/listings/australian-capital-territory-state/">Australian Capital Territory</a>
+                      <a href="/listings/new-south-wales-state/">New South Wales</a>
+                      <a href="/listings/northern-territory-state/">Northern Territory</a>
+                      <a href="/listings/queensland-state/">Queensland</a>
+                      <a href="/listings/south-australia-state/">South Australia</a>
+                      <a href="/listings/tasmania-state/">Tasmania</a>
+                      <a href="/listings/victoria-state/">Victoria</a>
+                      <a href="/listings/western-australia-state/">Western Australia</a>
+                    </div>
+                    
+                    <div className="mega-col">
+                      
+                      <div className="mega-col-title">By Region</div>
+                      <a href="/listings/melbourne-region/">Melbourne</a>
+                      <a href="/listings/sydney-region/">Sydney</a>
+                      <a href="/listings/brisbane-region/">Brisbane</a>
+                      <a href="/listings/perth-region/">Perth</a>
+                      <a href="/listings/adelaide-region/">Adelaide</a>
+                      <a href="/listings/geelong-region/">Geelong</a>
+                      <a href="/listings/newcastle-region/">Newcastle</a>
+                      <a href="/listings/cairns-region/">Cairns</a>
+                      <a href="/listings/hobart-region/">Hobart</a>
+                      <a href="/listings/darwin-region/">Darwin</a>
+                      <div className="mega-col-title mega-col-title-mt">By Price</div>
+                      <a href="/listings/under-20000/">Under $20k</a>
+                      <a href="/listings/under-30000/">Under $30k</a>
+                      <a href="/listings/under-40000/">Under $40k</a>
+                      <a href="/listings/under-50000/">Under $50k</a>
+                      <a href="/listings/under-70000/">Under $70k</a>
+                      <a href="/listings/under-100000/">Under $100k</a>
+                      <a href="/listings/under-150000/">Under $150k</a>
+                      <a href="/listings/over-200000/">Over $200k</a>
+                      
+                    </div>
+                    <div className="mega-col">
+                      <div className="mega-col-title">Popular Makes</div>
+                      <a href="/listings/jayco/">Jayco</a>
+                      <a href="/listings/evernew/">Evernew</a>
+                      <a href="/listings/design-rv/">Design RV</a>
+                      <a href="/listings/avan/">Avan</a>
+                      <a href="/listings/newgen/">Newgen</a>
+                      <a href="/listings/adria/">Adria</a>
+                      <a href="/listings/retreat/">Retreat</a>
+                      <a href="/listings/snowy-river/">Snowy River</a>
+                      <a href="/listings/crusader/">Crusader</a>
+                      <a href="/listings/supreme/">Supreme</a>
+                      <a href="/listings/essential/">Essential</a>
+                      <a href="/listings/golf/">Golf</a>
+                      <a href="/listings/royal-flair/">Royal Flair</a>
+                      <a href="/listings/new-age/">New Age</a>
+                      <a href="/listings/mdc/">MDC</a>
+                      <a href="/listings/jb/">JB</a>
+                      <a href="/listings/lotus/">Lotus</a>
+                      <a href="/listings/windsor/">Windsor</a>
+                      <a href="/listings/nova/">Nova</a>
+                    </div>
+                    <div className="mega-col">
+                      
+                      <div className="mega-col-title ">By Weight</div>
+                      <a href="/listings/under-1500-kg-atm/">Under 1500 Kgs</a>
+                      <a href="/listings/under-2500-kg-atm/">Under 2500 Kgs</a>
+                      <a href="/listings/under-3500-kg-atm/">Under 3500 Kgs</a>
+                      <a href="/listings/over-3500-kg-atm/">Over 3500 Kgs</a>
+                      <div className="mega-col-title mega-col-title-mt">By Length</div>
+                      <a href="/listings/under-12-length-in-feet/">Under 12ft</a>
+                      <a href="/listings/between-12-14-length-in-feet/">Under 14ft</a>
+                      <a href="/listings/between-15-17-length-in-feet/">Under 17ft</a>
+                      <a href="/listings/between-18-20-length-in-feet/">Under 20ft</a>
+                      <a href="/listings/between-21-23-length-in-feet/">Under 23ft</a>
+                      <a href="/listings/over-24-length-in-feet/">Over 24ft</a>
+                      <div className="mega-col-title mega-col-title-mt">By People</div>
+                      <a href="/listings/between-1-2-people-sleeping-capacity/">Under 2 People</a>
+                      <a href="/listings/between-3-4-people-sleeping-capacity/">Under 4 People</a>
+                      <a href="/listings/between-4-6-people-sleeping-capacity/">Under 6 People</a>
+                      <a href="/listings/over-6-people-sleeping-capacity/">Over 6 People</a>
+                    </div>
+                    </div>
+                  </div>
                 </li>
                 <li className="nav-item">
-                  <a className="nav-link" href="/dealer-advertising/">
-                    Dealer Advertising
-                  </a>
+                  <a className="nav-link" href="/blog/">Blog</a>
                 </li>
+                <li className="nav-item">
+                  <a className="nav-link" href="/sell-my-caravan/">Sell My Caravan</a>
+                </li>
+                <li className="nav-item">
+                  <a className="nav-link" href="/dealer-advertising/">Dealer Advertising</a>
+                </li>
+                
                 <li className="nav-item login">
                   <a className="nav-link" href="/login/">
                     <i className="bi bi-person-fill"></i> Login
@@ -150,7 +236,7 @@ export default function Navbar() {
               )}
             </div> */}
 
-            <div className="left_menu">
+            <div className="left_menu d-lg-none">
               <input
                 type="checkbox"
                 id="openSideMenu"
@@ -172,244 +258,185 @@ export default function Navbar() {
       {/* Sidebar */}
       {mounted && (
         <div id="mySidenav" ref={sidenavRef} className={`sidenav ${isOpen ? "open" : ""}`}>
-          <div className="sidebar-navigation">
-            <ul>
-              <li>
-                <Link href="/listings/" onClick={closeNav}>All Caravans</Link>
-              </li>
-              <li>
-                <Link href="/listings/new-condition/" onClick={closeNav}>New Caravans</Link>
-              </li>
-              <li>
-                <Link href="/listings/used-condition/" onClick={closeNav}>Used Caravans</Link>
-              </li>
 
-              {/* Popular Makes */}
-              <li className={openDropdown === "manufacturers" ? "selected" : ""}>
-                <div
-                  className="drop_down"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    toggleDropdown("manufacturers");
-                  }}
-                >
-                  Popular Makes
-                </div>
-                <ul className={openDropdown === "manufacturers" ? "submenu open" : "submenu"}>
-                  <li><Link className="dropdown-item" href="/listings/jayco/" onClick={closeNav}>Jayco</Link></li>
-                  <li><Link className="dropdown-item" href="/listings/evernew/" onClick={closeNav}>Evernew</Link></li>
-                  <li><Link className="dropdown-item" href="/listings/design-rv/" onClick={closeNav}>Design Rv</Link></li>
-                  <li><Link className="dropdown-item" href="/listings/avan/" onClick={closeNav}>Avan</Link></li>
-                  <li><Link className="dropdown-item" href="/listings/newgen/" onClick={closeNav}>Newgen</Link></li>
-                  <li><Link className="dropdown-item" href="/listings/adria/" onClick={closeNav}>Adria</Link></li>
-                  <li><Link className="dropdown-item" href="/listings/retreat/" onClick={closeNav}>Retreat</Link></li>
-                  <li><Link className="dropdown-item" href="/listings/snowy-river/" onClick={closeNav}>Snowy River</Link></li>
-                  <li><Link className="dropdown-item" href="/listings/crusader/" onClick={closeNav}>Crusader</Link></li>
-                  <li><Link className="dropdown-item" href="/listings/supreme/" onClick={closeNav}>Supreme</Link></li>
-                  <li><Link className="dropdown-item" href="/listings/essential/" onClick={closeNav}>Essential</Link></li>
-                  <li><Link className="dropdown-item" href="/listings/golf/" onClick={closeNav}>Golf</Link></li>
-                  <li><Link className="dropdown-item" href="/listings/royal-flair/" onClick={closeNav}>Royal Flair</Link></li>
-                  <li><Link className="dropdown-item" href="/listings/new-age/" onClick={closeNav}>New Age</Link></li>
-                  <li><Link className="dropdown-item" href="/listings/mdc/" onClick={closeNav}>Mdc</Link></li>
-                  <li><Link className="dropdown-item" href="/listings/jb/" onClick={closeNav}>Jb</Link></li>
-                  <li><Link className="dropdown-item" href="/listings/lotus/" onClick={closeNav}>Lotus</Link></li>
-                  <li><Link className="dropdown-item" href="/listings/windsor/" onClick={closeNav}>Windsor</Link></li>
-                  <li><Link className="dropdown-item" href="/listings/nova/" onClick={closeNav}>Nova</Link></li>
-                </ul>
-              </li>
-
-              {/* Popular Caravan Type */}
-              <li className={openDropdown === "category" ? "selected" : ""}>
-                <div
-                  className="drop_down"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    toggleDropdown("category");
-                  }}
-                >
-                  Caravan Type
-                </div>
-                <ul className={openDropdown === "category" ? "submenu open" : "submenu"}>
-                  <li><Link className="dropdown-item" href="/listings/off-road-category/" onClick={closeNav}>Off Road</Link></li>
-                  <li><Link className="dropdown-item" href="/listings/hybrid-category/" onClick={closeNav}>Hybrid</Link></li>
-                  <li><Link className="dropdown-item" href="/listings/pop-top-category/" onClick={closeNav}>Pop Top</Link></li>
-                  <li><Link className="dropdown-item" href="/listings/luxury-category/" onClick={closeNav}>Luxury</Link></li>
-                  <li><Link className="dropdown-item" href="/listings/family-category/" onClick={closeNav}>Family</Link></li>
-                  <li><Link className="dropdown-item" href="/listings/touring-category/" onClick={closeNav}>Touring</Link></li>
-                </ul>
-              </li>
-
-              {/* Popular Locations */}
-              <li className={openDropdown === "locations" ? "selected" : ""}>
-                <div
-                  className="drop_down"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    toggleDropdown("locations");
-                  }}
-                >
-                  Popular Locations
-                </div>
-                <ul className={openDropdown === "locations" ? "submenu open" : "submenu"}>
-                  {/* State */}
-                  <li className={openLocationSub === "state" ? "selected" : ""}>
-                    <div
-                      className="drop_down"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        toggleLocationSub("state");
-                      }}
-                    >
-                      State
-                    </div>
-                    <ul className={openLocationSub === "state" ? "submenu open" : "submenu"}>
-                      <li><Link className="dropdown-item" href="/listings/australian-capital-territory-state/" onClick={closeNav}>Australian Capital Territory</Link></li>
-                      <li><Link className="dropdown-item" href="/listings/new-south-wales-state/" onClick={closeNav}>New South Wales</Link></li>
-                      <li><Link className="dropdown-item" href="/listings/northern-territory-state/" onClick={closeNav}>Northern Territory</Link></li>
-                      <li><Link className="dropdown-item" href="/listings/queensland-state/" onClick={closeNav}>Queensland</Link></li>
-                      <li><Link className="dropdown-item" href="/listings/south-australia-state/" onClick={closeNav}>South Australia</Link></li>
-                      <li><Link className="dropdown-item" href="/listings/tasmania-state/" onClick={closeNav}>Tasmania</Link></li>
-                      <li><Link className="dropdown-item" href="/listings/victoria-state/" onClick={closeNav}>Victoria</Link></li>
-                      <li><Link className="dropdown-item" href="/listings/western-australia-state/" onClick={closeNav}>Western Australia</Link></li>
-                    </ul>
-                  </li>
-                  {/* Region */}
-                  <li className={openLocationSub === "region" ? "selected" : ""}>
-                    <div
-                      className="drop_down"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        toggleLocationSub("region");
-                      }}
-                    >
-                      Region
-                    </div>
-                    <ul className={openLocationSub === "region" ? "submenu open" : "submenu"}>
-                      <li><Link className="dropdown-item" href="/listings/victoria-state/melbourne-region/" onClick={closeNav}>Melbourne</Link></li>
-                      <li><Link className="dropdown-item" href="/listings/western-australia-state/perth-region/" onClick={closeNav}>Perth</Link></li>
-                      <li><Link className="dropdown-item" href="/listings/victoria-state/geelong-region/" onClick={closeNav}>Geelong</Link></li>
-                      <li><Link className="dropdown-item" href="/listings/queensland-state/cairns-region/" onClick={closeNav}>Cairns</Link></li>
-                      <li><Link className="dropdown-item" href="/listings/victoria-state/ballarat-region/" onClick={closeNav}>Ballarat</Link></li>
-                      <li><Link className="dropdown-item" href="/listings/tasmania-state/launceston-region/" onClick={closeNav}>Launceston</Link></li>
-                      <li><Link className="dropdown-item" href="/listings/new-south-wales-state/sydney-region/" onClick={closeNav}>Sydney</Link></li>
-                      <li><Link className="dropdown-item" href="/listings/south-australia-state/adelaide-region/" onClick={closeNav}>Adelaide</Link></li>
-                      <li><Link className="dropdown-item" href="/listings/tasmania-state/hobart-region/" onClick={closeNav}>Hobart</Link></li>
-                      <li><Link className="dropdown-item" href="/listings/queensland-state/toowoomba-region/" onClick={closeNav}>Toowoomba</Link></li>
-                      <li><Link className="dropdown-item" href="/listings/victoria-state/bendigo-region/" onClick={closeNav}>Bendigo</Link></li>
-                      <li><Link className="dropdown-item" href="/listings/victoria-state/shepparton-region/" onClick={closeNav}>Shepparton</Link></li>
-                      <li><Link className="dropdown-item" href="/listings/queensland-state/brisbane-region/" onClick={closeNav}>Brisbane</Link></li>
-                      <li><Link className="dropdown-item" href="/listings/new-south-wales-state/newcastle-region/" onClick={closeNav}>Newcastle</Link></li>
-                      <li><Link className="dropdown-item" href="/listings/queensland-state/townsville-region/" onClick={closeNav}>Townsville</Link></li>
-                      <li><Link className="dropdown-item" href="/listings/northern-territory-state/darwin-region/" onClick={closeNav}>Darwin</Link></li>
-                      <li><Link className="dropdown-item" href="/listings/queensland-state/ipswich-region/" onClick={closeNav}>Ipswich</Link></li>
-                    </ul>
-                  </li>
-                </ul>
-              </li>
-
-              {/* By Price */}
-              <li className={openDropdown === "price" ? "selected" : ""}>
-                <div
-                  className="drop_down"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    toggleDropdown("price");
-                  }}
-                >
-                  By Price
-                </div>
-                <ul className={openDropdown === "price" ? "submenu open" : "submenu"}>
-                  <li><Link className="dropdown-item" href="/listings/under-20000/" onClick={closeNav}>Under $20k</Link></li>
-                  <li><Link className="dropdown-item" href="/listings/under-30000/" onClick={closeNav}>Under $30k</Link></li>
-                  <li><Link className="dropdown-item" href="/listings/under-40000/" onClick={closeNav}>Under $40k</Link></li>
-                  <li><Link className="dropdown-item" href="/listings/under-50000/" onClick={closeNav}>Under $50k</Link></li>
-                  <li><Link className="dropdown-item" href="/listings/under-70000/" onClick={closeNav}>Under $70k</Link></li>
-                  <li><Link className="dropdown-item" href="/listings/under-100000/" onClick={closeNav}>Under $100k</Link></li>
-                  <li><Link className="dropdown-item" href="/listings/under-150000/" onClick={closeNav}>Under $150k</Link></li>
-                  <li><Link className="dropdown-item" href="/listings/under-200000/" onClick={closeNav}>Under $200k</Link></li>
-                  <li><Link className="dropdown-item" href="/listings/over-200000/" onClick={closeNav}>Over $200k</Link></li>
-                </ul>
-              </li>
-
-              {/* By Weight */}
-              <li className={openDropdown === "weight" ? "selected" : ""}>
-                <div
-                  className="drop_down"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    toggleDropdown("weight");
-                  }}
-                >
-                  By Weight
-                </div>
-                <ul className={openDropdown === "weight" ? "submenu open" : "submenu"}>
-                  <li><Link className="dropdown-item" href="/listings/under-1500-kg-atm/" onClick={closeNav}>Under 1500 Kgs</Link></li>
-                  <li><Link className="dropdown-item" href="/listings/under-2500-kg-atm/" onClick={closeNav}>Under 2500 Kgs</Link></li>
-                  <li><Link className="dropdown-item" href="/listings/under-3500-kg-atm/" onClick={closeNav}>Under 3500 Kgs</Link></li>
-                  <li><Link className="dropdown-item" href="/listings/under-4500-kg-atm/" onClick={closeNav}>Under 4500 Kgs</Link></li>
-                </ul>
-              </li>
-
-              {/* By People */}
-              <li className={openDropdown === "people" ? "selected" : ""}>
-                <div
-                  className="drop_down"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    toggleDropdown("people");
-                  }}
-                >
-                  By People
-                </div>
-                <ul className={openDropdown === "people" ? "submenu open" : "submenu"}>
-                  <li><Link className="dropdown-item" href="/listings/under-2-people-sleeping-capacity/" onClick={closeNav}>Under 2 People</Link></li>
-                  <li><Link className="dropdown-item" href="/listings/under-4-people-sleeping-capacity/" onClick={closeNav}>Under 4 People</Link></li>
-                  <li><Link className="dropdown-item" href="/listings/under-6-people-sleeping-capacity/" onClick={closeNav}>Under 6 People</Link></li>
-                  <li><Link className="dropdown-item" href="/listings/over-6-people-sleeping-capacity/" onClick={closeNav}>Over 6 People</Link></li>
-                </ul>
-              </li>
-
-              {/* By Length */}
-              <li className={openDropdown === "length" ? "selected" : ""}>
-                <div
-                  className="drop_down"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    toggleDropdown("length");
-                  }}
-                >
-                  By Length
-                </div>
-                <ul className={openDropdown === "length" ? "submenu open" : "submenu"}>
-                  <li><Link className="dropdown-item" href="/listings/under-12-length-in-feet/" onClick={closeNav}>Under 12ft</Link></li>
-                  <li><Link className="dropdown-item" href="/listings/under-14-length-in-feet/" onClick={closeNav}>Under 14ft</Link></li>
-                  <li><Link className="dropdown-item" href="/listings/under-17-length-in-feet/" onClick={closeNav}>Under 17ft</Link></li>
-                  <li><Link className="dropdown-item" href="/listings/under-20-length-in-feet/" onClick={closeNav}>Under 20ft</Link></li>
-                  <li><Link className="dropdown-item" href="/listings/under-23-length-in-feet/" onClick={closeNav}>Under 23ft</Link></li>
-                  <li><Link className="dropdown-item" href="/listings/over-24-length-in-feet/" onClick={closeNav}>Over 24ft</Link></li>
-                </ul>
-              </li>
-
-              <li>
-                <a href="/blog/" onClick={closeNav}>Blog</a>
-              </li>
-              <li>
-                <a href="/about-us/" onClick={closeNav}>About</a>
-              </li>
-              <li>
-                <a href="/contact/" onClick={closeNav}>Contact</a>
-              </li>
-            </ul>
-            {/* <div className="mobile_cta hidden-lg hidden-md">
-              <span>Find Your Ideal Caravan</span>
-              <a className="btn btn-primary" href="/caravan-enquiry-form/" onClick={() => {
-                setNavigating(true); // start loader immediately
-                closeNav();
-              }}>
-                Enquire Now
+          {/* ── Main Panel ── */}
+          <div className={`sidenav-panel sidenav-panel-main${activePanel ? " panel-slide-out" : ""}`}>
+            <div className="sidenav-header">
+              <a href="/" onClick={closeNav} className="sidenav-logo-link">
+                <Image src="/images/cfs-logo-black.svg" alt="Caravans For Sale" width={120} height={40} className="sidenav-logo-img" />
               </a>
-            </div> */}
+              <button className="sidenav-close" onClick={closeNav} aria-label="Close menu">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                  <path d="M14 4L4 14M4 4l10 10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+                </svg>
+              </button>
+            </div>
+            <div className="sidenav-scrollable">
+              <div className="sidebar-navigation">
+                <ul>
+                  <li><a href="/" onClick={closeNav}>Home</a></li>
+                  <li className="sidenav-has-child" onClick={() => setActivePanel("buynow")}>
+                    <span>Buy</span>
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                      <path d="M6 3l5 5-5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </li>
+                  <li><a href="/blog/" onClick={closeNav}>Blog</a></li>
+                  <li><a href="/about-us/" onClick={closeNav}>About</a></li>
+                  <li><a href="/contact/" onClick={closeNav}>Contact</a></li>
+                </ul>
+              </div>
+              <div className="sidenav-cta">
+                <a href="/sell-my-caravan/" className="sidenav-cta-link" onClick={closeNav}>Sell My Caravan</a>
+                <a href="/dealer-advertising/" className="sidenav-cta-link" onClick={closeNav}>Dealer Advertising</a>
+                <a href="/login/" className="sidenav-cta-login" onClick={closeNav}>
+                  <i className="bi bi-person-fill"></i> Login
+                </a>
+              </div>
+            </div>
           </div>
+
+          {/* ── Buy Now Sub-Panel ── */}
+          <div className={`sidenav-panel sidenav-panel-sub${activePanel === "buynow" ? " panel-slide-in" : ""}`}>
+            <div className="sidenav-header">
+              <button className="sidenav-back" onClick={() => setActivePanel(null)} aria-label="Back">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                  <path d="M12 14L7 9l5-5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                <span>Back</span>
+              </button>
+              <button className="sidenav-close" onClick={closeNav} aria-label="Close menu">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                  <path d="M14 4L4 14M4 4l10 10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+                </svg>
+              </button>
+            </div>
+            <div className="sidenav-scrollable">
+              <div className="snav-direct-links">
+                <Link href="/listings/" onClick={closeNav}>All Caravans</Link>
+                <Link href="/listings/new-condition/" onClick={closeNav}>New Caravans</Link>
+                <Link href="/listings/used-condition/" onClick={closeNav}>Used Caravans</Link>
+              </div>
+
+              <div className="snav-section">
+                <div className="snav-section-heading">Popular Makes</div>
+                <div className="snav-section-links">
+                  <Link href="/listings/jayco/" onClick={closeNav}>Jayco</Link>
+                  <Link href="/listings/evernew/" onClick={closeNav}>Evernew</Link>
+                  <Link href="/listings/design-rv/" onClick={closeNav}>Design RV</Link>
+                  <Link href="/listings/avan/" onClick={closeNav}>Avan</Link>
+                  <Link href="/listings/newgen/" onClick={closeNav}>Newgen</Link>
+                  <Link href="/listings/adria/" onClick={closeNav}>Adria</Link>
+                  <Link href="/listings/retreat/" onClick={closeNav}>Retreat</Link>
+                  <Link href="/listings/snowy-river/" onClick={closeNav}>Snowy River</Link>
+                  <Link href="/listings/crusader/" onClick={closeNav}>Crusader</Link>
+                  <Link href="/listings/supreme/" onClick={closeNav}>Supreme</Link>
+                  <Link href="/listings/essential/" onClick={closeNav}>Essential</Link>
+                  <Link href="/listings/golf/" onClick={closeNav}>Golf</Link>
+                  <Link href="/listings/royal-flair/" onClick={closeNav}>Royal Flair</Link>
+                  <Link href="/listings/new-age/" onClick={closeNav}>New Age</Link>
+                  <Link href="/listings/mdc/" onClick={closeNav}>MDC</Link>
+                  <Link href="/listings/jb/" onClick={closeNav}>JB</Link>
+                  <Link href="/listings/lotus/" onClick={closeNav}>Lotus</Link>
+                  <Link href="/listings/windsor/" onClick={closeNav}>Windsor</Link>
+                  <Link href="/listings/nova/" onClick={closeNav}>Nova</Link>
+                </div>
+              </div>
+
+              <div className="snav-section">
+                <div className="snav-section-heading">Caravan Type</div>
+                <div className="snav-section-links">
+                  <Link href="/listings/off-road-category/" onClick={closeNav}>Off Road</Link>
+                  <Link href="/listings/hybrid-category/" onClick={closeNav}>Hybrid</Link>
+                  <Link href="/listings/pop-top-category/" onClick={closeNav}>Pop Top</Link>
+                  <Link href="/listings/luxury-category/" onClick={closeNav}>Luxury</Link>
+                  <Link href="/listings/family-category/" onClick={closeNav}>Family</Link>
+                  <Link href="/listings/touring-category/" onClick={closeNav}>Touring</Link>
+                </div>
+              </div>
+
+              <div className="snav-section">
+                <div className="snav-section-heading">Popular Locations</div>
+                <div className="snav-section-links">
+                  <div className="snav-sub-heading">By State</div>
+                  <Link href="/listings/australian-capital-territory-state/" onClick={closeNav}>Australian Capital Territory</Link>
+                  <Link href="/listings/new-south-wales-state/" onClick={closeNav}>New South Wales</Link>
+                  <Link href="/listings/northern-territory-state/" onClick={closeNav}>Northern Territory</Link>
+                  <Link href="/listings/queensland-state/" onClick={closeNav}>Queensland</Link>
+                  <Link href="/listings/south-australia-state/" onClick={closeNav}>South Australia</Link>
+                  <Link href="/listings/tasmania-state/" onClick={closeNav}>Tasmania</Link>
+                  <Link href="/listings/victoria-state/" onClick={closeNav}>Victoria</Link>
+                  <Link href="/listings/western-australia-state/" onClick={closeNav}>Western Australia</Link>
+                  <div className="snav-sub-heading">By Region</div>
+                  <Link href="/listings/victoria-state/melbourne-region/" onClick={closeNav}>Melbourne</Link>
+                  <Link href="/listings/western-australia-state/perth-region/" onClick={closeNav}>Perth</Link>
+                  <Link href="/listings/victoria-state/geelong-region/" onClick={closeNav}>Geelong</Link>
+                  <Link href="/listings/queensland-state/cairns-region/" onClick={closeNav}>Cairns</Link>
+                  <Link href="/listings/victoria-state/ballarat-region/" onClick={closeNav}>Ballarat</Link>
+                  <Link href="/listings/tasmania-state/launceston-region/" onClick={closeNav}>Launceston</Link>
+                  <Link href="/listings/new-south-wales-state/sydney-region/" onClick={closeNav}>Sydney</Link>
+                  <Link href="/listings/south-australia-state/adelaide-region/" onClick={closeNav}>Adelaide</Link>
+                  <Link href="/listings/tasmania-state/hobart-region/" onClick={closeNav}>Hobart</Link>
+                  <Link href="/listings/queensland-state/toowoomba-region/" onClick={closeNav}>Toowoomba</Link>
+                  <Link href="/listings/victoria-state/bendigo-region/" onClick={closeNav}>Bendigo</Link>
+                  <Link href="/listings/victoria-state/shepparton-region/" onClick={closeNav}>Shepparton</Link>
+                  <Link href="/listings/queensland-state/brisbane-region/" onClick={closeNav}>Brisbane</Link>
+                  <Link href="/listings/new-south-wales-state/newcastle-region/" onClick={closeNav}>Newcastle</Link>
+                  <Link href="/listings/queensland-state/townsville-region/" onClick={closeNav}>Townsville</Link>
+                  <Link href="/listings/northern-territory-state/darwin-region/" onClick={closeNav}>Darwin</Link>
+                  <Link href="/listings/queensland-state/ipswich-region/" onClick={closeNav}>Ipswich</Link>
+                </div>
+              </div>
+
+              <div className="snav-section">
+                <div className="snav-section-heading">By Price</div>
+                <div className="snav-section-links">
+                  <Link href="/listings/under-20000/" onClick={closeNav}>Under $20k</Link>
+                  <Link href="/listings/under-30000/" onClick={closeNav}>Under $30k</Link>
+                  <Link href="/listings/under-40000/" onClick={closeNav}>Under $40k</Link>
+                  <Link href="/listings/under-50000/" onClick={closeNav}>Under $50k</Link>
+                  <Link href="/listings/under-70000/" onClick={closeNav}>Under $70k</Link>
+                  <Link href="/listings/under-100000/" onClick={closeNav}>Under $100k</Link>
+                  <Link href="/listings/under-150000/" onClick={closeNav}>Under $150k</Link>
+                  <Link href="/listings/under-200000/" onClick={closeNav}>Under $200k</Link>
+                  <Link href="/listings/over-200000/" onClick={closeNav}>Over $200k</Link>
+                </div>
+              </div>
+
+              <div className="snav-section">
+                <div className="snav-section-heading">By Weight</div>
+                <div className="snav-section-links">
+                  <Link href="/listings/under-1500-kg-atm/" onClick={closeNav}>Under 1500 Kgs</Link>
+                  <Link href="/listings/under-2500-kg-atm/" onClick={closeNav}>Under 2500 Kgs</Link>
+                  <Link href="/listings/under-3500-kg-atm/" onClick={closeNav}>Under 3500 Kgs</Link>
+                  <Link href="/listings/over-3500-kg-atm/" onClick={closeNav}>Over 3500 Kgs</Link>
+                </div>
+              </div>
+
+              <div className="snav-section">
+                <div className="snav-section-heading">By People</div>
+                <div className="snav-section-links">
+                  <Link href="/listings/under-2-people-sleeping-capacity/" onClick={closeNav}>Under 2 People</Link>
+                  <Link href="/listings/under-4-people-sleeping-capacity/" onClick={closeNav}>Under 4 People</Link>
+                  <Link href="/listings/under-6-people-sleeping-capacity/" onClick={closeNav}>Under 6 People</Link>
+                  <Link href="/listings/over-6-people-sleeping-capacity/" onClick={closeNav}>Over 6 People</Link>
+                </div>
+              </div>
+
+              <div className="snav-section">
+                <div className="snav-section-heading">By Length</div>
+                <div className="snav-section-links">
+                  <Link href="/listings/under-12-length-in-feet/" onClick={closeNav}>Under 12ft</Link>
+                  <Link href="/listings/under-14-length-in-feet/" onClick={closeNav}>Under 14ft</Link>
+                  <Link href="/listings/under-17-length-in-feet/" onClick={closeNav}>Under 17ft</Link>
+                  <Link href="/listings/under-20-length-in-feet/" onClick={closeNav}>Under 20ft</Link>
+                  <Link href="/listings/under-23-length-in-feet/" onClick={closeNav}>Under 23ft</Link>
+                  <Link href="/listings/over-24-length-in-feet/" onClick={closeNav}>Over 24ft</Link>
+                </div>
+              </div>
+            </div>
+          </div>
+
         </div>
       )}
 

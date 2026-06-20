@@ -287,19 +287,25 @@ export default function ListingContent({
   const MAX_SWIPER_IMAGES = 5;
 
   const getFirstImage = (item: Product): string | undefined => {
-    const img = item.image_format?.[0];
-    return img ? `${img}` : undefined;
+    return item.image_format?.[0] || item.image_url?.[0] || item.image || undefined;
   };
 
   const getInitialSlides = (item: Product): string[] => {
-    if (!Array.isArray(item.image_format)) return [];
-    return item.image_format.slice(0, 2).filter(Boolean).map((img) => `${img}`);
+    if (Array.isArray(item.image_format) && item.image_format.length > 0)
+      return item.image_format.slice(0, 2).filter(Boolean).map((img) => `${img}`);
+    if (Array.isArray(item.image_url) && item.image_url.length > 0)
+      return item.image_url.slice(0, 2).filter(Boolean).map((img) => `${img}`);
+    if (item.image) return [item.image];
+    return [];
   };
 
   const getRemainingImages = (item: Product): string[] => {
-    if (!Array.isArray(item.image_format)) return [];
-
-    return item.image_format.slice(0, MAX_SWIPER_IMAGES).map((img) => `${img}`);
+    if (Array.isArray(item.image_format) && item.image_format.length > 0)
+      return item.image_format.slice(0, MAX_SWIPER_IMAGES).map((img) => `${img}`);
+    if (Array.isArray(item.image_url) && item.image_url.length > 0)
+      return item.image_url.slice(0, MAX_SWIPER_IMAGES).map((img) => `${img}`);
+    if (item.image) return [item.image];
+    return [];
   };
 
   const loadRemaining = (item: Product) => {
