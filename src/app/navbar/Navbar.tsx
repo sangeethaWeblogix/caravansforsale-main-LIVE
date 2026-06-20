@@ -1,7 +1,7 @@
 ﻿
 "use client";
 
-import "./navbar.css?=56";
+import "./navbar.css?=60";
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -21,14 +21,9 @@ export default function Navbar() {
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   const sidenavRef = useRef<HTMLDivElement | null>(null);
   const [megaMenuOpen, setMegaMenuOpen] = useState(false);
-  const megaMenuTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const openMegaMenu = () => {
-    if (megaMenuTimer.current) clearTimeout(megaMenuTimer.current);
-    setMegaMenuOpen(true);
-  };
-  const closeMegaMenu = () => {
-    megaMenuTimer.current = setTimeout(() => setMegaMenuOpen(false), 120);
-  };
+  const megaMenuRef = useRef<HTMLLIElement | null>(null);
+  const [hamOpen, setHamOpen] = useState(false);
+  const hamRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -39,6 +34,12 @@ export default function Navbar() {
     const handleClickOutside = (e: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setOpen(false);
+      }
+      if (megaMenuRef.current && !megaMenuRef.current.contains(e.target as Node)) {
+        setMegaMenuOpen(false);
+      }
+      if (hamRef.current && !hamRef.current.contains(e.target as Node)) {
+        setHamOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -102,12 +103,11 @@ export default function Navbar() {
               id="navbarSupportedContent"
             >
               <ul className="navbar-nav mb-2 mb-lg-0">
-                <li className="nav-item desktop-buynow-item" onMouseEnter={openMegaMenu} onMouseLeave={closeMegaMenu}>
-                  <span className="nav-link desktop-buynow-trigger">
+                <li className="nav-item desktop-buynow-item" ref={megaMenuRef}>
+                  <span className="nav-link desktop-buynow-trigger" style={{ cursor: "pointer" }} onClick={() => setMegaMenuOpen(prev => !prev)}>
                     Buy
-                    
                   </span>
-                  <div className={`desktop-mega-menu${megaMenuOpen ? " mega-open" : ""}`} onMouseEnter={openMegaMenu} onMouseLeave={closeMegaMenu}>
+                  <div className={`desktop-mega-menu${megaMenuOpen ? " mega-open" : ""}`}>
                     <div className="desktop-mega-menu-inner">
                     <div className="mega-col">
                       <div className="mega-col-title">Browse</div>
@@ -187,23 +187,21 @@ export default function Navbar() {
                       <a href="/listings/over-3500-kg-atm/">Over 3500 Kgs</a>
                       <div className="mega-col-title mega-col-title-mt">By Length</div>
                       <a href="/listings/under-12-length-in-feet/">Under 12ft</a>
-                      <a href="/listings/between-12-14-length-in-feet/">Under 14ft</a>
-                      <a href="/listings/between-15-17-length-in-feet/">Under 17ft</a>
-                      <a href="/listings/between-18-20-length-in-feet/">Under 20ft</a>
-                      <a href="/listings/between-21-23-length-in-feet/">Under 23ft</a>
+                      <a href="/listings/under-14-length-in-feet/">Under 14ft</a>
+                      <a href="/listings/under-17-length-in-feet/">Under 17ft</a>
+                      <a href="/listings/under-20-length-in-feet/">Under 20ft</a>
+                      <a href="/listings/under-23-length-in-feet/">Under 23ft</a>
                       <a href="/listings/over-24-length-in-feet/">Over 24ft</a>
                       <div className="mega-col-title mega-col-title-mt">By People</div>
-                      <a href="/listings/between-1-2-people-sleeping-capacity/">Under 2 People</a>
-                      <a href="/listings/between-3-4-people-sleeping-capacity/">Under 4 People</a>
-                      <a href="/listings/between-4-6-people-sleeping-capacity/">Under 6 People</a>
+                      <a href="/listings/under-2-people-sleeping-capacity/">Under 2 People</a>
+                      <a href="/listings/under-4-people-sleeping-capacity/">Under 4 People</a>
+                      <a href="/listings/under-6-people-sleeping-capacity/">Under 6 People</a>
                       <a href="/listings/over-6-people-sleeping-capacity/">Over 6 People</a>
                     </div>
                     </div>
                   </div>
                 </li>
-                <li className="nav-item">
-                  <a className="nav-link" href="/blog/">Blog</a>
-                </li>
+                
                 <li className="nav-item">
                   <a className="nav-link" href="/sell-my-caravan/">Sell My Caravan</a>
                 </li>
@@ -217,6 +215,22 @@ export default function Navbar() {
                   </a>
                 </li>
               </ul>
+
+              <div className="ham-menu-wrapper" ref={hamRef}>
+                <button className="ham-menu-btn" onClick={() => setHamOpen(prev => !prev)} aria-label="Menu">
+                  <i className="bi bi-list"></i>
+                </button>
+                {hamOpen && (
+                  <div className="ham-dropdown">
+                    <a href="/listings/" className="ham-item">Caravan Listings</a>
+                    <a href="/sell-my-caravan/" className="ham-item">Sell My Caravan</a>
+                    <a href="/dealer-advertising/" className="ham-item">Dealer Advertising</a>
+                    <a href="/blog/" className="ham-item">Blog</a>
+                    <a href="/about/" className="ham-item">About</a>
+                    <a href="/contact/" className="ham-item">Contact</a>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/*<div className="navbar-right" ref={dropdownRef}>

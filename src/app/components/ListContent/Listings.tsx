@@ -454,7 +454,7 @@ const [pagination, setPagination] = useState<Pagination>(() => {
       if (nextFilters.orderby)
         query.set("orderby", String(nextFilters.orderby));
       const r = Number(nextFilters.radius_kms);
-      if (!Number.isNaN(r) && (nextFilters.suburb || r !== DEFAULT_RADIUS)) {
+      if (!Number.isNaN(r) && r !== 25 && (nextFilters.suburb || r !== DEFAULT_RADIUS)) {
         query.set("radius_kms", String(r));
       }
 

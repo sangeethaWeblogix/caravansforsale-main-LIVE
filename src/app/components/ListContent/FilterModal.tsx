@@ -1500,7 +1500,7 @@ const [states, setStates] = useState<StateOption[]>([]);
     const slugPath = buildSlugFromFilters(next);
     const query = new URLSearchParams();
 
-    if (next.radius_kms && (next.suburb || next.radius_kms !== DEFAULT_RADIUS))
+    if (next.radius_kms && next.radius_kms !== 25 && (next.suburb || next.radius_kms !== DEFAULT_RADIUS))
       query.set("radius_kms", String(next.radius_kms));
 
     const safeSlugPath = slugPath.endsWith("/") ? slugPath : `${slugPath}/`;

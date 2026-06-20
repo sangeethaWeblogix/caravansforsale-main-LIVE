@@ -1041,3 +1041,54 @@ input[type="checkbox"]:checked ~ .menuIconToggle > .dia.p-2 {
     display: none !important;
   }
 }
+
+/* Desktop hamburger menu */
+.ham-menu-wrapper {
+  position: relative;
+  margin-left: 10px;
+}
+
+.ham-menu-btn {
+    cursor: pointer;
+    color: #333;
+    background: none;
+    border: 1.5px solid #333;
+    border-radius: 6px;
+    align-items: center;
+    padding: 6px 10px;
+    font-size: 22px;
+    line-height: 1;
+    transition: border-color .2s;
+    display: flex;
+}
+
+.ham-menu-btn:hover {
+  border-color: #000000;
+  color: #000000;
+}
+
+.ham-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.10);
+  min-width: 200px;
+  z-index: 1050;
+  padding: 6px 0;
+}
+
+.ham-item {
+    color: #000000;
+    padding: 10px 18px;
+    font-size: 15px;
+    text-decoration: none;
+    transition: background .15s, color .15s;
+    display: block;
+}
+
+.ham-item:hover {
+    color: #f58333;
+}
