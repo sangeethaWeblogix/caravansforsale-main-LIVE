@@ -822,6 +822,7 @@ const [pagination, setPagination] = useState<Pagination>(() => {
       });
 
       try {
+        isSliderFetchingRef.current = true; // prevent URL-change effect from firing a duplicate fetch
         updateURLWithFilters(mergedFilters, 1);
         await loadListings(1, mergedFilters, true);
       } catch (error) {
