@@ -7,6 +7,7 @@ const API_KEY = process.env.CFS_API_KEY;
    Edge-safe in-memory cache
 ────────────────────────────────────────────── */
 const seoCache = new Map<string, { robots: string; isEmpty: boolean; hasExclusiveOnly: boolean; expires: number; staleExpires: number }>();
+const productCache = new Map<string, { exists: boolean; expires: number }>();
 const CACHE_TTL = 10 * 60 * 1000;       // 10 min fresh
 const CACHE_STALE_TTL = 60 * 60 * 1000; // 1 hr stale-while-revalidate window
 
