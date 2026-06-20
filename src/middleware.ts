@@ -7,6 +7,7 @@ const API_KEY = process.env.CFS_API_KEY;
    Edge-safe in-memory cache
 ────────────────────────────────────────────── */
 const seoCache = new Map<string, { robots: string; isEmpty: boolean; hasExclusiveOnly: boolean; expires: number }>();
+const productCache = new Map<string, { exists: boolean; expires: number }>();
 const CACHE_TTL = 60 * 1000; // 1 minute
 
 /* ──────────────────────────────────────────────
@@ -138,12 +139,56 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  /* 🤖 Bot Detection — listing pages not early-returned so bots also get 0-product check */
-  if (isBot(userAgent) && !url.pathname.startsWith('/listings')) {
+  /* 🤖 Bot Detection — listing and product pages not early-returned so they get 0-product/410 check */
+  if (isBot(userAgent) && !url.pathname.startsWith('/listings') && !url.pathname.startsWith('/product/')) {
     console.log(`🤖 Bot detected: ${userAgent.substring(0, 50)}...`);
     const response = NextResponse.next({ request: { headers: requestHeaders } });
     response.headers.set('X-Is-Bot', 'true');
     return response;
+  }
+
+  /* 🚫 Product pages: non-existent slugs → HTTP 410 Gone */
+  if (url.pathname.startsWith('/product/')) {
+    const slug = url.pathname.replace(/^\/product\//, '').replace(/\/$/, '');
+    if (slug) {
+      const cacheKey = `product:${slug}`;
+      const cached = productCache.get(cacheKey);
+      if (cached && cached.expires > Date.now()) {
+        if (!cached.exists) return render410(request);
+      } else {
+        try {
+          const API_BASE = process.env.NEXT_PUBLIC_CFS_API_BASE || 'https://admin.caravansforsale.com.au/wp-json/cfs/v1';
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 5000);
+          const apiRes = await fetch(
+            `${API_BASE}/product-detail-new/?slug=${encodeURIComponent(slug)}`,
+            {
+              headers: {
+                'User-Agent': 'next-middleware',
+                ...(API_KEY && { 'X-API-Key': API_KEY }),
+              },
+              signal: controller.signal,
+            }
+          );
+          clearTimeout(timeoutId);
+          if (!apiRes.ok) {
+            productCache.set(cacheKey, { exists: false, expires: Date.now() + CACHE_TTL });
+            return render410(request);
+          }
+          const data = await apiRes.json();
+          if (!data || Object.keys(data).length === 0) {
+            productCache.set(cacheKey, { exists: false, expires: Date.now() + CACHE_TTL });
+            return render410(request);
+          }
+          productCache.set(cacheKey, { exists: true, expires: Date.now() + CACHE_TTL });
+        } catch (error: any) {
+          if (error?.name !== 'AbortError') {
+            console.error('Middleware product 410 check error:', error);
+          }
+          // On timeout/error: let the page component handle it
+        }
+      }
+    }
   }
 
  if (
