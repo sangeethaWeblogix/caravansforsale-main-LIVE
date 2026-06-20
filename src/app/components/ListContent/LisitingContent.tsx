@@ -240,6 +240,14 @@ export default function ListingContent({
     }
   }, []);
 
+  // Reset swiper state when products change (filter apply) — prevents stale images
+  useEffect(() => {
+    setSwiperKey((k) => k + 1);
+    setSwiperActivated({});
+    setLazyImages({});
+    setLoadedAll({});
+  }, [products]);
+
   const handleViewDetails = (
     e: React.MouseEvent,
     productId: number,
@@ -424,9 +432,6 @@ export default function ListingContent({
   useEffect(() => {
     if (!products || products.length === 0) return;
 
-    // 🔒 Already shuffled → DO NOTHING
-    if (didShuffleRef.current) return;
-
     const premiumIds = new Set(
       (preminumProducts || []).map((p) => String(p.id)),
     );
@@ -436,16 +441,16 @@ export default function ListingContent({
     const orderbyFromUrl = currentFilters.orderby;
 
     const shouldShuffle =
-      allowShuffleRef.current && // ✅ new tab only
+      allowShuffleRef.current &&
+      !didShuffleRef.current && // only shuffle once per session
       normal.length >= 23 &&
       !orderbyFromUrl;
 
     if (shouldShuffle) {
-      normal = shuffleArray([...normal]); // ✅ CLONE + SHUFFLE
+      normal = shuffleArray([...normal]);
       didShuffleRef.current = true;
     }
 
-    // 🔥 IMPORTANT: mergedProducts set ONLY ONCE
     setMergedProducts(buildMergedProducts(normal));
   }, [products, preminumProducts, exculisiveProducts, currentFilters.orderby]);
 

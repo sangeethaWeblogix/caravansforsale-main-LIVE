@@ -40,7 +40,7 @@ export default function Home() {
   return (
     <div>
       <Header />
-      <CaravanList />
+      {/* <CaravanList /> */}
     </div>
   );
 }

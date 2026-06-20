@@ -381,6 +381,26 @@ const [pagination, setPagination] = useState<Pagination>(() => {
     return undefined;
   };
 
+  // Shuffle SSR-seeded products once on client mount (avoids hydration mismatch)
+  const mountShuffledRef = useRef(false);
+  useEffect(() => {
+    if (mountShuffledRef.current) return;
+    mountShuffledRef.current = true;
+    setProducts(prev => prev.length > 0 ? shuffleArray([...prev]) : prev);
+  }, []);
+
+  // Pre-fetch next page in background to warm server cache
+  const prefetchedPageRef = useRef<number>(-1);
+  useEffect(() => {
+    const { current_page, total_pages } = pagination;
+    if (current_page >= total_pages) return;
+    const nextPage = current_page + 1;
+    if (prefetchedPageRef.current === nextPage) return;
+    prefetchedPageRef.current = nextPage;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    fetchListings({ ...filtersRef.current, page: nextPage } as any).catch(() => {});
+  }, [pagination.current_page, pagination.total_pages]);
+
   // Parse slug ONCE on mount; do not fetch here
   const initializedRef = useRef(false);
   useEffect(() => {
@@ -569,15 +589,12 @@ const [pagination, setPagination] = useState<Pagination>(() => {
         const exclusiveList = response?.data?.exclusive_products ?? [];
         const emptyExclusiveList = response?.data?.emp_exclusive_products ?? [];
 
-        // ---- Store NORMAL PRODUCTS ----
+        // ---- Store NORMAL PRODUCTS (shuffled client-side on every fresh load) ----
         const validProducts = Array.isArray(productsList)
           ? productsList.filter((p) => p != null)
           : [];
-        setProducts(
-          validProducts.length > 0
-            ? transformApiItemsToProducts(validProducts)
-            : [],
-        );
+        const transformed = validProducts.length > 0 ? transformApiItemsToProducts(validProducts) : [];
+        setProducts(transformed.length > 0 ? shuffleArray(transformed) : transformed);
 
         // ---- Store FEATURED, PREMIUM, EXCLUSIVE ----
         setFeaturedProducts(transformApiItemsToProducts(featuredList ?? []));
@@ -662,7 +679,8 @@ const [pagination, setPagination] = useState<Pagination>(() => {
 
     const productsList = initialData.data?.products ?? [];
     const validProducts = Array.isArray(productsList) ? productsList.filter((p) => p != null) : [];
-    setProducts(validProducts.length > 0 ? transformApiItemsToProducts(validProducts) : []);
+    const syncTransformed = validProducts.length > 0 ? transformApiItemsToProducts(validProducts) : [];
+    setProducts(syncTransformed.length > 0 ? shuffleArray(syncTransformed) : syncTransformed);
     setFeaturedProducts(transformApiItemsToProducts(initialData.data?.featured_products ?? []));
     setPremiumProducts(transformApiItemsToProducts(initialData.data?.premium_products ?? []));
     setExculisiveProducts(transformApiItemsToProducts(initialData.data?.exclusive_products ?? []));

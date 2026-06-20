@@ -135,16 +135,16 @@ export default function Navbar() {
                     <div className="mega-col">
                       
                       <div className="mega-col-title">By Region</div>
-                      <a href="/listings/melbourne-region/">Melbourne</a>
-                      <a href="/listings/sydney-region/">Sydney</a>
-                      <a href="/listings/brisbane-region/">Brisbane</a>
-                      <a href="/listings/perth-region/">Perth</a>
-                      <a href="/listings/adelaide-region/">Adelaide</a>
-                      <a href="/listings/geelong-region/">Geelong</a>
-                      <a href="/listings/newcastle-region/">Newcastle</a>
-                      <a href="/listings/cairns-region/">Cairns</a>
-                      <a href="/listings/hobart-region/">Hobart</a>
-                      <a href="/listings/darwin-region/">Darwin</a>
+                      <a href="/listings/victoria-state/melbourne-region/">Melbourne</a>
+                      <a href="/listings/new-south-wales-state/sydney-region/">Sydney</a>
+                      <a href="/listings/queensland-state/brisbane-region/">Brisbane</a>
+                      <a href="/listings/western-australia-state/perth-region/">Perth</a>
+                      <a href="/listings/south-australia-state/adelaide-region/">Adelaide</a>
+                      <a href="/listings/victoria-state/geelong-region/">Geelong</a>
+                      <a href="/listings/new-south-wales-state/newcastle-region/">Newcastle</a>
+                      <a href="/listings/queensland-state/cairns-region/">Cairns</a>
+                      <a href="/listings/tasmania-state/hobart-region/">Hobart</a>
+                      <a href="/listings/northern-territory-state/darwin-region/">Darwin</a>
                       <div className="mega-col-title mega-col-title-mt">By Price</div>
                       <a href="/listings/under-20000/">Under $20k</a>
                       <a href="/listings/under-30000/">Under $30k</a>

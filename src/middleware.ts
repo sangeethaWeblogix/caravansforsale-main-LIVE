@@ -6,9 +6,9 @@ const API_KEY = process.env.CFS_API_KEY;
 /* ──────────────────────────────────────────────
    Edge-safe in-memory cache
 ────────────────────────────────────────────── */
-const seoCache = new Map<string, { robots: string; isEmpty: boolean; hasExclusiveOnly: boolean; expires: number }>();
-const productCache = new Map<string, { exists: boolean; expires: number }>();
-const CACHE_TTL = 60 * 1000; // 1 minute
+const seoCache = new Map<string, { robots: string; isEmpty: boolean; hasExclusiveOnly: boolean; expires: number; staleExpires: number }>();
+const CACHE_TTL = 10 * 60 * 1000;       // 10 min fresh
+const CACHE_STALE_TTL = 60 * 60 * 1000; // 1 hr stale-while-revalidate window
 
 /* ──────────────────────────────────────────────
    Bot Detection
@@ -75,6 +75,38 @@ function buildApiParams(filters: Filters): URLSearchParams {
   if (filters.acustom_fromyears) p.set('acustom_fromyears', `${filters.acustom_fromyears}`);
   if (filters.acustom_toyears) p.set('acustom_toyears', `${filters.acustom_toyears}`);
   return p;
+}
+
+async function refreshSeoCache(cacheKey: string, url: URL, request: NextRequest) {
+  try {
+    const slugParts = url.pathname.replace("/listings", "").split("/").filter(Boolean);
+    const filters = parseSlugToFilters(slugParts, Object.fromEntries(url.searchParams));
+    const apiParams = buildApiParams(filters);
+    const apiUrl = "https://admin.caravansforsale.com.au/wp-json/cfs/v1/new_optimize_code?" + apiParams.toString();
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+    const apiRes = await fetch(apiUrl, {
+      headers: { "User-Agent": "next-middleware", ...(API_KEY && { "X-API-Key": API_KEY }) },
+      signal: controller.signal,
+      // @ts-ignore
+      next: { revalidate: 3600 },
+    });
+    clearTimeout(timeoutId);
+    if (apiRes.ok) {
+      const data = await apiRes.json();
+      const products = data?.data?.products ?? [];
+      const empExclusive = data?.emp_exclusive_products ?? [];
+      const isEmpty = products.length === 0 && empExclusive.length === 0;
+      const hasExclusiveOnly = products.length === 0 && empExclusive.length > 0;
+      const seo = data?.seo_v2 ?? data?.seo ?? {};
+      const rawIndex = String(seo?.index ?? "").toLowerCase().trim();
+      const rawFollow = String(seo?.follow ?? "").toLowerCase().trim();
+      let robots = (rawIndex === "noindex" ? "noindex" : "index") + ", " + (rawFollow === "nofollow" ? "nofollow" : "follow");
+      const hasBand = !!(filters.maxKg || filters.minKg || filters.to_price || filters.from_price || filters.to_length || filters.from_length || filters.to_sleep || filters.from_sleep);
+      if (hasBand || isEmpty || hasExclusiveOnly) robots = "noindex, nofollow";
+      seoCache.set(cacheKey, { robots, isEmpty, hasExclusiveOnly, expires: Date.now() + CACHE_TTL, staleExpires: Date.now() + CACHE_STALE_TTL });
+    }
+  } catch {}
 }
 
 export async function middleware(request: NextRequest) {
@@ -218,19 +250,27 @@ export async function middleware(request: NextRequest) {
   if (url.pathname.startsWith("/listings")) {
     const cacheKey = fullPath;
 
-    /* 🔹 Cache hit */
+    /* 🔹 Cache hit (fresh or stale-while-revalidate) */
     const cached = seoCache.get(cacheKey);
-    if (cached && cached.expires > Date.now()) {
-      if (cached.isEmpty) {
+    const now = Date.now();
+    const isFresh = cached && cached.expires > now;
+    const isStale = cached && !isFresh && cached.staleExpires > now;
+
+    if (isFresh || isStale) {
+      if (isStale) {
+        // Revalidate in background — don't block the response
+        refreshSeoCache(cacheKey, url, request).catch(() => {});
+      }
+      if (cached!.isEmpty) {
         return render410(request);
       }
-      if (cached.hasExclusiveOnly) {
+      if (cached!.hasExclusiveOnly) {
         const rawSlug = url.pathname.replace(/^\/listings\/?/, '').replace(/\/$/, '');
         const rewriteUrl = new URL(`/api/listings-410/${rawSlug}/`, request.url);
         url.searchParams.forEach((v, k) => rewriteUrl.searchParams.set(k, v));
         return NextResponse.rewrite(rewriteUrl);
       }
-      robotsHeader = cached.robots;
+      robotsHeader = cached!.robots;
     } else {
       try {
         const slugParts = url.pathname
@@ -260,7 +300,7 @@ export async function middleware(request: NextRequest) {
           },
           signal: controller.signal,
           // @ts-ignore - Edge runtime specific
-          next: { revalidate: 60 },
+          next: { revalidate: 3600 },
         });
 
         clearTimeout(timeoutId);
@@ -275,10 +315,10 @@ export async function middleware(request: NextRequest) {
           const empExclusive = data?.emp_exclusive_products ?? [];
           if (products.length === 0) {
             if (empExclusive.length === 0) {
-              seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty: true, hasExclusiveOnly: false, expires: Date.now() + CACHE_TTL });
+              seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty: true, hasExclusiveOnly: false, expires: Date.now() + CACHE_TTL, staleExpires: Date.now() + CACHE_STALE_TTL });
               return render410(request);
             }
-            seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty: false, hasExclusiveOnly: true, expires: Date.now() + CACHE_TTL });
+            seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty: false, hasExclusiveOnly: true, expires: Date.now() + CACHE_TTL, staleExpires: Date.now() + CACHE_STALE_TTL });
             const rewriteUrl = new URL(`/api/listings-410/${slugParts.join('/')}${url.search}`, request.url);
             return NextResponse.rewrite(rewriteUrl);
           }
@@ -305,6 +345,7 @@ export async function middleware(request: NextRequest) {
             isEmpty: false,
             hasExclusiveOnly: false,
             expires: Date.now() + CACHE_TTL,
+            staleExpires: Date.now() + CACHE_STALE_TTL,
           });
         } else if (apiRes.status === 410) {
           // WordPress returns 410 for 0 products — check body for emp_exclusive_products before deciding
@@ -312,14 +353,14 @@ export async function middleware(request: NextRequest) {
             const data410 = await apiRes.json();
             const empExclusive410 = data410?.emp_exclusive_products ?? [];
             if (empExclusive410.length === 0) {
-              seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty: true, hasExclusiveOnly: false, expires: Date.now() + CACHE_TTL });
+              seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty: true, hasExclusiveOnly: false, expires: Date.now() + CACHE_TTL, staleExpires: Date.now() + CACHE_STALE_TTL });
               return render410(request);
             }
-            seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty: false, hasExclusiveOnly: true, expires: Date.now() + CACHE_TTL });
+            seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty: false, hasExclusiveOnly: true, expires: Date.now() + CACHE_TTL, staleExpires: Date.now() + CACHE_STALE_TTL });
             const rewriteUrl410 = new URL(`/api/listings-410/${slugParts.join('/')}${url.search}`, request.url);
             return NextResponse.rewrite(rewriteUrl410);
           } catch {
-            seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty: true, hasExclusiveOnly: false, expires: Date.now() + CACHE_TTL });
+            seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty: true, hasExclusiveOnly: false, expires: Date.now() + CACHE_TTL, staleExpires: Date.now() + CACHE_STALE_TTL });
             return render410(request);
           }
         }
