@@ -989,7 +989,7 @@ const [states, setStates] = useState<StateOption[]>([]);
     !!slug && makes.some((m) => m.slug === slug);
 
   const sanitizeMake = (value?: string | null) =>
-    isKnownMake(value) ? value! : undefined;
+    !makes.length || isKnownMake(value) ? value! : undefined;
 
   const clean = (f: Filters): Filters => ({
     ...f,
@@ -1014,9 +1014,9 @@ const [states, setStates] = useState<StateOption[]>([]);
         ),
         suburb: selectedSuburbName ?? currentFilters.suburb ?? filters.suburb,
         pincode: selectedpincode ?? currentFilters.pincode ?? filters.pincode,
-        make: selectedMake ?? filters.make,
-        model: selectedModel ?? filters.model,
-        category: selectedCategory ?? filters.category,
+        make: selectedMake ?? filters.make ?? currentFilters.make,
+        model: selectedModel ?? filters.model ?? currentFilters.model,
+        category: selectedCategory ?? filters.category ?? currentFilters.category,
       };
 
       const effectiveRadius = Number(currentFilters.radius_kms) || radiusKms;
