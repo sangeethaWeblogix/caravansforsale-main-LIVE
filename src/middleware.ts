@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { parseSlugToFilters, type Filters } from "@/app/components/urlBuilder";
 import { buildSlugFromFilters } from "@/app/components/slugBuilter";
+import { isAllowedSingleBand } from "@/utils/seo/meta";
 const API_KEY = process.env.CFS_API_KEY;
 
 /* ──────────────────────────────────────────────
@@ -210,7 +211,9 @@ async function refreshSeoCache(cacheKey: string, url: URL, request: NextRequest)
       const rawFollow = String(seo?.follow ?? "").toLowerCase().trim();
       let robots = (rawIndex === "noindex" ? "noindex" : "index") + ", " + (rawFollow === "nofollow" ? "nofollow" : "follow");
       const hasBand = !!(filters.maxKg || filters.minKg || filters.to_price || filters.from_price || filters.to_length || filters.from_length || filters.to_sleep || filters.from_sleep);
-      if (hasBand || isEmpty || hasExclusiveOnly) robots = "noindex, nofollow";
+      const hasOtherFilters = !!(filters.make || filters.model || filters.state || filters.region || filters.category);
+      const isSingleAllowedBand = hasBand && !hasOtherFilters && isAllowedSingleBand(slugParts);
+      if ((hasBand && !isSingleAllowedBand) || isEmpty || hasExclusiveOnly) robots = "noindex, nofollow";
       seoCache.set(cacheKey, { robots, isEmpty, hasExclusiveOnly, expires: Date.now() + CACHE_TTL, staleExpires: Date.now() + CACHE_STALE_TTL });
     }
   } catch {}
@@ -484,11 +487,12 @@ export async function middleware(request: NextRequest) {
             ", " +
             (rawFollow === "nofollow" ? "nofollow" : "follow");
 
-          // Band-only pages (range filter with no other filters) → always noindex.
-          // Mirrors the meta.ts rule: all band pages are noindex.
+          // Band pages: noindex unless it's a single allowed band filter with no other filters.
           const hasBand = !!(filters.maxKg || filters.minKg || filters.to_price || filters.from_price ||
             filters.to_length || filters.from_length || filters.to_sleep || filters.from_sleep);
-          if (hasBand) {
+          const hasOtherFilters = !!(filters.make || filters.model || filters.state || filters.region || filters.category);
+          const isSingleAllowedBand = hasBand && !hasOtherFilters && isAllowedSingleBand(slugParts);
+          if (hasBand && !isSingleAllowedBand) {
             robotsHeader = "noindex, nofollow";
           }
 
