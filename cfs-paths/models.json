@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "models",
-    "count": 2859,
+    "count": 2860,
     "paths": [
         "active/storm/",
         "adria/action/",
@@ -991,6 +991,7 @@
         "golf/tourer-650-3-2-bunk/",
         "golf/tourer-720-2-hardtop/",
         "goodlife-rv/extreme-196/",
+        "grand/dreamer-family/",
         "grand/halo/",
         "grand/nomad/",
         "grand/peak/",
@@ -2863,5 +2864,5 @@
         "zone-rv/venture-20-6/",
         "zone-rv/znu004/"
     ],
-    "generated_at": "2026-06-20 14:50:30"
+    "generated_at": "2026-06-20 14:52:55"
 }
