@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "models",
-    "count": 2860,
+    "count": 2861,
     "paths": [
         "active/storm/",
         "adria/action/",
@@ -300,6 +300,7 @@
         "concept/rs196/",
         "concept/rs206/",
         "concept/xtc-550/",
+        "concept/xtc-705/",
         "concorde/1906/",
         "condor/landbruiser/",
         "condor/ultimate/",
@@ -2864,5 +2865,5 @@
         "zone-rv/venture-20-6/",
         "zone-rv/znu004/"
     ],
-    "generated_at": "2026-06-20 22:06:01"
+    "generated_at": "2026-06-21 12:10:38"
 }
