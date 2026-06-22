@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "models",
-    "count": 2862,
+    "count": 2859,
     "paths": [
         "active/storm/",
         "adria/action/",
@@ -955,10 +955,8 @@
         "golf/grand-tourer-620-gt/",
         "golf/grand-tourer-620-3/",
         "golf/gtx-620-3/",
-        "golf/maxxi-390/",
         "golf/maxxi-501-1-pt/",
         "golf/maxxi-501-3/",
-        "golf/maxxi-573/",
         "golf/savannah/",
         "golf/savannah-402-poptop/",
         "golf/savannah-499/",
@@ -968,7 +966,6 @@
         "golf/savannah-maxxi/",
         "golf/savannah-maxxi-390/",
         "golf/savannah-maxxi-390-pop-top/",
-        "golf/savannah-maxxi-501/",
         "golf/savannah-maxxi-501-1/",
         "golf/savannah-maxxi-501-3/",
         "golf/savannah-maxxi-531-2/",
@@ -2866,5 +2863,5 @@
         "zone-rv/venture-20-6/",
         "zone-rv/znu004/"
     ],
-    "generated_at": "2026-06-22 17:59:53"
+    "generated_at": "2026-06-22 21:31:00"
 }
