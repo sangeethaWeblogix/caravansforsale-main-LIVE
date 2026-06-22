@@ -241,6 +241,13 @@ export async function middleware(request: NextRequest) {
 
     // Wrong URL order + value validation → 410 (URL unchanged, no redirect)
     const slugParts = url.pathname.replace('/listings', '').split('/').filter(Boolean);
+
+    // ?keyword or ?search combined with any slug-based path filter → 410
+    const hasKeywordParam = url.searchParams.has('keyword') || url.searchParams.has('search');
+    if (hasKeywordParam && slugParts.length > 0) {
+      return render410(request);
+    }
+
     if (slugParts.length > 0) {
       try {
         const filters = parseSlugToFilters(slugParts, Object.fromEntries(url.searchParams));
@@ -249,6 +256,17 @@ export async function middleware(request: NextRequest) {
         const norm = (p: string) => p.replace(/\/$/, '').toLowerCase();
         if (norm(canonicalPath) !== norm(incomingPath)) {
           return render410(request);
+        }
+
+        // Any URL with a -search slug → 410 status, page renders normally
+        if (slugParts.some(s => s.endsWith('-search'))) {
+          const h = new Headers(request.headers);
+          h.set('x-skip-middleware', '1');
+          h.set('x-pathname', url.pathname);
+          const res = NextResponse.rewrite(new URL(request.url), { status: 410, request: { headers: h } });
+          res.headers.set('X-Robots-Tag', 'noindex, nofollow');
+          res.headers.set('Cache-Control', 'no-store');
+          return res;
         }
 
         // State value validation — check the slug part before -state suffix
