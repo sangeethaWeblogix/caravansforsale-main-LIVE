@@ -104,7 +104,8 @@ function hasAnyFilter(filters: Filters): boolean {
     filters.from_length || filters.to_length ||
     filters.from_sleep || filters.to_sleep ||
     filters.from_price || filters.to_price ||
-    (filters as any).search || (filters as any).keyword
+    (filters as any).search || (filters as any).keyword ||
+    (filters as any).acustom_fromyears || (filters as any).acustom_toyears
   );
 }
 

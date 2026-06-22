@@ -23,7 +23,8 @@ export default function ListingBottomSections({
   );
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [isLoading, setIsLoading] = useState(false);
-  const [inView, setInView] = useState(false);
+  // If server provided initialData, start as in-view so filter changes fetch immediately
+  const [inView, setInView] = useState(initialData !== undefined);
   const sectionRef = useRef<HTMLDivElement>(null);
   // tracks the last params string we fetched — undefined = never fetched
   const lastFetchedParamsRef = useRef<string | undefined>(undefined);
@@ -50,17 +51,6 @@ export default function ListingBottomSections({
     const params = getBottomLinksParams(filters);
     const paramsStr = params.toString();
 
-    // First time section comes into view: if server provided initialData, trust it
-    // and skip the redundant initial fetch
-    if (lastFetchedParamsRef.current === undefined) {
-      lastFetchedParamsRef.current = paramsStr;
-      if (initialData !== undefined) return;
-    }
-
-    // Same params as last fetch — no change needed
-    if (lastFetchedParamsRef.current === paramsStr) return;
-    lastFetchedParamsRef.current = paramsStr;
-
     const hasFilters = !!(
       filters.make || filters.model || filters.category || filters.condition ||
       filters.state || filters.region || filters.suburb ||
@@ -68,8 +58,24 @@ export default function ListingBottomSections({
       filters.from_length || filters.to_length ||
       filters.from_sleep || filters.to_sleep ||
       filters.from_price || filters.to_price ||
-      filters.search || filters.keyword
+      filters.search || filters.keyword ||
+      filters.acustom_fromyears || filters.acustom_toyears
     );
+
+    // Sentinel distinguishes "no filter" (paramsStr="") from "unsupported combo" (paramsStr="" + hasFilters)
+    // Both produce empty paramsStr but need different behaviour — without this, dedup blocks the hide
+    const cacheKey = (paramsStr === "" && hasFilters) ? "__hidden__" : paramsStr;
+
+    // First time section comes into view: if server provided initialData, trust it
+    // and skip the redundant initial fetch
+    if (lastFetchedParamsRef.current === undefined) {
+      lastFetchedParamsRef.current = cacheKey;
+      if (initialData !== undefined) return;
+    }
+
+    // Same state as last fetch — no change needed
+    if (lastFetchedParamsRef.current === cacheKey) return;
+    lastFetchedParamsRef.current = cacheKey;
 
     // Unsupported filter combo — hide section
     if (paramsStr === "" && hasFilters) { setData(null); return; }
@@ -94,11 +100,13 @@ export default function ListingBottomSections({
     inView,
     filters.make, filters.model,
     filters.state, filters.region, filters.suburb,
-    filters.category,
+    filters.category, filters.condition,
     filters.minKg, filters.maxKg,
     filters.from_length, filters.to_length,
     filters.from_sleep, filters.to_sleep,
     filters.from_price, filters.to_price,
+    filters.search, filters.keyword,
+    filters.acustom_fromyears, filters.acustom_toyears,
   ]);
 
   const sections = data?.sections ? Object.entries(data.sections) : [];
