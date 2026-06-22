@@ -25,21 +25,11 @@ export default function ListingBottomSections({
   const [isLoading, setIsLoading] = useState(false);
   const [inView, setInView] = useState(false);
   const sectionRef = useRef<HTMLDivElement>(null);
+  // tracks the last params string we fetched — undefined = never fetched
+  const lastFetchedParamsRef = useRef<string | undefined>(undefined);
 
-  // Sync when server provides new initialData (soft navigation to new URL)
+  // IntersectionObserver: always set up on mount
   useEffect(() => {
-    if (initialData !== undefined) {
-      setData(initialData ?? null);
-      if (initialData?.sections) {
-        setActiveTab(Object.keys(initialData.sections)[0] ?? "");
-        setVisibleCount(PAGE_SIZE);
-      }
-    }
-  }, [initialData]);
-
-  // IntersectionObserver: only needed as fallback when no server data
-  useEffect(() => {
-    if (initialData) return;
     const el = sectionRef.current;
     if (!el) return;
     const observer = new IntersectionObserver(
@@ -48,12 +38,28 @@ export default function ListingBottomSections({
     );
     observer.observe(el);
     return () => observer.disconnect();
-  }, [initialData]);
+  }, []);
 
-  // Client-side fetch: fallback only when no server data and section is in view
+  // Client-side fetch: re-runs whenever filters change.
+  // updateURLWithFilters uses window.history.pushState (not router.push),
+  // so the server component never re-renders after initial load.
+  // This effect is the only mechanism that keeps bottom links in sync with filters.
   useEffect(() => {
-    if (initialData !== undefined || !inView || !API_BASE) return;
+    if (!inView || !API_BASE) return;
+
     const params = getBottomLinksParams(filters);
+    const paramsStr = params.toString();
+
+    // First time section comes into view: if server provided initialData, trust it
+    // and skip the redundant initial fetch
+    if (lastFetchedParamsRef.current === undefined) {
+      lastFetchedParamsRef.current = paramsStr;
+      if (initialData !== undefined) return;
+    }
+
+    // Same params as last fetch — no change needed
+    if (lastFetchedParamsRef.current === paramsStr) return;
+    lastFetchedParamsRef.current = paramsStr;
 
     const hasFilters = !!(
       filters.make || filters.model || filters.category || filters.condition ||
@@ -61,14 +67,17 @@ export default function ListingBottomSections({
       filters.minKg || filters.maxKg ||
       filters.from_length || filters.to_length ||
       filters.from_sleep || filters.to_sleep ||
-      filters.from_price || filters.to_price
+      filters.from_price || filters.to_price ||
+      filters.search || filters.keyword
     );
-    if (params.toString() === "" && hasFilters) { setData(null); return; }
+
+    // Unsupported filter combo — hide section
+    if (paramsStr === "" && hasFilters) { setData(null); return; }
 
     setIsLoading(true);
     setData(null);
 
-    fetch(`${API_BASE}/listing-internal-links?${params.toString()}`, {
+    fetch(`${API_BASE}/listing-internal-links?${paramsStr}`, {
       headers: { Accept: "application/json" },
     })
       .then((r) => (r.ok ? r.json() : null))
@@ -82,7 +91,7 @@ export default function ListingBottomSections({
       .catch(() => {})
       .finally(() => setIsLoading(false));
   }, [
-    inView, initialData,
+    inView,
     filters.make, filters.model,
     filters.state, filters.region, filters.suburb,
     filters.category,

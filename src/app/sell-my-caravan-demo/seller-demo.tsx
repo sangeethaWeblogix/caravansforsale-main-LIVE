@@ -3,6 +3,15 @@ import "@fortawesome/fontawesome-free/css/fontawesome.min.css";
 import "@fortawesome/fontawesome-free/css/solid.min.css";
 import { useState } from "react";
 
+const STATE_LINKS = [
+  { label: "Victoria",              img: "/images/vic_map.svg", href: "/sell-my-caravan/" },
+  { label: "New South Wales",       img: "/images/nsw_map.svg", href: "/sell-my-caravan/" },
+  { label: "Queensland",            img: "/images/qld_map.svg", href: "/sell-my-caravan/" },
+  { label: "Western Australia",     img: "/images/wa_map.svg",  href: "/sell-my-caravan/" },
+  { label: "South Australia",       img: "/images/sa_map.svg",  href: "/sell-my-caravan/" },
+  { label: "Tasmania",              img: "/images/tas_map.svg", href: "/sell-my-caravan/" },
+];
+
 const CITY_LINKS = [
   { label: "Sell My Caravan Melbourne", href: "/sell-my-caravan/" },
   { label: "Sell My Caravan Sydney", href: "/sell-my-caravan/" },
@@ -325,11 +334,28 @@ export default function SellerDemo() {
       <section className="demo-city-section">
         <div className="container">
           <h2 className="demo-section-title">Sell Your Caravan Across Australia</h2>
+
+          {/* State cards */}
+          <div className="demo-state-grid">
+            {STATE_LINKS.map((s) => (
+              <a href={s.href} key={s.label} className="demo-state-item">
+                <div className="demo-state-item__img">
+                  <img src={s.img} alt={s.label} />
+                </div>
+                <span className="demo-state-item__label">{s.label}</span>
+              </a>
+            ))}
+          </div>
+
+          {/* City cards */}
           <div className="demo-city-grid">
             {CITY_LINKS.map((c) => (
               <a href={c.href} key={c.label} className="demo-city-item">
-                <span className="demo-city-icon">🚐</span>
-                <span>{c.label}</span>
+                <span className="demo-city-icon">
+                  <img src="/images/caravan.png" alt="" />
+                </span>
+                <span className="demo-city-label">{c.label}</span>
+                <i className="fa-solid fa-chevron-right demo-city-arrow" />
               </a>
             ))}
           </div>

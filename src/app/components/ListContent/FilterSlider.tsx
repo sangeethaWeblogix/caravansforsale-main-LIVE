@@ -128,6 +128,12 @@ const ATM_OPTIONS = [
   600, 800, 1000, 1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000, 3500, 4000,
   4500,
 ];
+const SLEEP_OPTIONS = [1, 2, 3, 4, 5, 6, 7];
+const LENGTH_OPTIONS = [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28];
+const YEAR_OPTIONS = [
+  2026, 2025, 2024, 2023, 2022, 2021, 2020, 2019, 2018, 2017, 2016, 2015,
+  2014, 2013, 2012, 2011, 2010, 2009, 2008, 2007, 2006, 2005, 2004, 2000, 1975,
+];
 
 const FilterSlider = ({
   currentFilters,
@@ -350,6 +356,13 @@ const [states, setStates] = useState<StateOption[]>(
   const [tempAtmFrom, setTempAtmFrom] = useState<number | null>(null);
   const [tempAtmTo, setTempAtmTo] = useState<number | null>(null);
   const [tempCondition, setTempCondition] = useState<string | null>(null);
+  const [tempSleepFrom, setTempSleepFrom] = useState<number | null>(null);
+  const [tempSleepTo, setTempSleepTo] = useState<number | null>(null);
+  const [tempLengthFrom, setTempLengthFrom] = useState<number | null>(null);
+  const [tempLengthTo, setTempLengthTo] = useState<number | null>(null);
+  const [tempYearFrom, setTempYearFrom] = useState<number | null>(null);
+  const [tempYearTo, setTempYearTo] = useState<number | null>(null);
+  const [tempKeyword, setTempKeyword] = useState<string>("");
   const [openModal, setOpenModal] = useState<
     | "type"
     | "location"
@@ -358,6 +371,10 @@ const [states, setStates] = useState<StateOption[]>(
     | "make"
     | "suburb"
     | "condition"
+    | "sleep"
+    | "year"
+    | "length"
+    | "keyword"
     | null
   >(null);
 
@@ -441,6 +458,71 @@ const [states, setStates] = useState<StateOption[]>(
       maxKg: undefined,
     });
 
+    setOpenModal(null);
+  };
+
+  const handleSleepOpen = () => {
+    const f = getEffectiveFilters();
+    setTempSleepFrom(f.from_sleep ? Number(f.from_sleep) : null);
+    setTempSleepTo(f.to_sleep ? Number(f.to_sleep) : null);
+    setOpenModal("sleep");
+  };
+  const handleSleepSearch = () => {
+    updateFiltersAndURL({ from_sleep: tempSleepFrom ?? undefined, to_sleep: tempSleepTo ?? undefined });
+    setOpenModal(null);
+  };
+  const handleSleepClear = () => {
+    setTempSleepFrom(null);
+    setTempSleepTo(null);
+    updateFiltersAndURL({ from_sleep: undefined, to_sleep: undefined });
+    setOpenModal(null);
+  };
+
+  const handleLengthOpen = () => {
+    const f = getEffectiveFilters();
+    setTempLengthFrom(f.from_length ? Number(f.from_length) : null);
+    setTempLengthTo(f.to_length ? Number(f.to_length) : null);
+    setOpenModal("length");
+  };
+  const handleLengthSearch = () => {
+    updateFiltersAndURL({ from_length: tempLengthFrom ?? undefined, to_length: tempLengthTo ?? undefined });
+    setOpenModal(null);
+  };
+  const handleLengthClear = () => {
+    setTempLengthFrom(null);
+    setTempLengthTo(null);
+    updateFiltersAndURL({ from_length: undefined, to_length: undefined });
+    setOpenModal(null);
+  };
+
+  const handleYearOpen = () => {
+    const f = getEffectiveFilters();
+    setTempYearFrom(f.acustom_fromyears ? Number(f.acustom_fromyears) : null);
+    setTempYearTo(f.acustom_toyears ? Number(f.acustom_toyears) : null);
+    setOpenModal("year");
+  };
+  const handleYearSearch = () => {
+    updateFiltersAndURL({ acustom_fromyears: tempYearFrom ?? undefined, acustom_toyears: tempYearTo ?? undefined });
+    setOpenModal(null);
+  };
+  const handleYearClear = () => {
+    setTempYearFrom(null);
+    setTempYearTo(null);
+    updateFiltersAndURL({ acustom_fromyears: undefined, acustom_toyears: undefined });
+    setOpenModal(null);
+  };
+
+  const handleKeywordOpen = () => {
+    setTempKeyword(getEffectiveFilters().keyword ?? "");
+    setOpenModal("keyword");
+  };
+  const handleKeywordSearch = () => {
+    updateFiltersAndURL({ keyword: tempKeyword.trim() || undefined });
+    setOpenModal(null);
+  };
+  const handleKeywordClear = () => {
+    setTempKeyword("");
+    updateFiltersAndURL({ keyword: undefined });
     setOpenModal(null);
   };
 
@@ -777,6 +859,38 @@ const [states, setStates] = useState<StateOption[]>(
                 </span>
               )}
             </button>
+
+            <button
+              style={{ display: "none" }}
+              className={`tag ${currentFilters.from_sleep || currentFilters.to_sleep ? "active" : ""}`}
+              onClick={handleSleepOpen}
+            >
+              Sleep
+            </button>
+
+            <button
+              style={{ display: "none" }}
+              className={`tag ${currentFilters.acustom_fromyears || currentFilters.acustom_toyears ? "active" : ""}`}
+              onClick={handleYearOpen}
+            >
+              Year
+            </button>
+
+            <button
+              style={{ display: "none" }}
+              className={`tag ${currentFilters.from_length || currentFilters.to_length ? "active" : ""}`}
+              onClick={handleLengthOpen}
+            >
+              Length
+            </button>
+
+            <button
+              style={{ display: "none" }}
+              className={`tag ${currentFilters.keyword ? "active" : ""}`}
+              onClick={handleKeywordOpen}
+            >
+              Search by Keyword
+            </button>
           </div>
         </div>
       </div>
@@ -798,127 +912,153 @@ const [states, setStates] = useState<StateOption[]>(
         currentFilters.acustom_fromyears ||
         currentFilters.acustom_toyears ||
         currentFilters.from_length ||
-        currentFilters.to_length) && (
+        currentFilters.to_length ||
+        currentFilters.keyword) && (
         <div className="active-chips-row">
           {/* 1. Make */}
           {currentFilters.make && (
             <span className={`active-chip${removingChip === "make" ? " chip-removing" : ""}`}>
-              {toTitleCase(
-                makeCounts.find((m) => m.slug === currentFilters.make)?.name ??
-                  makes.find((m) => m.slug === currentFilters.make)?.name ??
-                  currentFilters.make,
-              )}
+              <span className="chip-label" onClick={handleMakeOpen}>
+                {toTitleCase(
+                  makeCounts.find((m) => m.slug === currentFilters.make)?.name ??
+                    makes.find((m) => m.slug === currentFilters.make)?.name ??
+                    currentFilters.make,
+                )}
+              </span>
               <span className="chip-close" onClick={() => removeChip("make", { make: undefined, model: undefined })}>×</span>
             </span>
           )}
           {/* 2. Model */}
           {currentFilters.model && (
             <span className={`active-chip${removingChip === "model" ? " chip-removing" : ""}`}>
-              {toTitleCase(
-                lastModelName ??
-                  modelCounts.find((m) => m.slug === currentFilters.model)?.name ??
-                  currentFilters.model.replace(/-/g, " "),
-              )}
+              <span className="chip-label" onClick={handleMakeOpen}>
+                {toTitleCase(
+                  lastModelName ??
+                    modelCounts.find((m) => m.slug === currentFilters.model)?.name ??
+                    currentFilters.model.replace(/-/g, " "),
+                )}
+              </span>
               <span className="chip-close" onClick={() => removeChip("model", { model: undefined })}>×</span>
             </span>
           )}
           {/* 3. Condition */}
           {currentFilters.condition && (
             <span className={`active-chip${removingChip === "condition" ? " chip-removing" : ""}`}>
-              {currentFilters.condition?.toLowerCase() === "new" ? "New" : "Used"}
+              <span className="chip-label" onClick={handleConditionOpen}>
+                {currentFilters.condition?.toLowerCase() === "new" ? "New" : "Used"}
+              </span>
               <span className="chip-close" onClick={() => removeChip("condition", { condition: undefined })}>×</span>
             </span>
           )}
           {/* 4. Category */}
           {currentFilters.category && (
             <span className={`active-chip${removingChip === "category" ? " chip-removing" : ""}`}>
-              {(() => {
-                const slug = currentFilters.category!;
-                const allCats = productListData?.data?.all_categories ?? [];
-                return toTitleCase(
-                  categoryCounts.find((c) => c.slug === slug)?.name ??
-                  cachedCategoryCountsRef.current.find((c) => c.slug === slug)?.name ??
-                  allCats.find((c) => c.slug === slug || c.slug === slug + "-category" || c.slug.replace(/-category$/, "") === slug)?.name ??
-                  slug.replace(/-/g, " "),
-                );
-              })()}
+              <span className="chip-label" onClick={handleTypeOpen}>
+                {(() => {
+                  const slug = currentFilters.category!;
+                  const allCats = productListData?.data?.all_categories ?? [];
+                  return toTitleCase(
+                    categoryCounts.find((c) => c.slug === slug)?.name ??
+                    cachedCategoryCountsRef.current.find((c) => c.slug === slug)?.name ??
+                    allCats.find((c) => c.slug === slug || c.slug === slug + "-category" || c.slug.replace(/-category$/, "") === slug)?.name ??
+                    slug.replace(/-/g, " "),
+                  );
+                })()}
+              </span>
               <span className="chip-close" onClick={() => removeChip("category", { category: undefined })}>×</span>
             </span>
           )}
           {/* 5. State */}
           {currentFilters.state && (
             <span className={`active-chip${removingChip === "state" ? " chip-removing" : ""}`}>
-              {toTitleCase(currentFilters.state)}
+              <span className="chip-label" onClick={handleLocationOpen}>{toTitleCase(currentFilters.state)}</span>
               <span className="chip-close" onClick={() => removeChip("state", { state: undefined, region: undefined, suburb: undefined, pincode: undefined, radius_kms: undefined })}>×</span>
             </span>
           )}
           {/* 6. Region */}
           {currentFilters.region && (
             <span className={`active-chip${removingChip === "region" ? " chip-removing" : ""}`}>
-              {toTitleCase(currentFilters.region)}
+              <span className="chip-label" onClick={handleLocationOpen}>{toTitleCase(currentFilters.region)}</span>
               <span className="chip-close" onClick={() => removeChip("region", { region: undefined, suburb: undefined, pincode: undefined, radius_kms: undefined })}>×</span>
             </span>
           )}
           {/* 7. Suburb */}
           {currentFilters.suburb && (
             <span className={`active-chip${removingChip === "suburb" ? " chip-removing" : ""}`}>
-              {toTitleCase(currentFilters.suburb)}
+              <span className="chip-label" onClick={handleLocationOpen}>{toTitleCase(currentFilters.suburb)}</span>
               <span className="chip-close" onClick={() => removeChip("suburb", { suburb: undefined, pincode: undefined, radius_kms: undefined })}>×</span>
             </span>
           )}
           {/* 8. Price */}
           {(currentFilters.from_price || currentFilters.to_price) && (
             <span className={`active-chip${removingChip === "price" ? " chip-removing" : ""}`}>
-              {currentFilters.from_price && currentFilters.to_price
-                ? `$${Number(currentFilters.from_price).toLocaleString()} – $${Number(currentFilters.to_price).toLocaleString()}`
-                : currentFilters.from_price
-                  ? `From $${Number(currentFilters.from_price).toLocaleString()}`
-                  : `Upto $${Number(currentFilters.to_price).toLocaleString()}`}
+              <span className="chip-label" onClick={handlePriceOpen}>
+                {currentFilters.from_price && currentFilters.to_price
+                  ? `$${Number(currentFilters.from_price).toLocaleString()} – $${Number(currentFilters.to_price).toLocaleString()}`
+                  : currentFilters.from_price
+                    ? `From $${Number(currentFilters.from_price).toLocaleString()}`
+                    : `Upto $${Number(currentFilters.to_price).toLocaleString()}`}
+              </span>
               <span className="chip-close" onClick={() => removeChip("price", { from_price: undefined, to_price: undefined })}>×</span>
             </span>
           )}
           {/* 9. ATM */}
           {(currentFilters.minKg || currentFilters.maxKg) && (
             <span className={`active-chip${removingChip === "atm" ? " chip-removing" : ""}`}>
-              {currentFilters.minKg && currentFilters.maxKg
-                ? `${Number(currentFilters.minKg).toLocaleString()} kg – ${Number(currentFilters.maxKg).toLocaleString()} kg`
-                : currentFilters.minKg
-                  ? `From ${Number(currentFilters.minKg).toLocaleString()} kg`
-                  : `Upto ${Number(currentFilters.maxKg).toLocaleString()} kg`}
+              <span className="chip-label" onClick={handleAtmOpen}>
+                {currentFilters.minKg && currentFilters.maxKg
+                  ? `${Number(currentFilters.minKg).toLocaleString()} kg – ${Number(currentFilters.maxKg).toLocaleString()} kg`
+                  : currentFilters.minKg
+                    ? `From ${Number(currentFilters.minKg).toLocaleString()} kg`
+                    : `Upto ${Number(currentFilters.maxKg).toLocaleString()} kg`}
+              </span>
               <span className="chip-close" onClick={() => removeChip("atm", { minKg: undefined, maxKg: undefined })}>×</span>
             </span>
           )}
           {/* 10. Length */}
           {(currentFilters.from_length || currentFilters.to_length) && (
             <span className={`active-chip${removingChip === "length" ? " chip-removing" : ""}`}>
-              {currentFilters.from_length && currentFilters.to_length
-                ? `${currentFilters.from_length}ft – ${currentFilters.to_length}ft`
-                : currentFilters.from_length
-                  ? `From ${currentFilters.from_length}ft`
-                  : `Upto ${currentFilters.to_length}ft`}
+              <span className="chip-label" onClick={handleLengthOpen}>
+                {currentFilters.from_length && currentFilters.to_length
+                  ? `${currentFilters.from_length}ft – ${currentFilters.to_length}ft`
+                  : currentFilters.from_length
+                    ? `From ${currentFilters.from_length}ft`
+                    : `Upto ${currentFilters.to_length}ft`}
+              </span>
               <span className="chip-close" onClick={() => removeChip("length", { from_length: undefined, to_length: undefined })}>×</span>
             </span>
           )}
           {/* 11. Sleep */}
           {(currentFilters.from_sleep || currentFilters.to_sleep) && (
             <span className={`active-chip${removingChip === "sleep" ? " chip-removing" : ""}`}>
-              {currentFilters.from_sleep && currentFilters.to_sleep
-                ? `${currentFilters.from_sleep} – ${currentFilters.to_sleep} Berths`
-                : currentFilters.from_sleep
-                  ? `From ${currentFilters.from_sleep} Berths`
-                  : `Upto ${currentFilters.to_sleep} Berths`}
+              <span className="chip-label" onClick={handleSleepOpen}>
+                {currentFilters.from_sleep && currentFilters.to_sleep
+                  ? `${currentFilters.from_sleep} – ${currentFilters.to_sleep} Berths`
+                  : currentFilters.from_sleep
+                    ? `From ${currentFilters.from_sleep} Berths`
+                    : `Upto ${currentFilters.to_sleep} Berths`}
+              </span>
               <span className="chip-close" onClick={() => removeChip("sleep", { from_sleep: undefined, to_sleep: undefined })}>×</span>
             </span>
           )}
           {/* 12. Year */}
           {(currentFilters.acustom_fromyears || currentFilters.acustom_toyears) && (
             <span className={`active-chip${removingChip === "year" ? " chip-removing" : ""}`}>
-              {currentFilters.acustom_fromyears && currentFilters.acustom_toyears
-                ? `${currentFilters.acustom_fromyears} – ${currentFilters.acustom_toyears}`
-                : currentFilters.acustom_fromyears
-                  ? `From ${currentFilters.acustom_fromyears}`
-                  : `${currentFilters.acustom_toyears}`}
+              <span className="chip-label" onClick={handleYearOpen}>
+                {currentFilters.acustom_fromyears && currentFilters.acustom_toyears
+                  ? `${currentFilters.acustom_fromyears} – ${currentFilters.acustom_toyears}`
+                  : currentFilters.acustom_fromyears
+                    ? `From ${currentFilters.acustom_fromyears}`
+                    : `${currentFilters.acustom_toyears}`}
+              </span>
               <span className="chip-close" onClick={() => removeChip("year", { acustom_fromyears: undefined, acustom_toyears: undefined })}>×</span>
+            </span>
+          )}
+          {/* 13. Keyword */}
+          {currentFilters.keyword && (
+            <span className={`active-chip${removingChip === "keyword" ? " chip-removing" : ""}`}>
+              <span className="chip-label" onClick={handleKeywordOpen}>{currentFilters.keyword}</span>
+              <span className="chip-close" onClick={() => removeChip("keyword", { keyword: undefined })}>×</span>
             </span>
           )}
           <button
@@ -1575,6 +1715,251 @@ const [states, setStates] = useState<StateOption[]>(
               <button
                 className={`search ${tempCondition ? "active" : ""}`}
                 onClick={handleConditionSearch}
+              >
+                Search
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Sleep Modal */}
+      {openModal === "sleep" && (
+        <div className="filter-overlay">
+          <div className="filter-modal">
+            <div className="filter-header">
+              <h3>Sleeping Capacity</h3>
+              {closeBtn}
+            </div>
+            <div className="filter-body">
+              <div className="row">
+                <div className="col-lg-6">
+                  <div className="location-item">
+                    <label>Min</label>
+                    <select
+                      className="cfs-select-input form-select"
+                      value={tempSleepFrom ?? ""}
+                      onChange={(e) => setTempSleepFrom(e.target.value ? Number(e.target.value) : null)}
+                    >
+                      <option value="">Any</option>
+                      {SLEEP_OPTIONS.map((v) => (
+                        <option key={v} value={v}>{v} {v === 1 ? "person" : "people"}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <div className="col-lg-6">
+                  <div className="location-item">
+                    <label>Max</label>
+                    <select
+                      className="cfs-select-input form-select"
+                      value={tempSleepTo ?? ""}
+                      onChange={(e) => setTempSleepTo(e.target.value ? Number(e.target.value) : null)}
+                    >
+                      <option value="">Any</option>
+                      {SLEEP_OPTIONS
+                        .filter((v) => !tempSleepFrom || v >= tempSleepFrom)
+                        .map((v) => (
+                          <option key={v} value={v}>{v} {v === 1 ? "person" : "people"}</option>
+                        ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="filter-footer">
+              <button
+                className="clear"
+                onClick={handleSleepClear}
+                style={{
+                  opacity: tempSleepFrom || tempSleepTo ? 1 : 0.4,
+                  cursor: tempSleepFrom || tempSleepTo ? "pointer" : "not-allowed",
+                }}
+              >
+                Clear filters
+              </button>
+              <button
+                className={`search ${tempSleepFrom || tempSleepTo ? "active" : ""}`}
+                onClick={handleSleepSearch}
+              >
+                Search
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Year Modal */}
+      {openModal === "year" && (
+        <div className="filter-overlay">
+          <div className="filter-modal">
+            <div className="filter-header">
+              <h3>Year Range</h3>
+              {closeBtn}
+            </div>
+            <div className="filter-body">
+              <div className="row">
+                <div className="col-lg-6">
+                  <div className="location-item">
+                    <label>From</label>
+                    <select
+                      className="cfs-select-input form-select"
+                      value={tempYearFrom ?? ""}
+                      onChange={(e) => setTempYearFrom(e.target.value ? Number(e.target.value) : null)}
+                    >
+                      <option value="">Any</option>
+                      {YEAR_OPTIONS.map((v) => (
+                        <option key={v} value={v}>{v}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <div className="col-lg-6">
+                  <div className="location-item">
+                    <label>To</label>
+                    <select
+                      className="cfs-select-input form-select"
+                      value={tempYearTo ?? ""}
+                      onChange={(e) => setTempYearTo(e.target.value ? Number(e.target.value) : null)}
+                    >
+                      <option value="">Any</option>
+                      {YEAR_OPTIONS
+                        .filter((v) => !tempYearFrom || v >= tempYearFrom)
+                        .map((v) => (
+                          <option key={v} value={v}>{v}</option>
+                        ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="filter-footer">
+              <button
+                className="clear"
+                onClick={handleYearClear}
+                style={{
+                  opacity: tempYearFrom || tempYearTo ? 1 : 0.4,
+                  cursor: tempYearFrom || tempYearTo ? "pointer" : "not-allowed",
+                }}
+              >
+                Clear filters
+              </button>
+              <button
+                className={`search ${tempYearFrom || tempYearTo ? "active" : ""}`}
+                onClick={handleYearSearch}
+              >
+                Search
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Length Modal */}
+      {openModal === "length" && (
+        <div className="filter-overlay">
+          <div className="filter-modal">
+            <div className="filter-header">
+              <h3>Length (ft)</h3>
+              {closeBtn}
+            </div>
+            <div className="filter-body">
+              <div className="row">
+                <div className="col-lg-6">
+                  <div className="location-item">
+                    <label>Min</label>
+                    <select
+                      className="cfs-select-input form-select"
+                      value={tempLengthFrom ?? ""}
+                      onChange={(e) => setTempLengthFrom(e.target.value ? Number(e.target.value) : null)}
+                    >
+                      <option value="">Any</option>
+                      {LENGTH_OPTIONS.map((v) => (
+                        <option key={v} value={v}>{v} ft</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <div className="col-lg-6">
+                  <div className="location-item">
+                    <label>Max</label>
+                    <select
+                      className="cfs-select-input form-select"
+                      value={tempLengthTo ?? ""}
+                      onChange={(e) => setTempLengthTo(e.target.value ? Number(e.target.value) : null)}
+                    >
+                      <option value="">Any</option>
+                      {LENGTH_OPTIONS
+                        .filter((v) => !tempLengthFrom || v >= tempLengthFrom)
+                        .map((v) => (
+                          <option key={v} value={v}>{v} ft</option>
+                        ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="filter-footer">
+              <button
+                className="clear"
+                onClick={handleLengthClear}
+                style={{
+                  opacity: tempLengthFrom || tempLengthTo ? 1 : 0.4,
+                  cursor: tempLengthFrom || tempLengthTo ? "pointer" : "not-allowed",
+                }}
+              >
+                Clear filters
+              </button>
+              <button
+                className={`search ${tempLengthFrom || tempLengthTo ? "active" : ""}`}
+                onClick={handleLengthSearch}
+              >
+                Search
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Keyword Modal */}
+      {openModal === "keyword" && (
+        <div className="filter-overlay">
+          <div className="filter-modal">
+            <div className="filter-header">
+              <h3>Search by Keyword</h3>
+              {closeBtn}
+            </div>
+            <div className="filter-body">
+              <div className="location-item">
+                <div style={{ position: "relative" }}>
+                  <i className="bi bi-search" style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "#999", fontSize: 14 }}></i>
+                  <input
+                    type="text"
+                    className="cfs-select-input form-control"
+                    placeholder="Try caravans with bunks"
+                    autoComplete="off"
+                    autoFocus
+                    value={tempKeyword}
+                    style={{ paddingLeft: 36 }}
+                    onChange={(e) => setTempKeyword(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter" && tempKeyword.trim()) handleKeywordSearch(); }}
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="filter-footer">
+              <button
+                className="clear"
+                onClick={handleKeywordClear}
+                style={{
+                  opacity: tempKeyword.trim() ? 1 : 0.4,
+                  cursor: tempKeyword.trim() ? "pointer" : "not-allowed",
+                }}
+              >
+                Clear filters
+              </button>
+              <button
+                className={`search ${tempKeyword.trim() ? "active" : ""}`}
+                onClick={handleKeywordSearch}
               >
                 Search
               </button>

@@ -300,6 +300,10 @@ const [states, setStates] = useState<StateOption[]>([]);
   const [selectedMakeTemp, setSelectedMakeTemp] = useState<string | null>(null);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const categoryRef = useRef<HTMLDivElement>(null);
+  const sleepRef = useRef<HTMLDivElement>(null);
+  const yearRef = useRef<HTMLDivElement>(null);
+  const lengthRef = useRef<HTMLDivElement>(null);
+  const keywordRef = useRef<HTMLDivElement>(null);
 
   const [baseKeywords, setBaseKeywords] = useState<KeywordItem[]>([]);
   const [keywordLoading, setKeywordLoading] = useState(false);
@@ -2092,13 +2096,17 @@ fetch(`/api/params-count?${catParams.toString()}`, { signal })
   ]);
 
   useEffect(() => {
-    if (focusSection === "category" && categoryRef.current) {
-      // Small delay so modal finishes rendering first
+    const refMap: Record<string, React.RefObject<HTMLDivElement | null>> = {
+      category: categoryRef,
+      sleep: sleepRef,
+      year: yearRef,
+      length: lengthRef,
+      keyword: keywordRef,
+    };
+    const ref = focusSection ? refMap[focusSection] : null;
+    if (ref?.current) {
       setTimeout(() => {
-        categoryRef.current?.scrollIntoView({
-          behavior: "smooth",
-          block: "start",
-        });
+        ref.current?.scrollIntoView({ behavior: "smooth", block: "start" });
       }, 100);
     }
   }, [focusSection]);
@@ -2653,7 +2661,7 @@ fetch(`/api/params-count?${catParams.toString()}`, { signal })
                   })}
                 </ul>
               </div>
-              <div className="filter-item">
+              <div className="filter-item" ref={sleepRef}>
                 <h4>Sleep</h4>
                 <div className="location-list">
                   <div className="row">
@@ -2707,7 +2715,7 @@ fetch(`/api/params-count?${catParams.toString()}`, { signal })
                   </div>
                 </div>
               </div>
-              <div className="filter-item">
+              <div className="filter-item" ref={yearRef}>
                 <h4>Year</h4>
                 <div className="location-list">
                   <div className="row">
@@ -2752,7 +2760,7 @@ fetch(`/api/params-count?${catParams.toString()}`, { signal })
                   </div>
                 </div>
               </div>
-              <div className="filter-item">
+              <div className="filter-item" ref={lengthRef}>
                 <h4>Length</h4>
                 <div className="location-list">
                   <div className="row">
@@ -2807,7 +2815,7 @@ fetch(`/api/params-count?${catParams.toString()}`, { signal })
                   </div>
                 </div>
               </div>
-              <div className="filter-item search-filter">
+              <div className="filter-item search-filter" ref={keywordRef}>
                 <h4>Search by Keyword</h4>
                 <div className="search-box">
                   <div className="secrch_icon">

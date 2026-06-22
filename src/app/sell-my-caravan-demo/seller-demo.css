@@ -940,14 +940,14 @@
 .demo-faq-head h2 {
   font-size: 32px;
   font-weight: 800;
-  color: #0c1f3f;
+  color: #000000;
   margin-bottom: 10px;
 }
 
 .demo-faq-head p {
-  font-size: 15px;
-  color: #666;
-  margin: 0;
+    color: #000000;
+    margin: 0;
+    font-size: 16px;
 }
 
 .demo-faq-list {
@@ -1083,11 +1083,71 @@
 
 /* ── Section title ── */
 .demo-section-title {
-  font-size: 26px;
-  font-weight: 700;
+  font-size: 32px;
+  font-weight: 800;
   color: #1a1a1a;
-  margin-bottom: 30px;
+  margin-bottom: 40px;
   text-align: center;
+}
+
+/* .demo-section-title::after {
+  content: '';
+  display: block;
+  width: 60px;
+  height: 3px;
+  background: #f58333;
+  border-radius: 2px;
+  margin: 12px auto 32px;
+} */
+
+/* ── State cards ── */
+.demo-state-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.demo-state-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  border-radius: 12px;
+  padding: 24px 12px 20px;
+  text-decoration: none;
+  color: #1a1a1a;
+  font-size: 15px;
+  font-weight: 700;
+  text-align: center;
+  transition: border-color 0.18s, box-shadow 0.18s;
+}
+
+.demo-state-item:hover {
+  border-color: #f58333;
+  box-shadow: 0 4px 18px rgba(245,131,51,.15);
+  text-decoration: none;
+  color: #1a1a1a;
+}
+
+.demo-state-item__img {
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.demo-state-item__img img {
+  height: 60px;
+  max-width: 100%;
+  width: auto;
+  filter: invert(55%) sepia(80%) saturate(700%) hue-rotate(340deg) brightness(95%);
+}
+
+.demo-state-item__label {
+  line-height: 1.3;
 }
 
 /* ── City links ── */
@@ -1098,32 +1158,56 @@
 
 .demo-city-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(5, 1fr);
   gap: 14px;
 }
 
 .demo-city-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  background: #f5f5f5;
-  border-radius: 8px;
-  padding: 14px 16px;
+  gap: 12px;
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  border-radius: 10px;
+  padding: 16px 18px;
   text-decoration: none;
   color: #1a1a1a;
   font-size: 14px;
-  font-weight: 500;
-  transition: background 0.18s, color 0.18s;
+  font-weight: 600;
+  transition: border-color 0.18s, box-shadow 0.18s, color 0.18s;
 }
 
 .demo-city-item:hover {
-  background: #f58333;
-  color: #fff;
+  border-color: #f58333;
+  box-shadow: 0 2px 12px rgba(245,131,51,.15);
+  color: #f58333;
   text-decoration: none;
 }
 
 .demo-city-icon {
-  font-size: 20px;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+.demo-city-icon img {
+  width: 28px;
+  height: auto;
+  filter: invert(55%) sepia(80%) saturate(700%) hue-rotate(340deg) brightness(95%);
+}
+
+.demo-city-label {
+  flex: 1;
+  line-height: 1.35;
+}
+
+.demo-city-arrow {
+  color: #f58333;
+  font-size: 13px;
+  flex-shrink: 0;
 }
 
 /* ── Caravan types ── */
@@ -1134,7 +1218,7 @@
 
 .demo-types-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  grid-template-columns: repeat(7, 1fr);
   gap: 14px;
 }
 
@@ -1142,31 +1226,47 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   background: #fff;
-  border-radius: 10px;
-  padding: 20px 10px;
+  border: 1px solid #e8e8e8;
+  border-radius: 12px;
+  padding: 28px 10px 24px;
   text-decoration: none;
   color: #1a1a1a;
-  font-size: 13px;
-  font-weight: 500;
+  font-size: 14px;
+  font-weight: 600;
   text-align: center;
-  box-shadow: 0 1px 6px rgba(0,0,0,.07);
-  transition: box-shadow 0.18s, color 0.18s;
+  transition: border-color 0.18s, box-shadow 0.18s;
 }
 
 .demo-type-item:hover {
-  box-shadow: 0 4px 18px rgba(245,131,51,.22);
-  color: #f58333;
+  border-color: #f58333;
+  box-shadow: 0 4px 18px rgba(245,131,51,.15);
+  color: #1a1a1a;
   text-decoration: none;
 }
 
 .demo-type-icon {
-  font-size: 30px;
+  font-size: 46px;
+  line-height: 1;
 }
 
 .demo-type-label {
-  line-height: 1.3;
+  line-height: 1.35;
+  position: relative;
+  padding-bottom: 12px;
+}
+
+.demo-type-label::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 32px;
+  height: 3px;
+  background: #f58333;
+  border-radius: 2px;
 }
 
 /* ── Why buyers ── */
@@ -1305,6 +1405,20 @@
 }
 
 /* ── Responsive ── */
+@media (max-width: 991px) {
+  .demo-state-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .demo-city-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .demo-types-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
 @media (max-width: 767px) {
   .demo-check-grid--2col {
     grid-template-columns: 1fr;
@@ -1315,14 +1429,18 @@
   }
 
   .demo-types-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .demo-state-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 
   .demo-city-grid {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .demo-section-title {
-    font-size: 22px;
+    font-size: 24px;
   }
 }
