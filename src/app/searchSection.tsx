@@ -180,7 +180,7 @@
           key: "Manufacturer",
           label: "Manufacturer",
           cards: manufactureBands.map((item) => ({
-            title: item.short_label + " for Sale",
+            title: item.short_label + " Caravans for Sale",
             sub: `${item.caravan_count ?? 0}`,
             url: `/listings/${item.permalink}`,
           })),
