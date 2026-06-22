@@ -2,7 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { parseSlugToFilters, type Filters } from "@/app/components/urlBuilder";
 import { buildSlugFromFilters } from "@/app/components/slugBuilter";
 import { isAllowedSingleBand } from "@/utils/seo/meta";
+import regionPathsData from "../cfs-paths/regions.json";
 const API_KEY = process.env.CFS_API_KEY;
+
+/* Valid region slugs built from cfs-paths/regions.json (sitemap source of truth) */
+const VALID_REGION_SLUGS = new Set<string>(
+  (regionPathsData.paths as string[]).map(p => {
+    const part = p.split('/').find(s => s.endsWith('-region'));
+    return part ? part.replace(/-region$/, '') : '';
+  }).filter(Boolean)
+);
 
 /* ──────────────────────────────────────────────
    Edge-safe in-memory cache
@@ -50,40 +59,6 @@ async function getValidMakeSlugs(apiKey: string | undefined): Promise<Set<string
   return makeSlugCache.slugs;
 }
 
-/* Region slug validation cache (all regions fetched once, 1 hr TTL) */
-const regionSlugCache: { slugs: Set<string>; expires: number } = { slugs: new Set(), expires: 0 };
-
-async function getValidRegionSlugs(apiKey: string | undefined): Promise<Set<string>> {
-  if (regionSlugCache.expires > Date.now() && regionSlugCache.slugs.size > 0) {
-    return regionSlugCache.slugs;
-  }
-  try {
-    const controller = new AbortController();
-    const tid = setTimeout(() => controller.abort(), 8000);
-    const res = await fetch(`${API_WP}/location-search-all`, {
-      headers: { 'User-Agent': 'next-middleware', ...(apiKey && { 'X-API-Key': apiKey }) },
-      signal: controller.signal,
-    });
-    clearTimeout(tid);
-    if (res.ok) {
-      const data = await res.json();
-      const items: { uri?: string }[] = data?.region_state ?? [];
-      const slugs = new Set<string>();
-      for (const item of items) {
-        if (!item.uri) continue;
-        const parts = item.uri.split('/').filter(Boolean);
-        const regionPart = parts.find((p: string) => p.endsWith('-region'));
-        if (regionPart) slugs.add(regionPart.replace(/-region$/, ''));
-      }
-      if (slugs.size > 0) {
-        regionSlugCache.slugs = slugs;
-        regionSlugCache.expires = Date.now() + 60 * 60 * 1000;
-      }
-      return slugs;
-    }
-  } catch {}
-  return regionSlugCache.slugs;
-}
 
 /* Per-suburb validation cache (search API, 1 hr TTL per suburb:pincode key) */
 const suburbValidCache = new Map<string, { valid: boolean; expires: number }>();
@@ -293,12 +268,11 @@ export async function middleware(request: NextRequest) {
           }
         }
 
-        // Region value validation — check against location-search-all API (cached 1 hr)
+        // Region value validation — check against cfs-paths/regions.json (sitemap source of truth)
         const regionSegment = slugParts.find(s => s.endsWith('-region'));
         if (regionSegment) {
           const regionSlug = regionSegment.replace(/-region$/, '');
-          const validRegions = await getValidRegionSlugs(API_KEY);
-          if (validRegions.size > 0 && !validRegions.has(regionSlug)) {
+          if (!VALID_REGION_SLUGS.has(regionSlug)) {
             return render410(request);
           }
         }
