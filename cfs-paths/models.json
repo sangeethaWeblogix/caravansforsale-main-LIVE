@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "models",
-    "count": 2861,
+    "count": 2862,
     "paths": [
         "active/storm/",
         "adria/action/",
@@ -2137,6 +2137,7 @@
         "roadstar/voyager/",
         "roadstar/voyager-5000/",
         "roadstar/voyager-sapphire/",
+        "roma/19-6ft-rear-ensuite/",
         "roma/eclipse/",
         "roma/elegance/",
         "roma/miniline/",
@@ -2865,5 +2866,5 @@
         "zone-rv/venture-20-6/",
         "zone-rv/znu004/"
     ],
-    "generated_at": "2026-06-21 23:57:03"
+    "generated_at": "2026-06-22 13:47:20"
 }
