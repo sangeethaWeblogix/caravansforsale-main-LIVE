@@ -103,7 +103,8 @@ function hasAnyFilter(filters: Filters): boolean {
     filters.minKg || filters.maxKg ||
     filters.from_length || filters.to_length ||
     filters.from_sleep || filters.to_sleep ||
-    filters.from_price || filters.to_price
+    filters.from_price || filters.to_price ||
+    (filters as any).search || (filters as any).keyword
   );
 }
 
