@@ -856,7 +856,7 @@ const [states, setStates] = useState<StateOption[]>(
           {currentFilters.region && (
             <span className={`active-chip${removingChip === "region" ? " chip-removing" : ""}`}>
               {toTitleCase(currentFilters.region)}
-              <span className="chip-close" onClick={() => removeChip("region", { region: undefined })}>×</span>
+              <span className="chip-close" onClick={() => removeChip("region", { region: undefined, suburb: undefined, pincode: undefined, radius_kms: undefined })}>×</span>
             </span>
           )}
           {/* 7. Suburb */}
