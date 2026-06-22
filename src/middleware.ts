@@ -258,15 +258,11 @@ export async function middleware(request: NextRequest) {
           return render410(request);
         }
 
-        // Any URL with a -search slug → 410 status, page renders normally
+        // Any URL with a -search slug → serve normal page with 410 status via route handler
         if (slugParts.some(s => s.endsWith('-search'))) {
-          const h = new Headers(request.headers);
-          h.set('x-skip-middleware', '1');
-          h.set('x-pathname', url.pathname);
-          const res = NextResponse.rewrite(new URL(request.url), { status: 410, request: { headers: h } });
-          res.headers.set('X-Robots-Tag', 'noindex, nofollow');
-          res.headers.set('Cache-Control', 'no-store');
-          return res;
+          const rewriteUrl = new URL(`/api/listings-410/${slugParts.join('/')}`, request.url);
+          url.searchParams.forEach((v, k) => rewriteUrl.searchParams.set(k, v));
+          return NextResponse.rewrite(rewriteUrl);
         }
 
         // State value validation — check the slug part before -state suffix
