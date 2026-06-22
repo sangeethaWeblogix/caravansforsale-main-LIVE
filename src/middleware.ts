@@ -258,11 +258,22 @@ export async function middleware(request: NextRequest) {
           return render410(request);
         }
 
-        // Any URL with a -search slug → serve normal page with 410 status via route handler
+        // Search slug + any other filter → 410; search alone → 200
         if (slugParts.some(s => s.endsWith('-search'))) {
-          const rewriteUrl = new URL(`/api/listings-410/${slugParts.join('/')}`, request.url);
-          url.searchParams.forEach((v, k) => rewriteUrl.searchParams.set(k, v));
-          return NextResponse.rewrite(rewriteUrl);
+          const hasOtherFilter = !!(
+            filters.make || filters.model || filters.condition || filters.category ||
+            filters.state || filters.region || filters.suburb ||
+            filters.from_price || filters.to_price ||
+            filters.minKg || filters.maxKg ||
+            filters.from_length || filters.to_length ||
+            filters.from_sleep || filters.to_sleep ||
+            filters.acustom_fromyears || filters.acustom_toyears
+          );
+          if (hasOtherFilter) {
+            const rewriteUrl = new URL(`/api/listings-410/${slugParts.join('/')}`, request.url);
+            url.searchParams.forEach((v, k) => rewriteUrl.searchParams.set(k, v));
+            return NextResponse.rewrite(rewriteUrl);
+          }
         }
 
         // State value validation — check the slug part before -state suffix
