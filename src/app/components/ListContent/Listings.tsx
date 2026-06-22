@@ -790,6 +790,7 @@ const [pagination, setPagination] = useState<Pagination>(() => {
     const merged: Filters = { ...prev };
     Object.entries(next).forEach(([key, value]) => {
       if (value === undefined || value === null || value === "") {
+        delete merged[key as keyof Filters];
         return;
       }
       merged[key as keyof Filters] = value;
