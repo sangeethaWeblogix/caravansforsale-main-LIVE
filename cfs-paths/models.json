@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "models",
-    "count": 2859,
+    "count": 2870,
     "paths": [
         "active/storm/",
         "adria/action/",
@@ -126,7 +126,9 @@
         "avan/aspire-555-1/",
         "avan/aspire-555-2/",
         "avan/aspire-555-3/",
+        "avan/aspire-555-3-poptop/",
         "avan/aspire-555-4/",
+        "avan/aspire-563/",
         "avan/aspire-564/",
         "avan/aspire-572/",
         "avan/aspire-572-ht/",
@@ -955,8 +957,10 @@
         "golf/grand-tourer-620-gt/",
         "golf/grand-tourer-620-3/",
         "golf/gtx-620-3/",
+        "golf/maxxi-390-poptop-ensuite/",
         "golf/maxxi-501-1-pt/",
         "golf/maxxi-501-3/",
+        "golf/maxxi-573-pop-top-expanda/",
         "golf/savannah/",
         "golf/savannah-402-poptop/",
         "golf/savannah-499/",
@@ -966,6 +970,7 @@
         "golf/savannah-maxxi/",
         "golf/savannah-maxxi-390/",
         "golf/savannah-maxxi-390-pop-top/",
+        "golf/savannah-maxxi-501/",
         "golf/savannah-maxxi-501-1/",
         "golf/savannah-maxxi-501-3/",
         "golf/savannah-maxxi-531-2/",
@@ -976,6 +981,7 @@
         "golf/savannah-maxxi-603-ht/",
         "golf/tourer/",
         "golf/tourer-556/",
+        "golf/tourer-556-hardtop/",
         "golf/tourer-556-ht/",
         "golf/tourer-577/",
         "golf/tourer-577-ht/",
@@ -1136,6 +1142,9 @@
         "jawa/sirocco/",
         "jawa/sirocco-15/",
         "jawa/stealth-16/",
+        "jayco-2/discovery-16-52-1/",
+        "jayco-2/discovery-pop-top/",
+        "jayco-2/stirling-tandem-pop-top/",
         "jayco/15ft-hard-top/",
         "jayco/17-55/",
         "jayco/22-68-5-sl/",
@@ -1697,6 +1706,7 @@
         "new-age/rp19be-adv/",
         "new-age/southern-cross-signature/",
         "new-age/wallaby/",
+        "new-age/wallaby-wa15e-pop-top/",
         "new-age/xtreme-utility-xu22bc/",
         "new-age/xu/",
         "new-age/xu22bcmy20/",
@@ -1864,6 +1874,7 @@
         "opal/sothern-explorer/",
         "opal/southern-explorer-series-196/",
         "opal/southern-explorer-series-216/",
+        "opal/tourer-tandem-ensuite/",
         "option-rv/distinction/",
         "option-rv/distinction-176/",
         "option-rv/distinction-20-rd/",
@@ -2863,5 +2874,5 @@
         "zone-rv/venture-20-6/",
         "zone-rv/znu004/"
     ],
-    "generated_at": "2026-06-22 21:31:00"
+    "generated_at": "2026-06-22 22:31:36"
 }
