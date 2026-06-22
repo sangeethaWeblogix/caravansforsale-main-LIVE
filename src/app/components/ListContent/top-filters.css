@@ -523,6 +523,14 @@ border-bottom: none;
   border-color: #aaa;
 }
 
+.search-bar span.chip-label {
+  cursor: pointer;
+}
+
+.search-bar span.chip-label:hover {
+  text-decoration: underline;
+}
+
 .search-bar span.chip-close {
   background: none;
   border: none;
