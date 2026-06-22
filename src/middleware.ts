@@ -319,7 +319,7 @@ export async function middleware(request: NextRequest) {
   /* 🚫 Unknown multi-segment paths → 410 (e.g. /queensland-state/stoney-creek/ without /listings/ prefix) */
   const KNOWN_MULTI_SEGMENT = new Set([
     'listings', 'product', 'api', '_next', 'blog', 'author', 'caravan-manufacturers',
-    '410', '404', '410-new',
+    '410', '404', '410-new', 'images', 'fonts', 'icons',
   ]);
   const pathSegments = url.pathname.split('/').filter(Boolean);
   if (pathSegments.length >= 2 && !KNOWN_MULTI_SEGMENT.has(pathSegments[0])) {
