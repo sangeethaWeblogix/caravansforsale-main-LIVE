@@ -220,7 +220,8 @@ export const fetchListings = async (
     // WordPress returns HTTP 410 for 0-product pages — parse body and return data normally
     if (res.status === 410) {
       try {
-        const json: ApiResponse = JSON.parse(errText);
+        const idx410 = errText.indexOf('{"');
+        const json: ApiResponse = JSON.parse(idx410 > 0 ? errText.substring(idx410) : errText);
         return {
           success: json.success,
           list_page_title: json.h1,
@@ -273,10 +274,23 @@ export const fetchListings = async (
   const raw = await res.text();
   let json: ApiResponse;
   try {
+    // Fast path — clean response
     json = JSON.parse(raw);
   } catch {
-    console.error("[BACKEND ERROR] Invalid JSON from API:", raw.substring(0, 300));
-    throw new Error("Invalid API response — unexpected non-JSON reply");
+    // WordPress WP_DEBUG ON can prepend PHP notices before JSON.
+    // Find the start of the actual JSON object ({"success":...) and retry.
+    const jsonIdx = raw.indexOf('{"');
+    if (jsonIdx > 0) {
+      try {
+        json = JSON.parse(raw.substring(jsonIdx));
+      } catch {
+        console.error("[BACKEND ERROR] Invalid JSON from API (after strip):", raw.substring(0, 300));
+        throw new Error("Invalid API response — unexpected non-JSON reply");
+      }
+    } else {
+      console.error("[BACKEND ERROR] Invalid JSON from API:", raw.substring(0, 300));
+      throw new Error("Invalid API response — unexpected non-JSON reply");
+    }
   }
 
   // Return all useful sections from API
