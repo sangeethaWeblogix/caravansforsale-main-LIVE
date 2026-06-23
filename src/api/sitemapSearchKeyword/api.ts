@@ -15,10 +15,14 @@ export async function fetchSearchkeywords(
       }, cache: "no-store", signal });
   if (!res.ok) throw new Error(`Keyword API failed: ${res.status}`);
 
-  const json = (await res.json()) as {
-    success?: boolean;
-    data?: { name?: string; url?: string }[];
-  };
+  let json: { success?: boolean; data?: { name?: string; url?: string }[] };
+  try {
+    const raw = await res.text();
+    const idx = raw.indexOf('{"');
+    json = JSON.parse(idx > 0 ? raw.substring(idx) : raw);
+  } catch {
+    return [];
+  }
 
   const arr = Array.isArray(json?.data) ? json.data : [];
 
