@@ -226,7 +226,7 @@ export default function Navbar() {
                     <a href="/sell-my-caravan/" className="ham-item">Sell My Caravan</a>
                     <a href="/dealer-advertising/" className="ham-item">Dealer Advertising</a>
                     <a href="/blog/" className="ham-item">Blog</a>
-                    <a href="/about/" className="ham-item">About</a>
+                    <a href="/about-us/" className="ham-item">About</a>
                     <a href="/contact/" className="ham-item">Contact</a>
                   </div>
                 )}
