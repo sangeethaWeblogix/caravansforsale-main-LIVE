@@ -63,6 +63,8 @@ import { fetchProductMeta } from "@/utils/fetchProductMeta";
       pathname !== "/product/" &&
       pathname !== "/product";
 
+    const isContactPage = pathname === "/contact/" || pathname === "/contact";
+
     // Static pages whose metadata ends up after </head> due to streaming — inject directly
     const STATIC_META: Record<string, { title: string; description: string; canonical: string }> = {
       "/caravan-manufacturers/": {
@@ -160,6 +162,74 @@ import { fetchProductMeta } from "@/utils/fetchProductMeta";
           {isListingSlug && slugCanonical && <meta property="og:url" content={slugCanonical} />}
           {isListingSlug && slugTitle && <meta name="twitter:title" content={slugTitle} />}
           {isListingSlug && slugDescription && <meta name="twitter:description" content={slugDescription} />}
+          {/* Contact page JSON-LD */}
+          {isContactPage && (
+            <script
+              type="application/ld+json"
+              dangerouslySetInnerHTML={{
+                __html: JSON.stringify({
+                  "@context": "https://schema.org",
+                  "@graph": [
+                    {
+                      "@type": "WebSite",
+                      "@id": "https://www.caravansforsale.com.au/#website",
+                      "url": "https://www.caravansforsale.com.au/",
+                      "name": "Caravans For Sale",
+                      "alternateName": "Caravans For Sale by Marketplace Network",
+                    },
+                    {
+                      "@type": "Organization",
+                      "@id": "https://www.caravansforsale.com.au/#organization",
+                      "name": "Marketplace Network Pty Ltd",
+                      "legalName": "Marketplace Network Pty Ltd",
+                      "taxID": "ABN 70 694 987 052",
+                      "url": "https://www.caravansforsale.com.au/",
+                      "logo": {
+                        "@type": "ImageObject",
+                        "url": "https://www.caravansforsale.com.au/images/cfs-logo-black.svg",
+                        "caption": "Caravans For Sale by Marketplace Network",
+                      },
+                      "contactPoint": {
+                        "@type": "ContactPoint",
+                        "contactType": "customer service",
+                        "url": "https://www.caravansforsale.com.au/contact/",
+                        "availableLanguage": "en",
+                        "areaServed": "AU",
+                      },
+                    },
+                    {
+                      "@type": "ContactPage",
+                      "@id": "https://www.caravansforsale.com.au/contact/#webpage",
+                      "url": "https://www.caravansforsale.com.au/contact/",
+                      "name": "Contact Us | Get in Touch with Caravans For Sale",
+                      "isPartOf": { "@id": "https://www.caravansforsale.com.au/#website" },
+                      "about": { "@id": "https://www.caravansforsale.com.au/#organization" },
+                      "description": "Have a question about buying, selling, or dealer advertising solutions? Fill out our online contact form to get in touch with the Caravans For Sale customer support team.",
+                      "breadcrumb": { "@id": "https://www.caravansforsale.com.au/contact/#breadcrumb" },
+                    },
+                    {
+                      "@type": "BreadcrumbList",
+                      "@id": "https://www.caravansforsale.com.au/contact/#breadcrumb",
+                      "itemListElement": [
+                        {
+                          "@type": "ListItem",
+                          "position": 1,
+                          "name": "Home",
+                          "item": "https://www.caravansforsale.com.au/",
+                        },
+                        {
+                          "@type": "ListItem",
+                          "position": 2,
+                          "name": "Contact Us",
+                          "item": "https://www.caravansforsale.com.au/contact/",
+                        },
+                      ],
+                    },
+                  ],
+                }),
+              }}
+            />
+          )}
           {/* ✅ Google Tag Manager (Head) */}
            <script
   dangerouslySetInnerHTML={{
