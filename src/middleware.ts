@@ -3,6 +3,7 @@ import { parseSlugToFilters, type Filters } from "@/app/components/urlBuilder";
 import { buildSlugFromFilters } from "@/app/components/slugBuilter";
 import { isAllowedSingleBand } from "@/utils/seo/meta";
 import regionPathsData from "../cfs-paths/regions.json";
+import makesData from "../cfs-paths/makes.json";
 const API_KEY = process.env.CFS_API_KEY;
 
 /* Valid region slugs built from cfs-paths/regions.json (sitemap source of truth) */
@@ -13,6 +14,11 @@ const VALID_REGION_SLUGS = new Set<string>(
   }).filter(Boolean)
 );
 
+/* Valid make slugs built from cfs-paths/makes.json — zero API dependency */
+const VALID_MAKE_SLUGS = new Set<string>(
+  (makesData.paths as string[]).map(p => p.replace(/\/$/, ''))
+);
+
 /* ──────────────────────────────────────────────
    Edge-safe in-memory cache
 ────────────────────────────────────────────── */
@@ -21,8 +27,6 @@ const productCache = new Map<string, { exists: boolean; expires: number }>();
 const CACHE_TTL = 10 * 60 * 1000;       // 10 min fresh
 const CACHE_STALE_TTL = 60 * 60 * 1000; // 1 hr stale-while-revalidate window
 
-/* Make slug validation cache (1 hr TTL) */
-const makeSlugCache: { slugs: Set<string>; expires: number } = { slugs: new Set(), expires: 0 };
 
 /* Valid Australian state slug parts (the bit before -state in the URL) */
 const VALID_AU_STATES = new Set([
@@ -33,31 +37,6 @@ const VALID_AU_STATES = new Set([
 
 const API_WP = 'https://admin.caravansforsale.com.au/wp-json/cfs/v1';
 
-async function getValidMakeSlugs(apiKey: string | undefined): Promise<Set<string>> {
-  if (makeSlugCache.expires > Date.now() && makeSlugCache.slugs.size > 0) {
-    return makeSlugCache.slugs;
-  }
-  try {
-    const controller = new AbortController();
-    const tid = setTimeout(() => controller.abort(), 5000);
-    const res = await fetch(`${API_WP}/make_details`, {
-      headers: { 'User-Agent': 'next-middleware', ...(apiKey && { 'X-API-Key': apiKey }) },
-      signal: controller.signal,
-    });
-    clearTimeout(tid);
-    if (res.ok) {
-      const data = await res.json();
-      const makes: { slug: string }[] = data?.data?.make_options ?? [];
-      const slugs = new Set(makes.map((m: { slug: string }) => m.slug));
-      if (slugs.size > 0) {
-        makeSlugCache.slugs = slugs;
-        makeSlugCache.expires = Date.now() + 60 * 60 * 1000;
-      }
-      return slugs;
-    }
-  } catch {}
-  return makeSlugCache.slugs;
-}
 
 
 /* Per-suburb validation cache (search API, 1 hr TTL per suburb:pincode key) */
@@ -285,12 +264,9 @@ export async function middleware(request: NextRequest) {
           }
         }
 
-        // Make value validation — check against make_details API (cached 1 hr)
-        if (filters.make) {
-          const validMakes = await getValidMakeSlugs(API_KEY);
-          if (validMakes.size > 0 && !validMakes.has(filters.make)) {
-            return render410(request);
-          }
+        // Make value validation — check against cfs-paths/makes.json (sitemap source of truth)
+        if (filters.make && !VALID_MAKE_SLUGS.has(filters.make)) {
+          return render410(request);
         }
 
         // Region value validation — check against cfs-paths/regions.json (sitemap source of truth)
