@@ -11,6 +11,10 @@ const IGNORE_PATTERNS = [
   "hydrat",               // Next.js hydration (expected in dev)
   "Loading chunk",        // Next.js lazy chunk (retry handles it)
   "ChunkLoadError",       // Same
+  "Load failed",          // iOS Safari network error (same as "Failed to fetch")
+  "Failed to fetch",      // Network offline / ad blocker / third-party
+  "Access is denied",     // sessionStorage blocked (private mode / Safari ITP)
+  "Minified React error", // React hydration mismatch — usually browser extensions modifying DOM
 ];
 
 function shouldIgnore(message: string): boolean {
