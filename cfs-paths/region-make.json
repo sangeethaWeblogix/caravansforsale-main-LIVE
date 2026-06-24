@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "region-make",
-    "count": 1160,
+    "count": 1159,
     "paths": [
         "australian-capital-territory-state/australian-capital-territory-region/carrera/",
         "australian-capital-territory-state/australian-capital-territory-region/coromal/",
@@ -444,7 +444,7 @@
         "queensland-state/moreton-bay-south-region/nova/",
         "queensland-state/moreton-bay-south-region/retreat/",
         "queensland-state/moreton-bay-south-region/roma/",
-        "queensland-state/moreton-bay-south-region/silver-sun/",
+        "queensland-state/moreton-bay-south-region/silversun/",
         "queensland-state/moreton-bay-south-region/sunseeker/",
         "queensland-state/moreton-bay-south-region/supreme/",
         "queensland-state/moreton-bay-south-region/track/",
@@ -465,7 +465,6 @@
         "queensland-state/sunshine-coast-region/hike/",
         "queensland-state/sunshine-coast-region/hinterland/",
         "queensland-state/sunshine-coast-region/jayco/",
-        "queensland-state/sunshine-coast-region/jayco-2/",
         "queensland-state/sunshine-coast-region/jb/",
         "queensland-state/sunshine-coast-region/legend/",
         "queensland-state/sunshine-coast-region/marvel-rv/",
@@ -607,6 +606,7 @@
         "south-australia-state/adelaide-region/nextgen/",
         "south-australia-state/adelaide-region/nova/",
         "south-australia-state/adelaide-region/on-the-move/",
+        "south-australia-state/adelaide-region/opal/",
         "south-australia-state/adelaide-region/oz-star/",
         "south-australia-state/adelaide-region/paramount/",
         "south-australia-state/adelaide-region/phoenix/",
@@ -693,7 +693,6 @@
         "tasmania-state/north-west-region/gold-class/",
         "tasmania-state/north-west-region/great-aussie/",
         "tasmania-state/north-west-region/jayco/",
-        "tasmania-state/north-west-region/jayco-2/",
         "tasmania-state/north-west-region/jb/",
         "tasmania-state/north-west-region/jurgens/",
         "tasmania-state/north-west-region/lunar/",
@@ -1164,5 +1163,5 @@
         "western-australia-state/western-australia-outback-south-region/vanguard/",
         "western-australia-state/western-australia-outback-south-region/western/"
     ],
-    "generated_at": "2026-06-24 17:17:14"
+    "generated_at": "2026-06-24 23:13:40"
 }
