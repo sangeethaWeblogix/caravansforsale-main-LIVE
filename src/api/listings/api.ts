@@ -186,12 +186,21 @@ export const fetchListings = async (
     ? `/api/listings?${params.toString()}`
     : `${API_BASE}/new_optimize_code?${params.toString()}`;
 
-  // Client cache hit — return instantly without API call
+  // Client cache hit — memory first, then sessionStorage (survives page refresh)
   if (isClient && !options?.noCache) {
-    const cached = clientResultCache.get(params.toString());
-    if (cached && Date.now() - cached.ts < CLIENT_CACHE_TTL) {
-      return cached.data;
-    }
+    const cacheKey = "listings_" + params.toString();
+    const mem = clientResultCache.get(params.toString());
+    if (mem && Date.now() - mem.ts < CLIENT_CACHE_TTL) return mem.data;
+    try {
+      const stored = sessionStorage.getItem(cacheKey);
+      if (stored) {
+        const parsed: { data: ApiResponse; ts: number } = JSON.parse(stored);
+        if (Date.now() - parsed.ts < CLIENT_CACHE_TTL) {
+          clientResultCache.set(params.toString(), parsed);
+          return parsed.data;
+        }
+      }
+    } catch {}
   }
 
   const controller = new AbortController();
@@ -323,9 +332,13 @@ export const fetchListings = async (
     },
   };
 
-  // Store in client cache for instant repeat access
+  // Store in memory + sessionStorage for instant repeat access (survives refresh)
   if (isClient) {
-    clientResultCache.set(params.toString(), { data: result, ts: Date.now() });
+    const entry = { data: result, ts: Date.now() };
+    clientResultCache.set(params.toString(), entry);
+    try {
+      sessionStorage.setItem("listings_" + params.toString(), JSON.stringify(entry));
+    } catch {}
   }
 
   return result;

@@ -15,6 +15,7 @@
   // import NextTopLoader from "nextjs-toploader";
 import NavigationHistory from "@/components/NavigationHistory";
 import { BannerProvider } from "@/components/BannerHandler";
+import GlobalErrorTracker from "@/components/GlobalErrorTracker";
 import { headers } from "next/headers";
 import { metaFromSlug } from "@/utils/seo/meta";
 import { fetchProductMeta } from "@/utils/fetchProductMeta";
@@ -284,6 +285,7 @@ import { fetchProductMeta } from "@/utils/fetchProductMeta";
           height={3}
           showSpinner={false}
         /> */}
+          <GlobalErrorTracker />
           <BannerProvider>
           {children}
           </BannerProvider>

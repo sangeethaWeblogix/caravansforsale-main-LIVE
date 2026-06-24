@@ -157,6 +157,28 @@ type HomeSearchItem = {
 
 type KeywordItem = { label: string; url?: string };
 
+// params-count client cache — same filter counts within 5 min = instant
+const paramsCountCache = new Map<string, { data: unknown; ts: number }>();
+const PARAMS_CACHE_TTL = 5 * 60 * 1000;
+
+async function fetchParamsCount(url: string, signal: AbortSignal): Promise<Record<string, unknown>> {
+  const cached = paramsCountCache.get(url);
+  if (cached && Date.now() - cached.ts < PARAMS_CACHE_TTL) {
+    return cached.data as Record<string, unknown>;
+  }
+  const res = await fetch(url, { signal });
+  if (!res.ok) return {};
+  const raw = await res.text();
+  const idx = raw.indexOf('{"');
+  try {
+    const data = JSON.parse(idx > 0 ? raw.substring(idx) : raw);
+    paramsCountCache.set(url, { data, ts: Date.now() });
+    return data;
+  } catch {
+    return {};
+  }
+}
+
 const FilterModal: React.FC<CaravanFilterProps> = ({
   onClose,
   onClearAll,
@@ -1991,12 +2013,10 @@ const [states, setStates] = useState<StateOption[]>([]);
     catParams.set("group_by", "category");
     setIsCategoryCountLoading(true); // ← only on first fetch
 
-fetch(`/api/params-count?${catParams.toString()}`, { signal })
-
-      .then((res) => res.json())
+fetchParamsCount(`/api/params-count?${catParams.toString()}`, signal)
       .then((json) => {
         if (!signal.aborted) {
-          setCategoryCounts(json.data || []);
+          setCategoryCounts((json.data as []) || []);
           setIsCategoryCountLoading(false);
           categoryFirstLoadDoneRef.current = true;
         }
@@ -2010,13 +2030,11 @@ fetch(`/api/params-count?${catParams.toString()}`, { signal })
     // ─── MAKE COUNTS ───
     const makeParams = buildCountParamsMulti(activeFilters, ["make", "model"]);
     makeParams.set("group_by", "make");
-    fetch(`/api/params-count?${makeParams.toString()}`, { signal })
-
-      .then((res) => res.json())
+    fetchParamsCount(`/api/params-count?${makeParams.toString()}`, signal)
       .then((json) => {
         if (!signal.aborted) {
-          setMakeCounts(json.data || []);
-          setPopularMakes(json.popular_makes || []);
+          setMakeCounts((json.data as []) || []);
+          setPopularMakes((json.popular_makes as []) || []);
         }
       })
       .catch((e) => {
@@ -2029,11 +2047,9 @@ fetch(`/api/params-count?${catParams.toString()}`, { signal })
       const modelParams = buildCountParamsMulti(activeFilters, ["model"]);
       modelParams.set("group_by", "model");
       modelParams.set("make", activeMake);
-     fetch(`/api/params-count?${modelParams.toString()}`, { signal })
-
-        .then((res) => res.json())
+      fetchParamsCount(`/api/params-count?${modelParams.toString()}`, signal)
         .then((json) => {
-          if (!signal.aborted) setModelCounts(json.data || []);
+          if (!signal.aborted) setModelCounts((json.data as []) || []);
         })
         .catch((e) => {
           if (e.name !== "AbortError") console.error(e);
