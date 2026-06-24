@@ -78,7 +78,13 @@ const fetchProductDetail = cache(async (slug: string) => {
       }
     );
     if (!res.ok) return null;
-    return res.json();
+    const raw = await res.text();
+    const idx = raw.indexOf('{"');
+    try {
+      return JSON.parse(idx > 0 ? raw.substring(idx) : raw);
+    } catch {
+      return null;
+    }
   } catch (error) {
     console.error("product fetch error:", error);
     return null;

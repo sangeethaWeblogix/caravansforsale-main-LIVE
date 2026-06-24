@@ -20,7 +20,15 @@ export async function GET() {
           return [];
         }
 
-        const data = await res.json();
+        const raw = await res.text();
+        const idx = raw.search(/[[{]/);
+        if (idx === -1) return [];
+        let data;
+        try {
+          data = JSON.parse(idx > 0 ? raw.substring(idx) : raw);
+        } catch {
+          return [];
+        }
         return Array.isArray(data) ? data : data.data || [];
       })
     );

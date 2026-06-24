@@ -53,6 +53,10 @@ export function BannerProvider({ children }: { children: ReactNode }) {
           return;
         }
         const res = await fetch("/api/banners");
+        if (!res.ok) {
+          setAllBanners([]);
+          return;
+        }
         const data = await res.json();
         const banners = Array.isArray(data) ? data : [];
         setAllBanners(banners);
