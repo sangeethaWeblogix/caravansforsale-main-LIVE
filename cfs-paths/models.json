@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "models",
-    "count": 2869,
+    "count": 2864,
     "paths": [
         "active/storm/",
         "adria/action/",
@@ -128,7 +128,6 @@
         "avan/aspire-555-3/",
         "avan/aspire-555-3-poptop/",
         "avan/aspire-555-4/",
-        "avan/aspire-563/",
         "avan/aspire-564/",
         "avan/aspire-572/",
         "avan/aspire-572-ht/",
@@ -1141,9 +1140,6 @@
         "jawa/sirocco/",
         "jawa/sirocco-15/",
         "jawa/stealth-16/",
-        "jayco-2/discovery-16-52-1/",
-        "jayco-2/discovery-pop-top/",
-        "jayco-2/stirling-tandem-pop-top/",
         "jayco/15ft-hard-top/",
         "jayco/17-55/",
         "jayco/22-68-5-sl/",
@@ -1873,7 +1869,6 @@
         "opal/sothern-explorer/",
         "opal/southern-explorer-series-196/",
         "opal/southern-explorer-series-216/",
-        "opal/tourer-tandem-ensuite/",
         "option-rv/distinction/",
         "option-rv/distinction-176/",
         "option-rv/distinction-20-rd/",
@@ -2873,5 +2868,5 @@
         "zone-rv/venture-20-6/",
         "zone-rv/znu004/"
     ],
-    "generated_at": "2026-06-24 16:32:35"
+    "generated_at": "2026-06-24 17:15:44"
 }
