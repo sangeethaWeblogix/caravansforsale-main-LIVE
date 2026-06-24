@@ -421,7 +421,7 @@ export async function middleware(request: NextRequest) {
           apiParams.toString();
 
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 30000);
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
 
         const apiRes = await fetch(apiUrl, {
           headers: {
@@ -436,7 +436,14 @@ export async function middleware(request: NextRequest) {
         clearTimeout(timeoutId);
 
         if (apiRes.ok) {
-          const data = await apiRes.json();
+          const raw = await apiRes.text();
+          const idx = raw.indexOf('{"');
+          let data: any;
+          try {
+            data = JSON.parse(idx > 0 ? raw.substring(idx) : raw);
+          } catch {
+            data = {};
+          }
 
           // 0 regular products:
           //   - empExclusive also empty → 410 (Vercel shows its own Gone page — no content anyway)
@@ -481,7 +488,9 @@ export async function middleware(request: NextRequest) {
         } else if (apiRes.status === 410) {
           // WordPress returns 410 for 0 products — check body for emp_exclusive_products before deciding
           try {
-            const data410 = await apiRes.json();
+            const raw410 = await apiRes.text();
+            const idx410 = raw410.indexOf('{"');
+            const data410 = JSON.parse(idx410 > 0 ? raw410.substring(idx410) : raw410);
             const empExclusive410 = data410?.emp_exclusive_products ?? [];
             if (empExclusive410.length === 0) {
               seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty: true, hasExclusiveOnly: false, expires: Date.now() + CACHE_TTL, staleExpires: Date.now() + CACHE_STALE_TTL });
