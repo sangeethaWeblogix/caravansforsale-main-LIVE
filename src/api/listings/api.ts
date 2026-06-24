@@ -112,6 +112,10 @@ export type ApiResponse = {
 const normalizeQuery = (s?: string) =>
   (s ?? "").replace(/\+/g, " ").trim().replace(/\s+/g, " ");
 
+// Client-side result cache — same filter within 5 min = instant, no API call
+const clientResultCache = new Map<string, { data: ApiResponse; ts: number }>();
+const CLIENT_CACHE_TTL = 5 * 60 * 1000;
+
 export const fetchListings = async (
   filters: Filters = {},
   options?: { noCache?: boolean }
@@ -181,6 +185,14 @@ export const fetchListings = async (
   const url = isClient
     ? `/api/listings?${params.toString()}`
     : `${API_BASE}/new_optimize_code?${params.toString()}`;
+
+  // Client cache hit — return instantly without API call
+  if (isClient && !options?.noCache) {
+    const cached = clientResultCache.get(params.toString());
+    if (cached && Date.now() - cached.ts < CLIENT_CACHE_TTL) {
+      return cached.data;
+    }
+  }
 
   const controller = new AbortController();
   const timeoutMs = Number(process.env.CFS_API_TIMEOUT_MS) || 30000;
@@ -293,8 +305,7 @@ export const fetchListings = async (
     }
   }
 
-  // Return all useful sections from API
-  return {
+  const result: ApiResponse = {
     success: json.success,
     list_page_title: json.h1,
     seo_v2: json.seo_v2,
@@ -311,6 +322,13 @@ export const fetchListings = async (
       states: json.data?.states ?? [],
     },
   };
+
+  // Store in client cache for instant repeat access
+  if (isClient) {
+    clientResultCache.set(params.toString(), { data: result, ts: Date.now() });
+  }
+
+  return result;
 };
 
 // Re-export for page imports
