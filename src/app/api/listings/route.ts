@@ -35,7 +35,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: false }, { status: res.status });
     }
 
-    const data = await res.json();
+    const raw = await res.text();
+    const jsonStart = raw.indexOf('{');
+    const data = JSON.parse(jsonStart > 0 ? raw.substring(jsonStart) : raw);
     return NextResponse.json(data, {
       headers: { "Cache-Control": "public, max-age=300, s-maxage=300" },
     });

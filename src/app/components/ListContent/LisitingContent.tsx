@@ -572,12 +572,10 @@ const [currentBanner, setCurrentBanner] = useState<typeof rightBanners[0] | null
         <div className="top-filter mb-10">
           <div className="row align-items-center">
             <div className="col-lg-8 col-md-8 col-12 show_count_wrapper mb-2 mb-md-0">
-              {count && (
-                <span className="show_count mb-2 d-inline">
-                  <strong>{count} </strong>
-                </span>
-              )}
-              <h1 className="show_count d-inline fw-bolder">{text}</h1>
+              <h1 className="show_count d-inline fw-bolder">
+                {count && <>{count} </>}
+                {text}
+              </h1>
             </div>
 
             <div className="col-lg-4 col-md-4 col-12">

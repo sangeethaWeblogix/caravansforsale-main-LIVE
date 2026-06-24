@@ -21,10 +21,44 @@ import { fetchBottomLinks } from "@/api/bottomLinks/api";
 import type { BottomLinksData } from "@/api/bottomLinks/api";
 import ApiErrorFallback from "@/app/components/ApiErrorFallback";
 import { reportGitHubIssue } from "@/lib/reportGitHubIssue";
-import { unstable_noStore } from "next/cache";
 import { metaFromSlug } from "@/utils/seo/meta";
+import statesData from "../../../../cfs-paths/states.json";
+import regionsData from "../../../../cfs-paths/regions.json";
+import categoriesData from "../../../../cfs-paths/categories.json";
+import makesData from "../../../../cfs-paths/makes.json";
+import catStateData from "../../../../cfs-paths/cat-state.json";
+import priceData from "../../../../cfs-paths/price.json";
+import sleepData from "../../../../cfs-paths/sleep.json";
+import lengthData from "../../../../cfs-paths/length.json";
+import atmData from "../../../../cfs-paths/atm.json";
 
 export const revalidate = 3600;
+
+// Pre-build high-value single/double-dimension pages (~484 paths).
+// Large combination types (models 2869, region-make 1162, state-make 662,
+// cat-region 274, extra-indexed 406) are served by dynamicParams on first
+// request and cached by ISR — avoids hammering WordPress during deploys.
+export async function generateStaticParams() {
+  const allFiles = [
+    statesData, regionsData, categoriesData, makesData,
+    catStateData, priceData, sleepData, lengthData, atmData,
+  ];
+  const seen = new Set<string>();
+  const result: { slug: string[] }[] = [];
+  for (const file of allFiles) {
+    for (const path of (file.paths as string[])) {
+      const slug = path.split('/').filter(Boolean);
+      const key = slug.join('/');
+      if (!seen.has(key)) {
+        seen.add(key);
+        result.push({ slug });
+      }
+    }
+  }
+  return result;
+}
+
+export const dynamicParams = true;
 
 export async function generateMetadata({
   params,
@@ -313,8 +347,6 @@ export default async function Listings({
     ]);
     console.log(`[PERF] total Promise.all: ${Date.now()-_t}ms`);
   } catch (err) {
-    // Prevent ISR from caching this error response — next request will retry fresh
-    unstable_noStore();
     const msg = err instanceof Error ? err.message : "";
     if (msg.includes("400") || msg.includes("404")) {
       redirect("/404");

@@ -9,7 +9,6 @@ import { fetchProductList, fetchCategoryCounts, fetchMakeCounts } from "@/api/pr
 import { fetchBottomLinks } from "@/api/bottomLinks/api";
 import type { BottomLinksData } from "@/api/bottomLinks/api";
 import { reportGitHubIssue } from "@/lib/reportGitHubIssue";
-import { unstable_noStore } from "next/cache";
 
 export const revalidate = 3600;
 
@@ -79,7 +78,6 @@ export default async function ListingsPage({
       fetchBottomLinks({}),
     ]);
   } catch (error) {
-    unstable_noStore(); // prevent ISR from caching this error response
     const msg = error instanceof Error ? error.message : String(error);
     const isBackend =
       msg.startsWith("API no response") ||

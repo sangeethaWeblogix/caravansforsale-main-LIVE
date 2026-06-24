@@ -54,8 +54,12 @@ export async function fetchHomeSearchList(): Promise<HomeSearchItem[]> {
   const res = await fetch(url, { cache: "no-store" });
   if (!res.ok) throw new Error(`HomeSearch API failed: ${res.status}`);
 
-  const json = await res.json();
-  return extractList(json);
+  try {
+    const json = await res.json();
+    return extractList(json);
+  } catch {
+    return [];
+  }
 }
 
 export async function fetchKeywordSuggestions(
@@ -67,10 +71,12 @@ export async function fetchKeywordSuggestions(
   const res = await fetch(url, { cache: "no-store", signal });
   if (!res.ok) throw new Error(`Keyword API failed: ${res.status}`);
 
-  const json = (await res.json()) as {
-    success?: boolean;
-    data?: { keyword?: string; url?: string; id?: string | number }[];
-  };
+  let json: { success?: boolean; data?: { keyword?: string; url?: string; id?: string | number }[] };
+  try {
+    json = await res.json();
+  } catch {
+    return [];
+  }
 
   const arr = Array.isArray(json?.data) ? json.data : [];
 

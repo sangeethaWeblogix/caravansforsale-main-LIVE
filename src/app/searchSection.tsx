@@ -286,8 +286,9 @@
 
         setBaseSuggestions(labels);
         setSuggestions(labels);
-      } catch (e: unknown) {
-        setError(e instanceof Error ? e.message : "Failed to load");
+      } catch {
+        setBaseSuggestions([]);
+        setSuggestions([]);
       } finally {
         setLoading(false);
       }

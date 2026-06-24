@@ -113,6 +113,10 @@ export type ApiResponse = {
 const normalizeQuery = (s?: string) =>
   (s ?? "").replace(/\+/g, " ").trim().replace(/\s+/g, " ");
 
+// Client-side result cache — same filter within 5 min = instant, no API call
+const clientResultCache = new Map<string, { data: ApiResponse; ts: number }>();
+const CLIENT_CACHE_TTL = 5 * 60 * 1000;
+
 export const fetchListings = async (
   filters: Filters = {},
   options?: { noCache?: boolean }
@@ -183,6 +187,23 @@ export const fetchListings = async (
     ? `/api/listings?${params.toString()}`
     : `${API_BASE}/new_optimize_code?${params.toString()}`;
 
+  // Client cache hit — memory first, then sessionStorage (survives page refresh)
+  if (isClient && !options?.noCache) {
+    const cacheKey = "listings_" + params.toString();
+    const mem = clientResultCache.get(params.toString());
+    if (mem && Date.now() - mem.ts < CLIENT_CACHE_TTL) return mem.data;
+    try {
+      const stored = sessionStorage.getItem(cacheKey);
+      if (stored) {
+        const parsed: { data: ApiResponse; ts: number } = JSON.parse(stored);
+        if (Date.now() - parsed.ts < CLIENT_CACHE_TTL) {
+          clientResultCache.set(params.toString(), parsed);
+          return parsed.data;
+        }
+      }
+    } catch {}
+  }
+
   const controller = new AbortController();
   const timeoutMs = Number(process.env.CFS_API_TIMEOUT_MS) || 30000;
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
@@ -221,7 +242,8 @@ export const fetchListings = async (
     // WordPress returns HTTP 410 for 0-product pages — parse body and return data normally
     if (res.status === 410) {
       try {
-        const json: ApiResponse = JSON.parse(errText);
+        const idx410 = errText.indexOf('{"');
+        const json: ApiResponse = JSON.parse(idx410 > 0 ? errText.substring(idx410) : errText);
         return {
           success: json.success,
           list_page_title: json.h1,
@@ -274,15 +296,17 @@ export const fetchListings = async (
   const raw = await res.text();
   let json: ApiResponse;
   try {
+    // Fast path — clean response
     json = JSON.parse(raw);
   } catch {
-    // WordPress WP_DEBUG may prepend PHP notices as HTML before the JSON — strip and retry
-    const jsonStart = raw.indexOf("{");
-    if (jsonStart > 0) {
+    // WordPress WP_DEBUG ON can prepend PHP notices before JSON.
+    // Find the start of the actual JSON object ({"success":...) and retry.
+    const jsonIdx = raw.indexOf('{"');
+    if (jsonIdx > 0) {
       try {
-        json = JSON.parse(raw.substring(jsonStart));
+        json = JSON.parse(raw.substring(jsonIdx));
       } catch {
-        console.error("[BACKEND ERROR] Invalid JSON from API:", raw.substring(0, 300));
+        console.error("[BACKEND ERROR] Invalid JSON from API (after strip):", raw.substring(0, 300));
         throw new Error("Invalid API response — unexpected non-JSON reply");
       }
     } else {
@@ -291,8 +315,7 @@ export const fetchListings = async (
     }
   }
 
-  // Return all useful sections from API
-  return {
+  const result: ApiResponse = {
     success: json.success,
     list_page_title: json.h1,
     seo_v2: json.seo_v2,
@@ -309,6 +332,17 @@ export const fetchListings = async (
       states: json.data?.states ?? [],
     },
   };
+
+  // Store in memory + sessionStorage for instant repeat access (survives refresh)
+  if (isClient) {
+    const entry = { data: result, ts: Date.now() };
+    clientResultCache.set(params.toString(), entry);
+    try {
+      sessionStorage.setItem("listings_" + params.toString(), JSON.stringify(entry));
+    } catch {}
+  }
+
+  return result;
 };
 
 // Re-export for page imports

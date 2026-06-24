@@ -68,8 +68,9 @@ export default function SearchSection() {
 
       setBaseSuggestions(sortedLabels);
       setSuggestions(sortedLabels);
-    } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Failed to load");
+    } catch {
+      setBaseSuggestions([]);
+      setSuggestions([]);
     } finally {
       setLoading(false);
     }
