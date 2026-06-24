@@ -5,6 +5,7 @@ import { useEffect } from "react";
 // Known third-party noise — don't alert on these
 const IGNORE_PATTERNS = [
   "parentNode",           // GTM script race condition
+  "contentWindow",        // GTM iframe access (third-party)
   "ResizeObserver",       // Browser internal
   "Non-Error promise",    // Browser extension noise
   "hydrat",               // Next.js hydration (expected in dev)
