@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "region-make",
-    "count": 1162,
+    "count": 1160,
     "paths": [
         "australian-capital-territory-state/australian-capital-territory-region/carrera/",
         "australian-capital-territory-state/australian-capital-territory-region/coromal/",
@@ -589,7 +589,6 @@
         "south-australia-state/adelaide-region/island-star/",
         "south-australia-state/adelaide-region/jawa/",
         "south-australia-state/adelaide-region/jayco/",
-        "south-australia-state/adelaide-region/jayco-2/",
         "south-australia-state/adelaide-region/jb/",
         "south-australia-state/adelaide-region/jurgens/",
         "south-australia-state/adelaide-region/kakadu/",
@@ -608,7 +607,6 @@
         "south-australia-state/adelaide-region/nextgen/",
         "south-australia-state/adelaide-region/nova/",
         "south-australia-state/adelaide-region/on-the-move/",
-        "south-australia-state/adelaide-region/opal/",
         "south-australia-state/adelaide-region/oz-star/",
         "south-australia-state/adelaide-region/paramount/",
         "south-australia-state/adelaide-region/phoenix/",
@@ -1166,5 +1164,5 @@
         "western-australia-state/western-australia-outback-south-region/vanguard/",
         "western-australia-state/western-australia-outback-south-region/western/"
     ],
-    "generated_at": "2026-06-24 16:32:43"
+    "generated_at": "2026-06-24 17:15:52"
 }
