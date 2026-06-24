@@ -18,6 +18,7 @@ import { BannerProvider } from "@/components/BannerHandler";
 import { headers } from "next/headers";
 import { metaFromSlug } from "@/utils/seo/meta";
 import { fetchProductMeta } from "@/utils/fetchProductMeta";
+import fetchListingsForHead, { buildListingsJsonLd, buildBreadcrumbs } from "@/utils/fetchListingsHead";
 
   const montserrat = Montserrat({
     subsets: ["latin"],
@@ -64,6 +65,7 @@ import { fetchProductMeta } from "@/utils/fetchProductMeta";
       pathname !== "/product";
 
     const isContactPage = pathname === "/contact/" || pathname === "/contact";
+    const isMainListings = pathname === "/listings/" || pathname === "/listings";
 
     // Static pages whose metadata ends up after </head> due to streaming — inject directly
     const STATIC_META: Record<string, { title: string; description: string; canonical: string }> = {
@@ -85,6 +87,26 @@ import { fetchProductMeta } from "@/utils/fetchProductMeta";
     if (isProductPage) {
       const slug = pathname.replace(/^\/product\//, "").replace(/\/$/, "");
       productMeta = await fetchProductMeta(slug);
+    }
+
+    // Listings JSON-LD — fetched here so both schemas render inside <head>
+    // Second call hits Next.js data cache (revalidate: 3600), no extra network round-trip.
+    let listingsCollectionLd: object | null = null;
+    let listingsSearchResultsLd: object | null = null;
+    if (isMainListings || isListingSlug) {
+      const normalizedPath = pathname.endsWith("/") ? pathname : pathname + "/";
+      const listingsData = await fetchListingsForHead(normalizedPath);
+      if (listingsData) {
+        const crumbs = buildBreadcrumbs(pathname);
+        const pageUrl = `https://www.caravansforsale.com.au${normalizedPath}`;
+        const { collectionPageLd, searchResultsLd } = buildListingsJsonLd(
+          listingsData,
+          pageUrl,
+          crumbs
+        );
+        listingsCollectionLd = collectionPageLd;
+        listingsSearchResultsLd = searchResultsLd;
+      }
     }
 
     if (isListingSlug) {
@@ -228,6 +250,20 @@ import { fetchProductMeta } from "@/utils/fetchProductMeta";
                   ],
                 }),
               }}
+            />
+          )}
+          {/* Listings page JSON-LD — CollectionPage + BreadcrumbList */}
+          {listingsCollectionLd && (
+            <script
+              type="application/ld+json"
+              dangerouslySetInnerHTML={{ __html: JSON.stringify(listingsCollectionLd) }}
+            />
+          )}
+          {/* Listings page JSON-LD — SearchResultsPage with product list */}
+          {listingsSearchResultsLd && (
+            <script
+              type="application/ld+json"
+              dangerouslySetInnerHTML={{ __html: JSON.stringify(listingsSearchResultsLd) }}
             />
           )}
           {/* ✅ Google Tag Manager (Head) */}

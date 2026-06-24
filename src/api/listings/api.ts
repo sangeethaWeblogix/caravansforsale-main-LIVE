@@ -59,6 +59,7 @@ export type Item = {
   image_format?: string[];
   image_url?: string[];
   seller_type?: string;
+  axle?: string;
 };
 
 export interface ApiSEO {
@@ -275,8 +276,19 @@ export const fetchListings = async (
   try {
     json = JSON.parse(raw);
   } catch {
-    console.error("[BACKEND ERROR] Invalid JSON from API:", raw.substring(0, 300));
-    throw new Error("Invalid API response — unexpected non-JSON reply");
+    // WordPress WP_DEBUG may prepend PHP notices as HTML before the JSON — strip and retry
+    const jsonStart = raw.indexOf("{");
+    if (jsonStart > 0) {
+      try {
+        json = JSON.parse(raw.substring(jsonStart));
+      } catch {
+        console.error("[BACKEND ERROR] Invalid JSON from API:", raw.substring(0, 300));
+        throw new Error("Invalid API response — unexpected non-JSON reply");
+      }
+    } else {
+      console.error("[BACKEND ERROR] Invalid JSON from API:", raw.substring(0, 300));
+      throw new Error("Invalid API response — unexpected non-JSON reply");
+    }
   }
 
   // Return all useful sections from API
