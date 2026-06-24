@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "state-make",
-    "count": 662,
+    "count": 660,
     "paths": [
         "australian-capital-territory-state/carrera/",
         "australian-capital-territory-state/coromal/",
@@ -301,7 +301,6 @@
         "south-australia-state/island-star/",
         "south-australia-state/jawa/",
         "south-australia-state/jayco/",
-        "south-australia-state/jayco-2/",
         "south-australia-state/jb/",
         "south-australia-state/jurgens/",
         "south-australia-state/kakadu/",
@@ -321,7 +320,6 @@
         "south-australia-state/nextgen/",
         "south-australia-state/nova/",
         "south-australia-state/on-the-move/",
-        "south-australia-state/opal/",
         "south-australia-state/oz-star/",
         "south-australia-state/paramount/",
         "south-australia-state/phoenix/",
@@ -666,5 +664,5 @@
         "western-australia-state/x-series-rv/",
         "western-australia-state/zone-rv/"
     ],
-    "generated_at": "2026-06-24 16:32:42"
+    "generated_at": "2026-06-24 17:15:51"
 }
