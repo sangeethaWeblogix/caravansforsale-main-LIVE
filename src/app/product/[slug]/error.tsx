@@ -10,6 +10,17 @@ interface ErrorProps {
 export default function ProductError({ error, reset }: ErrorProps) {
   useEffect(() => {
     console.error("[PRODUCT ERROR]", error.message, error.digest ?? "");
+    fetch("/api/report-error", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        errorSource: "FRONTEND",
+        errorType: "JS crash: " + error.message,
+        message: error.message,
+        pageUrl: window.location.href,
+        digest: error.digest,
+      }),
+    }).catch(() => {});
   }, [error]);
 
   return (
