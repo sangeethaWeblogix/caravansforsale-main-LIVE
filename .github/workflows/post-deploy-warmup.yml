@@ -1,0 +1,218 @@
+name: Post-Deploy Cache Warmup
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# After every deploy: warm priority + key listing pages in CF KV
+# so first visitors are always fast (no 6s cold render).
+# Large types (models, region-make, cat-region) are covered by daily generate-cache.yml.
+
+jobs:
+
+  # ==========================================
+  # PRIORITY PAGES (Homepage + /listings/) — Puppeteer
+  # ==========================================
+  warmup-priority:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Wait for Vercel deployment
+        run: |
+          echo "Waiting 3 minutes for Vercel to finish deploying..."
+          sleep 180
+
+      - name: Install dependencies
+        run: |
+          npm install node-fetch@2
+          npm install puppeteer
+
+      - name: Warm priority pages
+        env:
+          VERCEL_BASE_URL: ${{ secrets.VERCEL_BASE_URL }}
+          PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          TARGET_PAGE: 'all'
+          SKIP_ROUTES_UPDATE: 'true'
+        run: node scripts/generate-priority-pages.js
+
+  # ==========================================
+  # SMALL TYPES — categories, states, price, atm, sleep, length
+  # ==========================================
+  warmup-small-types:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      matrix:
+        type: [categories, states, price, atm, sleep, length]
+      fail-fast: false
+      max-parallel: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Wait for Vercel deployment
+        run: sleep 180
+
+      - name: Install dependencies
+        run: npm install node-fetch@2
+
+      - name: Warm ${{ matrix.type }}
+        env:
+          PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
+          VERCEL_BASE_URL: ${{ secrets.VERCEL_BASE_URL }}
+          WP_API_BASE: 'https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap'
+          WP_API_KEY: ${{ secrets.WP_API_KEY }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          TARGET_SITEMAP: ${{ matrix.type }}
+          SKIP_ROUTES_UPDATE: 'true'
+        run: node scripts/generate-sitemap-cache-simple.js
+
+  # ==========================================
+  # CAT-STATE
+  # ==========================================
+  warmup-cat-state:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Wait for Vercel deployment
+        run: sleep 180
+
+      - name: Install dependencies
+        run: npm install node-fetch@2
+
+      - name: Warm cat-state
+        env:
+          PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
+          VERCEL_BASE_URL: ${{ secrets.VERCEL_BASE_URL }}
+          WP_API_BASE: 'https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap'
+          WP_API_KEY: ${{ secrets.WP_API_KEY }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          TARGET_SITEMAP: cat-state
+          SKIP_ROUTES_UPDATE: 'true'
+        run: node scripts/generate-sitemap-cache-simple.js
+
+  # ==========================================
+  # REGIONS (~50 URLs, state+region combos)
+  # ==========================================
+  warmup-regions:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Wait for Vercel deployment
+        run: sleep 180
+
+      - name: Install dependencies
+        run: npm install node-fetch@2
+
+      - name: Fetch region paths
+        env:
+          WP_API_BASE: 'https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap'
+          WP_STATIC_BASE: 'https://admin.caravansforsale.com.au/wp-content/uploads/cfs-paths'
+          WP_API_KEY: ${{ secrets.WP_API_KEY }}
+          PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
+          TARGET_SITEMAP: regions
+        run: node scripts/fetch-paths-only.js
+
+      - name: Warm regions
+        env:
+          PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
+          VERCEL_BASE_URL: ${{ secrets.VERCEL_BASE_URL }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          TARGET_SITEMAP: regions
+          PATHS_FILE: /tmp/paths-regions.json
+          SKIP_ROUTES_UPDATE: 'true'
+        run: node scripts/generate-sitemap-cache-simple.js
+
+  # ==========================================
+  # MAKES (~260 URLs) — 6 parallel batches
+  # ==========================================
+  warmup-makes-fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install dependencies
+        run: npm install node-fetch@2
+      - name: Fetch makes paths
+        env:
+          WP_API_BASE: 'https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap'
+          WP_STATIC_BASE: 'https://admin.caravansforsale.com.au/wp-content/uploads/cfs-paths'
+          WP_API_KEY: ${{ secrets.WP_API_KEY }}
+          PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
+          TARGET_SITEMAP: makes
+        run: node scripts/fetch-paths-only.js
+      - uses: actions/upload-artifact@v4
+        with:
+          name: warmup-paths-makes
+          path: /tmp/paths-makes.json
+          retention-days: 1
+
+  warmup-makes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    needs: warmup-makes-fetch
+    strategy:
+      matrix:
+        batch: [1, 2, 3, 4, 5, 6]
+      fail-fast: false
+      max-parallel: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Wait for Vercel deployment
+        run: sleep 180
+
+      - name: Install dependencies
+        run: npm install node-fetch@2
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: warmup-paths-makes
+          path: /tmp
+
+      - name: Warm makes (Batch ${{ matrix.batch }}/6)
+        env:
+          PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
+          VERCEL_BASE_URL: ${{ secrets.VERCEL_BASE_URL }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          TARGET_SITEMAP: makes
+          PATHS_FILE: /tmp/paths-makes.json
+          BATCH_SIZE: 50
+          BATCH_NUMBER: ${{ matrix.batch }}
+          SKIP_ROUTES_UPDATE: 'true'
+        run: node scripts/generate-sitemap-cache-simple.js
