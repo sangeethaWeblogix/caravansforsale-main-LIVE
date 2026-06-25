@@ -1487,7 +1487,12 @@ const [pagination, setPagination] = useState<Pagination>(() => {
         </div>
       </div>
 
-      {/* <ListingBottomSections filters={filters} initialData={initialBottomLinksData} /> */}
+      {/* <ListingBottomSections
+        filters={filters}
+        initialData={initialBottomLinksData}
+        categoryName={categories.find((c) => c.slug === filters.category)?.name ?? ""}
+      /> */}
     </>
   );
+  
 }

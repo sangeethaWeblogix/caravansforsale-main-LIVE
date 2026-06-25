@@ -60,8 +60,49 @@ export function getBottomLinksParams(filters: Filters): URLSearchParams {
   if (hasCat && hasState && hasRegion && dims === 3) {
     p.set("category", filters.category!); p.set("state", filters.state!); p.set("region", filters.region!); return p;
   }
+  if (hasCat && hasState && hasPrice && dims === 3) {
+    p.set("category", filters.category!); p.set("state", filters.state!);
+    if (filters.from_price) p.set("from_price", String(filters.from_price));
+    if (filters.to_price)   p.set("to_price",   String(filters.to_price));
+    return p;
+  }
+  // cat + state + [sleep/weight/length] → fallback to cat+state
+  if (hasCat && hasState && (hasSleep || hasWeight || hasLength) && dims === 3) {
+    p.set("category", filters.category!); p.set("state", filters.state!); return p;
+  }
+  // cat + price + [sleep/weight/length] → fallback to cat+price
+  if (hasCat && hasPrice && (hasSleep || hasWeight || hasLength) && dims === 3) {
+    p.set("category", filters.category!);
+    if (filters.from_price) p.set("from_price", String(filters.from_price));
+    if (filters.to_price)   p.set("to_price",   String(filters.to_price));
+    return p;
+  }
   if (hasCat && hasState && dims === 2) {
     p.set("category", filters.category!); p.set("state", filters.state!); return p;
+  }
+  if (hasCat && hasPrice && dims === 2) {
+    p.set("category", filters.category!);
+    if (filters.from_price) p.set("from_price", String(filters.from_price));
+    if (filters.to_price)   p.set("to_price",   String(filters.to_price));
+    return p;
+  }
+  if (hasCat && hasSleep && dims === 2) {
+    p.set("category", filters.category!);
+    if (filters.from_sleep) p.set("from_sleep", String(filters.from_sleep));
+    if (filters.to_sleep)   p.set("to_sleep",   String(filters.to_sleep));
+    return p;
+  }
+  if (hasCat && hasWeight && dims === 2) {
+    p.set("category", filters.category!);
+    if (filters.minKg) p.set("from_atm", String(filters.minKg));
+    if (filters.maxKg) p.set("to_atm",   String(filters.maxKg));
+    return p;
+  }
+  if (hasCat && hasLength && dims === 2) {
+    p.set("category", filters.category!);
+    if (filters.from_length) p.set("from_length", String(filters.from_length));
+    if (filters.to_length)   p.set("to_length",   String(filters.to_length));
+    return p;
   }
   if (hasCat && dims === 1) {
     p.set("category", filters.category!); return p;
