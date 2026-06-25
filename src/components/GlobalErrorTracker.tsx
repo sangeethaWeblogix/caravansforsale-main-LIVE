@@ -17,6 +17,7 @@ const IGNORE_PATTERNS = [
   "Access is denied",     // sessionStorage blocked (private mode / Safari ITP)
   "Minified React error", // React hydration mismatch — usually browser extensions modifying DOM
   "addListener",          // Deprecated MediaQueryList.addListener in third-party ad/GTM scripts
+  "Unexpected end of form", // Browser/network form parse error — not our code
 ];
 
 function shouldIgnore(message: string): boolean {

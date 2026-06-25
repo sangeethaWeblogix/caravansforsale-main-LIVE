@@ -9,6 +9,7 @@ export async function GET(request: NextRequest) {
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 30000);
+  const t0 = Date.now();
 
   try {
     const res = await fetch(url, {
@@ -17,10 +18,11 @@ export async function GET(request: NextRequest) {
         Accept: "application/json",
         ...(API_KEY && { "X-API-Key": API_KEY }),
       },
-      next: { revalidate: 300 }, // Cache in Next.js data cache for 5 min (shared across all users)
+      next: { revalidate: 3600 }, // Cache in Next.js data cache for 1 hr (shared across all users)
     });
 
     clearTimeout(timeoutId);
+    console.log(`[WP API] ${Date.now() - t0}ms | ${params.substring(0, 80)}`);
 
     if (!res.ok) {
       // For 410, forward the full body (contains emp_exclusive_products for 0-product pages)
