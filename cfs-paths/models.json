@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "models",
-    "count": 2869,
+    "count": 2867,
     "paths": [
         "active/storm/",
         "adria/action/",
@@ -1162,7 +1162,6 @@
         "jayco/crosstrak-poptop-16-48-6-ct-my26/",
         "jayco/destiny/",
         "jayco/discovery/",
-        "jayco/discovery-16-52-1/",
         "jayco/discovery-caravan-17-54-1-dy-my25/",
         "jayco/discovery-outback/",
         "jayco/discovery-pop-top/",
@@ -1224,7 +1223,6 @@
         "jayco/sterling-23-72-3/",
         "jayco/sterling-outback/",
         "jayco/stirling/",
-        "jayco/stirling-tandem-pop-top/",
         "jayco/swan-outback/",
         "jayco/westport/",
         "jayco/work-n-play/",
@@ -2873,5 +2871,5 @@
         "zone-rv/venture-20-6/",
         "zone-rv/znu004/"
     ],
-    "generated_at": "2026-06-24 23:13:31"
+    "generated_at": "2026-06-25 14:35:18"
 }
