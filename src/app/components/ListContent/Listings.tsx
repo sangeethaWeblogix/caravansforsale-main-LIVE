@@ -389,6 +389,29 @@ const [pagination, setPagination] = useState<Pagination>(() => {
     setProducts(prev => prev.length > 0 ? shuffleArray([...prev]) : prev);
   }, []);
 
+  // Background prefetch: warm client cache for most common first-click filters.
+  // Fires once, 2s after page load. If user clicks these within 5 min → cache hit, instant.
+  const prefetchDoneRef = useRef(false);
+  useEffect(() => {
+    if (prefetchDoneRef.current) return;
+    if (sliderCategoryCounts.length === 0) return;
+    prefetchDoneRef.current = true;
+
+    const timer = setTimeout(() => {
+      fetchListings({ page: 1, condition: "new" }).catch(() => {});
+      fetchListings({ page: 1, condition: "used" }).catch(() => {});
+      sliderCategoryCounts
+        .slice()
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 3)
+        .forEach(({ slug }) =>
+          fetchListings({ page: 1, category: slug }).catch(() => {})
+        );
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [sliderCategoryCounts]);
+
   // Pre-fetch next page in background to warm server cache
   const prefetchedPageRef = useRef<number>(-1);
   useEffect(() => {

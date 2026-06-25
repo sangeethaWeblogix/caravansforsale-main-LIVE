@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "state-make",
-    "count": 660,
+    "count": 658,
     "paths": [
         "australian-capital-territory-state/carrera/",
         "australian-capital-territory-state/coromal/",
@@ -191,7 +191,6 @@
         "queensland-state/iconic/",
         "queensland-state/jawa/",
         "queensland-state/jayco/",
-        "queensland-state/jayco-2/",
         "queensland-state/jb/",
         "queensland-state/jurgens/",
         "queensland-state/kingdom/",
@@ -234,7 +233,6 @@
         "queensland-state/royal-flair/",
         "queensland-state/rp/",
         "queensland-state/signature/",
-        "queensland-state/silver-sun/",
         "queensland-state/silversun/",
         "queensland-state/snowy-river/",
         "queensland-state/southern-cross/",
@@ -320,6 +318,7 @@
         "south-australia-state/nextgen/",
         "south-australia-state/nova/",
         "south-australia-state/on-the-move/",
+        "south-australia-state/opal/",
         "south-australia-state/oz-star/",
         "south-australia-state/paramount/",
         "south-australia-state/phoenix/",
@@ -377,7 +376,6 @@
         "tasmania-state/hilltop/",
         "tasmania-state/imperial/",
         "tasmania-state/jayco/",
-        "tasmania-state/jayco-2/",
         "tasmania-state/jb/",
         "tasmania-state/jurgens/",
         "tasmania-state/lunar/",
@@ -664,5 +662,5 @@
         "western-australia-state/x-series-rv/",
         "western-australia-state/zone-rv/"
     ],
-    "generated_at": "2026-06-24 17:17:13"
+    "generated_at": "2026-06-25 15:46:35"
 }

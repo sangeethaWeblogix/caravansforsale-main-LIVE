@@ -61,7 +61,7 @@
 .demo-price-card__header h3 {
   font-size: 22px;
   font-weight: 700;
-  color: #0c1f3f;
+  color: #000000;
   margin: 0;
 }
 
@@ -634,11 +634,11 @@
 }
 
 .demo-check-item {
-  font-size: 14px;
-  color: #222;
-  display: flex;
-  align-items: center;
-  gap: 7px;
+    color: #000000;
+    align-items: center;
+    gap: 7px;
+    font-size: 16px;
+    display: flex;
 }
 
 .demo-info-box--accent .demo-check-item {
@@ -674,10 +674,11 @@
 }
 
 .demo-reach-device {
-  text-align: center;
-  margin-bottom: 40px;
+    text-align: center;
+    margin-bottom: 40px;
+    display: flex;
+    justify-content: center;
 }
-
 .demo-reach-device img {
   max-width: 100%;
   height: auto;
@@ -938,10 +939,10 @@
 }
 
 .demo-faq-head h2 {
-  font-size: 32px;
-  font-weight: 800;
-  color: #000000;
-  margin-bottom: 10px;
+    color: #000000;
+    margin-bottom: 10px;
+    font-size: 28px;
+    font-weight: 700;
 }
 
 .demo-faq-head p {
@@ -1083,11 +1084,11 @@
 
 /* ── Section title ── */
 .demo-section-title {
-  font-size: 32px;
-  font-weight: 800;
-  color: #1a1a1a;
-  margin-bottom: 40px;
-  text-align: center;
+    color: #000000;
+    text-align: center;
+    margin-bottom: 40px;
+    font-size: 28px;
+    font-weight: 700;
 }
 
 /* .demo-section-title::after {
@@ -1163,18 +1164,18 @@
 }
 
 .demo-city-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: #fff;
-  border: 1px solid #e8e8e8;
-  border-radius: 10px;
-  padding: 16px 18px;
-  text-decoration: none;
-  color: #1a1a1a;
-  font-size: 14px;
-  font-weight: 600;
-  transition: border-color 0.18s, box-shadow 0.18s, color 0.18s;
+    color: #1a1a1a;
+    background: #fff;
+    border: 1px solid #e8e8e8;
+    border-radius: 10px;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 18px;
+    font-size: 15px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: border-color .18s, box-shadow .18s, color .18s;
+    display: flex;
 }
 
 .demo-city-item:hover {
@@ -1205,7 +1206,7 @@
 }
 
 .demo-city-arrow {
-  color: #f58333;
+  
   font-size: 13px;
   flex-shrink: 0;
 }
@@ -1217,38 +1218,47 @@
 }
 
 .demo-types-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 14px;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 14px;
+    display: grid;
 }
 
 .demo-type-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  background: #fff;
-  border: 1px solid #e8e8e8;
-  border-radius: 12px;
-  padding: 28px 10px 24px;
-  text-decoration: none;
-  color: #1a1a1a;
-  font-size: 14px;
-  font-weight: 600;
-  text-align: center;
-  transition: border-color 0.18s, box-shadow 0.18s;
+    color: #1a1a1a;
+    text-align: center;
+    background: #fff;
+    border: 1px solid #e8e8e8;
+    border-radius: 12px;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 10px 15px;
+    font-size: 16px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: border-color .18s, box-shadow .18s;
+    display: flex;
 }
 
 .demo-type-item:hover {
   border-color: #f58333;
   box-shadow: 0 4px 18px rgba(245,131,51,.15);
-  color: #1a1a1a;
+  color: #f58333;
   text-decoration: none;
 }
 
 .demo-type-icon {
-  font-size: 46px;
-  line-height: 1;
+    justify-content: center;
+    align-items: center;
+    width: 100px;
+    height: 80px;
+    display: flex;
+}
+
+.demo-type-icon img {
+    object-fit: contain;
+    width: 100px;
+    height: 100px;
 }
 
 .demo-type-label {
@@ -1257,7 +1267,7 @@
   padding-bottom: 12px;
 }
 
-.demo-type-label::after {
+/* .demo-type-label::after {
   content: '';
   position: absolute;
   bottom: 0;
@@ -1267,7 +1277,7 @@
   height: 3px;
   background: #f58333;
   border-radius: 2px;
-}
+} */
 
 /* ── Why buyers ── */
 .demo-why-section {
@@ -1276,62 +1286,221 @@
 }
 
 .demo-why-section h2 {
-  font-size: 24px;
-  font-weight: 700;
-  color: #1a1a1a;
-  margin-bottom: 16px;
+    color: #000000;
+    margin-bottom: 16px;
+    font-size: 27px;
+    font-weight: 700;
+}
+
+.demo-why-section p {
+  font-size: 16px;
+  color: #000000;
 }
 
 .demo-why-img {
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0,0,0,.1);
+  
 }
 
 /* ── Steps ── */
 .demo-steps-section {
-  padding: 60px 0;
+  padding: 72px 0 60px;
   background: #f7f7f7;
 }
 
-.demo-steps-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 24px;
-}
-
-.demo-step {
-  background: #fff;
-  border-radius: 12px;
-  padding: 28px 22px;
-  box-shadow: 0 2px 10px rgba(0,0,0,.07);
-  text-align: center;
-}
-
-.demo-step-num {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: #f58333;
-  color: #fff;
-  font-size: 22px;
-  font-weight: 700;
+.demo-steps-eyebrow {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 16px;
+  gap: 14px;
+  margin-bottom: 16px;
 }
 
-.demo-step h4 {
-  font-size: 16px;
-  font-weight: 700;
-  margin-bottom: 8px;
-  color: #1a1a1a;
+.demo-steps-eyebrow-line {
+  display: block;
+  width: 48px;
+  height: 2px;
+  background: #f58333;
+  border-radius: 2px;
 }
 
-.demo-step p {
+.demo-steps-eyebrow-text {
   font-size: 13px;
-  color: #666;
-  margin: 0;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #f58333;
+  text-transform: uppercase;
+}
+
+.demo-steps-title {
+    color: #000000;
+    text-align: center;
+    margin-bottom: 12px;
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.15;
+}
+
+.demo-steps-subtitle {
+    color: #000000;
+    text-align: center;
+    margin-bottom: 48px;
+    font-size: 16px;
+}
+
+/* ── Steps: single wrapper, each item has circle + icon + content ── */
+.demo-steps-wrapper {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 0px;
+}
+
+.demo-steps-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 0 8px;
+}
+
+/* Connector: line + arrowhead, vertically centred with the 52px circle */
+.demo-steps-connector {
+  flex: 0 0 80px;
+  height: 1.5px;
+  background: #f58333;
+  margin-top: 20px; /* half of circle height (52px / 2) */
+  position: relative;
+  flex-shrink: 1;
+}
+
+.demo-steps-connector::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-left: 8px solid #f58333;
+}
+
+.demo-step-num {
+    color: #fff;
+    background: #f58333;
+    border: none;
+    border-radius: 50%;
+    flex-shrink: 0;
+    justify-content: center;
+    align-items: center;
+    width: 45px;
+    height: 45px;
+    margin-bottom: 24px;
+    font-size: 18px;
+    font-weight: 700;
+    display: flex;
+    position: relative;
+}
+
+.demo-step-num:before {
+    content: "";
+    z-index: 0;
+    box-shadow: 0px 0px 0px 1px #f58333;
+    border-radius: 50%;
+    width: 51px;
+    height: 51px;
+    position: absolute;
+}
+
+.demo-step-icon-circle {
+    color: #f58333;
+    background: #ffffff;
+    box-shadow: 0px 0px 8px rgb(0 0 0 / 12%);
+    border: none;
+    border-radius: 50%;
+    justify-content: center;
+    align-items: center;
+    width: 106px;
+    height: 106px;
+    margin-bottom: 20px;
+    font-size: 36px;
+    display: flex;
+}
+
+.demo-step-title {
+    color: #000;
+    margin-bottom: 4px;
+    padding-bottom: 2px;
+    font-size: 17px;
+    font-weight: 600;
+    position: relative;
+}
+
+
+
+.demo-step-desc {
+  font-size: 15px;
+  color: #000000;
+  font-weight: 400;
+  margin: 8px 0 0;
+  line-height: 1.5;
+}
+
+/* ── Trust bar ── */
+.demo-steps-trust {
+  display: flex;
+  align-items: center;
+  border: 1px solid #e8e8e8;
+  border-radius: 12px;
+  padding: 20px 16px;
+}
+
+.demo-steps-trust-item {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 0 12px;
+  justify-content: center;
+}
+
+.demo-steps-trust-item i {
+  font-size: 22px;
+  color: #f58333;
+  flex-shrink: 0;
+}
+
+.demo-steps-trust-aus {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.demo-steps-trust-aus img {
+  width: 100%;
+  height: auto;
+  filter: invert(55%) sepia(80%) saturate(700%) hue-rotate(340deg) brightness(95%);
+}
+
+.demo-steps-trust-sep {
+  width: 1px;
+  height: 44px;
+  background: #e0e0e0;
+  flex-shrink: 0;
+}
+
+.demo-steps-trust-label {
+    color: #1a1a1a;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.demo-steps-trust-sub {
+    color: #000000;
+    font-size: 14px;
 }
 
 /* ── 2-column FAQ ── */
@@ -1388,15 +1557,16 @@
 
 /* ── Bottom CTA strip ── */
 .demo-cta-strip {
-  background: #1a1a1a;
+  background: #ffffff;
   color: #fff;
   padding: 40px 0;
 }
 
 .demo-cta-strip p {
-  font-size: 20px;
-  margin-bottom: 20px;
-  color: #fff;
+    color: #000000;
+    margin-bottom: 20px;
+    font-size: 20px;
+    font-weight: 400;
 }
 
 .demo-cta-strip .white_btn {
@@ -1424,8 +1594,64 @@
     grid-template-columns: 1fr;
   }
 
-  .demo-steps-grid {
-    grid-template-columns: repeat(2, 1fr);
+  .demo-steps-title {
+    font-size: 28px;
+  }
+  /* wrapper approach: stack items vertically, hide connectors + num circles */
+  .demo-steps-wrapper {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .demo-steps-connector {
+    display: none;
+  }
+  .demo-step-num {
+    display: none;
+  }
+  .demo-steps-item {
+    display: grid;
+    grid-template-columns: 56px 1fr;
+    grid-template-rows: auto auto;
+    column-gap: 14px;
+    row-gap: 4px;
+    text-align: left;
+    padding: 0 0 20px;
+  }
+  .demo-step-icon-circle {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    width: 56px;
+    height: 56px;
+    font-size: 20px;
+    margin-bottom: 0;
+    align-self: start;
+  }
+  .demo-step-title {
+    grid-column: 2;
+    grid-row: 1;
+    padding-bottom: 0;
+    align-self: end;
+  }
+  .demo-step-desc {
+    grid-column: 2;
+    grid-row: 2;
+    margin: 0;
+  }
+  .demo-step-title::after {
+    display: none;
+  }
+  .demo-steps-trust {
+    flex-direction: column;
+    gap: 16px;
+    padding: 20px;
+  }
+  .demo-steps-trust-sep {
+    width: 60%;
+    height: 1px;
+  }
+  .demo-steps-trust-item {
+    padding: 0;
+    justify-content: flex-start;
   }
 
   .demo-types-grid {
@@ -1442,5 +1668,132 @@
 
   .demo-section-title {
     font-size: 24px;
+  }
+}
+
+/* ── Extra-small mobile (≤575px) ── */
+@media (max-width: 575px) {
+  /* Price card center */
+  .demo-price-card__center {
+    padding: 20px 16px 24px;
+  }
+  .demo-price-card__badge {
+    margin-bottom: 10px;
+    font-size: 12px;
+    padding: 6px 18px;
+  }
+  .demo-price-card__price-box {
+    border-radius: 14px;
+    padding: 20px 24px 18px;
+  }
+  .demo-price-card__only {
+    font-size: 16px;
+  }
+  .demo-price-card__amount {
+    font-size: 64px;
+  }
+  .demo-price-card__fee {
+    font-size: 13px;
+  }
+
+  /* Grids → fewer columns */
+  .demo-types-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .demo-city-grid {
+    grid-template-columns: 1fr;
+  }
+  .demo-state-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Hero */
+  .demo-hero {
+    padding: 32px 0 28px;
+  }
+  .demo-hero__title {
+    font-size: 24px;
+  }
+  .demo-price-card__amount {
+    font-size: 56px;
+  }
+
+  /* Section headings */
+  .demo-section-title {
+    font-size: 20px;
+    margin-bottom: 24px;
+  }
+  .demo-faq-head h2 {
+    font-size: 22px;
+  }
+  .demo-why-section h2 {
+    font-size: 22px;
+  }
+  .demo-steps-title {
+    font-size: 22px;
+  }
+
+  /* Steps section */
+  .demo-steps-section {
+    padding: 48px 0 36px;
+  }
+  .demo-step-icon-circle {
+    width: 48px;
+    height: 48px;
+    font-size: 18px;
+  }
+
+  /* FAQ */
+  .demo-faq-section {
+    padding: 36px 0 40px;
+  }
+  .demo-faq2-section {
+    padding: 36px 0;
+  }
+  .demo-faq-item__q {
+    font-size: 15px;
+    padding: 16px 16px;
+  }
+  .demo-faq-item__a {
+    padding: 0 16px 18px;
+  }
+
+  /* CTA strip */
+  .demo-cta-strip {
+    padding: 32px 0;
+    text-align: center;
+  }
+  .demo-cta-strip p {
+    font-size: 17px;
+  }
+
+  /* State items — smaller padding */
+  .demo-state-item {
+    padding: 16px 8px 14px;
+    font-size: 13px;
+  }
+  .demo-state-item__img img {
+    height: 44px;
+  }
+
+  /* City items */
+  .demo-city-item {
+    font-size: 14px;
+    padding: 14px 14px;
+  }
+
+  /* Type items */
+  .demo-type-item {
+    font-size: 13px;
+    padding: 10px 8px 12px;
+  }
+  .demo-type-icon img {
+    width: 70px;
+    height: 70px;
+  }
+
+  /* Trust bar */
+  .demo-steps-trust {
+    padding: 16px;
   }
 }

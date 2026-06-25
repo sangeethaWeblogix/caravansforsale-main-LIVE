@@ -1,14 +1,14 @@
 import { revalidatePath } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 
-// Called by backend admin when a product is updated/created.
-// Clears the ISR cache for that product page so the live site reflects changes immediately.
+// Called by WordPress when a product/listing is saved/updated.
+// Immediately purges ISR cache so fresh images/data show without waiting 24hr.
 //
 // Usage:
 //   POST /api/revalidate?secret=YOUR_SECRET
 //   Body: { "slug": "pro-rv-dingo-13ft6-touring-hybrid-ensuite-outdoor-kitchen" }
 //
-// Or revalidate all product pages at once:
+// Revalidate all pages (full site cache purge):
 //   POST /api/revalidate?secret=YOUR_SECRET
 //   Body: { "all": true }
 //
@@ -26,18 +26,21 @@ export async function POST(request: NextRequest) {
     const { slug, all } = body as { slug?: string; all?: boolean };
 
     if (all) {
-      // Revalidate the entire /product route — clears all product page caches.
-      revalidatePath("/product/[slug]", "page");
-      return NextResponse.json({ revalidated: true, scope: "all product pages" });
+      // Purge all product detail pages + all listing filter pages
+      revalidatePath("/[slug]", "page");
+      revalidatePath("/listings", "page");
+      revalidatePath("/listings/[...slug]", "page");
+      return NextResponse.json({ revalidated: true, scope: "all pages" });
     }
 
     if (!slug) {
       return NextResponse.json({ error: "slug or all required" }, { status: 400 });
     }
 
-    const path = `/product/${slug}/`;
-    revalidatePath(path, "page");
-    return NextResponse.json({ revalidated: true, path });
+    // Purge specific product detail page + main listings (product image may appear there too)
+    revalidatePath(`/${slug}`, "page");
+    revalidatePath("/listings", "page");
+    return NextResponse.json({ revalidated: true, paths: [`/${slug}`, "/listings"] });
   } catch {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
   }

@@ -1,7 +1,8 @@
 "use client";
 import "@fortawesome/fontawesome-free/css/fontawesome.min.css";
 import "@fortawesome/fontawesome-free/css/solid.min.css";
-import { useState } from "react";
+import "@fortawesome/fontawesome-free/css/regular.min.css";
+import React, { useState } from "react";
 
 const STATE_LINKS = [
   { label: "Victoria",              img: "/images/vic_map.svg", href: "/sell-my-caravan/" },
@@ -26,24 +27,24 @@ const CITY_LINKS = [
 ];
 
 const CARAVAN_TYPES = [
-  { label: "Off Road Caravans", icon: "🏕️", href: "/listings/off-road-category/" },
-  { label: "Family Caravans", icon: "👨‍👩‍👧‍👦", href: "/listings/family-caravans-category/" },
-  { label: "Pop Top Caravans", icon: "🔼", href: "/listings/pop-top-category/" },
-  { label: "Hybrid Caravans", icon: "🚐", href: "/listings/hybrid-caravans-category/" },
-  { label: "Luxury Caravans", icon: "⭐", href: "/listings/luxury-caravans-category/" },
-  { label: "Couples Caravans", icon: "💑", href: "/listings/couples-caravans-category/" },
-  { label: "Touring Caravans", icon: "🗺️", href: "/listings/touring-caravans-category/" },
-  { label: "Bunk Caravans", icon: "🛏️", href: "/listings/bunk-caravans-category/" },
-  { label: "Small Caravans", icon: "📦", href: "/listings/small-caravans-category/" },
-  { label: "Used Caravans", icon: "🔄", href: "/listings/used-condition/" },
+  { label: "Off Road Caravans", img: "/images/off-road.webp", href: "/listings/off-road-category/" },
+  { label: "Family Caravans", img: "/images/family.webp", href: "/listings/family-caravans-category/" },
+  { label: "Pop Top Caravans", img: "/images/pop-top.webp", href: "/listings/pop-top-category/" },
+  { label: "Hybrid Caravans", img: "/images/hybrid.webp", href: "/listings/hybrid-caravans-category/" },
+  { label: "Luxury Caravans", img: "/images/luxury.webp", href: "/listings/luxury-caravans-category/" },
+  { label: "Couples Caravans", img: "/images/touring.webp", href: "/listings/couples-caravans-category/" },
+  { label: "Touring Caravans", img: "/images/touring.webp", href: "/listings/touring-caravans-category/" },
+  { label: "Bunk Caravans", img: "/images/family.webp", href: "/listings/bunk-caravans-category/" },
+  { label: "Small Caravans", img: "/images/pop-top.webp", href: "/listings/small-caravans-category/" },
+  { label: "Used Caravans", img: "/images/off-road.webp", href: "/listings/used-condition/" },
 ];
 
 const HOW_TO_STEPS = [
-  { num: 1, title: "Create Your Listing", desc: "Add your caravan details, specifications, price and contact information." },
-  { num: 2, title: "Upload Photos", desc: "Add clear photos of the inside, outside and key features of your caravan." },
-  { num: 3, title: "Receive Buyer Enquiries", desc: "Interested buyers contact you directly through your listing." },
-  { num: 4, title: "Negotiate Directly", desc: "Arrange inspections, answer questions and negotiate with buyers." },
-  { num: 5, title: "Complete The Sale", desc: "Once sold, mark your listing as sold or remove it from the site." },
+  { num: 1, iconSet: "fa-regular", icon: "fa-file-lines",    title: "Create Your Listing",    desc: "Add your caravan details, specifications, price and contact information." },
+  { num: 2, iconSet: "fa-regular", icon: "fa-image",         title: "Upload Photos",          desc: "Add clear photos of the inside, outside and key features of your caravan." },
+  { num: 3, iconSet: "fa-regular", icon: "fa-comment-dots",  title: "Receive Buyer Enquiries", desc: "Interested buyers contact you directly through your listing." },
+  { num: 4, iconSet: "fa-regular", icon: "fa-handshake",     title: "Negotiate Directly",     desc: "Arrange inspections, answer questions and negotiate with buyers." },
+  { num: 5, iconSet: "fa-regular", icon: "fa-circle-check",  title: "Complete The Sale",      desc: "Once sold, mark your listing as sold or remove it from the site." },
 ];
 
 const FAQ_COL1 = [
@@ -369,7 +370,9 @@ export default function SellerDemo() {
           <div className="demo-types-grid">
             {CARAVAN_TYPES.map((t) => (
               <a href={t.href} key={t.label} className="demo-type-item">
-                <span className="demo-type-icon">{t.icon}</span>
+                <div className="demo-type-icon">
+                  <img src={t.img} alt={t.label} width={80} height={80} />
+                </div>
                 <span className="demo-type-label">{t.label}</span>
               </a>
             ))}
@@ -381,10 +384,10 @@ export default function SellerDemo() {
       <section className="demo-why-section">
         <div className="container">
           <div className="row align-items-center g-4">
-            <div className="col-md-5">
+            <div className="col-md-6">
               <img src="/images/your-caravan-desktop-seller.jpg" className="img-fluid demo-why-img" alt="Caravan buyers" />
             </div>
-            <div className="col-md-7">
+            <div className="col-md-6">
               <h2>Why Thousands of Caravan Buyers Visit CaravansForSale Every Month</h2>
               <p>
                 CaravansForSale.com.au is Australia's dedicated caravan marketplace, built exclusively
@@ -412,16 +415,30 @@ export default function SellerDemo() {
       {/* ── How to sell ── */}
       <section className="demo-steps-section">
         <div className="container">
-          <h2 className="demo-section-title">How To Sell Your Caravan Online</h2>
-          <div className="demo-steps-grid">
-            {HOW_TO_STEPS.map((s) => (
-              <div className="demo-step" key={s.num}>
-                <div className="demo-step-num">{s.num}</div>
-                <h4>{s.title}</h4>
-                <p>{s.desc}</p>
-              </div>
+          
+          <h2 className="demo-steps-title">How To Sell Your Caravan Online</h2>
+          <p className="demo-steps-subtitle">List your caravan in minutes and connect with serious buyers Australia-wide.</p>
+
+          {/* Steps: each column has number circle + icon + content; connectors between columns */}
+          <div className="demo-steps-wrapper">
+            {HOW_TO_STEPS.map((s, i) => (
+              <React.Fragment key={s.num}>
+                <div className="demo-steps-item">
+                  <div className="demo-step-num">{s.num}</div>
+                  <div className="demo-step-icon-circle">
+                    <i className={`${s.iconSet} ${s.icon}`} />
+                  </div>
+                  <h4 className="demo-step-title">{s.title}</h4>
+                  <p className="demo-step-desc">{s.desc}</p>
+                </div>
+                {i < HOW_TO_STEPS.length - 1 && (
+                  <div className="demo-steps-connector" />
+                )}
+              </React.Fragment>
             ))}
           </div>
+
+          
         </div>
       </section>
 

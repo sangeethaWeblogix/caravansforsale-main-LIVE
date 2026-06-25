@@ -10,13 +10,14 @@ export default function NavigationHistory() {
   useEffect(() => {
     if (!pathname) return;
 
-    const existing = sessionStorage.getItem("nav_history");
-    const history: string[] = existing ? JSON.parse(existing) : [];
-
-    if (history[history.length - 1] !== pathname) {
-      history.push(pathname);
-      sessionStorage.setItem("nav_history", JSON.stringify(history));
-    }
+    try {
+      const existing = sessionStorage.getItem("nav_history");
+      const history: string[] = existing ? JSON.parse(existing) : [];
+      if (history[history.length - 1] !== pathname) {
+        history.push(pathname);
+        sessionStorage.setItem("nav_history", JSON.stringify(history));
+      }
+    } catch {}
 
     // Push GTM pageview on every client-side navigation (skip initial load — GTM handles that via gtm.js)
     if (isFirst.current) {

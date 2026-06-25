@@ -234,7 +234,6 @@ export const fetchListings = async (
   }
 
   clearTimeout(timeoutId);
-  console.log("[list API] GET", res.url, res.status);
 
   if (!res.ok) {
     const errText = await res.text();
