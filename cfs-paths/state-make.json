@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "state-make",
-    "count": 658,
+    "count": 657,
     "paths": [
         "australian-capital-territory-state/carrera/",
         "australian-capital-territory-state/coromal/",
@@ -318,7 +318,6 @@
         "south-australia-state/nextgen/",
         "south-australia-state/nova/",
         "south-australia-state/on-the-move/",
-        "south-australia-state/opal/",
         "south-australia-state/oz-star/",
         "south-australia-state/paramount/",
         "south-australia-state/phoenix/",
@@ -662,5 +661,5 @@
         "western-australia-state/x-series-rv/",
         "western-australia-state/zone-rv/"
     ],
-    "generated_at": "2026-06-25 14:35:24"
+    "generated_at": "2026-06-25 14:39:26"
 }
