@@ -59,7 +59,8 @@ const KV_RETRY_DELAY = 2000;
 // OPTIMISATION #1: HTTP status codes that must be skipped immediately with no retries.
 // 500/502/503 are transient server errors — retrying them burns 6s each (3 attempts × 2s).
 // With 21 failures × 4 variants = 84 retries = ~8 wasted minutes per batch.
-const SKIP_IMMEDIATELY_STATUSES = new Set([404, 500, 502, 503]);
+// 410 = Gone (make/category has no listings) — skip silently, do not cache.
+const SKIP_IMMEDIATELY_STATUSES = new Set([404, 410, 500, 502, 503]);
 
 // SKIP_ROUTES_UPDATE: When running in parallel (matrix strategy),
 // skip routes mapping update to avoid race conditions.
