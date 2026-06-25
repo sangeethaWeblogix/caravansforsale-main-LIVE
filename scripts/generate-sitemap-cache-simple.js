@@ -298,7 +298,23 @@ function loadPathsFromFile(filePath) {
       return [];
     }
     console.log(`   ✅ Loaded ${data.paths.length} paths from file`);
-    return data.paths;
+    // Support two file formats:
+    // 1. fetch-paths-only.js output: paths is [{path, fullUrl, sourceType}] — return as-is
+    // 2. cfs-paths/*.json format: paths is ["relative/path/"] strings — convert to objects
+    const first = data.paths[0];
+    if (typeof first === 'object' && first !== null && first.path) {
+      return data.paths;
+    }
+    return data.paths.map(rawPath => {
+      let cleanPath = String(rawPath).replace(/^\/+/, '');
+      if (!cleanPath.endsWith('/')) cleanPath += '/';
+      const path = cleanPath.startsWith('listings/') ? `/${cleanPath}` : `/listings/${cleanPath}`;
+      return {
+        path,
+        fullUrl: `${PRODUCTION_DOMAIN}${path}`,
+        sourceType: TARGET_SITEMAP
+      };
+    });
   } catch (err) {
     console.error(`   ❌ Failed to load paths file: ${err.message}`);
     return [];
