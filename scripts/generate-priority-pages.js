@@ -255,8 +255,7 @@ async function generatePageVariant(page, variantNumber, browser) {
     console.log(`   ⬆️  Uploading (${sizeKB}KB)...`);
     
     const uploadStart = Date.now();
-    const metadata = { path: page.path, source: 'priority-pages' };
-    const uploaded = await uploadToKV(kvKey, html, metadata);
+    const uploaded = await uploadToKV(kvKey, html);
     const uploadDuration = Math.round((Date.now() - uploadStart) / 1000);
     
     if (uploaded) {
