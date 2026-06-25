@@ -4,7 +4,6 @@ import ListingsPage from "@/app/components/ListContent/Listings";
 import { parseSlugToFilters } from "../../components/urlBuilder";
 import { getCachedListings } from "@/api/listings/api";
 import { redirect, notFound } from "next/navigation";
-import GonePage from "@/app/410/page";
 import "../../components/ListContent/newList.css";
 import "../listings.css";
 // import { fetchMakeDetails } from "@/api/make-new/api";
@@ -367,11 +366,13 @@ export default async function Listings({
     throw err;
   }
 
-  // ───── Empty results → show GonePage only if emp_exclusive_products is also empty ─────
+  // ───── Empty results → throw so ISR keeps last good cached HTML ─────
+  // Returning <GonePage /> here would cause ISR to cache the 410 for 24hr,
+  // permanently hiding the page even if listings come back.
   if (!response?.data || !Array.isArray(response.data.products) || response.data.products.length === 0) {
     const hasEmpExclusive = Array.isArray(response?.data?.emp_exclusive_products) && response.data.emp_exclusive_products.length > 0;
     if (!hasEmpExclusive) {
-      return <GonePage />;
+      throw new Error("No products found — ISR will serve last good cached HTML");
     }
     // emp_exclusive_products available — fall through to render page with exclusive content
   }
