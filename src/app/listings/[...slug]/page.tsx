@@ -19,7 +19,6 @@ import { fetchProductList, fetchCategoryCounts, fetchMakeCounts, fetchModelCount
 import { calculateDistances } from "@/utils/postcodeCoords";
 import { fetchBottomLinks } from "@/api/bottomLinks/api";
 import type { BottomLinksData } from "@/api/bottomLinks/api";
-import ApiErrorFallback from "@/app/components/ApiErrorFallback";
 import { reportGitHubIssue } from "@/lib/reportGitHubIssue";
 import { metaFromSlug } from "@/utils/seo/meta";
 import statesData from "../../../../cfs-paths/states.json";
@@ -32,7 +31,7 @@ import sleepData from "../../../../cfs-paths/sleep.json";
 import lengthData from "../../../../cfs-paths/length.json";
 import atmData from "../../../../cfs-paths/atm.json";
 
-export const revalidate = 3600;
+export const revalidate = 86400;
 
 // Pre-build high-value single/double-dimension pages (~484 paths).
 // Large combination types (models 2869, region-make 1162, state-make 662,
@@ -365,14 +364,7 @@ export default async function Listings({
       errorType: msg,
       message: `Slug listings page failed: ${msg}`,
     }).catch(() => {});
-    return (
-      <ApiErrorFallback
-        title="Unable to load listings"
-        message="We couldn't load this page. Please try again."
-        showRetry={true}
-        errorSource={errorSource}
-      />
-    );
+    throw err;
   }
 
   // ───── Empty results → show GonePage only if emp_exclusive_products is also empty ─────

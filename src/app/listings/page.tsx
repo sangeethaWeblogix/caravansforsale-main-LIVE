@@ -4,13 +4,12 @@ import { getCachedListings } from "@/api/listings/api";
 import type { Metadata } from "next";
 import { ensureValidPage } from "@/utils/seo/validatePage";
 import { notFound } from "next/navigation";
-import ApiErrorFallback from "../components/ApiErrorFallback";
 import { fetchProductList, fetchCategoryCounts, fetchMakeCounts } from "@/api/productList/api";
 import { fetchBottomLinks } from "@/api/bottomLinks/api";
 import type { BottomLinksData } from "@/api/bottomLinks/api";
 import { reportGitHubIssue } from "@/lib/reportGitHubIssue";
 
-export const revalidate = 3600;
+export const revalidate = 86400;
 
 export const metadata: Metadata = {
   title: "Caravans for Sale in Australia",
@@ -94,24 +93,11 @@ export default async function ListingsPage({
       message: `Listings page failed: ${msg}`,
       pageUrl: "/listings",
     }).catch(() => {});
-    return (
-      <ApiErrorFallback
-        title="Unable to load listings"
-        message="We couldn't load this page. Please try again."
-        showRetry={true}
-        errorSource={errorSource}
-      />
-    );
+    throw error;
   }
 
   if (!response || !response.data) {
-    return (
-      <ApiErrorFallback
-        title="Unable to load listings"
-        message="We couldn't connect to our servers. Please try again."
-        showRetry={true}
-      />
-    );
+    throw new Error("Empty API response");
   }
 
   if (
