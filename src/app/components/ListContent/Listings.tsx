@@ -246,6 +246,10 @@ export default function ListingsPage({
   >(initialCategoryCounts ?? []);
   const [sliderCatLoading, setSliderCatLoading] = useState(false);
 
+  const [sliderMakeCounts, setSliderMakeCounts] = useState<
+    { name: string; slug: string; count: number }[]
+  >(initialMakeCounts ?? []);
+
   const [categories, setCategories] = useState<Category[]>(
     initialData?.data?.all_categories || [],
   );
@@ -388,29 +392,6 @@ const [pagination, setPagination] = useState<Pagination>(() => {
     mountShuffledRef.current = true;
     setProducts(prev => prev.length > 0 ? shuffleArray([...prev]) : prev);
   }, []);
-
-  // Background prefetch: warm client cache for most common first-click filters.
-  // Fires once, 2s after page load. If user clicks these within 5 min → cache hit, instant.
-  const prefetchDoneRef = useRef(false);
-  useEffect(() => {
-    if (prefetchDoneRef.current) return;
-    if (sliderCategoryCounts.length === 0) return;
-    prefetchDoneRef.current = true;
-
-    const timer = setTimeout(() => {
-      fetchListings({ page: 1, condition: "new" }).catch(() => {});
-      fetchListings({ page: 1, condition: "used" }).catch(() => {});
-      sliderCategoryCounts
-        .slice()
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 3)
-        .forEach(({ slug }) =>
-          fetchListings({ page: 1, category: slug }).catch(() => {})
-        );
-    }, 2000);
-
-    return () => clearTimeout(timer);
-  }, [sliderCategoryCounts]);
 
   // Pre-fetch next page in background to warm server cache
   const prefetchedPageRef = useRef<number>(-1);
@@ -1055,6 +1036,57 @@ const [pagination, setPagination] = useState<Pagination>(() => {
     filters.keyword,
   ]);
 
+  useEffect(() => {
+    const controller = new AbortController();
+    const params = new URLSearchParams();
+    if (filters.make) params.set("make", filters.make);
+    if (filters.model) params.set("model", resolveModelSlug(filters.model) ?? filters.model);
+    if (filters.condition) params.set("condition", filters.condition);
+    if (filters.state) params.set("state", filters.state.toLowerCase());
+    if (filters.region) params.set("region", filters.region);
+    if (filters.suburb) params.set("suburb", filters.suburb);
+    if (filters.pincode) params.set("pincode", String(filters.pincode));
+    if (filters.from_price) params.set("from_price", String(filters.from_price));
+    if (filters.to_price) params.set("to_price", String(filters.to_price));
+    if (filters.minKg) params.set("from_atm", String(filters.minKg));
+    if (filters.maxKg) params.set("to_atm", String(filters.maxKg));
+    if (filters.acustom_fromyears) params.set("acustom_fromyears", String(filters.acustom_fromyears));
+    if (filters.acustom_toyears) params.set("acustom_toyears", String(filters.acustom_toyears));
+    if (filters.from_length) params.set("from_length", String(filters.from_length));
+    if (filters.to_length) params.set("to_length", String(filters.to_length));
+    if (filters.from_sleep) params.set("from_sleep", String(filters.from_sleep));
+    if (filters.to_sleep) params.set("to_sleep", String(filters.to_sleep));
+    if (filters.search) params.set("search", filters.search);
+    if (filters.keyword) params.set("keyword", filters.keyword);
+    params.set("group_by", "make");
+
+    fetch(`/api/params-count?${params.toString()}`, { signal: controller.signal })
+      .then((r) => r.json())
+      .then((json) => { if (!controller.signal.aborted) setSliderMakeCounts(json.data || []); })
+      .catch(() => {});
+
+    return () => controller.abort();
+  }, [
+    filters.make,
+    filters.model,
+    filters.condition,
+    filters.state,
+    filters.region,
+    filters.suburb,
+    filters.from_price,
+    filters.to_price,
+    filters.minKg,
+    filters.maxKg,
+    filters.acustom_fromyears,
+    filters.acustom_toyears,
+    filters.from_length,
+    filters.to_length,
+    filters.from_sleep,
+    filters.to_sleep,
+    filters.search,
+    filters.keyword,
+  ]);
+
   const [modalFocusSection, setModalFocusSection] = useState<
     string | undefined
   >();
@@ -1510,11 +1542,13 @@ const [pagination, setPagination] = useState<Pagination>(() => {
         </div>
       </div>
 
-      {/* <ListingBottomSections
+      <ListingBottomSections
         filters={filters}
         initialData={initialBottomLinksData}
         categoryName={categories.find((c) => c.slug === filters.category)?.name ?? ""}
-      /> */}
+        categoryCounts={sliderCategoryCounts}
+        makeCounts={sliderMakeCounts}
+      />
     </>
   );
   

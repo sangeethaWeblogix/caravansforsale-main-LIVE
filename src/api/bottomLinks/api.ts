@@ -54,6 +54,45 @@ export function getBottomLinksParams(filters: Filters): URLSearchParams {
   if (hasMake && hasModel && dims === 2) {
     p.set("make", filters.make!); p.set("model", filters.model!); return p;
   }
+  // make + cat + state — include all active sub-filters so model counts reflect current filters
+  if (hasMake && hasCat && hasState) {
+    p.set("make", filters.make!); p.set("category", filters.category!); p.set("state", filters.state!);
+    if (filters.minKg)       p.set("from_atm",    String(filters.minKg));
+    if (filters.maxKg)       p.set("to_atm",      String(filters.maxKg));
+    if (filters.from_price)  p.set("from_price",  String(filters.from_price));
+    if (filters.to_price)    p.set("to_price",    String(filters.to_price));
+    if (filters.from_sleep)  p.set("from_sleep",  String(filters.from_sleep));
+    if (filters.to_sleep)    p.set("to_sleep",    String(filters.to_sleep));
+    if (filters.from_length) p.set("from_length", String(filters.from_length));
+    if (filters.to_length)   p.set("to_length",   String(filters.to_length));
+    return p;
+  }
+  // make + cat — include all active sub-filters
+  if (hasMake && hasCat) {
+    p.set("make", filters.make!); p.set("category", filters.category!);
+    if (filters.minKg)       p.set("from_atm",    String(filters.minKg));
+    if (filters.maxKg)       p.set("to_atm",      String(filters.maxKg));
+    if (filters.from_price)  p.set("from_price",  String(filters.from_price));
+    if (filters.to_price)    p.set("to_price",    String(filters.to_price));
+    if (filters.from_sleep)  p.set("from_sleep",  String(filters.from_sleep));
+    if (filters.to_sleep)    p.set("to_sleep",    String(filters.to_sleep));
+    if (filters.from_length) p.set("from_length", String(filters.from_length));
+    if (filters.to_length)   p.set("to_length",   String(filters.to_length));
+    return p;
+  }
+  // make + state — include all active sub-filters so counts reflect current combo
+  if (hasMake && hasState) {
+    p.set("make", filters.make!); p.set("state", filters.state!);
+    if (filters.minKg)       p.set("from_atm",    String(filters.minKg));
+    if (filters.maxKg)       p.set("to_atm",      String(filters.maxKg));
+    if (filters.from_price)  p.set("from_price",  String(filters.from_price));
+    if (filters.to_price)    p.set("to_price",    String(filters.to_price));
+    if (filters.from_sleep)  p.set("from_sleep",  String(filters.from_sleep));
+    if (filters.to_sleep)    p.set("to_sleep",    String(filters.to_sleep));
+    if (filters.from_length) p.set("from_length", String(filters.from_length));
+    if (filters.to_length)   p.set("to_length",   String(filters.to_length));
+    return p;
+  }
   if (hasMake && dims === 1) {
     p.set("make", filters.make!); return p;
   }
@@ -69,6 +108,13 @@ export function getBottomLinksParams(filters: Filters): URLSearchParams {
   // cat + state + [sleep/weight/length] → fallback to cat+state
   if (hasCat && hasState && (hasSleep || hasWeight || hasLength) && dims === 3) {
     p.set("category", filters.category!); p.set("state", filters.state!); return p;
+  }
+  // cat + state + price + [weight/length/sleep] (4 dims) → fallback to cat+state+price
+  if (hasCat && hasState && hasPrice && (hasWeight || hasLength || hasSleep) && dims === 4) {
+    p.set("category", filters.category!); p.set("state", filters.state!);
+    if (filters.from_price) p.set("from_price", String(filters.from_price));
+    if (filters.to_price)   p.set("to_price",   String(filters.to_price));
+    return p;
   }
   // cat + price + [sleep/weight/length] → fallback to cat+price
   if (hasCat && hasPrice && (hasSleep || hasWeight || hasLength) && dims === 3) {

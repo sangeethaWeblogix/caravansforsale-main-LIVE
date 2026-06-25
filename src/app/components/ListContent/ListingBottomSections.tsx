@@ -63,11 +63,13 @@ function filterFeaturedItems(items: BottomLinksItem[], names: string[]): BottomL
   return result;
 }
 
-type SectionType = "region" | "make" | "price" | "weight" | "length" | "sleep" | "used" | "new" | "other";
+type SectionType = "region" | "category" | "make" | "model" | "price" | "weight" | "length" | "sleep" | "used" | "new" | "other";
 
 function detectSectionType(label: string): SectionType {
   const l = label.toLowerCase();
   if (l === "location" || l.includes("locat")) return "region";
+  if (l.includes("caravan type") || l === "category" || l.includes("categor")) return "category";
+  if (l.includes("model")) return "model";
   if (l.includes("manufacturer") || l === "make") return "make";
   if (l.includes("price")) return "price";
   if (l.includes("weight")) return "weight";
@@ -103,15 +105,30 @@ function getSleepDisplay(from?: string | number, to?: string | number): string {
   return "";
 }
 
+function getWeightDisplay(min?: string | number, max?: string | number): string {
+  if (min && max) return `${min}-${max} Kg ATM`;
+  if (max) return `Under ${max} Kg ATM`;
+  if (min) return `Over ${min} Kg ATM`;
+  return "";
+}
+
+function getWeightSlug(min?: string | number, max?: string | number): string {
+  if (min && max) return `between-${min}-and-${max}-kg-atm`;
+  if (max) return `under-${max}-kg-atm`;
+  if (min) return `over-${min}-kg-atm`;
+  return "";
+}
+
 function getSectionHeading(type: string, catName: string, stateName = "", priceDisplay = ""): string {
   const p = catName ? `${catName} ` : "";
   const s = stateName ? ` in ${stateName}` : "";
   const pr = priceDisplay ? ` ${priceDisplay}` : "";
   const map: Record<string, string> = {
     state:    `Search ${p}Caravans for Sale${pr} by State`,
-    category: `Search ${p}Caravans for Sale by Category`,
+    category: `Search ${p}Caravans for Sale${pr} by Category${s}`,
     region:   `Browse ${p}Caravans for Sale${pr} by Popular Region${s}`,
     make:     `Popular ${p}Caravans For Sale${pr} by Manufacturer${s}`,
+    model:    `Browse ${p}Caravans for Sale${pr} by Model${s}`,
     price:    `Search ${p}Caravans for Sale by Price${s}`,
     weight:   `Browse ${p}Caravans for sale${pr} by Weight${s}`,
     length:   `Shop ${p}Caravans for Sale${pr} by Length${s}`,
@@ -170,18 +187,39 @@ function StateSectionBlock({
   );
 }
 
-function CategorySectionBlock({ catName, stateSlug }: { catName: string; stateSlug: string | null }) {
+function CategorySectionBlock({
+  catName, stateSlug, stateName, makeSlug, priceDisplay, filterSlug, categoryCounts,
+}: {
+  catName: string;
+  stateSlug: string | null;
+  stateName: string;
+  makeSlug: string | null;
+  priceDisplay: string;
+  filterSlug: string;
+  categoryCounts: { name: string; slug: string; count: number }[];
+}) {
+  // When count data is available, only show categories with count > 0
+  const visibleCategories = categoryCounts.length > 0
+    ? STATIC_CATEGORIES.filter((cat) =>
+        categoryCounts.some(
+          (c) => (c.slug === cat.slug || c.slug.replace(/-category$/, "") === cat.slug.replace(/-category$/, "")) && c.count > 0
+        )
+      )
+    : STATIC_CATEGORIES;
+  if (!visibleCategories.length) return null;
+  const pr  = priceDisplay ? ` ${priceDisplay}` : "";
+  const loc = stateName ? ` in ${stateName}` : "";
   return (
-    <CardGrid heading={getSectionHeading("category", catName)}>
-      {STATIC_CATEGORIES.map((cat) => (
-        <a
-          key={cat.slug}
-          href={stateSlug ? `/listings/${cat.slug}/${stateSlug}/` : `/listings/${cat.slug}/`}
-          className="custom-card"
-        >
-          <h4 className="custom-card-title">{cat.name} Caravans for Sale</h4>
-        </a>
-      ))}
+    <CardGrid heading={getSectionHeading("category", catName, stateName, priceDisplay)}>
+      {visibleCategories.map((cat) => {
+        const parts = [makeSlug, cat.slug, stateSlug, filterSlug].filter(Boolean).join("/");
+        const label = `${catName ? catName + " " : ""}${cat.name} Caravans for Sale${pr}${loc}`;
+        return (
+          <a key={cat.slug} href={`/listings/${parts}/`} className="custom-card">
+            <h4 className="custom-card-title">{label}</h4>
+          </a>
+        );
+      })}
     </CardGrid>
   );
 }
@@ -221,50 +259,86 @@ function RegionSectionBlock({
   );
 }
 
-function MakeSectionBlock({ items, catName, stateName, priceDisplay }: { items: BottomLinksItem[]; catName: string; stateName: string; priceDisplay: string }) {
-  const featured = filterFeaturedItems(items, FEATURED_MAKE_NAMES);
-  if (!featured.length) return null;
+// Inject slug segments into a URL only if they aren't already present
+function injectSlugIntoUrl(rawUrl: string, filterSlug: string): string {
+  if (!filterSlug) return rawUrl;
+  let href = rawUrl;
+  for (const part of filterSlug.split("/").filter(Boolean)) {
+    if (!href.includes(part)) {
+      href = href.replace(/\/$/, "") + "/" + part + "/";
+    }
+  }
+  return href;
+}
+
+// Append qualifier to a label only if it isn't already present
+function appendQualifierToLabel(label: string, qualifier: string): string {
+  if (!qualifier || label.toLowerCase().includes(qualifier.toLowerCase())) return label;
+  return `${label} ${qualifier}`;
+}
+
+function MakeSectionBlock({
+  items, catName, stateName, priceDisplay, filterSlug = "", makeCounts = [],
+}: {
+  items: BottomLinksItem[];
+  catName: string;
+  stateName: string;
+  priceDisplay: string;
+  filterSlug?: string;
+  makeCounts?: { name: string; slug: string; count: number }[];
+}) {
+  // Start with FEATURED makes only, then filter by count > 0 from params_count
+  let visibleItems = filterFeaturedItems(items, FEATURED_MAKE_NAMES);
+  if (makeCounts.length > 0) {
+    visibleItems = visibleItems.filter((item) => {
+      const featuredName = FEATURED_MAKE_NAMES.find((n) =>
+        item.label.toLowerCase().includes(n.toLowerCase())
+      );
+      if (!featuredName) return false;
+      return makeCounts.some(
+        (mc) => mc.count > 0 && mc.name.toLowerCase().includes(featuredName.toLowerCase())
+      );
+    });
+  }
+  if (!visibleItems.length) return null;
   return (
     <CardGrid heading={getSectionHeading("make", catName, stateName, priceDisplay)}>
-      {featured.map((item, i) => (
-        <a
-          key={i}
-          href={item.permalink.replace(/^https?:\/\/[^/]+/, "")}
-          className="custom-card"
-        >
-          <h4 className="custom-card-title">{item.label}</h4>
-        </a>
-      ))}
+      {visibleItems.map((item, i) => {
+        const rawHref = item.permalink.replace(/^https?:\/\/[^/]+/, "");
+        return (
+          <a key={i} href={injectSlugIntoUrl(rawHref, filterSlug)} className="custom-card">
+            <h4 className="custom-card-title">{appendQualifierToLabel(item.label, priceDisplay)}</h4>
+          </a>
+        );
+      })}
     </CardGrid>
   );
 }
 
 function ApiSectionBlock({
-  type,
-  items,
-  catName,
-  stateName,
-  priceDisplay,
+  type, items, catName, stateName, priceDisplay, filterSlug = "",
 }: {
   type: SectionType;
   items: BottomLinksItem[];
   catName: string;
   stateName: string;
   priceDisplay: string;
+  filterSlug?: string;
 }) {
   const heading = getSectionHeading(type, catName, stateName, priceDisplay);
-  if (!heading || !items.length) return null;
+  // Hide items with 0 products under the current filter combo
+  const visibleItems = items.filter((i) => i.count > 0);
+  if (!heading || !visibleItems.length) return null;
   return (
     <CardGrid heading={heading}>
-      {items.map((item, i) => (
-        <a
-          key={i}
-          href={item.permalink.replace(/^https?:\/\/[^/]+/, "")}
-          className="custom-card"
-        >
-          <h4 className="custom-card-title">{item.label}</h4>
-        </a>
-      ))}
+      {visibleItems.map((item, i) => {
+        const rawHref = item.permalink.replace(/^https?:\/\/[^/]+/, "");
+        return (
+          <a key={i} href={injectSlugIntoUrl(rawHref, filterSlug)} className="custom-card">
+            <h4 className="custom-card-title">{appendQualifierToLabel(item.label, priceDisplay)}</h4>
+          </a>
+        );
+      })}
     </CardGrid>
   );
 }
@@ -279,7 +353,7 @@ function UsedNewSectionBlock({
   priceSlug,
 }: {
   type: "used" | "new";
-  catSlug: string;
+  catSlug: string | null;
   catName: string;
   stateName: string;
   stateSlug: string | null;
@@ -287,9 +361,14 @@ function UsedNewSectionBlock({
   priceSlug: string;
 }) {
   const mid = [stateSlug, priceSlug].filter(Boolean).join("/");
-  const href = mid
-    ? `/listings/${catSlug}/${mid}/${type}-condition/`
-    : `/listings/${catSlug}/${type}-condition/`;
+  const conditionPart = `${type}-condition`;
+  const href = catSlug
+    ? mid
+      ? `/listings/${catSlug}/${mid}/${conditionPart}/`
+      : `/listings/${catSlug}/${conditionPart}/`
+    : mid
+      ? `/listings/${mid}/${conditionPart}/`
+      : `/listings/${conditionPart}/`;
   const loc = stateName ? ` in ${stateName}` : "";
   const pr = priceDisplay ? ` ${priceDisplay}` : "";
   const label =
@@ -311,10 +390,14 @@ export default function ListingBottomSections({
   filters,
   initialData,
   categoryName = "",
+  categoryCounts: categoryCountsProp = [],
+  makeCounts: makeCountsProp = [],
 }: {
   filters: Filters;
   initialData?: BottomLinksData | null;
   categoryName?: string;
+  categoryCounts?: { name: string; slug: string; count: number }[];
+  makeCounts?: { name: string; slug: string; count: number }[];
 }) {
   const [data, setData] = useState<BottomLinksData | null>(initialData ?? null);
   const [isLoading, setIsLoading] = useState(false);
@@ -366,9 +449,7 @@ export default function ListingBottomSections({
     setIsLoading(true);
     setData(null);
 
-    fetch(`${API_BASE}/listing-internal-links?${paramsStr}`, {
-      headers: { Accept: "application/json" },
-    })
+    fetch(`${API_BASE}/listing-internal-links?${paramsStr}`, { headers: { Accept: "application/json" } })
       .then((r) => (r.ok ? r.json() : null))
       .then((d: BottomLinksData | null) => { setData(d); })
       .catch(() => {})
@@ -386,6 +467,7 @@ export default function ListingBottomSections({
     filters.acustom_fromyears, filters.acustom_toyears,
   ]);
 
+
   // ── Filter context ────────────────────────────────────────────
   // filters.category = "off-road" (url builder strips -category suffix)
   // filters.state = "victoria" or "new south wales" (spaces, lowercase)
@@ -395,12 +477,20 @@ export default function ListingBottomSections({
     : null;
   const hasCategory = !!catSlug;
   const hasState = !!stateSlug;
+  const hasMake   = !!filters.make;
+  const makeSlug  = filters.make || null;
 
   // Resolve human-readable names (reliable, no API dependency)
   const effectiveCatName =
     categoryName ||
     STATIC_CATEGORIES.find((c) => c.slug === catSlug)?.name ||
     "";
+  // Capitalise make slug ("snowy-river" → "Snowy River")
+  const makeName = filters.make
+    ? filters.make.split(/[-\s]+/).map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")
+    : "";
+  // Combined display name for headings and labels (make + category when both active)
+  const displayName = [makeName, effectiveCatName].filter(Boolean).join(" ");
   // "new south wales" → "New South Wales"
   const stateName = filters.state
     ? filters.state.split(" ").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")
@@ -409,12 +499,22 @@ export default function ListingBottomSections({
   const hasSleep  = !!(filters.from_sleep || filters.to_sleep);
   const hasWeight = !!(filters.minKg || filters.maxKg);
   const hasLength = !!(filters.from_length || filters.to_length);
-  // Combined display for headings (price + sleep when active)
+  // Combined display for headings (price + weight + sleep when active)
   const priceDisplay = [
     getPriceDisplay(filters.from_price, filters.to_price),
+    getWeightDisplay(filters.minKg, filters.maxKg),
     getSleepDisplay(filters.from_sleep, filters.to_sleep),
   ].filter(Boolean).join(" ");
-  const priceSlug    = getPriceSlug(filters.from_price, filters.to_price);
+  const priceSlug  = getPriceSlug(filters.from_price, filters.to_price);
+  const weightSlug = getWeightSlug(filters.minKg, filters.maxKg);
+  const regionSlug = filters.region
+    ? `${filters.region.replace(/\s+/g, "-").toLowerCase()}-region`
+    : null;
+  const hasRegion = !!regionSlug;
+  // filterSlug WITHOUT region (state section links should not carry region)
+  const filterSlug = [priceSlug, weightSlug].filter(Boolean).join("/");
+  // fullFilterSlug WITH region (all other section links)
+  const fullFilterSlug = [regionSlug, priceSlug, weightSlug].filter(Boolean).join("/");
   const hasAnyFilter = !!(
     filters.category || filters.state || filters.make || filters.condition ||
     filters.region || filters.suburb || filters.minKg || filters.maxKg ||
@@ -445,10 +545,7 @@ export default function ListingBottomSections({
   return (
     <div ref={sectionRef}>
       {/* 1. State — always show unless state filter is active */}
-      {!hasState && <StateSectionBlock catName={effectiveCatName} catSlug={catSlug} priceDisplay={priceDisplay} priceSlug={priceSlug} />}
-
-      {/* 2. Category — always show unless category filter is active */}
-      {!hasCategory && <CategorySectionBlock catName={effectiveCatName} stateSlug={stateSlug} />}
+      {!hasState && <StateSectionBlock catName={displayName} catSlug={catSlug} priceDisplay={priceDisplay} priceSlug={filterSlug} />}
 
       {/* Loading skeleton while API fetches */}
       {isLoading && (
@@ -467,29 +564,29 @@ export default function ListingBottomSections({
       {/* API-dependent sections — render once data is ready */}
       {!isLoading && (
         <>
-          {/* 3. Region — static list on listing page; filtered by API on filter pages */}
-          <RegionSectionBlock catName={effectiveCatName} regions={visibleRegions} catSlug={catSlug} stateName={stateName} priceDisplay={priceDisplay} priceSlug={priceSlug} />
+          {/* 2. Category — filtered by API counts; hidden when category filter is active */}
+          {!hasCategory && <CategorySectionBlock catName={displayName} stateSlug={stateSlug} stateName={stateName} makeSlug={makeSlug} priceDisplay={priceDisplay} filterSlug={fullFilterSlug} categoryCounts={categoryCountsProp} />}
 
-          {/* 4. Make — 10 featured makes from API */}
-          <MakeSectionBlock items={apiSections.make ?? []} catName={effectiveCatName} stateName={stateName} priceDisplay={priceDisplay} />
+          {/* 3. Region — hidden when region filter is active */}
+          {!hasRegion && <RegionSectionBlock catName={displayName} regions={visibleRegions} catSlug={catSlug} stateName={stateName} priceDisplay={priceDisplay} priceSlug={filterSlug} />}
 
-          {/* 5-8. Price / Weight / Length / Sleep — from API, only when a filter is active */}
-          {hasAnyFilter && (
-            <>
-              {!hasPrice  && <ApiSectionBlock type="price"  items={apiSections.price  ?? []} catName={effectiveCatName} stateName={stateName} priceDisplay={priceDisplay} />}
-              {!hasWeight && <ApiSectionBlock type="weight" items={apiSections.weight ?? []} catName={effectiveCatName} stateName={stateName} priceDisplay={priceDisplay} />}
-              {!hasLength && <ApiSectionBlock type="length" items={apiSections.length ?? []} catName={effectiveCatName} stateName={stateName} priceDisplay={priceDisplay} />}
-              {!hasSleep  && <ApiSectionBlock type="sleep"  items={apiSections.sleep  ?? []} catName={effectiveCatName} stateName={stateName} priceDisplay={priceDisplay} />}
-            </>
-          )}
+          {/* 4. Make (when no make filter) or Model (when make filter is active) */}
+          {!hasMake && <MakeSectionBlock items={apiSections.make ?? []} catName={displayName} stateName={stateName} priceDisplay={priceDisplay} filterSlug={fullFilterSlug} makeCounts={makeCountsProp} />}
+          {hasMake && <ApiSectionBlock type="model" items={apiSections.model ?? []} catName={displayName} stateName={stateName} priceDisplay={priceDisplay} filterSlug={fullFilterSlug} />}
+
+          {/* 5-8. Price / Weight / Length / Sleep — from API; hidden only when that specific filter is already active */}
+          {!hasPrice  && <ApiSectionBlock type="price"  items={apiSections.price  ?? []} catName={displayName} stateName={stateName} priceDisplay={priceDisplay} filterSlug={fullFilterSlug} />}
+          {!hasWeight && <ApiSectionBlock type="weight" items={apiSections.weight ?? []} catName={displayName} stateName={stateName} priceDisplay={priceDisplay} filterSlug={fullFilterSlug} />}
+          {!hasLength && <ApiSectionBlock type="length" items={apiSections.length ?? []} catName={displayName} stateName={stateName} priceDisplay={priceDisplay} filterSlug={fullFilterSlug} />}
+          {!hasSleep  && <ApiSectionBlock type="sleep"  items={apiSections.sleep  ?? []} catName={displayName} stateName={stateName} priceDisplay={priceDisplay} filterSlug={fullFilterSlug} />}
         </>
       )}
 
-      {/* 9-10. Used / New — static links, only when category filter is active */}
-      {hasCategory && !isLoading && catSlug && (
+      {/* 9-10. Used / New — always show */}
+      {!isLoading && (
         <>
-          <UsedNewSectionBlock type="used" catSlug={catSlug} catName={effectiveCatName} stateName={stateName} stateSlug={stateSlug} priceDisplay={priceDisplay} priceSlug={priceSlug} />
-          <UsedNewSectionBlock type="new"  catSlug={catSlug} catName={effectiveCatName} stateName={stateName} stateSlug={stateSlug} priceDisplay={priceDisplay} priceSlug={priceSlug} />
+          <UsedNewSectionBlock type="used" catSlug={catSlug} catName={displayName} stateName={stateName} stateSlug={stateSlug} priceDisplay={priceDisplay} priceSlug={fullFilterSlug} />
+          <UsedNewSectionBlock type="new"  catSlug={catSlug} catName={displayName} stateName={stateName} stateSlug={stateSlug} priceDisplay={priceDisplay} priceSlug={fullFilterSlug} />
         </>
       )}
     </div>
