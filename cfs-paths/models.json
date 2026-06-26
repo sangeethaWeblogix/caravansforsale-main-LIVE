@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "models",
-    "count": 2869,
+    "count": 2864,
     "paths": [
         "active/storm/",
         "adria/action/",
@@ -128,7 +128,6 @@
         "avan/aspire-555-3/",
         "avan/aspire-555-3-poptop/",
         "avan/aspire-555-4/",
-        "avan/aspire-563/",
         "avan/aspire-564/",
         "avan/aspire-572/",
         "avan/aspire-572-ht/",
@@ -1162,10 +1161,8 @@
         "jayco/crosstrak-poptop-16-48-6-ct-my26/",
         "jayco/destiny/",
         "jayco/discovery/",
-        "jayco/discovery-16-52-1/",
         "jayco/discovery-caravan-17-54-1-dy-my25/",
         "jayco/discovery-outback/",
-        "jayco/discovery-pop-top/",
         "jayco/discovery-poptop-16-67-4-dy-my26/",
         "jayco/discovery-poptop-16-67-5-dy-my26/",
         "jayco/discovery-poptop-16-67-5-ob-dy-my26/",
@@ -1224,7 +1221,6 @@
         "jayco/sterling-23-72-3/",
         "jayco/sterling-outback/",
         "jayco/stirling/",
-        "jayco/stirling-tandem-pop-top/",
         "jayco/swan-outback/",
         "jayco/westport/",
         "jayco/work-n-play/",
@@ -1873,7 +1869,6 @@
         "opal/sothern-explorer/",
         "opal/southern-explorer-series-196/",
         "opal/southern-explorer-series-216/",
-        "opal/tourer-tandem-ensuite/",
         "option-rv/distinction/",
         "option-rv/distinction-176/",
         "option-rv/distinction-20-rd/",
@@ -2873,5 +2868,5 @@
         "zone-rv/venture-20-6/",
         "zone-rv/znu004/"
     ],
-    "generated_at": "2026-06-25 15:46:28"
+    "generated_at": "2026-06-26 14:56:07"
 }
