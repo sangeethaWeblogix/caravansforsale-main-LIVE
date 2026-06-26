@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "models",
-    "count": 2859,
+    "count": 2858,
     "paths": [
         "active/storm/",
         "adria/action/",
@@ -975,7 +975,6 @@
         "golf/savannah-maxxi-603-ht/",
         "golf/tourer/",
         "golf/tourer-556/",
-        "golf/tourer-556-hardtop/",
         "golf/tourer-556-ht/",
         "golf/tourer-577/",
         "golf/tourer-577-ht/",
@@ -2863,5 +2862,5 @@
         "zone-rv/venture-20-6/",
         "zone-rv/znu004/"
     ],
-    "generated_at": "2026-06-26 14:57:37"
+    "generated_at": "2026-06-26 16:06:24"
 }
