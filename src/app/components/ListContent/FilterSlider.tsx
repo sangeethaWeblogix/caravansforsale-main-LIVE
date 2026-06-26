@@ -1272,9 +1272,6 @@ const [states, setStates] = useState<StateOption[]>(
                             {isSelected && <i className="bi bi-check" style={{ color: "#fff", fontSize: 14, lineHeight: 1 }}></i>}
                           </span>
                           <span className="loc-state-name">{abbr}</span>
-                          {!stateCountsLoading && count !== undefined && (
-                            <span className="loc-count">{count.toLocaleString()}</span>
-                          )}
                           {isSelected ? (
                             <button
                               className="loc-region-pill"
@@ -1314,9 +1311,6 @@ const [states, setStates] = useState<StateOption[]>(
                             {isSelected && <i className="bi bi-check" style={{ color: "#fff", fontSize: 14, lineHeight: 1 }}></i>}
                           </span>
                           <span className="loc-state-name">{r.name}</span>
-                          {!regionCountsLoading && count !== undefined && (
-                            <span className="loc-count">{count.toLocaleString()}</span>
-                          )}
                         </li>
                       );
                     })}

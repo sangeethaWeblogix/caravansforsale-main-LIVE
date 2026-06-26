@@ -62,13 +62,7 @@ export async function generateMetadata({
   params: Promise<{ slug?: string[] }>;
 }): Promise<Metadata> {
   const { slug = [] } = await params;
-  // metaFromSlug is pure computation (no API call) → fast, title lands inside <head>
-  const meta = await metaFromSlug(slug, {});
-  const title =
-    meta.title && typeof meta.title === "object" && "absolute" in meta.title
-      ? (meta.title as { absolute: string }).absolute
-      : "Caravans for Sale in Australia";
-  return { title: { absolute: title } };
+  return metaFromSlug(slug, {});
 }
 
 function normalizeSlug(v: string = "") {
