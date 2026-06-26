@@ -93,11 +93,21 @@ export default async function ListingsPage({
       message: `Listings page failed: ${msg}`,
       pageUrl: "/listings",
     }).catch(() => {});
-    throw error;
+    // Backend down — don't throw; let client component fetch its own data
+    return (
+      <Suspense fallback={null}>
+        <Listing page={page} />
+      </Suspense>
+    );
   }
 
   if (!response || !response.data) {
-    throw new Error("Empty API response");
+    // Unexpected empty response — let client component handle
+    return (
+      <Suspense fallback={null}>
+        <Listing page={page} />
+      </Suspense>
+    );
   }
 
   if (
