@@ -84,6 +84,15 @@ interface Props {
   currentFilters?: Filters;
 }
 
+function formatLengthWithMeters(length: string): string {
+  if (!length) return length;
+  const num = parseFloat(length);
+  if (isNaN(num)) return length;
+  const meters = (num * 0.3048).toFixed(1);
+  const ftLabel = /ft/i.test(length) ? length.trim() : `${num}ft`;
+  return `${ftLabel} (${meters}m)`;
+}
+
 export default function ExculisiveContent({
   data,
   pageTitle,
@@ -601,7 +610,7 @@ export default function ExculisiveContent({
                               {item.length && (
                                 <li>
                                   <span className="attribute3">
-                                    {item.length}
+                                    {formatLengthWithMeters(item.length)}
                                   </span>
                                 </li>
                               )}

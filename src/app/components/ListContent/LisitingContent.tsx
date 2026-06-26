@@ -153,6 +153,15 @@ function useProductDistances(
   }, [searchPincode, fetchedDistances, initialDistances, pincodeKey]);
 }
 
+function formatLengthWithMeters(length: string): string {
+  if (!length) return length;
+  const num = parseFloat(length);
+  if (isNaN(num)) return length;
+  const meters = (num * 0.3048).toFixed(1);
+  const ftLabel = /ft/i.test(length) ? length.trim() : `${num}ft`;
+  return `${ftLabel} (${meters}m)`;
+}
+
 export default function ListingContent({
   products,
   pagination,
@@ -830,7 +839,7 @@ const [currentBanner, setCurrentBanner] = useState<typeof rightBanners[0] | null
                                 {item.length && (
                                   <li>
                                     <span className="attribute3">
-                                      {item.length}
+                                      {formatLengthWithMeters(item.length)}
                                     </span>
                                   </li>
                                 )}
@@ -1077,7 +1086,7 @@ const [currentBanner, setCurrentBanner] = useState<typeof rightBanners[0] | null
                           )}
                           {item.length && (
                             <li>
-                              <span className="attribute3">{item.length}</span>
+                              <span className="attribute3">{formatLengthWithMeters(item.length)}</span>
                             </li>
                           )}
 

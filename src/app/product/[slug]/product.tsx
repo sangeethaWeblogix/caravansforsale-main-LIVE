@@ -79,6 +79,12 @@ interface BlogPost extends HomeBlogPost {
   excerpt?: string;
   link?: string;
 }
+function ftToMeters(value: string): string | null {
+  const num = parseFloat(value);
+  if (isNaN(num)) return null;
+  return `(${(num * 0.3048).toFixed(1)}m)`;
+}
+
 export default function ClientLogger({
   data,
 }: {
@@ -774,6 +780,8 @@ export default function ClientLogger({
                                       String(f.value),
                                       f.url,
                                     );
+                                  const isLength = f.label.toLowerCase() === "length";
+                                  const metersLabel = isLength ? ftToMeters(String(f.value)) : null;
                                   return (
                                     <li key={f.label}>
                                       <strong>{f.label}:</strong>{" "}
@@ -793,6 +801,7 @@ export default function ClientLogger({
                                             </span>
                                           ))
                                           : String(f.value)}
+                                        {metersLabel && <> {metersLabel}</>}
                                       </span>
                                     </li>
                                   );
