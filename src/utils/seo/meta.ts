@@ -1,6 +1,7 @@
 import { parseSlugToFilters } from "@/app/components/urlBuilder";
 import type { Metadata } from "next";
 import extraIndexedData from "../../../cfs-paths/extra-indexed.json";
+import { INDEXABLE_URLS } from "./indexable-urls";
 
 const EXTRA_INDEXED_PATHS = new Set<string>(extraIndexedData.paths);
 
@@ -455,10 +456,11 @@ export async function metaFromSlug(
 
   const slugPath = filters.length > 0 ? filters.join("/") : "";
   const canonicalUrl = `${BASE_URL}/listings/${slugPath ? slugPath + "/" : ""}`;
-  const robotsResult = getRobotsFromFilters(parsed, filters, BASE_URL);
+  const urlPath = `/listings/${slugPath ? slugPath + "/" : ""}`;
+  const robotsResult = { index: INDEXABLE_URLS.has(urlPath) };
 
   // ── suburb canonical fix ──
-  let canonical = robotsResult.overrideCanonical ?? canonicalUrl;
+  let canonical = canonicalUrl;
   if (parsed.suburb) {
     const locationSegments = filters.filter(
       (seg) =>
