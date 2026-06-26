@@ -22,6 +22,7 @@ interface Filters {
   state?: string;
   region?: string;
   suburb?: string;
+  pincode?: string;
   category?: string;
   condition?: string;
   minKg?: string | number;
@@ -35,7 +36,14 @@ interface Filters {
 }
 
 export function getBottomLinksParams(filters: Filters): URLSearchParams {
-  if (filters.suburb) return new URLSearchParams();
+  if (filters.suburb) {
+    const p = new URLSearchParams();
+    if (filters.state)   p.set("state",    filters.state);
+    if (filters.region)  p.set("region",   filters.region);
+    if (filters.suburb)  p.set("suburb",   filters.suburb);
+    if (filters.pincode) p.set("postcode", filters.pincode);
+    return p;
+  }
 
   const hasMake   = !!filters.make;
   const hasModel  = !!filters.model;

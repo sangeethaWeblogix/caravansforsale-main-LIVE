@@ -511,10 +511,32 @@ export default function ListingBottomSections({
     ? `${filters.region.replace(/\s+/g, "-").toLowerCase()}-region`
     : null;
   const hasRegion = !!regionSlug;
+  const hasSuburb = !!filters.suburb;
+  // Build suburb slug for URLs (e.g. "jacana-3047-suburb")
+  const suburbSlug = hasSuburb
+    ? (filters.pincode
+        ? `${filters.suburb!.replace(/\s+/g, "-")}-${filters.pincode}-suburb`
+        : `${filters.suburb!.replace(/\s+/g, "-")}-suburb`)
+    : null;
+  // Human-readable suburb name (e.g. "Jacana 3047")
+  const suburbDisplayName = hasSuburb
+    ? [
+        filters.suburb!.split(/\s+/).map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(" "),
+        filters.pincode,
+      ].filter(Boolean).join(" ")
+    : "";
+  // Human-readable region name (e.g. "Melbourne Region")
+  const regionName = filters.region
+    ? filters.region.split(/\s+/).map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ") + " Region"
+    : "";
+  // Location string for headings — suburb pages include suburb + region + state
+  const locationName = hasSuburb
+    ? [suburbDisplayName, regionName, stateName].filter(Boolean).join(", ")
+    : stateName;
   // filterSlug WITHOUT region (state section links should not carry region)
   const filterSlug = [priceSlug, weightSlug].filter(Boolean).join("/");
-  // fullFilterSlug WITH region (all other section links)
-  const fullFilterSlug = [regionSlug, priceSlug, weightSlug].filter(Boolean).join("/");
+  // fullFilterSlug WITH region + suburb (all other section links)
+  const fullFilterSlug = [regionSlug, suburbSlug, priceSlug, weightSlug].filter(Boolean).join("/");
   const hasAnyFilter = !!(
     filters.category || filters.state || filters.make || filters.condition ||
     filters.region || filters.suburb || filters.minKg || filters.maxKg ||
@@ -565,28 +587,28 @@ export default function ListingBottomSections({
       {!isLoading && (
         <>
           {/* 2. Category — filtered by API counts; hidden when category filter is active */}
-          {!hasCategory && <CategorySectionBlock catName={displayName} stateSlug={stateSlug} stateName={stateName} makeSlug={makeSlug} priceDisplay={priceDisplay} filterSlug={fullFilterSlug} categoryCounts={categoryCountsProp} />}
+          {!hasCategory && <CategorySectionBlock catName={displayName} stateSlug={stateSlug} stateName={locationName} makeSlug={makeSlug} priceDisplay={priceDisplay} filterSlug={fullFilterSlug} categoryCounts={categoryCountsProp} />}
 
           {/* 3. Region — hidden when region filter is active */}
           {!hasRegion && <RegionSectionBlock catName={displayName} regions={visibleRegions} catSlug={catSlug} stateName={stateName} priceDisplay={priceDisplay} priceSlug={filterSlug} />}
 
           {/* 4. Make (when no make filter) or Model (when make filter is active) */}
-          {!hasMake && <MakeSectionBlock items={apiSections.make ?? []} catName={displayName} stateName={stateName} priceDisplay={priceDisplay} filterSlug={fullFilterSlug} makeCounts={makeCountsProp} />}
-          {hasMake && <ApiSectionBlock type="model" items={apiSections.model ?? []} catName={displayName} stateName={stateName} priceDisplay={priceDisplay} filterSlug={fullFilterSlug} />}
+          {!hasMake && <MakeSectionBlock items={apiSections.make ?? []} catName={displayName} stateName={locationName} priceDisplay={priceDisplay} filterSlug={fullFilterSlug} makeCounts={makeCountsProp} />}
+          {hasMake && <ApiSectionBlock type="model" items={apiSections.model ?? []} catName={displayName} stateName={locationName} priceDisplay={priceDisplay} filterSlug={fullFilterSlug} />}
 
           {/* 5-8. Price / Weight / Length / Sleep — from API; hidden only when that specific filter is already active */}
-          {!hasPrice  && <ApiSectionBlock type="price"  items={apiSections.price  ?? []} catName={displayName} stateName={stateName} priceDisplay={priceDisplay} filterSlug={fullFilterSlug} />}
-          {!hasWeight && <ApiSectionBlock type="weight" items={apiSections.weight ?? []} catName={displayName} stateName={stateName} priceDisplay={priceDisplay} filterSlug={fullFilterSlug} />}
-          {!hasLength && <ApiSectionBlock type="length" items={apiSections.length ?? []} catName={displayName} stateName={stateName} priceDisplay={priceDisplay} filterSlug={fullFilterSlug} />}
-          {!hasSleep  && <ApiSectionBlock type="sleep"  items={apiSections.sleep  ?? []} catName={displayName} stateName={stateName} priceDisplay={priceDisplay} filterSlug={fullFilterSlug} />}
+          {!hasPrice  && <ApiSectionBlock type="price"  items={apiSections.price  ?? []} catName={displayName} stateName={locationName} priceDisplay={priceDisplay} filterSlug={fullFilterSlug} />}
+          {!hasWeight && <ApiSectionBlock type="weight" items={apiSections.weight ?? []} catName={displayName} stateName={locationName} priceDisplay={priceDisplay} filterSlug={fullFilterSlug} />}
+          {!hasLength && <ApiSectionBlock type="length" items={apiSections.length ?? []} catName={displayName} stateName={locationName} priceDisplay={priceDisplay} filterSlug={fullFilterSlug} />}
+          {!hasSleep  && <ApiSectionBlock type="sleep"  items={apiSections.sleep  ?? []} catName={displayName} stateName={locationName} priceDisplay={priceDisplay} filterSlug={fullFilterSlug} />}
         </>
       )}
 
       {/* 9-10. Used / New — always show */}
       {!isLoading && (
         <>
-          <UsedNewSectionBlock type="used" catSlug={catSlug} catName={displayName} stateName={stateName} stateSlug={stateSlug} priceDisplay={priceDisplay} priceSlug={fullFilterSlug} />
-          <UsedNewSectionBlock type="new"  catSlug={catSlug} catName={displayName} stateName={stateName} stateSlug={stateSlug} priceDisplay={priceDisplay} priceSlug={fullFilterSlug} />
+          <UsedNewSectionBlock type="used" catSlug={catSlug} catName={displayName} stateName={locationName} stateSlug={stateSlug} priceDisplay={priceDisplay} priceSlug={fullFilterSlug} />
+          <UsedNewSectionBlock type="new"  catSlug={catSlug} catName={displayName} stateName={locationName} stateSlug={stateSlug} priceDisplay={priceDisplay} priceSlug={fullFilterSlug} />
         </>
       )}
     </div>
