@@ -391,9 +391,7 @@ export async function middleware(request: NextRequest) {
         // Revalidate in background — don't block the response
         refreshSeoCache(cacheKey, url, request).catch(() => {});
       }
-      if (cached!.isEmpty) {
-        return render410(request);
-      }
+      // isEmpty → let ISR/page component handle it (don't 410 from middleware)
       if (cached!.hasExclusiveOnly) {
         const rawSlug = url.pathname.replace(/^\/listings\/?/, '').replace(/\/$/, '');
         const rewriteUrl = new URL(`/api/listings-410/${rawSlug}/`, request.url);
@@ -452,13 +450,15 @@ export async function middleware(request: NextRequest) {
           const empExclusive = data?.emp_exclusive_products ?? [];
           if (products.length === 0) {
             if (empExclusive.length === 0) {
+              // Don't 410 from middleware — ISR/page component handles empty state
               seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty: true, hasExclusiveOnly: false, expires: Date.now() + CACHE_TTL, staleExpires: Date.now() + CACHE_STALE_TTL });
-              return render410(request);
+              robotsHeader = "noindex, nofollow";
+            } else {
+              seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty: false, hasExclusiveOnly: true, expires: Date.now() + CACHE_TTL, staleExpires: Date.now() + CACHE_STALE_TTL });
+              const rewriteUrl = new URL(`/api/listings-410/${slugParts.join('/')}${url.search}`, request.url);
+              return NextResponse.rewrite(rewriteUrl);
             }
-            seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty: false, hasExclusiveOnly: true, expires: Date.now() + CACHE_TTL, staleExpires: Date.now() + CACHE_STALE_TTL });
-            const rewriteUrl = new URL(`/api/listings-410/${slugParts.join('/')}${url.search}`, request.url);
-            return NextResponse.rewrite(rewriteUrl);
-          }
+          } else {
 
           const seo = data?.seo_v2 ?? data?.seo ?? {};
           const rawIndex = String(seo?.index ?? "").toLowerCase().trim();
@@ -485,8 +485,9 @@ export async function middleware(request: NextRequest) {
             expires: Date.now() + CACHE_TTL,
             staleExpires: Date.now() + CACHE_STALE_TTL,
           });
+          } // close else (products > 0)
         } else if (apiRes.status === 410) {
-          // WordPress returns 410 for 0 products — check body for emp_exclusive_products before deciding
+          // WordPress returns 410 for 0 products — set noindex but let ISR/page handle display
           try {
             const raw410 = await apiRes.text();
             const idx410 = raw410.indexOf('{"');
@@ -494,14 +495,17 @@ export async function middleware(request: NextRequest) {
             const empExclusive410 = data410?.emp_exclusive_products ?? [];
             if (empExclusive410.length === 0) {
               seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty: true, hasExclusiveOnly: false, expires: Date.now() + CACHE_TTL, staleExpires: Date.now() + CACHE_STALE_TTL });
-              return render410(request);
+              robotsHeader = "noindex, nofollow";
+              // Don't render410 — let ISR serve cached HTML
+            } else {
+              seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty: false, hasExclusiveOnly: true, expires: Date.now() + CACHE_TTL, staleExpires: Date.now() + CACHE_STALE_TTL });
+              const rewriteUrl410 = new URL(`/api/listings-410/${slugParts.join('/')}${url.search}`, request.url);
+              return NextResponse.rewrite(rewriteUrl410);
             }
-            seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty: false, hasExclusiveOnly: true, expires: Date.now() + CACHE_TTL, staleExpires: Date.now() + CACHE_STALE_TTL });
-            const rewriteUrl410 = new URL(`/api/listings-410/${slugParts.join('/')}${url.search}`, request.url);
-            return NextResponse.rewrite(rewriteUrl410);
           } catch {
             seoCache.set(cacheKey, { robots: "noindex, nofollow", isEmpty: true, hasExclusiveOnly: false, expires: Date.now() + CACHE_TTL, staleExpires: Date.now() + CACHE_STALE_TTL });
-            return render410(request);
+            robotsHeader = "noindex, nofollow";
+            // Don't render410 — let ISR serve cached HTML
           }
         }
       } catch (error: any) {
