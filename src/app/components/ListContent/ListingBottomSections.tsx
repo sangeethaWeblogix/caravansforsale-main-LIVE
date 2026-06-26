@@ -178,7 +178,7 @@ function StateSectionBlock({
             <h4 className="custom-card-title">
               {catName
                 ? `${catName} Caravans for Sale${pr} in ${s.name}`
-                : `${s.name} Caravans for Sale`}
+                : `${s.name} Caravans for Sale${pr}`}
             </h4>
           </a>
         );
@@ -246,8 +246,8 @@ function RegionSectionBlock({
         const base = catSlug ? `/listings/${catSlug}/${r.slug}/` : `/listings/${r.slug}/`;
         const href = priceSlug ? `${base}${priceSlug}/` : base;
         const pr = priceDisplay ? ` ${priceDisplay}` : "";
-        const label = catName
-          ? r.name.replace("Caravans for Sale", `${catName} Caravans for Sale${pr}`)
+        const label = (catName || priceDisplay)
+          ? r.name.replace("Caravans for Sale", `${catName ? catName + " " : ""}Caravans for Sale${pr}`)
           : r.name;
         return (
           <a key={r.slug} href={href} className="custom-card">

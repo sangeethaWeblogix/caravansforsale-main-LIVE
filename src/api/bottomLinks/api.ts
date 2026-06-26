@@ -164,6 +164,19 @@ export function getBottomLinksParams(filters: Filters): URLSearchParams {
   if (hasState && hasRegion && dims === 2) {
     p.set("state", filters.state!); p.set("region", filters.region!); return p;
   }
+  if (hasState && hasPrice && dims === 2) {
+    p.set("state", filters.state!);
+    if (filters.from_price) p.set("from_price", String(filters.from_price));
+    if (filters.to_price)   p.set("to_price",   String(filters.to_price));
+    return p;
+  }
+  // state + price + [weight/length/sleep] → fallback to state+price
+  if (hasState && hasPrice && (hasWeight || hasLength || hasSleep) && dims === 3) {
+    p.set("state", filters.state!);
+    if (filters.from_price) p.set("from_price", String(filters.from_price));
+    if (filters.to_price)   p.set("to_price",   String(filters.to_price));
+    return p;
+  }
   if (hasState && dims === 1) {
     p.set("state", filters.state!); return p;
   }
