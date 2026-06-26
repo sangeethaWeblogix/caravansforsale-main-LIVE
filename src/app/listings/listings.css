@@ -1126,3 +1126,61 @@ input[type="number"]::-webkit-outer-spin-button {
     font-size: 2.2rem;
   }
 }
+
+/* ── Listing bottom links section ─────────────────────────────── */
+.listing-bottom  {
+  padding-bottom: 60px;
+}
+
+.listing-bottom .quick_links_tabs {
+  background: #fff;
+    padding-bottom: 0;
+}
+
+.listing-bottom .quick_links_tabs h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1a1a2e;
+  position: relative;
+  padding-bottom: 10px;
+  display: inline-block;
+}
+
+.listing-bottom .quick_links_tabs h2::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 36px;
+  height: 3px;
+  background: #e07b39;
+  border-radius: 2px;
+}
+
+.listing-bottom .custom-card {
+  background: #fff;
+
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.listing-bottom .custom-card:hover {
+  
+}
+
+.listing-bottom .custom-card:hover h4 {
+  color: #e07b39;
+  border-bottom: none;
+}
+
+.listing-bottom .custom-card-title {
+  font-size: 15px;
+  font-weight: 500;
+  color: #1a1a2e;
+  display: block;
+}
+
+@media (max-width: 640px) {
+  .listing-bottom .custom-card {
+    padding: 10px 14px;
+  }
+}

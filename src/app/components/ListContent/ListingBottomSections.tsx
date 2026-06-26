@@ -543,7 +543,7 @@ export default function ListingBottomSections({
         );
 
   return (
-    <div ref={sectionRef}>
+    <div ref={sectionRef} className="listing-bottom">
       {/* 1. State — always show unless state filter is active */}
       {!hasState && <StateSectionBlock catName={displayName} catSlug={catSlug} priceDisplay={priceDisplay} priceSlug={filterSlug} />}
 
