@@ -29,17 +29,15 @@ import priceData from "../../../../cfs-paths/price.json";
 import sleepData from "../../../../cfs-paths/sleep.json";
 import lengthData from "../../../../cfs-paths/length.json";
 import atmData from "../../../../cfs-paths/atm.json";
+import bossUrlsData from "../../../../cfs-paths/boss-urls.json";
 
 export const revalidate = 86400;
 
-// Pre-build high-value single/double-dimension pages (~484 paths).
-// Large combination types (models 2869, region-make 1162, state-make 662,
-// cat-region 274, extra-indexed 406) are served by dynamicParams on first
-// request and cached by ISR — avoids hammering WordPress during deploys.
 export async function generateStaticParams() {
   const allFiles = [
     statesData, regionsData, categoriesData, makesData,
     catStateData, priceData, sleepData, lengthData, atmData,
+    bossUrlsData,
   ];
   const seen = new Set<string>();
   const result: { slug: string[] }[] = [];
