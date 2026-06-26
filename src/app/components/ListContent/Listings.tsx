@@ -592,7 +592,7 @@ const [pagination, setPagination] = useState<Pagination>(() => {
         const premiumList = response?.data?.premium_products ?? [];
         const exclusiveList = response?.data?.exclusive_products ?? [];
         const emptyExclusiveList = response?.data?.emp_exclusive_products ?? [];
-
+console.log("emptyExclusiveList", emptyExclusiveList)
         // ---- Store NORMAL PRODUCTS (shuffled client-side on every fresh load) ----
         const validProducts = Array.isArray(productsList)
           ? productsList.filter((p) => p != null)

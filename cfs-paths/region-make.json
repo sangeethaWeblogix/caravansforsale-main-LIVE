@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "region-make",
-    "count": 1159,
+    "count": 1158,
     "paths": [
         "australian-capital-territory-state/australian-capital-territory-region/carrera/",
         "australian-capital-territory-state/australian-capital-territory-region/coromal/",
@@ -606,7 +606,6 @@
         "south-australia-state/adelaide-region/nextgen/",
         "south-australia-state/adelaide-region/nova/",
         "south-australia-state/adelaide-region/on-the-move/",
-        "south-australia-state/adelaide-region/opal/",
         "south-australia-state/adelaide-region/oz-star/",
         "south-australia-state/adelaide-region/paramount/",
         "south-australia-state/adelaide-region/phoenix/",
@@ -1163,5 +1162,5 @@
         "western-australia-state/western-australia-outback-south-region/vanguard/",
         "western-australia-state/western-australia-outback-south-region/western/"
     ],
-    "generated_at": "2026-06-25 15:46:36"
+    "generated_at": "2026-06-26 16:06:32"
 }
