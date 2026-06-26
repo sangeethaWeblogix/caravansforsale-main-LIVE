@@ -218,7 +218,7 @@ export const fetchListings = async (
           ? { "X-API-Key": process.env.CFS_API_KEY }
           : {}),
       },
-      ...(!isClient && (options?.noCache ? { cache: 'no-store' } : { next: { revalidate: 3600 } })),
+      ...(!isClient && { cache: 'no-store' }),
     });
   } catch (err: any) {
     clearTimeout(timeoutId);

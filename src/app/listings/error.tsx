@@ -24,107 +24,99 @@ export default function ListingsError({ error, reset }: ErrorProps) {
   }, [error]);
 
   return (
-    <section className="error-section bg-gray-100 min-h-screen flex items-center justify-center">
-      <div className="container">
-        <div className="error-content text-center py-20 px-4">
-          {/* Error Icon */}
-          <div className="error-icon mb-6">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="120"
-              height="120"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#dc3545"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="mx-auto"
-            >
-              <circle cx="12" cy="12" r="10" />
-              <line x1="12" y1="8" x2="12" y2="12" />
-              <line x1="12" y1="16" x2="12.01" y2="16" />
-            </svg>
-          </div>
-
-          {/* Error Title */}
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
-            Sorry, something went wrong
-          </h1>
-
-          {/* Error Message */}
-          <p className="text-gray-600 text-lg mb-2 max-w-lg mx-auto">
-            We couldn&apos;t load the listings at this moment. This might be due to
-            a connection issue or our servers are temporarily unavailable.
-          </p>
-
-          <p className="text-gray-500 text-base mb-8">
-            Please try again or come back later.
-          </p>
-
-          {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <button
-              onClick={() => reset()}
-              className="btn btn-primary px-8 py-3 rounded-lg text-white font-medium transition-all hover:opacity-90"
-              style={{ backgroundColor: "#007bff", border: "none" }}
-            >
-              <i className="bi bi-arrow-clockwise me-2"></i>
-              Try Again
-            </button>
-
-            
-          </div>
-
-          {/* Help Text */}
-          <div className="mt-10 text-sm text-gray-400">
-            <p>
-              If the problem persists, please{" "}
-              <Link href="/contact" className="text-blue-500 hover:underline">
-                contact support
-              </Link>
-            </p>
-          </div>
+    <section className="lst-err-wrap">
+      <div className="lst-err-card">
+        <div className="lst-err-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#f37920" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
         </div>
+
+        <h1 className="lst-err-title">Unable to Load Listings</h1>
+
+        <p className="lst-err-msg">
+          We&apos;re having trouble connecting to our servers right now.<br />
+          Please try again in a moment.
+        </p>
+
+        <button onClick={() => reset()} className="lst-err-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="23 4 23 10 17 10"/>
+            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+          </svg>
+          Try Again
+        </button>
+
+        <p className="lst-err-help">
+          Problem persists?{" "}
+          <Link href="/contact">Contact support</Link>
+        </p>
       </div>
 
-      {/* Inline styles for standalone functionality */}
       <style jsx>{`
-        .error-section {
-          min-height: 80vh;
+        .lst-err-wrap {
+          min-height: 70vh;
           display: flex;
           align-items: center;
           justify-content: center;
-          background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+          background: #f8f8f8;
+          padding: 40px 16px;
         }
-        .error-content {
-          background: white;
-          border-radius: 16px;
-          box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-          max-width: 600px;
+        .lst-err-card {
+          background: #fff;
+          border-radius: 12px;
+          box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+          padding: 48px 40px;
+          max-width: 480px;
           width: 100%;
+          text-align: center;
         }
-        .error-icon svg {
-          animation: pulse 2s ease-in-out infinite;
+        .lst-err-icon {
+          margin-bottom: 20px;
         }
-        @keyframes pulse {
-          0%,
-          100% {
-            opacity: 1;
-          }
-          50% {
-            opacity: 0.6;
-          }
+        .lst-err-title {
+          font-size: 22px;
+          font-weight: 700;
+          color: #1a1a1a;
+          margin: 0 0 12px;
         }
-        .btn {
+        .lst-err-msg {
+          font-size: 15px;
+          color: #666;
+          line-height: 1.6;
+          margin: 0 0 28px;
+        }
+        .lst-err-btn {
           display: inline-flex;
           align-items: center;
-          justify-content: center;
-          min-width: 160px;
+          gap: 8px;
+          background: #f37920;
+          color: #fff;
+          border: none;
+          border-radius: 8px;
+          padding: 12px 28px;
+          font-size: 15px;
+          font-weight: 600;
           cursor: pointer;
+          transition: background 0.2s, transform 0.15s;
         }
-        .btn:hover {
-          transform: translateY(-2px);
+        .lst-err-btn:hover {
+          background: #d96510;
+          transform: translateY(-1px);
+        }
+        .lst-err-help {
+          margin-top: 20px;
+          font-size: 13px;
+          color: #999;
+        }
+        .lst-err-help a {
+          color: #f37920;
+          text-decoration: none;
+        }
+        .lst-err-help a:hover {
+          text-decoration: underline;
         }
       `}</style>
     </section>
