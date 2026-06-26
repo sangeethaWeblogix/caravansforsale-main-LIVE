@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { parseSlugToFilters, type Filters } from "@/app/components/urlBuilder";
 import { buildSlugFromFilters } from "@/app/components/slugBuilter";
-import { isAllowedSingleBand } from "@/utils/seo/meta";
+import { isAllowedSingleBand } from "@/utils/seo/band-utils";
 import regionPathsData from "../cfs-paths/regions.json";
 import makesData from "../cfs-paths/makes.json";
 const API_KEY = process.env.CFS_API_KEY;
