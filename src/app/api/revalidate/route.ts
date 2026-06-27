@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
     if (all) {
       // Purge all product detail pages; mark listing data stale (stale-on-error via unstable_cache)
       revalidatePath("/[slug]", "page");
-      revalidateTag("listings");
+      revalidateTag("listings", "days");
       return NextResponse.json({ revalidated: true, scope: "all pages" });
     }
 
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
 
     // Purge specific product detail page; mark listing data stale (not purged)
     revalidatePath(`/${slug}`, "page");
-    revalidateTag("listings");
+    revalidateTag("listings", "days");
     return NextResponse.json({ revalidated: true, paths: [`/${slug}`, "/listings"] });
   } catch {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
