@@ -207,105 +207,61 @@ const [states, setStates] = useState<StateOption[]>(
 
  
 
-  useEffect(() => {
-    if (!tempMake) {
-      setModelCounts([]);
-      return;
-    }
-
-    const controller = new AbortController();
-    setModelCountLoading(true);
-
-    const params = buildMakeCountParams(currentFilters);
-    // make set பண்ணு, model exclude பண்ணு
-    params.set("make", tempMake);
-    params.set("group_by", "model");
-    params.delete("group_by"); // முதல்ல delete
-    params.set("group_by", "model"); // model group_by set
-
-     fetch(
-  `/api/params-count?${params.toString()}`,
-  { signal: controller.signal },
-)
-      .then((r) => r.json())
-      .then((json) => {
-        if (!controller.signal.aborted) {
-          const data = json.data || [];
-          setModelCounts(data);
-          setModelCountLoading(false);
-          // ✅ Cache the matched model name for tag display
-          const matched = data.find(
-            (m: any) => m.slug === currentFilters.model,
-          );
-          if (matched) setLastModelName(matched.name);
-        }
-      })
-      .catch((e) => {
-        if (e.name !== "AbortError") {
-          console.error(e);
-          setModelCountLoading(false);
-        }
-      });
-
-    return () => controller.abort();
-  }, [tempMake]); // tempMake மாறும்போது மட்டும்
+  // useEffect(() => {
+  //   if (!tempMake) { setModelCounts([]); return; }
+  //   const controller = new AbortController();
+  //   setModelCountLoading(true);
+  //   const params = buildMakeCountParams(currentFilters);
+  //   params.set("make", tempMake);
+  //   params.delete("group_by");
+  //   params.set("group_by", "model");
+  //   fetch(`/api/params-count?${params.toString()}`, { signal: controller.signal })
+  //     .then((r) => r.json())
+  //     .then((json) => {
+  //       if (!controller.signal.aborted) {
+  //         const data = json.data || [];
+  //         setModelCounts(data);
+  //         setModelCountLoading(false);
+  //         const matched = data.find((m: any) => m.slug === currentFilters.model);
+  //         if (matched) setLastModelName(matched.name);
+  //       }
+  //     })
+  //     .catch((e) => { if (e.name !== "AbortError") { console.error(e); setModelCountLoading(false); } });
+  //   return () => controller.abort();
+  // }, [tempMake]);
 
   const availableModels = makes.find((m) => m.slug === tempMake)?.models ?? [];
 
+  const makeSource = makeCounts.length > 0
+    ? makeCounts
+    : makes.map((m) => ({ name: m.name, slug: m.slug, count: 0 }));
   const filteredMakes = makeSearch
-    ? makeCounts.filter((m) =>
-        m.name.toLowerCase().includes(makeSearch.toLowerCase()),
-      )
-    : makeCounts;
+    ? makeSource.filter((m) => m.name.toLowerCase().includes(makeSearch.toLowerCase()))
+    : makeSource;
 
+  const modelSource = modelCounts.length > 0
+    ? modelCounts
+    : availableModels.map((m) => ({ name: m.name, slug: m.slug, count: 0 }));
   const filteredModels = modelSearch
-    ? modelCounts.filter((m) =>
-        m.name.toLowerCase().includes(modelSearch.toLowerCase()),
-      )
-    : modelCounts;
+    ? modelSource.filter((m) => m.name.toLowerCase().includes(modelSearch.toLowerCase()))
+    : modelSource;
 
   // ── FIXED: FilterModal-போல் full filter params use பண்ணி make count fetch ──
-  useEffect(() => {
-    const controller = new AbortController();
-
-    const params = buildMakeCountParams(currentFilters);
-
-    fetch(
-      `/api/params-count?${params.toString()}`,
-      { signal: controller.signal },
-    )
-      .then((r) => r.json())
-      .then((json) => {
-        if (!controller.signal.aborted) {
-          setMakeCounts(json.data || []);
-        }
-      })
-      .catch((e) => {
-        if (e.name !== "AbortError") console.error(e);
-      });
-
-    return () => controller.abort();
-  }, [
-    // ── FilterModal-போல் ALL relevant filters watch பண்ணு ──
-    currentFilters.category,
-    currentFilters.condition,
-    currentFilters.state,
-    currentFilters.region,
-    currentFilters.suburb,
-    currentFilters.pincode,
-    currentFilters.from_price,
-    currentFilters.to_price,
-    currentFilters.minKg,
-    currentFilters.maxKg,
-    currentFilters.acustom_fromyears,
-    currentFilters.acustom_toyears,
-    currentFilters.from_length,
-    currentFilters.to_length,
-    currentFilters.from_sleep,
-    currentFilters.to_sleep,
-    currentFilters.search,
-    currentFilters.keyword,
-  ]);
+  // useEffect(() => {
+  //   const controller = new AbortController();
+  //   const params = buildMakeCountParams(currentFilters);
+  //   fetch(`/api/params-count?${params.toString()}`, { signal: controller.signal })
+  //     .then((r) => r.json())
+  //     .then((json) => { if (!controller.signal.aborted) setMakeCounts(json.data || []); })
+  //     .catch((e) => { if (e.name !== "AbortError") console.error(e); });
+  //   return () => controller.abort();
+  // }, [
+  //   currentFilters.category, currentFilters.condition, currentFilters.state, currentFilters.region,
+  //   currentFilters.suburb, currentFilters.pincode, currentFilters.from_price, currentFilters.to_price,
+  //   currentFilters.minKg, currentFilters.maxKg, currentFilters.acustom_fromyears, currentFilters.acustom_toyears,
+  //   currentFilters.from_length, currentFilters.to_length, currentFilters.from_sleep, currentFilters.to_sleep,
+  //   currentFilters.search, currentFilters.keyword,
+  // ]);
 
   // ── Make & Model handlers ──
 
@@ -664,14 +620,14 @@ const [states, setStates] = useState<StateOption[]>(
     setTempSuburbRadius(f.radius_kms ? Number(f.radius_kms) : RADIUS_OPTIONS[0]);
     setLocationSubView("states");
 
-    // Fetch state counts
-    setStateCountsLoading(true);
-    const stateParams = new URLSearchParams({ group_by: "state" });
-    if (currentFilters.category) stateParams.set("category", currentFilters.category);
-    fetch(`/api/params-count?${stateParams}`)
-      .then((r) => r.json())
-      .then((json) => { setStateCounts(json.data ?? []); setStateCountsLoading(false); })
-      .catch(() => setStateCountsLoading(false));
+    // // Fetch state counts
+    // setStateCountsLoading(true);
+    // const stateParams = new URLSearchParams({ group_by: "state" });
+    // if (currentFilters.category) stateParams.set("category", currentFilters.category);
+    // fetch(`/api/params-count?${stateParams}`)
+    //   .then((r) => r.json())
+    //   .then((json) => { setStateCounts(json.data ?? []); setStateCountsLoading(false); })
+    //   .catch(() => setStateCountsLoading(false));
 
     setOpenModal("location");
   };
@@ -695,13 +651,13 @@ const [states, setStates] = useState<StateOption[]>(
       }
     }
     setLocationSubView("regions");
-    setRegionCountsLoading(true);
-    const params = new URLSearchParams({ group_by: "region", state: target.toLowerCase() });
-    if (currentFilters.category) params.set("category", currentFilters.category);
-    fetch(`/api/params-count?${params}`)
-      .then((r) => r.json())
-      .then((json) => { setRegionCounts(json.data ?? []); setRegionCountsLoading(false); })
-      .catch(() => setRegionCountsLoading(false));
+    // setRegionCountsLoading(true);
+    // const params = new URLSearchParams({ group_by: "region", state: target.toLowerCase() });
+    // if (currentFilters.category) params.set("category", currentFilters.category);
+    // fetch(`/api/params-count?${params}`)
+    //   .then((r) => r.json())
+    //   .then((json) => { setRegionCounts(json.data ?? []); setRegionCountsLoading(false); })
+    //   .catch(() => setRegionCountsLoading(false));
   };
 
   const handleLocationClear = () => {
@@ -1100,7 +1056,7 @@ const [states, setStates] = useState<StateOption[]>(
                           {tempCategory === cat.slug && <i className="bi bi-check" style={{ color: "#fff", fontSize: 14, lineHeight: 1 }}></i>}
                         </span>
                         <span className="loc-state-name">{cat.name}</span>
-                        <span className="loc-count">({cat.count.toLocaleString()})</span>
+                        {/* <span className="loc-count">({cat.count.toLocaleString()})</span> */}
                       </li>
                     ))
                   )}
@@ -1436,7 +1392,7 @@ const [states, setStates] = useState<StateOption[]>(
                             {isSelected && <i className="bi bi-check" style={{ color: "#fff", fontSize: 14, lineHeight: 1 }}></i>}
                           </span>
                           <span className="loc-state-name">{m.name}</span>
-                          <span className="loc-count">({m.count.toLocaleString()})</span>
+                          {/* <span className="loc-count">({m.count.toLocaleString()})</span> */}
                           {isSelected ? (
                             <button
                               className="loc-region-pill"
@@ -1477,7 +1433,7 @@ const [states, setStates] = useState<StateOption[]>(
                             {isSelected && <i className="bi bi-check" style={{ color: "#fff", fontSize: 14, lineHeight: 1 }}></i>}
                           </span>
                           <span className="loc-state-name">{mod.name || mod.slug}</span>
-                          <span className="loc-count">({mod.count.toLocaleString()})</span>
+                          {/* <span className="loc-count">({mod.count.toLocaleString()})</span> */}
                         </li>
                       );
                     })

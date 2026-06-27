@@ -1542,13 +1542,13 @@ console.log("emptyExclusiveList", emptyExclusiveList)
         </div>
       </div>
 
-      <ListingBottomSections
+     {/* <ListingBottomSections
         filters={filters}
         initialData={initialBottomLinksData}
         categoryName={categories.find((c) => c.slug === filters.category)?.name ?? ""}
         categoryCounts={sliderCategoryCounts}
         makeCounts={sliderMakeCounts}
-      />
+      /> */}
     </>
   );
   
