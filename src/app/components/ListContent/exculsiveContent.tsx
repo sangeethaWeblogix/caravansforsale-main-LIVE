@@ -268,19 +268,15 @@ export default function ExculisiveContent({
 
   
 
- const postTrackClick = async (product_id: number) => {
-  await fetch("/api/track-click", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      product_id,
-    }),
-  });
-};
+  // const postTrackClick = async (product_id: number) => {
+  //   await fetch("/api/track-click", {
+  //     method: "POST",
+  //     headers: { "Content-Type": "application/json" },
+  //     body: JSON.stringify({ product_id }),
+  //   });
+  // };
   const handleProductClick = (id: any) => {
-      postTrackClick(id); 
+    // postTrackClick(id);
     // Allow product page to show "Back to Search"
     sessionStorage.setItem("cameFromListings", "true");
   };
@@ -298,46 +294,30 @@ export default function ExculisiveContent({
     }
   }, []);
 
-   const postTrackEvent = async (product_id: number) => {
-  await fetch("/api/track", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          product_id,
-          
-        }),
-      });
-    };
+  // const postTrackEvent = async (product_id: number) => {
+  //   await fetch("/api/track", {
+  //     method: "POST",
+  //     headers: { "Content-Type": "application/json" },
+  //     body: JSON.stringify({ product_id }),
+  //   });
+  // };
 
-
-  useEffect(() => {
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          const id = Number(
-            entry.target.getAttribute("data-product-id")
-          );
-
-          if (id) {
-            postTrackEvent(id); // ✅ only id
-          }
-
-          observer.unobserve(entry.target);
-        }
-      });
-    },
-    { threshold: 0.3 }
-  );
-
-  document
-    .querySelectorAll(".product-card[data-product-id]")
-    .forEach((el) => {
-      observer.observe(el);
-    });
-
-  return () => observer.disconnect();
-}, [data]);
+  // useEffect(() => {
+  //   const observer = new IntersectionObserver(
+  //     (entries) => {
+  //       entries.forEach((entry) => {
+  //         if (entry.isIntersecting) {
+  //           const id = Number(entry.target.getAttribute("data-product-id"));
+  //           if (id) postTrackEvent(id);
+  //           observer.unobserve(entry.target);
+  //         }
+  //       });
+  //     },
+  //     { threshold: 0.3 }
+  //   );
+  //   document.querySelectorAll(".product-card[data-product-id]").forEach((el) => observer.observe(el));
+  //   return () => observer.disconnect();
+  // }, [data]);
 
   const AUS_ABBR: Record<string, string> = {
     VICTORIA: "VIC",

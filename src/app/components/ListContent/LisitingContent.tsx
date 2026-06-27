@@ -351,17 +351,17 @@ export default function ListingContent({
   //     return "";
   //   }
   // };
-  const postTrackClick = async (product_id: number) => {
-    try {
-      await fetch("/api/track-click", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ product_id }),
-      });
-    } catch {}
-  };
-  const handleProductClick = (id) => {
-    postTrackClick(id);
+  // const postTrackClick = async (product_id: number) => {
+  //   try {
+  //     await fetch("/api/track-click", {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({ product_id }),
+  //     });
+  //   } catch {}
+  // };
+  const handleProductClick = (id: number) => {
+    // postTrackClick(id);
     // Allow product page to show "Back to Search"
     sessionStorage.setItem("cameFromListings", "true");
   };
@@ -378,15 +378,15 @@ export default function ListingContent({
     }
   }, []);
 
-  const postTrackEvent = async (product_id: number) => {
-    try {
-      await fetch("/api/track", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ product_id }),
-      });
-    } catch {}
-  };
+  // const postTrackEvent = async (product_id: number) => {
+  //   try {
+  //     await fetch("/api/track", {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({ product_id }),
+  //     });
+  //   } catch {}
+  // };
 
   const shuffleArray = <T,>(arr: T[]): T[] => {
     const copy = [...arr];
@@ -463,32 +463,22 @@ export default function ListingContent({
     setMergedProducts(buildMergedProducts(normal));
   }, [products, preminumProducts, exculisiveProducts, currentFilters.orderby]);
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const id = Number(entry.target.getAttribute("data-product-id"));
-
-            if (id) {
-              postTrackEvent(id); // ✅ only id
-            }
-
-            observer.unobserve(entry.target);
-          }
-        });
-      },
-      { threshold: 0.3 },
-    );
-
-    document
-      .querySelectorAll(".product-card[data-product-id]")
-      .forEach((el) => {
-        observer.observe(el);
-      });
-
-    return () => observer.disconnect();
-  }, [mergedProducts]);
+  // useEffect(() => {
+  //   const observer = new IntersectionObserver(
+  //     (entries) => {
+  //       entries.forEach((entry) => {
+  //         if (entry.isIntersecting) {
+  //           const id = Number(entry.target.getAttribute("data-product-id"));
+  //           if (id) postTrackEvent(id);
+  //           observer.unobserve(entry.target);
+  //         }
+  //       });
+  //     },
+  //     { threshold: 0.3 },
+  //   );
+  //   document.querySelectorAll(".product-card[data-product-id]").forEach((el) => observer.observe(el));
+  //   return () => observer.disconnect();
+  // }, [mergedProducts]);
 
   // ✅ Disable background scroll when popup is open
   useEffect(() => {

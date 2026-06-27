@@ -28,7 +28,7 @@ import { parseSlugToFilters } from "../../components/urlBuilder";
 import FilterSlider from "./FilterSlider";
 import StaticLinks from "./StaticLinks";
 import { useBanners } from "@/components/BannerHandler";
-import { useBannerTracking } from "@/hooks/useBannerTracking";
+// import { useBannerTracking } from "@/hooks/useBannerTracking";
 import ListingBottomSections from "./ListingBottomSections";
 import type { BottomLinksData } from "@/api/bottomLinks/api";
 
@@ -322,37 +322,34 @@ export default function ListingsPage({
   }
 }, [searchParams]);
 
-  const postTrackEvent = async (product_id: number) => {
-    try {
-      await fetch("/api/track", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ product_id }),
-      });
-    } catch {}
-  };
+  // const postTrackEvent = async (product_id: number) => {
+  //   try {
+  //     await fetch("/api/track", {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({ product_id }),
+  //     });
+  //   } catch {}
+  // };
 
- // ✅ Fix பண்ணிய code
-useEffect(() => {
-  const cards = document.querySelectorAll(".product-card[data-product-id]");
-  if (!cards.length) return;
-
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          const id = Number(entry.target.getAttribute("data-product-id"));
-          if (id) postTrackEvent(id);
-          observer.unobserve(entry.target);
-        }
-      });
-    },
-    { threshold: 0.3 },
-  );
-
-  cards.forEach((el) => observer.observe(el));
-  return () => observer.disconnect();
-}, [products]); // ✅ products state மாறும்போது re-run
+  // useEffect(() => {
+  //   const cards = document.querySelectorAll(".product-card[data-product-id]");
+  //   if (!cards.length) return;
+  //   const observer = new IntersectionObserver(
+  //     (entries) => {
+  //       entries.forEach((entry) => {
+  //         if (entry.isIntersecting) {
+  //           const id = Number(entry.target.getAttribute("data-product-id"));
+  //           if (id) postTrackEvent(id);
+  //           observer.unobserve(entry.target);
+  //         }
+  //       });
+  //     },
+  //     { threshold: 0.3 },
+  //   );
+  //   cards.forEach((el) => observer.observe(el));
+  //   return () => observer.disconnect();
+  // }, [products]);
 
  
  // ✅ Always use initialData or default — never window in useState
@@ -971,121 +968,79 @@ console.log("emptyExclusiveList", emptyExclusiveList)
     import("bootstrap/js/dist/offcanvas").catch(() => {});
   }, []);
 
-  useEffect(() => {
-    const controller = new AbortController();
-    setSliderCatLoading(true);
+  // useEffect(() => {
+  //   const controller = new AbortController();
+  //   setSliderCatLoading(true);
+  //   const params = new URLSearchParams();
+  //   const f = filtersRef.current;
+  //   if (f.make) params.set("make", f.make);
+  //   if (f.model) params.set("model", resolveModelSlug(f.model) ?? f.model);
+  //   if (f.condition) params.set("condition", f.condition);
+  //   if (f.state) params.set("state", f.state.toLowerCase());
+  //   if (f.region) params.set("region", f.region);
+  //   if (f.suburb) params.set("suburb", f.suburb);
+  //   if (f.pincode) params.set("pincode", f.pincode);
+  //   if (f.from_price) params.set("from_price", String(f.from_price));
+  //   if (f.to_price) params.set("to_price", String(f.to_price));
+  //   if (f.minKg) params.set("from_atm", String(f.minKg));
+  //   if (f.maxKg) params.set("to_atm", String(f.maxKg));
+  //   if (f.acustom_fromyears) params.set("acustom_fromyears", String(f.acustom_fromyears));
+  //   if (f.acustom_toyears) params.set("acustom_toyears", String(f.acustom_toyears));
+  //   if (f.from_length) params.set("from_length", String(f.from_length));
+  //   if (f.to_length) params.set("to_length", String(f.to_length));
+  //   if (f.from_sleep) params.set("from_sleep", String(f.from_sleep));
+  //   if (f.to_sleep) params.set("to_sleep", String(f.to_sleep));
+  //   if (f.search) params.set("search", f.search);
+  //   if (f.keyword) params.set("keyword", f.keyword);
+  //   params.set("group_by", "category");
+  //   fetch(`/api/params-count?${params.toString()}`, { signal: controller.signal })
+  //     .then((r) => r.json())
+  //     .then((json) => {
+  //       if (!controller.signal.aborted) { setSliderCategoryCounts(json.data || []); setSliderCatLoading(false); }
+  //     })
+  //     .catch((e) => { if (e.name !== "AbortError") setSliderCatLoading(false); });
+  //   return () => controller.abort();
+  // }, [
+  //   filters.make, filters.model, filters.condition, filters.state, filters.region, filters.suburb,
+  //   filters.from_price, filters.to_price, filters.minKg, filters.maxKg, filters.acustom_fromyears,
+  //   filters.acustom_toyears, filters.from_length, filters.to_length, filters.from_sleep,
+  //   filters.to_sleep, filters.search, filters.keyword,
+  // ]);
 
-    const params = new URLSearchParams();
-    const f = filtersRef.current;
-    if (f.make) params.set("make", f.make);
-    if (f.model) params.set("model", resolveModelSlug(f.model) ?? f.model);
-    if (f.condition) params.set("condition", f.condition);
-    if (f.state) params.set("state", f.state.toLowerCase());
-    if (f.region) params.set("region", f.region);
-    if (f.suburb) params.set("suburb", f.suburb);
-    if (f.pincode) params.set("pincode", f.pincode);
-    if (f.from_price) params.set("from_price", String(f.from_price));
-    if (f.to_price) params.set("to_price", String(f.to_price));
-    if (f.minKg) params.set("from_atm", String(f.minKg));
-    if (f.maxKg) params.set("to_atm", String(f.maxKg));
-    if (f.acustom_fromyears)
-      params.set("acustom_fromyears", String(f.acustom_fromyears));
-    if (f.acustom_toyears)
-      params.set("acustom_toyears", String(f.acustom_toyears));
-    if (f.from_length) params.set("from_length", String(f.from_length));
-    if (f.to_length) params.set("to_length", String(f.to_length));
-    if (f.from_sleep) params.set("from_sleep", String(f.from_sleep));
-    if (f.to_sleep) params.set("to_sleep", String(f.to_sleep));
-    if (f.search) params.set("search", f.search);
-    if (f.keyword) params.set("keyword", f.keyword);
-    params.set("group_by", "category");
-
-    fetch(`/api/params-count?${params.toString()}`, {
-      signal: controller.signal,
-    })
-      .then((r) => r.json())
-      .then((json) => {
-        if (!controller.signal.aborted) {
-          setSliderCategoryCounts(json.data || []);
-          setSliderCatLoading(false);
-        }
-      })
-      .catch((e) => {
-        if (e.name !== "AbortError") setSliderCatLoading(false);
-      });
-
-    return () => controller.abort();
-  }, [
-    filters.make,
-    filters.model,
-    filters.condition,
-    filters.state,
-    filters.region,
-    filters.suburb,
-    filters.from_price,
-    filters.to_price,
-    filters.minKg,
-    filters.maxKg,
-    filters.acustom_fromyears,
-    filters.acustom_toyears,
-    filters.from_length,
-    filters.to_length,
-    filters.from_sleep,
-    filters.to_sleep,
-    filters.search,
-    filters.keyword,
-  ]);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    const params = new URLSearchParams();
-    if (filters.make) params.set("make", filters.make);
-    if (filters.model) params.set("model", resolveModelSlug(filters.model) ?? filters.model);
-    if (filters.condition) params.set("condition", filters.condition);
-    if (filters.state) params.set("state", filters.state.toLowerCase());
-    if (filters.region) params.set("region", filters.region);
-    if (filters.suburb) params.set("suburb", filters.suburb);
-    if (filters.pincode) params.set("pincode", String(filters.pincode));
-    if (filters.from_price) params.set("from_price", String(filters.from_price));
-    if (filters.to_price) params.set("to_price", String(filters.to_price));
-    if (filters.minKg) params.set("from_atm", String(filters.minKg));
-    if (filters.maxKg) params.set("to_atm", String(filters.maxKg));
-    if (filters.acustom_fromyears) params.set("acustom_fromyears", String(filters.acustom_fromyears));
-    if (filters.acustom_toyears) params.set("acustom_toyears", String(filters.acustom_toyears));
-    if (filters.from_length) params.set("from_length", String(filters.from_length));
-    if (filters.to_length) params.set("to_length", String(filters.to_length));
-    if (filters.from_sleep) params.set("from_sleep", String(filters.from_sleep));
-    if (filters.to_sleep) params.set("to_sleep", String(filters.to_sleep));
-    if (filters.search) params.set("search", filters.search);
-    if (filters.keyword) params.set("keyword", filters.keyword);
-    params.set("group_by", "make");
-
-    fetch(`/api/params-count?${params.toString()}`, { signal: controller.signal })
-      .then((r) => r.json())
-      .then((json) => { if (!controller.signal.aborted) setSliderMakeCounts(json.data || []); })
-      .catch(() => {});
-
-    return () => controller.abort();
-  }, [
-    filters.make,
-    filters.model,
-    filters.condition,
-    filters.state,
-    filters.region,
-    filters.suburb,
-    filters.from_price,
-    filters.to_price,
-    filters.minKg,
-    filters.maxKg,
-    filters.acustom_fromyears,
-    filters.acustom_toyears,
-    filters.from_length,
-    filters.to_length,
-    filters.from_sleep,
-    filters.to_sleep,
-    filters.search,
-    filters.keyword,
-  ]);
+  // useEffect(() => {
+  //   const controller = new AbortController();
+  //   const params = new URLSearchParams();
+  //   if (filters.make) params.set("make", filters.make);
+  //   if (filters.model) params.set("model", resolveModelSlug(filters.model) ?? filters.model);
+  //   if (filters.condition) params.set("condition", filters.condition);
+  //   if (filters.state) params.set("state", filters.state.toLowerCase());
+  //   if (filters.region) params.set("region", filters.region);
+  //   if (filters.suburb) params.set("suburb", filters.suburb);
+  //   if (filters.pincode) params.set("pincode", String(filters.pincode));
+  //   if (filters.from_price) params.set("from_price", String(filters.from_price));
+  //   if (filters.to_price) params.set("to_price", String(filters.to_price));
+  //   if (filters.minKg) params.set("from_atm", String(filters.minKg));
+  //   if (filters.maxKg) params.set("to_atm", String(filters.maxKg));
+  //   if (filters.acustom_fromyears) params.set("acustom_fromyears", String(filters.acustom_fromyears));
+  //   if (filters.acustom_toyears) params.set("acustom_toyears", String(filters.acustom_toyears));
+  //   if (filters.from_length) params.set("from_length", String(filters.from_length));
+  //   if (filters.to_length) params.set("to_length", String(filters.to_length));
+  //   if (filters.from_sleep) params.set("from_sleep", String(filters.from_sleep));
+  //   if (filters.to_sleep) params.set("to_sleep", String(filters.to_sleep));
+  //   if (filters.search) params.set("search", filters.search);
+  //   if (filters.keyword) params.set("keyword", filters.keyword);
+  //   params.set("group_by", "make");
+  //   fetch(`/api/params-count?${params.toString()}`, { signal: controller.signal })
+  //     .then((r) => r.json())
+  //     .then((json) => { if (!controller.signal.aborted) setSliderMakeCounts(json.data || []); })
+  //     .catch(() => {});
+  //   return () => controller.abort();
+  // }, [
+  //   filters.make, filters.model, filters.condition, filters.state, filters.region, filters.suburb,
+  //   filters.from_price, filters.to_price, filters.minKg, filters.maxKg, filters.acustom_fromyears,
+  //   filters.acustom_toyears, filters.from_length, filters.to_length, filters.from_sleep,
+  //   filters.to_sleep, filters.search, filters.keyword,
+  // ]);
 
   const [modalFocusSection, setModalFocusSection] = useState<
     string | undefined
@@ -1272,7 +1227,7 @@ console.log("emptyExclusiveList", emptyExclusiveList)
   };
 
   const { matchedBanners, isMobile } = useBanners();
-  const { bannerRefs, trackClick } = useBannerTracking(matchedBanners);
+  // const { bannerRefs, trackClick } = useBannerTracking(matchedBanners);
 
   const [currentTopBanner, setCurrentTopBanner] = useState<
     (typeof matchedBanners)[0] | null
