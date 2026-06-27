@@ -11,7 +11,6 @@
         "australian-capital-territory-state/australian-capital-territory-region/network-rv/",
         "australian-capital-territory-state/australian-capital-territory-region/supreme/",
         "new-south-wales-state/capital-region/adria/",
-        "new-south-wales-state/capital-region/condor/",
         "new-south-wales-state/capital-region/jayco/",
         "new-south-wales-state/capital-region/snowy-river/",
         "new-south-wales-state/capital-region/viscount/",
@@ -606,6 +605,7 @@
         "south-australia-state/adelaide-region/nextgen/",
         "south-australia-state/adelaide-region/nova/",
         "south-australia-state/adelaide-region/on-the-move/",
+        "south-australia-state/adelaide-region/opal/",
         "south-australia-state/adelaide-region/oz-star/",
         "south-australia-state/adelaide-region/paramount/",
         "south-australia-state/adelaide-region/phoenix/",
@@ -1162,5 +1162,5 @@
         "western-australia-state/western-australia-outback-south-region/vanguard/",
         "western-australia-state/western-australia-outback-south-region/western/"
     ],
-    "generated_at": "2026-06-26 16:06:32"
+    "generated_at": "2026-06-27 18:43:51"
 }
