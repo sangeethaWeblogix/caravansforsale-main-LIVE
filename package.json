@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "warm": "node scripts/warm-cache.mjs https://www.caravansforsale.com.au",
+    "warm:staging": "node scripts/warm-cache.mjs"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
