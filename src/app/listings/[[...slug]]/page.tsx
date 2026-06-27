@@ -20,6 +20,7 @@ import { fetchBottomLinks } from "@/api/bottomLinks/api";
 import type { BottomLinksData } from "@/api/bottomLinks/api";
 import { reportGitHubIssue } from "@/lib/reportGitHubIssue";
 import { metaFromSlug } from "@/utils/seo/meta";
+import { unstable_cache } from "next/cache";
 import statesData from "../../../../cfs-paths/states.json";
 import regionsData from "../../../../cfs-paths/regions.json";
 import categoriesData from "../../../../cfs-paths/categories.json";
@@ -32,6 +33,110 @@ import atmData from "../../../../cfs-paths/atm.json";
 import bossUrlsData from "../../../../cfs-paths/boss-urls.json";
 
 export const revalidate = 86400;
+
+// Stale-on-error cache: if API throws during revalidation, unstable_cache returns
+// last-good data so users see the cached page instead of an error.
+// Tagged 'listings' so revalidateTag('listings') from the webhook marks it stale
+// without purging it — Next.js keeps old data until a fresh fetch succeeds.
+const _LISTING_API_CALLS = [
+  "getCachedListings",
+  "fetchLinksData",
+  "fetchProductList",
+  "fetchCategoryCounts",
+  "fetchMakeCounts",
+  "fetchBottomLinks",
+] as const;
+
+const _fetchListingsData = unstable_cache(
+  async (filtersJson: string, page: number) => {
+    const filters = JSON.parse(filtersJson);
+    const _t = Date.now();
+
+    // Use allSettled so we can report EXACTLY which API call(s) failed before re-throwing
+    const settled = await Promise.allSettled([
+      getCachedListings({ ...filters, page }),
+      fetchLinksData(filters),
+      fetchProductList(),
+      fetchCategoryCounts(),
+      fetchMakeCounts(),
+      fetchBottomLinks(filters),
+    ]);
+    console.log(`[PERF] allSettled total: ${Date.now() - _t}ms`);
+
+    // Collect failures with API name + error message
+    const failures = settled
+      .map((r, i) =>
+        r.status === "rejected"
+          ? { api: _LISTING_API_CALLS[i], error: r.reason instanceof Error ? r.reason.message : String(r.reason) }
+          : null
+      )
+      .filter(Boolean) as { api: string; error: string }[];
+
+    if (failures.length > 0) {
+      // Build a readable filter string for the GitHub issue (shows which page failed)
+      const filtersDisplay =
+        Object.entries(filters as Record<string, unknown>)
+          .filter(([, v]) => v !== undefined && v !== null && v !== "")
+          .map(([k, v]) => `${k}=${v}`)
+          .join(" | ") || "(root /listings)";
+
+      const firstError = failures[0].error;
+      const isBackend =
+        firstError.startsWith("API no response") ||
+        firstError.startsWith("Backend server error") ||
+        firstError.startsWith("Missing or invalid API key") ||
+        firstError.startsWith("API endpoint not found") ||
+        firstError.startsWith("Invalid API response") ||
+        firstError.startsWith("API failed:");
+
+      const detailMsg = [
+        `ISR cache revalidation failed — cache NOT updated, serving last-good data to users`,
+        `File: src/app/listings/[[...slug]]/page.tsx → _fetchListingsData (unstable_cache)`,
+        `Filters: ${filtersDisplay}`,
+        `Page param: ${page}`,
+        ``,
+        `Failed API calls (${failures.length} / ${_LISTING_API_CALLS.length}):`,
+        ...failures.map(f => `  • ${f.api}: ${f.error}`),
+        ``,
+        `Passed API calls: ${settled.filter(r => r.status === "fulfilled").map((_, i) => _LISTING_API_CALLS[i]).join(", ") || "none"}`,
+        ``,
+        `unstable_cache will return last-good cached data — no error shown to users.`,
+      ].join("\n");
+
+      console.error(`[CACHE SET FAILED]\n${detailMsg}`);
+
+      reportGitHubIssue({
+        errorSource: isBackend ? "BACKEND" : "BACKEND",
+        errorType: firstError,
+        message: detailMsg,
+      }).catch(() => {});
+
+      throw new Error(firstError);
+    }
+
+    const [response, linksData, productListRes, initialCategoryCounts, initialMakeCounts, bottomLinksData] =
+      (settled as PromiseFulfilledResult<any>[]).map(r => r.value);
+
+    // Empty results → throw so unstable_cache keeps last-good data (not the 0-product state)
+    if (!response?.data || !Array.isArray(response.data.products) || response.data.products.length === 0) {
+      const hasEmpExclusive = Array.isArray(response?.data?.emp_exclusive_products) && response.data.emp_exclusive_products.length > 0;
+      if (!hasEmpExclusive) {
+        throw new Error("No products — unstable_cache keeps last-good data");
+      }
+    }
+
+    return { response, linksData, productListRes, initialCategoryCounts, initialMakeCounts, bottomLinksData } as {
+      response: Awaited<ReturnType<typeof getCachedListings>>;
+      linksData: Awaited<ReturnType<typeof fetchLinksData>>;
+      productListRes: Awaited<ReturnType<typeof fetchProductList>>;
+      initialCategoryCounts: Awaited<ReturnType<typeof fetchCategoryCounts>>;
+      initialMakeCounts: Awaited<ReturnType<typeof fetchMakeCounts>>;
+      bottomLinksData: BottomLinksData | null;
+    };
+  },
+  ["listings-page-data"],
+  { revalidate: 86400, tags: ["listings"] }
+);
 
 export async function generateStaticParams() {
   const allFiles = [
@@ -318,24 +423,17 @@ export default async function Listings({
     if (matched) apiFilters = { ...filters, model: matched.slug };
   }
 
-  // ───── Fetch all data in parallel ─────
+  // ───── Fetch all data (stale-on-error via unstable_cache) ─────
   let response: Awaited<ReturnType<typeof getCachedListings>>;
   let linksData: Awaited<ReturnType<typeof fetchLinksData>>;
   let productListRes: Awaited<ReturnType<typeof fetchProductList>>;
   let initialCategoryCounts: Awaited<ReturnType<typeof fetchCategoryCounts>>;
   let initialMakeCounts: Awaited<ReturnType<typeof fetchMakeCounts>>;
   let bottomLinksData: BottomLinksData | null = null;
-  const _t = Date.now();
+
   try {
-    [response, linksData, productListRes, initialCategoryCounts, initialMakeCounts, bottomLinksData] = await Promise.all([
-      getCachedListings({ ...apiFilters, page }).then(r => { console.log(`[PERF] getCachedListings: ${Date.now()-_t}ms`); return r; }),
-      fetchLinksData(apiFilters).then(r => { console.log(`[PERF] fetchLinksData: ${Date.now()-_t}ms`); return r; }),
-      fetchProductList().then(r => { console.log(`[PERF] fetchProductList: ${Date.now()-_t}ms`); return r; }),
-      fetchCategoryCounts().then(r => { console.log(`[PERF] fetchCategoryCounts: ${Date.now()-_t}ms`); return r; }),
-      fetchMakeCounts().then(r => { console.log(`[PERF] fetchMakeCounts: ${Date.now()-_t}ms`); return r; }),
-      fetchBottomLinks(apiFilters).then(r => { console.log(`[PERF] fetchBottomLinks: ${Date.now()-_t}ms`); return r; }),
-    ]);
-    console.log(`[PERF] total Promise.all: ${Date.now()-_t}ms`);
+    const data = await _fetchListingsData(JSON.stringify(apiFilters), page);
+    ({ response, linksData, productListRes, initialCategoryCounts, initialMakeCounts, bottomLinksData } = data);
   } catch (err) {
     const msg = err instanceof Error ? err.message : "";
     if (msg.includes("400") || msg.includes("404")) {
@@ -355,18 +453,8 @@ export default async function Listings({
       errorType: msg,
       message: `Slug listings page failed: ${msg}`,
     }).catch(() => {});
+    // unstable_cache exhausted its old data (first-ever render for this URL) — let error.tsx handle it
     throw err;
-  }
-
-  // ───── Empty results → throw so ISR keeps last good cached HTML ─────
-  // Returning <GonePage /> here would cause ISR to cache the 410 for 24hr,
-  // permanently hiding the page even if listings come back.
-  if (!response?.data || !Array.isArray(response.data.products) || response.data.products.length === 0) {
-    const hasEmpExclusive = Array.isArray(response?.data?.emp_exclusive_products) && response.data.emp_exclusive_products.length > 0;
-    if (!hasEmpExclusive) {
-      throw new Error("No products found — ISR will serve last good cached HTML");
-    }
-    // emp_exclusive_products available — fall through to render page with exclusive content
   }
 
   // ───── Render ─────

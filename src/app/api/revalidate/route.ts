@@ -1,4 +1,4 @@
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 
 // Called by WordPress when a product/listing is saved/updated.
@@ -26,10 +26,9 @@ export async function POST(request: NextRequest) {
     const { slug, all } = body as { slug?: string; all?: boolean };
 
     if (all) {
-      // Purge all product detail pages + all listing filter pages
+      // Purge all product detail pages; mark listing data stale (stale-on-error via unstable_cache)
       revalidatePath("/[slug]", "page");
-      revalidatePath("/listings", "page");
-      revalidatePath("/listings/[...slug]", "page");
+      revalidateTag("listings");
       return NextResponse.json({ revalidated: true, scope: "all pages" });
     }
 
@@ -37,9 +36,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "slug or all required" }, { status: 400 });
     }
 
-    // Purge specific product detail page + main listings (product image may appear there too)
+    // Purge specific product detail page; mark listing data stale (not purged)
     revalidatePath(`/${slug}`, "page");
-    revalidatePath("/listings", "page");
+    revalidateTag("listings");
     return NextResponse.json({ revalidated: true, paths: [`/${slug}`, "/listings"] });
   } catch {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
