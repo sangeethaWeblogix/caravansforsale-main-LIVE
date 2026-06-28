@@ -405,6 +405,11 @@ async function generatePageVariant(urlData, variantNumber) {
     }
 
   } catch (error) {
+    // Premature close = server closed connection before full response (typically a 410 empty-body response)
+    if (error.message && (error.message.includes('Premature close') || error.message.includes('premature close'))) {
+      console.log(`   ⏭️  Skipping: Premature close (likely 410 — no products)`);
+      return { status: 'skipped_410', path, kvKey, variant: variantNumber };
+    }
     console.error(`   ❌ Failed: ${error.message}`);
     return { status: 'failed', path, kvKey, variant: variantNumber, error: error.message };
   }
