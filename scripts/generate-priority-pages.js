@@ -84,7 +84,8 @@ async function uploadToKV(key, value, metadata = null) {
           headers: {
             'Authorization': `Bearer ${CF_API_TOKEN}`,
             'Content-Type': `multipart/form-data; boundary=${boundary}`,
-            'Content-Length': String(bodyBuffer.length)
+            'Content-Length': String(bodyBuffer.length),
+            'Connection': 'close'
           },
           body: bodyBuffer,
           timeout: 60000
@@ -96,8 +97,9 @@ async function uploadToKV(key, value, metadata = null) {
           method: 'PUT',
           headers: {
             'Authorization': `Bearer ${CF_API_TOKEN}`,
-            'Content-Type': 'text/html;charset=UTF-8',
-            'Content-Length': String(bodyBuffer.length)
+            'Content-Type': 'text/plain',
+            'Content-Length': String(bodyBuffer.length),
+            'Connection': 'close'
           },
           body: bodyBuffer,
           timeout: 60000
