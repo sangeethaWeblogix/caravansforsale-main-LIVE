@@ -56,41 +56,50 @@ async function uploadToKV(key, value, metadata = null) {
       
       if (metadata) {
         const boundary = '----CFSFormBoundary' + Date.now();
-        let body = '';
-        
+        let bodyStr = '';
+
         // Value part
-        body += `--${boundary}\r\n`;
-        body += `Content-Disposition: form-data; name="value"; filename="blob"\r\n`;
-        body += `Content-Type: text/html\r\n\r\n`;
-        body += value;
-        body += `\r\n`;
-        
+        bodyStr += `--${boundary}\r\n`;
+        bodyStr += `Content-Disposition: form-data; name="value"; filename="blob"\r\n`;
+        bodyStr += `Content-Type: text/html\r\n\r\n`;
+        bodyStr += value;
+        bodyStr += `\r\n`;
+
         // Metadata part
-        body += `--${boundary}\r\n`;
-        body += `Content-Disposition: form-data; name="metadata"\r\n`;
-        body += `Content-Type: application/json\r\n\r\n`;
-        body += JSON.stringify(metadata);
-        body += `\r\n`;
-        
-        body += `--${boundary}--\r\n`;
-        
+        bodyStr += `--${boundary}\r\n`;
+        bodyStr += `Content-Disposition: form-data; name="metadata"\r\n`;
+        bodyStr += `Content-Type: application/json\r\n\r\n`;
+        bodyStr += JSON.stringify(metadata);
+        bodyStr += `\r\n`;
+
+        bodyStr += `--${boundary}--\r\n`;
+
+        // Convert to Buffer so node-fetch sends Content-Length instead of
+        // Transfer-Encoding: chunked — Cloudflare KV closes chunked connections
+        // prematurely on large payloads (>30KB), causing "Premature close" errors.
+        const bodyBuffer = Buffer.from(bodyStr, 'utf8');
+
         requestOptions = {
           method: 'PUT',
           headers: {
             'Authorization': `Bearer ${CF_API_TOKEN}`,
-            'Content-Type': `multipart/form-data; boundary=${boundary}`
+            'Content-Type': `multipart/form-data; boundary=${boundary}`,
+            'Content-Length': String(bodyBuffer.length)
           },
-          body: body,
+          body: bodyBuffer,
           timeout: 60000
         };
       } else {
+        // Convert to Buffer — same reason as above (prevents chunked encoding)
+        const bodyBuffer = Buffer.from(value, 'utf8');
         requestOptions = {
           method: 'PUT',
           headers: {
             'Authorization': `Bearer ${CF_API_TOKEN}`,
-            'Content-Type': 'text/html'
+            'Content-Type': 'text/html;charset=UTF-8',
+            'Content-Length': String(bodyBuffer.length)
           },
-          body: value,
+          body: bodyBuffer,
           timeout: 60000
         };
       }
