@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "region-make",
-    "count": 1158,
+    "count": 1166,
     "paths": [
         "australian-capital-territory-state/australian-capital-territory-region/carrera/",
         "australian-capital-territory-state/australian-capital-territory-region/coromal/",
@@ -259,6 +259,7 @@
         "new-south-wales-state/sydney-region/dream-rv/",
         "new-south-wales-state/sydney-region/elite/",
         "new-south-wales-state/sydney-region/essential/",
+        "new-south-wales-state/sydney-region/euro/",
         "new-south-wales-state/sydney-region/ezytrail/",
         "new-south-wales-state/sydney-region/goldstream-rv/",
         "new-south-wales-state/sydney-region/golf/",
@@ -765,16 +766,22 @@
         "victoria-state/bendigo-region/snowy-river/",
         "victoria-state/bendigo-region/swag/",
         "victoria-state/bendigo-region/viscount/",
+        "victoria-state/bendigo-region/york/",
         "victoria-state/geelong-region/adria/",
         "victoria-state/geelong-region/atlantic/",
+        "victoria-state/geelong-region/avan/",
         "victoria-state/geelong-region/bellarine/",
         "victoria-state/geelong-region/blue-sky/",
         "victoria-state/geelong-region/cedar/",
         "victoria-state/geelong-region/crusader/",
         "victoria-state/geelong-region/davsher/",
         "victoria-state/geelong-region/design-rv/",
+        "victoria-state/geelong-region/evernew/",
+        "victoria-state/geelong-region/ezytrail/",
         "victoria-state/geelong-region/fantasy/",
+        "victoria-state/geelong-region/golden-eagle/",
         "victoria-state/geelong-region/golf/",
+        "victoria-state/geelong-region/jawa/",
         "victoria-state/geelong-region/jayco/",
         "victoria-state/geelong-region/jb/",
         "victoria-state/geelong-region/jurgens/",
@@ -789,6 +796,7 @@
         "victoria-state/geelong-region/new-design/",
         "victoria-state/geelong-region/newgen/",
         "victoria-state/geelong-region/newlands/",
+        "victoria-state/geelong-region/nextgen/",
         "victoria-state/geelong-region/nova/",
         "victoria-state/geelong-region/olympic/",
         "victoria-state/geelong-region/opal/",
@@ -1162,5 +1170,5 @@
         "western-australia-state/western-australia-outback-south-region/vanguard/",
         "western-australia-state/western-australia-outback-south-region/western/"
     ],
-    "generated_at": "2026-06-27 18:43:51"
+    "generated_at": "2026-06-29 00:11:38"
 }

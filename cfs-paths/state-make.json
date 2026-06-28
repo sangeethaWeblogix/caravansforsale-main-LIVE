@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "state-make",
-    "count": 658,
+    "count": 661,
     "paths": [
         "australian-capital-territory-state/carrera/",
         "australian-capital-territory-state/coromal/",
@@ -42,6 +42,7 @@
         "new-south-wales-state/equalizer-rv/",
         "new-south-wales-state/essential/",
         "new-south-wales-state/eternity/",
+        "new-south-wales-state/euro/",
         "new-south-wales-state/evernew/",
         "new-south-wales-state/ezytrail/",
         "new-south-wales-state/fantasy/",
@@ -472,6 +473,7 @@
         "victoria-state/hurricane-rv/",
         "victoria-state/ideal-rv/",
         "victoria-state/inspired-rv/",
+        "victoria-state/jawa/",
         "victoria-state/jayco/",
         "victoria-state/jb/",
         "victoria-state/jollyrover/",
@@ -566,6 +568,7 @@
         "victoria-state/x-series-rv/",
         "victoria-state/xplore-rv/",
         "victoria-state/xtour/",
+        "victoria-state/york/",
         "western-australia-state/adria/",
         "western-australia-state/atlantic/",
         "western-australia-state/austrack-campers/",
@@ -662,5 +665,5 @@
         "western-australia-state/x-series-rv/",
         "western-australia-state/zone-rv/"
     ],
-    "generated_at": "2026-06-27 18:43:50"
+    "generated_at": "2026-06-29 00:11:38"
 }
