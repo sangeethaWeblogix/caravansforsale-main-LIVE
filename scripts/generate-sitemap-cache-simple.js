@@ -1,12 +1,11 @@
 /* eslint-disable */
 /**
- * Sitemap Cache Generation Script
- * Generates HTML cache for all pages using WordPress API (no XML sitemaps needed)
+ * HTML Cache Generation Script
+ * Generates HTML cache for all indexable listing pages from src/app/url.csv
  * NO PUPPETEER REQUIRED
  *
- * API endpoint: https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap/{type}
- * Returns: { success, type, count, paths: ["family-category/", ...], generated_at }
- * Paths are prepended with /listings/ to form the full URL path.
+ * URL source: src/app/url.csv (tab-separated: ID\tURL, 3,462 rows)
+ * Priority paths (/ and /listings/) are skipped — handled by generate-priority-pages.js.
  *
  * OPTIMISATIONS (applied):
  *  1. HTTP 500/502/503 → immediate skip, zero retries (saves ~6s wasted per bad variant)
@@ -14,22 +13,20 @@
  *  3. Error pages skipped immediately before KV upload (already present, kept)
  *
  * SEO META CHECK:
- *  Removed. The WordPress API only returns URLs that should be cached (indexable pages).
- *  Noindex pages will have a robots meta tag; index/follow pages will have NO meta robots tag.
- *  Checking for index/follow is therefore unnecessary — all API URLs are cached unless they
- *  are error pages (isErrorPage) or return a bad HTTP status.
+ *  Removed. url.csv only contains indexable pages (pre-validated list).
+ *  Noindex tags are stripped from HTML before KV upload as a safety measure.
  *
  * IMPORTANT - SLUG FORMAT (DO NOT CHANGE):
  * Path: /listings/caravans/nsw/ → Slug: caravans-nsw → KV keys: caravans-nsw-v1, caravans-nsw-v2, ...
  * Path: /listings/motorhomes/    → Slug: motorhomes   → KV keys: motorhomes-v1, motorhomes-v2, ...
  *
  * Routes-mapping format (DO NOT CHANGE):
- * { "/listings/caravans/nsw/": ["caravans-nsw-v1", "caravans-nsw-v2", "caravans-nsw-v3", "caravans-nsw-v4"] }
+ * { "/listings/caravans/nsw/": ["caravans-nsw-v1", "caravans-nsw-v2", "caravans-nsw-v3", "caravans-nsw-v4", "caravans-nsw-v5"] }
  * Values are ALWAYS arrays, never strings.
  *
  * VARIANT SHUFFLE:
  * Each variant uses a unique shuffle_seed to get different listing orders.
- * Seeds are: 1, 2, 3, 4 (matching variant numbers).
+ * Seeds are: 1, 2, 3, 4, 5 (matching variant numbers).
  * The worker randomly picks one variant per request → different order each visit.
  */
 
@@ -37,18 +34,15 @@ const fetch = require('node-fetch');
 const fs    = require('fs');
 
 // Environment variables
-const PRODUCTION_DOMAIN = process.env.PRODUCTION_DOMAIN || 'https://www.caravansforsale.com.au';
-const VERCEL_BASE_URL = process.env.VERCEL_BASE_URL || PRODUCTION_DOMAIN; // Prefer Vercel direct to bypass CF Worker
-const WP_API_BASE = process.env.WP_API_BASE || 'https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap';
-const WP_API_KEY = process.env.WP_API_KEY || '';
-const CF_ACCOUNT_ID = process.env.CF_ACCOUNT_ID;
+const PRODUCTION_DOMAIN  = process.env.PRODUCTION_DOMAIN || 'https://www.caravansforsale.com.au';
+const VERCEL_BASE_URL    = process.env.VERCEL_BASE_URL || PRODUCTION_DOMAIN; // Prefer Vercel direct to bypass CF Worker
+const CF_ACCOUNT_ID      = process.env.CF_ACCOUNT_ID;
 const CF_KV_NAMESPACE_ID = process.env.CF_KV_NAMESPACE_ID;
-const CF_API_TOKEN = process.env.CF_API_TOKEN;
-const TARGET_SITEMAP = process.env.TARGET_SITEMAP || 'all';
-const PATHS_FILE     = process.env.PATHS_FILE || '';    // If set, load paths from file instead of API
+const CF_API_TOKEN       = process.env.CF_API_TOKEN;
+const URLS_CSV           = process.env.URLS_CSV || require('path').join(__dirname, '../src/app/url.csv');
 
 // Configuration
-const VARIANTS_PER_URL = 4;
+const VARIANTS_PER_URL = 5;
 const DELAY_BETWEEN_VARIANTS = 100; // ms — reduced from 300ms (optimisation #2)
 const DELAY_BETWEEN_URLS = 300;     // ms — reduced from 800ms (optimisation #2)
 const BATCH_SIZE = process.env.BATCH_SIZE ? parseInt(process.env.BATCH_SIZE) : null;
@@ -67,26 +61,9 @@ const SKIP_IMMEDIATELY_STATUSES = new Set([404, 410, 500, 502, 503]);
 // The update-routes-mapping job rebuilds from KV metadata after all jobs complete.
 const SKIP_ROUTES_UPDATE = process.env.SKIP_ROUTES_UPDATE === 'true';
 
-// ============================================
-// ALL API TYPES
-// Map of TARGET_SITEMAP value → WP API type slug
-// To add a new type: add it here + add a job in the workflow .yml
-// ============================================
-const API_TYPES = [
-  'categories',
-  'states',
-  'regions',
-  'makes',
-  'models',
-  'price',
-  'atm',
-  'sleep',
-  'length',
-  'state-make',
-  'region-make',
-  'cat-state',
-  'cat-region',
-];
+// Priority paths are Puppeteer-rendered by generate-priority-pages.js with special slug
+// names (homepage, listings-home). Exclude them here to avoid KV key conflicts.
+const PRIORITY_PATHS = new Set(['/', '/listings/']);
 
 // ============================================
 // UTILITY FUNCTIONS
@@ -285,107 +262,60 @@ function isErrorPage(html) {
  * Result: /listings/family-category/
  */
 // ============================================
-// LOAD PATHS FROM PRE-FETCHED FILE (avoids API call in batch jobs)
+// READ URLS FROM url.csv
 // ============================================
 
-function loadPathsFromFile(filePath) {
-  console.log(`\n📂 Loading paths from file: ${filePath}`);
+/**
+ * Read tab-separated url.csv and return URL objects for generatePageVariant.
+ * Format: ID\tURL (header row skipped).
+ *
+ * Priority paths (/ and /listings/) are excluded — they are Puppeteer-rendered
+ * by generate-priority-pages.js using special slug names (homepage, listings-home).
+ * Including them here would overwrite those KV keys with mismatched slugs.
+ */
+function readUrlsFromCsv(csvPath) {
+  console.log(`\n📂 Loading paths from CSV: ${csvPath}`);
   try {
-    const raw  = fs.readFileSync(filePath, 'utf8');
-    const data = JSON.parse(raw);
-    if (!Array.isArray(data.paths) || data.paths.length === 0) {
-      console.warn(`   ⚠️  File contained 0 paths`);
-      return [];
-    }
-    console.log(`   ✅ Loaded ${data.paths.length} paths from file`);
-    // Support two file formats:
-    // 1. fetch-paths-only.js output: paths is [{path, fullUrl, sourceType}] — return as-is
-    // 2. cfs-paths/*.json format: paths is ["relative/path/"] strings — convert to objects
-    const first = data.paths[0];
-    if (typeof first === 'object' && first !== null && first.path) {
-      return data.paths;
-    }
-    return data.paths.map(rawPath => {
-      let cleanPath = String(rawPath).replace(/^\/+/, '');
-      if (!cleanPath.endsWith('/')) cleanPath += '/';
-      const path = cleanPath.startsWith('listings/') ? `/${cleanPath}` : `/listings/${cleanPath}`;
-      return {
-        path,
-        fullUrl: `${PRODUCTION_DOMAIN}${path}`,
-        sourceType: TARGET_SITEMAP
-      };
-    });
-  } catch (err) {
-    console.error(`   ❌ Failed to load paths file: ${err.message}`);
-    return [];
-  }
-}
+    const raw   = fs.readFileSync(csvPath, 'utf8');
+    const lines = raw.trim().split('\n');
+    const urls  = [];
+    let skippedPriority = 0;
 
-async function fetchPathsFromAPI(type) {
-  const apiUrl = `${WP_API_BASE}/${type}`;
-  console.log(`\n📥 Fetching paths from API: ${apiUrl}`);
+    for (let i = 1; i < lines.length; i++) { // skip header row
+      const cols   = lines[i].split('\t');
+      const rawUrl = (cols[1] || cols[0] || '').trim();
+      if (!rawUrl || !rawUrl.startsWith('http')) continue;
 
-  try {
-    const response = await fetch(apiUrl, {
-      headers: {
-        'User-Agent': 'CFS-CacheGenerator/3.0',
-        'Accept': 'application/json',
-        ...(WP_API_KEY && { 'X-API-Key': WP_API_KEY })
-      },
-      timeout: 30000
-    });
+      let urlPath;
+      try {
+        const u = new URL(rawUrl);
+        urlPath = u.pathname;
+        if (!urlPath.endsWith('/')) urlPath += '/'; // normalise trailing slash
+      } catch {
+        continue;
+      }
 
-    const responseText = await response.text();
+      if (!urlPath.startsWith('/listings/')) continue;
 
-    if (!response.ok) {
-      const preview = responseText.slice(0, 200).replace(/\s+/g, ' ');
-      throw new Error(`HTTP ${response.status}: ${response.statusText} — body: ${preview}`);
+      if (PRIORITY_PATHS.has(urlPath)) {
+        skippedPriority++;
+        continue;
+      }
+
+      urls.push({
+        path:       urlPath,
+        fullUrl:    `${PRODUCTION_DOMAIN}${urlPath}`,
+        sourceType: 'csv',
+      });
     }
 
-    const contentType = response.headers.get('content-type') || '';
-    if (!contentType.includes('application/json')) {
-      const preview = responseText.slice(0, 200).replace(/\s+/g, ' ');
-      throw new Error(`Expected JSON but got "${contentType}" (redirected to HTML?). Final URL: ${response.url} — body: ${preview}`);
+    console.log(`   ✅ Loaded ${urls.length} paths from CSV`);
+    if (skippedPriority > 0) {
+      console.log(`   ⏭️  Skipped ${skippedPriority} priority path(s) (handled by generate-priority-pages.js)`);
     }
-
-    let data;
-    try {
-      data = JSON.parse(responseText);
-    } catch (e) {
-      const preview = responseText.slice(0, 200).replace(/\s+/g, ' ');
-      throw new Error(`JSON parse failed: ${e.message} — body: ${preview}`);
-    }
-
-    if (!data.success) {
-      throw new Error(`API returned success=false for type "${type}"`);
-    }
-
-    if (!Array.isArray(data.paths) || data.paths.length === 0) {
-      console.warn(`   ⚠️  API returned 0 paths for type "${type}"`);
-      return [];
-    }
-
-    // Convert API paths → full URL objects
-    // e.g. "family-category/" → { path: "/listings/family-category/", ... }
-    const urls = data.paths.map(rawPath => {
-      // Ensure no double slashes and always ends with /
-      let cleanPath = rawPath.replace(/^\/+/, ''); // remove leading slashes
-      if (!cleanPath.endsWith('/')) cleanPath += '/';
-
-      const path = `/listings/${cleanPath}`;
-
-      return {
-        path,
-        fullUrl: `${PRODUCTION_DOMAIN}${path}`,
-        sourceType: type
-      };
-    });
-
-    console.log(`   ✅ Found ${urls.length} paths for type "${type}"`);
     return urls;
-
-  } catch (error) {
-    console.error(`   ❌ Failed to fetch API for type "${type}": ${error.message}`);
+  } catch (err) {
+    console.error(`   ❌ Failed to read CSV: ${err.message}`);
     return [];
   }
 }
@@ -486,13 +416,12 @@ async function generatePageVariant(urlData, variantNumber) {
 
 async function main() {
   console.log('\n' + '█'.repeat(70));
-  console.log('🗺️  API-BASED CACHE GENERATION');
+  console.log('🗺️  HTML CACHE GENERATION FROM url.csv');
   console.log('█'.repeat(70));
-  console.log(`📍 Domain:   ${PRODUCTION_DOMAIN}`);
+  console.log(`📍 Domain:     ${PRODUCTION_DOMAIN}`);
   console.log(`🌐 Fetch from: ${VERCEL_BASE_URL}${VERCEL_BASE_URL !== PRODUCTION_DOMAIN ? ' (direct to Vercel)' : ''}`);
-  console.log(`🔌 API Base: ${WP_API_BASE}`);
-  console.log(`🔢 Variants: ${VARIANTS_PER_URL}`);
-  console.log(`🎯 Target:   ${TARGET_SITEMAP}`);
+  console.log(`📂 CSV:        ${URLS_CSV}`);
+  console.log(`🔢 Variants:   ${VARIANTS_PER_URL}`);
   if (BATCH_SIZE && BATCH_NUMBER) {
     console.log(`📦 Batch mode: Batch ${BATCH_NUMBER}, Size ${BATCH_SIZE}`);
   }
@@ -505,38 +434,14 @@ async function main() {
   const failed404Paths = new Set();
   const startTime = Date.now();
 
-  // Determine which API types to process
-  let typesToProcess = [];
-
-  if (TARGET_SITEMAP && TARGET_SITEMAP !== 'all') {
-    // Single type
-    if (!API_TYPES.includes(TARGET_SITEMAP)) {
-      console.error(`\n❌ Unknown target: "${TARGET_SITEMAP}"`);
-      console.error(`   Valid options: all, ${API_TYPES.join(', ')}`);
-      process.exit(1);
-    }
-    typesToProcess = [TARGET_SITEMAP];
-    console.log(`\n🎯 Processing single type: ${TARGET_SITEMAP}\n`);
-  } else {
-    typesToProcess = [...API_TYPES];
-    console.log(`\n📋 Processing all ${typesToProcess.length} API types\n`);
-  }
-
   // ============================================
-  // STEP 1: Fetch all URLs from WP API
+  // STEP 1: Read all URLs from url.csv
   // ============================================
   console.log('='.repeat(70));
-  console.log('📥 STEP 1: Fetching paths from WordPress API');
+  console.log('📥 STEP 1: Reading paths from url.csv');
   console.log('='.repeat(70));
 
-  let allUrls = [];
-  for (let i = 0; i < typesToProcess.length; i++) {
-    const type = typesToProcess[i];
-    console.log(`\n[${i + 1}/${typesToProcess.length}] Type: ${type}`);
-    const urls = PATHS_FILE ? loadPathsFromFile(PATHS_FILE) : await fetchPathsFromAPI(type);
-    allUrls = allUrls.concat(urls);
-    if (!PATHS_FILE) await new Promise(r => setTimeout(r, 500));
-  }
+  let allUrls = readUrlsFromCsv(URLS_CSV);
 
   // Apply batching if specified
   const totalUrlsBeforeBatch = allUrls.length;
@@ -548,18 +453,17 @@ async function main() {
     console.log('\n' + '='.repeat(70));
     console.log('📦 BATCH FILTERING APPLIED');
     console.log('='.repeat(70));
-    console.log(`📊 Total URLs from API: ${totalUrlsBeforeBatch}`);
+    console.log(`📊 Total URLs from CSV: ${totalUrlsBeforeBatch}`);
     console.log(`📦 Batch ${BATCH_NUMBER}: URLs ${start + 1}–${Math.min(end, totalUrlsBeforeBatch)}`);
     console.log(`🔄 URLs in this batch: ${allUrls.length}`);
     console.log('='.repeat(70));
   }
 
   console.log('\n' + '='.repeat(70));
-  console.log('📊 API FETCH COMPLETE');
+  console.log('📊 CSV READ COMPLETE');
   console.log('='.repeat(70));
   console.log(`🔄 Total URLs to process: ${allUrls.length}`);
   console.log(`📦 Total variants to generate: ${allUrls.length * VARIANTS_PER_URL}`);
-  const estimatedMinutes = Math.round(allUrls.length * VARIANTS_PER_URL * 2 / 60);
   const estimatedMinutesOptimised = Math.round(allUrls.length * VARIANTS_PER_URL * 1.2 / 60);
   console.log(`⏱️  Estimated time: ~${estimatedMinutesOptimised} minutes (optimised delays)`);
   console.log('='.repeat(70));
@@ -761,7 +665,7 @@ async function main() {
   console.log('\n\n' + '█'.repeat(70));
   console.log('📊 FINAL SUMMARY');
   console.log('█'.repeat(70));
-  console.log(`🎯 Target: ${TARGET_SITEMAP}`);
+  console.log(`📂 Source: url.csv`);
   if (BATCH_SIZE && BATCH_NUMBER) {
     console.log(`📦 Batch: ${BATCH_NUMBER} (size ${BATCH_SIZE})`);
   }
@@ -780,7 +684,7 @@ async function main() {
 
   if (failed404Paths.size > 0) {
     console.log('\n' + '-'.repeat(70));
-    console.log(`⚠️  ${failed404Paths.size} URLs returned 404 (check API data):`);
+    console.log(`⚠️  ${failed404Paths.size} URLs returned 404 (check url.csv):`);
     for (const path404 of failed404Paths) {
       console.log(`   - ${path404}`);
     }

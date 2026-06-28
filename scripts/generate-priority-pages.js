@@ -5,9 +5,9 @@
  * REQUIRES PUPPETEER
  * 
  * IMPORTANT - SLUG FORMAT (DO NOT CHANGE):
- * Homepage:  homepage-v1, homepage-v2, homepage-v3, homepage-v4
- * Listings:  listings-home-v1, listings-home-v2, listings-home-v3, listings-home-v4
- * 
+ * Homepage:  homepage-v1, homepage-v2, homepage-v3, homepage-v4, homepage-v5
+ * Listings:  listings-home-v1, listings-home-v2, listings-home-v3, listings-home-v4, listings-home-v5
+ *
  * Routes-mapping format (DO NOT CHANGE):
  * { "/": ["homepage-v1", "homepage-v2", ...], "/listings/": ["listings-home-v1", ...] }
  * Values are ALWAYS arrays, never strings.
@@ -28,7 +28,7 @@ const TARGET_PAGE = process.env.TARGET_PAGE || 'all';
 // The update-routes-mapping job will handle it after all jobs complete.
 const SKIP_ROUTES_UPDATE = process.env.SKIP_ROUTES_UPDATE === 'true';
 
-const LISTINGS_VARIANTS = 4;
+const LISTINGS_VARIANTS = 5;
 const KV_UPLOAD_RETRIES = 3;
 const KV_RETRY_DELAY = 2000;
 
