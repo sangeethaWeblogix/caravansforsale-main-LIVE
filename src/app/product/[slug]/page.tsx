@@ -17,7 +17,7 @@ export async function generateStaticParams() {
   };
 
   const fetchPage = async (page: number): Promise<string[]> => {
-    try {
+    // try {
       const res = await fetch(
         `${API_BASE}/new_optimize_code?page=${page}&per_page=500`,
         { headers, cache: "no-store" }
@@ -26,9 +26,9 @@ export async function generateStaticParams() {
       const data = await res.json();
       const products: { slug?: string }[] = data?.data?.products ?? [];
       return products.map((p) => p.slug ?? "").filter(Boolean);
-    } catch {
-      return [];
-    }
+    // } catch {
+    //   return [];
+    // }
   };
 
   // Page 1 — also tells us total_pages
@@ -66,7 +66,7 @@ type PageProps = { params: Promise<RouteParams> };
 const fetchProductDetail = cache(async (slug: string) => {
   const API_BASE = process.env.NEXT_PUBLIC_CFS_API_BASE!;
   const API_KEY = process.env.CFS_API_KEY;
-  try {
+  // try {
     const res = await fetch(
       `${API_BASE}/product-detail-new/?slug=${encodeURIComponent(slug)}`,
       {
@@ -80,15 +80,15 @@ const fetchProductDetail = cache(async (slug: string) => {
     if (!res.ok) return null;
     const raw = await res.text();
     const idx = raw.indexOf('{"');
-    try {
+    // try {
       return JSON.parse(idx > 0 ? raw.substring(idx) : raw);
-    } catch {
-      return null;
-    }
-  } catch (error) {
-    console.error("product fetch error:", error);
-    return null;
-  }
+    // } catch {
+    //   return null;
+    // }
+  // } catch (error) {
+  //   console.error("product fetch error:", error);
+  //   return null;
+  // }
 });
 
 

@@ -431,31 +431,31 @@ export default async function Listings({
   let initialMakeCounts: Awaited<ReturnType<typeof fetchMakeCounts>>;
   let bottomLinksData: BottomLinksData | null = null;
 
-  try {
+  // try {
     const data = await _fetchListingsData(JSON.stringify(apiFilters), page);
     ({ response, linksData, productListRes, initialCategoryCounts, initialMakeCounts, bottomLinksData } = data);
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : "";
-    if (msg.includes("400") || msg.includes("404")) {
-      redirect("/404");
-    }
-    const isBackend =
-      msg.startsWith("API no response") ||
-      msg.startsWith("Backend server error") ||
-      msg.startsWith("Missing or invalid API key") ||
-      msg.startsWith("API endpoint not found") ||
-      msg.startsWith("Invalid API response") ||
-      msg.startsWith("API failed:");
-    const errorSource = isBackend ? "BACKEND" : "FRONTEND";
-    console.error(`[${errorSource} ERROR] Slug listings page failed:`, msg);
-    reportGitHubIssue({
-      errorSource,
-      errorType: msg,
-      message: `Slug listings page failed: ${msg}`,
-    }).catch(() => {});
-    // unstable_cache exhausted its old data (first-ever render for this URL) — let error.tsx handle it
-    throw err;
-  }
+  // } catch (err) {
+  //   const msg = err instanceof Error ? err.message : "";
+  //   if (msg.includes("400") || msg.includes("404")) {
+  //     redirect("/404");
+  //   }
+  //   const isBackend =
+  //     msg.startsWith("API no response") ||
+  //     msg.startsWith("Backend server error") ||
+  //     msg.startsWith("Missing or invalid API key") ||
+  //     msg.startsWith("API endpoint not found") ||
+  //     msg.startsWith("Invalid API response") ||
+  //     msg.startsWith("API failed:");
+  //   const errorSource = isBackend ? "BACKEND" : "FRONTEND";
+  //   console.error(`[${errorSource} ERROR] Slug listings page failed:`, msg);
+  //   reportGitHubIssue({
+  //     errorSource,
+  //     errorType: msg,
+  //     message: `Slug listings page failed: ${msg}`,
+  //   }).catch(() => {});
+  //   // unstable_cache exhausted its old data (first-ever render for this URL) — let error.tsx handle it
+  //   throw err;
+  // }
 
   // ───── Render ─────
   return (

@@ -175,12 +175,12 @@ export default async function ProductDetailPage({ params }: PageProps) {
     );
   }
   let data;
-  try {
+  // try {
     data = await fetchBlogDetail(slug);
-  } catch {
-    // Network/API failure → throw so ISR keeps old cached HTML
-    throw new Error("Product detail API failed");
-  }
+  // } catch {
+  //   // Network/API failure → throw so ISR keeps old cached HTML
+  //   throw new Error("Product detail API failed");
+  // }
 
   if (slug.startsWith("thank-you-")) {
     return <Thankyou />;

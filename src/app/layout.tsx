@@ -120,7 +120,7 @@ import fetchListingsForHead, { buildListingsJsonLd, buildBreadcrumbs } from "@/u
         slugCanonical = `https://www.caravansforsale.com.au/listings/${slugParts.join("/")}/`;
         slugDescription = "Browse caravans for sale across Australia. Compare prices on off-road, hybrid, pop top, touring, luxury models with size, weight & sleeping capacity.";
       } else {
-        try {
+        // try {
           // All SEO from metaFromSlug — pure computation, no API call
           const meta = await metaFromSlug(slugParts, {});
           slugCanonical = (meta.alternates?.canonical as string) ?? "";
@@ -133,21 +133,21 @@ import fetchListingsForHead, { buildListingsJsonLd, buildBreadcrumbs } from "@/u
             slugTitle = (meta.title as { absolute: string }).absolute;
           }
           slugDescription = "Browse caravans for sale across Australia. Compare prices on off-road, hybrid, pop top, touring, luxury models with size, weight & sleeping capacity.";
-        } catch {
-          const parts = slugParts
-            .map((p: string) =>
-              p.replace(/-(category|state|region|condition|search|suburb)$/, "")
-               .replace(/-/g, " ")
-               .replace(/\b\w/g, (c: string) => c.toUpperCase())
-            )
-            .filter(Boolean);
-          slugTitle = parts.length
-            ? `${parts.join(" ")} Caravans for Sale in Australia`
-            : "Caravans for Sale in Australia";
-          slugCanonical = `https://www.caravansforsale.com.au/listings/${slugParts.join("/")}/`;
-          slugDescription = "Browse caravans for sale across Australia. Compare prices on off-road, hybrid, pop top, touring, luxury models with size, weight & sleeping capacity.";
-          slugRobots = "index, follow";
-        }
+        // } catch {
+        //   const parts = slugParts
+        //     .map((p: string) =>
+        //       p.replace(/-(category|state|region|condition|search|suburb)$/, "")
+        //        .replace(/-/g, " ")
+        //        .replace(/\b\w/g, (c: string) => c.toUpperCase())
+        //     )
+        //     .filter(Boolean);
+        //   slugTitle = parts.length
+        //     ? `${parts.join(" ")} Caravans for Sale in Australia`
+        //     : "Caravans for Sale in Australia";
+        //   slugCanonical = `https://www.caravansforsale.com.au/listings/${slugParts.join("/")}/`;
+        //   slugDescription = "Browse caravans for sale across Australia. Compare prices on off-road, hybrid, pop top, touring, luxury models with size, weight & sleeping capacity.";
+        //   slugRobots = "index, follow";
+        // }
       }
     }
 
