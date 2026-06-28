@@ -76,7 +76,7 @@ export async function generateMetadata({
     "View caravan details.";
   const robots = "index, follow";
   const canonicalUrl = `https://www.caravansforsale.com.au/${slug}/`;
-
+  console.log("generateMetadata", { title, description, robots, canonicalUrl });
   return {
     title,
     description,
