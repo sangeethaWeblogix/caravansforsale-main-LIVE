@@ -6,57 +6,53 @@ import './product.css?=30006'
 
 export const revalidate = 3600;
 
-export async function generateStaticParams() {
-  const API_BASE = process.env.NEXT_PUBLIC_CFS_API_BASE;
-  const API_KEY = process.env.CFS_API_KEY;
-  if (!API_BASE) return [];
-
-  const headers: Record<string, string> = {
-    Accept: "application/json",
-    ...(API_KEY ? { "X-API-Key": API_KEY } : {}),
-  };
-
-  const fetchPage = async (page: number): Promise<string[]> => {
-    // try {
-      const res = await fetch(
-        `${API_BASE}/new_optimize_code?page=${page}&per_page=500`,
-        { headers, cache: "no-store" }
-      );
-      if (!res.ok) return [];
-      const data = await res.json();
-      const products: { slug?: string }[] = data?.data?.products ?? [];
-      return products.map((p) => p.slug ?? "").filter(Boolean);
-    // } catch {
-    //   return [];
-    // }
-  };
-
-  // Page 1 — also tells us total_pages
-  const firstRes = await fetch(
-    `${API_BASE}/new_optimize_code?page=1&per_page=500`,
-    { headers, cache: "no-store" }
-  );
-  if (!firstRes.ok) return [];
-  const firstData = await firstRes.json();
-  const firstSlugs = (firstData?.data?.products ?? [])
-    .map((p: { slug?: string }) => p.slug ?? "")
-    .filter(Boolean) as string[];
-  const totalPages: number = firstData?.pagination?.total_pages ?? 1;
-
-  // Remaining pages — 10 at a time in parallel
-  const allSlugs = [...firstSlugs];
-  const BATCH = 10;
-  for (let i = 2; i <= totalPages; i += BATCH) {
-    const pages = Array.from(
-      { length: Math.min(BATCH, totalPages - i + 1) },
-      (_, j) => fetchPage(i + j)
-    );
-    const results = await Promise.all(pages);
-    allSlugs.push(...results.flat());
-  }
-
-  return allSlugs.map((slug) => ({ slug }));
-}
+// export async function generateStaticParams() {
+//   const API_BASE = process.env.NEXT_PUBLIC_CFS_API_BASE;
+//   const API_KEY = process.env.CFS_API_KEY;
+//   if (!API_BASE) return [];
+//
+//   const headers: Record<string, string> = {
+//     Accept: "application/json",
+//     ...(API_KEY ? { "X-API-Key": API_KEY } : {}),
+//   };
+//
+//   const fetchPage = async (page: number): Promise<string[]> => {
+//     const res = await fetch(
+//       `${API_BASE}/new_optimize_code?page=${page}&per_page=500`,
+//       { headers, cache: "no-store" }
+//     );
+//     if (!res.ok) return [];
+//     const data = await res.json();
+//     const products: { slug?: string }[] = data?.data?.products ?? [];
+//     return products.map((p) => p.slug ?? "").filter(Boolean);
+//   };
+//
+//   // Page 1 — also tells us total_pages
+//   const firstRes = await fetch(
+//     `${API_BASE}/new_optimize_code?page=1&per_page=500`,
+//     { headers, cache: "no-store" }
+//   );
+//   if (!firstRes.ok) return [];
+//   const firstData = await firstRes.json();
+//   const firstSlugs = (firstData?.data?.products ?? [])
+//     .map((p: { slug?: string }) => p.slug ?? "")
+//     .filter(Boolean) as string[];
+//   const totalPages: number = firstData?.pagination?.total_pages ?? 1;
+//
+//   // Remaining pages — 10 at a time in parallel
+//   const allSlugs = [...firstSlugs];
+//   const BATCH = 10;
+//   for (let i = 2; i <= totalPages; i += BATCH) {
+//     const pages = Array.from(
+//       { length: Math.min(BATCH, totalPages - i + 1) },
+//       (_, j) => fetchPage(i + j)
+//     );
+//     const results = await Promise.all(pages);
+//     allSlugs.push(...results.flat());
+//   }
+//
+//   return allSlugs.map((slug) => ({ slug }));
+// }
 
 export const dynamicParams = true;
 
