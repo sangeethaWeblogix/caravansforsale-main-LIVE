@@ -86,6 +86,23 @@ export default {
       }
 
       // ============================================
+      // PRIORITY 3b: Bypass KV HTML for Next.js client-side navigation (RSC requests)
+      // ============================================
+      // When the user clicks a link, Next.js does a client-side navigation by sending
+      // a GET request to the new URL with the header "RSC: 1" (React Server Component
+      // payload request). The server must respond with RSC payload text, NOT a full HTML page.
+      // If we serve KV-cached HTML here, Next.js discards it (wrong format), the navigation
+      // silently fails, and the page keeps showing the old content until a full refresh.
+      // Solution: detect RSC/prefetch headers and pass through to Vercel (origin).
+      const isRscRequest = request.headers.get('RSC') === '1'
+        || request.headers.get('Next-Router-State-Tree') !== null
+        || request.headers.get('Next-Router-Prefetch') !== null;
+      if (isRscRequest) {
+        const response = await fetch(request);
+        return addDebugHeaders(response, 'BYPASS-RSC', null, null);
+      }
+
+      // ============================================
       // PRIORITY 4: Serve Static HTML from KV (clean paths only)
       // ============================================
       const cachedHtml = await getStaticHtmlFromKV(url, env);

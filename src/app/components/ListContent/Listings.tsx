@@ -730,8 +730,8 @@ console.log("emptyExclusiveList", emptyExclusiveList)
     const pageFromURL = validatePage(searchParams.get("page"));
 
     const merged: Filters = withResolvedModel({
-      ...parsedFromURL,
       ...incomingFiltersRef.current,
+      ...parsedFromURL,           // URL is the source of truth — must come last to win
       ...(orderbyFromQuery ? { orderby: orderbyFromQuery } : {}),
       ...(radiusFromQuery ? { radius_kms: radiusFromQuery } : {}),
     });
