@@ -10,6 +10,13 @@
   font-weight: 800;
   color: #000000;
   line-height: 1.15;
+  margin-bottom: 12px;
+}
+
+.demo-hero__subtitle {
+  font-size: 18px;
+  font-weight: 400;
+  color: #444444;
   margin-bottom: 24px;
 }
 
@@ -52,10 +59,7 @@
 }
 
 .demo-price-card__header {
-  flex: 0 0 100%;
-  width: 100%;
-  padding: 18px 32px;
-  border-bottom: 1px solid #eee;
+
 }
 
 .demo-price-card__header h3 {
@@ -91,7 +95,7 @@
   align-items: center;
   justify-content: center;
   padding: 22px;
-  margin: 0 auto 4px;
+  
 }
 
 .demo-price-card__aus-circle img {
@@ -102,9 +106,36 @@
 
 .demo-price-card__desc {
     color: #000000;
-    margin: 0;
+    margin: 0 0 10px;
     font-size: 16px;
     line-height: 1.6;
+}
+
+.demo-price-card__bullets {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.demo-price-card__bullets li {
+  font-size: 15px;
+  color: #333;
+  padding-left: 20px;
+  position: relative;
+}
+
+.demo-price-card__bullets li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 7px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #e8740c;
 }
 
 .demo-price-card__trust {
@@ -135,7 +166,7 @@
 
 /* Center price */
 .demo-price-card__center {
-  flex: 0 0 300px;
+  flex: 0 0 350px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -680,7 +711,7 @@
     justify-content: center;
 }
 .demo-reach-device img {
-  max-width: 100%;
+  max-width: 950px;
   height: auto;
 }
 
@@ -915,6 +946,110 @@
 }
 
 /* ── FAQ section ── */
+.demo-guide-section {
+  background: #f5f7fa;
+  padding: 56px 0 64px;
+}
+
+.demo-guide-title {
+    color: #000;
+    margin-bottom: 50px;
+    font-size: 28px;
+    font-weight: 700;
+    text-align: center;
+}
+
+.demo-guide-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.demo-guide-card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 28px 28px 24px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+
+.demo-guide-card__header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.demo-guide-card__num {
+  width: 36px;
+  height: 36px;
+  background: #fff0e0;
+  color: #e8740c;
+  font-size: 16px;
+  font-weight: 800;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.demo-guide-card__header h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #000000;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.demo-guide-card__list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 0 50px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.demo-guide-card__list li {
+    color: #000000;
+    padding-left: 20px;
+    font-size: 16px;
+    line-height: 1.5;
+    position: relative;
+}
+
+.demo-guide-card__list li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 6px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #e8740c;
+}
+
+@media (max-width: 991px) {
+  .demo-guide-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 767px) {
+  .demo-guide-section {
+    padding: 40px 0 48px;
+  }
+  .demo-guide-title {
+    font-size: 26px;
+  }
+  .demo-guide-card {
+    padding: 20px 18px 18px;
+  }
+  .demo-guide-card__list {
+    margin-left: 0;
+  }
+}
+
 .demo-faq-section {
   background: #f5f7fa;
   padding: 56px 0 64px;
@@ -1587,6 +1722,9 @@
   .demo-types-grid {
     grid-template-columns: repeat(4, 1fr);
   }
+   .demo-reach-device img {
+    max-width: 100%;
+  }
 }
 
 @media (max-width: 767px) {
@@ -1669,6 +1807,7 @@
   .demo-section-title {
     font-size: 24px;
   }
+  
 }
 
 /* ── Extra-small mobile (≤575px) ── */
@@ -1681,6 +1820,9 @@
     margin-bottom: 10px;
     font-size: 12px;
     padding: 6px 18px;
+  }
+  .demo-reach-device img {
+    max-width: 100%;
   }
   .demo-price-card__price-box {
     border-radius: 14px;
