@@ -45,16 +45,16 @@ jobs:
         run: node scripts/generate-priority-pages.js
 
   # ==========================================
-  # SMALL TYPES — categories, states, price, atm, sleep, length
+  # ALL LISTING URLS (url.csv) — 10 parallel batches of ~350 URLs each
   # ==========================================
-  warmup-small-types:
+  warmup-urls:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 90
     strategy:
       matrix:
-        type: [categories, states, price, atm, sleep, length]
+        batch: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
       fail-fast: false
-      max-parallel: 6
+      max-parallel: 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -76,16 +76,15 @@ jobs:
             sleep 15
           done
 
-      - name: Warm ${{ matrix.type }}
+      - name: Warm Batch ${{ matrix.batch }} of 10
         env:
           PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
           VERCEL_BASE_URL: ${{ secrets.VERCEL_BASE_URL }}
-          WP_API_BASE: 'https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap'
-          WP_API_KEY: ${{ secrets.WP_API_KEY }}
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
-          TARGET_SITEMAP: ${{ matrix.type }}
+          BATCH_SIZE: 350
+          BATCH_NUMBER: ${{ matrix.batch }}
           SKIP_ROUTES_UPDATE: 'true'
         run: node scripts/generate-sitemap-cache-simple.js
 
