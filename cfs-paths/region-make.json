@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "region-make",
-    "count": 1166,
+    "count": 1167,
     "paths": [
         "australian-capital-territory-state/australian-capital-territory-region/carrera/",
         "australian-capital-territory-state/australian-capital-territory-region/coromal/",
@@ -650,6 +650,7 @@
         "south-australia-state/south-australia-south-east-region/empire/",
         "south-australia-state/south-australia-south-east-region/fusion/",
         "south-australia-state/south-australia-south-east-region/galaxy/",
+        "south-australia-state/south-australia-south-east-region/island-star/",
         "south-australia-state/south-australia-south-east-region/jayco/",
         "south-australia-state/south-australia-south-east-region/lagoon/",
         "south-australia-state/south-australia-south-east-region/new-age/",
@@ -1170,5 +1171,5 @@
         "western-australia-state/western-australia-outback-south-region/vanguard/",
         "western-australia-state/western-australia-outback-south-region/western/"
     ],
-    "generated_at": "2026-06-29 00:11:38"
+    "generated_at": "2026-06-29 16:58:19"
 }

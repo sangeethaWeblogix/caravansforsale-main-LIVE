@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "models",
-    "count": 2894,
+    "count": 2895,
     "paths": [
         "active/storm/",
         "adria/action/",
@@ -1154,6 +1154,7 @@
         "inspired-rv/irv240b/",
         "inspired-rv/luxury-206/",
         "island-star/caribbean/",
+        "island-star/concorde/",
         "island-star/pop-top/",
         "island-star/series-2/",
         "jawa/sirocco/",
@@ -2898,5 +2899,5 @@
         "zone-rv/venture-20-6/",
         "zone-rv/znu004/"
     ],
-    "generated_at": "2026-06-29 00:11:38"
+    "generated_at": "2026-06-29 16:58:19"
 }
