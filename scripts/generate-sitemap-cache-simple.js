@@ -332,34 +332,134 @@ function readUrlsFromCsv(csvPath) {
 // GENERATE A SINGLE PAGE VARIANT
 // ============================================
 
+// ============================================
+// DIAGNOSTIC: run once at startup to understand connection behaviour
+// ============================================
+
+async function runDiagnosticFetch(testPath) {
+  const testUrl = `${VERCEL_BASE_URL}${testPath}`;
+  console.log('\n' + '='.repeat(70));
+  console.log('🔬 DIAGNOSTIC FETCH (runs once before warmup)');
+  console.log('='.repeat(70));
+  console.log(`   URL: [masked] (${testPath})`);
+
+  // ── Test 1: node-fetch with redirect:follow (default) ──────────────────
+  console.log('\n[Test 1] node-fetch, redirect:follow');
+  let response1;
+  try {
+    response1 = await fetch(testUrl, {
+      headers: { 'User-Agent': 'CFS-CacheGenerator/3.0', 'Accept': 'text/html' },
+      redirect: 'follow',
+      timeout: 30000,
+    });
+    console.log(`   HTTP status : ${response1.status} ${response1.statusText}`);
+    console.log(`   Final URL   : ${response1.url}`);
+    console.log(`   Redirected  : ${response1.redirected}`);
+    console.log(`   Content-Type: ${response1.headers.get('content-type')}`);
+    console.log(`   Content-Len : ${response1.headers.get('content-length')}`);
+    console.log(`   Transfer-Enc: ${response1.headers.get('transfer-encoding')}`);
+    console.log(`   Connection  : ${response1.headers.get('connection')}`);
+    console.log(`   Server      : ${response1.headers.get('server')}`);
+    console.log(`   x-vercel-id : ${response1.headers.get('x-vercel-id')}`);
+    console.log(`   cf-ray      : ${response1.headers.get('cf-ray')}`);
+    try {
+      const text = await response1.text();
+      console.log(`   Body length : ${text.length} chars`);
+      console.log(`   Body preview: ${text.substring(0, 150).replace(/\n/g, ' ')}`);
+    } catch (bodyErr) {
+      console.log(`   ❌ Body read FAILED: [${bodyErr.constructor.name}] ${bodyErr.message}`);
+      console.log(`   Error code  : ${bodyErr.code}`);
+      console.log(`   Error type  : ${bodyErr.type}`);
+    }
+  } catch (fetchErr) {
+    console.log(`   ❌ Fetch FAILED (before headers): [${fetchErr.constructor.name}] ${fetchErr.message}`);
+    console.log(`   Error code  : ${fetchErr.code}`);
+    console.log(`   Error type  : ${fetchErr.type}`);
+  }
+
+  // ── Test 2: node-fetch with redirect:manual ─────────────────────────────
+  console.log('\n[Test 2] node-fetch, redirect:manual (detects server-side redirects)');
+  try {
+    const response2 = await fetch(testUrl, {
+      headers: { 'User-Agent': 'CFS-CacheGenerator/3.0', 'Accept': 'text/html' },
+      redirect: 'manual',
+      timeout: 30000,
+    });
+    console.log(`   HTTP status : ${response2.status} ${response2.statusText}`);
+    console.log(`   Location    : ${response2.headers.get('location')}`);
+    console.log(`   Content-Type: ${response2.headers.get('content-type')}`);
+    if (response2.status >= 300 && response2.status < 400) {
+      console.log(`   ⚠️  SERVER IS REDIRECTING → redirect target: ${response2.headers.get('location')}`);
+      console.log(`   This means VERCEL_BASE_URL is not the final destination.`);
+      console.log(`   node-fetch follows this redirect, and the REDIRECT TARGET is causing Premature close.`);
+    } else {
+      console.log(`   No redirect detected at this URL.`);
+    }
+  } catch (e2) {
+    console.log(`   ❌ Test 2 failed: ${e2.message}`);
+  }
+
+  // ── Test 3: Node.js native https (no node-fetch) ────────────────────────
+  console.log('\n[Test 3] Node.js native https module (rules out node-fetch bug)');
+  const https = require('https');
+  const http = require('http');
+  await new Promise((resolve) => {
+    const parsed = new URL(testUrl);
+    const lib = parsed.protocol === 'https:' ? https : http;
+    const req = lib.get({
+      hostname: parsed.hostname,
+      path: parsed.pathname + parsed.search,
+      headers: { 'User-Agent': 'CFS-CacheGenerator/3.0', 'Accept': 'text/html' },
+    }, (res) => {
+      console.log(`   HTTP status : ${res.statusCode}`);
+      console.log(`   Location    : ${res.headers['location']}`);
+      console.log(`   Content-Type: ${res.headers['content-type']}`);
+      console.log(`   Transfer-Enc: ${res.headers['transfer-encoding']}`);
+      console.log(`   Connection  : ${res.headers['connection']}`);
+      let data = '';
+      res.on('data', (chunk) => { data += chunk; });
+      res.on('end', () => {
+        console.log(`   Body length : ${data.length} chars`);
+        console.log(`   Body preview: ${data.substring(0, 150).replace(/\n/g, ' ')}`);
+        resolve();
+      });
+      res.on('error', (e) => { console.log(`   ❌ Body error: ${e.message}`); resolve(); });
+    });
+    req.on('error', (e) => { console.log(`   ❌ Request error: ${e.message}`); resolve(); });
+    req.setTimeout(30000, () => { console.log(`   ❌ Request timed out`); req.destroy(); resolve(); });
+  });
+
+  console.log('\n' + '='.repeat(70));
+  console.log('🔬 DIAGNOSTIC COMPLETE — check above before interpreting Premature close errors');
+  console.log('='.repeat(70) + '\n');
+}
+
 async function generatePageVariant(urlData, variantNumber) {
   const { path } = urlData;
   const slug = convertPathToSlug(path);
 
-  // Fetch the base URL WITHOUT shuffle_seed. Adding ?shuffle_seed=N forces dynamic RSC
-  // rendering on Vercel (bypasses ISR cache), which causes node-fetch v2 "Premature close"
-  // on cold-cache renders (the RSC stream starts but terminates before the body completes).
-  // The static ISR HTML (no query params) is served as a complete response every time.
-  // All VARIANTS_PER_URL slots store identical content — the CF Worker picks randomly
-  // from them to distribute cache load, not to vary content.
   const fetchUrl = `${VERCEL_BASE_URL}${path}`;
   const kvKey = `${slug}-v${variantNumber}`;
 
   console.log(`\n🔄 Generating: ${path} (variant ${variantNumber})`);
   console.log(`   Slug: ${kvKey}`);
-  console.log(`   URL: *** (static ISR, no shuffle_seed)`);
+  console.log(`   URL: *** (static ISR)`);
 
+  let response;
   try {
     console.log(`   🌐 Fetching...`);
     const fetchStart = Date.now();
 
-    const response = await fetch(fetchUrl, {
+    response = await fetch(fetchUrl, {
       headers: {
         'User-Agent': 'CFS-CacheGenerator/3.0',
         'Accept': 'text/html'
       },
       timeout: 30000
     });
+
+    // Log key response info to help diagnose issues
+    console.log(`   📡 HTTP ${response.status} | redirected:${response.redirected} | url:${response.url !== fetchUrl ? '[redirected]' : '[same]'} | ct:${(response.headers.get('content-type')||'').split(';')[0]}`);
 
     // OPTIMISATION #1: skip bad statuses immediately — no retries, no delay
     if (SKIP_IMMEDIATELY_STATUSES.has(response.status)) {
@@ -375,7 +475,15 @@ async function generatePageVariant(urlData, variantNumber) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
 
-    let html = await response.text();
+    let html;
+    try {
+      html = await response.text();
+    } catch (bodyError) {
+      // Body-read specific error — log extra detail to distinguish from fetch-level errors
+      console.error(`   ❌ Body read failed [${bodyError.constructor.name}] code:${bodyError.code} type:${bodyError.type}: ${bodyError.message}`);
+      throw bodyError;
+    }
+
     const fetchDuration = Math.round((Date.now() - fetchStart) / 1000);
     console.log(`   ⏱️  Fetched in ${fetchDuration}s`);
 
@@ -411,12 +519,12 @@ async function generatePageVariant(urlData, variantNumber) {
     }
 
   } catch (error) {
-    // Premature close = server closed connection before full response (typically a 410 empty-body response)
     if (error.message && (error.message.includes('Premature close') || error.message.includes('premature close'))) {
-      console.log(`   ⏭️  Skipping: Premature close (likely 410 — no products)`);
+      const phase = response ? 'body-read' : 'fetch';
+      console.log(`   ⏭️  Skipping: Premature close during ${phase}`);
       return { status: 'skipped_410', path, kvKey, variant: variantNumber };
     }
-    console.error(`   ❌ Failed: ${error.message}`);
+    console.error(`   ❌ Failed [${error.constructor.name}] code:${error.code}: ${error.message}`);
     return { status: 'failed', path, kvKey, variant: variantNumber, error: error.message };
   }
 }
@@ -440,6 +548,10 @@ async function main() {
     console.log(`⏭️  Routes mapping update: SKIPPED (handled by update-routes-mapping job)`);
   }
   console.log('█'.repeat(70));
+
+  // Run diagnostic fetch before processing URLs — logs response status, headers,
+  // redirect behaviour, and body-read success/failure to diagnose Premature close.
+  await runDiagnosticFetch('/listings/new-south-wales-state/');
 
   const results = { success: 0, failed: 0, skipped_error: 0, skipped_server_error: 0, skipped_404: 0, pages: [] };
   const failed404Paths = new Set();
