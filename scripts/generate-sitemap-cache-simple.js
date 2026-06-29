@@ -24,10 +24,12 @@
  * { "/listings/caravans/nsw/": ["caravans-nsw-v1", "caravans-nsw-v2", "caravans-nsw-v3", "caravans-nsw-v4", "caravans-nsw-v5"] }
  * Values are ALWAYS arrays, never strings.
  *
- * VARIANT SHUFFLE:
- * Each variant uses a unique shuffle_seed to get different listing orders.
- * Seeds are: 1, 2, 3, 4, 5 (matching variant numbers).
- * The worker randomly picks one variant per request → different order each visit.
+ * VARIANT CACHE:
+ * All 5 variants store the same static ISR HTML (no shuffle_seed query param).
+ * Appending ?shuffle_seed=N triggers dynamic RSC rendering on Vercel which causes
+ * node-fetch v2 "Premature close" (stream terminates before body is complete on cold
+ * cache). The ISR static page is served instantly as a complete response. All 5 KV
+ * variants are intentionally identical — caching depth matters more than content variation.
  */
 
 const fetch = require('node-fetch');
@@ -334,20 +336,18 @@ async function generatePageVariant(urlData, variantNumber) {
   const { path } = urlData;
   const slug = convertPathToSlug(path);
 
-  // Use VERCEL_BASE_URL to bypass Cloudflare Worker (which would serve
-  // existing KV cache and ignore ?shuffle_seed). Hitting Vercel directly
-  // ensures page.tsx receives shuffle_seed and forwards it to the WP API.
-  let fetchUrl = `${VERCEL_BASE_URL}${path}`;
-  if (VARIANTS_PER_URL > 1) {
-    fetchUrl += fetchUrl.includes('?') ? '&' : '?';
-    fetchUrl += `shuffle_seed=${variantNumber}`;
-  }
-
+  // Fetch the base URL WITHOUT shuffle_seed. Adding ?shuffle_seed=N forces dynamic RSC
+  // rendering on Vercel (bypasses ISR cache), which causes node-fetch v2 "Premature close"
+  // on cold-cache renders (the RSC stream starts but terminates before the body completes).
+  // The static ISR HTML (no query params) is served as a complete response every time.
+  // All VARIANTS_PER_URL slots store identical content — the CF Worker picks randomly
+  // from them to distribute cache load, not to vary content.
+  const fetchUrl = `${VERCEL_BASE_URL}${path}`;
   const kvKey = `${slug}-v${variantNumber}`;
 
   console.log(`\n🔄 Generating: ${path} (variant ${variantNumber})`);
   console.log(`   Slug: ${kvKey}`);
-  console.log(`   URL: ***?shuffle_seed=${variantNumber}`);
+  console.log(`   URL: *** (static ISR, no shuffle_seed)`);
 
   try {
     console.log(`   🌐 Fetching...`);
@@ -706,30 +706,4 @@ async function main() {
 
   if (results.failed === 0 && results.success > 0) {
     console.log('✨ ALL VARIANTS GENERATED SUCCESSFULLY!');
-  } else if (results.failed > 0 && results.success > 0) {
-    console.log('⚠️  COMPLETED WITH SOME FAILURES');
-  } else if (results.success === 0 && results.skipped_404 > 0) {
-    console.log('⚠️  NO VARIANTS GENERATED (all URLs returned 404)');
-  } else if (results.success === 0) {
-    console.log('❌ NO VARIANTS GENERATED');
-  }
-
-  console.log('█'.repeat(70));
-  console.log();
-
-  if (results.failed > 0 && results.success === 0) {
-    process.exit(1);
-  } else {
-    process.exit(0);
-  }
-}
-
-if (require.main === module) {
-  main().catch(error => {
-    console.error('\n💥 Fatal error:', error);
-    console.error(error.stack);
-    process.exit(1);
-  });
-}
-
-module.exports = { main };
+  } else if (results.failed > 0 && results.suc
