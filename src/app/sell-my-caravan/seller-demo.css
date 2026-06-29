@@ -1709,6 +1709,19 @@
   padding: 14px 36px;
 }
 
+.white_btn {
+    border: 1px solid #f58333;
+    color: #fff;
+    background-color: #f58333;
+    z-index: 1;
+    border-radius: 6px;
+    padding: 15px 65px;
+    font-size: 20px;
+    font-weight: 500;
+    position: relative;
+    overflow: hidden;
+}
+
 /* ── Responsive ── */
 @media (max-width: 991px) {
   .demo-state-grid {
