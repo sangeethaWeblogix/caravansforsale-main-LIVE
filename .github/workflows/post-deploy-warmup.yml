@@ -76,9 +76,6 @@ jobs:
             sleep 15
           done
 
-      - name: Install dependencies
-        run: npm install node-fetch@2
-
       - name: Warm ${{ matrix.type }}
         env:
           PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
@@ -106,9 +103,6 @@ jobs:
 
       - name: Wait for Vercel deployment
         run: sleep 120
-
-      - name: Install dependencies
-        run: npm install node-fetch@2
 
       - name: Warm cat-state
         env:
@@ -205,9 +199,6 @@ jobs:
 
       - name: Wait for Vercel deployment
         run: sleep 120
-
-      - name: Install dependencies
-        run: npm install node-fetch@2
 
       - uses: actions/download-artifact@v4
         with:

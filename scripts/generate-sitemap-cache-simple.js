@@ -32,8 +32,30 @@
  * variants are intentionally identical — caching depth matters more than content variation.
  */
 
-const fetch = require('node-fetch');
-const fs    = require('fs');
+// node-fetch@2 removed — use Node.js 24 native fetch (undici).
+// undici negotiates HTTP/2 via TLS ALPN when the server supports it. This is critical:
+// Cloudflare's edge uses HTTP/2 for streaming responses. node-fetch v2 was HTTP/1.1 only,
+// which caused ERR_STREAM_PREMATURE_CLOSE when Cloudflare's HTTP/2 stream was translated
+// to HTTP/1.1 chunked encoding for node-fetch. Native fetch avoids that translation entirely.
+const fs = require('fs');
+
+/**
+ * fetch() with an explicit timeout via AbortController.
+ * Replaces node-fetch's `timeout` option which is not supported in native fetch.
+ */
+async function fetchWithTimeout(url, options = {}, timeoutMs = 30000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, { ...options, signal: controller.signal });
+    clearTimeout(timer);
+    return response;
+  } catch (err) {
+    clearTimeout(timer);
+    if (err.name === 'AbortError') throw new Error(`Request timed out after ${timeoutMs}ms`);
+    throw err;
+  }
+}
 
 // Environment variables
 const PRODUCTION_DOMAIN  = process.env.PRODUCTION_DOMAIN || 'https://www.caravansforsale.com.au';
@@ -143,7 +165,6 @@ async function uploadToKV(key, value, metadata = null) {
             'Connection': 'close'
           },
           body: bodyBuffer,
-          timeout: 60000
         };
       } else {
         const bodyBuffer = Buffer.from(value, 'utf8');
@@ -156,11 +177,10 @@ async function uploadToKV(key, value, metadata = null) {
             'Connection': 'close'
           },
           body: bodyBuffer,
-          timeout: 60000
         };
       }
 
-      const response = await fetch(url, requestOptions);
+      const response = await fetchWithTimeout(url, requestOptions, 60000);
       const responseText = await response.text();
 
       let result;
@@ -343,15 +363,14 @@ async function runDiagnosticFetch(testPath) {
   console.log('='.repeat(70));
   console.log(`   URL: [masked] (${testPath})`);
 
-  // ── Test 1: node-fetch with redirect:follow (default) ──────────────────
-  console.log('\n[Test 1] node-fetch, redirect:follow');
+  // ── Test 1: native fetch with redirect:follow (default) ──────────────────
+  console.log('\n[Test 1] native fetch (undici/HTTP-2), redirect:follow');
   let response1;
   try {
-    response1 = await fetch(testUrl, {
+    response1 = await fetchWithTimeout(testUrl, {
       headers: { 'User-Agent': 'CFS-CacheGenerator/3.0', 'Accept': 'text/html' },
       redirect: 'follow',
-      timeout: 30000,
-    });
+    }, 30000);
     console.log(`   HTTP status : ${response1.status} ${response1.statusText}`);
     console.log(`   Final URL   : ${response1.url}`);
     console.log(`   Redirected  : ${response1.redirected}`);
@@ -377,14 +396,13 @@ async function runDiagnosticFetch(testPath) {
     console.log(`   Error type  : ${fetchErr.type}`);
   }
 
-  // ── Test 2: node-fetch with redirect:manual ─────────────────────────────
-  console.log('\n[Test 2] node-fetch, redirect:manual (detects server-side redirects)');
+  // ── Test 2: native fetch with redirect:manual ─────────────────────────────
+  console.log('\n[Test 2] native fetch, redirect:manual (detects server-side redirects)');
   try {
-    const response2 = await fetch(testUrl, {
+    const response2 = await fetchWithTimeout(testUrl, {
       headers: { 'User-Agent': 'CFS-CacheGenerator/3.0', 'Accept': 'text/html' },
       redirect: 'manual',
-      timeout: 30000,
-    });
+    }, 30000);
     console.log(`   HTTP status : ${response2.status} ${response2.statusText}`);
     console.log(`   Location    : ${response2.headers.get('location')}`);
     console.log(`   Content-Type: ${response2.headers.get('content-type')}`);
@@ -450,13 +468,12 @@ async function generatePageVariant(urlData, variantNumber) {
     console.log(`   🌐 Fetching...`);
     const fetchStart = Date.now();
 
-    response = await fetch(fetchUrl, {
+    response = await fetchWithTimeout(fetchUrl, {
       headers: {
         'User-Agent': 'CFS-CacheGenerator/3.0',
-        'Accept': 'text/html'
+        'Accept': 'text/html',
       },
-      timeout: 30000
-    });
+    }, 30000);
 
     // Log key response info to help diagnose issues
     console.log(`   📡 HTTP ${response.status} | redirected:${response.redirected} | url:${response.url !== fetchUrl ? '[redirected]' : '[same]'} | ct:${(response.headers.get('content-type')||'').split(';')[0]}`);
@@ -684,9 +701,9 @@ async function main() {
     let mapping = {};
     try {
       const existingMappingUrl = `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/storage/kv/namespaces/${CF_KV_NAMESPACE_ID}/values/routes-mapping`;
-      const existingResponse = await fetch(existingMappingUrl, {
+      const existingResponse = await fetchWithTimeout(existingMappingUrl, {
         headers: { 'Authorization': `Bearer ${CF_API_TOKEN}` }
-      });
+      }, 30000);
 
       if (existingResponse.ok) {
         const existingText = await existingResponse.text();
