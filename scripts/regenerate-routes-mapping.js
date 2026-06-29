@@ -19,7 +19,32 @@
  * The worker depends on this format for variant selection.
  */
 
-const fetch = require('node-fetch');
+const https = require('https');
+
+// Use native https instead of node-fetch — node-fetch v2's Gunzip decompressor
+// crashes with "Premature close" on large Cloudflare KV key list responses.
+function httpsGet(url, authToken) {
+  return new Promise((resolve, reject) => {
+    const u = new URL(url);
+    const options = {
+      hostname: u.hostname,
+      path: u.pathname + u.search,
+      headers: {
+        'Authorization': `Bearer ${authToken}`,
+        'Accept-Encoding': 'identity', // no gzip — avoids decompression issues
+      },
+    };
+    https.get(options, (res) => {
+      let raw = '';
+      res.on('data', chunk => { raw += chunk; });
+      res.on('end', () => {
+        try { resolve(JSON.parse(raw)); }
+        catch (e) { reject(new Error('JSON parse error: ' + raw.slice(0, 200))); }
+      });
+      res.on('error', reject);
+    }).on('error', reject);
+  });
+}
 
 const CF_ACCOUNT_ID = process.env.CF_ACCOUNT_ID;
 const CF_KV_NAMESPACE_ID = process.env.CF_KV_NAMESPACE_ID;
@@ -29,17 +54,7 @@ const EXCLUDED_KEYS = ['routes-mapping']; // Keys that aren't page variants
 
 async function fetchKVKeysPage(url, attempt = 1) {
   try {
-    const response = await fetch(url, {
-      headers: {
-        'Authorization': `Bearer ${CF_API_TOKEN}`,
-      },
-      // compress:false stops node-fetch v2 from adding Accept-Encoding:gzip
-      // AND from running its Gunzip decompressor — prevents "Premature close"
-      // on large KV key list responses.
-      compress: false,
-      timeout: 60000,
-    });
-    const data = await response.json();
+    const data = await httpsGet(url, CF_API_TOKEN);
     if (!data.success) {
       throw new Error(`KV list failed: ${JSON.stringify(data.errors)}`);
     }
