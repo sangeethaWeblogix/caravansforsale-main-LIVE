@@ -62,7 +62,19 @@ jobs:
           node-version: '24'
 
       - name: Wait for Vercel deployment
-        run: sleep 120
+        env:
+          VERCEL_BASE_URL: ${{ secrets.VERCEL_BASE_URL }}
+        run: |
+          echo "Waiting for Vercel deployment to be ready..."
+          for i in $(seq 1 12); do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${VERCEL_BASE_URL}/listings/" --max-time 10 || echo "000")
+            echo "Attempt $i: HTTP $STATUS"
+            if [ "$STATUS" = "200" ] || [ "$STATUS" = "410" ] || [ "$STATUS" = "301" ] || [ "$STATUS" = "302" ]; then
+              echo "Vercel is ready."
+              break
+            fi
+            sleep 15
+          done
 
       - name: Install dependencies
         run: npm install node-fetch@2

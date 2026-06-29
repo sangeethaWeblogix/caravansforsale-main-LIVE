@@ -35,6 +35,15 @@ export async function GET(
       },
     });
   } catch {
-    return new Response(null, { status: 410 });
+    // Return a proper body so node-fetch (warmup script) doesn't throw "Premature close"
+    // on a null-body 410 with no Content-Length header.
+    return new Response('<html><body>Gone</body></html>', {
+      status: 410,
+      headers: {
+        'Content-Type': 'text/html; charset=utf-8',
+        'X-Robots-Tag': 'noindex, nofollow',
+        'Cache-Control': 'no-store',
+      },
+    });
   }
 }
