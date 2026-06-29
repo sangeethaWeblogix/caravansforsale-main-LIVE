@@ -24,9 +24,30 @@
  * by generate-priority-pages.js with special slug names (listings-home, homepage).
  */
 
-const fetch = require('node-fetch');
-const fs    = require('fs');
-const path  = require('path');
+// node-fetch removed — use Node.js 24 native fetch (undici).
+// undici negotiates HTTP/2 via TLS ALPN, avoiding ERR_STREAM_PREMATURE_CLOSE
+// that occurred when Cloudflare's HTTP/2 stream was translated to HTTP/1.1
+// chunked encoding for node-fetch v2.
+const fs   = require('fs');
+const path = require('path');
+
+/**
+ * fetch() with an explicit timeout via AbortController.
+ * Replaces node-fetch's `timeout` option which is not supported in native fetch.
+ */
+async function fetchWithTimeout(url, options = {}, timeoutMs = 30000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, { ...options, signal: controller.signal });
+    clearTimeout(timer);
+    return response;
+  } catch (err) {
+    clearTimeout(timer);
+    if (err.name === 'AbortError') throw new Error(`Request timed out after ${timeoutMs}ms`);
+    throw err;
+  }
+}
 
 // ── Environment ───────────────────────────────────────────────────────────────
 const VERCEL_BASE_URL    = process.env.VERCEL_BASE_URL    || 'https://caravansforsale-main-live.vercel.app';
@@ -325,10 +346,9 @@ async function generateHtmlVariants(urlPath, slug) {
     const kvKey    = `${slug}-v${v}`;
 
     try {
-      const res = await fetch(fetchUrl, {
+      const res = await fetchWithTimeout(fetchUrl, {
         headers: { 'User-Agent': 'CFS-IndexCacheGenerator/1.0', 'Accept': 'text/html' },
-        timeout: HTML_FETCH_TIMEOUT,
-      });
+      }, HTML_FETCH_TIMEOUT);
 
       if (HTML_SKIP_IMMEDIATELY.has(res.status)) {
         console.log(`   [HTML-v${v}] Skip HTTP ${res.status}`);
@@ -378,13 +398,12 @@ async function generateJsonCache(urlStr, urlPath) {
   const kvKey  = buildJsonKvKey(params);
 
   try {
-    const res = await fetch(apiUrl, {
+    const res = await fetchWithTimeout(apiUrl, {
       headers: {
         'Accept': 'application/json',
         ...(WP_API_KEY ? { 'X-API-Key': WP_API_KEY } : {}),
       },
-      timeout: JSON_FETCH_TIMEOUT,
-    });
+    }, JSON_FETCH_TIMEOUT);
 
     if (JSON_SKIP_IMMEDIATELY.has(res.status)) {
       console.log(`   [JSON] Skip HTTP ${res.status}`);

@@ -1,4 +1,4 @@
-name: Generate Cache (With Batching)
+name: Generate Cache (Daily)
 
 on:
   schedule:
@@ -16,95 +16,38 @@ on:
         options:
           - all
           - priority
-          - small-types
-          - large-types
-          - categories
-          - states
-          - regions
-          - makes
-          - models
-          - price
-          - atm
-          - sleep
-          - length
-          - state-make
-          - region-make
-          - cat-state
-          - cat-region
+          - urls
 
-
-# ==========================================
-# API TYPES & BATCH STRATEGY
-#
-# URLs fetched from:
-#   https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap/{type}
-#
-# OPTIMISATIONS (v3):
-#  1. HTTP 500/502/503 treated as immediate skip (no retries)
-#  2. Delays: 100ms between variants, 300ms between URLs
-#  3. Reduced BATCH_SIZE: 25 URLs for slow/deep-URL types (region-make, cat-region)
-#  4. More parallel batches: region-make 8→16, cat-region 8→16
-#  5. cat-state moved out of small-types into its own job with 120-min timeout
-#  6. Timeout guide:
-#       priority       → 60  min (Puppeteer, 8 total variants)
-#       small-types    → 60  min (<50 URLs, fast pages)
-#       regions        → 90  min (~62 URLs, 2 batches of 50)
-#       state-make     → 90  min (2 batches of 50)
-#       makes          → 90  min (6 batches of 50, ~267 URLs)
-#       models         → 90  min (6 batches of 50)
-#       cat-state      → 120 min (48 URLs, single runner, can be slow)
-#       region-make    → 90  min (16 batches of 25 — was 8×50, too slow)
-#       cat-region     → 90  min (16 batches of 25 — was 8×50, too slow)
-#
-# BATCH SIZE GUIDE:
-#   Fast pages  (<5s fetch):  50 URLs/batch → ~10 min/batch
-#   Medium pages (~10s fetch): 25 URLs/batch → ~17 min/batch
-#   Slow pages  (~26s fetch): 25 URLs/batch → ~45 min/batch ← region-make observed
-#
-# CURRENT ESTIMATED URL COUNTS:
-#   categories:  ~6    → no batching
-#   states:      ~8    → no batching
-#   regions:     ~62   → 2 batches × 50
-#   makes:       ~267  → 6 batches × 50
-#   models:      ~TBD  → 6 batches × 50 (adjust if needed)
-#   price:       ~TBD  → no batching
-#   atm:         ~TBD  → no batching
-#   sleep:       ~TBD  → no batching
-#   length:      ~TBD  → no batching
-#   state-make:  ~TBD  → 2 batches × 50
-#   region-make: ~TBD  → 16 batches × 25  ← CHANGED (was 8×50)
-#   cat-state:   ~48   → own job, no batching
-#   cat-region:  ~378  → 16 batches × 25  ← CHANGED (was 8×50)
-# ==========================================
+# Source: src/app/url.csv (3,462 URLs × 5 variants = 17,310 KV uploads)
+# Split across 10 parallel batches of 350 URLs each.
 
 jobs:
 
   # ==========================================
-  # PRIORITY PAGES (Homepage + Listings) - WITH PUPPETEER
+  # PRIORITY PAGES (Homepage + /listings/) — Puppeteer
   # ==========================================
   generate-priority:
     runs-on: ubuntu-latest
-    timeout-minutes: 60     # Puppeteer: 2 pages × 4 variants = 8 total, generous
+    timeout-minutes: 60
     if: |
       (github.event_name == 'schedule') ||
       (github.event_name == 'workflow_dispatch' &&
        (github.event.inputs.target == 'all' || github.event.inputs.target == 'priority'))
-
     steps:
-      - name: 📥 Checkout
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: 🔧 Setup Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '24'
 
-      - name: 📦 Install dependencies
+      - name: Install dependencies
         run: |
           npm install node-fetch@2
           npm install puppeteer
 
-      - name: 🎯 Generate Priority Pages
+      - name: Generate priority pages
         env:
           VERCEL_BASE_URL: ${{ secrets.VERCEL_BASE_URL }}
           PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
@@ -115,746 +58,70 @@ jobs:
           SKIP_ROUTES_UPDATE: 'true'
         run: node scripts/generate-priority-pages.js
 
-      - name: ✅ Complete
-        if: success()
-        run: echo "::notice::✅ Priority pages generated successfully!"
-
   # ==========================================
-  # SMALL TYPES (no batching, <50 URLs, fast pages)
-  # categories, states, price, atm, sleep, length only
-  # NOTE: cat-state moved to its own job (can be slow at 48 URLs)
+  # ALL LISTING URLS (url.csv) — 10 parallel batches of ~350 URLs each
   # ==========================================
-  generate-small-types:
-    runs-on: ubuntu-latest
-    timeout-minutes: 60     # <50 URLs × 4 variants × ~5s = <20 min max
-    if: |
-      (github.event_name == 'schedule') ||
-      (github.event_name == 'workflow_dispatch' &&
-       (github.event.inputs.target == 'all' || github.event.inputs.target == 'small-types'))
-
-    strategy:
-      matrix:
-        type:
-          - categories
-          - states
-          - price
-          - atm
-          - sleep
-          - length
-      fail-fast: false
-      max-parallel: 6
-
-    steps:
-      - name: 📥 Checkout
-        uses: actions/checkout@v4
-
-      - name: 🔧 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-
-      - name: 📦 Install dependencies
-        run: npm install node-fetch@2
-
-      - name: 🗺️ Generate ${{ matrix.type }}
-        env:
-          PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
-          VERCEL_BASE_URL: ${{ secrets.VERCEL_BASE_URL }}
-          WP_API_BASE: 'https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap'
-          WP_API_KEY: ${{ secrets.WP_API_KEY }}
-          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
-          CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
-          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
-          TARGET_SITEMAP: ${{ matrix.type }}
-          SKIP_ROUTES_UPDATE: 'true'
-        run: node scripts/generate-sitemap-cache-simple.js
-
-      - name: ✅ ${{ matrix.type }} Complete
-        if: success()
-        run: echo "::notice::✅ ${{ matrix.type }} completed!"
-
-  # ==========================================
-  # CAT-STATE (~48 URLs) - own job, no batching
-  # Moved out of small-types: 48 URLs × 4 variants can exceed 60 min
-  # ==========================================
-  generate-cat-state:
-    runs-on: ubuntu-latest
-    timeout-minutes: 120    # 48 URLs × 4 variants × ~26s worst case = ~83 min
-    if: |
-      (github.event_name == 'schedule') ||
-      (github.event_name == 'workflow_dispatch' &&
-       (github.event.inputs.target == 'all' || github.event.inputs.target == 'small-types' || github.event.inputs.target == 'cat-state'))
-
-    steps:
-      - name: 📥 Checkout
-        uses: actions/checkout@v4
-
-      - name: 🔧 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-
-      - name: 📦 Install dependencies
-        run: npm install node-fetch@2
-
-      - name: 🗺️ Generate cat-state
-        env:
-          PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
-          VERCEL_BASE_URL: ${{ secrets.VERCEL_BASE_URL }}
-          WP_API_BASE: 'https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap'
-          WP_API_KEY: ${{ secrets.WP_API_KEY }}
-          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
-          CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
-          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
-          TARGET_SITEMAP: cat-state
-          SKIP_ROUTES_UPDATE: 'true'
-        run: node scripts/generate-sitemap-cache-simple.js
-
-      - name: ✅ cat-state Complete
-        if: success()
-        run: echo "::notice::✅ cat-state completed!"
-
-  # ==========================================
-  # REGIONS — fetch paths once, then 2 batches × 50
-  # ==========================================
-  fetch-paths-regions:
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    if: |
-      (github.event_name == 'schedule') ||
-      (github.event_name == 'workflow_dispatch' &&
-       (github.event.inputs.target == 'all' || github.event.inputs.target == 'small-types' || github.event.inputs.target == 'regions'))
-    steps:
-      - name: 📥 Checkout
-        uses: actions/checkout@v4
-      - name: 🔧 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-      - name: 📦 Install dependencies
-        run: npm install node-fetch@2
-      - name: 📥 Fetch paths from API
-        env:
-          WP_API_BASE: 'https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap'
-          WP_STATIC_BASE: 'https://admin.caravansforsale.com.au/wp-content/uploads/cfs-paths'
-          WP_API_KEY: ${{ secrets.WP_API_KEY }}
-          PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
-          TARGET_SITEMAP: regions
-        run: node scripts/fetch-paths-only.js
-      - name: 📤 Upload paths artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: paths-regions
-          path: /tmp/paths-regions.json
-          retention-days: 1
-
-  generate-regions:
-    runs-on: ubuntu-latest
-    timeout-minutes: 90     # 50 URLs × 4 variants × ~10s = ~33 min, 90 is safe
-    needs: fetch-paths-regions
-    if: |
-      (github.event_name == 'schedule') ||
-      (github.event_name == 'workflow_dispatch' &&
-       (github.event.inputs.target == 'all' || github.event.inputs.target == 'small-types' || github.event.inputs.target == 'regions'))
-
-    strategy:
-      matrix:
-        batch: [1, 2]
-      fail-fast: false
-      max-parallel: 2
-
-    steps:
-      - name: 📥 Checkout
-        uses: actions/checkout@v4
-
-      - name: 🔧 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-
-      - name: 📦 Install dependencies
-        run: npm install node-fetch@2
-
-      - name: 📥 Download paths artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: paths-regions
-          path: /tmp
-
-      - name: 🗺️ Generate regions (Batch ${{ matrix.batch }}/2)
-        env:
-          PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
-          VERCEL_BASE_URL: ${{ secrets.VERCEL_BASE_URL }}
-          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
-          CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
-          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
-          TARGET_SITEMAP: regions
-          PATHS_FILE: /tmp/paths-regions.json
-          BATCH_SIZE: 50
-          BATCH_NUMBER: ${{ matrix.batch }}
-          SKIP_ROUTES_UPDATE: 'true'
-        run: node scripts/generate-sitemap-cache-simple.js
-
-      - name: ✅ regions Batch ${{ matrix.batch }} Complete
-        if: success()
-        run: echo "::notice::✅ regions batch ${{ matrix.batch }} completed!"
-
-  # ==========================================
-  # STATE-MAKE — fetch paths once, then 2 batches × 50
-  # ==========================================
-  fetch-paths-state-make:
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    if: |
-      (github.event_name == 'schedule') ||
-      (github.event_name == 'workflow_dispatch' &&
-       (github.event.inputs.target == 'all' || github.event.inputs.target == 'large-types' || github.event.inputs.target == 'state-make'))
-    steps:
-      - name: 📥 Checkout
-        uses: actions/checkout@v4
-      - name: 🔧 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-      - name: 📦 Install dependencies
-        run: npm install node-fetch@2
-      - name: 📥 Fetch paths from API
-        env:
-          WP_API_BASE: 'https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap'
-          WP_STATIC_BASE: 'https://admin.caravansforsale.com.au/wp-content/uploads/cfs-paths'
-          WP_API_KEY: ${{ secrets.WP_API_KEY }}
-          PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
-          TARGET_SITEMAP: state-make
-        run: node scripts/fetch-paths-only.js
-      - name: 📤 Upload paths artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: paths-state-make
-          path: /tmp/paths-state-make.json
-          retention-days: 1
-
-  generate-state-make:
+  generate-urls:
     runs-on: ubuntu-latest
     timeout-minutes: 90
-    needs: fetch-paths-state-make
     if: |
       (github.event_name == 'schedule') ||
       (github.event_name == 'workflow_dispatch' &&
-       (github.event.inputs.target == 'all' || github.event.inputs.target == 'large-types' || github.event.inputs.target == 'state-make'))
-
+       (github.event.inputs.target == 'all' || github.event.inputs.target == 'urls'))
     strategy:
       matrix:
-        batch: [1, 2]
+        batch: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
       fail-fast: false
-      max-parallel: 2
-
+      max-parallel: 10
     steps:
-      - name: 📥 Checkout
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: 🔧 Setup Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '24'
 
-      - name: 📦 Install dependencies
-        run: npm install node-fetch@2
-
-      - name: 📥 Download paths artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: paths-state-make
-          path: /tmp
-
-      - name: 🗺️ Generate state-make (Batch ${{ matrix.batch }}/2)
+      - name: Generate Batch ${{ matrix.batch }} of 10
         env:
           PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
           VERCEL_BASE_URL: ${{ secrets.VERCEL_BASE_URL }}
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
-          TARGET_SITEMAP: state-make
-          PATHS_FILE: /tmp/paths-state-make.json
-          BATCH_SIZE: 50
+          BATCH_SIZE: 350
           BATCH_NUMBER: ${{ matrix.batch }}
           SKIP_ROUTES_UPDATE: 'true'
         run: node scripts/generate-sitemap-cache-simple.js
 
-      - name: ✅ state-make Batch ${{ matrix.batch }} Complete
-        if: success()
-        run: echo "::notice::✅ state-make batch ${{ matrix.batch }} completed!"
-
   # ==========================================
-  # MAKES — fetch paths once, then 6 batches × 50
-  # ==========================================
-  fetch-paths-makes:
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    if: |
-      (github.event_name == 'schedule') ||
-      (github.event_name == 'workflow_dispatch' &&
-       (github.event.inputs.target == 'all' || github.event.inputs.target == 'large-types' || github.event.inputs.target == 'makes'))
-    steps:
-      - name: 📥 Checkout
-        uses: actions/checkout@v4
-      - name: 🔧 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-      - name: 📦 Install dependencies
-        run: npm install node-fetch@2
-      - name: 📥 Fetch paths from API
-        env:
-          WP_API_BASE: 'https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap'
-          WP_STATIC_BASE: 'https://admin.caravansforsale.com.au/wp-content/uploads/cfs-paths'
-          WP_API_KEY: ${{ secrets.WP_API_KEY }}
-          PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
-          TARGET_SITEMAP: makes
-        run: node scripts/fetch-paths-only.js
-      - name: 📤 Upload paths artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: paths-makes
-          path: /tmp/paths-makes.json
-          retention-days: 1
-
-  generate-makes:
-    runs-on: ubuntu-latest
-    timeout-minutes: 90
-    needs: fetch-paths-makes
-    if: |
-      (github.event_name == 'schedule') ||
-      (github.event_name == 'workflow_dispatch' &&
-       (github.event.inputs.target == 'all' || github.event.inputs.target == 'large-types' || github.event.inputs.target == 'makes'))
-
-    strategy:
-      matrix:
-        batch: [1, 2, 3, 4, 5, 6]
-      fail-fast: false
-      max-parallel: 6
-
-    steps:
-      - name: 📥 Checkout
-        uses: actions/checkout@v4
-
-      - name: 🔧 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-
-      - name: 📦 Install dependencies
-        run: npm install node-fetch@2
-
-      - name: 📥 Download paths artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: paths-makes
-          path: /tmp
-
-      - name: 🗺️ Generate makes (Batch ${{ matrix.batch }}/6)
-        env:
-          PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
-          VERCEL_BASE_URL: ${{ secrets.VERCEL_BASE_URL }}
-          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
-          CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
-          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
-          TARGET_SITEMAP: makes
-          PATHS_FILE: /tmp/paths-makes.json
-          BATCH_SIZE: 50
-          BATCH_NUMBER: ${{ matrix.batch }}
-          SKIP_ROUTES_UPDATE: 'true'
-        run: node scripts/generate-sitemap-cache-simple.js
-
-      - name: ✅ makes Batch ${{ matrix.batch }} Complete
-        if: success()
-        run: echo "::notice::✅ makes batch ${{ matrix.batch }} completed!"
-
-  # ==========================================
-  # MODELS — fetch paths once, then 6 batches × 50
-  # ==========================================
-  fetch-paths-models:
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    if: |
-      (github.event_name == 'schedule') ||
-      (github.event_name == 'workflow_dispatch' &&
-       (github.event.inputs.target == 'all' || github.event.inputs.target == 'large-types' || github.event.inputs.target == 'models'))
-    steps:
-      - name: 📥 Checkout
-        uses: actions/checkout@v4
-      - name: 🔧 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-      - name: 📦 Install dependencies
-        run: npm install node-fetch@2
-      - name: 📥 Fetch paths from API
-        env:
-          WP_API_BASE: 'https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap'
-          WP_STATIC_BASE: 'https://admin.caravansforsale.com.au/wp-content/uploads/cfs-paths'
-          WP_API_KEY: ${{ secrets.WP_API_KEY }}
-          PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
-          TARGET_SITEMAP: models
-        run: node scripts/fetch-paths-only.js
-      - name: 📤 Upload paths artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: paths-models
-          path: /tmp/paths-models.json
-          retention-days: 1
-
-  generate-models:
-    runs-on: ubuntu-latest
-    timeout-minutes: 90
-    needs: fetch-paths-models
-    if: |
-      (github.event_name == 'schedule') ||
-      (github.event_name == 'workflow_dispatch' &&
-       (github.event.inputs.target == 'all' || github.event.inputs.target == 'large-types' || github.event.inputs.target == 'models'))
-
-    strategy:
-      matrix:
-        batch: [1, 2, 3, 4, 5, 6]
-      fail-fast: false
-      max-parallel: 6
-
-    steps:
-      - name: 📥 Checkout
-        uses: actions/checkout@v4
-
-      - name: 🔧 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-
-      - name: 📦 Install dependencies
-        run: npm install node-fetch@2
-
-      - name: 📥 Download paths artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: paths-models
-          path: /tmp
-
-      - name: 🗺️ Generate models (Batch ${{ matrix.batch }}/6)
-        env:
-          PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
-          VERCEL_BASE_URL: ${{ secrets.VERCEL_BASE_URL }}
-          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
-          CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
-          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
-          TARGET_SITEMAP: models
-          PATHS_FILE: /tmp/paths-models.json
-          BATCH_SIZE: 50
-          BATCH_NUMBER: ${{ matrix.batch }}
-          SKIP_ROUTES_UPDATE: 'true'
-        run: node scripts/generate-sitemap-cache-simple.js
-
-      - name: ✅ models Batch ${{ matrix.batch }} Complete
-        if: success()
-        run: echo "::notice::✅ models batch ${{ matrix.batch }} completed!"
-
-  # ==========================================
-  # REGION-MAKE — fetch paths once, then 16 batches × 25 URLs
-  # ==========================================
-  fetch-paths-region-make:
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    if: |
-      (github.event_name == 'schedule') ||
-      (github.event_name == 'workflow_dispatch' &&
-       (github.event.inputs.target == 'all' || github.event.inputs.target == 'large-types' || github.event.inputs.target == 'region-make'))
-    steps:
-      - name: 📥 Checkout
-        uses: actions/checkout@v4
-      - name: 🔧 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-      - name: 📦 Install dependencies
-        run: npm install node-fetch@2
-      - name: 📥 Fetch paths from API
-        env:
-          WP_API_BASE: 'https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap'
-          WP_STATIC_BASE: 'https://admin.caravansforsale.com.au/wp-content/uploads/cfs-paths'
-          WP_API_KEY: ${{ secrets.WP_API_KEY }}
-          PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
-          TARGET_SITEMAP: region-make
-        run: node scripts/fetch-paths-only.js
-      - name: 📤 Upload paths artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: paths-region-make
-          path: /tmp/paths-region-make.json
-          retention-days: 1
-
-  generate-region-make:
-    runs-on: ubuntu-latest
-    timeout-minutes: 90     # 25 URLs × 4 variants × ~26s = ~43 min, 90 is safe
-    needs: fetch-paths-region-make
-    if: |
-      (github.event_name == 'schedule') ||
-      (github.event_name == 'workflow_dispatch' &&
-       (github.event.inputs.target == 'all' || github.event.inputs.target == 'large-types' || github.event.inputs.target == 'region-make'))
-
-    strategy:
-      matrix:
-        batch: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
-      fail-fast: false
-      max-parallel: 16
-
-    steps:
-      - name: 📥 Checkout
-        uses: actions/checkout@v4
-
-      - name: 🔧 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-
-      - name: 📦 Install dependencies
-        run: npm install node-fetch@2
-
-      - name: 📥 Download paths artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: paths-region-make
-          path: /tmp
-
-      - name: 🗺️ Generate region-make (Batch ${{ matrix.batch }}/16)
-        env:
-          PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
-          VERCEL_BASE_URL: ${{ secrets.VERCEL_BASE_URL }}
-          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
-          CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
-          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
-          TARGET_SITEMAP: region-make
-          PATHS_FILE: /tmp/paths-region-make.json
-          BATCH_SIZE: 25
-          BATCH_NUMBER: ${{ matrix.batch }}
-          SKIP_ROUTES_UPDATE: 'true'
-        run: node scripts/generate-sitemap-cache-simple.js
-
-      - name: ✅ region-make Batch ${{ matrix.batch }} Complete
-        if: success()
-        run: echo "::notice::✅ region-make batch ${{ matrix.batch }} completed!"
-
-  # ==========================================
-  # CAT-REGION — fetch paths once, then 16 batches × 25 URLs
-  # ==========================================
-  fetch-paths-cat-region:
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    if: |
-      (github.event_name == 'schedule') ||
-      (github.event_name == 'workflow_dispatch' &&
-       (github.event.inputs.target == 'all' || github.event.inputs.target == 'large-types' || github.event.inputs.target == 'cat-region'))
-    steps:
-      - name: 📥 Checkout
-        uses: actions/checkout@v4
-      - name: 🔧 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-      - name: 📦 Install dependencies
-        run: npm install node-fetch@2
-      - name: 📥 Fetch paths from API
-        env:
-          WP_API_BASE: 'https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap'
-          WP_STATIC_BASE: 'https://admin.caravansforsale.com.au/wp-content/uploads/cfs-paths'
-          WP_API_KEY: ${{ secrets.WP_API_KEY }}
-          PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
-          TARGET_SITEMAP: cat-region
-        run: node scripts/fetch-paths-only.js
-      - name: 📤 Upload paths artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: paths-cat-region
-          path: /tmp/paths-cat-region.json
-          retention-days: 1
-
-  generate-cat-region:
-    runs-on: ubuntu-latest
-    timeout-minutes: 90     # 25 URLs × 4 variants × ~26s = ~43 min, 90 is safe
-    needs: fetch-paths-cat-region
-    if: |
-      (github.event_name == 'schedule') ||
-      (github.event_name == 'workflow_dispatch' &&
-       (github.event.inputs.target == 'all' || github.event.inputs.target == 'large-types' || github.event.inputs.target == 'cat-region'))
-
-    strategy:
-      matrix:
-        batch: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
-      fail-fast: false
-      max-parallel: 16
-
-    steps:
-      - name: 📥 Checkout
-        uses: actions/checkout@v4
-
-      - name: 🔧 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-
-      - name: 📦 Install dependencies
-        run: npm install node-fetch@2
-
-      - name: 📥 Download paths artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: paths-cat-region
-          path: /tmp
-
-      - name: 🗺️ Generate cat-region (Batch ${{ matrix.batch }}/16)
-        env:
-          PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
-          VERCEL_BASE_URL: ${{ secrets.VERCEL_BASE_URL }}
-          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
-          CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
-          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
-          TARGET_SITEMAP: cat-region
-          PATHS_FILE: /tmp/paths-cat-region.json
-          BATCH_SIZE: 25
-          BATCH_NUMBER: ${{ matrix.batch }}
-          SKIP_ROUTES_UPDATE: 'true'
-        run: node scripts/generate-sitemap-cache-simple.js
-
-      - name: ✅ cat-region Batch ${{ matrix.batch }} Complete
-        if: success()
-        run: echo "::notice::✅ cat-region batch ${{ matrix.batch }} completed!"
-
-  # ==========================================
-  # UPDATE ROUTES MAPPING (After ALL jobs complete)
+  # UPDATE ROUTES MAPPING (after all jobs complete)
   # ==========================================
   update-routes-mapping:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     needs:
       - generate-priority
-      - generate-small-types
-      - generate-cat-state
-      - fetch-paths-regions
-      - generate-regions
-      - fetch-paths-state-make
-      - generate-state-make
-      - fetch-paths-makes
-      - generate-makes
-      - fetch-paths-models
-      - generate-models
-      - fetch-paths-region-make
-      - generate-region-make
-      - fetch-paths-cat-region
-      - generate-cat-region
+      - generate-urls
     if: |
       always() &&
       (github.event_name == 'schedule' ||
        github.event_name == 'workflow_dispatch')
-
     steps:
-      - name: 📥 Checkout
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: 🔧 Setup Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '24'
 
-      - name: 📦 Install dependencies
+      - name: Install dependencies
         run: npm install node-fetch@2
 
-      - name: 📋 Regenerate Routes Mapping from KV
+      - name: Regenerate routes mapping from KV
         env:
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
         run: node scripts/regenerate-routes-mapping.js
-
-      - name: ✅ Routes Mapping Updated
-        if: success()
-        run: echo "::notice::✅ Routes mapping regenerated successfully!"
-
-  # ==========================================
-  # INDIVIDUAL MANUAL RUNS (single type, no batching)
-  # ==========================================
-  generate-individual:
-    runs-on: ubuntu-latest
-    timeout-minutes: 120    # Single runner, no batching — needs generous timeout
-    if: |
-      github.event_name == 'workflow_dispatch' &&
-      (github.event.inputs.target == 'categories' ||
-       github.event.inputs.target == 'states'     ||
-       github.event.inputs.target == 'regions'    ||
-       github.event.inputs.target == 'price'      ||
-       github.event.inputs.target == 'atm'        ||
-       github.event.inputs.target == 'sleep'      ||
-       github.event.inputs.target == 'length'     ||
-       github.event.inputs.target == 'cat-state')
-
-    steps:
-      - name: 📥 Checkout
-        uses: actions/checkout@v4
-
-      - name: 🔧 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-
-      - name: 📦 Install dependencies
-        run: npm install node-fetch@2
-
-      - name: 🎯 Generate ${{ github.event.inputs.target }}
-        env:
-          PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
-          VERCEL_BASE_URL: ${{ secrets.VERCEL_BASE_URL }}
-          WP_API_BASE: 'https://admin.caravansforsale.com.au/wp-json/cfs/v1/sitemap'
-          WP_API_KEY: ${{ secrets.WP_API_KEY }}
-          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
-          CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
-          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
-          TARGET_SITEMAP: ${{ github.event.inputs.target }}
-        run: node scripts/generate-sitemap-cache-simple.js
-
-      - name: ✅ Complete
-        if: success()
-        run: echo "::notice::✅ ${{ github.event.inputs.target }} completed!"
-
-  # ==========================================
-  # SUMMARY
-  # ==========================================
-  summary:
-    runs-on: ubuntu-latest
-    needs:
-      - generate-priority
-      - generate-small-types
-      - generate-cat-state
-      - fetch-paths-regions
-      - generate-regions
-      - fetch-paths-state-make
-      - generate-state-make
-      - fetch-paths-makes
-      - generate-makes
-      - fetch-paths-models
-      - generate-models
-      - fetch-paths-region-make
-      - generate-region-make
-      - fetch-paths-cat-region
-      - generate-cat-region
-      - update-routes-mapping
-    if: always() && github.event_name == 'schedule'
-
-    steps:
-      - name: 📊 Summary
-        run: |
-          echo "::notice::✅ All cache generation jobs completed!"
-          echo "::notice::Source: WordPress API (no XML sitemaps)"
-          echo "::notice::Priority: Homepage + Listings (4 variants each)"
-          echo "::notice::Small types (6 in parallel): categories, states, price, atm, sleep, length"
-          echo "::notice::Cat-state: own job (120-min timeout)"
-          echo "::notice::Regions: 2 batches × 50"
-          echo "::notice::State-make: 2 batches × 50"
-          echo "::notice::Makes: 6 batches × 50"
-          echo "::notice::Models: 6 batches × 50"
-          echo "::notice::Region-make: 16 batches × 25 (reduced from 8×50 — slow pages)"
-          echo "::notice::Cat-region: 16 batches × 25 (reduced from 8×50 — slow pages)"
-          echo "::notice::Routes mapping: Regenerated after all jobs"

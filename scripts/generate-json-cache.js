@@ -31,6 +31,8 @@ const CF_ACCOUNT_ID     = process.env.CF_ACCOUNT_ID;
 const CF_KV_NAMESPACE_ID = process.env.CF_KV_NAMESPACE_ID;
 const CF_API_TOKEN      = process.env.CF_API_TOKEN;
 const URLS_CSV          = process.env.URLS_CSV || path.join(__dirname, '../src/app/url.csv');
+const BATCH_SIZE        = process.env.BATCH_SIZE   ? parseInt(process.env.BATCH_SIZE)   : null;
+const BATCH_NUMBER      = process.env.BATCH_NUMBER ? parseInt(process.env.BATCH_NUMBER) : null;
 
 // ── Configuration ────────────────────────────────────────────────────────────
 const CONCURRENCY           = 5;
@@ -380,8 +382,15 @@ async function main() {
   console.log(`KV TTL:      ${KV_STALE_TTL}s`);
   console.log('');
 
-  const allUrls = readUrlsFromCsv(URLS_CSV);
+  let allUrls = readUrlsFromCsv(URLS_CSV);
   console.log(`Loaded ${allUrls.length} URLs from CSV`);
+
+  if (BATCH_SIZE && BATCH_NUMBER) {
+    const start = (BATCH_NUMBER - 1) * BATCH_SIZE;
+    const end = start + BATCH_SIZE;
+    allUrls = allUrls.slice(start, end);
+    console.log(`Batch ${BATCH_NUMBER}: URLs ${start + 1}–${Math.min(end, allUrls.length + start)} (${allUrls.length} URLs)`);
+  }
 
   const startTime = Date.now();
   const results = await runConcurrent(allUrls, CONCURRENCY, processUrl);
