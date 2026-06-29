@@ -131,23 +131,29 @@ async function uploadToKV(key, value, metadata = null) {
 
         body += `--${boundary}--\r\n`;
 
+        const bodyBuffer = Buffer.from(body, 'utf8');
         requestOptions = {
           method: 'PUT',
           headers: {
             'Authorization': `Bearer ${CF_API_TOKEN}`,
-            'Content-Type': `multipart/form-data; boundary=${boundary}`
+            'Content-Type': `multipart/form-data; boundary=${boundary}`,
+            'Content-Length': String(bodyBuffer.length),
+            'Connection': 'close'
           },
-          body,
+          body: bodyBuffer,
           timeout: 60000
         };
       } else {
+        const bodyBuffer = Buffer.from(value, 'utf8');
         requestOptions = {
           method: 'PUT',
           headers: {
             'Authorization': `Bearer ${CF_API_TOKEN}`,
-            'Content-Type': 'text/html'
+            'Content-Type': 'text/plain',
+            'Content-Length': String(bodyBuffer.length),
+            'Connection': 'close'
           },
-          body: value,
+          body: bodyBuffer,
           timeout: 60000
         };
       }
