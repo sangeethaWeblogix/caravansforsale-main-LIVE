@@ -32,10 +32,11 @@ async function fetchKVKeysPage(url, attempt = 1) {
     const response = await fetch(url, {
       headers: {
         'Authorization': `Bearer ${CF_API_TOKEN}`,
-        // Disable gzip — node-fetch v2's Gunzip decompressor fails on large
-        // compressed responses from Cloudflare (Premature close / FetchError).
-        'Accept-Encoding': 'identity',
       },
+      // compress:false stops node-fetch v2 from adding Accept-Encoding:gzip
+      // AND from running its Gunzip decompressor — prevents "Premature close"
+      // on large KV key list responses.
+      compress: false,
       timeout: 60000,
     });
     const data = await response.json();
