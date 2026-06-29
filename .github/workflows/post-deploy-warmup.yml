@@ -1,8 +1,10 @@
 name: Post-Deploy Cache Warmup
 
 on:
-  push:
-    branches: [main]
+  # Auto-run on push disabled — daily generate-cache.yml handles full refresh.
+  # Run manually from GitHub Actions when needed (e.g. after a major design change).
+  # push:
+  #   branches: [main]
   workflow_dispatch:
 
 # After every deploy: warm all listing pages in CF KV
