@@ -27,43 +27,59 @@ const CF_API_TOKEN = process.env.CF_API_TOKEN;
 
 const EXCLUDED_KEYS = ['routes-mapping']; // Keys that aren't page variants
 
+async function fetchKVKeysPage(url, attempt = 1) {
+  try {
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': `Bearer ${CF_API_TOKEN}`,
+        // Disable gzip — node-fetch v2's Gunzip decompressor fails on large
+        // compressed responses from Cloudflare (Premature close / FetchError).
+        'Accept-Encoding': 'identity',
+      },
+      timeout: 60000,
+    });
+    const data = await response.json();
+    if (!data.success) {
+      throw new Error(`KV list failed: ${JSON.stringify(data.errors)}`);
+    }
+    return data;
+  } catch (err) {
+    if (attempt < 4) {
+      const delay = attempt * 3000;
+      console.warn(`   ⚠️  Attempt ${attempt}/3 failed (${err.message}), retrying in ${delay / 1000}s...`);
+      await new Promise(r => setTimeout(r, delay));
+      return fetchKVKeysPage(url, attempt + 1);
+    }
+    throw err;
+  }
+}
+
 async function listAllKVKeys() {
   let allKeys = [];
   let cursor = null;
   let page = 1;
-  
+
   console.log('📥 Listing all KV keys (with metadata)...');
-  
+
   while (true) {
     let url = `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/storage/kv/namespaces/${CF_KV_NAMESPACE_ID}/keys?limit=1000`;
     if (cursor) {
-      url += `&cursor=${cursor}`;
+      url += `&cursor=${encodeURIComponent(cursor)}`;
     }
-    
-    const response = await fetch(url, {
-      headers: {
-        'Authorization': `Bearer ${CF_API_TOKEN}`
-      }
-    });
-    
-    const data = await response.json();
-    
-    if (!data.success) {
-      throw new Error(`KV list failed: ${JSON.stringify(data.errors)}`);
-    }
-    
-    // Each key object has: { name, metadata }
+
+    const data = await fetchKVKeysPage(url);
+
     allKeys = allKeys.concat(data.result);
-    
+
     console.log(`   Page ${page}: ${data.result.length} keys (total: ${allKeys.length})`);
-    
+
     cursor = data.result_info?.cursor;
     if (!cursor || data.result.length === 0) {
       break;
     }
     page++;
   }
-  
+
   return allKeys;
 }
 
