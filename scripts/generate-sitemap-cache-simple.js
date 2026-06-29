@@ -706,4 +706,30 @@ async function main() {
 
   if (results.failed === 0 && results.success > 0) {
     console.log('✨ ALL VARIANTS GENERATED SUCCESSFULLY!');
-  } else if (results.failed > 0 && results.suc
+  } else if (results.failed > 0 && results.success > 0) {
+    console.log('⚠️  COMPLETED WITH SOME FAILURES');
+  } else if (results.success === 0 && results.skipped_404 > 0) {
+    console.log('⚠️  NO VARIANTS GENERATED (all URLs returned 404)');
+  } else if (results.success === 0) {
+    console.log('❌ NO VARIANTS GENERATED');
+  }
+
+  console.log('█'.repeat(70));
+  console.log();
+
+  if (results.failed > 0 && results.success === 0) {
+    process.exit(1);
+  } else {
+    process.exit(0);
+  }
+}
+
+if (require.main === module) {
+  main().catch(error => {
+    console.error('\n💥 Fatal error:', error);
+    console.error(error.stack);
+    process.exit(1);
+  });
+}
+
+module.exports = { main };
