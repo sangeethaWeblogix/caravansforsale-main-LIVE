@@ -47,73 +47,47 @@ const HOW_TO_STEPS = [
   { num: 5, iconSet: "fa-regular", icon: "fa-circle-check",  title: "Complete The Sale",      desc: "Once sold, mark your listing as sold or remove it from the site." },
 ];
 
-const FAQ_COL1 = [
-  "How do I sell my caravan online?",
-  "What photos should I upload?",
-  "How much does it cost to list my caravan?",
-  "How long does it take to list a caravan?",
-  "Can I edit my listing after it's live?",
-  "How do buyers contact me?",
-  "Can dealers list caravans on CaravansForSale?",
-];
-
-const FAQ_COL2 = [
-  "What information should I include in my listing?",
-  "How do I price my caravan?",
-  "Can I remove my listing at any time?",
-  "What happens when my caravan is sold?",
-  "How many photos can I upload?",
-  "Do I handle the payment directly with the buyer?",
-  "Is my listing visible across Australia?",
-];
-
-const FAQ_BOTTOM = [
-  "Can I relist my caravan if it doesn't sell?",
-  "Is there a limit to how long my ad is active?",
-  "Do I need an account to list my caravan?",
-  "Can I update the price after listing?",
-  "Is it safe to sell my caravan online?",
-];
 
 const MAIN_FAQS = [
   {
-    q: "How do I list my caravan for sale on CaravansForSale?",
-    a: (
-      <ul>
-        <li><b>1. Sign Up/Login:</b> Create a free account or log in to your existing account.</li>
-        <li><b>2. Create Your Listing:</b> Enter your caravan's details, description, price, location and key features.</li>
-        <li><b>3. Upload Photos:</b> Add clear photos of your caravan (interior and exterior) to attract buyers.</li>
-        <li><b>4. Pay & Publish:</b> Pay the one-time $49 listing fee. Your listing goes live instantly.</li>
-      </ul>
-    ),
+    q: "How do I sell my caravan online in Australia?",
+    a: <p>You can sell your caravan online by creating a private seller listing on CaravansForSale.com.au. Add your caravan details, upload clear photos, set your asking price and publish your ad so buyers across Australia can contact you directly.</p>,
   },
   {
-    q: "How much does it cost to list my caravan, and are there any other fees?",
-    a: <p>It costs just $49 to list your caravan as a private seller. This is a one-time listing fee — no subscriptions, no commissions, no hidden fees. Your ad stays up until your caravan is sold.</p>,
+    q: "How much does it cost to list my caravan?",
+    a: <p>It costs $49 inc. GST to list your caravan on CaravansForSale.com.au. This is a one-time listing fee with no monthly subscription, no hidden charges and no commission when your caravan sells.</p>,
   },
   {
-    q: "How long will my listing stay active?",
-    a: <p>Your ad stays live until your caravan is sold. There are no expiry dates. Unlike some sites that limit listings to 30 or 60 days, CaravansForSale keeps your listing up for as long as it takes.</p>,
+    q: "How long does my caravan listing stay live?",
+    a: <p>Your caravan listing stays live until sold. You do not need to keep paying monthly fees to keep your ad active. Once your caravan is sold, you can remove the listing from the website.</p>,
   },
   {
-    q: "How do interested buyers contact me about my caravan?",
-    a: <p>Buyers reach out through the "Enquire Now" button on your listing. Messages go straight to your email. Your personal contact details aren't displayed publicly on the listing.</p>,
+    q: "Can I edit my caravan listing after publishing?",
+    a: <p>Yes. After your listing is published, you can update your caravan details, change the asking price, add or replace photos and improve your description if needed.</p>,
   },
   {
-    q: "Can I edit or update my listing after it's live?",
-    a: <p>Absolutely! You can update your listing at any time — change the price, edit the description, or upload new photos — at no extra cost.</p>,
+    q: "How do buyers contact me?",
+    a: <p>Interested buyers can contact you directly through your caravan listing. This allows you to answer questions, arrange inspections, negotiate the price and manage the sale privately.</p>,
   },
   {
-    q: "What if I sell my caravan or change my mind about selling?",
-    a: <p>You're in full control. Mark your listing as "Sold" or remove it at any time. No penalties or extra fees.</p>,
+    q: "What photos should I upload when selling my caravan?",
+    a: <p>Upload clear photos of the outside, inside, kitchen, beds, seating area, bathroom, tyres, drawbar and any included accessories. Good photos help buyers understand the condition of your caravan and can increase enquiries.</p>,
   },
   {
-    q: "How many photos can I upload, and what details should I include?",
-    a: <p>We allow multiple photos. Upload clear pictures from all angles — exterior, interior, layout, and special features. Include make, model, year, condition, upgrades, and registration status in your description.</p>,
+    q: "How should I price my caravan?",
+    a: <p>Check similar caravans for sale before setting your price. Compare by make, model, year, condition, length, ATM, tare weight, sleeping capacity, features and location. A realistic asking price can help attract more genuine buyers.</p>,
   },
   {
-    q: "Do I handle the sale and payment directly with the buyer?",
-    a: <p>Yes. Once connected, all sale details are handled between you and the buyer. CaravansForSale does not process payments — we simply connect you both.</p>,
+    q: "Is it safe to sell my caravan privately online?",
+    a: <p>Yes, but you should take normal precautions. Speak with buyers directly, meet in a safe location, confirm payment has cleared before handover and complete any required transfer paperwork for your state or territory.</p>,
+  },
+  {
+    q: "Do I pay commission when my caravan sells?",
+    a: <p>No. CaravansForSale.com.au does not charge commission when your caravan sells. You pay the one-time listing fee and keep 100% of the agreed sale price.</p>,
+  },
+  {
+    q: "Can I remove my listing after my caravan is sold?",
+    a: <p>Yes. Once your caravan has sold, you can remove your listing so buyers know it is no longer available.</p>,
   },
 ];
 
@@ -127,42 +101,34 @@ export default function SellerDemo() {
       <section className="demo-hero">
         <div className="container">
           <h1 className="demo-hero__title">
-            Best Place To Sell Your Caravan In Australia
+            Sell My Caravan Online in Australia
           </h1>
-          <div className="demo-hero__divider">
-            <span className="demo-hero__divider-line" />
-            <i className="fa-solid fa-shield-halved demo-hero__divider-icon" />
-            <span className="demo-hero__divider-line" />
-          </div>
+          <p className="demo-hero__subtitle">
+            List your caravan for $49 until sold — no commissions, no subscriptions and direct buyer contact.
+          </p>
+          
 
           {/* Pricing card + CTA wrapper — one seamless unit */}
           <div className="demo-price-wrapper">
           <div className="demo-price-card">
-            <div className="demo-price-card__header">
-              <h3>Looking to sell your caravan in Australia?</h3>
-            </div>
+            
             {/* Left: Australia info */}
             <div className="demo-price-card__left">
               <div className="demo-price-card__aus-circle">
                 <img src="/images/australia.png" alt="Australia" />
               </div>
+              <div className="demo-price-card__header">
+              <h3>Looking to sell your caravana?</h3>
+            </div>
               <p className="demo-price-card__desc">
-                CaravansForSale.com.au connects private sellers with caravan buyers across
-                Victoria, New South Wales, Queensland, Western Australia, South Australia and Tasmania.
+                CaravansForSale.com.au helps private sellers advertise directly to genuine caravan buyers for a one-time $49 listing fee, with no commissions, no subscriptions and your ad live until sold.
               </p>
-              <div className="demo-price-card__trust">
-                <span className="demo-price-card__trust-icon">
-                  <i className="fa-solid fa-shield-halved" />
-                </span>
-                <span className="demo-price-card__trust-text">
-                  Trusted by thousands<br />of sellers Australia-wide.
-                </span>
-              </div>
+              
             </div>
 
             {/* Center: Price highlight */}
             <div className="demo-price-card__center">
-              <div className="demo-price-card__badge">ONE-TIME PRICE</div>
+              <div className="demo-price-card__badge">BEST VALUE</div>
               <div className="demo-price-card__price-box">
                 <div className="demo-price-card__only">ONLY</div>
                 <div className="demo-price-card__amount"><sup>$</sup>49</div>
@@ -233,8 +199,8 @@ export default function SellerDemo() {
 
           {/* Device image */}
           <div className="demo-reach-device">
-            <img src="/images/your-caravan-desktop-seller.jpg" className="img-fluid d-none d-lg-block" alt="Caravan For Sale Desktop" />
-            <img src="/images/your-caravan-mobile.png" className="img-fluid d-block d-lg-none" alt="Caravan For Sale Mobile" />
+            <img src="/images/your-caravan-desktop-seller-2.jpg" className="img-fluid d-none d-lg-block" alt="Caravan For Sale Desktop" />
+            <img src="/images/your-caravan-mobile-2.jpg" className="img-fluid d-block d-lg-none" alt="Caravan For Sale Mobile" />
           </div>
 
           {/* Pricing + FAQ card */}
@@ -299,6 +265,66 @@ export default function SellerDemo() {
         </div>
       </section>
 
+      {/* ── Compact Seller Guide ── */}
+      <section className="demo-guide-section">
+        <div className="container">
+          <h2 className="demo-guide-title">Compact Seller Guide</h2>
+          <div className="demo-guide-underline" />
+          <div className="demo-guide-grid">
+
+            <div className="demo-guide-card">
+              <div className="demo-guide-card__header">
+                <span className="demo-guide-card__num">1</span>
+                <h3>Why sell on CaravansForSale.com.au?</h3>
+              </div>
+              <ul className="demo-guide-card__list">
+                <li>Caravan-only marketplace, not a general classifieds page.</li>
+                <li>Buyers search by type, price, weight, sleeps and location.</li>
+                <li>Your caravan is shown to people already looking to buy.</li>
+                <li>Direct enquiries, no commission on the final sale.</li>
+              </ul>
+            </div>
+
+            <div className="demo-guide-card">
+              <div className="demo-guide-card__header">
+                <span className="demo-guide-card__num">2</span>
+                <h3>What you need before listing</h3>
+              </div>
+              <ul className="demo-guide-card__list">
+                <li>Photos: exterior, interior, beds, kitchen, tyres and accessories.</li>
+                <li>Details: make, model, year, ATM, tare, length and sleeps.</li>
+                <li>Condition, rego, service history, upgrades and asking price.</li>
+              </ul>
+            </div>
+
+            <div className="demo-guide-card">
+              <div className="demo-guide-card__header">
+                <span className="demo-guide-card__num">3</span>
+                <h3>How to price your caravan</h3>
+              </div>
+              <ul className="demo-guide-card__list">
+                <li>Check similar caravans before setting your asking price.</li>
+                <li>Compare make, year, condition, length, features and location.</li>
+                <li>Leave room for negotiation while staying competitive.</li>
+              </ul>
+            </div>
+
+            <div className="demo-guide-card">
+              <div className="demo-guide-card__header">
+                <span className="demo-guide-card__num">4</span>
+                <h3>Private sale vs other options</h3>
+              </div>
+              <ul className="demo-guide-card__list">
+                <li>Private sale: more control and keep the sale price.</li>
+                <li>Trade-in: faster and easier, but often lower value.</li>
+                <li>Consignment: dealer handles the sale, fees may apply.</li>
+              </ul>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
       {/* ── Main FAQ accordion ── */}
       <section className="demo-faq-section">
         <div className="container">
@@ -339,25 +365,25 @@ export default function SellerDemo() {
           {/* State cards */}
           <div className="demo-state-grid">
             {STATE_LINKS.map((s) => (
-              <a href={s.href} key={s.label} className="demo-state-item">
+              <div key={s.label} className="demo-state-item">
                 <div className="demo-state-item__img">
                   <img src={s.img} alt={s.label} />
                 </div>
                 <span className="demo-state-item__label">{s.label}</span>
-              </a>
+              </div>
             ))}
           </div>
 
           {/* City cards */}
           <div className="demo-city-grid">
             {CITY_LINKS.map((c) => (
-              <a href={c.href} key={c.label} className="demo-city-item">
+              <div key={c.label} className="demo-city-item">
                 <span className="demo-city-icon">
                   <img src="/images/caravan.png" alt="" />
                 </span>
                 <span className="demo-city-label">{c.label}</span>
                 <i className="fa-solid fa-chevron-right demo-city-arrow" />
-              </a>
+              </div>
             ))}
           </div>
         </div>
@@ -369,12 +395,12 @@ export default function SellerDemo() {
           <h2 className="demo-section-title">Sell Any Type of Caravan</h2>
           <div className="demo-types-grid">
             {CARAVAN_TYPES.map((t) => (
-              <a href={t.href} key={t.label} className="demo-type-item">
+              <div key={t.label} className="demo-type-item">
                 <div className="demo-type-icon">
                   <img src={t.img} alt={t.label} width={80} height={80} />
                 </div>
                 <span className="demo-type-label">{t.label}</span>
-              </a>
+              </div>
             ))}
           </div>
         </div>
@@ -385,7 +411,7 @@ export default function SellerDemo() {
         <div className="container">
           <div className="row align-items-center g-4">
             <div className="col-md-6">
-              <img src="/images/your-caravan-desktop-seller.jpg" className="img-fluid demo-why-img" alt="Caravan buyers" />
+              <img src="/images/your-caravan-desktop-seller-2.jpg" className="img-fluid demo-why-img" alt="Caravan buyers" />
             </div>
             <div className="col-md-6">
               <h2>Why Thousands of Caravan Buyers Visit CaravansForSale Every Month</h2>
@@ -442,29 +468,7 @@ export default function SellerDemo() {
         </div>
       </section>
 
-      {/* ── 2-column FAQ ── */}
-      <section className="demo-faq2-section">
-        <div className="container">
-          <h2 className="demo-section-title">Frequently Asked Questions</h2>
-          <div className="row">
-            <div className="col-md-6">
-              <ul className="demo-faq2-list">
-                {FAQ_COL1.map((q) => <li key={q}><a href="#">{q}</a></li>)}
-              </ul>
-            </div>
-            <div className="col-md-6">
-              <ul className="demo-faq2-list">
-                {FAQ_COL2.map((q) => <li key={q}><a href="#">{q}</a></li>)}
-              </ul>
-            </div>
-          </div>
-          <div className="demo-faq2-bottom">
-            {FAQ_BOTTOM.map((q) => (
-              <a href="#" key={q} className="demo-faq2-chip">{q}</a>
-            ))}
-          </div>
-        </div>
-      </section>
+      
 
       {/* ── Bottom CTA strip ── */}
       <section className="demo-cta-strip">
