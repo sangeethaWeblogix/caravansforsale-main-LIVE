@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "cat-region",
-    "count": 274,
+    "count": 272,
     "paths": [
         "family-category/australian-capital-territory-state/australian-capital-territory-region/",
         "family-category/new-south-wales-state/capital-region/",
@@ -116,7 +116,6 @@
         "luxury-category/queensland-state/moreton-bay-north-region/",
         "luxury-category/queensland-state/moreton-bay-south-region/",
         "luxury-category/queensland-state/sunshine-coast-region/",
-        "luxury-category/queensland-state/toowoomba-region/",
         "luxury-category/queensland-state/townsville-region/",
         "luxury-category/queensland-state/wide-bay-region/",
         "luxury-category/south-australia-state/adelaide-region/",
@@ -254,7 +253,6 @@
         "touring-category/queensland-state/moreton-bay-north-region/",
         "touring-category/queensland-state/moreton-bay-south-region/",
         "touring-category/queensland-state/sunshine-coast-region/",
-        "touring-category/queensland-state/toowoomba-region/",
         "touring-category/queensland-state/townsville-region/",
         "touring-category/queensland-state/wide-bay-region/",
         "touring-category/south-australia-state/adelaide-region/",
@@ -278,5 +276,5 @@
         "touring-category/western-australia-state/perth-region/",
         "touring-category/western-australia-state/western-australia-outback-south-region/"
     ],
-    "generated_at": "2026-06-29 16:58:21"
+    "generated_at": "2026-06-30 16:07:10"
 }

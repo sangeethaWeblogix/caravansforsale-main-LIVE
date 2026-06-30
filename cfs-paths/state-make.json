@@ -159,6 +159,7 @@
         "queensland-state/concept/",
         "queensland-state/coromal/",
         "queensland-state/cosy-cab/",
+        "queensland-state/creative/",
         "queensland-state/crusader/",
         "queensland-state/cub/",
         "queensland-state/design-rv/",
@@ -179,7 +180,6 @@
         "queensland-state/goldstar-rv/",
         "queensland-state/goldy/",
         "queensland-state/golf/",
-        "queensland-state/goodlife-rv/",
         "queensland-state/grand/",
         "queensland-state/great-aussie/",
         "queensland-state/great-escape/",
@@ -196,6 +196,7 @@
         "queensland-state/jurgens/",
         "queensland-state/kingdom/",
         "queensland-state/kokoda/",
+        "queensland-state/la-vista/",
         "queensland-state/leader/",
         "queensland-state/legend/",
         "queensland-state/lifestyle-campers/",
@@ -227,6 +228,7 @@
         "queensland-state/red-centre/",
         "queensland-state/regent/",
         "queensland-state/rembrandt/",
+        "queensland-state/resort-rv/",
         "queensland-state/retreat/",
         "queensland-state/rhinomax/",
         "queensland-state/roadstar/",
@@ -537,7 +539,6 @@
         "victoria-state/scenic/",
         "victoria-state/seascape/",
         "victoria-state/signature/",
-        "victoria-state/silver-valley/",
         "victoria-state/snowy-river/",
         "victoria-state/southern-cross/",
         "victoria-state/stallion/",
@@ -563,7 +564,6 @@
         "victoria-state/viscount/",
         "victoria-state/western-star/",
         "victoria-state/wildtrail/",
-        "victoria-state/willow-rv/",
         "victoria-state/windsor/",
         "victoria-state/x-series-rv/",
         "victoria-state/xplore-rv/",
@@ -665,5 +665,5 @@
         "western-australia-state/x-series-rv/",
         "western-australia-state/zone-rv/"
     ],
-    "generated_at": "2026-06-29 16:58:19"
+    "generated_at": "2026-06-30 16:07:09"
 }

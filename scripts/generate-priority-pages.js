@@ -462,11 +462,48 @@ async function generateStaticPages() {
     }
   }
   
+  // ============================================
+  // STORE CURRENT BUILD-ID IN KV
+  // ============================================
+  // The worker reads 'current-build-id' to detect when KV HTML is stale after a
+  // Vercel redeployment. It compares this value against the buildId embedded in the
+  // HTML (__NEXT_DATA__). A mismatch means Vercel has been redeployed since the last
+  // KV generation → worker bypasses KV and serves fresh HTML from Vercel instead.
+  // This prevents the "first filter apply fails after deploy" RSC navigation bug.
+  const successfulPages = results.pages.filter(p => p.status === 'success');
+  if (successfulPages.length > 0) {
+    // Read back one of the successfully generated HTML pages to extract the buildId
+    try {
+      const sampleKey = successfulPages[0].slug;
+      const sampleUrl = `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/storage/kv/namespaces/${CF_KV_NAMESPACE_ID}/values/${encodeURIComponent(sampleKey)}`;
+      const sampleRes = await fetch(sampleUrl, {
+        headers: { 'Authorization': `Bearer ${CF_API_TOKEN}` }
+      });
+      if (sampleRes.ok) {
+        const sampleHtml = await sampleRes.text();
+        const buildIdMatch = sampleHtml.match(/"buildId":"([^"]+)"/);
+        if (buildIdMatch) {
+          const buildId = buildIdMatch[1];
+          const stored = await uploadToKV('current-build-id', buildId);
+          if (stored) {
+            console.log(`\n✅ Stored current-build-id: ${buildId}`);
+          } else {
+            console.error('\n⚠️  Failed to store current-build-id in KV');
+          }
+        } else {
+          console.warn('\n⚠️  Could not extract buildId from generated HTML');
+        }
+      }
+    } catch (err) {
+      console.error(`\n⚠️  current-build-id update failed: ${err.message}`);
+    }
+  }
+
   const duration = Math.round((Date.now() - startTime) / 1000);
   const minutes = Math.floor(duration / 60);
   const seconds = duration % 60;
   const totalVariants = pagesToGenerate.reduce((sum, page) => sum + page.variants, 0);
-  
+
   console.log('\n' + '█'.repeat(70));
   console.log('📊 GENERATION COMPLETE');
   console.log('█'.repeat(70));

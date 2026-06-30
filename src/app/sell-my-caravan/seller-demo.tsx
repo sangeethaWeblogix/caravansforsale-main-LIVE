@@ -118,7 +118,7 @@ export default function SellerDemo() {
                 <img src="/images/australia.png" alt="Australia" />
               </div>
               <div className="demo-price-card__header">
-              <h3>Looking to sell your caravana?</h3>
+              <h3>Looking to sell your caravan?</h3>
             </div>
               <p className="demo-price-card__desc">
                 CaravansForSale.com.au helps private sellers advertise directly to genuine caravan buyers for a one-time $49 listing fee, with no commissions, no subscriptions and your ad live until sold.

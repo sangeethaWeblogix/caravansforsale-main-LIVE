@@ -410,9 +410,23 @@ async function getStaticHtmlFromKV(url, env) {
     
     // Fetch from KV
     const html = await env.CFS_STATIC_PAGES.get(kvKey);
-    
+
     if (!html) {
       return null;
+    }
+
+    // Build-ID mismatch check: if Vercel has been redeployed since the KV HTML was
+    // generated, the embedded __NEXT_DATA__ buildId will be stale. Serving stale HTML
+    // causes RSC client-side navigation to fail silently (filter apply doesn't update
+    // the page) because the client's router state and Vercel's live build are out of sync.
+    // Fix: bypass KV HTML and serve fresh from Vercel when buildIds differ.
+    const currentBuildId = await env.CFS_STATIC_PAGES.get('current-build-id');
+    if (currentBuildId) {
+      const htmlBuildId = html.match(/"buildId":"([^"]+)"/)?.[1];
+      if (htmlBuildId && htmlBuildId !== currentBuildId) {
+        console.log(`Build-ID mismatch: KV=${htmlBuildId}, live=${currentBuildId} — bypassing KV for ${kvKey}`);
+        return null; // Falls through to PRIORITY 5 (Vercel origin)
+      }
     }
 
     // Inject shuffle seed so React hydration uses the same variant order.
