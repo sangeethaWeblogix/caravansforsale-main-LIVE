@@ -312,10 +312,13 @@ async function prewarmNextPage(url, responseBody, env) {
     });
     const body = await res.text();
 
-    await env.CFS_STATIC_PAGES.put(nextKey, body, {
-      expirationTtl: JSON_CACHE_STALE_TTL,
-      metadata: { savedAt: Date.now(), status: res.status }
-    });
+    // Only cache successful responses — never store redirects (3xx) or errors (4xx/5xx)
+    if (res.status >= 200 && res.status < 300) {
+      await env.CFS_STATIC_PAGES.put(nextKey, body, {
+        expirationTtl: JSON_CACHE_STALE_TTL,
+        metadata: { savedAt: Date.now(), status: res.status }
+      });
+    }
   } catch (e) {
     console.error('Pre-warm next page failed:', e.message);
   }
@@ -329,10 +332,13 @@ async function refreshJsonCache(originalUrl, env, cacheKey) {
   try {
     const res = await fetch(originalUrl);
     const body = await res.text();
-    await env.CFS_STATIC_PAGES.put(cacheKey, body, {
-      expirationTtl: JSON_CACHE_STALE_TTL,
-      metadata: { savedAt: Date.now(), status: res.status }
-    });
+    // Only cache successful responses — never overwrite a valid entry with a redirect or error
+    if (res.status >= 200 && res.status < 300) {
+      await env.CFS_STATIC_PAGES.put(cacheKey, body, {
+        expirationTtl: JSON_CACHE_STALE_TTL,
+        metadata: { savedAt: Date.now(), status: res.status }
+      });
+    }
   } catch (e) {
     console.error('Background JSON refresh failed:', e.message);
   }
