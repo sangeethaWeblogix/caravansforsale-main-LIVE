@@ -338,9 +338,11 @@ async function processUrl(url, index, total) {
     return { status: 'skip' };
   }
 
-  // Skip auth errors — means WP_API_KEY is wrong/missing
+  // Skip auth errors — log response body once to diagnose the exact cause
   if (res.status === 401 || res.status === 403) {
-    console.log(`[SKIP] [${index}/${total}] HTTP ${res.status} (auth error) → API Key issue? URL: ${apiUrl}`);
+    const authBody = await res.text().catch(() => '(could not read body)');
+    console.log(`[SKIP] [${index}/${total}] HTTP ${res.status} (auth error) URL: ${apiUrl}`);
+    console.log(`         Response: ${authBody.substring(0, 300)}`);
     return { status: 'skip' };
   }
 
