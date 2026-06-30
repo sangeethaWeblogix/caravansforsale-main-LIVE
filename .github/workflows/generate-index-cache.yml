@@ -1,14 +1,12 @@
-name: Generate Index Cache (HTML + JSON from url.csv)
+name: Generate Index Cache (HTML from url.csv)
 
-# Generates BOTH the HTML KV cache (5 variants per URL) AND the JSON KV cache
-# (page=1 per URL) for all 3,462 indexable listing URLs in src/app/url.csv.
+# Generates the HTML KV cache (5 variants per URL) for all 3,462 indexable
+# listing URLs in src/app/url.csv.
 #
-# This workflow uses url.csv as the single source of truth, so both cache layers
-# are always consistent with each other. It complements the existing workflows:
-#   generate-cache.yml      — HTML cache via WP Sitemap API (runs at 7 AM)
-#   generate-json-cache.yml — JSON cache via url.csv         (runs at 2 AM)
+# JSON KV cache is now handled by the WordPress plugin (cfs-json-cache-warmer)
+# which calls get_products_fast_new() directly in PHP — no sgcaptcha issues.
 #
-# Use this workflow when you need to re-warm BOTH layers at once, e.g. after
+# Use this workflow when you need to re-warm the HTML cache, e.g. after
 # a Cloudflare KV namespace reset or an initial deployment.
 #
 # BATCH STRATEGY
@@ -18,14 +16,12 @@ name: Generate Index Cache (HTML + JSON from url.csv)
 #
 # Per-batch timing estimate:
 #   250 URLs × 5 HTML variants × 3s/fetch ÷ 3 parallel = ~21 min
-#   JSON: runs concurrently with HTML — negligible overhead
 #   With generous margin, 60 min timeout is safe.
 #
 # REQUIRED SECRETS
 #   VERCEL_BASE_URL     — Direct Vercel URL, bypasses Cloudflare Worker
-#   WP_API_KEY          — WordPress REST API key
 #   CF_ACCOUNT_ID       — Cloudflare account ID
-#   CF_KV_NAMESPACE_ID  — KV namespace for HTML + JSON cache
+#   CF_KV_NAMESPACE_ID  — KV namespace for HTML cache
 #   CF_API_TOKEN        — Cloudflare API token with KV write permission
 
 on:
@@ -64,8 +60,6 @@ jobs:
       - name: Generate Index Cache (Batch ${{ matrix.batch }}/14)
         env:
           VERCEL_BASE_URL:      ${{ secrets.VERCEL_BASE_URL }}
-          WP_API_BASE:          'https://admin.caravansforsale.com.au/wp-json/cfs/v1/new_optimize_code'
-          WP_API_KEY:           ${{ secrets.WP_API_KEY }}
           CF_ACCOUNT_ID:        ${{ secrets.CF_ACCOUNT_ID }}
           CF_KV_NAMESPACE_ID:   ${{ secrets.CF_KV_NAMESPACE_ID }}
           CF_API_TOKEN:         ${{ secrets.CF_API_TOKEN }}

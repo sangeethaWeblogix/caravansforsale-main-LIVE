@@ -1,21 +1,19 @@
 /* eslint-disable */
 /**
- * Unified Index Cache Generator
+ * Index Cache Generator (HTML only)
  *
  * Reads src/app/url.csv (all 3,462 indexable listing URLs) and generates:
- *   1. HTML KV cache  — 5 rendered variants per URL (fetched from Vercel with shuffle_seed)
- *   2. JSON KV cache  — pre-warmed WP API response for page=1 per URL
+ *   HTML KV cache — 5 rendered variants per URL (fetched from Vercel with shuffle_seed)
  *
- * Both layers are generated concurrently per URL, using url.csv as the single
- * source of truth so HTML and JSON caches stay in sync.
+ * JSON KV cache is handled by the WordPress plugin (cfs-json-cache-warmer) which
+ * calls get_products_fast_new() directly in PHP — no HTTP requests needed.
  *
  * Supports BATCH_SIZE + BATCH_NUMBER for parallel GitHub Actions matrix runs.
  * Set SKIP_ROUTES_UPDATE=true when running in parallel; the update-routes-mapping
  * job rebuilds routes-mapping from KV metadata after all batches finish.
  *
- * KV key format — must match worker.js and generate-sitemap-cache-simple.js:
+ * KV key format — must match worker.js:
  *   HTML:  {slug}-v{1..5}   (e.g. caravans-victoria-v1)
- *   JSON:  json:api:{sorted-params}  (e.g. json:api:page=1&state=victoria)
  *
  * Routes-mapping entry (ALWAYS arrays):
  *   "/listings/caravans/victoria/": ["caravans-victoria-v1", ..., "caravans-victoria-v5"]
@@ -51,8 +49,6 @@ async function fetchWithTimeout(url, options = {}, timeoutMs = 30000) {
 
 // ── Environment ───────────────────────────────────────────────────────────────
 const VERCEL_BASE_URL    = process.env.VERCEL_BASE_URL    || 'https://caravansforsale-main-live.vercel.app';
-const WP_API_BASE        = process.env.WP_API_BASE        || 'https://admin.caravansforsale.com.au/wp-json/cfs/v1/new_optimize_code';
-const WP_API_KEY         = process.env.WP_API_KEY         || '';
 const CF_ACCOUNT_ID      = process.env.CF_ACCOUNT_ID;
 const CF_KV_NAMESPACE_ID = process.env.CF_KV_NAMESPACE_ID;
 const CF_API_TOKEN       = process.env.CF_API_TOKEN;
@@ -65,8 +61,6 @@ const BATCH_NUMBER       = process.env.BATCH_NUMBER ? parseInt(process.env.BATCH
 const HTML_VARIANTS       = 5;
 const HTML_CONCURRENCY    = 3;   // max parallel URL slots for HTML generation
 const HTML_FETCH_TIMEOUT  = 30000;
-const JSON_FETCH_TIMEOUT  = 15000;
-const JSON_KV_STALE_TTL   = 86400; // 24 hours — matches worker.js JSON_CACHE_STALE_TTL
 const KV_UPLOAD_RETRIES   = 3;
 const KV_RETRY_DELAY      = 2000;
 const DELAY_BETWEEN_URLS  = 200; // ms between URL batches to reduce burst load
@@ -77,7 +71,6 @@ const PRIORITY_PATHS = new Set(['/', '/listings/']);
 
 // HTTP statuses that must not be retried (saves ~6 s wasted per variant)
 const HTML_SKIP_IMMEDIATELY = new Set([404, 410, 500, 502, 503]);
-const JSON_SKIP_IMMEDIATELY = new Set([500, 502, 503]);
 
 // ── CSV parsing ───────────────────────────────────────────────────────────────
 /**
@@ -382,55 +375,6 @@ async function generateHtmlVariants(urlPath, slug) {
   return variantKeys;
 }
 
-// ── JSON generation ───────────────────────────────────────────────────────────
-/**
- * Fetch page=1 JSON from the WP API and upload to KV.
- * Returns the KV key on success, null on skip/error.
- */
-async function generateJsonCache(urlStr, urlPath) {
-  const params = pathToApiParams(urlStr);
-  if (!params) {
-    console.log(`   [JSON] Skip: cannot parse params from ${urlPath}`);
-    return null;
-  }
-
-  const apiUrl = `${WP_API_BASE}?${params.toString()}`;
-  const kvKey  = buildJsonKvKey(params);
-
-  try {
-    const res = await fetchWithTimeout(apiUrl, {
-      headers: {
-        'Accept': 'application/json',
-        ...(WP_API_KEY ? { 'X-API-Key': WP_API_KEY } : {}),
-      },
-    }, JSON_FETCH_TIMEOUT);
-
-    if (JSON_SKIP_IMMEDIATELY.has(res.status)) {
-      console.log(`   [JSON] Skip HTTP ${res.status}`);
-      return null;
-    }
-
-    const body = await res.text();
-
-    if (!body.trim().startsWith('{') && !body.includes('{"')) {
-      console.log(`   [JSON] Skip non-JSON response`);
-      return null;
-    }
-
-    await uploadToKV(kvKey, body, 'application/json', {
-      savedAt:   Date.now(),
-      status:    res.status,
-      sourceUrl: urlStr,
-    });
-
-    console.log(`   [JSON] OK → ${kvKey.substring(0, 70)}`);
-    return kvKey;
-  } catch (e) {
-    console.error(`   [JSON] ERROR: ${e.message}`);
-    return null;
-  }
-}
-
 // ── Per-URL processor ─────────────────────────────────────────────────────────
 async function processUrl(urlStr, index, total) {
   const urlPath = urlToPath(urlStr);
@@ -455,11 +399,8 @@ async function processUrl(urlStr, index, total) {
   const slug = pathToSlug(urlPath);
   console.log(`\n[${index}/${total}] ${urlPath}  slug=${slug}`);
 
-  // Generate HTML variants and JSON cache concurrently for this URL
-  const [variantKeys, jsonKey] = await Promise.all([
-    generateHtmlVariants(urlPath, slug),
-    generateJsonCache(urlStr, urlPath),
-  ]);
+  // Generate HTML variants (JSON cache is handled by the WordPress plugin)
+  const variantKeys = await generateHtmlVariants(urlPath, slug);
 
   return {
     status:      'done',
@@ -467,7 +408,6 @@ async function processUrl(urlStr, index, total) {
     urlPath,
     slug,
     variantKeys: variantKeys || [],
-    jsonKey,
   };
 }
 
@@ -551,10 +491,10 @@ async function main() {
   }
 
   console.log('\n' + '='.repeat(70));
-  console.log('INDEX CACHE GENERATOR  —  HTML (5 variants) + JSON per URL');
+  console.log('INDEX CACHE GENERATOR  —  HTML (5 variants per URL)');
+  console.log('JSON cache handled by WordPress plugin (cfs-json-cache-warmer)');
   console.log('='.repeat(70));
   console.log(`Vercel URL:      ${VERCEL_BASE_URL}`);
-  console.log(`WP API Base:     ${WP_API_BASE}`);
   console.log(`CSV path:        ${URLS_CSV}`);
   console.log(`HTML concurrency: ${HTML_CONCURRENCY} parallel URLs`);
   console.log(`HTML variants:   ${HTML_VARIANTS} per URL`);
@@ -591,7 +531,6 @@ async function main() {
   const done     = results.filter(r => r.status === 'done');
   const skipped  = results.filter(r => r.status === 'skip');
   const htmlOk   = done.reduce((n, r) => n + r.variantKeys.length, 0);
-  const jsonOk   = done.filter(r => r.jsonKey).length;
 
   console.log('\n' + '='.repeat(70));
   console.log('SUMMARY');
@@ -599,7 +538,6 @@ async function main() {
   console.log(`URLs processed:   ${done.length}`);
   console.log(`URLs skipped:     ${skipped.length}`);
   console.log(`HTML KV entries:  ${htmlOk}`);
-  console.log(`JSON KV entries:  ${jsonOk}`);
   console.log(`Duration:         ${Math.floor(elapsed / 60)}m ${elapsed % 60}s`);
   console.log('='.repeat(70));
 
