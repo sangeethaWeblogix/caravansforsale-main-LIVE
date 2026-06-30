@@ -178,6 +178,12 @@ function parsePathToApiParams(urlString) {
       m = seg.match(/^between-(\d+)-(\d+)-people-sleeping-capacity$/);
       if (m) { filters.from_sleep = m[1]; filters.to_sleep = m[2]; continue; }
 
+      m = seg.match(/^over-(\d+)-people-sleeping-capacity$/);
+      if (m) { filters.from_sleep = m[1]; continue; }
+
+      m = seg.match(/^under-(\d+)-people-sleeping-capacity$/);
+      if (m) { filters.to_sleep = m[1]; continue; }
+
       m = seg.match(/^(\d+)-people-sleeping-capacity$/);
       if (m) { filters.from_sleep = m[1]; filters.to_sleep = m[1]; continue; }
 
@@ -315,6 +321,7 @@ async function processUrl(url, index, total) {
     res = await fetch(apiUrl, {
       headers: {
         'Accept': 'application/json',
+        'User-Agent': 'Mozilla/5.0 (compatible; CFS-CacheWarmer/1.0)',
         ...(WP_API_KEY ? { 'X-API-Key': WP_API_KEY } : {}),
       },
       timeout: 30000, // 30s — prevents hanging on slow/stuck server responses
