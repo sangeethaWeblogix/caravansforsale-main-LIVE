@@ -306,6 +306,33 @@ async function uploadToKV(key, value, metadata) {
   }
 }
 
+// ── Fetch with sgcaptcha retry ────────────────────────────────────────────────
+// LiteSpeed rate-limiter can re-trigger sgcaptcha (HTTP 202) mid-batch even with
+// the bypass header set. Back off and retry up to 3 times before giving up.
+const CAPTCHA_RETRIES    = 3;
+const CAPTCHA_BACKOFF_MS = 8000; // wait 8s before each retry
+
+async function fetchWithCaptchaRetry(apiUrl, attempt = 1) {
+  const res = await fetch(apiUrl, {
+    headers: {
+      'Accept': 'application/json',
+      'User-Agent': 'Mozilla/5.0 (compatible; CFS-CacheWarmer/1.0)',
+      ...(WP_API_KEY        ? { 'X-API-Key':    WP_API_KEY }        : {}),
+      ...(WARMER_BYPASS_KEY ? { 'X-Warmer-Key': WARMER_BYPASS_KEY } : {}),
+    },
+    timeout: 30000,
+  });
+
+  // 202 = sgcaptcha challenge — back off and retry
+  if (res.status === 202 && attempt <= CAPTCHA_RETRIES) {
+    console.log(`[WAIT]  sgcaptcha triggered (attempt ${attempt}/${CAPTCHA_RETRIES}) — waiting ${CAPTCHA_BACKOFF_MS / 1000}s...`);
+    await delay(CAPTCHA_BACKOFF_MS * attempt); // 8s, 16s, 24s
+    return fetchWithCaptchaRetry(apiUrl, attempt + 1);
+  }
+
+  return res;
+}
+
 // ── Process a single URL ─────────────────────────────────────────────────────
 async function processUrl(url, index, total) {
   const params = parsePathToApiParams(url);
@@ -319,15 +346,7 @@ async function processUrl(url, index, total) {
 
   let res;
   try {
-    res = await fetch(apiUrl, {
-      headers: {
-        'Accept': 'application/json',
-        'User-Agent': 'Mozilla/5.0 (compatible; CFS-CacheWarmer/1.0)',
-        ...(WP_API_KEY        ? { 'X-API-Key':     WP_API_KEY }        : {}),
-        ...(WARMER_BYPASS_KEY ? { 'X-Warmer-Key':  WARMER_BYPASS_KEY } : {}),
-      },
-      timeout: 30000, // 30s — prevents hanging on slow/stuck server responses
-    });
+    res = await fetchWithCaptchaRetry(apiUrl);
   } catch (fetchErr) {
     console.log(`[ERROR] [${index}/${total}] Network error: ${url} — ${fetchErr.message}`);
     return { status: 'error' };
@@ -354,6 +373,12 @@ async function processUrl(url, index, total) {
     // Log and continue — don't crash the entire batch.
     console.log(`[ERROR] [${index}/${total}] Premature close reading response body: ${url} — ${bodyErr.message}`);
     return { status: 'error' };
+  }
+
+  // Still a captcha page after all retries — skip
+  if (res.status === 202 || body.includes('sgcaptcha')) {
+    console.log(`[SKIP] [${index}/${total}] sgcaptcha persists after retries: ${url}`);
+    return { status: 'skip' };
   }
 
   // Don't cache error pages (HTML error responses instead of JSON)
