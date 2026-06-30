@@ -42,7 +42,7 @@ export default function HomeLatestBlogs({ blogPosts  }: Props) {
       <div className="container">
         <div className="title">
           <div className="tpof_tab">
-            <h3>Latest Blogs</h3>
+            <h3 className="hd-section-title">Latest Blogs</h3>
             <div className="viewall_bttn">
               <a href="/blog/">
                 <i className="bi bi-chevron-right" />
@@ -52,20 +52,6 @@ export default function HomeLatestBlogs({ blogPosts  }: Props) {
         </div>
       
         <div className="content">
-          <Swiper
-                modules={[Navigation]}
-                navigation={{
-                  nextEl: ".blog-manu-next",
-                  prevEl: ".blog-manu-prev",
-                }}
-                //autoplay={{ delay: 3000 }}
-                spaceBetween={20}
-                slidesPerView={1}
-                breakpoints={{
-                  768: { slidesPerView: 2 },
-                  1024: { slidesPerView: 3 },
-                }}
-              >
           {loading ? (
             <div className="row">
               {[...Array(3)].map((_, i) => (
@@ -73,59 +59,55 @@ export default function HomeLatestBlogs({ blogPosts  }: Props) {
               ))}
             </div>
           ) : (
-            <div className="blog-content">
-              
+            <div className="position-relative">
+              <Swiper
+                modules={[Navigation]}
+                navigation={{
+                  nextEl: ".blog-manu-next",
+                  prevEl: ".blog-manu-prev",
+                }}
+                spaceBetween={20}
+                slidesPerView={1}
+                breakpoints={{
+                  768: { slidesPerView: 2 },
+                  1024: { slidesPerView: 3 },
+                }}
+              >
                 {posts.map((post) => {
                   const href = getHref(post);
                   return (
                     <SwiperSlide key={post.id}>
                       <div className="side-posts">
                         <div className="item">
-                     <a href={href} >
-                          <div className="img img-cover">
-                            {post.image && (
-                              <Image
-                                src={post.image}
-                                alt={post.title}
-                                width={300}
-                                height={200}
-                                priority
-                              />
-                            )}
-                          </div>
-
-                          <div className="info">
-                            <h4 className="title">
-                              
-                                {post.title}
-                           
-                            </h4>
-                            <div className="date-author">
-                             
-                                {formatPostDate(post.date ?? "")}
-                             
+                          <a href={href}>
+                            <div className="img img-cover">
+                              {post.image && (
+                                <Image
+                                  src={post.image}
+                                  alt={post.title}
+                                  width={300}
+                                  height={200}
+                                  priority
+                                />
+                              )}
                             </div>
-                          </div>
-                                                                          </a>
-
+                            <div className="info">
+                              <h4 className="title">{post.title}</h4>
+                              <div className="date-author">
+                                {formatPostDate(post.date ?? "")}
+                              </div>
+                            </div>
+                          </a>
                         </div>
                       </div>
                     </SwiperSlide>
-
                   );
                 })}
-                {!blogPosts.length && (
-                  <div className="col-12 py-3 text-muted">No posts found.</div>
-
-                )}
-              
+              </Swiper>
+              <div className="swiper-button-next blog-manu-next" />
+              <div className="swiper-button-prev blog-manu-prev" />
             </div>
           )}
-          </Swiper>
-        
-                {/* Arrows */}
-                <div className="swiper-button-next blog-manu-next" />
-                <div className="swiper-button-prev blog-manu-prev" />
         </div>
 
         
