@@ -18,12 +18,12 @@ jobs:
   # ==========================================
   generate-json-cache:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     strategy:
       matrix:
         batch: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
       fail-fast: false
-      max-parallel: 10
+      max-parallel: 3   # 3 batches × 1 concurrent = 3 total connections — avoids sgcaptcha rate trigger
     steps:
       - name: Checkout
         uses: actions/checkout@v4

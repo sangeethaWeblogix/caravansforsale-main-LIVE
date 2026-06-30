@@ -36,8 +36,8 @@ const BATCH_SIZE        = process.env.BATCH_SIZE   ? parseInt(process.env.BATCH_
 const BATCH_NUMBER      = process.env.BATCH_NUMBER ? parseInt(process.env.BATCH_NUMBER) : null;
 
 // ── Configuration ────────────────────────────────────────────────────────────
-const CONCURRENCY           = 5;
-const DELAY_BETWEEN_URLS    = 300;  // ms between URL batches
+const CONCURRENCY           = 1;    // 1 sequential request per batch — prevents sgcaptcha rate trigger
+const DELAY_BETWEEN_URLS    = 500;  // ms between requests
 const KV_STALE_TTL          = 86400; // 24 hours — matches worker JSON_CACHE_STALE_TTL
 const KV_UPLOAD_RETRIES     = 3;
 const KV_RETRY_DELAY        = 2000;
