@@ -317,6 +317,7 @@ async function processUrl(url, index, total) {
         'Accept': 'application/json',
         ...(WP_API_KEY ? { 'X-API-Key': WP_API_KEY } : {}),
       },
+      timeout: 30000, // 30s — prevents hanging on slow/stuck server responses
     });
   } catch (fetchErr) {
     console.log(`[ERROR] [${index}/${total}] Network error: ${url} — ${fetchErr.message}`);
@@ -328,11 +329,34 @@ async function processUrl(url, index, total) {
     return { status: 'skip' };
   }
 
-  const body = await res.text();
+  // Skip auth errors — means WP_API_KEY is wrong/missing
+  if (res.status === 401 || res.status === 403) {
+    console.log(`[SKIP] [${index}/${total}] HTTP ${res.status} (auth error) → API Key issue? URL: ${apiUrl}`);
+    return { status: 'skip' };
+  }
+
+  let body;
+  try {
+    body = await res.text();
+  } catch (bodyErr) {
+    // Server dropped the connection before sending the full response (premature close).
+    // Log and continue — don't crash the entire batch.
+    console.log(`[ERROR] [${index}/${total}] Premature close reading response body: ${url} — ${bodyErr.message}`);
+    return { status: 'error' };
+  }
 
   // Don't cache error pages (HTML error responses instead of JSON)
   if (!body.trim().startsWith('{') && !body.includes('{"')) {
-    console.log(`[SKIP] [${index}/${total}] Non-JSON response: ${url}`);
+    console.log(`[SKIP] [${index}/${total}] Non-JSON response (HTTP ${res.status}): ${url}`);
+    console.log(`         API URL: ${apiUrl}`);
+    console.log(`         Response preview: ${body.substring(0, 150).replace(/\s+/g, ' ')}`);
+    return { status: 'skip' };
+  }
+
+  // Don't cache WP REST API error responses (auth failures, route-not-found, etc.)
+  if (body.includes('"code"') && (body.includes('"rest_forbidden"') || body.includes('"rest_no_route"') || body.includes('"status":401') || body.includes('"status":403'))) {
+    console.log(`[SKIP] [${index}/${total}] WP API error response (HTTP ${res.status}): ${url}`);
+    console.log(`         Response: ${body.substring(0, 200)}`);
     return { status: 'skip' };
   }
 
@@ -380,6 +404,7 @@ async function main() {
   console.log(`CSV:         ${URLS_CSV}`);
   console.log(`Concurrency: ${CONCURRENCY}`);
   console.log(`KV TTL:      ${KV_STALE_TTL}s`);
+  console.log(`API Key:     ${WP_API_KEY ? '✓ set' : '✗ MISSING — requests will get 401'}`);
   console.log('');
 
   let allUrls = readUrlsFromCsv(URLS_CSV);
