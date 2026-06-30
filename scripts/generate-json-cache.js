@@ -25,9 +25,10 @@ const fs    = require('fs');
 const path  = require('path');
 
 // ── Environment ──────────────────────────────────────────────────────────────
-const WP_API_BASE       = process.env.WP_API_BASE || 'https://admin.caravansforsale.com.au/wp-json/cfs/v1/new_optimize_code';
-const WP_API_KEY        = process.env.WP_API_KEY || '';
-const CF_ACCOUNT_ID     = process.env.CF_ACCOUNT_ID;
+const WP_API_BASE        = process.env.WP_API_BASE || 'https://admin.caravansforsale.com.au/wp-json/cfs/v1/new_optimize_code';
+const WP_API_KEY         = process.env.WP_API_KEY || '';
+const WARMER_BYPASS_KEY  = process.env.WARMER_BYPASS_KEY || '';
+const CF_ACCOUNT_ID      = process.env.CF_ACCOUNT_ID;
 const CF_KV_NAMESPACE_ID = process.env.CF_KV_NAMESPACE_ID;
 const CF_API_TOKEN      = process.env.CF_API_TOKEN;
 const URLS_CSV          = process.env.URLS_CSV || path.join(__dirname, '../src/app/url.csv');
@@ -322,7 +323,8 @@ async function processUrl(url, index, total) {
       headers: {
         'Accept': 'application/json',
         'User-Agent': 'Mozilla/5.0 (compatible; CFS-CacheWarmer/1.0)',
-        ...(WP_API_KEY ? { 'X-API-Key': WP_API_KEY } : {}),
+        ...(WP_API_KEY        ? { 'X-API-Key':     WP_API_KEY }        : {}),
+        ...(WARMER_BYPASS_KEY ? { 'X-Warmer-Key':  WARMER_BYPASS_KEY } : {}),
       },
       timeout: 30000, // 30s — prevents hanging on slow/stuck server responses
     });
@@ -412,6 +414,7 @@ async function main() {
   console.log(`Concurrency: ${CONCURRENCY}`);
   console.log(`KV TTL:      ${KV_STALE_TTL}s`);
   console.log(`API Key:     ${WP_API_KEY ? '✓ set' : '✗ MISSING — requests will get 401'}`);
+  console.log(`Bypass Key:  ${WARMER_BYPASS_KEY ? '✓ set' : '✗ MISSING — sgcaptcha may block requests'}`);
   console.log('');
 
   let allUrls = readUrlsFromCsv(URLS_CSV);
