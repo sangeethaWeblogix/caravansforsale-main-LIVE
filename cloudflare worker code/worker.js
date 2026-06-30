@@ -149,6 +149,7 @@ function buildJsonCacheKey(url) {
   const params = new URLSearchParams(url.search);
   params.delete('clickid');
   params.delete('msid');
+  params.delete('shuffle_seed'); // shuffle_seed is a client-side display hint, not a data filter
   return buildJsonCacheKeyFromParams(params);
 }
 
@@ -240,13 +241,16 @@ async function handleJsonApiCache(request, url, env, ctx) {
   const body = await originResponse.text();
   const status = originResponse.status;
 
-  // Store in KV
-  ctx.waitUntil(
-    env.CFS_STATIC_PAGES.put(cacheKey, body, {
-      expirationTtl: JSON_CACHE_STALE_TTL,
-      metadata: { savedAt: Date.now(), status }
-    }).catch(e => console.error('KV write error (json cache):', e.message))
-  );
+  // Only cache successful responses — never store redirects (3xx) or server errors (5xx).
+  // A stored 308 would be replayed to every future request for this key, breaking the API.
+  if (status >= 200 && status < 300) {
+    ctx.waitUntil(
+      env.CFS_STATIC_PAGES.put(cacheKey, body, {
+        expirationTtl: JSON_CACHE_STALE_TTL,
+        metadata: { savedAt: Date.now(), status }
+      }).catch(e => console.error('KV write error (json cache):', e.message))
+    );
+  }
 
   // No pre-warm on MISS — see comment above
 
