@@ -47,8 +47,9 @@ const _LISTING_API_CALLS = [
   "fetchBottomLinks",
 ] as const;
 
-const _fetchListingsData = unstable_cache(
-  async (filtersJson: string, page: number) => {
+const _makeFetchListingsData = (filtersJson: string, page: number) =>
+  unstable_cache(
+    async () => {
     const filters = JSON.parse(filtersJson);
     const _t = Date.now();
 
@@ -134,9 +135,9 @@ const _fetchListingsData = unstable_cache(
       bottomLinksData: BottomLinksData | null;
     };
   },
-  ["listings-page-data"],
+  ["listings-page-data", filtersJson, String(page)],
   { revalidate: 86400, tags: ["listings"] }
-);
+  );
 
 export async function generateStaticParams() {
   const allFiles = [
@@ -432,7 +433,7 @@ export default async function Listings({
   let bottomLinksData: BottomLinksData | null = null;
 
   try {
-    const data = await _fetchListingsData(JSON.stringify(apiFilters), page);
+    const data = await _makeFetchListingsData(JSON.stringify(apiFilters), page)();
     ({ response, linksData, productListRes, initialCategoryCounts, initialMakeCounts, bottomLinksData } = data);
   } catch (err) {
     const msg = err instanceof Error ? err.message : "";
