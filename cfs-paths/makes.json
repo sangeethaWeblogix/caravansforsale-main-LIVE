@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "makes",
-    "count": 261,
+    "count": 260,
     "paths": [
         "active/",
         "adria/",
@@ -227,7 +227,6 @@
         "supreme/",
         "swag/",
         "swift/",
-        "tango/",
         "the-little-caravan-company/",
         "titan/",
         "titanium/",
@@ -265,5 +264,5 @@
         "york/",
         "zone-rv/"
     ],
-    "generated_at": "2026-06-30 16:07:09"
+    "generated_at": "2026-07-01 15:52:12"
 }
