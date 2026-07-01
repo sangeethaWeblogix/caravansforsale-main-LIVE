@@ -98,7 +98,11 @@ export function buildSlugFromFilters(f: Filters): string {
   
 
   if (fromSleep && toSleep) {
-    segments.push(`between-${fromSleep}-${toSleep}-people-sleeping-capacity`);
+    if (fromSleep === toSleep) {
+      segments.push(`${fromSleep}-people-sleeping-capacity`);
+    } else {
+      segments.push(`between-${fromSleep}-${toSleep}-people-sleeping-capacity`);
+    }
   } else if (fromSleep) {
     segments.push(`over-${fromSleep}-people-sleeping-capacity`);
   } else if (toSleep) {

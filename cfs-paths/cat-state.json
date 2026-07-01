@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "cat-state",
-    "count": 46,
+    "count": 44,
     "paths": [
         "family-category/australian-capital-territory-state/",
         "family-category/new-south-wales-state/",
@@ -12,7 +12,6 @@
         "family-category/victoria-state/",
         "family-category/western-australia-state/",
         "hybrid-category/new-south-wales-state/",
-        "hybrid-category/northern-territory-state/",
         "hybrid-category/queensland-state/",
         "hybrid-category/south-australia-state/",
         "hybrid-category/tasmania-state/",
@@ -20,7 +19,6 @@
         "hybrid-category/western-australia-state/",
         "luxury-category/australian-capital-territory-state/",
         "luxury-category/new-south-wales-state/",
-        "luxury-category/northern-territory-state/",
         "luxury-category/queensland-state/",
         "luxury-category/south-australia-state/",
         "luxury-category/tasmania-state/",
@@ -50,5 +48,5 @@
         "touring-category/victoria-state/",
         "touring-category/western-australia-state/"
     ],
-    "generated_at": "2026-06-30 16:07:10"
+    "generated_at": "2026-07-01 15:52:13"
 }
