@@ -3,25 +3,25 @@
 import Image from "next/image";
 
 const MAJOR_CITIES = [
-  { name: "Adelaide",   href: "/listings/caravans-for-sale-in-south-australia/",  imgSrc: "/images/Adelaide.png"   },
-  { name: "Brisbane",   href: "/listings/caravans-for-sale-in-queensland/",        imgSrc: "/images/Brisbane.png"   },
-  { name: "Gold Coast", href: "/listings/caravans-for-sale-in-queensland/",        imgSrc: "/images/Gold-Coast.png" },
-  { name: "Melbourne",  href: "/listings/caravans-for-sale-in-victoria/",          imgSrc: "/images/Melbourne.png"  },
-  { name: "Perth",      href: "/listings/caravans-for-sale-in-western-australia/", imgSrc: "/images/Perth.png"      },
-  { name: "Sydney",     href: "/listings/caravans-for-sale-in-new-south-wales/",   imgSrc: "/images/Sydney.png"     },
+  { name: "Adelaide",   href: "/listings/south-australia-state/adelaide-region/",    imgSrc: "/images/Adelaide.png"   },
+  { name: "Brisbane",   href: "/listings/queensland-state/brisbane-region/",         imgSrc: "/images/Brisbane.png"   },
+  { name: "Gold Coast", href: "/listings/queensland-state/gold-coast-region/",       imgSrc: "/images/Gold-Coast.png" },
+  { name: "Melbourne",  href: "/listings/victoria-state/melbourne-region/",          imgSrc: "/images/Melbourne.png"  },
+  { name: "Perth",      href: "/listings/western-australia-state/perth-region/",     imgSrc: "/images/Perth.png"      },
+  { name: "Sydney",     href: "/listings/new-south-wales-state/sydney-region/",      imgSrc: "/images/Sydney.png"     },
 ];
 
 const MINOR_CITIES = [
-  { name: "Cairns",         href: "/listings/?location=cairns" },
-  { name: "Canberra",       href: "/listings/?location=canberra" },
-  { name: "Darwin",         href: "/listings/?location=darwin" },
-  { name: "Geelong",        href: "/listings/?location=geelong" },
-  { name: "Hobart",         href: "/listings/?location=hobart" },
-  { name: "Newcastle",      href: "/listings/?location=newcastle" },
-  { name: "Sunshine Coast", href: "/listings/?location=sunshine-coast" },
-  { name: "Townsville",     href: "/listings/?location=townsville" },
-  { name: "Wollongong",     href: "/listings/?location=wollongong" },
-  { name: "Ballarat",       href: "/listings/?location=ballarat" },
+  { name: "Cairns",         href: "/listings/queensland-state/cairns-region/" },
+  { name: "Canberra",       href: "/listings/australian-capital-territory-state/australian-capital-territory-region/" },
+  { name: "Darwin",         href: "/listings/northern-territory-state/darwin-region/" },
+  { name: "Geelong",        href: "/listings/victoria-state/geelong-region/" },
+  { name: "Hobart",         href: "/listings/tasmania-state/hobart-region/" },
+  { name: "Newcastle",      href: "/listings/new-south-wales-state/newcastle-region/" },
+  { name: "Sunshine Coast", href: "/listings/queensland-state/sunshine-coast-region/" },
+  { name: "Townsville",     href: "/listings/queensland-state/townsville-region/" },
+  { name: "Wollongong",     href: "/listings/new-south-wales-state/illawarra-region/" },
+  { name: "Ballarat",       href: "/listings/victoria-state/ballarat-region/" },
 ];
 
 const FILTERS = [
