@@ -123,7 +123,7 @@ function useProductDistances(
     const uniquePincodes = [...new Set([searchPincode, ...productPincodes])];
     if (uniquePincodes.length === 0) return;
 
-    fetch(`/api/coords?p=${uniquePincodes.join(",")}`)
+    fetch(`/api/coords/?p=${uniquePincodes.join(",")}`)
       .then((r) => r.json())
       .then((data: Record<string, [number, number] | null>) => {
         setCoordsCache(data);

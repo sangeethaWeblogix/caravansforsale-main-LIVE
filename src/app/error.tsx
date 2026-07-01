@@ -11,7 +11,7 @@ interface ErrorProps {
 export default function RootError({ error, reset }: ErrorProps) {
   useEffect(() => {
     console.error("[ROOT ERROR]", error.message, error.digest ?? "");
-    fetch("/api/report-error", {
+    fetch("/api/report-error/", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

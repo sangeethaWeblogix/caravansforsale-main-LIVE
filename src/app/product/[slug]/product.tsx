@@ -499,7 +499,7 @@ export default function ClientLogger({
 
   const postTrackEvent = async (product_id: number) => {
   try {
-    await fetch("/api/track-product", {
+    await fetch("/api/track-product/", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ product_id }),

@@ -184,7 +184,7 @@ export const fetchListings = async (
   // Client-side: use internal proxy to avoid CORS. Server-side: call admin API directly.
   const isClient = typeof window !== "undefined";
   const url = isClient
-    ? `/api/listings?${params.toString()}`
+    ? `/api/listings/?${params.toString()}`
     : `${API_BASE}/new_optimize_code?${params.toString()}`;
 
   // Client cache hit — memory first, then sessionStorage (survives page refresh)

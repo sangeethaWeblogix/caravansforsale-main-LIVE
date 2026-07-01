@@ -29,7 +29,7 @@ export const fetchLocations = async (keyword: string) => {
   if (!keyword || keyword.trim().length < 2) return [];
 
   const res = await fetch(
-    `/api/location-search?keyword=${encodeURIComponent(keyword)}`,
+    `/api/location-search/?keyword=${encodeURIComponent(keyword)}`,
     { headers: { Accept: "application/json" } }
   );
 

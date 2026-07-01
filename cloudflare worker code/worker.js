@@ -254,16 +254,25 @@ async function handleJsonApiCache(request, url, env, ctx) {
 
   // No pre-warm on MISS — see comment above
 
+  // Redirects (e.g. Next.js trailingSlash 308) must carry their Location header
+  // through, otherwise fetch() on the client can't follow them and the request
+  // dead-ends with a bare 3xx — which is exactly what silently broke filter
+  // navigation on production (client called /api/listings without the trailing
+  // slash the app requires, got a Location-less 308 back here, and threw).
+  const passthroughHeaders = {
+    'Content-Type': originResponse.headers.get('Content-Type') || 'application/json;charset=UTF-8',
+    'Cache-Control': 'public, max-age=60, s-maxage=60',
+    'X-Cache': 'MISS',
+    'X-CFS-Cache': 'MISS-JSON',
+    'X-CFS-Key': cacheKey,
+    'Access-Control-Allow-Origin': '*',
+  };
+  const location = originResponse.headers.get('Location');
+  if (location) passthroughHeaders['Location'] = location;
+
   return new Response(body, {
     status,
-    headers: {
-      'Content-Type': originResponse.headers.get('Content-Type') || 'application/json;charset=UTF-8',
-      'Cache-Control': 'public, max-age=60, s-maxage=60',
-      'X-Cache': 'MISS',
-      'X-CFS-Cache': 'MISS-JSON',
-      'X-CFS-Key': cacheKey,
-      'Access-Control-Allow-Origin': '*',
-    }
+    headers: passthroughHeaders
   });
 }
 

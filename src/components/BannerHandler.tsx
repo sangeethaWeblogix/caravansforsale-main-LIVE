@@ -52,7 +52,7 @@ export function BannerProvider({ children }: { children: ReactNode }) {
           setIsLoading(false);
           return;
         }
-        const res = await fetch("/api/banners");
+        const res = await fetch("/api/banners/");
         if (!res.ok) {
           setAllBanners([]);
           return;

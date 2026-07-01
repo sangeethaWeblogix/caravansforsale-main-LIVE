@@ -66,7 +66,7 @@ export async function fetchKeywordSuggestions(
   query: string,
   signal?: AbortSignal
 ): Promise<KeywordSuggestion[]> {
-  const url = `/api/home-search?keyword=${encodeURIComponent(query)}`;
+  const url = `/api/home-search/?keyword=${encodeURIComponent(query)}`;
 
   const res = await fetch(url, { cache: "no-store", signal });
   if (!res.ok) throw new Error(`Keyword API failed: ${res.status}`);

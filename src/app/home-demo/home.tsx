@@ -151,7 +151,7 @@ export default function HomePage({
       <HomeListingSlider
         title="New Caravans for Sale"
         viewAllHref="/listings/new-caravans/"
-        apiUrl="/api/listings?per_page=12&condition=new"
+        apiUrl="/api/listings/?per_page=12&condition=new"
         badgeVariant="new"
       />
 
@@ -176,7 +176,7 @@ export default function HomePage({
       <HomeListingSlider
         title="Used Caravans for Sale"
         viewAllHref="/listings/used-caravans/"
-        apiUrl="/api/listings?per_page=12&condition=used"
+        apiUrl="/api/listings/?per_page=12&condition=used"
         badgeVariant="used"
       />
 

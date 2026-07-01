@@ -27,7 +27,7 @@ function shouldIgnore(message: string): boolean {
 
 function report(errorType: string, message: string) {
   if (shouldIgnore(message)) return;
-  fetch("/api/report-error", {
+  fetch("/api/report-error/", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({

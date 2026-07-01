@@ -4,7 +4,7 @@ const API_KEY = process.env.CFS_API_KEY; // ✅ Add this
 // api/productList/api.ts
  export const fetchMakeDetails = async () => {
   try {
-    const res = await fetch(`/api/make-details`, {
+    const res = await fetch(`/api/make-details/`, {
       headers: { Accept: "application/json" },
     });
     if (!res.ok) return [];

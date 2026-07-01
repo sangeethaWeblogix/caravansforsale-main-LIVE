@@ -114,7 +114,7 @@ export function useEnquiryForm(product: Product) {
         ? (() => { try { return JSON.parse(navHistory).join(", "); } catch { return ""; } })()
         : "";
 
-      const res = await fetch("/api/enquiry", {
+      const res = await fetch("/api/enquiry/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

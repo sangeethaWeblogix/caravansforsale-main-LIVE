@@ -1779,7 +1779,7 @@ const [states, setStates] = useState<StateOption[]>([]);
     const params = new URLSearchParams();
     params.set(type, value);
 
-    fetch(`/api/listings?${params.toString()}`, {
+    fetch(`/api/listings/?${params.toString()}`, {
       method: "GET",
       keepalive: true,
     }).catch(() => {});

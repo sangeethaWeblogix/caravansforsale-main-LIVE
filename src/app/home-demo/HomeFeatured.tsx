@@ -22,7 +22,7 @@ type Listing = {
 };
 
 async function fetchFeaturedListings(): Promise<Listing[]> {
-  const res = await fetch("/api/listings?per_page=12", { cache: "no-store" });
+  const res = await fetch("/api/listings/?per_page=12", { cache: "no-store" });
   if (!res.ok) return [];
   const json = await res.json();
   return json?.data?.products ?? [];
