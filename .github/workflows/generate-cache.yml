@@ -1,10 +1,25 @@
-name: Generate Cache (Daily)
+name: Generate Cache (Weekly Safety Net)
+
+# NOTE: This used to run daily and rebuild all 3,462 URLs every time, even
+# though most pages had zero product changes underneath them. Day-to-day
+# freshness is now handled by the event-driven flow instead:
+#   WordPress (cfs-selective-cache-invalidator.php) scans wp_amigo_product_datas
+#   every 15 min, works out exactly which listing pages a product add/edit/
+#   delete affects (state, category, make, ATM, length, sleep, price, region),
+#   refreshes JSON KV immediately, and dispatches
+#   generate-affected-cache.yml to rebuild HTML KV for just those pages.
+#
+# This workflow is now a WEEKLY safety net — it catches anything the
+# selective invalidator might miss (e.g. price-band boundary edge cases,
+# orphaned KV keys, manual DB edits that bypass both scan paths) by doing a
+# full rebuild of every URL, same as before. Run it manually any time via
+# workflow_dispatch if you need an immediate full rebuild.
 
 on:
   schedule:
-    # Run daily at 7 AM Melbourne time (AEST UTC+10 - standard time)
+    # Weekly, Sunday 7 AM Melbourne time (AEST UTC+10 - standard time)
     # Note: During DST (Oct–Apr) this will fire at 8 AM Melbourne time
-    - cron: '0 21 * * *'
+    - cron: '0 21 * * 0'
 
   workflow_dispatch:
     inputs:
