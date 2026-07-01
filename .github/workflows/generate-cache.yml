@@ -71,6 +71,10 @@ jobs:
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           TARGET_PAGE: 'all'
           SKIP_ROUTES_UPDATE: 'true'
+          # Same safety gate as the post-deploy canary: don't flip current-build-id
+          # on a partial/flaky run. A weekly full rebuild that half-fails shouldn't
+          # be able to point the whole site's cache at a build-id nothing matches.
+          REQUIRE_FULL_SUCCESS: 'true'
         run: node scripts/generate-priority-pages.js
 
   # ==========================================

@@ -1,66 +1,76 @@
 name: Post-Deploy Cache Warmup
 
+# Auto-runs on every push to main so KV HTML gets refreshed after each deploy.
+#
+# HISTORY / WHY THIS LOOKS THE WAY IT DOES:
+# This workflow used to start with an "invalidate-kv-build-id" job that wiped
+# current-build-id in KV the instant code was pushed — before anyone knew if
+# the new deploy actually worked. That meant every deploy, good or bad, sent
+# 100% of live traffic straight to Vercel origin with zero cache protection.
+# On 2026-07-01 a broken navbar/mega-menu deploy reached every visitor
+# directly for ~2 hours because of exactly this, since the two jobs below
+# that were supposed to refresh the cache afterward were also disabled.
+#
+# New behavior: regenerate the homepage + /listings/ pages against the new
+# deployment FIRST, as a canary (only 10 renders total, cheap and fast).
+# The existing KV cache — old, still-correct HTML — keeps serving live
+# traffic the entire time this runs. Only if the canary renders perfectly
+# clean (no failures, no error pages) does generate-priority-pages.js flip
+# current-build-id — that's the one moment the live site actually starts
+# serving the new deployment. If the canary fails, current-build-id is left
+# untouched, the old cache keeps serving, this job fails loudly (GitHub
+# emails the pusher + watchers on workflow failure), and warmup-urls never
+# runs at all.
+#
+# Source: src/app/url.csv (3,462 URLs × 5 variants = 17,310 KV uploads)
+# Split across 10 parallel batches of 350 URLs each.
+
 on:
-  # Auto-run on every push to main so KV HTML is invalidated and regenerated after each deploy.
   push:
     branches: [main]
   workflow_dispatch:
 
-# After every deploy: warm all listing pages in CF KV
-# so first visitors are always fast (no 6s cold render).
-# Source: src/app/url.csv (3,462 URLs × 5 variants = 17,310 KV uploads)
-# Split across 10 parallel batches of 350 URLs each.
-
 jobs:
 
   # ==========================================
-  # STEP 0: Immediately invalidate current-build-id in KV
-  # Runs BEFORE Vercel finishes deploying so the worker stops serving stale KV HTML
-  # the moment new code is pushed. Worker bypasses KV HTML when build-id doesn't match.
-  # ==========================================
-  invalidate-kv-build-id:
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - name: Set current-build-id to INVALIDATED
-        env:
-          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
-          CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
-          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
-        run: |
-          RESPONSE=$(curl -s -X PUT \
-            "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/storage/kv/namespaces/${CF_KV_NAMESPACE_ID}/values/current-build-id" \
-            -H "Authorization: Bearer ${CF_API_TOKEN}" \
-            -H "Content-Type: text/plain" \
-            -d "INVALIDATED")
-          echo "KV response: $RESPONSE"
-          echo "✅ KV HTML invalidated — worker will bypass cache until regeneration completes"
-
-  # ==========================================
-  # PRIORITY PAGES (Homepage + /listings/) — Puppeteer
+  # CANARY — Homepage + /listings/ (Puppeteer)
+  # Gate for the current-build-id flip. See header comment above.
   # ==========================================
   warmup-priority:
-    if: false  # temporarily disabled — re-enable by removing this line
-    needs: invalidate-kv-build-id
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: '24'
 
-      - name: Wait for Vercel deployment
+      - name: Wait for Vercel deployment to be ready
+        env:
+          VERCEL_BASE_URL: ${{ secrets.VERCEL_BASE_URL }}
         run: |
-          echo "Waiting 2 minutes for Vercel to finish deploying..."
-          sleep 120
+          echo "Waiting for Vercel deployment to be ready..."
+          for i in $(seq 1 20); do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${VERCEL_BASE_URL}/" --max-time 10 || echo "000")
+            echo "Attempt $i: HTTP $STATUS"
+            if [ "$STATUS" = "200" ]; then
+              echo "Vercel is ready."
+              exit 0
+            fi
+            sleep 15
+          done
+          echo "::error::Vercel deployment never became ready within 5 minutes — aborting warmup. current-build-id untouched, old cache stays live."
+          exit 1
 
       - name: Install dependencies
         run: |
           npm install node-fetch@2
           npm install puppeteer
 
-      - name: Warm priority pages
+      - name: Generate + validate priority pages (canary)
         env:
           VERCEL_BASE_URL: ${{ secrets.VERCEL_BASE_URL }}
           PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
@@ -69,14 +79,24 @@ jobs:
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           TARGET_PAGE: 'all'
           SKIP_ROUTES_UPDATE: 'true'
+          REQUIRE_FULL_SUCCESS: 'true'
         run: node scripts/generate-priority-pages.js
 
+      - name: Report canary failure
+        if: failure()
+        run: |
+          echo "::error::Canary failed — current-build-id was NOT updated. Live site is still serving the previous (last known-good) cache. Check the 'Generate + validate priority pages' step above for which page/variant failed, fix it, then re-run this workflow (Actions tab -> Post-Deploy Cache Warmup -> Re-run)."
+
   # ==========================================
-  # ALL LISTING URLS (url.csv) — 10 parallel batches of ~350 URLs each
+  # ALL LISTING URLS (url.csv) — 10 parallel batches of ~350 URLs each.
+  # Only runs once the canary above proves the new deployment is healthy.
+  # Each variant is still independently validated (existing isErrorPage
+  # skip in the generation script) — a single bad listing page just leaves
+  # its previous KV entry in place rather than overwriting it with a broken
+  # render.
   # ==========================================
   warmup-urls:
-    if: false  # temporarily disabled — re-enable by removing this line
-    needs: invalidate-kv-build-id
+    needs: warmup-priority
     runs-on: ubuntu-latest
     timeout-minutes: 90
     strategy:
@@ -90,21 +110,6 @@ jobs:
         with:
           node-version: '24'
 
-      - name: Wait for Vercel deployment
-        env:
-          VERCEL_BASE_URL: ${{ secrets.VERCEL_BASE_URL }}
-        run: |
-          echo "Waiting for Vercel deployment to be ready..."
-          for i in $(seq 1 12); do
-            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${VERCEL_BASE_URL}/listings/" --max-time 10 || echo "000")
-            echo "Attempt $i: HTTP $STATUS"
-            if [ "$STATUS" = "200" ] || [ "$STATUS" = "410" ] || [ "$STATUS" = "301" ] || [ "$STATUS" = "302" ]; then
-              echo "Vercel is ready."
-              break
-            fi
-            sleep 15
-          done
-
       - name: Warm Batch ${{ matrix.batch }} of 10
         env:
           PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
@@ -116,4 +121,3 @@ jobs:
           BATCH_NUMBER: ${{ matrix.batch }}
           SKIP_ROUTES_UPDATE: 'true'
         run: node scripts/generate-sitemap-cache-simple.js
-

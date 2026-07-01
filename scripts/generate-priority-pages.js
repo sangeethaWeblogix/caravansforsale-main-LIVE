@@ -28,6 +28,16 @@ const TARGET_PAGE = process.env.TARGET_PAGE || 'all';
 // The update-routes-mapping job will handle it after all jobs complete.
 const SKIP_ROUTES_UPDATE = process.env.SKIP_ROUTES_UPDATE === 'true';
 
+// REQUIRE_FULL_SUCCESS: set by the post-deploy canary run (post-deploy-warmup.yml).
+// That run only generates 10 variants total (homepage + /listings/), so it's cheap
+// to require a perfectly clean render before trusting the new deployment. When set,
+// current-build-id is left untouched unless every single variant succeeds with no
+// errors — this is what stops a broken deploy from ever going live to real traffic.
+// Not set during the weekly full url.csv rebuild (individual pages there already
+// have their own per-variant error skip; a single flaky listing shouldn't block
+// the whole site's cache from refreshing).
+const REQUIRE_FULL_SUCCESS = process.env.REQUIRE_FULL_SUCCESS === 'true';
+
 const LISTINGS_VARIANTS = 5;
 const KV_UPLOAD_RETRIES = 3;
 const KV_RETRY_DELAY = 2000;
@@ -463,15 +473,32 @@ async function generateStaticPages() {
   }
   
   // ============================================
-  // STORE CURRENT BUILD-ID IN KV
+  // STORE CURRENT BUILD-ID IN KV — gated on a clean run
   // ============================================
   // The worker reads 'current-build-id' to detect when KV HTML is stale after a
   // Vercel redeployment. It compares this value against the buildId embedded in the
   // HTML (__NEXT_DATA__). A mismatch means Vercel has been redeployed since the last
   // KV generation → worker bypasses KV and serves fresh HTML from Vercel instead.
   // This prevents the "first filter apply fails after deploy" RSC navigation bug.
+  //
+  // When REQUIRE_FULL_SUCCESS is set, this write is the ONLY thing that switches
+  // the live site over to a new deployment's cache. If anything failed or came
+  // back as an error page, we deliberately skip this write — current-build-id
+  // stays at its old value, so the worker keeps serving the previous, still-correct
+  // cached HTML instead of falling through to a possibly-broken origin.
   const successfulPages = results.pages.filter(p => p.status === 'success');
-  if (successfulPages.length > 0) {
+  const totalVariantsRequested = pagesToGenerate.reduce((sum, page) => sum + page.variants, 0);
+  const cleanRun = results.failed === 0 && (results.skipped_error || 0) === 0 && results.success === totalVariantsRequested;
+  results.canaryFailed = REQUIRE_FULL_SUCCESS && !cleanRun;
+
+  if (results.canaryFailed) {
+    console.error('\n' + '█'.repeat(70));
+    console.error('🚫 CANARY FAILED — current-build-id will NOT be updated.');
+    console.error(`   Requested: ${totalVariantsRequested} variants | Success: ${results.success} | Failed: ${results.failed} | Error pages skipped: ${results.skipped_error || 0}`);
+    console.error('   The live site keeps serving the previous (last known-good) cache.');
+    console.error('   Fix the failure above, confirm the deploy is healthy, then re-run this workflow.');
+    console.error('█'.repeat(70));
+  } else if (successfulPages.length > 0) {
     // Read back one of the successfully generated HTML pages to extract the buildId
     try {
       const sampleKey = successfulPages[0].slug;
@@ -529,7 +556,7 @@ async function generateStaticPages() {
 if (require.main === module) {
   generateStaticPages()
     .then((results) => {
-      if (results.failed > 0) {
+      if (results.failed > 0 || results.canaryFailed) {
         process.exit(1);
       }
       process.exit(0);
