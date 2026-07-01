@@ -168,7 +168,20 @@ export async function generateMetadata({
   params: Promise<{ slug?: string[] }>;
 }): Promise<Metadata> {
   const { slug = [] } = await params;
-  return metaFromSlug(slug, {});
+
+  let totalProducts: number | undefined;
+  try {
+    const filters = parseSlugToFilters(slug, {});
+    const data = await _makeFetchListingsData(JSON.stringify(filters), 1)();
+    totalProducts = data.response.pagination?.total_products ??
+      (data.response.data?.products?.length ?? 0);
+  } catch (err) {
+    if (err instanceof Error && err.message.includes("No products")) {
+      totalProducts = 0;
+    }
+  }
+
+  return metaFromSlug(slug, {}, totalProducts);
 }
 
 function normalizeSlug(v: string = "") {
