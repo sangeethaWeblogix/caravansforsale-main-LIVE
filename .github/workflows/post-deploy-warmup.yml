@@ -1,40 +1,49 @@
-name: Post-Deploy Cache Warmup
+name: Promote Deploy to Cache (Manual)
 
-# Auto-runs on every push to main so KV HTML gets refreshed after each deploy.
+# MANUAL ONLY — this workflow no longer fires automatically on push to main.
 #
 # HISTORY / WHY THIS LOOKS THE WAY IT DOES:
-# This workflow used to start with an "invalidate-kv-build-id" job that wiped
-# current-build-id in KV the instant code was pushed — before anyone knew if
-# the new deploy actually worked. That meant every deploy, good or bad, sent
-# 100% of live traffic straight to Vercel origin with zero cache protection.
-# On 2026-07-01 a broken navbar/mega-menu deploy reached every visitor
-# directly for ~2 hours because of exactly this, since the two jobs below
-# that were supposed to refresh the cache afterward were also disabled.
+# This used to be "Post-Deploy Cache Warmup," auto-triggered on every push.
+# It started with an "invalidate-kv-build-id" job that wiped current-build-id
+# in KV the instant code was pushed — before anyone knew if the new deploy
+# actually worked. That meant every deploy, good or bad, sent 100% of live
+# traffic straight to Vercel origin with zero cache protection. On
+# 2026-07-01 a broken navbar/mega-menu deploy reached every visitor directly
+# for ~2 hours because of exactly this.
 #
-# New behavior: regenerate the homepage + /listings/ pages against the new
-# deployment FIRST, as a canary (only 10 renders total, cheap and fast).
-# The existing KV cache — old, still-correct HTML — keeps serving live
-# traffic the entire time this runs. Only if the canary renders perfectly
-# clean (no failures, no error pages) does generate-priority-pages.js flip
-# current-build-id — that's the one moment the live site actually starts
-# serving the new deployment. If the canary fails, current-build-id is left
-# untouched, the old cache keeps serving, this job fails loudly (GitHub
-# emails the pusher + watchers on workflow failure), and warmup-urls never
-# runs at all.
+# The first fix made this a validated canary-then-flip flow, still automatic
+# on every push. That solved the "broken deploy goes live" problem, but with
+# frequent deploys (e.g. 10/day) it created a new one: each deploy resets
+# Vercel's ISR cache, so re-crawling pages afterward forces cold SSR renders
+# against WP admin's API — real CPU pressure on a shared admin box.
 #
-# Source: src/app/url.csv (3,462 URLs × 5 variants = 17,310 KV uploads)
-# Split across 10 parallel batches of 350 URLs each.
+# Final design: deploying code to Vercel and updating what Cloudflare serves
+# are now two SEPARATE, deliberate steps. Pushing to main only deploys to
+# Vercel — it does not touch KV, current-build-id, or routes-mapping at all.
+# The live site keeps serving whatever was already cached, completely
+# unaffected by the deploy, until one of these three things happens:
+#   1. A dev manually runs this workflow (Actions tab -> Run workflow) to
+#      promote the current Vercel deployment into the cache.
+#   2. The weekly generate-cache.yml cron does its full rebuild (Sunday).
+#   3. WordPress pushes a product/listing data change through the
+#      cfs-selective-cache-invalidator.php -> generate-affected-cache.yml
+#      path — this only refreshes the data on already-cached pages using
+#      whichever build was last promoted by (1) or (2); it never carries
+#      new frontend code into the cache on its own.
+#
+# This job is still a canary + gate, same as before: current-build-id only
+# gets flipped if the homepage + /listings/ render perfectly cleanly against
+# the live Vercel deployment. If they don't, nothing in KV changes and the
+# job fails loudly so whoever ran it knows the promotion didn't happen.
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 jobs:
 
   # ==========================================
   # CANARY — Homepage + /listings/ (Puppeteer)
-  # Gate for the current-build-id flip. See header comment above.
+  # Always runs first. Gates the current-build-id flip — see header comment.
   # ==========================================
   warmup-priority:
     runs-on: ubuntu-latest
@@ -48,11 +57,11 @@ jobs:
         with:
           node-version: '24'
 
-      - name: Wait for Vercel deployment to be ready
+      - name: Confirm Vercel deployment is live
         env:
           VERCEL_BASE_URL: ${{ secrets.VERCEL_BASE_URL }}
         run: |
-          echo "Waiting for Vercel deployment to be ready..."
+          echo "Checking that the Vercel deployment is reachable..."
           # -L follows redirects so we land on the real response code. VERCEL_BASE_URL/
           # permanently redirects (308, likely a canonical-domain rule in middleware.ts) —
           # that's normal steady-state behavior, not a sign the deploy isn't ready, so we
@@ -61,12 +70,12 @@ jobs:
             STATUS=$(curl -Ls -o /dev/null -w "%{http_code}" "${VERCEL_BASE_URL}/" --max-time 15 || echo "000")
             echo "Attempt $i: HTTP $STATUS (after following redirects)"
             if [ "$STATUS" = "200" ]; then
-              echo "Vercel is ready."
+              echo "Vercel is reachable."
               exit 0
             fi
             sleep 15
           done
-          echo "::error::Vercel deployment never became ready within 5 minutes — aborting warmup. current-build-id untouched, old cache stays live."
+          echo "::error::Vercel deployment never responded within 5 minutes — aborting. current-build-id untouched, existing cache stays live."
           exit 1
 
       - name: Install dependencies
@@ -89,11 +98,14 @@ jobs:
       - name: Report canary failure
         if: failure()
         run: |
-          echo "::error::Canary failed — current-build-id was NOT updated. Live site is still serving the previous (last known-good) cache. Check the 'Generate + validate priority pages' step above for which page/variant failed, fix it, then re-run this workflow (Actions tab -> Post-Deploy Cache Warmup -> Re-run)."
+          echo "::error::Canary failed — current-build-id was NOT updated, nothing was promoted. The live site is still serving whatever was cached before this run. Check the 'Generate + validate priority pages' step above for which page/variant failed, fix it, then re-run this workflow."
 
   # ==========================================
   # ALL LISTING URLS (url.csv) — 10 parallel batches of ~350 URLs each.
-  # Only runs once the canary above proves the new deployment is healthy.
+  # Runs after the canary passes. This is the expensive part (17,310 KV
+  # uploads) — that's exactly why the whole workflow is manual now, so it
+  # only happens when a dev decides it's worth the WP admin load, not on
+  # every single deploy.
   # Each variant is still independently validated (existing isErrorPage
   # skip in the generation script) — a single bad listing page just leaves
   # its previous KV entry in place rather than overwriting it with a broken
