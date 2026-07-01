@@ -755,16 +755,10 @@ console.log("emptyExclusiveList", emptyExclusiveList)
       return;
     }
 
-    // Server already returned fresh data via ISR (initialData sync effect applied it).
-    // Skip the duplicate client fetch but still clear any loading states FilterSlider may have set.
-    if (shouldSkipFetchRef.current) {
-      shouldSkipFetchRef.current = false;
-      setIsLoading(false);
-      setIsMainLoading(false);
-      setIsFeaturedLoading(false);
-      setIsPremiumLoading(false);
-      return;
-    }
+    // Always reset the skip flag and proceed with client fetch on URL change.
+    // unstable_cache can return stale data for a different URL's key, so we
+    // always refetch from KV (~125ms hit) to guarantee correct products/h1/pagination.
+    shouldSkipFetchRef.current = false;
 
     if (filterDebounceRef.current) clearTimeout(filterDebounceRef.current);
     filterDebounceRef.current = setTimeout(() => {
