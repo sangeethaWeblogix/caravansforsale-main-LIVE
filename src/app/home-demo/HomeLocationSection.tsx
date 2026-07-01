@@ -95,9 +95,9 @@ export default function HomeLocationSection() {
                   unoptimized
                 />
               </div>
-              <span className="hloc-city-name">
+              <h3 className="hloc-city-name">
                 {city.name} <span className="hloc-city-arrow"></span>
-              </span>
+              </h3>
             </a>
           ))}
         </div>
@@ -109,12 +109,18 @@ export default function HomeLocationSection() {
               href={city.href}
               className={`hloc-minor-pill${idx === 0 ? " hloc-minor-pill--active" : ""}`}
             >
-              {city.name}
+              <h3>{city.name}</h3>
             </a>
           ))}
         </div>
-
+<div className="hloc-header">
+  <h2 className="hloc-title">
+           Search Caravans for Sale <span className="hloc-title-accent">Your Way</span>
+          </h2>
+   
+        </div>
         <div className="hloc-filters">
+          
           {FILTERS.map((f) => (
             <div key={f.label} className="hloc-filter-row">
               <div className="hloc-filter-label">
@@ -122,14 +128,18 @@ export default function HomeLocationSection() {
                 <span className="hloc-filter-text">{f.label}</span>
               </div>
               <div className="hloc-filter-chips">
-                {f.items.map((item) => (
-                  <a key={item.text} href={item.href} className="hloc-chip">{item.text}</a>
+                <h3>
+                {f.items.map((item,) => (
+
+                  <a key={item.text} href={item.href} className="hloc-chip">
+                   {item.text}</a>
                 ))}
+                </h3>
               </div>
             </div>
           ))}
         </div>
-
+ 
         
 
       </div>

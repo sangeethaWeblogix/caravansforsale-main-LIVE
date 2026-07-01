@@ -111,7 +111,7 @@ export default function HomeListingSlider({ title, viewAllHref, apiUrl, badgeVar
 
                     {/* Body */}
                     <div className="hf-card__body">
-                      <p className="hf-card__title">{item.name}</p>
+                      <h3 className="hf-card__title">{item.name}</h3>
                       <div className="hf-card__meta">
                         {item.location && (
                           <span className="hf-card__meta-item">

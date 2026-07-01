@@ -42,7 +42,7 @@ export default function HomeLatestBlogs({ blogPosts  }: Props) {
       <div className="container">
         <div className="title">
           <div className="tpof_tab">
-            <h3 className="hd-section-title">Latest Blogs</h3>
+            <h2 className="hd-section-title">Latest Caravans for Sale Blogs & Advice</h2>
             <div className="viewall_bttn">
               <a href="/blog/">
                 <i className="bi bi-chevron-right" />
@@ -92,7 +92,7 @@ export default function HomeLatestBlogs({ blogPosts  }: Props) {
                               )}
                             </div>
                             <div className="info">
-                              <h4 className="title">{post.title}</h4>
+                              <h3 className="title">{post.title}</h3>
                               <div className="date-author">
                                 {formatPostDate(post.date ?? "")}
                               </div>

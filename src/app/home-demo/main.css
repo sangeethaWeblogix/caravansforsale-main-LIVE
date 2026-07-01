@@ -1506,6 +1506,16 @@ a.ignoretext {
   color: #000;
 }
 
+.blog.style-8 .side-posts .item .info h3.title {
+  height: auto;
+  margin-top: 0;
+  margin-bottom: 15px;
+  font-size: 17px;
+  line-height: 25px;
+  font-weight: 600;
+  overflow: hidden;
+  color: #000;
+}
 .blog.style-8 .side-posts .item .info .date-author .date {
   font-size: 13px;
 }
@@ -3185,8 +3195,14 @@ main .section-head .category_icon li img {
   margin-bottom: 28px;
   justify-content: center;
 }
-
-.hloc-minor-pill {
+.hloc-minor-pill h3 {
+  margin: 0;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+  font-family: inherit;
+}
+.hloc-minor-pill  {
   display: inline-block;
   padding: 7px 20px;
   border: 1.5px solid #dde1e6;
@@ -3259,6 +3275,13 @@ main .section-head .category_icon li img {
 }
 
 .hloc-filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.hloc-filter-chips h3 {
+  all: unset;
   display: flex;
   flex-wrap: wrap;
   gap: 8px;

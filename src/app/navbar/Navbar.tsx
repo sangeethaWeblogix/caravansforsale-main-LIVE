@@ -16,8 +16,10 @@ export default function Navbar() {
   }, [isOpen]);
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [buyOpen, setBuyOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   const sidenavRef = useRef<HTMLDivElement | null>(null);
+  const buynowRef = useRef<HTMLLIElement | null>(null);
   const [hamOpen, setHamOpen] = useState(false);
   const hamRef = useRef<HTMLDivElement | null>(null);
 
@@ -33,6 +35,9 @@ export default function Navbar() {
       }
       if (hamRef.current && !hamRef.current.contains(e.target as Node)) {
         setHamOpen(false);
+      }
+      if (buynowRef.current && !buynowRef.current.contains(e.target as Node)) {
+        setBuyOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -95,8 +100,50 @@ export default function Navbar() {
               id="navbarSupportedContent"
             >
               <ul className="navbar-nav mb-2 mb-lg-0">
-                <li className="nav-item">
-                  <a className="nav-link" href="/listings/">Buy</a>
+                <li className="nav-item desktop-buynow-item" ref={buynowRef}>
+                  <span
+                    className="nav-link desktop-buynow-trigger"
+                    style={{ cursor: "pointer" }}
+                    onClick={() => setBuyOpen((prev) => !prev)}
+                  >
+                    Buy
+                    <svg
+                      className={`buynow-chevron${buyOpen ? " chevron-up" : ""}`}
+                      width="12"
+                      height="12"
+                      viewBox="0 0 12 12"
+                      fill="none"
+                    >
+                      <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </span>
+                  {buyOpen && (
+                    <div className="desktop-mega-menu mega-open">
+                      <div className="desktop-mega-menu-inner">
+                        <div className="mega-col">
+                          <div className="mega-col-title">Browse Caravans</div>
+                          <a href="/listings/">All Caravans</a>
+                          <a href="/listings/new-condition/">New Caravans</a>
+                          <a href="/listings/used-condition/">Used Caravans</a>
+                        </div>
+                        <div className="mega-col">
+                          <div className="mega-col-title">By Type</div>
+                          <a href="/listings/full-caravan-category/">Full Caravans</a>
+                          <a href="/listings/pop-top-caravan-category/">Pop Tops</a>
+                          <a href="/listings/camper-trailer-category/">Camper Trailers</a>
+                          <a href="/listings/fifth-wheeler-category/">Fifth Wheelers</a>
+                        </div>
+                        <div className="mega-col">
+                          <div className="mega-col-title">By State</div>
+                          <a href="/listings/new-south-wales-state/">NSW</a>
+                          <a href="/listings/victoria-state/">VIC</a>
+                          <a href="/listings/queensland-state/">QLD</a>
+                          <a href="/listings/south-australia-state/">SA</a>
+                          <a href="/listings/western-australia-state/">WA</a>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </li>
                 
                 <li className="nav-item">
