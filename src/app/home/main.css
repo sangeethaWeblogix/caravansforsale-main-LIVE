@@ -2,6 +2,15 @@
 
 /* Home page*/
 
+.hd-section-title {
+  color: #000 !important;
+  letter-spacing: 0;
+  margin: 0 !important;
+  font-size: 22px !important;
+  font-weight: 700 !important;
+  line-height: 1.3 !important;
+}
+
 .home_top {
   background: #f1f1f1;
   border: none;
@@ -1045,7 +1054,8 @@ a.ignoretext {
   padding: 12px 20px;
 }
 
-.blog.style-8 .side-posts .item .info h4.title {
+.blog.style-8 .side-posts .item .info h4.title,
+.blog.style-8 .side-posts .item .info h3.title {
   height: auto;
   margin-top: 0;
   margin-bottom: 15px;

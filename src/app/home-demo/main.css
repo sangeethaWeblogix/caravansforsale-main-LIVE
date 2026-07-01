@@ -2971,7 +2971,7 @@ main .section-head .category_icon li img {
 
   border-radius: 16px;
   padding: 36px;
-  margin-bottom: 36px;
+  margin-bottom: 0px;
 }
 
 .hbg-why-grid {
