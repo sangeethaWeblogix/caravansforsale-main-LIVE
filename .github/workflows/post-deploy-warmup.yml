@@ -53,9 +53,13 @@ jobs:
           VERCEL_BASE_URL: ${{ secrets.VERCEL_BASE_URL }}
         run: |
           echo "Waiting for Vercel deployment to be ready..."
+          # -L follows redirects so we land on the real response code. VERCEL_BASE_URL/
+          # permanently redirects (308, likely a canonical-domain rule in middleware.ts) —
+          # that's normal steady-state behavior, not a sign the deploy isn't ready, so we
+          # check the code AFTER following it rather than treating any non-200 as "not ready."
           for i in $(seq 1 20); do
-            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${VERCEL_BASE_URL}/" --max-time 10 || echo "000")
-            echo "Attempt $i: HTTP $STATUS"
+            STATUS=$(curl -Ls -o /dev/null -w "%{http_code}" "${VERCEL_BASE_URL}/" --max-time 15 || echo "000")
+            echo "Attempt $i: HTTP $STATUS (after following redirects)"
             if [ "$STATUS" = "200" ]; then
               echo "Vercel is ready."
               exit 0
