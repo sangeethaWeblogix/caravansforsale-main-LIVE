@@ -21,7 +21,6 @@ import type { BottomLinksData } from "@/api/bottomLinks/api";
 import { reportGitHubIssue } from "@/lib/reportGitHubIssue";
 import { metaFromSlug } from "@/utils/seo/meta";
 import { unstable_cache } from "next/cache";
-import { cache } from "react";
 import statesData from "../../../../cfs-paths/states.json";
 import regionsData from "../../../../cfs-paths/regions.json";
 import categoriesData from "../../../../cfs-paths/categories.json";
@@ -140,10 +139,6 @@ const _makeFetchListingsData = (filtersJson: string, page: number) =>
   { revalidate: 86400, tags: ["listings"] }
   );
 
-// Deduplicates the fetch within a single page render so generateMetadata and the page component share one API call
-const _getListingsData = cache((filtersJson: string, page: number) =>
-  _makeFetchListingsData(filtersJson, page)()
-);
 
 export async function generateStaticParams() {
   const allFiles = [
@@ -174,20 +169,7 @@ export async function generateMetadata({
   params: Promise<{ slug?: string[] }>;
 }): Promise<Metadata> {
   const { slug = [] } = await params;
-
-  let totalProducts: number | undefined;
-  try {
-    const filters = parseSlugToFilters(slug, {});
-    const data = await _getListingsData(JSON.stringify(filters), 1);
-    totalProducts = data.response.pagination?.total_products ??
-      (data.response.data?.products?.length ?? 0);
-  } catch (err) {
-    if (err instanceof Error && err.message.includes("No products")) {
-      totalProducts = 0;
-    }
-  }
-
-  return metaFromSlug(slug, {}, totalProducts);
+  return metaFromSlug(slug, {});
 }
 
 function normalizeSlug(v: string = "") {
@@ -452,12 +434,15 @@ export default async function Listings({
   let bottomLinksData: BottomLinksData | null = null;
 
   try {
-    const data = await _getListingsData(JSON.stringify(apiFilters), page);
+    const data = await _makeFetchListingsData(JSON.stringify(apiFilters), page)();
     ({ response, linksData, productListRes, initialCategoryCounts, initialMakeCounts, bottomLinksData } = data);
   } catch (err) {
     const msg = err instanceof Error ? err.message : "";
     if (msg.includes("400") || msg.includes("404")) {
       redirect("/404");
+    }
+    if (msg.includes("No products")) {
+      notFound();
     }
     const isBackend =
       msg.startsWith("API no response") ||

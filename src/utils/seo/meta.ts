@@ -340,8 +340,7 @@ export function generateTitleFromFilters(
 
 export async function metaFromSlug(
   filters: string[] = [],
-  searchParams: Record<string, string | string[] | undefined> = {},
-  totalProducts?: number
+  searchParams: Record<string, string | string[] | undefined> = {}
 ): Promise<Metadata> {
   const BASE_URL = "https://www.caravansforsale.com.au";
 
@@ -351,7 +350,6 @@ export async function metaFromSlug(
   const canonicalUrl = `${BASE_URL}/listings/${slugPath ? slugPath + "/" : ""}`;
   const urlPath = `/listings/${slugPath ? slugPath + "/" : ""}`;
   const robotsResult = { index: INDEXABLE_URLS.has(urlPath) };
-  if (totalProducts === 0) robotsResult.index = false;
 
   // ── suburb canonical fix ──
   let canonical = canonicalUrl;
