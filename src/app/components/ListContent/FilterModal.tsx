@@ -2627,7 +2627,17 @@ const [states, setStates] = useState<StateOption[]>([]);
                               ? Number(e.target.value)
                               : null;
                             setTempSleepFrom(val);
-                            // 🔥 background only (no commit)
+                            triggerGlobalLoaders();
+                            const updatedFilters: Filters = {
+                              ...currentFilters,
+                              from_sleep: val ?? undefined,
+                              to_sleep: tempSleepTo ?? undefined,
+                            };
+                            setFilters(updatedFilters);
+                            filtersInitialized.current = true;
+                            startTransition(() => {
+                              updateAllFiltersAndURL(updatedFilters);
+                            });
                           }}
                         >
                           <option value="">Any</option>
@@ -2650,6 +2660,17 @@ const [states, setStates] = useState<StateOption[]>([]);
                               ? Number(e.target.value)
                               : null;
                             setTempSleepTo(val);
+                            triggerGlobalLoaders();
+                            const updatedFilters: Filters = {
+                              ...currentFilters,
+                              from_sleep: tempSleepFrom ?? undefined,
+                              to_sleep: val ?? undefined,
+                            };
+                            setFilters(updatedFilters);
+                            filtersInitialized.current = true;
+                            startTransition(() => {
+                              updateAllFiltersAndURL(updatedFilters);
+                            });
                           }}
                         >
                           <option value="">Any</option>
