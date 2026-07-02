@@ -2,6 +2,7 @@
 import "../filter.css?=27";
 import { useState, useEffect, useRef } from "react";
 import { fetchProductList } from "@/api/productList/api";
+import { fetchMakeDetails } from "@/api/make-new/api";
 import CategorySkeleton from "./CategorySkeleton";
 import { buildSlugFromFilters } from "../slugBuilter";
 import { useRouter } from "next/navigation";
@@ -198,6 +199,17 @@ const [states, setStates] = useState<StateOption[]>(
   const [modelCountLoading, setModelCountLoading] = useState(false);
 
   const didFetchMakeRef = useRef(false);
+
+  // ✅ make-details API la make & model rendu um oru sethuvom, click pannum bothu
+  // athukulla irukura models ah nேrடா show pannalam (old initialMakeOptions-la models illa)
+  useEffect(() => {
+    if (didFetchMakeRef.current) return;
+    didFetchMakeRef.current = true;
+    fetchMakeDetails().then((list) => {
+      if (Array.isArray(list) && list.length) setMakes(list);
+    });
+  }, []);
+
   const suburbReqIdRef = useRef(0);
   const suburbDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 

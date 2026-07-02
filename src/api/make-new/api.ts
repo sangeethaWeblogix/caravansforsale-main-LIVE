@@ -9,6 +9,7 @@ const API_KEY = process.env.CFS_API_KEY; // ✅ Add this
     });
     if (!res.ok) return [];
     const json = await res.json();
+    
     return json?.data?.make_options || [];
   } catch {
     return [];

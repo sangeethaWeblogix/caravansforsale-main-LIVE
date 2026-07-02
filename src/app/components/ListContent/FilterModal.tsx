@@ -382,16 +382,19 @@ const [states, setStates] = useState<StateOption[]>([]);
     "Australian Capital Territory": "ACT",
   };
 
+  // ✅ FilterSlider-la mari: tempMake (modal-la live select panradhu) மாறினா உடனே
+  // athukான models காமிக்கும். selectedMake (committed/URL value) மட்டும் வெச்சா
+  // dropdown-la make pick pannும் போது model list update aagathu.
   useEffect(() => {
-    if (!selectedMake || makes.length === 0) {
+    if (!selectedMakeTemp || makes.length === 0) {
       setModel([]);
       return;
     }
 
-    const make = makes.find((m) => m.slug === selectedMake);
+    const make = makes.find((m) => m.slug === selectedMakeTemp);
     setModel(make?.models || []);
     setModelOpen(true);
-  }, [selectedMake, makes]);
+  }, [selectedMakeTemp, makes]);
 
   const buildParamsFromFilters = (filters: Filters) => {
     const params = new URLSearchParams();
@@ -898,16 +901,18 @@ const [states, setStates] = useState<StateOption[]>([]);
   ]);
 
   // correct 3
-  useEffect(() => {
-    if (!selectedMake || makes.length === 0) {
-      setModel([]);
-      return;
-    }
-
-    const make = makes.find((m) => m.slug === selectedMake);
-    setModel(make?.models || []);
-    setModelOpen(true);
-  }, [selectedMake, makes]);
+  // ⛔ duplicate of the selectedMakeTemp-based effect above (was stuck on selectedMake only,
+  // so picking a make in the modal never updated the Model dropdown) — commented, not deleted.
+  // useEffect(() => {
+  //   if (!selectedMake || makes.length === 0) {
+  //     setModel([]);
+  //     return;
+  //   }
+  //
+  //   const make = makes.find((m) => m.slug === selectedMake);
+  //   setModel(make?.models || []);
+  //   setModelOpen(true);
+  // }, [selectedMake, makes]);
 
   const [locationSuggestions, setLocationSuggestions] = useState<
     LocationSuggestion[]
