@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "region-make",
-    "count": 1127,
+    "count": 1123,
     "paths": [
         "australian-capital-territory-state/australian-capital-territory-region/carrera/",
         "australian-capital-territory-state/australian-capital-territory-region/coromal/",
@@ -475,6 +475,7 @@
         "queensland-state/sunshine-coast-region/vision-rv/",
         "queensland-state/sunshine-coast-region/zone-rv/",
         "queensland-state/toowoomba-region/blue-tongue/",
+        "queensland-state/toowoomba-region/coromal/",
         "queensland-state/toowoomba-region/regent/",
         "queensland-state/toowoomba-region/snowy-river/",
         "queensland-state/townsville-region/austrack-campers/",
@@ -687,7 +688,6 @@
         "tasmania-state/north-west-region/windsor/",
         "tasmania-state/north-west-region/x-series-rv/",
         "victoria-state/ballarat-region/aussie-wide/",
-        "victoria-state/ballarat-region/blue-sky/",
         "victoria-state/ballarat-region/coromal/",
         "victoria-state/ballarat-region/coronet-rv/",
         "victoria-state/ballarat-region/design-rv/",
@@ -697,24 +697,20 @@
         "victoria-state/ballarat-region/highline/",
         "victoria-state/ballarat-region/jayco/",
         "victoria-state/ballarat-region/kingdom/",
-        "victoria-state/ballarat-region/lumberjack/",
         "victoria-state/ballarat-region/majestic/",
         "victoria-state/ballarat-region/my-dream-rv/",
         "victoria-state/ballarat-region/ndc/",
         "victoria-state/ballarat-region/new-age/",
-        "victoria-state/ballarat-region/newlands/",
         "victoria-state/ballarat-region/nextgen/",
         "victoria-state/ballarat-region/nova/",
         "victoria-state/ballarat-region/olympic/",
         "victoria-state/ballarat-region/paramount/",
-        "victoria-state/ballarat-region/retreat/",
         "victoria-state/ballarat-region/roma/",
         "victoria-state/ballarat-region/royal-flair/",
         "victoria-state/ballarat-region/safari/",
         "victoria-state/ballarat-region/southern-cross/",
         "victoria-state/ballarat-region/supreme/",
         "victoria-state/ballarat-region/traveller/",
-        "victoria-state/ballarat-region/windsor/",
         "victoria-state/bendigo-region/avan/",
         "victoria-state/bendigo-region/brilliant/",
         "victoria-state/bendigo-region/compass/",
@@ -1131,5 +1127,5 @@
         "western-australia-state/western-australia-outback-south-region/vanguard/",
         "western-australia-state/western-australia-outback-south-region/western/"
     ],
-    "generated_at": "2026-07-01 15:52:12"
+    "generated_at": "2026-07-02 15:48:08"
 }

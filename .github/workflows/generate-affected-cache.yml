@@ -23,7 +23,13 @@ on:
 jobs:
   generate-affected:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # WordPress now batches a whole day's worth of affected pages into one
+    # nightly dispatch (see cfs-selective-cache-invalidator.php) instead of
+    # firing this per product change, so a single run can cover far more URLs
+    # than before. 90 min gives real headroom; it only runs once/night so a
+    # longer worst case doesn't cost anything (see generate-affected-html-cache.js
+    # for the concurrency/checkpointing changes that make this safer too).
+    timeout-minutes: 90
     steps:
       - name: Checkout
         uses: actions/checkout@v4
