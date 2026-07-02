@@ -30,11 +30,11 @@ const FILTERS = [
     label: "By Your Budget",
     items: [
       { text: "Under $30,000",       href: "/listings/under-30000/" },
-      { text: "$30 – $40",   href: "/listings/between-30000-40000/" },
-      { text: "$40 – $50",   href: "/listings/between-40000-50000/" },
-      { text: "$50 – $70",   href: "/listings/between-50000-70000/" },
-      { text: "$70 – $80",   href: "/listings/between-70000-80000/" },
-      { text: "$80 – $100",  href: "/listings/between-80000-100000/" },
+      { text: "$30,000 – $40,000",   href: "/listings/between-30000-40000/" },
+      { text: "$40,000 – $50,000",   href: "/listings/between-40000-50000/" },
+      { text: "$50,000 – $70,000",   href: "/listings/between-50000-70000/" },
+      { text: "$70,000 – $80,000",   href: "/listings/between-70000-80000/" },
+      { text: "$80,000 – $100,000",  href: "/listings/between-80000-100000/" },
       { text: "Over $100,000",       href: "/listings/over-100000/" }, 
     ],
   },
@@ -71,7 +71,7 @@ const FILTERS = [
       { text: "3 Berth",     href: "/listings/3-people-sleeping-capacity/" },
       { text: "4 Berth",     href: "/listings/4-people-sleeping-capacity/" },
       { text: "5 Berth",     href: "/listings/5-people-sleeping-capacity/" },
-      { text: "6 Berth",     href: "/listings/6-people-sleeping-capacity/" },
+      { text: "Over6 Berth",     href: "/listings/over-6-people-sleeping-capacity/" },
       
       
     ],
