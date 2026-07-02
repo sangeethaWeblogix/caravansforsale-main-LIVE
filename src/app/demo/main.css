@@ -294,6 +294,13 @@ input.loc-search-input:focus { box-shadow: 0 0 0 1.5px #7e7e7e !important; }
   text-decoration: none;
   transition: box-shadow 0.2s, border-color 0.2s;
 }
+
+.lsd-card.lsd-card--spotlight .lsd-card__body{
+  background: #f1f1f1;
+}
+.lsd-card.lsd-card--spotlight .lsd-card__btn-view {
+    background: #000;
+}
 .lsd-card:hover { border-color: #bcbcbc; text-decoration: none; }
 
 .lsd-card__img-wrap {
