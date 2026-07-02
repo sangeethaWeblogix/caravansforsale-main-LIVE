@@ -29,17 +29,13 @@ const FILTERS = [
     icon: <Image src="/images/Budget.png" alt="Budget" width={24} height={24} unoptimized />,
     label: "By Your Budget",
     items: [
-      { text: "Under 30000",  href: "/listings/under-30000/" },
-      { text: "Under 40000",  href: "/listings/under-40000/" },
-      { text: "Under 50000",  href: "/listings/under-50000/" },
-      { text: "Under 60000",  href: "/listings/under-60000/" },
-      { text: "Under 70000",  href: "/listings/under-70000/" },
-      { text: "Under 80000",  href: "/listings/under-80000/" },
-      { text: "Under 90000",  href: "/listings/under-90000/" },
-      { text: "Under 100000", href: "/listings/under-100000/" },
-      { text: "Under 125000", href: "/listings/under-125000/" },
-      { text: "Under 150000", href: "/listings/under-150000/" },
-      { text: "Over 100000",  href: "/listings/over-100000/" },
+      { text: "Under $30,000",       href: "/listings/under-30000/" },
+      { text: "$30 – $40",   href: "/listings/between-30000-40000/" },
+      { text: "$40 – $50",   href: "/listings/between-40000-50000/" },
+      { text: "$50 – $70",   href: "/listings/between-50000-70000/" },
+      { text: "$70 – $80",   href: "/listings/between-70000-80000/" },
+      { text: "$80 – $100",  href: "/listings/between-80000-100000/" },
+      { text: "Over $100,000",       href: "/listings/over-100000/" }, 
     ],
   },
   {
@@ -50,20 +46,21 @@ const FILTERS = [
       { text: "Under 2000kg", href: "/listings/under-2000-kg-atm/" },
       { text: "Under 2500kg", href: "/listings/under-2500-kg-atm/" },
       { text: "Under 3000kg", href: "/listings/under-3000-kg-atm/" },
-      { text: "Under 3500kg", href: "/listings/under-3500-kg-atm/" },
+       
       { text: "Over 3000kg",  href: "/listings/over-3000-kg-atm/" },
-      { text: "Over 3500kg",  href: "/listings/over-3500-kg-atm/" },
+       
     ],
   },
   {
     icon: <Image src="/images/Length.png" alt="Length" width={24} height={24} unoptimized />,
     label: "By Size (Length)",
     items: [
-      { text: "Under 14ft", href: "/listings/under-14-length-in-feet/" },
-      { text: "Under 16ft", href: "/listings/under-16-length-in-feet/" },
-      { text: "Under 18ft", href: "/listings/under-18-length-in-feet/" },
-      { text: "Under 20ft", href: "/listings/under-20-length-in-feet/" },
-      { text: "Over 22ft",  href: "/listings/over-22-length-in-feet/" },
+      
+      { text: "Under 16ft",     href: "/listings/under-16-length-in-feet/" },
+      { text: "16ft – 18ft",    href: "/listings/between-16-18-length-in-feet/" },
+      { text: "18ft – 20ft",    href: "/listings/between-18-20-length-in-feet/" },
+      { text: "20ft – 22ft",    href: "/listings/between-20-22-length-in-feet/" },
+      { text: "Over 22ft",      href: "/listings/over-22-length-in-feet/" },
     ],
   },
   {
@@ -75,9 +72,8 @@ const FILTERS = [
       { text: "4 Berth",     href: "/listings/4-people-sleeping-capacity/" },
       { text: "5 Berth",     href: "/listings/5-people-sleeping-capacity/" },
       { text: "6 Berth",     href: "/listings/6-people-sleeping-capacity/" },
-      { text: "2 – 4 Berth", href: "/listings/between-2-4-people-sleeping-capacity/" },
-      { text: "4 – 6 Berth", href: "/listings/between-4-6-people-sleeping-capacity/" },
-      { text: "Over 5 Berth", href: "/listings/over-5-people-sleeping-capacity/" },
+      
+      
     ],
   },
 ];
