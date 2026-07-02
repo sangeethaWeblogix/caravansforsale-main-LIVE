@@ -295,6 +295,7 @@ export async function middleware(request: NextRequest) {
   const KNOWN_MULTI_SEGMENT = new Set([
     'listings', 'product', 'api', '_next', 'blog', 'author', 'caravan-manufacturers',
     '410', '404', '410-new', 'images', 'fonts', 'icons',
+    'demo', 'product-detail-demo',
   ]);
   const pathSegments = url.pathname.split('/').filter(Boolean);
   if (pathSegments.length >= 2 && !KNOWN_MULTI_SEGMENT.has(pathSegments[0])) {
