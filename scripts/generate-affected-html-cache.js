@@ -19,6 +19,16 @@
  * Usage:
  *   AFFECTED_URLS_JSON='["https://.../listings/victoria-state/"]' node scripts/generate-affected-html-cache.js
  *   AFFECTED_URLS_FILE=/tmp/affected.json node scripts/generate-affected-html-cache.js
+ *
+ * NOTE ON BATCH SIZE: WordPress now queues affected URLs throughout the day
+ * and dispatches them once a night (see cfs-selective-cache-invalidator.php's
+ * cfs_sci_run_nightly_dispatch()) instead of firing this per product change.
+ * That means a single run here can cover a whole day's worth of pages rather
+ * than a handful — HTML_CONCURRENCY and the routes-mapping merge strategy
+ * below were both adjusted for that: higher concurrency to get through a
+ * bigger list, and an incremental (per-batch) merge so that if the job still
+ * times out, everything processed before the cutoff is already saved instead
+ * of being lost when the final merge never runs.
  */
 
 const fs = require('fs');
@@ -45,7 +55,7 @@ const CF_API_TOKEN       = process.env.CF_API_TOKEN;
 const SITE_BASE          = 'https://www.caravansforsale.com.au';
 
 const HTML_VARIANTS      = 5;
-const HTML_CONCURRENCY   = 3;
+const HTML_CONCURRENCY   = 6;
 const HTML_FETCH_TIMEOUT = 30000;
 const KV_UPLOAD_RETRIES  = 3;
 const KV_RETRY_DELAY     = 2000;
@@ -255,12 +265,22 @@ function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function runConcurrent(items, concurrency, fn) {
+async function runConcurrent(items, concurrency, fn, onBatchDone) {
   const results = [];
   for (let i = 0; i < items.length; i += concurrency) {
     const batch = items.slice(i, i + concurrency);
     const batchResults = await Promise.all(batch.map((item, j) => fn(item, i + j + 1, items.length)));
     results.push(...batchResults);
+    if (onBatchDone) {
+      try {
+        await onBatchDone(batchResults, i + batch.length, items.length);
+      } catch (e) {
+        // A checkpoint failure shouldn't abort the whole run — the next
+        // checkpoint (or the loop simply continuing) will pick up any pages
+        // this one missed.
+        console.error(`   [checkpoint] ERROR: ${e.message}`);
+      }
+    }
   }
   return results;
 }
@@ -328,7 +348,18 @@ async function main() {
   }
 
   const startTime = Date.now();
-  const results = await runConcurrent(urls, HTML_CONCURRENCY, processUrl);
+
+  // Merge routes-mapping after every concurrency batch (not just once at the
+  // very end) — see the NOTE ON BATCH SIZE at the top of this file. If the
+  // job gets cancelled/times out partway through a large nightly batch, every
+  // page successfully cached before the cutoff is already reflected in
+  // routes-mapping instead of being silently dropped.
+  const results = await runConcurrent(urls, HTML_CONCURRENCY, processUrl, async (batchResults) => {
+    const doneInBatch = batchResults.filter(r => r.status === 'done' && r.variantKeys && r.variantKeys.length > 0);
+    if (doneInBatch.length > 0) {
+      await mergeRoutesMapping(doneInBatch);
+    }
+  });
   const elapsed = Math.round((Date.now() - startTime) / 1000);
 
   const done = results.filter(r => r.status === 'done');
@@ -340,8 +371,7 @@ async function main() {
   console.log(`URLs processed:  ${done.length}/${urls.length}`);
   console.log(`HTML KV entries: ${htmlOk}`);
   console.log(`Duration:        ${elapsed}s`);
-
-  await mergeRoutesMapping(done);
+  console.log('(routes-mapping already merged incrementally per batch above)');
   console.log('\nDone!\n');
 }
 
