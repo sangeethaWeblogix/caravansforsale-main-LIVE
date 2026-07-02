@@ -193,7 +193,7 @@
  
            {/* Heading */}
            <div className="demo-reach-heading">
-             <h2>Reach Caravan Buyers Across Australia, Including: </h2>
+             <h3>Reach Caravan Buyers Across Australia, Including: </h3>
              {/* <p>Your listing is seen by thousands of active buyers Australia-wide.</p> */}
            </div>
  
@@ -209,7 +209,7 @@
                  <div className="demo-state-item__img">
                    <img src={s.img} alt={s.label} />
                  </div>
-                 <span className="demo-state-item__label">{s.label}</span>
+                 <h3 className="demo-state-item__label">{s.label}</h3>
                </div>
              ))}
            </div>
@@ -221,6 +221,8 @@
                  <span className="demo-city-icon">
                    <img src="/images/caravan.png" alt="" />
                  </span>
+                       <h3 className="demo-city-label">
+
                  <a
                    href={`/sell-my-caravan-${c.slug}`}
                    title={`Sell my caravan in ${c.label.trim()}`}
@@ -228,6 +230,7 @@
                  >
                    {c.label}
                  </a>
+                 </h3>
                  <i className="fa-solid fa-chevron-right demo-city-arrow" />
                </div>
              ))}
@@ -381,7 +384,7 @@
                    className="demo-faq-item__q"
                    onClick={() => setActiveFaq(activeFaq === i ? null : i)}
                  >
-                   <span>{faq.q}</span>
+        <h3 className="demo-faq-item__q-text">{faq.q}</h3>
                    <span className="demo-faq-item__icon">
                      <i className={`fa-solid ${activeFaq === i ? "fa-minus" : "fa-plus"}`} />
                    </span>
