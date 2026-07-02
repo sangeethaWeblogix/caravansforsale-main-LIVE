@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "makes",
-    "count": 260,
+    "count": 259,
     "paths": [
         "active/",
         "adria/",
@@ -140,7 +140,6 @@
         "long-haul-campers/",
         "lotus/",
         "luckystar/",
-        "lumberjack/",
         "lunar/",
         "lyfe-rv/",
         "majestic/",
@@ -264,5 +263,5 @@
         "york/",
         "zone-rv/"
     ],
-    "generated_at": "2026-07-01 15:52:12"
+    "generated_at": "2026-07-02 15:48:07"
 }

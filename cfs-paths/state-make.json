@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "state-make",
-    "count": 650,
+    "count": 649,
     "paths": [
         "australian-capital-territory-state/carrera/",
         "australian-capital-territory-state/coromal/",
@@ -483,7 +483,6 @@
         "victoria-state/lifestyle-campers/",
         "victoria-state/lotus/",
         "victoria-state/luckystar/",
-        "victoria-state/lumberjack/",
         "victoria-state/majestic/",
         "victoria-state/malibu/",
         "victoria-state/mars-campers/",
@@ -654,5 +653,5 @@
         "western-australia-state/x-series-rv/",
         "western-australia-state/zone-rv/"
     ],
-    "generated_at": "2026-07-01 15:52:12"
+    "generated_at": "2026-07-02 15:48:08"
 }
