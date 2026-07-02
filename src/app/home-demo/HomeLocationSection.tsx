@@ -71,7 +71,7 @@ const FILTERS = [
       { text: "3 Berth",     href: "/listings/3-people-sleeping-capacity/" },
       { text: "4 Berth",     href: "/listings/4-people-sleeping-capacity/" },
       { text: "5 Berth",     href: "/listings/5-people-sleeping-capacity/" },
-      { text: "Over6 Berth",     href: "/listings/over-6-people-sleeping-capacity/" },
+      { text: "Over 6 Berth",     href: "/listings/over-6-people-sleeping-capacity/" },
       
       
     ],
