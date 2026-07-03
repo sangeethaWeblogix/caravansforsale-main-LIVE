@@ -398,7 +398,16 @@ const [pagination, setPagination] = useState<Pagination>(() => {
   };
 
 
-  // Pre-fetch next page in background to warm server cache
+  // Pre-fetch next page in background to warm server cache.
+  // Filters are derived directly from the current URL (pathname + query) instead
+  // of from filtersRef, because filtersRef isn't guaranteed to be populated yet on
+  // the very first render of a fresh page load (a separate effect sets it, and
+  // React runs effects in declaration order — relying on the ref caused this
+  // effect to occasionally fire with empty filters and prefetch the wrong,
+  // unfiltered page). The URL is always the authoritative source of what's
+  // currently being viewed, so parsing it here directly avoids that race
+  // entirely and keeps prefetching working on every page view, not just later
+  // ones.
   const prefetchedPageRef = useRef<number>(-1);
   useEffect(() => {
     const { current_page, total_pages } = pagination;
@@ -406,9 +415,21 @@ const [pagination, setPagination] = useState<Pagination>(() => {
     const nextPage = current_page + 1;
     if (prefetchedPageRef.current === nextPage) return;
     prefetchedPageRef.current = nextPage;
+
+    const slugParts = pathname.split("/listings/")[1]?.split("/") || [];
+    const parsedFromURL = parseSlugToFilters(slugParts);
+    const orderbyFromQuery = searchParams.get("orderby") ?? undefined;
+    const radiusFromQuery = searchParams.get("radius_kms") ?? undefined;
+    const currentFilters = withResolvedModel({
+      ...incomingFilters,
+      ...parsedFromURL, // URL is the source of truth — must come last to win
+      ...(orderbyFromQuery ? { orderby: orderbyFromQuery } : {}),
+      ...(radiusFromQuery ? { radius_kms: radiusFromQuery } : {}),
+    });
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    fetchListings({ ...filtersRef.current, page: nextPage, indexed: indexedRef.current } as any).catch(() => {});
-  }, [pagination.current_page, pagination.total_pages]);
+    fetchListings({ ...currentFilters, page: nextPage, indexed: indexedRef.current } as any).catch(() => {});
+  }, [pagination.current_page, pagination.total_pages, pathname, searchParams, incomingFilters]);
 
   // Parse slug ONCE on mount; do not fetch here
   const initializedRef = useRef(false);
