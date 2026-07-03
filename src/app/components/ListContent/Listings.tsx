@@ -675,6 +675,15 @@ console.log("emptyExclusiveList", emptyExclusiveList)
     [DEFAULT_RADIUS, initialData, computeTitleFromFilters],
   );
 
+  // Pagination now transitions client-side instead of doing a full
+  // window.location.href reload. The clickid/localStorage URL scheme is
+  // unchanged (still no ?page=N, still SEO-intentional per earlier decision) —
+  // only the navigation mechanism changes, mirroring the pushState pattern
+  // updateURLWithFilters already uses for filter changes. setclickid() below
+  // triggers the existing clickid effect (further down this file), which
+  // reads the target page from localStorage and fetches it — that effect now
+  // also clears the loading flags set here once the fetch resolves, so the
+  // skeleton UI shows for the duration instead of a blank reload.
   const handleNextPage = useCallback(() => {
     if (pagination.current_page >= pagination.total_pages) return;
     const nextPage = pagination.current_page + 1;
@@ -682,22 +691,42 @@ console.log("emptyExclusiveList", emptyExclusiveList)
     try { localStorage.setItem(`page_${id}`, String(nextPage)); } catch {}
     const url = new URL(window.location.href);
     url.searchParams.set("clickid", id);
-    window.location.href = url.toString();
+    window.history.pushState({}, "", url.toString());
+    setIsMainLoading(true);
+    setIsFeaturedLoading(true);
+    setIsPremiumLoading(true);
+    setclickid(id);
+    window.scrollTo({ top: 0, behavior: "instant" });
   }, [pagination.current_page, pagination.total_pages]);
 
   const handlePrevPage = useCallback(() => {
     if (pagination.current_page <= 1) return;
     const prevPage = pagination.current_page - 1;
     const url = new URL(window.location.href);
+    setIsMainLoading(true);
+    setIsFeaturedLoading(true);
+    setIsPremiumLoading(true);
     if (prevPage <= 1) {
+      // Page 1 never carries a clickid. The clickid effect only runs for a
+      // truthy clickid, so this branch loads page 1 directly rather than
+      // relying on that effect.
       url.searchParams.delete("clickid");
-      window.location.href = url.toString();
+      window.history.pushState({}, "", url.toString());
+      setclickid(null);
+      setPagination((p) => ({ ...p, current_page: 1 }));
+      loadListings(1, filtersRef.current, true).finally(() => {
+        setIsMainLoading(false);
+        setIsFeaturedLoading(false);
+        setIsPremiumLoading(false);
+      });
     } else {
       const id = uuidv4();
       try { localStorage.setItem(`page_${id}`, String(prevPage)); } catch {}
       url.searchParams.set("clickid", id);
-      window.location.href = url.toString();
+      window.history.pushState({}, "", url.toString());
+      setclickid(id);
     }
+    window.scrollTo({ top: 0, behavior: "instant" });
   }, [pagination.current_page]);
 
   const restoredOnceRef = useRef(false);
@@ -862,7 +891,14 @@ console.log("emptyExclusiveList", emptyExclusiveList)
 
       try {
         isSliderFetchingRef.current = true; // prevent URL-change effect from firing a duplicate fetch
-        updateURLWithFilters(mergedFilters, 1);
+        // Applying a filter always resets to page 1, which never carries a
+        // clickid (see handlePrevPage's own page-1 branch for the same rule).
+        // Pass "" explicitly so a clickid left over from prior pagination on
+        // the OLD filter set doesn't get carried into the new filtered URL —
+        // that clickid's localStorage entry points at a page number that has
+        // nothing to do with this new filter combination.
+        updateURLWithFilters(mergedFilters, 1, "");
+        setclickid(null);
         await loadListings(1, mergedFilters, true);
       } catch (error) {
         console.error("Error applying filters:", error);
@@ -939,7 +975,14 @@ console.log("emptyExclusiveList", emptyExclusiveList)
       restoredOnceRef.current = true;
       setPagination((p) => ({ ...p, current_page: savedPage }));
       setUrlParams({ clickid });
-      loadListings(savedPage, filtersRef.current, true);
+      // Clears the loading flags handleNextPage/handlePrevPage set before
+      // triggering this effect (via setclickid), so the skeleton UI shows for
+      // the duration of the fetch and then disappears once real content is in.
+      loadListings(savedPage, filtersRef.current, true).finally(() => {
+        setIsMainLoading(false);
+        setIsFeaturedLoading(false);
+        setIsPremiumLoading(false);
+      });
     } else {
       setUrlParams({ clickid });
     }
@@ -1148,7 +1191,11 @@ console.log("emptyExclusiveList", emptyExclusiveList)
     });
 
     isSliderFetchingRef.current = true;
-    updateURLWithFilters(next, 1);
+    // Same reasoning as handleFilterChange: a filter change always resets to
+    // page 1, which never carries a clickid — clear any leftover one from
+    // prior pagination so it doesn't get carried into the new filtered URL.
+    updateURLWithFilters(next, 1, "");
+    setclickid(null);
 
     try {
       const radiusNum =
