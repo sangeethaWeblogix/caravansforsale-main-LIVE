@@ -4,26 +4,19 @@ import "@fortawesome/fontawesome-free/css/solid.min.css";
 import "@fortawesome/fontawesome-free/css/regular.min.css";
 import React, { useState } from "react";
 
-const REGION_LINKS = [
-  { label: "Melbourne Metro", icon: "fa-city" },
-  { label: "Geelong & Bellarine", icon: "fa-anchor" },
-  { label: "Great Ocean Road", icon: "fa-water" },
-  { label: "Mornington Peninsula", icon: "fa-umbrella-beach" },
-  { label: "Gippsland", icon: "fa-tree" },
-  { label: "Murray & High Country", icon: "fa-mountain" },
-];
+ 
 
 const CITY_LINKS = [
-  { label: " Melbourne", slug: "melbourne" },
-  { label: " Geelong", slug: "geelong" },
-  { label: " Ballarat", slug: "ballarat" },
-  { label: " Bendigo", slug: "bendigo" },
-  { label: " Frankston", slug: "frankston" },
-  { label: " Mornington", slug: "mornington" },
-  { label: " Warrnambool", slug: "warrnambool" },
-  { label: " Shepparton", slug: "shepparton" },
-  { label: " Traralgon", slug: "traralgon" },
-  { label: " Mildura", slug: "mildura" },
+  { label: " Melbourne", slug: "melbourne-region" },
+  { label: " Geelong", slug: "geelong-region" },
+  { label: " Ballarat", slug: "ballarat-region" },
+  { label: " Latrobe Gippsland", slug: "latrobe-gippsland-region" },
+  { label: " Mornington Peninsula", slug: "mornington-peninsula-region" },
+  { label: " Shepparton", slug: "shepparton-region" },
+  { label: " Hume", slug: "hume-region" },
+  { label: " Bendigo", slug: "bendigo-region" },
+  { label: " North West", slug: "north-west-region" },
+  { label: " Warrnambool And South West", slug: "warrnambool-and-south-west-region" },
 ];
 
 const CARAVAN_TYPES = [
@@ -50,11 +43,11 @@ const HOW_TO_STEPS = [
 const MAIN_FAQS = [
   {
     q: "How do I sell my caravan in Victoria?",
-    a: <p>You can sell your caravan in Victoria by creating a private seller listing on CaravansForSale.com.au. Add your caravan details, upload clear photos, set your asking price and publish your ad so buyers across Melbourne and regional Victoria can contact you directly.</p>,
+    a: <p>You can sell your caravan online by creating a private seller listing on CaravansForSale.com.au. Simply add your caravan details, upload clear photos, set your asking price, and publish your ad so active buyers across Victoria and all of Australia can contact you directly.</p>,
   },
   {
     q: "How much does it cost to sell my caravan in Victoria?",
-    a: <p>It costs $49 inc. GST to list your caravan on CaravansForSale.com.au. This is a one-time listing fee with no monthly subscription, no hidden charges and no commission when your caravan sells.</p>,
+    a: <p>We charge a simple, flat one-time fee of just $49 (inc. GST). There are absolutely no commissions, no hidden upfront fees, and no recurring monthly subscriptions. You keep 100% of your sale price.</p>,
   },
   {
     q: "How long does my caravan listing stay live?",
@@ -197,17 +190,7 @@ export default function SellerVictoria() {
       <section className="demo-city-section">
         <div className="container">
 
-          {/* Region cards */}
-          <div className="demo-state-grid">
-            {REGION_LINKS.map((r) => (
-              <div key={r.label} className="demo-state-item">
-                <div className="demo-state-item__img demo-state-item__img--icon">
-                  <i className={`fa-solid ${r.icon}`} />
-                </div>
-                <h3 className="demo-state-item__label">{r.label}</h3>
-              </div>
-            ))}
-          </div>
+         
 
           {/* City cards */}
           <div className="demo-city-grid">
@@ -216,16 +199,17 @@ export default function SellerVictoria() {
                 <span className="demo-city-icon">
                   <img src="/images/caravan.png" alt="" />
                 </span>
-                      <h3 className="demo-city-label">
+                     <h3 className="demo-city-label">
 
-                <a
-                  href={`/sell-my-caravan-${c.slug}`}
-                  title={`Sell my caravan in ${c.label.trim()}`}
-                  className="demo-city-label"
-                >
-                  Sell My Caravan{c.label}
-                </a>
-                </h3>
+                 <a
+                   href={`/sell-my-caravan-${c.slug}`}
+                   title={`Sell my caravan in ${c.label.trim()}`}
+                   className="demo-city-label"
+                 >
+                   {c.label}
+                 </a>
+                 </h3>
+                 
                 <i className="fa-solid fa-chevron-right demo-city-arrow" />
               </div>
             ))}
