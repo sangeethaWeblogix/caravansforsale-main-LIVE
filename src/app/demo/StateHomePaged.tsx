@@ -91,10 +91,11 @@ export default function StateHomePaged({ initialPage }: { initialPage: number })
         viewAllHref="/listings/?state=victoria"
         apiUrl={allUrl}
         showSpotlight={!hasActiveFilters}
-        hideTitle
         hideViewAll
+        hideTitle
         page={page}
         onTotalPages={handleTotalPages}
+        maxItems={24}
       />
 
       {maxPages > 1 && (

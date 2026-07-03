@@ -50,9 +50,9 @@ export default function StateHome() {
     filters.acustom_fromyears || filters.from_length || filters.keyword
   );
 
-  const featuredUrl = buildApiUrl("/api/listings?per_page=10&featured=1", filters);
-  const newUrl      = buildApiUrl("/api/listings?per_page=10", filters, "new");
-  const usedUrl     = buildApiUrl("/api/listings?per_page=10", filters, "used");
+  const featuredUrl = buildApiUrl("/api/listings?per_page=8&featured=1", filters);
+  const newUrl      = buildApiUrl("/api/listings?per_page=8", filters, "new");
+  const usedUrl     = buildApiUrl("/api/listings?per_page=8", filters, "used");
 
   const handleTotalPages = (n: number) => setMaxPages(prev => Math.max(prev, n));
 
@@ -80,6 +80,7 @@ export default function StateHome() {
         hideViewAll
         page={page}
         onTotalPages={handleTotalPages}
+        maxItems={8}
       />
 
       <StateListingGrid
@@ -88,6 +89,7 @@ export default function StateHome() {
         apiUrl={newUrl}
         page={page}
         onTotalPages={handleTotalPages}
+        maxItems={8}
       />
 
       <StateListingGrid
@@ -96,6 +98,7 @@ export default function StateHome() {
         apiUrl={usedUrl}
         page={page}
         onTotalPages={handleTotalPages}
+        maxItems={8}
       />
 
       {maxPages > 1 && (
