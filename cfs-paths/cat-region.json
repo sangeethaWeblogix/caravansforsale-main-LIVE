@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "cat-region",
-    "count": 267,
+    "count": 268,
     "paths": [
         "family-category/australian-capital-territory-state/australian-capital-territory-region/",
         "family-category/new-south-wales-state/central-coast-region/",
@@ -228,6 +228,7 @@
         "touring-category/new-south-wales-state/central-west-region/",
         "touring-category/new-south-wales-state/coffs-harbour-region/",
         "touring-category/new-south-wales-state/hunter-region/",
+        "touring-category/new-south-wales-state/illawarra-region/",
         "touring-category/new-south-wales-state/mid-north-coast-region/",
         "touring-category/new-south-wales-state/murray-region/",
         "touring-category/new-south-wales-state/new-england-region/",
@@ -271,5 +272,5 @@
         "touring-category/western-australia-state/perth-region/",
         "touring-category/western-australia-state/western-australia-outback-south-region/"
     ],
-    "generated_at": "2026-07-02 15:48:09"
+    "generated_at": "2026-07-03 15:51:28"
 }
