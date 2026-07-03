@@ -5,12 +5,12 @@
  import React, { useState } from "react";
  
  const STATE_LINKS = [
-   { label: "Victoria",              img: "/images/vic_map.svg", href: "/sell-my-caravan/" },
-   { label: "New South Wales",       img: "/images/nsw_map.svg", href: "/sell-my-caravan/" },
-   { label: "Queensland",            img: "/images/qld_map.svg", href: "/sell-my-caravan/" },
-   { label: "Western Australia",     img: "/images/wa_map.svg",  href: "/sell-my-caravan/" },
-   { label: "South Australia",       img: "/images/sa_map.svg",  href: "/sell-my-caravan/" },
-   { label: "Tasmania",              img: "/images/tas_map.svg", href: "/sell-my-caravan/" },
+   { label: "Victoria",              img: "/images/vic_map.svg", href: "/sell-my-caravan-victoria/" },
+   { label: "New South Wales",       img: "/images/nsw_map.svg", href: "/sell-my-caravan-new-south-wales/" },
+   { label: "Queensland",            img: "/images/qld_map.svg", href: "/sell-my-caravan-queensland/" },
+   { label: "Western Australia",     img: "/images/wa_map.svg",  href: "/sell-my-caravan-western-australia/" },
+   { label: "South Australia",       img: "/images/sa_map.svg",  href: "/sell-my-caravan-south-australia/" },
+   { label: "Tasmania",              img: "/images/tas_map.svg", href: "/sell-my-caravan-tasmania/" },
  ];
  
  const CITY_LINKS = [
@@ -205,12 +205,17 @@
            {/* State cards */}
            <div className="demo-state-grid">
              {STATE_LINKS.map((s) => (
-               <div key={s.label} className="demo-state-item">
+               <a
+                 key={s.label}
+                 href={s.href}
+                 title={`Sell my caravan in ${s.label}`}
+                 className="demo-state-item"
+               >
                  <div className="demo-state-item__img">
                    <img src={s.img} alt={s.label} />
                  </div>
                  <h3 className="demo-state-item__label">{s.label}</h3>
-               </div>
+               </a>
              ))}
            </div>
  
