@@ -20,7 +20,6 @@ import { fetchBottomLinks } from "@/api/bottomLinks/api";
 import type { BottomLinksData } from "@/api/bottomLinks/api";
 import { reportGitHubIssue } from "@/lib/reportGitHubIssue";
 import { metaFromSlug } from "@/utils/seo/meta";
-import { INDEXABLE_URLS } from "@/utils/seo/indexable-urls";
 import { unstable_cache } from "next/cache";
 import statesData from "../../../../cfs-paths/states.json";
 import regionsData from "../../../../cfs-paths/regions.json";
@@ -231,13 +230,6 @@ export default async function Listings({
   ]);
 
   const slug = resolvedParams.slug || [];
-
-  // Same computation metaFromSlug uses for <meta robots> — tells the client
-  // whether /api/listings calls for this page are eligible for Cloudflare KV
-  // caching (curated/indexed pages only; noindex/long-tail pages stay live).
-  const slugPathForIndex = slug.length > 0 ? slug.join("/") : "";
-  const urlPathForIndex = `/listings/${slugPathForIndex ? slugPathForIndex + "/" : ""}`;
-  const isIndexedPage = INDEXABLE_URLS.has(urlPathForIndex);
 
   // ───── Block any "acustom" usage ─────
 
@@ -532,7 +524,6 @@ export default async function Listings({
 
       <ListingsPage
           {...apiFilters}
-          indexed={isIndexedPage}
           initialData={response}
           linksData={linksData}
           productListData={productListRes}

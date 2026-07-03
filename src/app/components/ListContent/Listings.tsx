@@ -24,6 +24,7 @@ import {
 } from "next/navigation";
 import { buildSlugFromFilters } from "../slugBuilter";
 import { parseSlugToFilters } from "../../components/urlBuilder";
+import { INDEXABLE_URLS_CLIENT } from "@/utils/seo/indexable-urls-client";
  import "./loader.css";
 import FilterSlider from "./FilterSlider";
 import StaticLinks from "./StaticLinks";
@@ -138,10 +139,6 @@ interface Props extends Filters {
   initialMakeCounts?: { name: string; slug: string; count: number }[];
   initialBottomLinksData?: BottomLinksData | null;
   initialDistances?: Record<string, number>;
-  // Computed server-side (page.tsx) from the curated indexable-URLs list. Tells the
-  // Cloudflare Worker whether client-side /api/listings calls for this page are
-  // eligible for KV caching, or should always be live-proxied (noindex/long-tail).
-  indexed?: boolean;
 }
 
 /** ------------ Helper Functions ------------ */
@@ -187,7 +184,6 @@ export default function ListingsPage({
   initialMakeCounts,
   initialBottomLinksData,
   initialDistances,
-  indexed,
   ...incomingFilters
 }: Props) {
   const DEFAULT_RADIUS = 50 as const;
@@ -195,17 +191,24 @@ export default function ListingsPage({
   const [filters, setFilters] = useState<Filters>(incomingFilters);
   const filtersRef = useRef<Filters>({});
   const pathname = usePathname();
-  // Tracks whether the current listings page is on the curated/indexed list, so
-  // client-side /api/listings calls know whether the Cloudflare Worker should
-  // cache the response. Re-synced whenever page.tsx re-renders with a fresh value
-  // (full navigations). Filter changes that only update the URL client-side
-  // (window.history.pushState, no server round-trip) won't refresh this value —
-  // see indexedRef usage below.
-  const indexedRef = useRef<boolean>(!!indexed);
-  useEffect(() => {
-    indexedRef.current = !!indexed;
-  }, [indexed]);
   const searchParams = useSearchParams();
+  // Tells the Cloudflare Worker whether client-side /api/listings calls for the
+  // current page are eligible for KV caching (curated/indexed pages only) or
+  // should always be live-proxied (noindex/long-tail pages).
+  //
+  // This used to be a prop computed once server-side and synced into a ref —
+  // but client-side filter changes update the URL via window.history.pushState
+  // without a full Next.js server round-trip, so that ref could go stale and
+  // wrongly keep reporting "indexed" after navigating to a genuinely noindex
+  // combo, risking polluting KV with long-tail pages. Recomputing it live from
+  // pathname here (via a client-safe copy of the same curated list used
+  // server-side — see indexable-urls-client.ts) means it's always correct,
+  // regardless of how the navigation happened.
+  const isIndexedPage = useMemo(() => {
+    const slugPath = pathname.split("/listings/")[1]?.split("/").filter(Boolean).join("/") || "";
+    const urlPath = `/listings/${slugPath ? slugPath + "/" : ""}`;
+    return INDEXABLE_URLS_CLIENT.has(urlPath);
+  }, [pathname]);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const [relatedChips, setRelatedChips] = useState<
@@ -408,13 +411,23 @@ const [pagination, setPagination] = useState<Pagination>(() => {
   // currently being viewed, so parsing it here directly avoids that race
   // entirely and keeps prefetching working on every page view, not just later
   // ones.
-  const prefetchedPageRef = useRef<number>(-1);
+  //
+  // The de-dupe guard is keyed on pathname + query + page, not just the bare
+  // page number. A bare-number guard breaks the moment a filter is applied:
+  // e.g. root /listings/ prefetches page 2 and remembers "2" — then applying
+  // a filter resets pagination and lands back on page 1 of the *new* filtered
+  // set, whose own "next page" is also numerically 2. A bare-number guard
+  // would see "2 already prefetched" and skip it, even though that was for a
+  // completely different filter context and the new page 2 was never fetched.
+  const prefetchedKeyRef = useRef<string>("");
   useEffect(() => {
     const { current_page, total_pages } = pagination;
     if (current_page >= total_pages) return;
     const nextPage = current_page + 1;
-    if (prefetchedPageRef.current === nextPage) return;
-    prefetchedPageRef.current = nextPage;
+
+    const key = `${pathname}?${searchParams.toString()}::page=${nextPage}`;
+    if (prefetchedKeyRef.current === key) return;
+    prefetchedKeyRef.current = key;
 
     const slugParts = pathname.split("/listings/")[1]?.split("/") || [];
     const parsedFromURL = parseSlugToFilters(slugParts);
@@ -428,8 +441,8 @@ const [pagination, setPagination] = useState<Pagination>(() => {
     });
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    fetchListings({ ...currentFilters, page: nextPage, indexed: indexedRef.current } as any).catch(() => {});
-  }, [pagination.current_page, pagination.total_pages, pathname, searchParams, incomingFilters]);
+    fetchListings({ ...currentFilters, page: nextPage, indexed: isIndexedPage } as any).catch(() => {});
+  }, [pagination.current_page, pagination.total_pages, pathname, searchParams, incomingFilters, isIndexedPage]);
 
   // Parse slug ONCE on mount; do not fetch here
   const initializedRef = useRef(false);
@@ -606,7 +619,7 @@ const [pagination, setPagination] = useState<Pagination>(() => {
           from_sleep: safeFilters.from_sleep?.toString(),
           to_sleep: safeFilters.to_sleep?.toString(),
           radius_kms: radiusParam,
-          indexed: indexedRef.current,
+          indexed: isIndexedPage,
         });
 
         if (requestId !== latestListingsRequestRef.current) {
@@ -1170,6 +1183,7 @@ console.log("emptyExclusiveList", emptyExclusiveList)
         from_sleep: next.from_sleep?.toString(),
         to_sleep: next.to_sleep?.toString(),
         radius_kms: radiusParam,
+        indexed: isIndexedPage,
       });
 
       const validProducts = (response?.data?.products ?? []).filter(
