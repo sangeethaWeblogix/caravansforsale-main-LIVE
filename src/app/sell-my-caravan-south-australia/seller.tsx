@@ -7,16 +7,8 @@ import React, { useState } from "react";
  
 
 const CITY_LINKS = [
-  { label: " Melbourne", slug: "melbourne-region" },
-  { label: " Geelong", slug: "geelong-region" },
-  { label: " Ballarat", slug: "ballarat-region" },
-  { label: " Latrobe Gippsland", slug: "latrobe-gippsland-region" },
-  { label: " Mornington Peninsula", slug: "mornington-peninsula-region" },
-  { label: " Shepparton", slug: "shepparton-region" },
-  { label: " Hume", slug: "hume-region" },
-  { label: " Bendigo", slug: "bendigo-region" },
-  { label: " North West", slug: "north-west-region" },
-  { label: " Warrnambool And South West", slug: "warrnambool-and-south-west-region" },
+  { label: " Adelaide", slug: "adelaide-region" },
+  { label: " South Australia South East", slug: "south-australia-south-east-region" },
 ];
 
 const CARAVAN_TYPES = [
@@ -35,18 +27,18 @@ const CARAVAN_TYPES = [
 const HOW_TO_STEPS = [
   { num: 1, iconSet: "fa-regular", icon: "fa-file-lines",    title: "Create Your Listing",    desc: "Add your caravan details, description, price and location in minutes." },
   { num: 2, iconSet: "fa-regular", icon: "fa-image",         title: "Upload Photos",          desc: "Add clear photos of the inside, outside and features of your caravan." },
-  { num: 3, iconSet: "fa-regular", icon: "fa-comment-dots",  title: "Reach Buyers",           desc: "Your listing is live across Victoria. Buyers contact you directly." },
+  { num: 3, iconSet: "fa-regular", icon: "fa-comment-dots",  title: "Reach Buyers",           desc: "Your listing is live across South Australia. Buyers contact you directly." },
   { num: 4, iconSet: "fa-regular", icon: "fa-handshake",     title: "Negotiate Directly",     desc: "Arrange inspections and negotiate price with buyers." },
   { num: 5, iconSet: "fa-regular", icon: "fa-circle-check",  title: "Complete The Sale",      desc: "Once sold, remove your listing or mark as sold. It's that simple." },
 ];
 
 const MAIN_FAQS = [
   {
-    q: "How do I sell my caravan in Victoria?",
-    a: <p>You can sell your caravan online by creating a private seller listing on CaravansForSale.com.au. Simply add your caravan details, upload clear photos, set your asking price, and publish your ad so active buyers across Victoria and all of Australia can contact you directly.</p>,
+    q: "How do I sell my caravan in South Australia?",
+    a: <p>You can sell your caravan online by creating a private seller listing on CaravansForSale.com.au. Simply add your caravan details, upload clear photos, set your asking price, and publish your ad so active buyers across South Australia and all of Australia can contact you directly.</p>,
   },
   {
-    q: "How much does it cost to sell my caravan in Victoria?",
+    q: "How much does it cost to sell my caravan in South Australia?",
     a: <p>We charge a simple, flat one-time fee of just $49 (inc. GST). There are absolutely no commissions, no hidden upfront fees, and no recurring monthly subscriptions. You keep 100% of your sale price.</p>,
   },
   {
@@ -67,11 +59,11 @@ const MAIN_FAQS = [
   },
   {
     q: "How should I price my caravan?",
-    a: <p>Check similar caravans for sale in Victoria before setting your price. Compare by make, model, year, condition, length, ATM, tare weight, sleeping capacity, features and location. A realistic asking price can help attract more genuine buyers.</p>,
+    a: <p>Check similar caravans for sale in South Australia before setting your price. Compare by make, model, year, condition, length, ATM, tare weight, sleeping capacity, features and location. A realistic asking price can help attract more genuine buyers.</p>,
   },
   {
     q: "Is it safe to sell my caravan privately online?",
-    a: <p>Yes, but you should take normal precautions. Speak with buyers directly, meet in a safe location, confirm payment has cleared before handover and complete any required transfer paperwork for Victoria.</p>,
+    a: <p>Yes, but you should take normal precautions. Speak with buyers directly, meet in a safe location, confirm payment has cleared before handover and complete any required transfer paperwork for South Australia.</p>,
   },
   {
     q: "Do I pay commission when my caravan sells?",
@@ -83,7 +75,7 @@ const MAIN_FAQS = [
   },
 ];
 
-export default function SellerVictoria() {
+export default function SellerSouthAustralia() {
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
 
   return (
@@ -93,26 +85,26 @@ export default function SellerVictoria() {
       <section className="demo-hero">
         <div className="container">
           <h1 className="demo-hero__title">
-            Sell My Caravan in Victoria
+            Sell My Caravan in South Australia
           </h1>
           <p className="demo-hero__subtitle">
-            The fastest, safest way to reach active caravan buyers across Melbourne and regional Victoria.
+            The fastest, safest way to reach active caravan buyers across Adelaide and regional South Australia.
           </p>
 
           {/* Pricing card + CTA wrapper — one seamless unit */}
           <div className="demo-price-wrapper">
           <div className="demo-price-card">
 
-            {/* Left: Victoria info */}
+            {/* Left: South Australia info */}
             <div className="demo-price-card__left">
               <div className="demo-price-card__aus-circle">
-                <img src="/images/vic_map.svg" alt="Victoria" />
+                <img src="/images/sa_map.svg" alt="South Australia" />
               </div>
               <div className="demo-price-card__header">
               <h3>Looking to sell your caravan?</h3>
             </div>
               <p className="demo-price-card__desc">
-                List your caravan on Australia's #1 caravan marketplace and connect with thousands of buyers across Melbourne and regional Victoria.
+                List your caravan on Australia's #1 caravan marketplace and connect with thousands of buyers across Adelaide and regional South Australia.
               </p>
 
             </div>
@@ -183,7 +175,7 @@ export default function SellerVictoria() {
 
           {/* Heading */}
           <div className="demo-reach-heading">
-            <h3>Reach Caravan Buyers Across Victoria, Including: </h3>
+            <h3>Reach Caravan Buyers Across South Australia, Including: </h3>
           </div>
 
   {/* ── Region + City links ── */}
@@ -299,7 +291,7 @@ export default function SellerVictoria() {
               </div>
               <ul className="demo-guide-card__list">
                 <li>Australia's #1 marketplace for buying and selling caravans.</li>
-                <li>Targeted caravan buyers across Melbourne and regional Victoria.</li>
+                <li>Targeted caravan buyers across Adelaide and regional South Australia.</li>
                 <li>Your listing stays live until sold with no hidden fees.</li>
                 <li>Fast, simple and secure way to sell your caravan.</li>
               </ul>
@@ -323,7 +315,7 @@ export default function SellerVictoria() {
                 <h3>How to price your caravan</h3>
               </div>
               <ul className="demo-guide-card__list">
-                <li>Check similar caravans for sale in Victoria.</li>
+                <li>Check similar caravans for sale in South Australia.</li>
                 <li>Compare make, model, year, condition and inclusions.</li>
                 <li>List at a realistic price to attract more buyers.</li>
               </ul>
@@ -351,7 +343,7 @@ export default function SellerVictoria() {
           <div className="demo-faq-head">
             <span className="demo-faq-head__tag">FAQ</span>
             <h2>Frequently Asked Questions</h2>
-            <p>Everything you need to know about selling your caravan in Victoria on CaravansForSale.com.au</p>
+            <p>Everything you need to know about selling your caravan in South Australia on CaravansForSale.com.au</p>
           </div>
           <div className="demo-faq-list">
             {MAIN_FAQS.map((faq, i) => (
@@ -399,18 +391,18 @@ export default function SellerVictoria() {
         <div className="container">
           <div className="row align-items-center g-4">
             <div className="col-md-6">
-              <img src="/images/your-caravan-desktop-seller-2.jpg" className="img-fluid demo-why-img" alt="Victorian caravan buyers" />
+              <img src="/images/your-caravan-desktop-seller-2.jpg" className="img-fluid demo-why-img" alt="South Australian caravan buyers" />
             </div>
             <div className="col-md-6">
-              <h2>Why Victorian Caravan Buyers Visit CaravansForSale Every Month</h2>
+              <h2>Why South Australian Caravan Buyers Visit CaravansForSale Every Month</h2>
               <p>
-                CaravansForSale.com.au helps Victorian caravan sellers reach buyers searching for
+                CaravansForSale.com.au helps South Australian caravan sellers reach buyers searching for
                 used caravans, off road caravans, family caravans, pop tops, hybrids and touring
-                caravans across Melbourne and regional Victoria.
+                caravans across Adelaide and regional South Australia.
               </p>
               <div className="demo-check-grid demo-check-grid--2col mt-3">
                 {[
-                  "Thousands of active buyers", "Local reach across VIC regions",
+                  "Thousands of active buyers", "Local reach across SA regions",
                   "Caravan-only marketplace", "Simple listing process",
                   "High quality enquiries", "No commissions",
                   "Live until sold – no extra fees", "Friendly local support team",
@@ -430,7 +422,7 @@ export default function SellerVictoria() {
         <div className="container">
 
           <h2 className="demo-steps-title">How To Sell Your Caravan Online</h2>
-          <p className="demo-steps-subtitle">List in minutes and reach thousands of active caravan buyers in Victoria.</p>
+          <p className="demo-steps-subtitle">List in minutes and reach thousands of active caravan buyers in South Australia.</p>
 
           {/* Steps: each column has number circle + icon + content; connectors between columns */}
           <div className="demo-steps-wrapper">
@@ -458,14 +450,14 @@ export default function SellerVictoria() {
       <section className="demo-cta-strip">
         <div className="container text-center">
           <p>
-            Start selling your caravan in Victoria today for just{" "}
+            Start selling your caravan in South Australia today for just{" "}
             <strong>$49 (Inc. GST)</strong> — live until sold.
           </p>
           <a href="https://seller.caravansforsale.com.au/seller-signup/" className="btn white_btn">
             List Your Caravan Now
           </a>
           <p className="demo-cta-strip__alt-link">
-            Not in VIC? Sell your caravan across Australia <a href="/sell-my-caravan/">here</a>.
+            Not in SA? Sell your caravan across Australia <a href="/sell-my-caravan/">here</a>.
           </p>
         </div>
       </section>
