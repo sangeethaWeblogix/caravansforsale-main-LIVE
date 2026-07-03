@@ -3,21 +3,9 @@ import "@fortawesome/fontawesome-free/css/fontawesome.min.css";
 import "@fortawesome/fontawesome-free/css/solid.min.css";
 import "@fortawesome/fontawesome-free/css/regular.min.css";
 import React, { useState } from "react";
+import { getRegionsByState } from "../sell-my-caravan-region/regions-data";
 
- 
-
-const CITY_LINKS = [
-  { label: " Melbourne", slug: "melbourne-region" },
-  { label: " Geelong", slug: "geelong-region" },
-  { label: " Ballarat", slug: "ballarat-region" },
-  { label: " Latrobe Gippsland", slug: "latrobe-gippsland-region" },
-  { label: " Mornington Peninsula", slug: "mornington-peninsula-region" },
-  { label: " Shepparton", slug: "shepparton-region" },
-  { label: " Hume", slug: "hume-region" },
-  { label: " Bendigo", slug: "bendigo-region" },
-  { label: " North West", slug: "north-west-region" },
-  { label: " Warrnambool And South West", slug: "warrnambool-and-south-west-region" },
-];
+const CITY_LINKS = getRegionsByState("victoria");
 
 const CARAVAN_TYPES = [
   { label: "Off Road Caravans", img: "/images/off-road.webp", href: "/listings/off-road-category/" },

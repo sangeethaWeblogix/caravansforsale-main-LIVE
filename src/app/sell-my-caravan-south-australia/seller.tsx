@@ -3,13 +3,9 @@ import "@fortawesome/fontawesome-free/css/fontawesome.min.css";
 import "@fortawesome/fontawesome-free/css/solid.min.css";
 import "@fortawesome/fontawesome-free/css/regular.min.css";
 import React, { useState } from "react";
+import { getRegionsByState } from "../sell-my-caravan-region/regions-data";
 
- 
-
-const CITY_LINKS = [
-  { label: " Adelaide", slug: "adelaide-region" },
-  { label: " South Australia South East", slug: "south-australia-south-east-region" },
-];
+const CITY_LINKS = getRegionsByState("south-australia");
 
 const CARAVAN_TYPES = [
   { label: "Off Road Caravans", img: "/images/off-road.webp", href: "/listings/off-road-category/" },

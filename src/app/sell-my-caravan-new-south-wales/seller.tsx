@@ -3,26 +3,9 @@ import "@fortawesome/fontawesome-free/css/fontawesome.min.css";
 import "@fortawesome/fontawesome-free/css/solid.min.css";
 import "@fortawesome/fontawesome-free/css/regular.min.css";
 import React, { useState } from "react";
+import { getRegionsByState } from "../sell-my-caravan-region/regions-data";
 
- 
-
-const CITY_LINKS = [
-  { label: " Sydney", slug: "sydney-region" },
-  { label: " Hunter", slug: "hunter-region" },
-  { label: " Coffs Harbour", slug: "coffs-harbour-region" },
-  { label: " Newcastle", slug: "newcastle-region" },
-  { label: " Southern Highlands", slug: "southern-highlands-region" },
-  { label: " Richmond Tweed", slug: "richmond-tweed-region" },
-  { label: " Central Coast", slug: "central-coast-region" },
-  { label: " Central West", slug: "central-west-region" },
-  { label: " Mid North Coast", slug: "mid-north-coast-region" },
-  { label: " Murray", slug: "murray-region" },
-  { label: " New England", slug: "new-england-region" },
-  { label: " Riverina", slug: "riverina-region" },
-  { label: " Capital", slug: "capital-region" },
-  { label: " Orana", slug: "orana-region" },
-  { label: " Illawarra", slug: "illawarra-region" },
-];
+const CITY_LINKS = getRegionsByState("new-south-wales");
 
 const CARAVAN_TYPES = [
   { label: "Off Road Caravans", img: "/images/off-road.webp", href: "/listings/off-road-category/" },

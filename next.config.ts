@@ -34,6 +34,10 @@ const nextConfig: NextConfig = {
         destination:
           "https://wb79vudhmjvv4ng6.public.blob.vercel-storage.com/:path*",
       },
+      {
+        source: "/sell-my-caravan-:slug",
+        destination: "/sell-my-caravan-region/:slug",
+      },
     ];
   },
   experimental: {

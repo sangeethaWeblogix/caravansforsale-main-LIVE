@@ -3,9 +3,7 @@ import "@fortawesome/fontawesome-free/css/fontawesome.min.css";
 import "@fortawesome/fontawesome-free/css/solid.min.css";
 import "@fortawesome/fontawesome-free/css/regular.min.css";
 import React, { useState } from "react";
-import { getRegionsByState } from "../sell-my-caravan-region/regions-data";
-
-const CITY_LINKS = getRegionsByState("western-australia");
+import { RegionInfo } from "./regions-data";
 
 const CARAVAN_TYPES = [
   { label: "Off Road Caravans", img: "/images/off-road.webp", href: "/listings/off-road-category/" },
@@ -20,59 +18,66 @@ const CARAVAN_TYPES = [
   { label: "Used Caravans", img: "/images/off-road.webp", href: "/listings/used-condition/" },
 ];
 
-const HOW_TO_STEPS = [
-  { num: 1, iconSet: "fa-regular", icon: "fa-file-lines",    title: "Create Your Listing",    desc: "Add your caravan details, description, price and location in minutes." },
-  { num: 2, iconSet: "fa-regular", icon: "fa-image",         title: "Upload Photos",          desc: "Add clear photos of the inside, outside and features of your caravan." },
-  { num: 3, iconSet: "fa-regular", icon: "fa-comment-dots",  title: "Reach Buyers",           desc: "Your listing is live across Western Australia. Buyers contact you directly." },
-  { num: 4, iconSet: "fa-regular", icon: "fa-handshake",     title: "Negotiate Directly",     desc: "Arrange inspections and negotiate price with buyers." },
-  { num: 5, iconSet: "fa-regular", icon: "fa-circle-check",  title: "Complete The Sale",      desc: "Once sold, remove your listing or mark as sold. It's that simple." },
-];
+interface RegionSellerProps {
+  region: RegionInfo;
+}
 
-const MAIN_FAQS = [
-  {
-    q: "How do I sell my caravan in Western Australia?",
-    a: <p>You can sell your caravan online by creating a private seller listing on CaravansForSale.com.au. Simply add your caravan details, upload clear photos, set your asking price, and publish your ad so active buyers across Western Australia and all of Australia can contact you directly.</p>,
-  },
-  {
-    q: "How much does it cost to sell my caravan in Western Australia?",
-    a: <p>We charge a simple, flat one-time fee of just $49 (inc. GST). There are absolutely no commissions, no hidden upfront fees, and no recurring monthly subscriptions. You keep 100% of your sale price.</p>,
-  },
-  {
-    q: "How long does my caravan listing stay live?",
-    a: <p>Your caravan listing stays live until sold. You do not need to keep paying monthly fees to keep your ad active. Once your caravan is sold, you can remove the listing from the website.</p>,
-  },
-  {
-    q: "Can I edit my caravan listing after publishing?",
-    a: <p>Yes. After your listing is published, you can update your caravan details, change the asking price, add or replace photos and improve your description if needed.</p>,
-  },
-  {
-    q: "How do buyers contact me?",
-    a: <p>Interested buyers can contact you directly through your caravan listing. This allows you to answer questions, arrange inspections, negotiate the price and manage the sale privately.</p>,
-  },
-  {
-    q: "What photos should I upload when selling my caravan?",
-    a: <p>Upload clear photos of the outside, inside, kitchen, beds, seating area, bathroom, tyres, drawbar and any included accessories. Good photos help buyers understand the condition of your caravan and can increase enquiries.</p>,
-  },
-  {
-    q: "How should I price my caravan?",
-    a: <p>Check similar caravans for sale in Western Australia before setting your price. Compare by make, model, year, condition, length, ATM, tare weight, sleeping capacity, features and location. A realistic asking price can help attract more genuine buyers.</p>,
-  },
-  {
-    q: "Is it safe to sell my caravan privately online?",
-    a: <p>Yes, but you should take normal precautions. Speak with buyers directly, meet in a safe location, confirm payment has cleared before handover and complete any required transfer paperwork for Western Australia.</p>,
-  },
-  {
-    q: "Do I pay commission when my caravan sells?",
-    a: <p>No. CaravansForSale.com.au does not charge commission when your caravan sells. You pay the one-time listing fee and keep 100% of the agreed sale price.</p>,
-  },
-  {
-    q: "Can I remove my listing after my caravan is sold?",
-    a: <p>Yes. Once your caravan has sold, you can remove your listing so buyers know it is no longer available.</p>,
-  },
-];
-
-export default function SellerWesternAustralia() {
+export default function RegionSeller({ region }: RegionSellerProps) {
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
+  const regionLabel = region.label;
+  const stateLabel = region.state.label;
+  const stateSlug = region.state.slug;
+
+  const HOW_TO_STEPS = [
+    { num: 1, iconSet: "fa-regular", icon: "fa-file-lines",    title: "Create Your Listing",    desc: "Add your caravan details, description, price and location in minutes." },
+    { num: 2, iconSet: "fa-regular", icon: "fa-image",         title: "Upload Photos",          desc: "Add clear photos of the inside, outside and features of your caravan." },
+    { num: 3, iconSet: "fa-regular", icon: "fa-comment-dots",  title: "Reach Buyers",           desc: `Your listing is live across ${regionLabel} and ${stateLabel}. Buyers contact you directly.` },
+    { num: 4, iconSet: "fa-regular", icon: "fa-handshake",     title: "Negotiate Directly",     desc: "Arrange inspections and negotiate price with buyers." },
+    { num: 5, iconSet: "fa-regular", icon: "fa-circle-check",  title: "Complete The Sale",      desc: "Once sold, remove your listing or mark as sold. It's that simple." },
+  ];
+
+  const MAIN_FAQS = [
+    {
+      q: `How do I sell my caravan in ${regionLabel}?`,
+      a: <p>You can sell your caravan online by creating a private seller listing on CaravansForSale.com.au. Simply add your caravan details, upload clear photos, set your asking price, and publish your ad so active buyers in {regionLabel} and across {stateLabel} can contact you directly.</p>,
+    },
+    {
+      q: `How much does it cost to sell my caravan in ${regionLabel}?`,
+      a: <p>We charge a simple, flat one-time fee of just $49 (inc. GST). There are absolutely no commissions, no hidden upfront fees, and no recurring monthly subscriptions. You keep 100% of your sale price.</p>,
+    },
+    {
+      q: "How long does my caravan listing stay live?",
+      a: <p>Your caravan listing stays live until sold. You do not need to keep paying monthly fees to keep your ad active. Once your caravan is sold, you can remove the listing from the website.</p>,
+    },
+    {
+      q: "Can I edit my caravan listing after publishing?",
+      a: <p>Yes. After your listing is published, you can update your caravan details, change the asking price, add or replace photos and improve your description if needed.</p>,
+    },
+    {
+      q: "How do buyers contact me?",
+      a: <p>Interested buyers can contact you directly through your caravan listing. This allows you to answer questions, arrange inspections, negotiate the price and manage the sale privately.</p>,
+    },
+    {
+      q: "What photos should I upload when selling my caravan?",
+      a: <p>Upload clear photos of the outside, inside, kitchen, beds, seating area, bathroom, tyres, drawbar and any included accessories. Good photos help buyers understand the condition of your caravan and can increase enquiries.</p>,
+    },
+    {
+      q: "How should I price my caravan?",
+      a: <p>Check similar caravans for sale in {regionLabel} before setting your price. Compare by make, model, year, condition, length, ATM, tare weight, sleeping capacity, features and location. A realistic asking price can help attract more genuine buyers.</p>,
+    },
+    {
+      q: "Is it safe to sell my caravan privately online?",
+      a: <p>Yes, but you should take normal precautions. Speak with buyers directly, meet in a safe location, confirm payment has cleared before handover and complete any required transfer paperwork for {stateLabel}.</p>,
+    },
+    {
+      q: "Do I pay commission when my caravan sells?",
+      a: <p>No. CaravansForSale.com.au does not charge commission when your caravan sells. You pay the one-time listing fee and keep 100% of the agreed sale price.</p>,
+    },
+    {
+      q: "Can I remove my listing after my caravan is sold?",
+      a: <p>Yes. Once your caravan has sold, you can remove your listing so buyers know it is no longer available.</p>,
+    },
+  ];
 
   return (
     <div className="page_wrapper demo-page">
@@ -81,26 +86,26 @@ export default function SellerWesternAustralia() {
       <section className="demo-hero">
         <div className="container">
           <h1 className="demo-hero__title">
-            Sell My Caravan in Western Australia
+            Sell My Caravan in {regionLabel}
           </h1>
           <p className="demo-hero__subtitle">
-            The fastest, safest way to reach active caravan buyers across Perth and regional Western Australia.
+            The fastest, safest way to reach active caravan buyers in {regionLabel}, {stateLabel}.
           </p>
 
           {/* Pricing card + CTA wrapper — one seamless unit */}
           <div className="demo-price-wrapper">
           <div className="demo-price-card">
 
-            {/* Left: Western Australia info */}
+            {/* Left: region info */}
             <div className="demo-price-card__left">
               <div className="demo-price-card__aus-circle">
-                <img src="/images/wa_map.svg" alt="Western Australia" />
+                <img src="/images/vic_map.svg" alt={regionLabel} />
               </div>
               <div className="demo-price-card__header">
               <h3>Looking to sell your caravan?</h3>
             </div>
               <p className="demo-price-card__desc">
-                List your caravan on Australia's #1 caravan marketplace and connect with thousands of buyers across Perth and regional Western Australia.
+                List your caravan on Australia's #1 caravan marketplace and connect with thousands of buyers in {regionLabel}, {stateLabel}.
               </p>
 
             </div>
@@ -171,39 +176,8 @@ export default function SellerWesternAustralia() {
 
           {/* Heading */}
           <div className="demo-reach-heading">
-            <h3>Reach Caravan Buyers Across Western Australia, Including: </h3>
+            <h3>Reach Caravan Buyers in {regionLabel}, {stateLabel}</h3>
           </div>
-
-  {/* ── Region + City links ── */}
-      <section className="demo-city-section">
-        <div className="container">
-
-         
-
-          {/* City cards */}
-          <div className="demo-city-grid">
-            {CITY_LINKS.map((c) => (
-              <div key={c.label} className="demo-city-item">
-                <span className="demo-city-icon">
-                  <img src="/images/caravan.png" alt="" />
-                </span>
-                     <h3 className="demo-city-label">
-
-                 <a
-                   href={`/sell-my-caravan-${c.slug}`}
-                   title={`Sell my caravan in ${c.label.trim()}`}
-                   className="demo-city-label"
-                 >
-                   {c.label}
-                 </a>
-                 </h3>
-                 
-                <i className="fa-solid fa-chevron-right demo-city-arrow" />
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
           <div className="demo-reach-row">
           {/* Device image */}
@@ -287,7 +261,7 @@ export default function SellerWesternAustralia() {
               </div>
               <ul className="demo-guide-card__list">
                 <li>Australia's #1 marketplace for buying and selling caravans.</li>
-                <li>Targeted caravan buyers across Perth and regional Western Australia.</li>
+                <li>Targeted caravan buyers across {regionLabel} and regional {stateLabel}.</li>
                 <li>Your listing stays live until sold with no hidden fees.</li>
                 <li>Fast, simple and secure way to sell your caravan.</li>
               </ul>
@@ -311,7 +285,7 @@ export default function SellerWesternAustralia() {
                 <h3>How to price your caravan</h3>
               </div>
               <ul className="demo-guide-card__list">
-                <li>Check similar caravans for sale in Western Australia.</li>
+                <li>Check similar caravans for sale in {regionLabel}.</li>
                 <li>Compare make, model, year, condition and inclusions.</li>
                 <li>List at a realistic price to attract more buyers.</li>
               </ul>
@@ -339,7 +313,7 @@ export default function SellerWesternAustralia() {
           <div className="demo-faq-head">
             <span className="demo-faq-head__tag">FAQ</span>
             <h2>Frequently Asked Questions</h2>
-            <p>Everything you need to know about selling your caravan in Western Australia on CaravansForSale.com.au</p>
+            <p>Everything you need to know about selling your caravan in {regionLabel} on CaravansForSale.com.au</p>
           </div>
           <div className="demo-faq-list">
             {MAIN_FAQS.map((faq, i) => (
@@ -387,18 +361,18 @@ export default function SellerWesternAustralia() {
         <div className="container">
           <div className="row align-items-center g-4">
             <div className="col-md-6">
-              <img src="/images/your-caravan-desktop-seller-2.jpg" className="img-fluid demo-why-img" alt="Western Australian caravan buyers" />
+              <img src="/images/your-caravan-desktop-seller-2.jpg" className="img-fluid demo-why-img" alt={`${regionLabel} caravan buyers`} />
             </div>
             <div className="col-md-6">
-              <h2>Why Western Australian Caravan Buyers Visit CaravansForSale Every Month</h2>
+              <h2>Why {regionLabel} Caravan Buyers Visit CaravansForSale Every Month</h2>
               <p>
-                CaravansForSale.com.au helps Western Australian caravan sellers reach buyers searching for
+                CaravansForSale.com.au helps caravan sellers in {regionLabel} reach buyers searching for
                 used caravans, off road caravans, family caravans, pop tops, hybrids and touring
-                caravans across Perth and regional Western Australia.
+                caravans across {regionLabel} and regional {stateLabel}.
               </p>
               <div className="demo-check-grid demo-check-grid--2col mt-3">
                 {[
-                  "Thousands of active buyers", "Local reach across WA regions",
+                  "Thousands of active buyers", `Local reach across ${regionLabel}`,
                   "Caravan-only marketplace", "Simple listing process",
                   "High quality enquiries", "No commissions",
                   "Live until sold – no extra fees", "Friendly local support team",
@@ -418,7 +392,7 @@ export default function SellerWesternAustralia() {
         <div className="container">
 
           <h2 className="demo-steps-title">How To Sell Your Caravan Online</h2>
-          <p className="demo-steps-subtitle">List in minutes and reach thousands of active caravan buyers in Western Australia.</p>
+          <p className="demo-steps-subtitle">List in minutes and reach thousands of active caravan buyers in {regionLabel}.</p>
 
           {/* Steps: each column has number circle + icon + content; connectors between columns */}
           <div className="demo-steps-wrapper">
@@ -446,14 +420,14 @@ export default function SellerWesternAustralia() {
       <section className="demo-cta-strip">
         <div className="container text-center">
           <p>
-            Start selling your caravan in Western Australia today for just{" "}
+            Start selling your caravan in {regionLabel} today for just{" "}
             <strong>$49 (Inc. GST)</strong> — live until sold.
           </p>
           <a href="https://seller.caravansforsale.com.au/seller-signup/" className="btn white_btn">
             List Your Caravan Now
           </a>
           <p className="demo-cta-strip__alt-link">
-            Not in WA? Sell your caravan across Australia <a href="/sell-my-caravan/">here</a>.
+            Not in {regionLabel}? Sell your caravan across {stateLabel} <a href={`/sell-my-caravan-${stateSlug}/`}>here</a>.
           </p>
         </div>
       </section>

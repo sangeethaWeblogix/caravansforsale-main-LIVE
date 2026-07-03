@@ -14,16 +14,16 @@
  ];
  
  const CITY_LINKS = [
-   { label: " Melbourne", slug: "melbourne" },
-   { label: " Sydney", slug: "sydney" },
-   { label: " Brisbane", slug: "brisbane" },
-   { label: " Perth", slug: "perth" },
-   { label: " Adelaide", slug: "adelaide" },
-   { label: " Gold Coast", slug: "gold-coast" },
-   { label: " Sunshine Coast", slug: "sunshine-coast" },
-   { label: " Newcastle", slug: "newcastle" },
-   { label: " Canberra", slug: "canberra" },
-   { label: " Hobart", slug: "hobart" },
+   { label: " Melbourne", slug: "melbourne-region" },
+   { label: " Sydney", slug: "sydney-region" },
+   { label: " Brisbane", slug: "brisbane-region" },
+   { label: " Perth", slug: "perth-region" },
+   { label: " Adelaide", slug: "adelaide-region" },
+   { label: " Gold Coast", slug: "gold-coast-region" },
+   { label: " Sunshine Coast", slug: "sunshine-coast-region" },
+   { label: " Newcastle", slug: "newcastle-region" },
+   { label: " Canberra", slug: "canberra-region" },
+   { label: " Hobart", slug: "hobart-region" },
  ];
  
  const CARAVAN_TYPES = [

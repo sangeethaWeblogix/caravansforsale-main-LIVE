@@ -3,23 +3,9 @@ import "@fortawesome/fontawesome-free/css/fontawesome.min.css";
 import "@fortawesome/fontawesome-free/css/solid.min.css";
 import "@fortawesome/fontawesome-free/css/regular.min.css";
 import React, { useState } from "react";
+import { getRegionsByState } from "../sell-my-caravan-region/regions-data";
 
- 
-
-const CITY_LINKS = [
-  { label: " Moreton Bay North", slug: "moreton-bay-north-region" },
-  { label: " Wide Bay", slug: "wide-bay-region" },
-  { label: " Gold Coast", slug: "gold-coast-region" },
-  { label: " Brisbane", slug: "brisbane-region" },
-  { label: " Sunshine Coast", slug: "sunshine-coast-region" },
-  { label: " Logan Beaudesert", slug: "logan-beaudesert-region" },
-  { label: " Moreton Bay South", slug: "moreton-bay-south-region" },
-  { label: " Townsville", slug: "townsville-region" },
-  { label: " Mackay Isaac Whitsunday", slug: "mackay-isaac-whitsunday-region" },
-  { label: " Ipswich", slug: "ipswich-region" },
-  { label: " Toowoomba", slug: "toowoomba-region" },
-  { label: " Cairns", slug: "cairns-region" },
-];
+const CITY_LINKS = getRegionsByState("queensland");
 
 const CARAVAN_TYPES = [
   { label: "Off Road Caravans", img: "/images/off-road.webp", href: "/listings/off-road-category/" },
