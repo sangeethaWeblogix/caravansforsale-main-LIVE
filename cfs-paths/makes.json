@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "makes",
-    "count": 259,
+    "count": 263,
     "paths": [
         "active/",
         "adria/",
@@ -45,6 +45,7 @@
         "cell/",
         "centaur/",
         "chief/",
+        "coach-rv/",
         "compass/",
         "complete-campsite/",
         "concept/",
@@ -139,7 +140,6 @@
         "lifestyle-campers/",
         "long-haul-campers/",
         "lotus/",
-        "luckystar/",
         "lunar/",
         "lyfe-rv/",
         "majestic/",
@@ -170,6 +170,7 @@
         "option-rv/",
         "opus-campers/",
         "orbit/",
+        "orca-rv/",
         "oz-star/",
         "oz-venture/",
         "oz-way/",
@@ -218,6 +219,7 @@
         "suncoast/",
         "sunfinder/",
         "sunland/",
+        "sunliner-rv/",
         "sunrise/",
         "sunseeker/",
         "sunset/",
@@ -256,6 +258,8 @@
         "wildtrail/",
         "willow-rv/",
         "windsor/",
+        "winnebago/",
+        "wonder-roo/",
         "x-series-rv/",
         "xplore-rv/",
         "xtour/",
@@ -263,5 +267,5 @@
         "york/",
         "zone-rv/"
     ],
-    "generated_at": "2026-07-02 15:48:07"
+    "generated_at": "2026-07-03 15:51:26"
 }
