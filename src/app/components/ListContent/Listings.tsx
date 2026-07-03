@@ -138,6 +138,10 @@ interface Props extends Filters {
   initialMakeCounts?: { name: string; slug: string; count: number }[];
   initialBottomLinksData?: BottomLinksData | null;
   initialDistances?: Record<string, number>;
+  // Computed server-side (page.tsx) from the curated indexable-URLs list. Tells the
+  // Cloudflare Worker whether client-side /api/listings calls for this page are
+  // eligible for KV caching, or should always be live-proxied (noindex/long-tail).
+  indexed?: boolean;
 }
 
 /** ------------ Helper Functions ------------ */
@@ -183,6 +187,7 @@ export default function ListingsPage({
   initialMakeCounts,
   initialBottomLinksData,
   initialDistances,
+  indexed,
   ...incomingFilters
 }: Props) {
   const DEFAULT_RADIUS = 50 as const;
@@ -190,6 +195,16 @@ export default function ListingsPage({
   const [filters, setFilters] = useState<Filters>(incomingFilters);
   const filtersRef = useRef<Filters>({});
   const pathname = usePathname();
+  // Tracks whether the current listings page is on the curated/indexed list, so
+  // client-side /api/listings calls know whether the Cloudflare Worker should
+  // cache the response. Re-synced whenever page.tsx re-renders with a fresh value
+  // (full navigations). Filter changes that only update the URL client-side
+  // (window.history.pushState, no server round-trip) won't refresh this value —
+  // see indexedRef usage below.
+  const indexedRef = useRef<boolean>(!!indexed);
+  useEffect(() => {
+    indexedRef.current = !!indexed;
+  }, [indexed]);
   const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -382,15 +397,17 @@ const [pagination, setPagination] = useState<Pagination>(() => {
     return undefined;
   };
 
-  // Shuffle SSR-seeded products once on client mount (avoids hydration mismatch)
-  const mountShuffledRef = useRef(false);
-  useEffect(() => {
-    if (mountShuffledRef.current) return;
-    mountShuffledRef.current = true;
-    setProducts(prev => prev.length > 0 ? shuffleArray([...prev]) : prev);
-  }, []);
 
-  // Pre-fetch next page in background to warm server cache
+  // Pre-fetch next page in background to warm server cache.
+  // Filters are derived directly from the current URL (pathname + query) instead
+  // of from filtersRef, because filtersRef isn't guaranteed to be populated yet on
+  // the very first render of a fresh page load (a separate effect sets it, and
+  // React runs effects in declaration order — relying on the ref caused this
+  // effect to occasionally fire with empty filters and prefetch the wrong,
+  // unfiltered page). The URL is always the authoritative source of what's
+  // currently being viewed, so parsing it here directly avoids that race
+  // entirely and keeps prefetching working on every page view, not just later
+  // ones.
   const prefetchedPageRef = useRef<number>(-1);
   useEffect(() => {
     const { current_page, total_pages } = pagination;
@@ -398,9 +415,21 @@ const [pagination, setPagination] = useState<Pagination>(() => {
     const nextPage = current_page + 1;
     if (prefetchedPageRef.current === nextPage) return;
     prefetchedPageRef.current = nextPage;
+
+    const slugParts = pathname.split("/listings/")[1]?.split("/") || [];
+    const parsedFromURL = parseSlugToFilters(slugParts);
+    const orderbyFromQuery = searchParams.get("orderby") ?? undefined;
+    const radiusFromQuery = searchParams.get("radius_kms") ?? undefined;
+    const currentFilters = withResolvedModel({
+      ...incomingFilters,
+      ...parsedFromURL, // URL is the source of truth — must come last to win
+      ...(orderbyFromQuery ? { orderby: orderbyFromQuery } : {}),
+      ...(radiusFromQuery ? { radius_kms: radiusFromQuery } : {}),
+    });
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    fetchListings({ ...filtersRef.current, page: nextPage } as any).catch(() => {});
-  }, [pagination.current_page, pagination.total_pages]);
+    fetchListings({ ...currentFilters, page: nextPage, indexed: indexedRef.current } as any).catch(() => {});
+  }, [pagination.current_page, pagination.total_pages, pathname, searchParams, incomingFilters]);
 
   // Parse slug ONCE on mount; do not fetch here
   const initializedRef = useRef(false);
@@ -577,6 +606,7 @@ const [pagination, setPagination] = useState<Pagination>(() => {
           from_sleep: safeFilters.from_sleep?.toString(),
           to_sleep: safeFilters.to_sleep?.toString(),
           radius_kms: radiusParam,
+          indexed: indexedRef.current,
         });
 
         if (requestId !== latestListingsRequestRef.current) {
@@ -595,7 +625,7 @@ console.log("emptyExclusiveList", emptyExclusiveList)
           ? productsList.filter((p) => p != null)
           : [];
         const transformed = validProducts.length > 0 ? transformApiItemsToProducts(validProducts) : [];
-        setProducts(transformed.length > 0 ? shuffleArray(transformed) : transformed);
+        setProducts(transformed);
 
         // ---- Store FEATURED, PREMIUM, EXCLUSIVE ----
         setFeaturedProducts(transformApiItemsToProducts(featuredList ?? []));
@@ -681,7 +711,7 @@ console.log("emptyExclusiveList", emptyExclusiveList)
     const productsList = initialData.data?.products ?? [];
     const validProducts = Array.isArray(productsList) ? productsList.filter((p) => p != null) : [];
     const syncTransformed = validProducts.length > 0 ? transformApiItemsToProducts(validProducts) : [];
-    setProducts(syncTransformed.length > 0 ? shuffleArray(syncTransformed) : syncTransformed);
+    setProducts(syncTransformed);
     setFeaturedProducts(transformApiItemsToProducts(initialData.data?.featured_products ?? []));
     setPremiumProducts(transformApiItemsToProducts(initialData.data?.premium_products ?? []));
     setExculisiveProducts(transformApiItemsToProducts(initialData.data?.exclusive_products ?? []));

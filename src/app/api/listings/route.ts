@@ -18,7 +18,12 @@ export async function GET(request: NextRequest) {
         Accept: "application/json",
         ...(API_KEY && { "X-API-Key": API_KEY }),
       },
-      next: { revalidate: 3600 }, // Cache in Next.js data cache for 1 hr (shared across all users)
+      // No Next.js Data Cache here by design — this route only ever runs after a
+      // Cloudflare KV miss (or for noindex pages, which always live-proxy). The
+      // Cloudflare Worker's KV cache is the single source of truth; an extra,
+      // unmanaged cache layer here (with no way to invalidate it on demand) could
+      // silently serve stale data even after the WP admin refreshes KV.
+      cache: "no-store",
     });
 
     clearTimeout(timeoutId);
@@ -40,9 +45,7 @@ export async function GET(request: NextRequest) {
     const raw = await res.text();
     const jsonStart = raw.indexOf('{');
     const data = JSON.parse(jsonStart > 0 ? raw.substring(jsonStart) : raw);
-    return NextResponse.json(data, {
-      headers: { "Cache-Control": "public, max-age=300, s-maxage=300" },
-    });
+    return NextResponse.json(data);
   } catch (err: any) {
     clearTimeout(timeoutId);
     const status = err?.name === "AbortError" ? 504 : 500;

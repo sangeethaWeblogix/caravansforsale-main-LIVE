@@ -29,6 +29,7 @@ interface Filters {
   to_sleep?: string | number;
   msid?: string | null;
   shuffle_seed?: string | number; // NEW: For Cloudflare cache variants
+  indexed?: boolean; // Tells the Cloudflare Worker whether this page is eligible for KV caching
 }
 
 export type Item = {
@@ -113,13 +114,13 @@ export type ApiResponse = {
 const normalizeQuery = (s?: string) =>
   (s ?? "").replace(/\+/g, " ").trim().replace(/\s+/g, " ");
 
-// Client-side result cache — same filter within 5 min = instant, no API call
-const clientResultCache = new Map<string, { data: ApiResponse; ts: number }>();
-const CLIENT_CACHE_TTL = 5 * 60 * 1000;
+// NOTE: no client-side result cache here by design — Cloudflare KV (fed by the WP
+// admin warmer) is the single source of truth for cached listings JSON. A separate
+// browser-local cache could serve a visitor stale data for minutes after the admin
+// has already pushed a fresh version to KV, so every call goes straight through.
 
 export const fetchListings = async (
-  filters: Filters = {},
-  options?: { noCache?: boolean }
+  filters: Filters = {}
 ): Promise<ApiResponse> => {
   const {
     page = 1,
@@ -146,6 +147,7 @@ export const fetchListings = async (
     from_sleep,
     to_sleep,
     shuffle_seed, // NEW: Extract shuffle_seed
+    indexed,
   } = filters;
 
   const params = new URLSearchParams();
@@ -178,6 +180,10 @@ export const fetchListings = async (
   // NEW: Pass shuffle_seed to API for deterministic shuffle (CDN cache variants)
   if (shuffle_seed) params.append("shuffle_seed", `${shuffle_seed}`);
 
+  // Tells the Cloudflare Worker this page is indexed/curated and eligible for KV
+  // caching. Non-indexed (long-tail) requests omit this and are always live-proxied.
+  if (indexed) params.append("indexed", "1");
+
   const s = normalizeQuery(search);
   if (s) params.append("search", s);
 
@@ -186,23 +192,6 @@ export const fetchListings = async (
   const url = isClient
     ? `/api/listings/?${params.toString()}`
     : `${API_BASE}/new_optimize_code?${params.toString()}`;
-
-  // Client cache hit — memory first, then sessionStorage (survives page refresh)
-  if (isClient && !options?.noCache) {
-    const cacheKey = "listings_" + params.toString();
-    const mem = clientResultCache.get(params.toString());
-    if (mem && Date.now() - mem.ts < CLIENT_CACHE_TTL) return mem.data;
-    try {
-      const stored = sessionStorage.getItem(cacheKey);
-      if (stored) {
-        const parsed: { data: ApiResponse; ts: number } = JSON.parse(stored);
-        if (Date.now() - parsed.ts < CLIENT_CACHE_TTL) {
-          clientResultCache.set(params.toString(), parsed);
-          return parsed.data;
-        }
-      }
-    } catch {}
-  }
 
   const controller = new AbortController();
   const timeoutMs = Number(process.env.CFS_API_TIMEOUT_MS) || 30000;
@@ -331,15 +320,6 @@ export const fetchListings = async (
       states: json.data?.states ?? [],
     },
   };
-
-  // Store in memory + sessionStorage for instant repeat access (survives refresh)
-  if (isClient) {
-    const entry = { data: result, ts: Date.now() };
-    clientResultCache.set(params.toString(), entry);
-    try {
-      sessionStorage.setItem("listings_" + params.toString(), JSON.stringify(entry));
-    } catch {}
-  }
 
   return result;
 };
