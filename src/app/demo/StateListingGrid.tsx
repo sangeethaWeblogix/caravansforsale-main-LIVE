@@ -48,6 +48,7 @@ interface Props {
   skeletonCount?: number;
   page?: number;
   onTotalPages?: (n: number) => void;
+  maxItems?: number;
 }
 
 function getImages(item: Listing): string[] {
@@ -347,7 +348,7 @@ function SkeletonCard() {
 }
 
 /* ── Main grid component ── */
-export default function StateListingGrid({ title, viewAllHref, apiUrl, showSpotlight, hideViewAll, hideTitle, skeletonCount = 10, page = 1, onTotalPages }: Props) {
+export default function StateListingGrid({ title, viewAllHref, apiUrl, showSpotlight, hideViewAll, hideTitle, skeletonCount = 10, page = 1, onTotalPages, maxItems }: Props) {
 
   const [items,       setItems]       = useState<Listing[]>([]);
   const [loading,     setLoading]     = useState(true);
@@ -377,7 +378,7 @@ export default function StateListingGrid({ title, viewAllHref, apiUrl, showSpotl
           if (i === 3 && premiums[1]) { merged.push(premiums[1]); continue; }
           if (fi < filtered.length)  { merged.push(filtered[fi++]); }
         }
-        setItems(merged);
+        setItems(maxItems ? merged.slice(0, maxItems) : merged);
         onTotalPages?.(json?.pagination?.total_pages ?? 1);
       })
       .catch(() => setItems([]))
@@ -403,7 +404,7 @@ export default function StateListingGrid({ title, viewAllHref, apiUrl, showSpotl
           <div className="lsd-grid lsd-grid--4col">
             {loading
               ? [...Array(Math.floor(skeletonCount / cols) * cols || cols)].map((_, i) => <SkeletonCard key={i} />)
-              : items.slice(0, Math.floor(items.length / cols) * cols || cols).map((item, idx) => (
+              : items.map((item, idx) => (
                   <ListingCard
                     key={item.id ?? idx}
                     item={item}

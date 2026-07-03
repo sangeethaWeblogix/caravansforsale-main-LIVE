@@ -24,6 +24,7 @@ import {
 } from "next/navigation";
 import { buildSlugFromFilters } from "../slugBuilter";
 import { parseSlugToFilters } from "../../components/urlBuilder";
+import { INDEXABLE_URLS_CLIENT } from "@/utils/seo/indexable-urls-client";
  import "./loader.css";
 import FilterSlider from "./FilterSlider";
 import StaticLinks from "./StaticLinks";
@@ -138,10 +139,6 @@ interface Props extends Filters {
   initialMakeCounts?: { name: string; slug: string; count: number }[];
   initialBottomLinksData?: BottomLinksData | null;
   initialDistances?: Record<string, number>;
-  // Computed server-side (page.tsx) from the curated indexable-URLs list. Tells the
-  // Cloudflare Worker whether client-side /api/listings calls for this page are
-  // eligible for KV caching, or should always be live-proxied (noindex/long-tail).
-  indexed?: boolean;
 }
 
 /** ------------ Helper Functions ------------ */
@@ -187,7 +184,6 @@ export default function ListingsPage({
   initialMakeCounts,
   initialBottomLinksData,
   initialDistances,
-  indexed,
   ...incomingFilters
 }: Props) {
   const DEFAULT_RADIUS = 50 as const;
@@ -195,17 +191,24 @@ export default function ListingsPage({
   const [filters, setFilters] = useState<Filters>(incomingFilters);
   const filtersRef = useRef<Filters>({});
   const pathname = usePathname();
-  // Tracks whether the current listings page is on the curated/indexed list, so
-  // client-side /api/listings calls know whether the Cloudflare Worker should
-  // cache the response. Re-synced whenever page.tsx re-renders with a fresh value
-  // (full navigations). Filter changes that only update the URL client-side
-  // (window.history.pushState, no server round-trip) won't refresh this value —
-  // see indexedRef usage below.
-  const indexedRef = useRef<boolean>(!!indexed);
-  useEffect(() => {
-    indexedRef.current = !!indexed;
-  }, [indexed]);
   const searchParams = useSearchParams();
+  // Tells the Cloudflare Worker whether client-side /api/listings calls for the
+  // current page are eligible for KV caching (curated/indexed pages only) or
+  // should always be live-proxied (noindex/long-tail pages).
+  //
+  // This used to be a prop computed once server-side and synced into a ref —
+  // but client-side filter changes update the URL via window.history.pushState
+  // without a full Next.js server round-trip, so that ref could go stale and
+  // wrongly keep reporting "indexed" after navigating to a genuinely noindex
+  // combo, risking polluting KV with long-tail pages. Recomputing it live from
+  // pathname here (via a client-safe copy of the same curated list used
+  // server-side — see indexable-urls-client.ts) means it's always correct,
+  // regardless of how the navigation happened.
+  const isIndexedPage = useMemo(() => {
+    const slugPath = pathname.split("/listings/")[1]?.split("/").filter(Boolean).join("/") || "";
+    const urlPath = `/listings/${slugPath ? slugPath + "/" : ""}`;
+    return INDEXABLE_URLS_CLIENT.has(urlPath);
+  }, [pathname]);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const [relatedChips, setRelatedChips] = useState<
@@ -408,13 +411,23 @@ const [pagination, setPagination] = useState<Pagination>(() => {
   // currently being viewed, so parsing it here directly avoids that race
   // entirely and keeps prefetching working on every page view, not just later
   // ones.
-  const prefetchedPageRef = useRef<number>(-1);
+  //
+  // The de-dupe guard is keyed on pathname + query + page, not just the bare
+  // page number. A bare-number guard breaks the moment a filter is applied:
+  // e.g. root /listings/ prefetches page 2 and remembers "2" — then applying
+  // a filter resets pagination and lands back on page 1 of the *new* filtered
+  // set, whose own "next page" is also numerically 2. A bare-number guard
+  // would see "2 already prefetched" and skip it, even though that was for a
+  // completely different filter context and the new page 2 was never fetched.
+  const prefetchedKeyRef = useRef<string>("");
   useEffect(() => {
     const { current_page, total_pages } = pagination;
     if (current_page >= total_pages) return;
     const nextPage = current_page + 1;
-    if (prefetchedPageRef.current === nextPage) return;
-    prefetchedPageRef.current = nextPage;
+
+    const key = `${pathname}?${searchParams.toString()}::page=${nextPage}`;
+    if (prefetchedKeyRef.current === key) return;
+    prefetchedKeyRef.current = key;
 
     const slugParts = pathname.split("/listings/")[1]?.split("/") || [];
     const parsedFromURL = parseSlugToFilters(slugParts);
@@ -428,8 +441,8 @@ const [pagination, setPagination] = useState<Pagination>(() => {
     });
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    fetchListings({ ...currentFilters, page: nextPage, indexed: indexedRef.current } as any).catch(() => {});
-  }, [pagination.current_page, pagination.total_pages, pathname, searchParams, incomingFilters]);
+    fetchListings({ ...currentFilters, page: nextPage, indexed: isIndexedPage } as any).catch(() => {});
+  }, [pagination.current_page, pagination.total_pages, pathname, searchParams, incomingFilters, isIndexedPage]);
 
   // Parse slug ONCE on mount; do not fetch here
   const initializedRef = useRef(false);
@@ -606,7 +619,7 @@ const [pagination, setPagination] = useState<Pagination>(() => {
           from_sleep: safeFilters.from_sleep?.toString(),
           to_sleep: safeFilters.to_sleep?.toString(),
           radius_kms: radiusParam,
-          indexed: indexedRef.current,
+          indexed: isIndexedPage,
         });
 
         if (requestId !== latestListingsRequestRef.current) {
@@ -662,6 +675,15 @@ console.log("emptyExclusiveList", emptyExclusiveList)
     [DEFAULT_RADIUS, initialData, computeTitleFromFilters],
   );
 
+  // Pagination now transitions client-side instead of doing a full
+  // window.location.href reload. The clickid/localStorage URL scheme is
+  // unchanged (still no ?page=N, still SEO-intentional per earlier decision) —
+  // only the navigation mechanism changes, mirroring the pushState pattern
+  // updateURLWithFilters already uses for filter changes. setclickid() below
+  // triggers the existing clickid effect (further down this file), which
+  // reads the target page from localStorage and fetches it — that effect now
+  // also clears the loading flags set here once the fetch resolves, so the
+  // skeleton UI shows for the duration instead of a blank reload.
   const handleNextPage = useCallback(() => {
     if (pagination.current_page >= pagination.total_pages) return;
     const nextPage = pagination.current_page + 1;
@@ -669,22 +691,42 @@ console.log("emptyExclusiveList", emptyExclusiveList)
     try { localStorage.setItem(`page_${id}`, String(nextPage)); } catch {}
     const url = new URL(window.location.href);
     url.searchParams.set("clickid", id);
-    window.location.href = url.toString();
+    window.history.pushState({}, "", url.toString());
+    setIsMainLoading(true);
+    setIsFeaturedLoading(true);
+    setIsPremiumLoading(true);
+    setclickid(id);
+    window.scrollTo({ top: 0, behavior: "instant" });
   }, [pagination.current_page, pagination.total_pages]);
 
   const handlePrevPage = useCallback(() => {
     if (pagination.current_page <= 1) return;
     const prevPage = pagination.current_page - 1;
     const url = new URL(window.location.href);
+    setIsMainLoading(true);
+    setIsFeaturedLoading(true);
+    setIsPremiumLoading(true);
     if (prevPage <= 1) {
+      // Page 1 never carries a clickid. The clickid effect only runs for a
+      // truthy clickid, so this branch loads page 1 directly rather than
+      // relying on that effect.
       url.searchParams.delete("clickid");
-      window.location.href = url.toString();
+      window.history.pushState({}, "", url.toString());
+      setclickid(null);
+      setPagination((p) => ({ ...p, current_page: 1 }));
+      loadListings(1, filtersRef.current, true).finally(() => {
+        setIsMainLoading(false);
+        setIsFeaturedLoading(false);
+        setIsPremiumLoading(false);
+      });
     } else {
       const id = uuidv4();
       try { localStorage.setItem(`page_${id}`, String(prevPage)); } catch {}
       url.searchParams.set("clickid", id);
-      window.location.href = url.toString();
+      window.history.pushState({}, "", url.toString());
+      setclickid(id);
     }
+    window.scrollTo({ top: 0, behavior: "instant" });
   }, [pagination.current_page]);
 
   const restoredOnceRef = useRef(false);
@@ -849,7 +891,14 @@ console.log("emptyExclusiveList", emptyExclusiveList)
 
       try {
         isSliderFetchingRef.current = true; // prevent URL-change effect from firing a duplicate fetch
-        updateURLWithFilters(mergedFilters, 1);
+        // Applying a filter always resets to page 1, which never carries a
+        // clickid (see handlePrevPage's own page-1 branch for the same rule).
+        // Pass "" explicitly so a clickid left over from prior pagination on
+        // the OLD filter set doesn't get carried into the new filtered URL —
+        // that clickid's localStorage entry points at a page number that has
+        // nothing to do with this new filter combination.
+        updateURLWithFilters(mergedFilters, 1, "");
+        setclickid(null);
         await loadListings(1, mergedFilters, true);
       } catch (error) {
         console.error("Error applying filters:", error);
@@ -926,7 +975,14 @@ console.log("emptyExclusiveList", emptyExclusiveList)
       restoredOnceRef.current = true;
       setPagination((p) => ({ ...p, current_page: savedPage }));
       setUrlParams({ clickid });
-      loadListings(savedPage, filtersRef.current, true);
+      // Clears the loading flags handleNextPage/handlePrevPage set before
+      // triggering this effect (via setclickid), so the skeleton UI shows for
+      // the duration of the fetch and then disappears once real content is in.
+      loadListings(savedPage, filtersRef.current, true).finally(() => {
+        setIsMainLoading(false);
+        setIsFeaturedLoading(false);
+        setIsPremiumLoading(false);
+      });
     } else {
       setUrlParams({ clickid });
     }
@@ -1135,7 +1191,11 @@ console.log("emptyExclusiveList", emptyExclusiveList)
     });
 
     isSliderFetchingRef.current = true;
-    updateURLWithFilters(next, 1);
+    // Same reasoning as handleFilterChange: a filter change always resets to
+    // page 1, which never carries a clickid — clear any leftover one from
+    // prior pagination so it doesn't get carried into the new filtered URL.
+    updateURLWithFilters(next, 1, "");
+    setclickid(null);
 
     try {
       const radiusNum =
@@ -1170,6 +1230,7 @@ console.log("emptyExclusiveList", emptyExclusiveList)
         from_sleep: next.from_sleep?.toString(),
         to_sleep: next.to_sleep?.toString(),
         radius_kms: radiusParam,
+        indexed: isIndexedPage,
       });
 
       const validProducts = (response?.data?.products ?? []).filter(

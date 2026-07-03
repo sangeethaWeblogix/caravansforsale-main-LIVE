@@ -240,7 +240,7 @@ input.loc-search-input:focus { box-shadow: 0 0 0 1.5px #7e7e7e !important; }
   padding: 40px 0 20px;
   background: #fff;
 }
-.lsd-grid-section--no-title { padding-top: 16px; }
+.lsd-grid-section--no-title { padding-top: 32px; }
 
 .lsd-grid-section:nth-child(odd) { background: #ffffff; }
 
