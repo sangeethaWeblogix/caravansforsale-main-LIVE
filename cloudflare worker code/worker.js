@@ -8,7 +8,9 @@
  * 4. Pass through to origin (Vercel) — for filtered/sorted/paginated pages
  *
  * Features:
- * - JSON cache for /api/listings: KV-backed, 1-hr TTL, stale-while-revalidate, API-down resilience
+ * - JSON cache for /api/listings: KV-backed, passive (admin-controlled), API-down resilience.
+ *   No stale-while-revalidate, no predictive pre-warming — KV is served as-is until the
+ *   WP admin warmer overwrites it. Non-indexed (noindex) requests skip KV entirely.
  * - Bypasses HTML cache for ANY query params to prevent hydration errors
  * - Random variant selection (5 variants) for shuffle effect on cached HTML pages
  * - Routes-mapping cached in memory with TTL to reduce KV reads
@@ -28,9 +30,11 @@ const IMAGE_CACHE_TTL = 2592000; // 30 days
 // completely defeating the random-variant shuffle. Every request must reach the worker
 // so it can pick a fresh random variant from the 5 KV keys.
 
-// JSON API cache TTL (1 hour fresh, 24 hours stale-available)
-const JSON_CACHE_FRESH_TTL = 3600;       // 1 hour — serve as HIT
-const JSON_CACHE_STALE_TTL = 86400;      // 24 hours — kept in KV for stale fallback
+// JSON API cache: entries are written by the WP admin warmer (or as a fallback by this
+// Worker on a genuine miss on an indexed page) and served as-is until they naturally
+// expire or the admin process overwrites them. No background staleness refresh, no
+// predictive pre-warming — KV is treated as a passive, admin-controlled cache.
+const JSON_CACHE_TTL = 86400;            // 24 hours — KV entry lifetime before it must be re-fetched
 
 // In-memory routes-mapping cache (per isolate)
 let cachedRoutesMapping = null;
@@ -58,8 +62,8 @@ export default {
       // PRIORITY 2: JSON Cache for /api/listings
       // ============================================
       // Intercept the client-side JSON API requests that fire after React hydration.
-      // Serves from KV (X-Cache: HIT), refreshes in background when stale,
-      // and falls back to stale KV when origin/WP API is down.
+      // Indexed pages: serve from KV as-is (X-Cache: HIT), or fetch-and-cache on a
+      // genuine miss. Non-indexed pages: always live-proxied, never cached.
       // ============================================
       if (url.pathname === '/api/listings' || url.pathname === '/api/listings/') {
         return await handleJsonApiCache(request, url, env, ctx);
@@ -150,6 +154,7 @@ function buildJsonCacheKey(url) {
   params.delete('clickid');
   params.delete('msid');
   params.delete('shuffle_seed'); // shuffle_seed is a client-side display hint, not a data filter
+  params.delete('indexed'); // control flag for this Worker, not part of the page identity
   return buildJsonCacheKeyFromParams(params);
 }
 
@@ -162,25 +167,49 @@ function buildJsonCacheKeyFromParams(params) {
 }
 
 /**
- * Handle /api/listings with KV-backed JSON cache + predictive next-page pre-warming.
+ * Handle /api/listings with KV-backed JSON cache.
+ *
+ * Cache is populated in one of two ways:
+ *   1. The WP admin JSON cache warmer writes curated pages directly to KV
+ *      (tagged with `sourceUrl` in metadata) on its own schedule.
+ *   2. This Worker fills in a fallback entry on a genuine cache miss for an
+ *      indexed page, so the next visitor to that combo gets an instant hit.
+ *      (These entries have no `sourceUrl` — that's how an admin-side audit
+ *      can tell curated entries apart from Worker-created fallbacks.)
+ *
+ * There is no background staleness refresh and no predictive next-page
+ * pre-warming — KV is a passive cache. Whatever is in KV is served as-is
+ * until the admin process overwrites it or the entry's TTL expires.
+ *
+ * Non-indexed (noindex) requests — signalled by `?indexed=1` being absent —
+ * skip KV entirely and are always live-proxied to origin. These are
+ * long-tail filter combinations that rarely repeat; caching them would
+ * flood KV with one-off entries nobody revisits.
  *
  * Flow:
- *   1. Check KV for cached JSON
- *   2a. FRESH hit  → return immediately (X-Cache: HIT)  + pre-warm next page in background
- *   2b. STALE hit  → return stale immediately            + refresh current + pre-warm next
- *   3. MISS        → fetch from origin, store in KV      + pre-warm next page in background
- *   4. Origin fail → 503 (no stale available)
- *
- * Predictive pre-warming:
- *   After serving any page N response, the worker fires a background job that:
- *   - Parses total_pages from the JSON
- *   - If page N+1 exists and is not already fresh in KV, fetches and caches it
- *   This means by the time the user clicks "next page", it's already in KV.
- *   X-CFS-Prewarm: 1 header marks pre-warm requests so they don't chain infinitely.
+ *   - Not indexed  → live-proxy to origin, never touch KV
+ *   - Indexed, HIT → return KV value as-is
+ *   - Indexed, MISS → fetch from origin, cache the result, return it
+ *   - Origin fail  → 503
  */
 async function handleJsonApiCache(request, url, env, ctx) {
+  const isIndexed = url.searchParams.get('indexed') === '1';
+
+  // ── Non-indexed pages: always live, never cached ──────────────────
+  if (!isIndexed) {
+    try {
+      const response = await fetch(request);
+      return addDebugHeaders(response, 'BYPASS-NOINDEX', null, null);
+    } catch (fetchErr) {
+      console.error('Origin fetch failed (noindex, no cache):', fetchErr.message);
+      return new Response(JSON.stringify({ success: false, error: 'Service unavailable' }), {
+        status: 503,
+        headers: { 'Content-Type': 'application/json', 'X-CFS-Cache': 'ERROR-ORIGIN-DOWN' }
+      });
+    }
+  }
+
   const cacheKey = buildJsonCacheKey(url);
-  const isPrewarm = request.headers.get('X-CFS-Prewarm') === '1';
 
   // ── Step 1: Check KV ──────────────────────────────────────────────
   let kvResult;
@@ -193,40 +222,23 @@ async function handleJsonApiCache(request, url, env, ctx) {
 
   if (kvResult.value !== null) {
     const meta = kvResult.metadata || {};
-    const savedAt = meta.savedAt || 0;
     const originalStatus = meta.status || 200;
-    const isStale = (Date.now() - savedAt) > JSON_CACHE_FRESH_TTL * 1000;
 
-    if (isStale) {
-      ctx.waitUntil(refreshJsonCache(request.url, env, cacheKey));
-    }
-
-    // ── Pre-warm next page ONLY on cache HIT ──────────────────────────
-    // IMPORTANT: Never pre-warm on a cache MISS. A MISS means SiteGround is
-    // already handling this request — adding a pre-warm call on top would double
-    // the server load during a thundering herd (100 users × 2 calls each = 200 hits).
-    // On a HIT the page is warm and SiteGround is idle, so 1 extra call is safe.
-    // The freshness check inside prewarmNextPage ensures only 1 of 100 concurrent
-    // HIT responses actually fires the API call — the other 99 see it as already fresh.
-    if (!isPrewarm) {
-      ctx.waitUntil(prewarmNextPage(url, kvResult.value, env));
-    }
-
+    // Serve exactly what's in KV — no staleness check, no background refresh.
     return new Response(kvResult.value, {
       status: originalStatus,
       headers: {
         'Content-Type': 'application/json;charset=UTF-8',
         'Cache-Control': 'public, max-age=60, s-maxage=60',
-        'X-Cache': isStale ? 'STALE' : 'HIT',
-        'X-CFS-Cache': isStale ? 'HIT-JSON-STALE' : 'HIT-JSON',
+        'X-Cache': 'HIT',
+        'X-CFS-Cache': 'HIT-JSON',
         'X-CFS-Key': cacheKey,
         'Access-Control-Allow-Origin': '*',
       }
     });
   }
 
-  // ── Step 2: Cache MISS — fetch from origin ────────────────────────
-  // No pre-warm here — SiteGround is already under load serving this request.
+  // ── Step 2: Cache MISS — fetch from origin, cache as fallback ─────
   let originResponse;
   try {
     originResponse = await fetch(request);
@@ -246,13 +258,11 @@ async function handleJsonApiCache(request, url, env, ctx) {
   if (status >= 200 && status < 300) {
     ctx.waitUntil(
       env.CFS_STATIC_PAGES.put(cacheKey, body, {
-        expirationTtl: JSON_CACHE_STALE_TTL,
+        expirationTtl: JSON_CACHE_TTL,
         metadata: { savedAt: Date.now(), status }
       }).catch(e => console.error('KV write error (json cache):', e.message))
     );
   }
-
-  // No pre-warm on MISS — see comment above
 
   // Redirects (e.g. Next.js trailingSlash 308) must carry their Location header
   // through, otherwise fetch() on the client can't follow them and the request
@@ -274,83 +284,6 @@ async function handleJsonApiCache(request, url, env, ctx) {
     status,
     headers: passthroughHeaders
   });
-}
-
-/**
- * Predictive next-page pre-warmer.
- * Parses total_pages from the current page's JSON response, then fetches
- * and caches page N+1 if it isn't already fresh in KV.
- * Uses X-CFS-Prewarm: 1 header so the worker doesn't chain further.
- */
-async function prewarmNextPage(url, responseBody, env) {
-  try {
-    // Parse pagination from response
-    let totalPages = 1;
-    try {
-      const json = JSON.parse(responseBody);
-      totalPages = json?.pagination?.total_pages || 1;
-    } catch {
-      return; // Non-JSON or unparseable — skip
-    }
-
-    const params = new URLSearchParams(url.search);
-    params.delete('clickid');
-    params.delete('msid');
-
-    const currentPage = parseInt(params.get('page') || '1', 10);
-    if (currentPage >= totalPages) return; // Already on last page
-
-    // Build next-page params
-    const nextParams = new URLSearchParams(params.toString());
-    nextParams.set('page', String(currentPage + 1));
-
-    const nextKey = buildJsonCacheKeyFromParams(nextParams);
-
-    // Skip if next page is already fresh in KV
-    const existing = await env.CFS_STATIC_PAGES.getWithMetadata(nextKey);
-    if (existing.value !== null) {
-      const savedAt = existing.metadata?.savedAt || 0;
-      const isFresh = (Date.now() - savedAt) < JSON_CACHE_FRESH_TTL * 1000;
-      if (isFresh) return; // Already warm, nothing to do
-    }
-
-    // Fetch next page via origin (X-CFS-Prewarm prevents further chaining)
-    const nextUrl = `${url.origin}/api/listings?${nextParams.toString()}`;
-    const res = await fetch(nextUrl, {
-      headers: { 'X-CFS-Prewarm': '1' }
-    });
-    const body = await res.text();
-
-    // Only cache successful responses — never store redirects (3xx) or errors (4xx/5xx)
-    if (res.status >= 200 && res.status < 300) {
-      await env.CFS_STATIC_PAGES.put(nextKey, body, {
-        expirationTtl: JSON_CACHE_STALE_TTL,
-        metadata: { savedAt: Date.now(), status: res.status }
-      });
-    }
-  } catch (e) {
-    console.error('Pre-warm next page failed:', e.message);
-  }
-}
-
-/**
- * Background refresh: re-fetch from origin and update KV.
- * Called via ctx.waitUntil so it doesn't block the response.
- */
-async function refreshJsonCache(originalUrl, env, cacheKey) {
-  try {
-    const res = await fetch(originalUrl);
-    const body = await res.text();
-    // Only cache successful responses — never overwrite a valid entry with a redirect or error
-    if (res.status >= 200 && res.status < 300) {
-      await env.CFS_STATIC_PAGES.put(cacheKey, body, {
-        expirationTtl: JSON_CACHE_STALE_TTL,
-        metadata: { savedAt: Date.now(), status: res.status }
-      });
-    }
-  } catch (e) {
-    console.error('Background JSON refresh failed:', e.message);
-  }
 }
 
 // ============================================
