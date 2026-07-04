@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "makes",
-    "count": 263,
+    "count": 264,
     "paths": [
         "active/",
         "adria/",
@@ -226,6 +226,7 @@
         "sunshine-trail/",
         "sunstar/",
         "supreme/",
+        "suv/",
         "swag/",
         "swift/",
         "the-little-caravan-company/",
@@ -267,5 +268,5 @@
         "york/",
         "zone-rv/"
     ],
-    "generated_at": "2026-07-03 15:51:26"
+    "generated_at": "2026-07-04 16:24:51"
 }
