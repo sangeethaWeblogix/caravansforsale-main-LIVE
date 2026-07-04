@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "models",
-    "count": 2961,
+    "count": 2962,
     "paths": [
         "active/storm/",
         "adria/action-361-lt/",
@@ -2687,6 +2687,7 @@
         "traveller/18ft-track-semi-off-road-triple-bunk/",
         "traveller/20ft-track-semi-off-road-triple-bunk/",
         "traveller/brand-new-model-20ft-triple-bunk/",
+        "traveller/chateau/",
         "traveller/cruise/",
         "traveller/cruise-20f-family-bunk/",
         "traveller/cruise-couples-17ft-full-ensuite/",
@@ -2965,5 +2966,5 @@
         "zone-rv/venture-20-6/",
         "zone-rv/znu004/"
     ],
-    "generated_at": "2026-07-04 16:27:03"
+    "generated_at": "2026-07-04 16:28:29"
 }
