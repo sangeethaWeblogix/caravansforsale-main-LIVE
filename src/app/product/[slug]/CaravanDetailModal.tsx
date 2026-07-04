@@ -16,6 +16,7 @@ type CaravanDetailModalProps = {
   isOpen: boolean;
   onClose: () => void;
   images: string[];
+  initialIndex?: number;
   product: {
     id?: string | number;
     slug?: string;
@@ -33,6 +34,7 @@ export default function CaravanDetailModal({
   isOpen,
   onClose,
   images,
+  initialIndex = 0,
   product,
 }: CaravanDetailModalProps) {
   const swiperRef = useRef<SwiperType | null>(null);
@@ -153,6 +155,12 @@ export default function CaravanDetailModal({
   }, []);
 
   useEffect(() => {
+    if (isOpen && initialIndex > 0) {
+      setTimeout(() => { swiperRef.current?.slideTo(initialIndex, 0); }, 50);
+    }
+  }, [isOpen, initialIndex]);
+
+  useEffect(() => {
     if (!isOpen) {
       setOkMsg(null);
       setErrors({});
@@ -195,7 +203,8 @@ export default function CaravanDetailModal({
               <h3 className="cfs-modal-title">{product.name}</h3>
               {product.location && (
                 <p className="cfs-modal-location">
-                  <i className="fa-solid fa-location-dot" /> {product.location}
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style={{marginRight:4,flexShrink:0}}><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                  {product.location}
                 </p>
               )}
             </div>
@@ -233,7 +242,7 @@ export default function CaravanDetailModal({
               onClick={() => setIsFullscreen(true)}
               aria-label="View fullscreen"
             >
-              <i className="fa-solid fa-expand" />
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
             </button>
           </div>
 
