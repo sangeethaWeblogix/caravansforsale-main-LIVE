@@ -174,7 +174,7 @@ const [states, setStates] = useState<StateOption[]>(
   const [removingChip, setRemovingChip] = useState<string | null>(null);
   const [clearingAll, setClearingAll] = useState(false);
 
-  useEffect(() => { setRemovingChip(null); }, [currentFilters]);
+  useEffect(() => { setRemovingChip(null); setClearingAll(false); }, [currentFilters]);
 
   // ── Make & Model states ──
   const [makes, setMakes] = useState<
@@ -523,7 +523,13 @@ const [states, setStates] = useState<StateOption[]>(
 
   const handleClearAll = () => {
     setClearingAll(true);
-    window.location.href = "/listings/";
+    // Clear every key currently set, same pattern as removeChip — routed
+    // through onFilterChange so it goes through the normal client-side
+    // filter/URL update path instead of a hard reload.
+    const cleared = Object.fromEntries(
+      Object.keys(currentFilters).map((key) => [key, undefined])
+    ) as Partial<Filters>;
+    updateFiltersAndURL(cleared);
   };
   const handleTypeOpen = () => {
     const f = getEffectiveFilters();
