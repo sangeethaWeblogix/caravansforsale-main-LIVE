@@ -157,27 +157,27 @@ type HomeSearchItem = {
 
 type KeywordItem = { label: string; url?: string };
 
-// // params-count client cache — same filter counts within 5 min = instant
-// const paramsCountCache = new Map<string, { data: unknown; ts: number }>();
-// const PARAMS_CACHE_TTL = 5 * 60 * 1000;
+// params-count client cache — same filter counts within 5 min = instant
+const paramsCountCache = new Map<string, { data: unknown; ts: number }>();
+const PARAMS_CACHE_TTL = 5 * 60 * 1000;
 
-// async function fetchParamsCount(url: string, signal: AbortSignal): Promise<Record<string, unknown>> {
-//   const cached = paramsCountCache.get(url);
-//   if (cached && Date.now() - cached.ts < PARAMS_CACHE_TTL) {
-//     return cached.data as Record<string, unknown>;
-//   }
-//   const res = await fetch(url, { signal });
-//   if (!res.ok) return {};
-//   const raw = await res.text();
-//   const idx = raw.indexOf('{"');
-//   try {
-//     const data = JSON.parse(idx > 0 ? raw.substring(idx) : raw);
-//     paramsCountCache.set(url, { data, ts: Date.now() });
-//     return data;
-//   } catch {
-//     return {};
-//   }
-// }
+async function fetchParamsCount(url: string, signal: AbortSignal): Promise<Record<string, unknown>> {
+  const cached = paramsCountCache.get(url);
+  if (cached && Date.now() - cached.ts < PARAMS_CACHE_TTL) {
+    return cached.data as Record<string, unknown>;
+  }
+  const res = await fetch(url, { signal });
+  if (!res.ok) return {};
+  const raw = await res.text();
+  const idx = raw.indexOf('{"');
+  try {
+    const data = JSON.parse(idx > 0 ? raw.substring(idx) : raw);
+    paramsCountCache.set(url, { data, ts: Date.now() });
+    return data;
+  } catch {
+    return {};
+  }
+}
 
 const FilterModal: React.FC<CaravanFilterProps> = ({
   onClose,
@@ -754,14 +754,14 @@ const [states, setStates] = useState<StateOption[]>([]);
   }
 }, [productListData]);
 
-  useEffect(() => {
-    const load = async () => {
-      const list = await fetchMakeDetails();
-      setMakes(list); // includes models[]
-      setModelOpen(true);
-    };
-    load();
-  }, []);
+  // useEffect(() => {
+  //   const load = async () => {
+  //     const list = await fetchMakeDetails();
+  //     setMakes(list); // includes models[]
+  //     setModelOpen(true);
+  //   };
+  //   load();
+  // }, []);
 
   type UnknownRec = Record<string, unknown>;
 
@@ -1963,93 +1963,93 @@ const [states, setStates] = useState<StateOption[]>([]);
 
   // Replace your count useEffect with this:
 
-  // useEffect(() => {
-  //   // ✅ temp values merge பண்ணு - modal-ல் select பண்ணவுடனே count update ஆகும்
-  //   const tempFilters: Filters = {};
-  //   if (tempCategory) tempFilters.category = tempCategory;
-  //   if (selectedMakeTemp) tempFilters.make = selectedMakeTemp;
-  //   if (tempModel) tempFilters.model = tempModel;
-  //   if (tempCondition) tempFilters.condition = tempCondition;
-  //   if (tempStateName) tempFilters.state = tempStateName.toLowerCase();
-  //   if (tempRegionName) tempFilters.region = tempRegionName;
-  //   else if (tempRegionNameRaw) tempFilters.region = tempRegionNameRaw;
-  //   if (selectedSuggestion) {
-  //     const uriParts = selectedSuggestion.uri.split("/");
-  //     const suburbSlug = uriParts[2] || "";
-  //     const pincode = uriParts[3] || "";
-  //     const suburb = suburbSlug.replace(/-suburb$/, "").replace(/-/g, " ").trim();
-  //     tempFilters.suburb = suburb.toLowerCase();
-  //     tempFilters.pincode = pincode;
-  //   }
-  //   if (tempAtmFrom) tempFilters.minKg = tempAtmFrom;
-  //   if (tempAtmTo) tempFilters.maxKg = tempAtmTo;
-  //   if (tempPriceFrom) tempFilters.from_price = tempPriceFrom;
-  //   if (tempPriceTo) tempFilters.to_price = tempPriceTo;
-  //   if (tempSleepFrom) tempFilters.from_sleep = tempSleepFrom;
-  //   if (tempSleepTo) tempFilters.to_sleep = tempSleepTo;
-  //   if (tempLengthFrom) tempFilters.from_length = tempLengthFrom;
-  //   if (tempLengthTo) tempFilters.to_length = tempLengthTo;
-  //   if (tempYearFrom) tempFilters.acustom_fromyears = tempYearFrom;
-  //   if (tempYearTo) tempFilters.acustom_toyears = tempYearTo;
-  //   if (modalKeyword.trim().length < 2) {
-  //     const rawSearch = currentFilters.search || currentFilters.keyword;
-  //     if (rawSearch) tempFilters.search = rawSearch as string;
-  //   }
-  //   const activeFilters: Filters = mergeFilters(mergeFilters(currentFilters, filters), tempFilters);
-  //   const controller = new AbortController();
-  //   const { signal } = controller;
-  //   // ─── CATEGORY COUNTS ───
-  //   const catParams = buildCountParamsMulti(activeFilters, ["category"]);
-  //   catParams.set("group_by", "category");
-  //   setIsCategoryCountLoading(true);
-  //   fetchParamsCount(`/api/params-count?${catParams.toString()}`, signal)
-  //     .then((json) => {
-  //       if (!signal.aborted) {
-  //         setCategoryCounts((json.data as []) || []);
-  //         setIsCategoryCountLoading(false);
-  //         categoryFirstLoadDoneRef.current = true;
-  //       }
-  //     })
-  //     .catch((e) => { if (e.name !== "AbortError") setIsCategoryCountLoading(false); });
-  //   // ─── MAKE COUNTS ───
-  //   const makeParams = buildCountParamsMulti(activeFilters, ["make", "model"]);
-  //   makeParams.set("group_by", "make");
-  //   fetchParamsCount(`/api/params-count?${makeParams.toString()}`, signal)
-  //     .then((json) => {
-  //       if (!signal.aborted) {
-  //         setMakeCounts((json.data as []) || []);
-  //         setPopularMakes((json.popular_makes as []) || []);
-  //       }
-  //     })
-  //     .catch((e) => { if (e.name !== "AbortError") console.error(e); });
-  //   // ─── MODEL COUNTS ───
-  //   const activeMake = activeFilters.make;
-  //   if (activeMake) {
-  //     const modelParams = buildCountParamsMulti(activeFilters, ["model"]);
-  //     modelParams.set("group_by", "model");
-  //     modelParams.set("make", activeMake);
-  //     fetchParamsCount(`/api/params-count?${modelParams.toString()}`, signal)
-  //       .then((json) => { if (!signal.aborted) setModelCounts((json.data as []) || []); })
-  //       .catch((e) => { if (e.name !== "AbortError") console.error(e); });
-  //   } else {
-  //     setModelCounts([]);
-  //   }
-  //   return () => controller.abort();
-  // }, [
-  //   currentFilters.category, currentFilters.make, currentFilters.model, currentFilters.condition,
-  //   currentFilters.state, currentFilters.region, currentFilters.suburb, currentFilters.from_price,
-  //   currentFilters.to_price, currentFilters.minKg, currentFilters.maxKg, currentFilters.acustom_fromyears,
-  //   currentFilters.acustom_toyears, currentFilters.from_length, currentFilters.to_length,
-  //   currentFilters.from_sleep, currentFilters.to_sleep, currentFilters.search, currentFilters.keyword,
-  //   filters.category, filters.make, filters.model, filters.state, filters.region, filters.suburb,
-  //   filters.condition, filters.from_price, filters.to_price, filters.minKg, filters.maxKg,
-  //   filters.acustom_fromyears, filters.acustom_toyears, filters.from_length,
-  //   filters.to_length, filters.from_sleep, filters.to_sleep,
-  //   filters.search,
-  //   filters.keyword,
-  //   tempCategory, selectedMakeTemp, tempModel, tempCondition,
-  //   tempStateName, tempRegionName, modalKeyword, selectedSuggestion,
-  // ]);
+  useEffect(() => {
+    // ✅ temp values merge பண்ணு - modal-ல் select பண்ணவுடனே count update ஆகும்
+    const tempFilters: Filters = {};
+    if (tempCategory) tempFilters.category = tempCategory;
+    if (selectedMakeTemp) tempFilters.make = selectedMakeTemp;
+    if (tempModel) tempFilters.model = tempModel;
+    if (tempCondition) tempFilters.condition = tempCondition;
+    if (tempStateName) tempFilters.state = tempStateName.toLowerCase();
+    if (tempRegionName) tempFilters.region = tempRegionName;
+    else if (tempRegionNameRaw) tempFilters.region = tempRegionNameRaw;
+    if (selectedSuggestion) {
+      const uriParts = selectedSuggestion.uri.split("/");
+      const suburbSlug = uriParts[2] || "";
+      const pincode = uriParts[3] || "";
+      const suburb = suburbSlug.replace(/-suburb$/, "").replace(/-/g, " ").trim();
+      tempFilters.suburb = suburb.toLowerCase();
+      tempFilters.pincode = pincode;
+    }
+    if (tempAtmFrom) tempFilters.minKg = tempAtmFrom;
+    if (tempAtmTo) tempFilters.maxKg = tempAtmTo;
+    if (tempPriceFrom) tempFilters.from_price = tempPriceFrom;
+    if (tempPriceTo) tempFilters.to_price = tempPriceTo;
+    if (tempSleepFrom) tempFilters.from_sleep = tempSleepFrom;
+    if (tempSleepTo) tempFilters.to_sleep = tempSleepTo;
+    if (tempLengthFrom) tempFilters.from_length = tempLengthFrom;
+    if (tempLengthTo) tempFilters.to_length = tempLengthTo;
+    if (tempYearFrom) tempFilters.acustom_fromyears = tempYearFrom;
+    if (tempYearTo) tempFilters.acustom_toyears = tempYearTo;
+    if (modalKeyword.trim().length < 2) {
+      const rawSearch = currentFilters.search || currentFilters.keyword;
+      if (rawSearch) tempFilters.search = rawSearch as string;
+    }
+    const activeFilters: Filters = mergeFilters(mergeFilters(currentFilters, filters), tempFilters);
+    const controller = new AbortController();
+    const { signal } = controller;
+    // ─── CATEGORY COUNTS ───
+    const catParams = buildCountParamsMulti(activeFilters, ["category"]);
+    catParams.set("group_by", "category");
+    setIsCategoryCountLoading(true);
+    fetchParamsCount(`/api/params-count?${catParams.toString()}`, signal)
+      .then((json) => {
+        if (!signal.aborted) {
+          setCategoryCounts((json.data as []) || []);
+          setIsCategoryCountLoading(false);
+          categoryFirstLoadDoneRef.current = true;
+        }
+      })
+      .catch((e) => { if (e.name !== "AbortError") setIsCategoryCountLoading(false); });
+    // ─── MAKE COUNTS ───
+    const makeParams = buildCountParamsMulti(activeFilters, ["make", "model"]);
+    makeParams.set("group_by", "make");
+    fetchParamsCount(`/api/params-count?${makeParams.toString()}`, signal)
+      .then((json) => {
+        if (!signal.aborted) {
+          setMakeCounts((json.data as []) || []);
+          setPopularMakes((json.popular_makes as []) || []);
+        }
+      })
+      .catch((e) => { if (e.name !== "AbortError") console.error(e); });
+    // ─── MODEL COUNTS ───
+    const activeMake = activeFilters.make;
+    if (activeMake) {
+      const modelParams = buildCountParamsMulti(activeFilters, ["model"]);
+      modelParams.set("group_by", "model");
+      modelParams.set("make", activeMake);
+      fetchParamsCount(`/api/params-count?${modelParams.toString()}`, signal)
+        .then((json) => { if (!signal.aborted) setModelCounts((json.data as []) || []); })
+        .catch((e) => { if (e.name !== "AbortError") console.error(e); });
+    } else {
+      setModelCounts([]);
+    }
+    return () => controller.abort();
+  }, [
+    currentFilters.category, currentFilters.make, currentFilters.model, currentFilters.condition,
+    currentFilters.state, currentFilters.region, currentFilters.suburb, currentFilters.from_price,
+    currentFilters.to_price, currentFilters.minKg, currentFilters.maxKg, currentFilters.acustom_fromyears,
+    currentFilters.acustom_toyears, currentFilters.from_length, currentFilters.to_length,
+    currentFilters.from_sleep, currentFilters.to_sleep, currentFilters.search, currentFilters.keyword,
+    filters.category, filters.make, filters.model, filters.state, filters.region, filters.suburb,
+    filters.condition, filters.from_price, filters.to_price, filters.minKg, filters.maxKg,
+    filters.acustom_fromyears, filters.acustom_toyears, filters.from_length,
+    filters.to_length, filters.from_sleep, filters.to_sleep,
+    filters.search,
+    filters.keyword,
+    tempCategory, selectedMakeTemp, tempModel, tempCondition,
+    tempStateName, tempRegionName, modalKeyword, selectedSuggestion,
+  ]);
 
   useEffect(() => {
     const refMap: Record<string, React.RefObject<HTMLDivElement | null>> = {
