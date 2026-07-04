@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "models",
-    "count": 2960,
+    "count": 2961,
     "paths": [
         "active/storm/",
         "adria/action-361-lt/",
@@ -1993,6 +1993,7 @@
         "paramount/micro/",
         "paramount/micro-mrx/",
         "paramount/signature/",
+        "paramount/signature-family/",
         "paramount/signature-series/",
         "paramount/tribute/",
         "paramount/tribute-6-9m-23ft-226fd/",
@@ -2964,5 +2965,5 @@
         "zone-rv/venture-20-6/",
         "zone-rv/znu004/"
     ],
-    "generated_at": "2026-07-04 16:26:01"
+    "generated_at": "2026-07-04 16:27:03"
 }
