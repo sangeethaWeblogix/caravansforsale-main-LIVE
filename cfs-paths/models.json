@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "models",
-    "count": 2962,
+    "count": 2963,
     "paths": [
         "active/storm/",
         "adria/action-361-lt/",
@@ -1997,6 +1997,7 @@
         "paramount/signature-series/",
         "paramount/tribute/",
         "paramount/tribute-6-9m-23ft-226fd/",
+        "paramount/vogue/",
         "pathfinder/rugged-trek/",
         "pathfinder/terrain-trekker/",
         "pathfinder/trek-life/",
@@ -2966,5 +2967,5 @@
         "zone-rv/venture-20-6/",
         "zone-rv/znu004/"
     ],
-    "generated_at": "2026-07-04 16:28:29"
+    "generated_at": "2026-07-04 16:29:34"
 }
