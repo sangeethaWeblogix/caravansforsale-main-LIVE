@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "region-make",
-    "count": 1098,
+    "count": 1093,
     "paths": [
         "australian-capital-territory-state/australian-capital-territory-region/carrera/",
         "australian-capital-territory-state/australian-capital-territory-region/coromal/",
@@ -16,7 +16,6 @@
         "new-south-wales-state/central-coast-region/avan/",
         "new-south-wales-state/central-coast-region/billabong/",
         "new-south-wales-state/central-coast-region/concept/",
-        "new-south-wales-state/central-coast-region/crusader/",
         "new-south-wales-state/central-coast-region/essential/",
         "new-south-wales-state/central-coast-region/goldstar-rv/",
         "new-south-wales-state/central-coast-region/jayco/",
@@ -243,7 +242,6 @@
         "new-south-wales-state/sydney-region/avan/",
         "new-south-wales-state/sydney-region/black-series/",
         "new-south-wales-state/sydney-region/blue-tongue/",
-        "new-south-wales-state/sydney-region/condor/",
         "new-south-wales-state/sydney-region/cub/",
         "new-south-wales-state/sydney-region/design-rv/",
         "new-south-wales-state/sydney-region/dream-rv/",
@@ -256,6 +254,7 @@
         "new-south-wales-state/sydney-region/harvok/",
         "new-south-wales-state/sydney-region/jayco/",
         "new-south-wales-state/sydney-region/jb/",
+        "new-south-wales-state/sydney-region/jurgens/",
         "new-south-wales-state/sydney-region/lifestyle-campers/",
         "new-south-wales-state/sydney-region/majestic/",
         "new-south-wales-state/sydney-region/mars-campers/",
@@ -807,8 +806,6 @@
         "victoria-state/latrobe-gippsland-region/jayco/",
         "victoria-state/latrobe-gippsland-region/jb/",
         "victoria-state/latrobe-gippsland-region/millard/",
-        "victoria-state/latrobe-gippsland-region/my-dream-rv/",
-        "victoria-state/latrobe-gippsland-region/new-age/",
         "victoria-state/latrobe-gippsland-region/newlands/",
         "victoria-state/latrobe-gippsland-region/nextgen/",
         "victoria-state/latrobe-gippsland-region/nova/",
@@ -850,7 +847,6 @@
         "victoria-state/melbourne-region/crusader/",
         "victoria-state/melbourne-region/design-rv/",
         "victoria-state/melbourne-region/dreamhaven/",
-        "victoria-state/melbourne-region/dreamseeker/",
         "victoria-state/melbourne-region/eden/",
         "victoria-state/melbourne-region/elite/",
         "victoria-state/melbourne-region/empire/",
@@ -896,7 +892,6 @@
         "victoria-state/melbourne-region/olympic/",
         "victoria-state/melbourne-region/on-the-move/",
         "victoria-state/melbourne-region/opal/",
-        "victoria-state/melbourne-region/option-rv/",
         "victoria-state/melbourne-region/opus-campers/",
         "victoria-state/melbourne-region/orbit/",
         "victoria-state/melbourne-region/oz-star/",
@@ -1102,5 +1097,5 @@
         "western-australia-state/western-australia-outback-south-region/western/",
         "western-australia-state/western-australia-outback-south-region/windsor/"
     ],
-    "generated_at": "2026-07-04 16:29:35"
+    "generated_at": "2026-07-05 18:08:45"
 }

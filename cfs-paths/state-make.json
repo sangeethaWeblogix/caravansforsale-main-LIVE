@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "state-make",
-    "count": 648,
+    "count": 646,
     "paths": [
         "australian-capital-territory-state/carrera/",
         "australian-capital-territory-state/coromal/",
@@ -438,7 +438,6 @@
         "victoria-state/design-rv/",
         "victoria-state/donway/",
         "victoria-state/dreamhaven/",
-        "victoria-state/dreamseeker/",
         "victoria-state/eagle/",
         "victoria-state/ecotourer/",
         "victoria-state/eden/",
@@ -505,7 +504,6 @@
         "victoria-state/olympic/",
         "victoria-state/on-the-move/",
         "victoria-state/opal/",
-        "victoria-state/option-rv/",
         "victoria-state/opus-campers/",
         "victoria-state/orbit/",
         "victoria-state/oz-star/",
@@ -652,5 +650,5 @@
         "western-australia-state/x-series-rv/",
         "western-australia-state/zone-rv/"
     ],
-    "generated_at": "2026-07-04 16:29:35"
+    "generated_at": "2026-07-05 18:08:45"
 }
