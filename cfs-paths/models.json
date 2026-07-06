@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "models",
-    "count": 2947,
+    "count": 2940,
     "paths": [
         "active/storm/",
         "adria/action-361-lt/",
@@ -9,6 +9,7 @@
         "adria/adora-492-dt/",
         "adria/adora-542-ph-sport/",
         "adria/altea/",
+        "adria/altea-402-ph/",
         "adria/altea-402-ph-sport/",
         "adria/altea-402ph/",
         "apache/15-pop-top/",
@@ -324,7 +325,6 @@
         "concorde/1906/",
         "condor/land-bruiser-21/",
         "condor/ultimate/",
-        "coromal/adventure-seeker/",
         "coromal/appeal-554/",
         "coromal/appeal-601/",
         "coromal/appeal-ap601s/",
@@ -778,7 +778,6 @@
         "eternity/monument/",
         "eternity/vigilante/",
         "eternity/vigilante-x/",
-        "euro/adventure-seeker/",
         "euro/glider/",
         "everest/alpine/",
         "everest/blizzard/",
@@ -1252,7 +1251,6 @@
         "jayco/journey-dx/",
         "jayco/journey-dx-outback/",
         "jayco/journey-family-2-bunk/",
-        "jayco/journey-family-bunk/",
         "jayco/journey-outback/",
         "jayco/journey-outback-21-66-3/",
         "jayco/journey-outback-22-68-3/",
@@ -1272,7 +1270,6 @@
         "jayco/silverline-caravan-21-65-3-ob-sl-my26/",
         "jayco/silverline-caravan-21-65-3-sl-my26/",
         "jayco/silverline-caravan-25-78-5-16sl/",
-        "jayco/silverline-caravan-of-the-month/",
         "jayco/silverline-outback/",
         "jayco/silverline-slide-out/",
         "jayco/starcraft/",
@@ -1335,7 +1332,6 @@
         "jurgens/skygazer-j2207-le/",
         "jurgens/solaris/",
         "jurgens/stargazer-j2201/",
-        "jurgens/sungazer/",
         "jurgens/travado/",
         "jurgens/wallaroo/",
         "kakadu/comet/",
@@ -1702,7 +1698,6 @@
         "new-age/desert-rose-dr18e/",
         "new-age/desert-rose-dr18es2/",
         "new-age/embark/",
-        "new-age/ge125s2-comfort-gecko/",
         "new-age/gecko/",
         "new-age/gecko-11s-enduro/",
         "new-age/jewel/",
@@ -1843,7 +1838,6 @@
         "nova/bravo-signature-z-series/",
         "nova/bravo-z-series-signature-166-1c/",
         "nova/family-escape/",
-        "nova/family-escape-4-bunks/",
         "nova/little-terra/",
         "nova/metrolink/",
         "nova/metrolink-176-12r/",
@@ -2136,7 +2130,6 @@
         "regent/discoverer/",
         "regent/discoverer-196/",
         "regent/discoverer-206/",
-        "regent/discoverer-caravan-of-the-month/",
         "regent/monarch/",
         "regent/parklane/",
         "regent/rcc216/",
@@ -2951,5 +2944,5 @@
         "zone-rv/venture-20-6/",
         "zone-rv/znu004/"
     ],
-    "generated_at": "2026-07-05 18:08:45"
+    "generated_at": "2026-07-06 15:48:29"
 }
