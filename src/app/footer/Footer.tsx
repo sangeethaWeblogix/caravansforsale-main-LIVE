@@ -1,5 +1,4 @@
-﻿import "./footer.css?=17";
-import Link from "next/link";
+import "./footer.css?=19";
 // import {
 //   FaFacebookF,
 //   FaInstagram,
@@ -7,6 +6,7 @@ import Link from "next/link";
 //   FaPinterestP,
 // } from "react-icons/fa";
 import BackToTopButton from "./BackToTopButton";
+import FooterNav from "./FooterNav";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -20,129 +20,17 @@ const Footer = () => {
               {/* Left Column */}
               <div className="col-lg-12">
                 <h6 className="foot-title hidden-lg hidden-md hidden-sm foot_xs">Marketplace Network</h6>
-                <ul className="footer_menu footer_xs">
-                  <li>
-                    <a href="/listings/">For Sale</a>
-                  </li>
-                  <li>
-                    <a href="/blog/">Blog</a>
-                  </li>
-                  <li>
-                    <a href="/terms-conditions/" rel="nofollow">Terms & Conditions</a>
-                  </li>
-                  <li>
-                    <a href="/privacy-policy/" rel="nofollow">Privacy Policy</a>
-                  </li>
-                  <li>
-                    <a href="/privacy-collection-statement/" rel="nofollow">
-                      Privacy Collection Statement
-                    </a>
-                  </li>
-                  <li>
-                    <a href="/buyer-safety-guide/" rel="nofollow">Buy Safely</a>
-                  </li>
-                  <li>
-                    <a href="/cookie-policy/" rel="nofollow">Cookie Policy</a>
-                  </li>
-                  <li>
-                    <a href="/about-us/">About</a>
-                  </li>
-                  <li>
-                    <a href="/contact/">Contact Us</a>
-                  </li>
-                </ul>
+                {/* FooterNav contains the nav ul + Sell dropdown panel as a sibling div */}
+                <FooterNav />
                 <div>
                   <p>
                     © {currentYear ?? "----"} Marketplace Network Pty Ltd (ABN 70 694 987 052)
                   </p>
-                  {/* <p>
-                    Marketplace Network Pty Ltd. ABN : 70 694 987 052 <br />
-                    Copyright © {currentYear ?? "----"}. All Rights Reserved.
-                  </p> */}
                 </div>
-                {/* <div className="disclaimer" style={{ marginTop: "12px" }}>
-                  <p>
-                    Disclaimer: Marketplace Network operates a portfolio of independent “for sale” marketplace websites. Marketplace Network is not affiliated with, endorsed by, or associated with any manufacturers, dealers, advertisers, or sellers listed on our websites unless expressly stated.
-                    <br />
-                    All product information, images, logos, trademarks, and brand names displayed on our websites are the property of their respective owners and are used for identification and informational purposes only.
-Marketplace Network makes no representations or warranties regarding the accuracy, completeness, or reliability of any information published on its platforms and accepts no liability for any loss or damage arising from reliance on such information. Information provided on our websites should not be considered professional, financial, or purchasing advice. Users are encouraged to conduct their own due diligence and seek independent professional advice before making any purchasing or commercial decisions.
-                  </p>
-                </div> */}
               </div>
-
-              {/* About Us Column */}
-              {/* <div className="col-lg-4 col-sm-12">
-                <h6 className="foot-title foot_xs">Company</h6>
-                <ul className="menu footer_xs">
-                  <li>
-                    <a href="/listings/">For Sale</a>
-                  </li>
-                  <li>
-                    <a href="/blog/">Blog</a>
-                  </li>
-                  <li>
-                    <a href="/terms-conditions/" rel="nofollow">Terms & Conditions</a>
-                  </li>
-                  <li>
-                    <a href="/privacy-policy/" rel="nofollow">Privacy Policy</a>
-                  </li>
-                  <li>
-                    <a href="/privacy-collection-statement/" rel="nofollow">
-                      Privacy Collection Statement
-                    </a>
-                  </li>
-                  <li>
-                    <a href="/buyer-safety-guide/" rel="nofollow">Buy Safely</a>
-                  </li>
-                  <li>
-                    <a href="/cookie-policy/" rel="nofollow">Cookie Policy</a>
-                  </li>
-                  <li>
-                    <a href="/about-us/">About</a>
-                  </li>
-                  <li>
-                    <a href="/contact/">Contact Us</a>
-                  </li>
-                </ul>
-              </div> */}
-
-              {/* Popular Pages Column */}
-              {/* <div className="col-lg-3 col-sm-6">
-                <h6 className="foot-title foot_xs">Popular Pages</h6>
-                <ul className="menu footer_xs">
-                  <li>
-                    <Link href="/best-caravans-full-off-road-capabilities-australia/">
-                      Best Off Road Caravans
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/best-semi-off-road-caravans-australia-guide/">
-                      Best Semi Off Road Caravans
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/best-caravans-for-extreme-off-road-travel/">
-                      Best Extreme Off Road Caravans
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/best-luxury-caravans-australia-highlights-features-reviews/">
-                      Best Luxury Caravans
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/top-family-off-road-caravans-australia/">
-                      Best Family Caravans
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/touring-caravans/">Best Touring Caravans</Link>
-                  </li>
-                </ul>
-              </div> */}
             </div>
 
-            {/* Social Icons */}
+            {/* Social Icons (commented out) */}
             {/*<div className="content mt-3">
               <div className="foot-info logo-social">
                 <div className="socials">

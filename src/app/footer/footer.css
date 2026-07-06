@@ -1,6 +1,6 @@
 footer.style-8 {
   position: relative;
-  z-index: 1ad-right-banner;
+  z-index: 1;
   background: #1e1e1e;
 }
 
@@ -221,4 +221,163 @@ footer.style-8 .content .logo-social .socials a:hover {
   .footer_menu li::before {
     content:none
   }
+}
+
+/* ── Sell button in footer nav ───────────────────────── */
+.sell-footer-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: #a3a3a3;
+  font-size: 15px;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  line-height: 1;
+  transition: color 0.2s;
+}
+.sell-footer-btn:hover {
+  color: #ffffff;
+}
+.sell-chevron {
+  transition: transform 0.25s ease;
+}
+.sell-chevron--open {
+  transform: rotate(180deg);
+}
+
+/* ── Panel li — full-width break-out ────────────────── */
+.footer_menu--sell {
+  flex-wrap: wrap;
+}
+.sell-panel-li {
+  width: 100%;
+  padding-left: 0 !important;
+  padding-bottom: 0 !important;
+}
+.sell-panel-li::before {
+  content: none !important;
+}
+
+/* Prevent footer_menu li:before pipe bleeding into region list items */
+.sell-panel__region-list li::before {
+  content: none !important;
+  display: none !important;
+}
+
+/* ── Panel container ─────────────────────────────────── */
+.sell-panel {
+  background: #262626;
+  border-top: 1px solid #333;
+  border-radius: 8px;
+  padding: 24px 20px 20px;
+  margin-top: 12px;
+  animation: sellPanelIn 0.22s ease;
+}
+@keyframes sellPanelIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Panel header ────────────────────────────────────── */
+.sell-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #333;
+}
+.sell-panel__main-link {
+  color: #ffffff !important;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  letter-spacing: 0.03em;
+  transition: color 0.2s;
+}
+.sell-panel__main-link:hover {
+  color: #ec7200 !important;
+}
+.sell-panel__close {
+  background: none;
+  border: 1px solid #444;
+  border-radius: 50%;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #a3a3a3;
+  padding: 0;
+  transition: border-color 0.2s, color 0.2s;
+  flex-shrink: 0;
+}
+.sell-panel__close:hover {
+  border-color: #fff;
+  color: #fff;
+}
+
+/* ── State/region grid ───────────────────────────────── */
+.sell-panel__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px 20px;
+}
+@media (max-width: 991px) {
+  .sell-panel__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 575px) {
+  .sell-panel__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── State column ────────────────────────────────────── */
+.sell-panel__col {
+  min-width: 0;
+}
+.sell-panel__state-title {
+  display: block;
+  color: #ffffff !important;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  text-decoration: none;
+  padding-bottom: 8px;
+  margin-bottom: 10px;
+  border-bottom: 2px solid #ec7200;
+  transition: color 0.2s;
+}
+.sell-panel__state-title:hover {
+  color: #ec7200 !important;
+}
+
+/* ── Region list ─────────────────────────────────────── */
+.sell-panel__region-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.sell-panel__region-list li a {
+  color: #a3a3a3;
+  font-size: 13px;
+  text-decoration: none;
+  transition: color 0.2s;
+  display: block;
+  line-height: 1.4;
+}
+.sell-panel__region-list li a:hover {
+  color: #ec7200;
 }

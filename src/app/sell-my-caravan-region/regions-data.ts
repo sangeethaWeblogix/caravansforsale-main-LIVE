@@ -6,7 +6,10 @@ export interface StateInfo {
 }
 
 export interface RegionInfo {
+  /** Internal slug (legacy, used by old /sell-my-caravan-region/[slug] route) */
   slug: string;
+  /** Clean URL slug for new nested route: /sell-my-caravan/{state}/{pageSlug}/ */
+  pageSlug: string;
   label: string;
   state: StateInfo;
 }
@@ -22,8 +25,15 @@ export const STATES = {
 
 type StateKey = keyof typeof STATES;
 
-function region(slug: string, label: string, stateKey: StateKey): RegionInfo {
-  return { slug, label, state: STATES[stateKey] };
+function region(slug: string, label: string, stateKey: StateKey, pageSlug?: string): RegionInfo {
+  return {
+    slug,
+    // Default: strip "-region" suffix. Override with explicit pageSlug for
+    // regions that also have a state-name prefix (e.g. "tasmania-north-west-region").
+    pageSlug: pageSlug ?? slug.replace(/-region$/, ""),
+    label,
+    state: STATES[stateKey],
+  };
 }
 
 export const ALL_REGIONS: RegionInfo[] = [
@@ -71,25 +81,34 @@ export const ALL_REGIONS: RegionInfo[] = [
   region("toowoomba-region", "Toowoomba", "queensland"),
   region("cairns-region", "Cairns", "queensland"),
 
-  // Tasmania — "north-west-region" is taken by Victoria's North West, so
-  // Tasmania's North West is prefixed to keep every region slug unique.
-  region("tasmania-north-west-region", "North West", "tasmania"),
+  // Tasmania — slug prefixed to stay unique; pageSlug strips the prefix.
+  region("tasmania-north-west-region", "North West", "tasmania", "north-west"),
   region("hobart-region", "Hobart", "tasmania"),
   region("launceston-region", "Launceston", "tasmania"),
 
-  // South Australia
+  // South Australia — slug prefixed; pageSlug strips the prefix.
   region("adelaide-region", "Adelaide", "south-australia"),
-  region("south-australia-south-east-region", "South Australia South East", "south-australia"),
+  region("south-australia-south-east-region", "South Australia South East", "south-australia", "south-east"),
 
-  // Western Australia
+  // Western Australia — slug prefixed; pageSlug strips the prefix.
   region("perth-region", "Perth", "western-australia"),
   region("mandurah-region", "Mandurah", "western-australia"),
-  region("western-australia-outback-south-region", "Western Australia Outback South", "western-australia"),
+  region("western-australia-outback-south-region", "Western Australia Outback South", "western-australia", "outback-south"),
   region("bunbury-region", "Bunbury", "western-australia"),
 ];
 
 export function getRegionBySlug(slug: string): RegionInfo | undefined {
   return ALL_REGIONS.find((r) => r.slug === slug);
+}
+
+/** Look up a region by its state slug + new page slug (for the nested route). */
+export function getRegionByStateAndPageSlug(
+  stateSlug: string,
+  pageSlug: string
+): RegionInfo | undefined {
+  return ALL_REGIONS.find(
+    (r) => r.state.slug === stateSlug && r.pageSlug === pageSlug
+  );
 }
 
 export function getRegionsByState(stateSlug: StateKey): RegionInfo[] {
@@ -100,24 +119,17 @@ const BASE_URL = "https://www.caravansforsale.com.au";
 
 export function buildRegionMetadata(region: RegionInfo): Metadata {
   return {
-    title: {
-      default: `Sell My Caravan in ${region.label} for $49 Until Sold | CaravansForSale.com.au`,
-      template: "%s ",
-    },
-    description: `Sell your caravan in ${region.label}, ${region.state.label} on CaravansForSale.com.au for just $49 until sold. No subscriptions, no commissions, and connect directly with caravan buyers in ${region.label}.`,
-    icons: { icon: "/favicon.ico" },
-    robots: "noindex, nofollow",
-    verification: {
-      google: "6tT6MT6AJgGromLaqvdnyyDQouJXq0VHS-7HC194xEo",
-    },
+    title: `Sell My Caravan in ${region.label} | List Until Sold for $49`,
+    description: `Sell your caravan in ${region.label} for just $49. List until sold, pay no commission and connect directly with caravan buyers across ${region.label} and ${region.state.label}.`,
+    robots: "index, follow",
     alternates: {
-      canonical: `${BASE_URL}/sell-my-caravan-${region.slug}/`,
+      canonical: `${BASE_URL}/sell-my-caravan/${region.state.slug}/${region.pageSlug}/`,
     },
   };
 }
 
 export function buildRegionJsonLd(region: RegionInfo) {
-  const pageUrl = `${BASE_URL}/sell-my-caravan-${region.slug}/`;
+  const pageUrl = `${BASE_URL}/sell-my-caravan/${region.state.slug}/${region.pageSlug}/`;
 
   return {
     "@context": "https://schema.org",
@@ -126,7 +138,7 @@ export function buildRegionJsonLd(region: RegionInfo) {
         "@type": "WebPage",
         "@id": `${pageUrl}#webpage`,
         url: pageUrl,
-        name: `Sell My Caravan in ${region.label} | $49 Until Sold`,
+        name: `Sell My Caravan in ${region.label} | List Until Sold for $49`,
         description: `Sell your caravan in ${region.label}, ${region.state.label} with CaravansForSale.com.au. List your caravan for a one-time $49 fee, keep 100% of the sale price, and stay live until sold.`,
         inLanguage: "en-AU",
         isPartOf: { "@id": `${BASE_URL}/#website` },
@@ -218,7 +230,7 @@ export function buildRegionJsonLd(region: RegionInfo) {
             name: "Is it safe to sell my caravan privately online?",
             acceptedAnswer: {
               "@type": "Answer",
-              text: `Yes, but you should take normal precautions. Speak with buyers directly, meet in a safe location, confirm payment has cleared before handover and complete any required transfer paperwork for ${region.state.label}.`,
+              text: `Yes, but you should take normal precautions. Speak with buyers directly, meet in a safe location, confirm payment has cleared before handover and complete any required transfer paperwork for ${region.state.label}`,
             },
           },
           {

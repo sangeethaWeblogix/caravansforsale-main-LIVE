@@ -10,9 +10,9 @@ const sellPageJsonLd = {
       "@type": "WebPage",
       "@id": `${BASE_URL}/sell-my-caravan/#webpage`,
       "url": `${BASE_URL}/sell-my-caravan/`,
-      "name": "Sell My Caravan Online Australia | $49 Until Sold",
+      "name": "Sell My Caravan Online Australia | List Until Sold for $49",
       "description":
-        "Sell your caravan online in Australia with CaravansForSale.com.au. List your caravan for a one-time $49 fee, keep 100% of the sale price, and stay live until sold.",
+        "Sell your caravan online across Australia for just $49. List until sold, edit anytime, pay no commission and connect directly with genuine caravan buyers.",
       "inLanguage": "en-AU",
       "isPartOf": { "@id": `${BASE_URL}/#website` },
     },

@@ -101,7 +101,7 @@ export default function SellerDemo() {
       <section className="demo-hero">
         <div className="container">
           <h1 className="demo-hero__title">
-            Sell My Caravan Online in Australia
+            Best Marketplace To Sell Your Caravan in Australia
           </h1>
           <p className="demo-hero__subtitle">
             List your caravan for $49 until sold — no commissions, no subscriptions and direct buyer contact.
@@ -483,6 +483,7 @@ export default function SellerDemo() {
         </div>
       </section>
 
+    
     </div>
   );
 }
