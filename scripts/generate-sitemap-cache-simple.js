@@ -66,7 +66,7 @@ const CF_API_TOKEN       = process.env.CF_API_TOKEN;
 const URLS_CSV           = process.env.URLS_CSV || require('path').join(__dirname, '../src/app/url.csv');
 
 // Configuration
-const VARIANTS_PER_URL = 5;
+const VARIANTS_PER_URL = 7;
 const DELAY_BETWEEN_VARIANTS = 100; // ms — reduced from 300ms (optimisation #2)
 const DELAY_BETWEEN_URLS = 300;     // ms — reduced from 800ms (optimisation #2)
 const BATCH_SIZE = process.env.BATCH_SIZE ? parseInt(process.env.BATCH_SIZE) : null;

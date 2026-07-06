@@ -17,9 +17,9 @@ name: Generate Cache (Weekly Safety Net)
 
 on:
   schedule:
-    # Weekly, Sunday 7 AM Melbourne time (AEST UTC+10 - standard time)
-    # Note: During DST (Oct–Apr) this will fire at 8 AM Melbourne time
-    - cron: '0 21 * * 0'
+    # Weekly, Saturday 1 AM Melbourne time (AEST UTC+10 - standard time)
+    # Note: During DST (Oct–Apr) this will fire at 2 AM Melbourne time (AEDT UTC+11)
+    - cron: '0 15 * * 5'
 
   workflow_dispatch:
     inputs:
@@ -33,8 +33,10 @@ on:
           - priority
           - urls
 
-# Source: src/app/url.csv (3,462 URLs × 5 variants = 17,310 KV uploads)
-# Split across 10 parallel batches of 350 URLs each.
+# Source: src/app/url.csv (3,462 URLs × 7 variants = 24,234 KV uploads)
+# Split across 10 sequential batches of 350 URLs each (max-parallel: 1).
+# Each batch runs after the previous finishes, with a 10-minute cooldown between
+# them to avoid simultaneous Vercel + KV load. Estimated total: ~6–7 hours.
 
 jobs:
 
@@ -78,7 +80,9 @@ jobs:
         run: node scripts/generate-priority-pages.js
 
   # ==========================================
-  # ALL LISTING URLS (url.csv) — 10 parallel batches of ~350 URLs each
+  # ALL LISTING URLS (url.csv) — 10 sequential batches of ~350 URLs each
+  # Batches run one after another (max-parallel: 1) with a 10-min cooldown
+  # between each to prevent simultaneous Vercel/KV load spikes.
   # ==========================================
   generate-urls:
     runs-on: ubuntu-latest
@@ -91,8 +95,14 @@ jobs:
       matrix:
         batch: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
       fail-fast: false
-      max-parallel: 10
+      max-parallel: 1
     steps:
+      - name: Cooldown before batch (skip for batch 1)
+        if: matrix.batch != 1
+        run: |
+          echo "Waiting 10 minutes before starting batch ${{ matrix.batch }}..."
+          sleep 600
+
       - name: Checkout
         uses: actions/checkout@v4
 

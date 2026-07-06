@@ -38,7 +38,7 @@ const SKIP_ROUTES_UPDATE = process.env.SKIP_ROUTES_UPDATE === 'true';
 // the whole site's cache from refreshing).
 const REQUIRE_FULL_SUCCESS = process.env.REQUIRE_FULL_SUCCESS === 'true';
 
-const LISTINGS_VARIANTS = 5;
+const LISTINGS_VARIANTS = 7;
 const KV_UPLOAD_RETRIES = 3;
 const KV_RETRY_DELAY = 2000;
 
