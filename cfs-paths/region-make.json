@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "region-make",
-    "count": 1093,
+    "count": 1092,
     "paths": [
         "australian-capital-territory-state/australian-capital-territory-region/carrera/",
         "australian-capital-territory-state/australian-capital-territory-region/coromal/",
@@ -239,6 +239,7 @@
         "new-south-wales-state/southern-highlands-region/supreme/",
         "new-south-wales-state/southern-highlands-region/vacationer/",
         "new-south-wales-state/southern-highlands-region/vibe/",
+        "new-south-wales-state/sydney-region/adria/",
         "new-south-wales-state/sydney-region/avan/",
         "new-south-wales-state/sydney-region/black-series/",
         "new-south-wales-state/sydney-region/blue-tongue/",
@@ -869,8 +870,6 @@
         "victoria-state/melbourne-region/jayco/",
         "victoria-state/melbourne-region/jb/",
         "victoria-state/melbourne-region/jollyrover/",
-        "victoria-state/melbourne-region/jurgens/",
-        "victoria-state/melbourne-region/kingdom/",
         "victoria-state/melbourne-region/kokoda/",
         "victoria-state/melbourne-region/la-vista/",
         "victoria-state/melbourne-region/lake-star/",
@@ -1097,5 +1096,5 @@
         "western-australia-state/western-australia-outback-south-region/western/",
         "western-australia-state/western-australia-outback-south-region/windsor/"
     ],
-    "generated_at": "2026-07-05 18:08:45"
+    "generated_at": "2026-07-06 15:48:29"
 }
