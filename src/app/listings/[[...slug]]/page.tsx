@@ -452,14 +452,23 @@ export default async function Listings({
       msg.startsWith("Invalid API response") ||
       msg.startsWith("API failed:");
     const errorSource = isBackend ? "BACKEND" : "FRONTEND";
-    console.error(`[${errorSource} ERROR] Slug listings page failed:`, msg);
+    console.error(`[${errorSource} ERROR] Slug listings page failed, rendering client-side fallback:`, msg);
     reportGitHubIssue({
       errorSource,
       errorType: msg,
       message: `Slug listings page failed: ${msg}`,
     }).catch(() => {});
-    // unstable_cache exhausted its old data (first-ever render for this URL) — let error.tsx handle it
-    throw err;
+    // Server-side API unavailable — render page shell so client component can
+    // fetch on mount via /api/listings/ proxy (which succeeds even when the
+    // direct WordPress admin endpoint is unreachable from the Next.js server).
+    return (
+      <>
+        <ListingsPage
+          {...apiFilters}
+          initialDistances={{}}
+        />
+      </>
+    );
   }
 
   // ───── Render ─────
