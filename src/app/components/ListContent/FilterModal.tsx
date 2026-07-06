@@ -2002,7 +2002,7 @@ const [states, setStates] = useState<StateOption[]>([]);
     const catParams = buildCountParamsMulti(activeFilters, ["category"]);
     catParams.set("group_by", "category");
     setIsCategoryCountLoading(true);
-    fetchParamsCount(`/api/params-count?${catParams.toString()}`, signal)
+    fetchParamsCount(`/api/params-count/?${catParams.toString()}`, signal)
       .then((json) => {
         if (!signal.aborted) {
           setCategoryCounts((json.data as []) || []);
@@ -2014,7 +2014,7 @@ const [states, setStates] = useState<StateOption[]>([]);
     // ─── MAKE COUNTS ───
     const makeParams = buildCountParamsMulti(activeFilters, ["make", "model"]);
     makeParams.set("group_by", "make");
-    fetchParamsCount(`/api/params-count?${makeParams.toString()}`, signal)
+    fetchParamsCount(`/api/params-count/?${makeParams.toString()}`, signal)
       .then((json) => {
         if (!signal.aborted) {
           setMakeCounts((json.data as []) || []);
@@ -2028,7 +2028,7 @@ const [states, setStates] = useState<StateOption[]>([]);
       const modelParams = buildCountParamsMulti(activeFilters, ["model"]);
       modelParams.set("group_by", "model");
       modelParams.set("make", activeMake);
-      fetchParamsCount(`/api/params-count?${modelParams.toString()}`, signal)
+      fetchParamsCount(`/api/params-count/?${modelParams.toString()}`, signal)
         .then((json) => { if (!signal.aborted) setModelCounts((json.data as []) || []); })
         .catch((e) => { if (e.name !== "AbortError") console.error(e); });
     } else {

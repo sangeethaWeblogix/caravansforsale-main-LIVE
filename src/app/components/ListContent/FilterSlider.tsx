@@ -227,7 +227,7 @@ const [states, setStates] = useState<StateOption[]>(
     params.set("make", tempMake);
     params.delete("group_by");
     params.set("group_by", "model");
-    fetch(`/api/params-count?${params.toString()}`, { signal: controller.signal })
+    fetch(`/api/params-count/?${params.toString()}`, { signal: controller.signal })
       .then((r) => r.json())
       .then((json) => {
         if (!controller.signal.aborted) {
@@ -262,7 +262,7 @@ const [states, setStates] = useState<StateOption[]>(
   useEffect(() => {
     const controller = new AbortController();
     const params = buildMakeCountParams(currentFilters);
-    fetch(`/api/params-count?${params.toString()}`, { signal: controller.signal })
+    fetch(`/api/params-count/?${params.toString()}`, { signal: controller.signal })
       .then((r) => r.json())
       .then((json) => { if (!controller.signal.aborted) setMakeCounts(json.data || []); })
       .catch((e) => { if (e.name !== "AbortError") console.error(e); });
@@ -642,7 +642,7 @@ const [states, setStates] = useState<StateOption[]>(
     setStateCountsLoading(true);
     const stateParams = new URLSearchParams({ group_by: "state" });
     if (currentFilters.category) stateParams.set("category", currentFilters.category);
-    fetch(`/api/params-count?${stateParams}`)
+    fetch(`/api/params-count/?${stateParams}`)
       .then((r) => r.json())
       .then((json) => { setStateCounts(json.data ?? []); setStateCountsLoading(false); })
       .catch(() => setStateCountsLoading(false));
@@ -672,7 +672,7 @@ const [states, setStates] = useState<StateOption[]>(
     setRegionCountsLoading(true);
     const params = new URLSearchParams({ group_by: "region", state: target.toLowerCase() });
     if (currentFilters.category) params.set("category", currentFilters.category);
-    fetch(`/api/params-count?${params}`)
+    fetch(`/api/params-count/?${params}`)
       .then((r) => r.json())
       .then((json) => { setRegionCounts(json.data ?? []); setRegionCountsLoading(false); })
       .catch(() => setRegionCountsLoading(false));

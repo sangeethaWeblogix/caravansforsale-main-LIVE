@@ -1073,7 +1073,7 @@ console.log("emptyExclusiveList", emptyExclusiveList)
     if (f.search) params.set("search", f.search);
     if (f.keyword) params.set("keyword", f.keyword);
     params.set("group_by", "category");
-    fetch(`/api/params-count?${params.toString()}`, { signal: controller.signal })
+    fetch(`/api/params-count/?${params.toString()}`, { signal: controller.signal })
       .then((r) => r.json())
       .then((json) => {
         if (!controller.signal.aborted) { setSliderCategoryCounts(json.data || []); setSliderCatLoading(false); }
@@ -1110,7 +1110,7 @@ console.log("emptyExclusiveList", emptyExclusiveList)
     if (filters.search) params.set("search", filters.search);
     if (filters.keyword) params.set("keyword", filters.keyword);
     params.set("group_by", "make");
-    fetch(`/api/params-count?${params.toString()}`, { signal: controller.signal })
+    fetch(`/api/params-count/?${params.toString()}`, { signal: controller.signal })
       .then((r) => r.json())
       .then((json) => { if (!controller.signal.aborted) setSliderMakeCounts(json.data || []); })
       .catch(() => {});
