@@ -357,11 +357,21 @@ export default function StateListingGrid({ title, viewAllHref, apiUrl, showSpotl
 
   useEffect(() => {
     setLoading(true);
-    fetch(`${apiUrl}&page=${page}`, { cache: "no-store" })
+    const requestUrl = `${apiUrl}&page=${page}`;
+    // Logged as an absolute URL so devtools renders it as a clickable link —
+    // click it to open the raw JSON response in a new tab.
+    const absoluteUrl = new URL(requestUrl, window.location.origin).toString();
+    console.log(`[StateListingGrid] "${title}" API:`, absoluteUrl);
+
+    fetch(requestUrl, { cache: "no-store" })
       .then((r) => (r.ok ? r.json() : null))
       .then((json) => {
-        const products: Listing[]  = json?.data?.products ?? [];
-        const premiums: Listing[]  = (json?.data?.premium_products ?? []).map(
+        console.log(`[StateListingGrid] "${title}" API response:`, json);
+
+        // pool_test returns products/premium_products at the top level;
+        // new_optimize_code nests them under `data` — support both shapes.
+        const products: Listing[]  = json?.data?.products ?? json?.products ?? [];
+        const premiums: Listing[]  = (json?.data?.premium_products ?? json?.premium_products ?? []).map(
           (p: Listing) => ({ ...p, is_premium: true }),
         );
 
