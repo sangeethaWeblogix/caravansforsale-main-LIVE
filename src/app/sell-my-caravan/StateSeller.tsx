@@ -187,21 +187,18 @@ export default function StateSeller({ state }: StateSellerProps) {
             <div className="container">
               <div className="demo-city-grid">
                 {CITY_LINKS.map((c) => (
-                  <div key={c.label} className="demo-city-item">
+                  <a
+                    key={c.label}
+                    href={`/sell-my-caravan/${state.slug}/${c.pageSlug}/`}
+                    className="demo-city-item"
+                    title={`Sell my caravan in ${c.label.trim()}`}
+                  >
                     <span className="demo-city-icon">
                       <img src="/images/caravan.png" alt="" />
                     </span>
-                    <h3 className="demo-city-label">
-                      <a
-                        href={`/sell-my-caravan/${state.slug}/${c.pageSlug}/`}
-                        title={`Sell my caravan in ${c.label.trim()}`}
-                        className="demo-city-label"
-                      >
-                        {c.label}
-                      </a>
-                    </h3>
+                    <span className="demo-city-label">{c.label}</span>
                     <i className="fa-solid fa-chevron-right demo-city-arrow" />
-                  </div>
+                  </a>
                 ))}
               </div>
             </div>

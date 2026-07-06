@@ -5,25 +5,25 @@ import "@fortawesome/fontawesome-free/css/regular.min.css";
 import React, { useState } from "react";
 
 const STATE_LINKS = [
-  { label: "Victoria",              img: "/images/vic_map.svg", href: "/sell-my-caravan/" },
-  { label: "New South Wales",       img: "/images/nsw_map.svg", href: "/sell-my-caravan/" },
-  { label: "Queensland",            img: "/images/qld_map.svg", href: "/sell-my-caravan/" },
-  { label: "Western Australia",     img: "/images/wa_map.svg",  href: "/sell-my-caravan/" },
-  { label: "South Australia",       img: "/images/sa_map.svg",  href: "/sell-my-caravan/" },
-  { label: "Tasmania",              img: "/images/tas_map.svg", href: "/sell-my-caravan/" },
+  { label: "Victoria",              img: "/images/vic_map.svg", href: "/sell-my-caravan/victoria/" },
+  { label: "New South Wales",       img: "/images/nsw_map.svg", href: "/sell-my-caravan/new-south-wales/" },
+  { label: "Queensland",            img: "/images/qld_map.svg", href: "/sell-my-caravan/queensland/" },
+  { label: "Western Australia",     img: "/images/wa_map.svg",  href: "/sell-my-caravan/western-australia/" },
+  { label: "South Australia",       img: "/images/sa_map.svg",  href: "/sell-my-caravan/south-australia/" },
+  { label: "Tasmania",              img: "/images/tas_map.svg", href: "/sell-my-caravan/tasmania/" },
 ];
 
 const CITY_LINKS = [
-  { label: "Sell My Caravan Melbourne", href: "/sell-my-caravan/" },
-  { label: "Sell My Caravan Sydney", href: "/sell-my-caravan/" },
-  { label: "Sell My Caravan Brisbane", href: "/sell-my-caravan/" },
-  { label: "Sell My Caravan Perth", href: "/sell-my-caravan/" },
-  { label: "Sell My Caravan Adelaide", href: "/sell-my-caravan/" },
-  { label: "Sell My Caravan Gold Coast", href: "/sell-my-caravan/" },
-  { label: "Sell My Caravan Sunshine Coast", href: "/sell-my-caravan/" },
-  { label: "Sell My Caravan Newcastle", href: "/sell-my-caravan/" },
-  { label: "Sell My Caravan Canberra", href: "/sell-my-caravan/" },
-  { label: "Sell My Caravan Hobart", href: "/sell-my-caravan/" },
+  { label: "Sell My Caravan Melbourne",      href: "/sell-my-caravan/victoria/melbourne/" },
+  { label: "Sell My Caravan Sydney",         href: "/sell-my-caravan/new-south-wales/sydney/" },
+  { label: "Sell My Caravan Brisbane",       href: "/sell-my-caravan/queensland/brisbane/" },
+  { label: "Sell My Caravan Perth",          href: "/sell-my-caravan/western-australia/perth/" },
+  { label: "Sell My Caravan Adelaide",       href: "/sell-my-caravan/south-australia/adelaide/" },
+  { label: "Sell My Caravan Gold Coast",     href: "/sell-my-caravan/queensland/gold-coast/" },
+  { label: "Sell My Caravan Sunshine Coast", href: "/sell-my-caravan/queensland/sunshine-coast/" },
+  { label: "Sell My Caravan Newcastle",      href: "/sell-my-caravan/new-south-wales/newcastle/" },
+  { label: "Sell My Caravan Canberra",       href: "/sell-my-caravan/new-south-wales/canberra/" },
+  { label: "Sell My Caravan Hobart",         href: "/sell-my-caravan/tasmania/hobart/" },
 ];
 
 const CARAVAN_TYPES = [
@@ -365,25 +365,25 @@ export default function SellerDemo() {
           {/* State cards */}
           <div className="demo-state-grid">
             {STATE_LINKS.map((s) => (
-              <div key={s.label} className="demo-state-item">
+              <a key={s.label} href={s.href} className="demo-state-item" title={`Sell my caravan in ${s.label}`}>
                 <div className="demo-state-item__img">
                   <img src={s.img} alt={s.label} />
                 </div>
                 <span className="demo-state-item__label">{s.label}</span>
-              </div>
+              </a>
             ))}
           </div>
 
           {/* City cards */}
           <div className="demo-city-grid">
             {CITY_LINKS.map((c) => (
-              <div key={c.label} className="demo-city-item">
+              <a key={c.label} href={c.href} className="demo-city-item" title={c.label}>
                 <span className="demo-city-icon">
                   <img src="/images/caravan.png" alt="" />
                 </span>
                 <span className="demo-city-label">{c.label}</span>
                 <i className="fa-solid fa-chevron-right demo-city-arrow" />
-              </div>
+              </a>
             ))}
           </div>
         </div>
