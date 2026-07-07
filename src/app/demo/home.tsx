@@ -5,10 +5,10 @@ import { v4 as uuidv4 } from "uuid";
 import Link from "next/link";
 import StateHero from "./StateHero";
 import StateFilterBar, { FilterState } from "./StateFilterBar";
-import StateListingGrid from "./StateListingGrid";
+import StateListingGrid, { SeoV2, Listing, buildFeaturedOrder } from "./StateListingGrid";
 import StateBrowseSection from "./StateBrowseSection";
 import StateContent from "./StateContent";
-import { buildDemoSlug } from "./urlUtils";
+import { buildDemoSlug, buildApiUrl } from "./urlUtils";
 import "./main.css";
 
 // clickid pagination — same scheme as /listings/: no ?page=N in the URL,
@@ -25,35 +25,7 @@ const readPage = (id: string): number | null => {
   return match ? parseInt(match[1], 10) : null;
 };
 
-const ORDERBY = "default";
 const SEED_MAX = 15;
-
-function buildApiUrl(base: string, filters: FilterState, seed: number, lockCondition?: string): string {
-  const params = new URLSearchParams();
-  params.set("state", "victoria");
-  params.set("orderby", ORDERBY);
-  params.set("seed", String(seed));
-  if (filters.category)           params.set("category",          filters.category);
-  if (filters.make)               params.set("make",               filters.make);
-  if (filters.model)              params.set("model",              filters.model);
-  if (filters.region)             params.set("region",             filters.region);
-  if (filters.suburb)             params.set("suburb",             filters.suburb);
-  if (filters.pincode)            params.set("pincode",            filters.pincode);
-  if (filters.from_price)         params.set("from_price",         String(filters.from_price));
-  if (filters.to_price)           params.set("to_price",           String(filters.to_price));
-  if (filters.minKg)              params.set("from_atm",           String(filters.minKg));
-  if (filters.maxKg)              params.set("to_atm",             String(filters.maxKg));
-  if (filters.from_sleep)         params.set("from_sleep",         String(filters.from_sleep));
-  if (filters.to_sleep)           params.set("to_sleep",           String(filters.to_sleep));
-  if (filters.acustom_fromyears)  params.set("acustom_fromyears",  String(filters.acustom_fromyears));
-  if (filters.acustom_toyears)    params.set("acustom_toyears",    String(filters.acustom_toyears));
-  if (filters.from_length)        params.set("from_length",        String(filters.from_length));
-  if (filters.to_length)          params.set("to_length",          String(filters.to_length));
-  if (filters.keyword)            params.set("keyword",            filters.keyword);
-  if (!lockCondition && filters.condition) params.set("condition", filters.condition);
-  if (lockCondition) params.set("condition", lockCondition);
-  return `${base}&${params.toString()}`;
-}
 
 interface Props {
   initialFilters: FilterState;
@@ -65,6 +37,26 @@ export default function StateHome({ initialFilters }: Props) {
   const [maxPages, setMaxPages] = useState(1);
   const [clickid,  setClickid]  = useState<string | null>(null);
   const [ready,    setReady]    = useState(false);
+  const [seo,      setSeo]      = useState<SeoV2 | null>(null);
+  const [seed,     setSeed]     = useState(1);
+  const [pool,     setPool]     = useState<{ featured: Listing[]; new: Listing[]; used: Listing[] }>({ featured: [], new: [], used: [] });
+  const [poolLoading, setPoolLoading] = useState(true);
+  console.log("seoo89", seo)
+
+  // Push the API's seo_v2 into the browser tab title + meta description.
+  useEffect(() => {
+    if (!seo) return;
+    if (seo.meta_title) document.title = seo.meta_title;
+    if (seo.meta_description) {
+      let tag = document.querySelector('meta[name="description"]');
+      if (!tag) {
+        tag = document.createElement("meta");
+        tag.setAttribute("name", "description");
+        document.head.appendChild(tag);
+      }
+      tag.setAttribute("content", seo.meta_description);
+    }
+  }, [seo]);
 
   // Restore page from ?clickid= on mount (hard refresh / shared link) before
   // the grids below fetch anything, so they fetch the right page just once.
@@ -77,6 +69,23 @@ export default function StateHome({ initialFilters }: Props) {
         setPage(saved);
       }
     }
+
+    // seed stays fixed for this browser session (persisted via sessionStorage)
+    // instead of changing every time the page changes — a fresh session (new
+    // tab/browser) gets a fresh random seed.
+    try {
+      const stored = sessionStorage.getItem("demo_seed");
+      if (stored) {
+        setSeed(parseInt(stored, 10));
+      } else {
+        const fresh = Math.floor(Math.random() * SEED_MAX) + 1;
+        sessionStorage.setItem("demo_seed", String(fresh));
+        setSeed(fresh);
+      }
+    } catch {
+      setSeed(Math.floor(Math.random() * SEED_MAX) + 1);
+    }
+
     setReady(true);
   }, []);
 
@@ -97,9 +106,43 @@ export default function StateHome({ initialFilters }: Props) {
     return () => window.removeEventListener("popstate", handlePopState);
   }, []);
 
-  // pool_test's `seed` param cycles 1-15, keyed off the current page number
-  const seed = ((page - 1) % SEED_MAX) + 1;
   console.log("[StateHome] page:", page, "seed:", seed);
+
+  const handleTotalPages = (n: number) => setMaxPages(prev => Math.max(prev, n));
+
+  // Page 1 uses ONE shared pool call (same shape as before, just no condition
+  // lock + a bigger per_page) split by slot_bucket into Featured/New/Used —
+  // instead of 3 separate condition-locked API calls.
+  const poolApiUrl = buildApiUrl("/api/pool-listings/?per_page=24&featured=1", filters, seed);
+
+  useEffect(() => {
+    if (page !== 1) return;
+    setPoolLoading(true);
+    const requestUrl = `${poolApiUrl}&page=${page}`;
+    const absoluteUrl = new URL(requestUrl, window.location.origin).toString();
+    console.log("[StateHome] shared pool API:", absoluteUrl);
+
+    fetch(requestUrl, { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((json) => {
+        console.log("[StateHome] shared pool API response:", json);
+
+        const products: Listing[]      = json?.data?.products ?? json?.products ?? [];
+        const premiumsRaw: Listing[]   = json?.data?.premium_products ?? json?.premium_products ?? [];
+        const exclusivesRaw: Listing[] = json?.data?.exclusive_products ?? json?.exclusive_products ?? [];
+
+        const featuredItems = buildFeaturedOrder(products, premiumsRaw, exclusivesRaw).slice(0, 8);
+        const newItems      = products.filter((p) => p.slot_bucket === "new"  && !p.is_premium && !p.is_exclusive).slice(0, 8);
+        const usedItems     = products.filter((p) => p.slot_bucket === "used" && !p.is_premium && !p.is_exclusive).slice(0, 8);
+
+        setPool({ featured: featuredItems, new: newItems, used: usedItems });
+        handleTotalPages(json?.pagination?.total_pages ?? 1);
+        const seoData = json?.data?.seo_v2 ?? json?.seo_v2;
+        if (seoData) setSeo(seoData);
+      })
+      .catch(() => setPool({ featured: [], new: [], used: [] }))
+      .finally(() => setPoolLoading(false));
+  }, [poolApiUrl, page]);
 
   const pushFiltersToUrl = (f: FilterState) => {
     window.history.pushState({}, "", buildDemoSlug(f));
@@ -120,8 +163,6 @@ export default function StateHome({ initialFilters }: Props) {
     filters.region || filters.suburb || filters.from_sleep || filters.to_sleep ||
     filters.acustom_fromyears || filters.from_length || filters.keyword
   );
-
-  const handleTotalPages = (n: number) => setMaxPages(prev => Math.max(prev, n));
 
   const handleNextPage = () => {
     if (page >= maxPages) return;
@@ -185,13 +226,11 @@ export default function StateHome({ initialFilters }: Props) {
   if (!ready) return null;
 
   if (page === 1) {
-    const featuredUrl = buildApiUrl("/api/pool-listings/?per_page=8&featured=1", filters, seed);
-    const newUrl      = buildApiUrl("/api/pool-listings/?per_page=8", filters, seed, "new");
-    const usedUrl     = buildApiUrl("/api/pool-listings/?per_page=8", filters, seed, "used");
-
+    console.log("seooo", seo?.h1)
     return (
       <div className="lsd-page">
-        <StateHero />
+        <StateHero title={seo?.h1} />
+
 
         <StateFilterBar
           currentFilters={filters}
@@ -202,30 +241,24 @@ export default function StateHome({ initialFilters }: Props) {
         <StateListingGrid
           title="Featured Caravans for Sale in Victoria"
           viewAllHref="/listings/?state=victoria&featured=1"
-          apiUrl={featuredUrl}
+          items={pool.featured}
+          loading={poolLoading}
           showSpotlight={!hasActiveFilters}
           hideViewAll
-          page={page}
-          onTotalPages={handleTotalPages}
-          maxItems={8}
         />
 
         <StateListingGrid
           title="New Caravans for Sale in Victoria"
           viewAllHref="/listings/new-caravans/?state=victoria"
-          apiUrl={newUrl}
-          page={page}
-          onTotalPages={handleTotalPages}
-          maxItems={8}
+          items={pool.new}
+          loading={poolLoading}
         />
 
         <StateListingGrid
           title="Used Caravans for Sale in Victoria"
           viewAllHref="/listings/used-caravans/?state=victoria"
-          apiUrl={usedUrl}
-          page={page}
-          onTotalPages={handleTotalPages}
-          maxItems={8}
+          items={pool.used}
+          loading={poolLoading}
         />
 
         {maxPages > 1 && pagination}
@@ -250,7 +283,7 @@ export default function StateHome({ initialFilters }: Props) {
             <svg width="10" height="16" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
             <span>Victoria</span>
           </nav>
-          <h1 className="lsd-paged-title">Caravans for Sale in Victoria</h1>
+          <h1 className="lsd-paged-title">{seo?.h1 || "Caravans for Sale in Victoria"}</h1>
         </div>
       </div>
 
@@ -269,6 +302,7 @@ export default function StateHome({ initialFilters }: Props) {
         hideTitle
         page={page}
         onTotalPages={handleTotalPages}
+        onSeo={setSeo}
         maxItems={24}
       />
 

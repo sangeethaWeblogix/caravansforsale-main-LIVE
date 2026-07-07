@@ -33,7 +33,11 @@ const TRUST_ITEMS = [
   },
 ];
 
-export default function StateHero() {
+interface Props {
+  title?: string;
+}
+
+export default function StateHero({ title }: Props) {
   return (
     <section className="lsd-hero">
       {/* Background image — right side */}
@@ -57,7 +61,7 @@ export default function StateHero() {
           </nav>
 
           <h1 className="lsd-hero__title">
-            Caravans for Sale in Victoria
+            {title || "Caravans for Sale in Victoria"}
           </h1>
 
           <p className="lsd-hero__desc">
