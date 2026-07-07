@@ -778,6 +778,8 @@ console.log("emptyExclusiveList", emptyExclusiveList)
 
   const prevFiltersRef = useRef<Filters>({});
   const prevPageRef = useRef(1);
+  // Tracks whether we've done the initial mount fetch when SSR failed (no initialData).
+  const hasMountFetchedRef = useRef(false);
 
   useEffect(() => {
     if (!initializedRef.current) return;
@@ -812,7 +814,11 @@ console.log("emptyExclusiveList", emptyExclusiveList)
       JSON.stringify(merged) !== JSON.stringify(prevFiltersRef.current);
     const pageChanged = pageFromURL !== prevPageRef.current;
 
-    if (!filtersChanged && !pageChanged) return;
+    // When SSR failed (no initialData), do a client-side fetch on the very first
+    // mount even if no filters have changed — otherwise the page stays empty.
+    const needsMountFetch = !initialData && !hasMountFetchedRef.current;
+    if (!filtersChanged && !pageChanged && !needsMountFetch) return;
+    if (needsMountFetch) hasMountFetchedRef.current = true;
 
     prevFiltersRef.current = { ...merged };
     prevPageRef.current = pageFromURL;
