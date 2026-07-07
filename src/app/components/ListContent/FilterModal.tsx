@@ -191,6 +191,7 @@ const FilterModal: React.FC<CaravanFilterProps> = ({
   focusSection,
   productListData,
   initialCategoryCounts,
+  makes: makesProp,
 }) => {
   const router = useRouter();
   const pathname = usePathname();
@@ -214,7 +215,7 @@ const FilterModal: React.FC<CaravanFilterProps> = ({
   // இந்த state variables add பண்ணு (top-ல்)
   const [tempStateName, setTempStateName] = useState<string | null>(null);
   const [tempRegionName, setTempRegionName] = useState<string | null>(null);
-  const [makes, setMakes] = useState<Make[]>([]);
+  const [makes, setMakes] = useState<Make[]>(makesProp || []);
   const [model, setModel] = useState<Model[]>([]);
    const [modelOpen, setModelOpen] = useState(false);
    const [categories, setCategories] = useState<Option[]>(
@@ -748,11 +749,16 @@ const [states, setStates] = useState<StateOption[]>([]);
   if (productListData?.data) {
     setCategories(productListData.data.all_categories || []);
     setStates(productListData.data.states || []);
-    if (productListData.data.make_options?.length) {
-      setMakes(productListData.data.make_options);
+    const makeOpts = (productListData.data as any).make_options;
+    if (makeOpts?.length) {
+      setMakes(makeOpts);
+    } else if (makesProp?.length) {
+      setMakes(makesProp);
     }
+  } else if (makesProp?.length) {
+    setMakes(makesProp);
   }
-}, [productListData]);
+}, [productListData, makesProp]);
 
   // useEffect(() => {
   //   const load = async () => {
@@ -2476,7 +2482,7 @@ const [states, setStates] = useState<StateOption[]>([]);
                             }}
                           >
                             <option value="">Any</option>
-                            {model.map((mod, index) => (
+                            {(modelCounts.length > 0 ? modelCounts : model).map((mod, index) => (
                               <option key={index} value={mod.slug}>
                                 {mod.name || mod.slug}
                               </option>
