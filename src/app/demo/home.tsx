@@ -131,9 +131,15 @@ export default function StateHome({ initialFilters }: Props) {
         const premiumsRaw: Listing[]   = json?.data?.premium_products ?? json?.premium_products ?? [];
         const exclusivesRaw: Listing[] = json?.data?.exclusive_products ?? json?.exclusive_products ?? [];
 
+        // Featured's "rest" fill pulls from the whole pool (not just
+        // slot_bucket "featured"), so on a small/narrow pool it can grab the
+        // same products the New/Used sections would also show. Exclude
+        // whatever Featured already claimed so a listing never appears twice
+        // across sections.
         const featuredItems = buildFeaturedOrder(products, premiumsRaw, exclusivesRaw).slice(0, 8);
-        const newItems      = products.filter((p) => p.slot_bucket === "new"  && !p.is_premium && !p.is_exclusive).slice(0, 8);
-        const usedItems     = products.filter((p) => p.slot_bucket === "used" && !p.is_premium && !p.is_exclusive).slice(0, 8);
+        const featuredIds   = new Set(featuredItems.map((p) => p.id));
+        const newItems      = products.filter((p) => p.slot_bucket === "new"  && !p.is_premium && !p.is_exclusive && !featuredIds.has(p.id)).slice(0, 8);
+        const usedItems     = products.filter((p) => p.slot_bucket === "used" && !p.is_premium && !p.is_exclusive && !featuredIds.has(p.id)).slice(0, 8);
 
         setPool({ featured: featuredItems, new: newItems, used: usedItems });
         handleTotalPages(json?.pagination?.total_pages ?? 1);
