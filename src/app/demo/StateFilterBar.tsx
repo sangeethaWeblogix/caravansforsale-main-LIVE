@@ -53,12 +53,42 @@ const SLEEP_OPTIONS  = [1,2,3,4,5,6,7];
 const YEAR_OPTIONS   = [2026,2025,2024,2023,2022,2021,2020,2019,2018,2017,2016,2015,2014,2013,2012,2011,2010,2009,2008,2007,2006,2005,2004,2000,1975];
 const LENGTH_OPTIONS = [12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28];
 
+/** Same param shape as FilterSlider's buildMakeCountParams — make/model excluded
+ * on purpose (they're what group_by is counting), everything else included so
+ * the make/model list narrows to what's actually available under the other
+ * active filters, matching production's live /api/params-count/ behaviour. */
+const buildMakeCountParams = (filters: FilterState): URLSearchParams => {
+  const params = new URLSearchParams();
+  if (filters.category)          params.set("category", filters.category);
+  if (filters.condition)         params.set("condition", filters.condition);
+  if (filters.state)             params.set("state", String(filters.state).toLowerCase());
+  if (filters.region)            params.set("region", filters.region);
+  if (filters.suburb)            params.set("suburb", filters.suburb);
+  if (filters.pincode)           params.set("pincode", filters.pincode);
+  if (filters.from_price)        params.set("from_price", String(filters.from_price));
+  if (filters.to_price)          params.set("to_price", String(filters.to_price));
+  if (filters.minKg)             params.set("from_atm", String(filters.minKg));
+  if (filters.maxKg)             params.set("to_atm", String(filters.maxKg));
+  if (filters.acustom_fromyears) params.set("acustom_fromyears", String(filters.acustom_fromyears));
+  if (filters.acustom_toyears)   params.set("acustom_toyears", String(filters.acustom_toyears));
+  if (filters.from_length)       params.set("from_length", String(filters.from_length));
+  if (filters.to_length)         params.set("to_length", String(filters.to_length));
+  if (filters.from_sleep)        params.set("from_sleep", String(filters.from_sleep));
+  if (filters.to_sleep)          params.set("to_sleep", String(filters.to_sleep));
+  if (filters.keyword)           params.set("keyword", filters.keyword);
+  params.set("group_by", "make");
+  return params;
+};
+
 export default function StateFilterBar({ currentFilters, onFilterChange, onClearAll }: Props) {
   /* ── Data ── */
   const [categories, setCategories] = useState<{name: string; slug: string}[]>([]);
   const [states,     setStates]     = useState<StateOption[]>([]);
   const [makes,      setMakes]      = useState<{name: string; slug: string; models?: {name: string; slug: string}[]}[]>([]);
   const [catLoading, setCatLoading] = useState(true);
+  const [categoryCounts, setCategoryCounts] = useState<{name: string; slug: string; count: number}[]>([]);
+  const [catCountLoading, setCatCountLoading] = useState(false);
+  const cachedCategoryCountsRef = useRef<{name: string; slug: string; count: number}[]>([]);
 
   useEffect(() => {
     fetch("/api/product-list/")
@@ -75,6 +105,65 @@ export default function StateFilterBar({ currentFilters, onFilterChange, onClear
       .then((json: any) => setMakes(json?.data?.make_options || []))
       .catch(() => {});
   }, []);
+
+  // Live category counts — same /api/params-count/?group_by=category endpoint
+  // production's Listings.tsx uses, scoped to every OTHER active filter (make,
+  // model, state, etc. — but not category itself) so the Caravan Type list only
+  // shows types that actually have matching results under the current filters.
+  useEffect(() => {
+    const controller = new AbortController();
+    setCatCountLoading(true);
+    const params = new URLSearchParams();
+    if (currentFilters.make)               params.set("make", currentFilters.make);
+    if (currentFilters.model)              params.set("model", currentFilters.model);
+    if (currentFilters.condition)          params.set("condition", currentFilters.condition);
+    if (currentFilters.state)              params.set("state", String(currentFilters.state).toLowerCase());
+    if (currentFilters.region)             params.set("region", currentFilters.region);
+    if (currentFilters.suburb)             params.set("suburb", currentFilters.suburb);
+    if (currentFilters.pincode)            params.set("pincode", currentFilters.pincode);
+    if (currentFilters.from_price)         params.set("from_price", String(currentFilters.from_price));
+    if (currentFilters.to_price)           params.set("to_price", String(currentFilters.to_price));
+    if (currentFilters.minKg)              params.set("from_atm", String(currentFilters.minKg));
+    if (currentFilters.maxKg)              params.set("to_atm", String(currentFilters.maxKg));
+    if (currentFilters.acustom_fromyears)  params.set("acustom_fromyears", String(currentFilters.acustom_fromyears));
+    if (currentFilters.acustom_toyears)    params.set("acustom_toyears", String(currentFilters.acustom_toyears));
+    if (currentFilters.from_length)        params.set("from_length", String(currentFilters.from_length));
+    if (currentFilters.to_length)          params.set("to_length", String(currentFilters.to_length));
+    if (currentFilters.from_sleep)         params.set("from_sleep", String(currentFilters.from_sleep));
+    if (currentFilters.to_sleep)           params.set("to_sleep", String(currentFilters.to_sleep));
+    if (currentFilters.keyword)            params.set("keyword", currentFilters.keyword);
+    params.set("group_by", "category");
+    fetch(`/api/params-count/?${params.toString()}`, { signal: controller.signal })
+      .then(r => r.json())
+      .then(json => {
+        if (controller.signal.aborted) return;
+        setCategoryCounts(json.data || []);
+        setCatCountLoading(false);
+      })
+      .catch(e => { if (e.name !== "AbortError") setCatCountLoading(false); });
+    return () => controller.abort();
+  }, [
+    currentFilters.make, currentFilters.model, currentFilters.condition, currentFilters.state, currentFilters.region,
+    currentFilters.suburb, currentFilters.pincode, currentFilters.from_price, currentFilters.to_price,
+    currentFilters.minKg, currentFilters.maxKg, currentFilters.acustom_fromyears, currentFilters.acustom_toyears,
+    currentFilters.from_length, currentFilters.to_length, currentFilters.from_sleep, currentFilters.to_sleep,
+    currentFilters.keyword,
+  ]);
+
+  // Cache the last non-empty result so a transient 0-count response (or one
+  // where the backend returns no breakdown at all) doesn't flash an empty list.
+  useEffect(() => {
+    if (categoryCounts.length > 0) cachedCategoryCountsRef.current = categoryCounts;
+  }, [categoryCounts]);
+
+  // Only show caravan types that actually have matching results under the
+  // current filters — falls back to the full static list before the first
+  // count response arrives (or if the API returned no breakdown at all).
+  const visibleCategories = categoryCounts.length > 0
+    ? categories.filter(c => categoryCounts.some(cc => cc.slug === c.slug && cc.count > 0))
+    : cachedCategoryCountsRef.current.length > 0
+      ? categories.filter(c => cachedCategoryCountsRef.current.some(cc => cc.slug === c.slug && cc.count > 0))
+      : categories;
 
   /* ── Suburb search ── */
   const RADIUS_OPTIONS = [25, 50, 100, 250, 500, 1000] as const;
@@ -93,7 +182,52 @@ export default function StateFilterBar({ currentFilters, onFilterChange, onClear
   const [makeSearch,    setMakeSearch]    = useState("");
   const [modelSearch,   setModelSearch]   = useState("");
   const [makeSubView,   setMakeSubView]   = useState<"makes" | "models">("makes");
-  const [modelCounts]                     = useState<{name: string; slug: string; count: number}[]>([]);
+  const [makeCounts,       setMakeCounts]       = useState<{name: string; slug: string; count: number}[]>([]);
+  const [modelCounts,      setModelCounts]      = useState<{name: string; slug: string; count: number}[]>([]);
+  const [modelCountLoading, setModelCountLoading] = useState(false);
+  const [lastModelName,    setLastModelName]    = useState<string | null>(null);
+
+  // Live make counts — same /api/params-count/ endpoint FilterSlider uses,
+  // re-fetched whenever any other active filter changes so the make list
+  // narrows to what's actually available (not just the full static make list).
+  useEffect(() => {
+    const controller = new AbortController();
+    const params = buildMakeCountParams(currentFilters);
+    fetch(`/api/params-count/?${params.toString()}`, { signal: controller.signal })
+      .then(r => r.json())
+      .then(json => { if (!controller.signal.aborted) setMakeCounts(json.data || []); })
+      .catch(e => { if (e.name !== "AbortError") console.error(e); });
+    return () => controller.abort();
+  }, [
+    currentFilters.category, currentFilters.condition, currentFilters.state, currentFilters.region,
+    currentFilters.suburb, currentFilters.pincode, currentFilters.from_price, currentFilters.to_price,
+    currentFilters.minKg, currentFilters.maxKg, currentFilters.acustom_fromyears, currentFilters.acustom_toyears,
+    currentFilters.from_length, currentFilters.to_length, currentFilters.from_sleep, currentFilters.to_sleep,
+    currentFilters.keyword,
+  ]);
+
+  // Live model counts — scoped to whichever make is currently selected in the modal.
+  useEffect(() => {
+    if (!tempMake) { setModelCounts([]); return; }
+    const controller = new AbortController();
+    setModelCountLoading(true);
+    const params = buildMakeCountParams(currentFilters);
+    params.set("make", tempMake);
+    params.delete("group_by");
+    params.set("group_by", "model");
+    fetch(`/api/params-count/?${params.toString()}`, { signal: controller.signal })
+      .then(r => r.json())
+      .then(json => {
+        if (controller.signal.aborted) return;
+        const data = json.data || [];
+        setModelCounts(data);
+        setModelCountLoading(false);
+        const matched = data.find((m: any) => m.slug === currentFilters.model);
+        if (matched) setLastModelName(matched.name);
+      })
+      .catch(e => { if (e.name !== "AbortError") { console.error(e); setModelCountLoading(false); } });
+    return () => controller.abort();
+  }, [tempMake]);
 
   /* ── Temp filter values ── */
   const [tempCategory,     setTempCategory]     = useState<string | null>(null);
@@ -151,7 +285,7 @@ export default function StateFilterBar({ currentFilters, onFilterChange, onClear
 
   const filteredRegions = states.find(s => s.name.toLowerCase() === tempState?.toLowerCase())?.regions ?? [];
 
-  const makeSource  = makes.map(m => ({ name: m.name, slug: m.slug, count: 0 }));
+  const makeSource  = makeCounts.length > 0 ? makeCounts : makes.map(m => ({ name: m.name, slug: m.slug, count: 0 }));
   const filteredMakes = makeSearch
     ? (() => {
         const q = makeSearch.toLowerCase();
@@ -440,13 +574,25 @@ export default function StateFilterBar({ currentFilters, onFilterChange, onClear
           <div className="active-chips-row">
             {currentFilters.make && (
               <span className={`active-chip${removingChip === "make" ? " chip-removing" : ""}`}>
-                <span className="chip-label" onClick={handleMakeOpen}>{toTitleCase(makes.find(m => m.slug === currentFilters.make)?.name ?? currentFilters.make)}</span>
+                <span className="chip-label" onClick={handleMakeOpen}>
+                  {toTitleCase(
+                    makeCounts.find(m => m.slug === currentFilters.make)?.name ??
+                      makes.find(m => m.slug === currentFilters.make)?.name ??
+                      currentFilters.make,
+                  )}
+                </span>
                 <span className="chip-close" onClick={() => removeChip("make", { make: undefined, model: undefined })}>×</span>
               </span>
             )}
             {currentFilters.model && (
               <span className={`active-chip${removingChip === "model" ? " chip-removing" : ""}`}>
-                <span className="chip-label" onClick={handleMakeOpen}>{toTitleCase(currentFilters.model.replace(/-/g," "))}</span>
+                <span className="chip-label" onClick={handleMakeOpen}>
+                  {toTitleCase(
+                    lastModelName ??
+                      modelCounts.find(m => m.slug === currentFilters.model)?.name ??
+                      currentFilters.model.replace(/-/g," "),
+                  )}
+                </span>
                 <span className="chip-close" onClick={() => removeChip("model", { model: undefined })}>×</span>
               </span>
             )}
@@ -537,7 +683,7 @@ export default function StateFilterBar({ currentFilters, onFilterChange, onClear
                   {catLoading && categories.length === 0 ? (
                     <CategorySkeleton />
                   ) : (
-                    categories.map(cat => (
+                    visibleCategories.map(cat => (
                       <li key={cat.slug} className="loc-state-item"
                         onClick={() => setTempCategory(tempCategory === cat.slug ? null : cat.slug)}>
                         <span className={`loc-checkbox${tempCategory === cat.slug ? " checked" : ""}`}>
@@ -862,7 +1008,7 @@ export default function StateFilterBar({ currentFilters, onFilterChange, onClear
                   {catLoading && categories.length === 0 ? (
                     <CategorySkeleton />
                   ) : (
-                    categories.map(cat => (
+                    visibleCategories.map(cat => (
                       <li key={cat.slug} className="loc-state-item" onClick={() => setTempCategory(tempCategory === cat.slug ? null : cat.slug)}>
                         <span className={`loc-checkbox${tempCategory === cat.slug ? " checked" : ""}`}>
                           {tempCategory === cat.slug && <i className="bi bi-check" style={{ color:"#fff", fontSize:14, lineHeight:1 }} />}
@@ -1124,7 +1270,9 @@ export default function StateFilterBar({ currentFilters, onFilterChange, onClear
                 </ul>
               ) : (
                 <ul className="loc-state-list">
-                  {filteredModels.length === 0 ? (
+                  {modelCountLoading ? (
+                    <li className="loc-state-item" style={{ justifyContent:"center", color:"#888" }}>Loading...</li>
+                  ) : filteredModels.length === 0 ? (
                     <li className="loc-state-item" style={{ color:"#888" }}>No models found</li>
                   ) : (
                     filteredModels.map(mod => {

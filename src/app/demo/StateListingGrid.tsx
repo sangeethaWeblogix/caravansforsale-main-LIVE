@@ -18,7 +18,7 @@ function useColCount() {
   return cols;
 }
 
-type Listing = {
+export type Listing = {
   id: number;
   name: string;
   slug?: string;
@@ -36,19 +36,48 @@ type Listing = {
   make?: string;
   is_premium?: boolean;
   is_exclusive?: boolean;
+  is_featured?: boolean;
+  slot_bucket?: string;
+};
+
+export type SeoV2 = {
+  h1?: string;
+  meta_title?: string;
+  meta_description?: string;
 };
 
 interface Props {
   title: string;
   viewAllHref: string;
-  apiUrl: string;
+  /** Self-fetch mode: this grid owns its own request/loading/pagination/seo. */
+  apiUrl?: string;
+  /** Externally-supplied mode: parent already fetched + composed the items
+   * (e.g. a single shared pool call split by slot_bucket across several
+   * grids) — this grid just renders them, no fetch of its own. */
+  items?: Listing[];
+  loading?: boolean;
   showSpotlight?: boolean;
   hideViewAll?: boolean;
   hideTitle?: boolean;
   skeletonCount?: number;
   page?: number;
   onTotalPages?: (n: number) => void;
+  onSeo?: (seo: SeoV2) => void;
   maxItems?: number;
+}
+
+/** Featured-tab ordering: slots 1 & 2 are regular featured vans, slot 3 is the
+ * exclusive spotlight van, slots 4 & 5 are premium vans, then the rest of the
+ * pool fills in after. Shared by the internal fetch path and any caller doing
+ * its own shared fetch (e.g. StateHome splitting one response across grids). */
+export function buildFeaturedOrder(products: Listing[], premiumsRaw: Listing[], exclusivesRaw: Listing[]): Listing[] {
+  const premiums   = premiumsRaw.map((p) => ({ ...p, is_premium: true }));
+  const exclusives = exclusivesRaw.map((p) => ({ ...p, is_exclusive: true }));
+  const heroFeatured = products.slice(0, 2);
+  const hero = [...heroFeatured, ...exclusives.slice(0, 1), ...premiums.slice(0, 2)];
+  const heroIds = new Set(hero.map((p) => p.id));
+  const rest = products.filter((p) => !heroIds.has(p.id));
+  return [...hero, ...rest];
 }
 
 function getImages(item: Listing): string[] {
@@ -348,15 +377,18 @@ function SkeletonCard() {
 }
 
 /* ── Main grid component ── */
-export default function StateListingGrid({ title, viewAllHref, apiUrl, showSpotlight, hideViewAll, hideTitle, skeletonCount = 10, page = 1, onTotalPages, maxItems }: Props) {
+export default function StateListingGrid({ title, viewAllHref, apiUrl, items: externalItems, loading: externalLoading, showSpotlight, hideViewAll, hideTitle, skeletonCount = 10, page = 1, onTotalPages, onSeo, maxItems }: Props) {
 
-  const [items,       setItems]       = useState<Listing[]>([]);
-  const [loading,     setLoading]     = useState(true);
-  const [contactItem, setContactItem] = useState<Listing | null>(null);
+  const [fetchedItems,  setFetchedItems]  = useState<Listing[]>([]);
+  const [fetchLoading,  setFetchLoading]  = useState(true);
+  const [contactItem,   setContactItem]   = useState<Listing | null>(null);
   const cols = useColCount();
 
+  const externalMode = externalItems !== undefined;
+
   useEffect(() => {
-    setLoading(true);
+    if (externalMode || !apiUrl) return;
+    setFetchLoading(true);
     const requestUrl = `${apiUrl}&page=${page}`;
     // Logged as an absolute URL so devtools renders it as a clickable link —
     // click it to open the raw JSON response in a new tab.
@@ -368,32 +400,51 @@ export default function StateListingGrid({ title, viewAllHref, apiUrl, showSpotl
       .then((json) => {
         console.log(`[StateListingGrid] "${title}" API response:`, json);
 
-        // pool_test returns products/premium_products at the top level;
-        // new_optimize_code nests them under `data` — support both shapes.
-        const products: Listing[]  = json?.data?.products ?? json?.products ?? [];
-        const premiums: Listing[]  = (json?.data?.premium_products ?? json?.premium_products ?? []).map(
-          (p: Listing) => ({ ...p, is_premium: true }),
-        );
+        // pool_test returns products/premium_products/exclusive_products at the
+        // top level; new_optimize_code nests them under `data` — support both shapes.
+        const products: Listing[]      = json?.data?.products ?? json?.products ?? [];
+        const premiumsRaw: Listing[]   = json?.data?.premium_products ?? json?.premium_products ?? [];
+        const exclusivesRaw: Listing[] = json?.data?.exclusive_products ?? json?.exclusive_products ?? [];
 
-        // Exclude premium IDs from regular list to avoid duplicates
-        const premiumIds = new Set(premiums.map((p) => p.id));
-        const filtered   = products.filter((p) => !premiumIds.has(p.id));
-
-        // Insert first 2 premiums at positions 2 and 3 (same as /listings/ page)
-        const merged: Listing[] = [];
-        let fi = 0;
-        const total = filtered.length + Math.min(premiums.length, 2);
-        for (let i = 0; i < total; i++) {
-          if (i === 2 && premiums[0]) { merged.push(premiums[0]); continue; }
-          if (i === 3 && premiums[1]) { merged.push(premiums[1]); continue; }
-          if (fi < filtered.length)  { merged.push(filtered[fi++]); }
+        // Split `products` by whatever slot_bucket value actually comes back —
+        // the API isn't limited to just featured/new/used (e.g. "featured_core"
+        // also shows up), so group dynamically rather than hardcoding 3 buckets.
+        const productsBySlotBucket = new Map<string, Listing[]>();
+        for (const p of products) {
+          const key = p.slot_bucket || "(none)";
+          if (!productsBySlotBucket.has(key)) productsBySlotBucket.set(key, []);
+          productsBySlotBucket.get(key)!.push(p);
         }
-        setItems(maxItems ? merged.slice(0, maxItems) : merged);
+        for (const [bucket, items] of productsBySlotBucket) {
+          console.log(`[StateListingGrid] "${title}" slot_bucket=${bucket}:`, items);
+        }
+        console.log(`[StateListingGrid] "${title}" slot_bucket=premium:`, premiumsRaw);
+        console.log(`[StateListingGrid] "${title}" slot_bucket=exclusive:`, exclusivesRaw);
+
+        // Featured (and combined) grid: slots 1 & 2 are regular featured vans,
+        // slot 3 is the exclusive spotlight van, slots 4 & 5 are premium vans,
+        // then the rest of the pool fills in after. New/Used grids: premium &
+        // exclusive vans only ever show on the Featured tab — plain
+        // condition-matched products here, nothing spliced in.
+        const merged: Listing[] = showSpotlight
+          ? buildFeaturedOrder(products, premiumsRaw, exclusivesRaw)
+          : products.filter((p) => !p.is_premium && !p.is_exclusive);
+
+        setFetchedItems(maxItems ? merged.slice(0, maxItems) : merged);
         onTotalPages?.(json?.pagination?.total_pages ?? 1);
+        const seo = json?.data?.seo_v2 ?? json?.seo_v2;
+        if (seo) onSeo?.(seo);
       })
-      .catch(() => setItems([]))
-      .finally(() => setLoading(false));
-  }, [apiUrl, page]);
+      .catch(() => setFetchedItems([]))
+      .finally(() => setFetchLoading(false));
+  }, [externalMode, apiUrl, page]);
+
+  const items   = externalMode ? (externalItems as Listing[]) : fetchedItems;
+  const loading = externalMode ? (externalLoading ?? false) : fetchLoading;
+
+  // No title/section at all once we know for sure there's nothing to show —
+  // an empty heading with a blank grid under it reads as broken, not "no results".
+  if (!loading && items.length === 0) return null;
 
   return (
     <>
@@ -418,7 +469,7 @@ export default function StateListingGrid({ title, viewAllHref, apiUrl, showSpotl
                   <ListingCard
                     key={item.id ?? idx}
                     item={item}
-                    spotlight={showSpotlight && idx === 3}
+                    spotlight={item.is_exclusive === true}
                     onContact={setContactItem}
                   />
                 ))}
