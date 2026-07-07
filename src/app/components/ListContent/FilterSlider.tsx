@@ -223,9 +223,11 @@ const [states, setStates] = useState<StateOption[]>(
     if (!tempMake) { setModelCounts([]); return; }
     const controller = new AbortController();
     setModelCountLoading(true);
-    const params = buildMakeCountParams(currentFilters);
+    // Use only make + group_by=model — matches what the KV warmer pre-warms.
+    // Including category or other filters causes a KV miss every time (warmer
+    // only covers {make, group_by=model}) and WP returns empty for that combo.
+    const params = new URLSearchParams();
     params.set("make", tempMake);
-    params.delete("group_by");
     params.set("group_by", "model");
     fetch(`/api/params-count/?${params.toString()}`, { signal: controller.signal })
       .then((r) => r.json())
