@@ -209,14 +209,18 @@ export default function ListingsPage({
     const urlPath = `/listings/${slugPath ? slugPath + "/" : ""}`;
     return INDEXABLE_URLS_CLIENT.has(urlPath);
   }, [pathname]);
-  const [isLoading, setIsLoading] = useState(false);
+  // When SSR failed (no initialData), show the skeleton immediately so there is
+  // no blank flash while waiting for the 300 ms debounced client-side fetch.
+  // When initialData IS present the loading states stay false — products are
+  // already seeded via useState below and no fetch is needed on first render.
+  const [isLoading, setIsLoading] = useState(!initialData);
   const router = useRouter();
   const [relatedChips, setRelatedChips] = useState<
     { label: string; url: string; group: string }[]
   >([]);
-  const [isMainLoading, setIsMainLoading] = useState(false);
-  const [isFeaturedLoading, setIsFeaturedLoading] = useState(false);
-  const [isPremiumLoading, setIsPremiumLoading] = useState(false);
+  const [isMainLoading, setIsMainLoading] = useState(!initialData);
+  const [isFeaturedLoading, setIsFeaturedLoading] = useState(!initialData);
+  const [isPremiumLoading, setIsPremiumLoading] = useState(!initialData);
 
   const isSliderFetchingRef = useRef(false);
   const [clickid, setclickid] = useState<string | null>(null);
