@@ -30,11 +30,9 @@ const IMAGE_CACHE_TTL = 2592000; // 30 days
 // completely defeating the random-variant shuffle. Every request must reach the worker
 // so it can pick a fresh random variant from the 5 KV keys.
 
-// JSON API cache: entries are written by the WP admin warmer (or as a fallback by this
-// Worker on a genuine miss on an indexed page) and served as-is until they naturally
-// expire or the admin process overwrites them. No background staleness refresh, no
-// predictive pre-warming — KV is treated as a passive, admin-controlled cache.
-const JSON_CACHE_TTL = 86400;            // 24 hours — KV entry lifetime before it must be re-fetched
+// JSON API cache: entries are written exclusively by the WP admin cache warmer.
+// The Worker is read-only — it serves KV hits instantly and live-proxies misses.
+// No writes, no background refreshes, no TTL management here.
 
 // In-memory routes-mapping cache (per isolate)
 let cachedRoutesMapping = null;
@@ -66,7 +64,7 @@ export default {
       // genuine miss. Non-indexed pages: always live-proxied, never cached.
       // ============================================
       if (url.pathname === '/api/listings' || url.pathname === '/api/listings/') {
-        return await handleJsonApiCache(request, url, env, ctx);
+        return await handleJsonApiCache(request, url, env);
       }
 
       // ============================================
@@ -169,39 +167,24 @@ function buildJsonCacheKeyFromParams(params) {
 /**
  * Handle /api/listings with KV-backed JSON cache.
  *
- * Cache is populated in one of two ways:
- *   1. The WP admin JSON cache warmer writes curated pages directly to KV
- *      (tagged with `sourceUrl` in metadata) on its own schedule.
- *   2. This Worker fills in a fallback entry on a genuine cache miss for an
- *      indexed page, so the next visitor to that combo gets an instant hit.
- *      (These entries have no `sourceUrl` — that's how an admin-side audit
- *      can tell curated entries apart from Worker-created fallbacks.)
- *
- * There is no background staleness refresh and no predictive next-page
- * pre-warming — KV is a passive cache. Whatever is in KV is served as-is
- * until the admin process overwrites it or the entry's TTL expires.
- *
- * Non-indexed (noindex) requests — signalled by `?indexed=1` being absent —
- * skip KV entirely and are always live-proxied to origin. These are
- * long-tail filter combinations that rarely repeat; caching them would
- * flood KV with one-off entries nobody revisits.
+ * The admin cache warmer is the SOLE writer to KV — the Worker never writes.
+ * This keeps KV clean: only curated, admin-generated entries ever land there.
  *
  * Flow:
  *   - Not indexed  → live-proxy to origin, never touch KV
- *   - Indexed, HIT → return KV value as-is
- *   - Indexed, MISS → fetch from origin, cache the result, return it
- *   - Origin fail  → 503
+ *   - Indexed, HIT → serve KV immediately, no staleness check, no background work
+ *   - Indexed, MISS → live-proxy to origin, do NOT write to KV
  */
-async function handleJsonApiCache(request, url, env, ctx) {
+async function handleJsonApiCache(request, url, env) {
   const isIndexed = url.searchParams.get('indexed') === '1';
 
-  // ── Non-indexed pages: always live, never cached ──────────────────
+  // ── Non-indexed: always live, never touch KV ──────────────────────
   if (!isIndexed) {
     try {
       const response = await fetch(request);
       return addDebugHeaders(response, 'BYPASS-NOINDEX', null, null);
     } catch (fetchErr) {
-      console.error('Origin fetch failed (noindex, no cache):', fetchErr.message);
+      console.error('Origin fetch failed (noindex):', fetchErr.message);
       return new Response(JSON.stringify({ success: false, error: 'Service unavailable' }), {
         status: 503,
         headers: { 'Content-Type': 'application/json', 'X-CFS-Cache': 'ERROR-ORIGIN-DOWN' }
@@ -211,7 +194,7 @@ async function handleJsonApiCache(request, url, env, ctx) {
 
   const cacheKey = buildJsonCacheKey(url);
 
-  // ── Step 1: Check KV ──────────────────────────────────────────────
+  // ── KV lookup ─────────────────────────────────────────────────────
   let kvResult;
   try {
     kvResult = await env.CFS_STATIC_PAGES.getWithMetadata(cacheKey);
@@ -220,11 +203,10 @@ async function handleJsonApiCache(request, url, env, ctx) {
     kvResult = { value: null, metadata: null };
   }
 
+  // ── HIT: serve immediately, no writes, no background work ─────────
   if (kvResult.value !== null) {
     const meta = kvResult.metadata || {};
     const originalStatus = meta.status || 200;
-
-    // Serve exactly what's in KV — no staleness check, no background refresh.
     return new Response(kvResult.value, {
       status: originalStatus,
       headers: {
@@ -238,7 +220,7 @@ async function handleJsonApiCache(request, url, env, ctx) {
     });
   }
 
-  // ── Step 2: Cache MISS — fetch from origin, cache as fallback ─────
+  // ── MISS: live-proxy only, admin warmer will populate KV later ────
   let originResponse;
   try {
     originResponse = await fetch(request);
@@ -253,22 +235,8 @@ async function handleJsonApiCache(request, url, env, ctx) {
   const body = await originResponse.text();
   const status = originResponse.status;
 
-  // Only cache successful responses — never store redirects (3xx) or server errors (5xx).
-  // A stored 308 would be replayed to every future request for this key, breaking the API.
-  if (status >= 200 && status < 300) {
-    ctx.waitUntil(
-      env.CFS_STATIC_PAGES.put(cacheKey, body, {
-        expirationTtl: JSON_CACHE_TTL,
-        metadata: { savedAt: Date.now(), status }
-      }).catch(e => console.error('KV write error (json cache):', e.message))
-    );
-  }
-
   // Redirects (e.g. Next.js trailingSlash 308) must carry their Location header
-  // through, otherwise fetch() on the client can't follow them and the request
-  // dead-ends with a bare 3xx — which is exactly what silently broke filter
-  // navigation on production (client called /api/listings without the trailing
-  // slash the app requires, got a Location-less 308 back here, and threw).
+  // through, otherwise the client can't follow them.
   const passthroughHeaders = {
     'Content-Type': originResponse.headers.get('Content-Type') || 'application/json;charset=UTF-8',
     'Cache-Control': 'public, max-age=60, s-maxage=60',
@@ -280,10 +248,7 @@ async function handleJsonApiCache(request, url, env, ctx) {
   const location = originResponse.headers.get('Location');
   if (location) passthroughHeaders['Location'] = location;
 
-  return new Response(body, {
-    status,
-    headers: passthroughHeaders
-  });
+  return new Response(body, { status, headers: passthroughHeaders });
 }
 
 // ============================================
@@ -368,13 +333,20 @@ async function getStaticHtmlFromKV(url, env) {
     // causes RSC client-side navigation to fail silently (filter apply doesn't update
     // the page) because the client's router state and Vercel's live build are out of sync.
     // Fix: bypass KV HTML and serve fresh from Vercel when buildIds differ.
+    //
+    // "current-build-id" is written to KV by scripts/update-kv-build-id.js which runs
+    // automatically after every "next build" (see package.json). If it is absent the
+    // KV HTML is potentially stale — bypass conservatively rather than risk serving
+    // broken CSS/JS.
     const currentBuildId = await env.CFS_STATIC_PAGES.get('current-build-id');
-    if (currentBuildId) {
-      const htmlBuildId = html.match(/"buildId":"([^"]+)"/)?.[1];
-      if (htmlBuildId && htmlBuildId !== currentBuildId) {
-        console.log(`Build-ID mismatch: KV=${htmlBuildId}, live=${currentBuildId} — bypassing KV for ${kvKey}`);
-        return null; // Falls through to PRIORITY 5 (Vercel origin)
-      }
+    if (!currentBuildId) {
+      console.log(`No current-build-id in KV — bypassing KV HTML conservatively for ${kvKey}`);
+      return null; // Falls through to PRIORITY 5 (Vercel origin)
+    }
+    const htmlBuildId = html.match(/"buildId":"([^"]+)"/)?.[1];
+    if (!htmlBuildId || htmlBuildId !== currentBuildId) {
+      console.log(`Build-ID mismatch: KV=${htmlBuildId}, live=${currentBuildId} — bypassing KV for ${kvKey}`);
+      return null; // Falls through to PRIORITY 5 (Vercel origin)
     }
 
     // Inject shuffle seed so React hydration uses the same variant order.
