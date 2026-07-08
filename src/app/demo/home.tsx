@@ -113,7 +113,7 @@ export default function StateHome({ initialFilters }: Props) {
   // Page 1 uses ONE shared pool call (same shape as before, just no condition
   // lock + a bigger per_page) split by slot_bucket into Featured/New/Used —
   // instead of 3 separate condition-locked API calls.
-  const poolApiUrl = buildApiUrl("/api/pool-listings/?per_page=24&featured=1", filters, seed);
+  const poolApiUrl = buildApiUrl("/api/pool-listings/?per_page=24", filters, seed);
 
   useEffect(() => {
     if (page !== 1) return;
