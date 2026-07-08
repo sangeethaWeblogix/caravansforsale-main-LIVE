@@ -75,7 +75,7 @@ const fetchProductDetail = async (slug: string) => {
     if (!res.ok) return null;
     const raw = await res.text();
     const idx = raw.indexOf('{"');
-    return JSON.parse(idx > 0 ? raw.substring(idx) : raw);
+    return JSON.parse(idx >= 0 ? raw.substring(idx) : raw);
   } catch {
     return null;
   }
