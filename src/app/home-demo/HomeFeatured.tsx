@@ -47,7 +47,7 @@ export default function HomeFeatured() {
       <section className="hf-section">
         <div className="container">
           <div className="hf-header">
-            <h2 className="hf-title">Featured Caravans for Sale</h2>
+            <h2 className="hf-title">s for Sale</h2>
           </div>
           <div className="hf-skeleton-row">
             {[...Array(4)].map((_, i) => <div key={i} className="hf-skeleton-card" />)}
