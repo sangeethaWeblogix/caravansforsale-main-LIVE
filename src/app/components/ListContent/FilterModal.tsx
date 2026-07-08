@@ -192,6 +192,7 @@ const FilterModal: React.FC<CaravanFilterProps> = ({
   productListData,
   initialCategoryCounts,
   makes: makesProp,
+  states: statesProp = [],
 }) => {
   const router = useRouter();
   const pathname = usePathname();
@@ -222,7 +223,7 @@ const FilterModal: React.FC<CaravanFilterProps> = ({
   productListData?.data?.all_categories || []
 );
 
-const [states, setStates] = useState<StateOption[]>([]);
+const [states, setStates] = useState<StateOption[]>(statesProp);
 
     console.log("productstate", productListData )
 
@@ -745,10 +746,20 @@ const [states, setStates] = useState<StateOption[]>([]);
   //   loadFilters();
   // }, []);
 
+  // Keep states in sync when the prop is updated (e.g. after Listings loads states from the API)
+  useEffect(() => {
+    if (statesProp?.length) setStates(statesProp);
+  }, [statesProp]);
+
   useEffect(() => {
   if (productListData?.data) {
     setCategories(productListData.data.all_categories || []);
-    setStates(productListData.data.states || []);
+    // Prefer productListData states only when they're populated; fall back to the prop
+    if (productListData.data.states?.length) {
+      setStates(productListData.data.states);
+    } else if (statesProp?.length) {
+      setStates(statesProp);
+    }
     const makeOpts = (productListData.data as any).make_options;
     if (makeOpts?.length) {
       setMakes(makeOpts);
@@ -758,7 +769,7 @@ const [states, setStates] = useState<StateOption[]>([]);
   } else if (makesProp?.length) {
     setMakes(makesProp);
   }
-}, [productListData, makesProp]);
+}, [productListData, makesProp, statesProp]);
 
   // useEffect(() => {
   //   const load = async () => {
@@ -1815,8 +1826,6 @@ const [states, setStates] = useState<StateOption[]>([]);
       setTempRegionName(null);
       setTempRegionNameRaw(null);
     }
-
-    setTempRegionName(matchedRegion?.name || null);
     setTempCondition(currentFilters.condition ?? null);
     setTempCategory(currentFilters.category || null);
     setSelectedMakeTemp(currentFilters.make || null);
