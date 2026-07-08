@@ -30,7 +30,7 @@
   font-size: 24px;
   font-weight: 700;
   color: #000000;
-  margin: 10px 0 8px;
+  margin: 28px 0 8px;
   line-height: 1.3;
 }
 
@@ -59,6 +59,20 @@
   font-weight: 600;
   padding: 2px 11px;
 }
+.pdd-seller-badge {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #444;
+  background: #f4f4f4;
+  border: 1px solid #e0e0e0;
+  border-radius: 20px;
+  padding: 4px 12px;
+  margin-bottom: 16px;
+}
+.pdd-seller-badge i { font-size: 14px; color: #666; }
 
 /* ── Specs Bar ── */
 .pdd-specs-bar {
@@ -346,7 +360,7 @@
 /* Prices section */
 .pdd-sidebar__prices {
   padding: 18px 16px 14px;
-  border-bottom: 1px solid #eee;
+  
   background: #fff;
 }
 .pdd-sidebar__sale-label {

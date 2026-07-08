@@ -61,7 +61,7 @@ type PageProps = { params: Promise<RouteParams> };
 const fetchProductDetail = async (slug: string) => {
   const API_BASE = process.env.NEXT_PUBLIC_CFS_API_BASE!;
   const API_KEY = process.env.CFS_API_KEY;
-  // try {
+  try {
     const res = await fetch(
       `${API_BASE}/product-detail-new/?slug=${encodeURIComponent(slug)}`,
       {
@@ -75,7 +75,10 @@ const fetchProductDetail = async (slug: string) => {
     if (!res.ok) return null;
     const raw = await res.text();
     const idx = raw.indexOf('{"');
-    return JSON.parse(idx > 0 ? raw.substring(idx) : raw);
+    return JSON.parse(idx >= 0 ? raw.substring(idx) : raw);
+  } catch {
+    return null;
+  }
 };
 
 

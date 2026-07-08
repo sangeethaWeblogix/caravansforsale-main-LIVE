@@ -16,8 +16,6 @@ import {
 } from "@/app/components/ListContent/StaticLinksUtils";
 import { fetchProductList, fetchCategoryCounts, fetchMakeCounts, fetchModelCounts } from "@/api/productList/api";
 import { calculateDistances } from "@/utils/postcodeCoords";
-import { fetchBottomLinks } from "@/api/bottomLinks/api";
-import type { BottomLinksData } from "@/api/bottomLinks/api";
 import { reportGitHubIssue } from "@/lib/reportGitHubIssue";
 import { metaFromSlug } from "@/utils/seo/meta";
 import { unstable_cache } from "next/cache";
@@ -44,7 +42,6 @@ const _LISTING_API_CALLS = [
   "fetchProductList",
   "fetchCategoryCounts",
   "fetchMakeCounts",
-  "fetchBottomLinks",
 ] as const;
 
 const _makeFetchListingsData = (filtersJson: string, page: number) =>
@@ -60,7 +57,6 @@ const _makeFetchListingsData = (filtersJson: string, page: number) =>
       fetchProductList(),
       fetchCategoryCounts(),
       fetchMakeCounts(),
-      fetchBottomLinks(filters),
     ]);
     console.log(`[PERF] allSettled total: ${Date.now() - _t}ms`);
 
@@ -115,7 +111,7 @@ const _makeFetchListingsData = (filtersJson: string, page: number) =>
       throw new Error(firstError);
     }
 
-    const [response, linksData, productListRes, initialCategoryCounts, initialMakeCounts, bottomLinksData] =
+    const [response, linksData, productListRes, initialCategoryCounts, initialMakeCounts] =
       (settled as PromiseFulfilledResult<any>[]).map(r => r.value);
 
     // Empty results → throw so unstable_cache keeps last-good data (not the 0-product state)
@@ -126,13 +122,12 @@ const _makeFetchListingsData = (filtersJson: string, page: number) =>
       }
     }
 
-    return { response, linksData, productListRes, initialCategoryCounts, initialMakeCounts, bottomLinksData } as {
+    return { response, linksData, productListRes, initialCategoryCounts, initialMakeCounts } as {
       response: Awaited<ReturnType<typeof getCachedListings>>;
       linksData: Awaited<ReturnType<typeof fetchLinksData>>;
       productListRes: Awaited<ReturnType<typeof fetchProductList>>;
       initialCategoryCounts: Awaited<ReturnType<typeof fetchCategoryCounts>>;
       initialMakeCounts: Awaited<ReturnType<typeof fetchMakeCounts>>;
-      bottomLinksData: BottomLinksData | null;
     };
   },
   ["listings-page-data", filtersJson, String(page)],
@@ -431,11 +426,10 @@ export default async function Listings({
   let productListRes: Awaited<ReturnType<typeof fetchProductList>>;
   let initialCategoryCounts: Awaited<ReturnType<typeof fetchCategoryCounts>>;
   let initialMakeCounts: Awaited<ReturnType<typeof fetchMakeCounts>>;
-  let bottomLinksData: BottomLinksData | null = null;
 
   try {
     const data = await _makeFetchListingsData(JSON.stringify(apiFilters), page)();
-    ({ response, linksData, productListRes, initialCategoryCounts, initialMakeCounts, bottomLinksData } = data);
+    ({ response, linksData, productListRes, initialCategoryCounts, initialMakeCounts } = data);
   } catch (err) {
     const msg = err instanceof Error ? err.message : "";
     if (msg.includes("400") || msg.includes("404")) {
@@ -538,7 +532,6 @@ export default async function Listings({
           productListData={productListRes}
           initialCategoryCounts={initialCategoryCounts}
           initialMakeCounts={initialMakeCounts}
-          initialBottomLinksData={bottomLinksData}
           initialDistances={await (async () => {
             if (!filters.suburb || !filters.pincode) return {};
             const allItems = [

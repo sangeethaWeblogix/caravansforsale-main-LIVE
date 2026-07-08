@@ -339,7 +339,9 @@ export async function middleware(request: NextRequest) {
             productCache.set(cacheKey, { exists: false, expires: Date.now() + CACHE_TTL });
             return render410(request);
           }
-          const data = await apiRes.json();
+          const rawText = await apiRes.text();
+          const jsonIdx = rawText.indexOf('{"');
+          const data = JSON.parse(jsonIdx >= 0 ? rawText.substring(jsonIdx) : rawText);
           if (!data || Object.keys(data).length === 0) {
             productCache.set(cacheKey, { exists: false, expires: Date.now() + CACHE_TTL });
             return render410(request);

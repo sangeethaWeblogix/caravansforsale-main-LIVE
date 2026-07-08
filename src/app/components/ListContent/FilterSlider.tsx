@@ -246,9 +246,18 @@ const [states, setStates] = useState<StateOption[]>(
 
   const availableModels = makes.find((m) => m.slug === tempMake)?.models ?? [];
 
-  const makeSource = makeCounts.length > 0
-    ? makeCounts
-    : makes.map((m) => ({ name: m.name, slug: m.slug, count: 0 }));
+  const makeSource = (() => {
+    const raw = makeCounts.length > 0
+      ? makeCounts
+      : makes.map((m) => ({ name: m.name, slug: m.slug, count: 0 }));
+    // Deduplicate by slug (WP taxonomy can register the same make twice)
+    const seen = new Set<string>();
+    return raw.filter((m) => {
+      if (seen.has(m.slug)) return false;
+      seen.add(m.slug);
+      return true;
+    });
+  })();
   const filteredMakes = makeSearch
     ? makeSource.filter((m) => m.name.toLowerCase().includes(makeSearch.toLowerCase()))
     : makeSource;
@@ -1386,7 +1395,10 @@ const [states, setStates] = useState<StateOption[]>(
                 />
               </div>
             </div>
-            <div className="filter-body">
+            {/* key={makeSubView} forces a full DOM remount (and scroll-to-top)
+                when switching between the makes list and the models list so the
+                two lists are never visible at the same time. */}
+            <div className="filter-body" key={makeSubView}>
               {makeSubView === "makes" ? (
                 <ul className="loc-state-list">
                   {makeLoading ? (
