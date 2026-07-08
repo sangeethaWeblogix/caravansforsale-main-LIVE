@@ -1,6 +1,6 @@
 import DeatilsPage from "./details";
 
-export const revalidate = 86400;
+export const dynamic = "force-dynamic";
 
 import "./details.css";
 import { Card, CardContent, Typography, Button } from "@mui/material";
@@ -21,7 +21,7 @@ async function fetchBlogDetail(slug: string) {
       slug
     )}`,
     {
-      next: { revalidate: 86400 },
+      cache: "no-store",
       headers: {
         Accept: "application/json",
         ...(API_KEY && { "X-API-Key": API_KEY }),
