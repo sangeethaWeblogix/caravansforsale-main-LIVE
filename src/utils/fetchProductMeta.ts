@@ -23,7 +23,9 @@ export const fetchProductMeta = cache(async (slug: string): Promise<ProductMeta>
       }
     );
     if (!res.ok) return empty;
-    const data = await res.json();
+    const raw = await res.text();
+    const idx = raw.indexOf('{"');
+    const data = JSON.parse(idx >= 0 ? raw.substring(idx) : raw);
     const seo = data?.seo ?? data?.product?.seo ?? {};
     const pd = data?.data?.product_details ?? {};
     const title = seo.metatitle || seo.meta_title || pd.name || data?.name || "";
