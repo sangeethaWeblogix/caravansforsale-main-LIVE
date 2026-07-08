@@ -390,8 +390,8 @@ export default function BlogDetailsPage({
           <div className="blog-browse-layout">
 
             {/* Left: Table of Contents */}
-            {tocItems.length > 0 && (
-              <div className="blog-browse-toc">
+            {post?.toc && (
+              <div className="blog-browse-toc" style={{ visibility: tocItems.length > 0 ? "visible" : "hidden" }}>
                 <h3 className="blog-browse-toc__heading">Table of Contents</h3>
                 <ul className="blog-browse-toc__list">
                   {(showFullToc ? tocItems : tocItems.slice(0, 5)).map((item, index) => {
@@ -505,7 +505,7 @@ export default function BlogDetailsPage({
                 <h3 className="blog-sidebar-cta__heading">Sell Your Caravan Faster with Australia's Growing Caravan Marketplace</h3>
                 
                 <a href="/sell-my-caravan/" className="blog-sidebar-cta__btn">
-                  Start Selling Today <i className="bi bi-arrow-right" />
+                  List Your Caravan Now <i className="bi bi-arrow-right" />
                 </a>
               </div>
             </aside>
