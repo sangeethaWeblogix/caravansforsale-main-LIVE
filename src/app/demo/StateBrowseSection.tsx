@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { getRegionsByState } from "../sell-my-caravan-region/regions-data";
 
 const STATES = [
   { name: "Victoria",            href: "/listings/victoria-state/" },
@@ -63,68 +64,65 @@ const FILTERS_NO_STATE = [
   },
 ];
 
-const REGIONS = [
-  { name: "Melbourne",            href: "/listings/caravans-for-sale-in-melbourne/" },
-  { name: "Geelong",              href: "/listings/caravans-for-sale-in-geelong/" },
-  { name: "Ballarat",             href: "/listings/caravans-for-sale-in-ballarat/" },
-  { name: "Bendigo",              href: "/listings/caravans-for-sale-in-bendigo/" },
-  { name: "Gippsland",            href: "/listings/caravans-for-sale-in-gippsland/" },
-  { name: "Shepparton",           href: "/listings/caravans-for-sale-in-shepparton/" },
-  { name: "Mornington Peninsula", href: "/listings/caravans-for-sale-in-mornington-peninsula/" },
-  { name: "Pakenham",             href: "/listings/caravans-for-sale-in-pakenham/" },
-  { name: "Campbellfield",        href: "/listings/caravans-for-sale-in-campbellfield/" },
-  { name: "Dandenong",            href: "/listings/caravans-for-sale-in-dandenong/" },
-  { name: "Bayswater",            href: "/listings/caravans-for-sale-in-bayswater/" },
-  { name: "Traralgon",            href: "/listings/caravans-for-sale-in-traralgon/" },
-];
+function buildRegions(state: string) {
+  const stateSlug = state.trim().toLowerCase().replace(/ /g, "-");
+  return getRegionsByState(stateSlug).map((r) => ({
+    name: r.label,
+    href: `/listings/${r.state.slug}-state/${r.pageSlug}-region/`,
+  }));
+}
 
-const TYPES = [
-  { label: "Off Road Caravans", href: "/listings/off-road-category/?state=victoria" },
-  { label: "Luxury Caravans",   href: "/listings/luxury-category/?state=victoria" },
-  { label: "Hybrid Caravans",   href: "/listings/hybrid-category/?state=victoria" },
-  { label: "Pop Top Caravans",  href: "/listings/pop-top-category/?state=victoria" },
-  { label: "Touring Caravans",  href: "/listings/touring-category/?state=victoria" },
-  { label: "Family Caravans",   href: "/listings/family-category/?state=victoria" },
-];
+function buildTypes(state: string) {
+  return [
+    { label: "Off Road Caravans", href: `/listings/off-road-category/?state=${state}` },
+    { label: "Luxury Caravans",   href: `/listings/luxury-category/?state=${state}` },
+    { label: "Hybrid Caravans",   href: `/listings/hybrid-category/?state=${state}` },
+    { label: "Pop Top Caravans",  href: `/listings/pop-top-category/?state=${state}` },
+    { label: "Touring Caravans",  href: `/listings/touring-category/?state=${state}` },
+    { label: "Family Caravans",   href: `/listings/family-category/?state=${state}` },
+  ];
+}
 
-const FILTERS = [
-  {
-    icon: "/images/Budget.png", title: "By Budget",
-    links: [
-      { text: "Under $50k",  href: "/listings/?max_price=50000&state=victoria" },
-      { text: "Under $75k",  href: "/listings/?max_price=75000&state=victoria" },
-      { text: "Under $100k", href: "/listings/?max_price=100000&state=victoria" },
-      { text: "Over $100k",  href: "/listings/?min_price=100000&state=victoria" },
-    ],
-  },
-  {
-    icon: "/images/ATM.png", title: "By Weight (ATM)",
-    links: [
-      { text: "Under 2000kg",    href: "/listings/?max_atm=2000&state=victoria" },
-      { text: "2000kg – 2500kg", href: "/listings/?min_atm=2000&max_atm=2500&state=victoria" },
-      { text: "2500kg – 3000kg", href: "/listings/?min_atm=2500&max_atm=3000&state=victoria" },
-      { text: "Over 3000kg",     href: "/listings/?min_atm=3000&state=victoria" },
-    ],
-  },
-  {
-    icon: "/images/Length.png", title: "By Size (Length)",
-    links: [
-      { text: "Under 18ft",  href: "/listings/?max_length=18&state=victoria" },
-      { text: "18ft – 20ft", href: "/listings/?min_length=18&max_length=20&state=victoria" },
-      { text: "20ft – 22ft", href: "/listings/?min_length=20&max_length=22&state=victoria" },
-      { text: "Over 22ft",   href: "/listings/?min_length=22&state=victoria" },
-    ],
-  },
-  {
-    icon: "/images/Sleeping.png", title: "By Sleeping Capacity",
-    links: [
-      { text: "2 Berth",           href: "/listings/2-berth-caravans/?state=victoria" },
-      { text: "3 – 4 Berth",       href: "/listings/3-4-berth-caravans/?state=victoria" },
-      { text: "5 – 6 Berth",       href: "/listings/5-6-berth-caravans/?state=victoria" },
-      { text: "Family (7+ Berth)", href: "/listings/7-plus-berth-caravans/?state=victoria" },
-    ],
-  },
-];
+function buildFilters(state: string) {
+  return [
+    {
+      icon: "/images/Budget.png", title: "By Budget",
+      links: [
+        { text: "Under $50k",  href: `/listings/?max_price=50000&state=${state}` },
+        { text: "Under $75k",  href: `/listings/?max_price=75000&state=${state}` },
+        { text: "Under $100k", href: `/listings/?max_price=100000&state=${state}` },
+        { text: "Over $100k",  href: `/listings/?min_price=100000&state=${state}` },
+      ],
+    },
+    {
+      icon: "/images/ATM.png", title: "By Weight (ATM)",
+      links: [
+        { text: "Under 2000kg",    href: `/listings/?max_atm=2000&state=${state}` },
+        { text: "2000kg – 2500kg", href: `/listings/?min_atm=2000&max_atm=2500&state=${state}` },
+        { text: "2500kg – 3000kg", href: `/listings/?min_atm=2500&max_atm=3000&state=${state}` },
+        { text: "Over 3000kg",     href: `/listings/?min_atm=3000&state=${state}` },
+      ],
+    },
+    {
+      icon: "/images/Length.png", title: "By Size (Length)",
+      links: [
+        { text: "Under 18ft",  href: `/listings/?max_length=18&state=${state}` },
+        { text: "18ft – 20ft", href: `/listings/?min_length=18&max_length=20&state=${state}` },
+        { text: "20ft – 22ft", href: `/listings/?min_length=20&max_length=22&state=${state}` },
+        { text: "Over 22ft",   href: `/listings/?min_length=22&state=${state}` },
+      ],
+    },
+    {
+      icon: "/images/Sleeping.png", title: "By Sleeping Capacity",
+      links: [
+        { text: "2 Berth",           href: `/listings/2-berth-caravans/?state=${state}` },
+        { text: "3 – 4 Berth",       href: `/listings/3-4-berth-caravans/?state=${state}` },
+        { text: "5 – 6 Berth",       href: `/listings/5-6-berth-caravans/?state=${state}` },
+        { text: "Family (7+ Berth)", href: `/listings/7-plus-berth-caravans/?state=${state}` },
+      ],
+    },
+  ];
+}
 
 interface Props {
   state?: string;
@@ -132,8 +130,9 @@ interface Props {
 
 export default function StateBrowseSection({ state }: Props) {
   const hasState = !!state;
-  const types = hasState ? TYPES : TYPES_NO_STATE;
-  const filters = hasState ? FILTERS : FILTERS_NO_STATE;
+  const regions = hasState ? buildRegions(state!) : STATES;
+  const types = hasState ? buildTypes(state!) : TYPES_NO_STATE;
+  const filters = hasState ? buildFilters(state!) : FILTERS_NO_STATE;
 
   return (
     <section className="lsd-browse">
@@ -144,7 +143,7 @@ export default function StateBrowseSection({ state }: Props) {
           <div className="lsd-browse__panel">
             <h3 className="lsd-browse__panel-title">{hasState ? "Browse by Region" : "Browse by State"}</h3>
             <div className="lsd-browse__pills">
-              {(hasState ? REGIONS : STATES).map((r) => (
+              {regions.map((r) => (
                 <a key={r.name} href={r.href} className="lsd-browse__pill">{r.name}</a>
               ))}
             </div>
