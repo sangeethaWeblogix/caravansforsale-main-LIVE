@@ -411,6 +411,17 @@ const priceUpperIdx = !isPOA ? PRICE_STEPS.findIndex(s => s >= displayPrice) : -
     }
   }, [product.description]);
 
+  useEffect(() => {
+    const productId = product.id ?? pd.id;
+    if (!productId) return;
+    fetch("/api/track-product/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ product_id: Number(productId) }),
+    }).catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [product.id]);
+
   const [descOpen, setDescOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalInitialIndex, setModalInitialIndex] = useState(0);
