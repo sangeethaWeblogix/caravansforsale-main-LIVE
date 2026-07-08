@@ -551,7 +551,7 @@ const priceUpperIdx = !isPOA ? PRICE_STEPS.findIndex(s => s >= displayPrice) : -
                       <tr key={label}>
                         <td className="pdd-details-table__key">{label}</td>
                         <td className="pdd-details-table__val">
-                          {links?.length ? links.map((l, i) => <span key={i}>{i > 0 && ", "}<a href={l.href} className="pdd-details-link">{l.text}</a></span>) : url ? <a href={url} className="pdd-details-link">{value}</a> : value}
+                          {links?.length ? (label === "Type" ? links.map((l, i) => <span key={i} style={{display:"block"}}><a href={l.href} className="pdd-details-link">{l.text}</a></span>) : links.map((l, i) => <span key={i}>{i > 0 && ", "}<a href={l.href} className="pdd-details-link">{l.text}</a></span>)) : url ? <a href={url} className="pdd-details-link">{value}</a> : value}
                         </td>
                       </tr>
                     ))}
@@ -563,7 +563,7 @@ const priceUpperIdx = !isPOA ? PRICE_STEPS.findIndex(s => s >= displayPrice) : -
                       <tr key={label}>
                         <td className="pdd-details-table__key">{label}</td>
                         <td className="pdd-details-table__val">
-                          {links?.length ? links.map((l, i) => <span key={i}>{i > 0 && ", "}<a href={l.href} className="pdd-details-link">{l.text}</a></span>) : url ? <a href={url} className="pdd-details-link">{value}</a> : value}
+                          {links?.length ? (label === "Type" ? links.map((l, i) => <span key={i} style={{display:"block"}}><a href={l.href} className="pdd-details-link">{l.text}</a></span>) : links.map((l, i) => <span key={i}>{i > 0 && ", "}<a href={l.href} className="pdd-details-link">{l.text}</a></span>)) : url ? <a href={url} className="pdd-details-link">{value}</a> : value}
                         </td>
                       </tr>
                     ))}
@@ -675,7 +675,7 @@ const priceUpperIdx = !isPOA ? PRICE_STEPS.findIndex(s => s >= displayPrice) : -
         {/* ── Similar Caravans ── */}
         {makeSimilar.length > 0 && (
           <section className="pdd-section pdd-similar">
-            <h2 className="pdd-section__title">Similar Caravans in the {make}</h2>
+            <h2 className="pdd-section__title">Similar Caravans in the {makeLabel} Range</h2>
             <div className="pdd-similar__grid">
                 {makeSimilar.filter(r => r.slug !== product.slug).slice(0, 5).map((r, i) => {
                   const rName     = r.name ?? "";
