@@ -1998,13 +1998,26 @@ const [states, setStates] = useState<StateOption[]>([]);
     const controller = new AbortController();
     const { signal } = controller;
     // ─── CATEGORY COUNTS ───
-    const catParams = buildCountParamsMulti(activeFilters, ["category"]);
+    // Location filters (state/region/suburb) are excluded intentionally:
+    // category names are global, counts are not shown in the UI, and
+    // excluding location means this always hits the pre-warmed KV key
+    // (params-count:group_by=category) so it never blocks on a WP fallback.
+    const catParams = buildCountParamsMulti(activeFilters, [
+      "category",
+      "state",
+      "region",
+      "suburb",
+      "pincode",
+    ]);
     catParams.set("group_by", "category");
     setIsCategoryCountLoading(true);
     fetchParamsCount(`/api/params-count/?${catParams.toString()}`, signal)
       .then((json) => {
         if (!signal.aborted) {
-          setCategoryCounts((json.data as []) || []);
+          // Only overwrite if we got real data — never blank out categories with an empty array
+          if (Array.isArray(json.data) && (json.data as []).length > 0) {
+            setCategoryCounts(json.data as []);
+          }
           setIsCategoryCountLoading(false);
           categoryFirstLoadDoneRef.current = true;
         }

@@ -1062,10 +1062,9 @@ console.log("emptyExclusiveList", emptyExclusiveList)
     if (f.make) params.set("make", f.make);
     if (f.model) params.set("model", resolveModelSlug(f.model) ?? f.model);
     if (f.condition) params.set("condition", f.condition);
-    if (f.state) params.set("state", f.state.toLowerCase());
-    if (f.region) params.set("region", f.region);
-    if (f.suburb) params.set("suburb", f.suburb);
-    if (f.pincode) params.set("pincode", f.pincode);
+    // Location filters (state/region/suburb) intentionally excluded:
+    // category names are global and counts are not shown, so we always use the
+    // pre-warmed KV key (params-count:group_by=category) for instant response.
     if (f.from_price) params.set("from_price", String(f.from_price));
     if (f.to_price) params.set("to_price", String(f.to_price));
     if (f.minKg) params.set("from_atm", String(f.minKg));
@@ -1082,12 +1081,18 @@ console.log("emptyExclusiveList", emptyExclusiveList)
     fetch(`/api/params-count/?${params.toString()}`, { signal: controller.signal })
       .then((r) => r.json())
       .then((json) => {
-        if (!controller.signal.aborted) { setSliderCategoryCounts(json.data || []); setSliderCatLoading(false); }
+        if (!controller.signal.aborted) {
+          // Only overwrite if we got real data — never blank out categories with an empty array
+          if (Array.isArray(json.data) && json.data.length > 0) {
+            setSliderCategoryCounts(json.data);
+          }
+          setSliderCatLoading(false);
+        }
       })
       .catch((e) => { if (e.name !== "AbortError") setSliderCatLoading(false); });
     return () => controller.abort();
   }, [
-    filters.make, filters.model, filters.condition, filters.state, filters.region, filters.suburb,
+    filters.make, filters.model, filters.condition,
     filters.from_price, filters.to_price, filters.minKg, filters.maxKg, filters.acustom_fromyears,
     filters.acustom_toyears, filters.from_length, filters.to_length, filters.from_sleep,
     filters.to_sleep, filters.search, filters.keyword,
