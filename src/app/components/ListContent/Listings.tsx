@@ -30,8 +30,6 @@ import FilterSlider from "./FilterSlider";
 import StaticLinks from "./StaticLinks";
 import { useBanners } from "@/components/BannerHandler";
 // import { useBannerTracking } from "@/hooks/useBannerTracking";
-import ListingBottomSections from "./ListingBottomSections";
-import type { BottomLinksData } from "@/api/bottomLinks/api";
 
 /* --------- GLOBAL de-dupe across StrictMode remounts --------- */
 // let LAST_GLOBAL_REQUEST_KEY = "";
@@ -137,7 +135,6 @@ interface Props extends Filters {
   productListData?: ProductListResponse;
   initialCategoryCounts?: { name: string; slug: string; count: number }[];
   initialMakeCounts?: { name: string; slug: string; count: number }[];
-  initialBottomLinksData?: BottomLinksData | null;
   initialDistances?: Record<string, number>;
 }
 
@@ -182,7 +179,6 @@ export default function ListingsPage({
   linksData: serverLinksData,
   initialCategoryCounts,
   initialMakeCounts,
-  initialBottomLinksData,
   initialDistances,
   ...incomingFilters
 }: Props) {
@@ -1592,13 +1588,6 @@ console.log("emptyExclusiveList", emptyExclusiveList)
         </div>
       </div>
 
-     {/* <ListingBottomSections
-        filters={filters}
-        initialData={initialBottomLinksData}
-        categoryName={categories.find((c) => c.slug === filters.category)?.name ?? ""}
-        categoryCounts={sliderCategoryCounts}
-        makeCounts={sliderMakeCounts}
-      /> */}
     </>
   );
   

@@ -797,34 +797,27 @@ const [states, setStates] = useState<StateOption[]>([]);
     if (kms > 0) setRadiusKms(kms);
   }, [currentFilters.radius_kms]);
 
-  const hasOtherFilters = !!(
-    currentFilters.condition ||
-    currentFilters.category ||
-    currentFilters.state ||
-    currentFilters.region ||
-    currentFilters.suburb ||
-    currentFilters.from_price ||
-    currentFilters.to_price ||
-    currentFilters.minKg ||
-    currentFilters.maxKg ||
-    currentFilters.from_length ||
-    currentFilters.to_length ||
-    currentFilters.from_sleep ||
-    currentFilters.to_sleep ||
-    currentFilters.acustom_fromyears ||
-    currentFilters.acustom_toyears
-  );
-
   const displayedMakes = useMemo(() => {
-    const source: MakeCount[] =
-      hasOtherFilters && makeCounts.length > 0
+    // Always prefer live makeCounts from params-count (pre-warmed via KV) when
+    // available — this fixes the empty Make dropdown when no other filters are
+    // active (old code only used makeCounts when hasOtherFilters was true).
+    const raw: MakeCount[] =
+      makeCounts.length > 0
         ? makeCounts
         : makes.map((m) => ({ name: m.name, slug: m.slug, count: 0 }));
+    // Deduplicate by slug — WP taxonomy can register the same make twice,
+    // which causes the same name to appear twice in the dropdown.
+    const seen = new Set<string>();
+    const source = raw.filter((m) => {
+      if (seen.has(m.slug)) return false;
+      seen.add(m.slug);
+      return true;
+    });
     if (!searchText.trim()) return source;
     return source.filter((m) =>
       m.name.toLowerCase().includes(searchText.toLowerCase()),
     );
-  }, [makeCounts, makes, searchText, isSearching, hasOtherFilters]);
+  }, [makeCounts, makes, searchText, isSearching]);
 
   // ✅ validate region only if it exists under the given state
   const getValidRegionName = (
