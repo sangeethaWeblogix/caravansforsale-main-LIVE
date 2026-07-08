@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback, memo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useEnquiryForm } from "@/app/components/ListContent/enquiryform";
@@ -44,8 +44,11 @@ interface ApiData {
 interface BlogPost {
   id: number;
   title: string;
+  thumbnail?: string;
+  first_image?: string;
   image?: string;
   slug?: string;
+  permalink?: string;
   date?: string;
   excerpt?: string;
 }
@@ -54,19 +57,48 @@ interface MakeListing {
   id: number;
   name: string;
   slug?: string;
-  image: string;
+  thumbnail?: string;
+  first_image?: string;
+  image?: string;
   image_url?: string[];
-  regular_price: string;
+  image_format?: string[];
+  price?: string;
+  regular_price?: string;
   sale_price?: string;
   location?: string;
+  state?: string;
+  suburb?: string;
+  region?: string;
   condition?: string;
   seller_type?: string;
+  category?: string;
   categories?: string[];
+  make?: string;
+  model?: string;
+}
+
+interface SimilarSection {
+  label?: string;
+  count?: number;
+  products?: MakeListing[];
+  blogs?: BlogPost[];
+}
+
+interface SimilarData {
+  similar_by_make?: SimilarSection;
+  similar_by_price?: SimilarSection;
+  similar_blogs?: SimilarSection;
+  related_blogs?: SimilarSection;
+  make_similar?: MakeListing[];
+  price_similar?: MakeListing[];
+  blogs?: BlogPost[];
+  latest_blog_posts?: BlogPost[];
+  make_label?: string;
 }
 
 interface Props {
   data: { data?: ApiData } | null;
-  makeListings?: MakeListing[];
+  similarData?: SimilarData | null;
 }
 
 /* ── Helpers ── */
@@ -77,6 +109,19 @@ const parseAmt = (v: string | number | undefined) => {
 const fmt = (n: number) =>
   n.toLocaleString("en-AU", { style: "currency", currency: "AUD", maximumFractionDigits: 0 });
 const slugify = (s: string) => s.trim().toLowerCase().replace(/\s+/g, "-");
+const toInt = (s: string) => { const n = parseInt(String(s).replace(/[^\d]/g, ""), 10); return Number.isFinite(n) && n > 0 ? n : null; };
+const linkFromApiUrl = (rawUrl: string, text: string) => { const u = (rawUrl || "").trim().replace(/^\/+|\/+$/g, ""); return { href: /[=&]/.test(u) ? `/listings/?${u}` : `/listings/${u}/`, text }; };
+const STATE_ABBR: Record<string, string> = {
+  queensland: "QLD", "new-south-wales": "NSW", "new south wales": "NSW", nsw: "NSW",
+  victoria: "VIC", vic: "VIC", "western-australia": "WA", "western australia": "WA", wa: "WA",
+  "south-australia": "SA", "south australia": "SA", sa: "SA",
+  tasmania: "TAS", tas: "TAS", "northern-territory": "NT", "northern territory": "NT", nt: "NT",
+  "australian-capital-territory": "ACT", act: "ACT",
+};
+const resolveState = (s: string) => STATE_ABBR[s.toLowerCase().trim()] ?? s.toUpperCase();
+const fmtCat = (cat: string) =>
+  cat.split(",")[0].trim().replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+
 const PRICE_STEPS = [10000,20000,30000,40000,50000,60000,70000,80000,90000,100000,125000,150000,175000,200000,225000,250000,275000,300000];
 const getPriceRangeLinks = (price: number): { label: string; href: string }[] => {
   const upperIdx = PRICE_STEPS.findIndex(s => s >= price);
@@ -106,19 +151,21 @@ function isNonEmpty(s: unknown): s is string {
 }
 
 /* ── Mosaic gallery ── */
-function Gallery({ images, onOpen }: { images: string[]; onOpen: (index: number) => void }) {
+const Gallery = memo(function Gallery({ images, onOpen }: { images: string[]; onOpen: (index: number) => void }) {
   const extra = images.length - 3;
+  const [mobileSlide, setMobileSlide] = useState(1);
+  const go = (dir: 1 | -1) =>
+    setMobileSlide(p => Math.max(0, Math.min(images.length - 1, p + dir)));
 
   return (
     <div className="pdd-gallery">
+      {/* Desktop: mosaic layout */}
       <div className="pdd-gallery__mosaic">
-        {/* Main large image */}
         <div className="pdd-gallery__mosaic-main" onClick={() => onOpen(0)}>
           {images[0]
             ? <Image src={images[0]} alt="Caravan" fill style={{ objectFit: "cover" }} unoptimized />
             : <div className="pdd-gallery__placeholder" />}
         </div>
-        {/* 2-cell right grid */}
         <div className="pdd-gallery__mosaic-grid">
           {[1, 2].map(i => (
             <div key={i} className="pdd-gallery__mosaic-cell" onClick={() => onOpen(i)}>
@@ -132,9 +179,30 @@ function Gallery({ images, onOpen }: { images: string[]; onOpen: (index: number)
           ))}
         </div>
       </div>
+
+      {/* Mobile: pure CSS slider */}
+      <div className="pdd-gallery__mobile-slider" onClick={() => onOpen(mobileSlide)}>
+        <div
+          className="pdd-gallery__mobile-track"
+          style={{ transform: `translateX(-${mobileSlide * 100}%)` }}
+        >
+          {images.map((img, i) => (
+            <div key={i} className="pdd-gallery__mobile-item">
+              <Image src={img} alt={`Photo ${i + 1}`} fill style={{ objectFit: "cover" }} unoptimized />
+            </div>
+          ))}
+        </div>
+        <button className="pdd-gallery__prev" onClick={e => { e.stopPropagation(); go(-1); }} aria-label="Previous">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <button className="pdd-gallery__next" onClick={e => { e.stopPropagation(); go(1); }} aria-label="Next">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+        <div className="pdd-gallery__mobile-counter">{mobileSlide + 1} / {images.length}</div>
+      </div>
     </div>
   );
-}
+});
 
 /* ── Sidebar enquiry form — always open ── */
 function EnquiryForm({ product }: { product: { id?: string | number; slug?: string; name?: string } }) {
@@ -186,7 +254,7 @@ function EnquiryForm({ product }: { product: { id?: string | number; slug?: stri
 }
 
 /* ── Main component ── */
-export default function ProductDetailDemo({ data, makeListings = [] }: Props) {
+export default function ProductDetailDemo({ data, similarData }: Props) {
   const pd: ApiData  = data?.data ?? {};
   const product: ProductData = pd.product_details ?? {};
   const attributes: Attribute[] = Array.isArray(product.attribute_urls) ? product.attribute_urls : [];
@@ -197,9 +265,11 @@ export default function ProductDetailDemo({ data, makeListings = [] }: Props) {
 
   const related: ProductData[] = Array.isArray(pd.related) ? pd.related : [];
 
-  const images: string[] = Array.isArray(product.image_url)
-    ? product.image_url.filter(Boolean)
-    : [];
+  const images = useMemo<string[]>(
+    () => Array.isArray(product.image_url) ? product.image_url.filter(Boolean) : [],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [product.image_url]
+  );
 
   const rawCats: Category[] = Array.isArray(product.categories) ? product.categories
     : Array.isArray(pd.categories) ? pd.categories : [];
@@ -232,7 +302,7 @@ export default function ProductDetailDemo({ data, makeListings = [] }: Props) {
     : location;
   const shortCategory = categoryNames[0]?.replace(/\s+caravans?$/i, '').trim() ?? categoryNames[0];
   const shortSleeps   = getAttr("sleeps").replace(/\s+people?$/i, '').trim();
-  const shortAxle     = getAttr("Axle Configuration").replace(/\s+axle$/i, '').trim();
+  const shortAtm      = getAttr("ATM");
 
   /* helper: find first matching attribute with value + url */
   const pickFull = (...labels: string[]): { value: string; url: string } => {
@@ -243,43 +313,70 @@ export default function ProductDetailDemo({ data, makeListings = [] }: Props) {
     return { value: "", url: "" };
   };
 
-  /* caravan details — single column with optional links */
-  type DetailRow = { label: string; value: string; url: string };
+  /* caravan details — with link logic matching live layout */
+  type DetailLink = { href: string; text: string };
+  type DetailRow = { label: string; value: string; url: string; links?: DetailLink[] };
+
+  const makeDetailUrl = (label: string, value: string, apiUrl: string): string => {
+    const v = value.trim();
+    const L = label.toLowerCase();
+    if (L === "year" || L === "years") { const n = toInt(v); return n ? `/listings/${n}-caravans-range/` : ""; }
+    if (apiUrl) return linkFromApiUrl(apiUrl, v).href;
+    if (L === "type" || L === "category") return v ? `/listings/${slugify(v.replace(/\s*caravans?\s*/gi, " ").trim())}-category/` : "";
+    if (L === "make") return v ? `/listings/${slugify(v)}/` : "";
+    if (L === "model") { const mk = pickFull("Make"); const mkSlug = mk.url?.trim().replace(/^\/+|\/+$/g, "") || slugify(mk.value); return v ? `/listings/${mkSlug}/${slugify(v)}/` : ""; }
+    if (L === "condition" || L === "conditions") return v ? `/listings/${slugify(v)}-condition/` : "";
+    if (L === "sleeping capacity" || L === "sleep" || L === "sleeps") { const n = toInt(v); return n ? `/listings/under-${n}-people-sleeping-capacity/` : ""; }
+    if (L === "length") { const n = toInt(v); return n ? `/listings/under-${n}-length-in-feet/` : ""; }
+    if (L === "atm") { const n = toInt(v); return n ? `/listings/under-${n}-kg-atm/` : ""; }
+    return "";
+  };
+
+  const makeRow = (label: string, ...keys: string[]): DetailRow => {
+    const { value, url } = pickFull(...keys);
+    return { label, value, url: makeDetailUrl(label, value, url) };
+  };
+
+  const typeLinks: DetailLink[] = (categoryNames.length > 0 ? categoryNames : [getAttr("Type")].filter(Boolean))
+    .map(c => ({ href: `/listings/${slugify(c.replace(/\s*caravans?\s*/gi, " ").trim())}-category/`, text: c }));
+
   const detailRows: DetailRow[] = [
-    { label: "Type",               ...(() => { const a = pickFull("Type"); if (a.value) return a; const cat = categoryNames[0] ?? ""; return cat ? { value: cat, url: `/listings/${slugify(cat.replace(/\s*caravans?\s*/gi, " ").trim())}-category/` } : { value: "", url: "" }; })() },
-    { label: "Make",               ...pickFull("Make") },
-    { label: "Model",              ...pickFull("Model") },
-    { label: "Year",               ...pickFull("Years") },
-    { label: "Condition",          ...pickFull("Conditions") },
-    { label: "Length",             ...pickFull("Length") },
-    { label: "Sleeping Capacity",  ...pickFull("sleeps", "Sleeping Capacity") },
-    { label: "ATM",                ...pickFull("ATM") },
-    { label: "Tare Mass",          ...pickFull("Tare Mass", "Tare") },
-    { label: "Axle Configuration", ...pickFull("Axle Configuration", "Axle") },
-    { label: "Ball Weight",        ...pickFull("Ball Weight") },
-    { label: "Payload",            ...pickFull("Payload") },
-    { label: "Brakes",             ...pickFull("Brakes") },
-    { label: "Suspension",         ...pickFull("Suspension") },
-    { label: "Stock Number",       ...pickFull("Stock Number", "Stock") },
-    { label: "VIN",                ...pickFull("VIN") },
-    { label: "Registration",       ...pickFull("Registration") },
-    { label: "Colour",             ...pickFull("Colour", "Color") },
-    { label: "Solar",              ...pickFull("Solar") },
-    { label: "Battery",            ...pickFull("Battery") },
-    { label: "Air Conditioner",    ...pickFull("Air Conditioner", "Air Con") },
-    { label: "Water (Fresh)",      ...pickFull("Water (Fresh)", "Fresh Water") },
-    { label: "Water (Grey)",       ...pickFull("Water (Grey)", "Grey Water") },
+    { label: "Type", value: (categoryNames.length > 0 ? categoryNames : [getAttr("Type")]).filter(Boolean).join(", "), url: "", links: typeLinks.length ? typeLinks : undefined },
+    makeRow("Make",               "Make"),
+    makeRow("Model",              "Model"),
+    makeRow("Year",               "Years"),
+    makeRow("Condition",          "Conditions"),
+    makeRow("Length",             "Length"),
+    makeRow("Sleeping Capacity",  "sleeps", "Sleeping Capacity"),
+    makeRow("ATM",                "ATM"),
+    makeRow("Tare Mass",          "Tare Mass", "Tare"),
+    makeRow("Axle Configuration", "Axle Configuration", "Axle"),
+    makeRow("Ball Weight",        "Ball Weight"),
+    makeRow("Payload",            "Payload"),
+    makeRow("Brakes",             "Brakes"),
+    makeRow("Suspension",         "Suspension"),
+    makeRow("Stock Number",       "Stock Number", "Stock"),
+    makeRow("VIN",                "VIN"),
+    makeRow("Registration",       "Registration"),
+    makeRow("Colour",             "Colour", "Color"),
+    makeRow("Solar",              "Solar"),
+    makeRow("Battery",            "Battery"),
+    makeRow("Air Conditioner",    "Air Conditioner", "Air Con"),
+    makeRow("Water (Fresh)",      "Water (Fresh)", "Fresh Water"),
+    makeRow("Water (Grey)",       "Water (Grey)", "Grey Water"),
   ].filter(r => r.value);
 
   const locationCity  = product.region?.value?.replace(/-/g, " ") ?? "";
   const locationState = state;
 
   if (locationCity || locationState) {
-    detailRows.push({
-      label: "Location",
-      value: [locationCity, locationState].filter(Boolean).join(", "),
-      url:   locationState ? `/listings/${slugify(locationState)}-state/` : "",
-    });
+    const regionSlug  = product.region?.slug ?? slugify(locationCity);
+    const stateAttr   = attributes.find(a => String(a?.label ?? "").toLowerCase() === "location");
+    const stateSlug   = stateAttr?.url?.trim() || `${slugify(locationState)}-state`;
+    const links: DetailLink[] = [];
+    if (locationCity && regionSlug) links.push({ href: `/listings/${stateSlug}/${regionSlug}/`, text: locationCity.replace(/\b\w/g, c => c.toUpperCase()) });
+    if (locationState) links.push(stateAttr?.url ? linkFromApiUrl(stateAttr.url, locationState) : { href: `/listings/${stateSlug}/`, text: locationState });
+    detailRows.push({ label: "Location", value: [locationCity, locationState].filter(Boolean).join(", "), url: "", links });
   }
 
   const half2     = Math.ceil(detailRows.length / 2);
@@ -290,12 +387,20 @@ export default function ProductDetailDemo({ data, makeListings = [] }: Props) {
   const make = getAttr("Make");
   /* strip trailing "Caravans" from make so labels don't duplicate (e.g. "Retreat Caravans") */
   const makeLabel = make.replace(/\s+caravans?$/i, "").trim() || make;
-  const relatedSearches = [
-    make && { label: `${make}`, href: `/listings/${slugify(make)}/` },
-    make && state && { label: `${make} in ${state}`, href: `/listings/${slugify(make)}/?state=${slugify(state)}` },
-    make && { label: `${makeLabel} Off Road Caravans`, href: `/listings/${slugify(make)}/?category=off-road` },
-    ...(isPOA ? [] : getPriceRangeLinks(displayPrice)),
-    make && locationCity && { label: `${make} in ${locationCity}`, href: `/listings/${slugify(make)}/?state=${slugify(state)}&region=${slugify(locationCity)}` },
+
+  const catKeyword = categoryNames[0]?.toLowerCase().replace(/\s*caravans?$/i, "").trim() ?? "";
+
+const priceUpperIdx = !isPOA ? PRICE_STEPS.findIndex(s => s >= displayPrice) : -1;
+  const priceHi = priceUpperIdx >= 0 ? PRICE_STEPS[priceUpperIdx] : 0;
+  const priceLo = priceUpperIdx >= 1 ? PRICE_STEPS[priceUpperIdx - 1] : 0;
+
+  const relatedSearches: { label: string; href: string }[] = [
+    make ? { label: make, href: `/listings/${slugify(makeLabel)}/` } : null,
+    state ? { label: `Caravans for Sale in ${state}`, href: `/listings/${slugify(state)}-state/` } : null,
+    locationCity ? { label: `Caravans for Sale in ${locationCity}`, href: `/listings/${slugify(state)}-state/${slugify(locationCity)}-region/` } : null,
+    shortCategory ? { label: `${shortCategory} Caravans for Sale`, href: `/listings/${slugify(shortCategory)}-category/` } : null,
+    priceHi ? { label: `Caravans Under $${priceHi.toLocaleString()}`, href: `/listings/under-${priceHi}/` } : null,
+    (priceHi && priceLo) ? { label: `Caravans Between $${priceLo.toLocaleString()} to $${priceHi.toLocaleString()}`, href: `/listings/between-${priceLo}-${priceHi}/` } : null,
     { label: `All Caravans for Sale`, href: `/listings/` },
   ].filter(Boolean) as { label: string; href: string }[];
 
@@ -306,10 +411,26 @@ export default function ProductDetailDemo({ data, makeListings = [] }: Props) {
     }
   }, [product.description]);
 
+  useEffect(() => {
+    const productId = product.id ?? pd.id;
+    if (!productId) return;
+    fetch("/api/track-product/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ product_id: Number(productId) }),
+    }).catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [product.id]);
+
   const [descOpen, setDescOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalInitialIndex, setModalInitialIndex] = useState(0);
   const [checklistOpen, setChecklistOpen] = useState(false);
+  const handleGalleryOpen = useCallback((i: number) => { setModalInitialIndex(i); setModalOpen(true); }, []);
+  const sd = similarData ?? {};
+  const makeSimilar: MakeListing[]  = sd.similar_by_make?.products ?? sd.make_similar ?? [];
+  const priceSimilar: MakeListing[] = sd.similar_by_price?.products ?? sd.price_similar ?? [];
+  const similarBlogs: BlogPost[]    = sd.similar_blogs?.blogs ?? sd.related_blogs?.blogs ?? sd.blogs ?? sd.latest_blog_posts ?? [];
 
   if (!product.name) {
     return <div style={{ padding: "60px 24px", textAlign: "center", color: "#888" }}>Loading product…</div>;
@@ -328,16 +449,6 @@ export default function ProductDetailDemo({ data, makeListings = [] }: Props) {
     <div className="pdd-page">
       <div className="pdd-container">
 
-        {/* Breadcrumb */}
-        <nav className="pdd-breadcrumb">
-          {breadcrumb.map((b, i) => (
-            <span key={i}>
-              {i > 0 && <span className="pdd-breadcrumb__sep">›</span>}
-              {b.href ? <Link href={b.href}>{b.label}</Link> : <span>{b.label}</span>}
-            </span>
-          ))}
-        </nav>
-
         {/* Title */}
         <h1 className="pdd-title">{product.name}</h1>
 
@@ -347,6 +458,13 @@ export default function ProductDetailDemo({ data, makeListings = [] }: Props) {
           <a href="/sell-my-caravan/" className="pdd-subtitle__link">List Your Caravan</a>
           <span className="pdd-subtitle__badge">$49 Until Sold</span>
         </div>
+
+        {/* Seller type badge */}
+        {product.seller_type && (
+          <div className="pdd-seller-badge">
+            <span>{product.seller_type === "private" ? "Private Seller" : "Dealer"}</span>
+          </div>
+        )}
 
         {/* 2-col layout: content + sidebar */}
         <div className="pdd-layout">
@@ -374,12 +492,12 @@ export default function ProductDetailDemo({ data, makeListings = [] }: Props) {
                   </div>
                 </div>
               )}
-              {shortAxle && (
+              {shortAtm && (
                 <div className="pdd-specs-bar__item">
-                  <img src="/images/axle.svg" width="20" height="20" alt="" />
+                  <img src="/images/weight.svg" width="20" height="20" alt="" />
                   <div className="pdd-specs-bar__text">
-                    <span className="pdd-specs-bar__val">{shortAxle}</span>
-                    <span className="pdd-specs-bar__lbl">Axle</span>
+                    <span className="pdd-specs-bar__val">{shortAtm}</span>
+                    <span className="pdd-specs-bar__lbl">ATM</span>
                   </div>
                 </div>
               )}
@@ -403,7 +521,33 @@ export default function ProductDetailDemo({ data, makeListings = [] }: Props) {
               )}
             </div>
 
-            <Gallery images={images} onOpen={(i) => { setModalInitialIndex(i); setModalOpen(true); }} />
+            <Gallery images={images} onOpen={handleGalleryOpen} />
+
+            {/* Mobile-only price block — below gallery */}
+            <div className="pdd-mobile-price">
+              {sale > 0 && sale < reg ? (
+                <div className="pdd-mobile-price__save-row">
+                  <div className="pdd-mobile-price__left">
+                    <span className="pdd-mobile-price__label">Sale Price</span>
+                    <span className="pdd-mobile-price__val">{fmt(displayPrice)}</span>
+                    <span className="pdd-mobile-price__was">{fmt(reg)}</span>
+                  </div>
+                  <div className="pdd-mobile-price__right">
+                    <span className="pdd-mobile-price__save-label">Save</span>
+                    <span className="pdd-mobile-price__save-val">{fmt(reg - sale)}</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="pdd-mobile-price__simple">
+                  <span className="pdd-mobile-price__label">Sale Price</span>
+                  <span className="pdd-mobile-price__val">{isPOA ? "POA" : fmt(displayPrice)}</span>
+                </div>
+              )}
+              <button className="pdd-mobile-price__checklist" onClick={() => setChecklistOpen(true)}>
+                Caravan Buyer Safety Checklist
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+              </button>
+            </div>
 
             {/* Caravan Details */}
             <section className="pdd-section">
@@ -411,11 +555,11 @@ export default function ProductDetailDemo({ data, makeListings = [] }: Props) {
               <div className="pdd-details-grid">
                 <table className="pdd-details-table">
                   <tbody>
-                    {leftRows.map(({ label, value, url }) => (
+                    {leftRows.map(({ label, value, url, links }) => (
                       <tr key={label}>
                         <td className="pdd-details-table__key">{label}</td>
                         <td className="pdd-details-table__val">
-                          {url ? <a href={url} className="pdd-details-link">{value}</a> : value}
+                          {links?.length ? (label === "Type" ? links.map((l, i) => <span key={i} style={{display:"block"}}><a href={l.href} className="pdd-details-link">{l.text}</a></span>) : links.map((l, i) => <span key={i}>{i > 0 && ", "}<a href={l.href} className="pdd-details-link">{l.text}</a></span>)) : url ? <a href={url} className="pdd-details-link">{value}</a> : value}
                         </td>
                       </tr>
                     ))}
@@ -423,11 +567,11 @@ export default function ProductDetailDemo({ data, makeListings = [] }: Props) {
                 </table>
                 <table className="pdd-details-table">
                   <tbody>
-                    {rightRows.map(({ label, value, url }) => (
+                    {rightRows.map(({ label, value, url, links }) => (
                       <tr key={label}>
                         <td className="pdd-details-table__key">{label}</td>
                         <td className="pdd-details-table__val">
-                          {url ? <a href={url} className="pdd-details-link">{value}</a> : value}
+                          {links?.length ? (label === "Type" ? links.map((l, i) => <span key={i} style={{display:"block"}}><a href={l.href} className="pdd-details-link">{l.text}</a></span>) : links.map((l, i) => <span key={i}>{i > 0 && ", "}<a href={l.href} className="pdd-details-link">{l.text}</a></span>)) : url ? <a href={url} className="pdd-details-link">{value}</a> : value}
                         </td>
                       </tr>
                     ))}
@@ -453,7 +597,7 @@ export default function ProductDetailDemo({ data, makeListings = [] }: Props) {
             </section>
 
             <button className="pdd-btn-contact-inline" onClick={() => { setModalInitialIndex(0); setModalOpen(true); }}>
-              Contact Seller
+              CONTACT SELLER
             </button>
           </div>
 
@@ -464,7 +608,7 @@ export default function ProductDetailDemo({ data, makeListings = [] }: Props) {
                 {sale > 0 && sale < reg ? (
                   <div className="pdd-sidebar__price-save">
                     <div className="pdd-sidebar__price-left">
-                      <span className="pdd-sidebar__sale-label">Sales Price</span>
+                      <span className="pdd-sidebar__sale-label">Sale Price</span>
                       <span className="pdd-sidebar__sale-val">{fmt(displayPrice)}</span>
                       <span className="pdd-sidebar__was">{fmt(reg)}</span>
                     </div>
@@ -475,7 +619,7 @@ export default function ProductDetailDemo({ data, makeListings = [] }: Props) {
                   </div>
                 ) : (
                   <>
-                    <span className="pdd-sidebar__sale-label">Sales Price</span>
+                    <span className="pdd-sidebar__sale-label">Sale Price</span>
                     <span className="pdd-sidebar__sale-val">{isPOA ? "POA" : fmt(displayPrice)}</span>
                   </>
                 )}
@@ -515,7 +659,7 @@ export default function ProductDetailDemo({ data, makeListings = [] }: Props) {
             <div className="pdd-banner__features">
               <span>
                 <span className="pdd-banner__icon-circle">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="10" width="22" height="9" rx="2"/><path d="M5 10V7a2 2 0 012-2h10a2 2 0 012 2v3"/><circle cx="7" cy="19" r="2"/><circle cx="17" cy="19" r="2"/></svg>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="2" width="20" height="14" rx="2.5"/><rect x="3" y="5" width="5" height="4" rx="1"/><rect x="14" y="5" width="5" height="8" rx="1"/><circle cx="7" cy="18" r="3"/><line x1="20" y1="14" x2="20" y2="21"/><line x1="18" y1="21" x2="22" y2="21"/></svg>
                 </span>
                 Australia&apos;s largest range
               </span>
@@ -533,21 +677,20 @@ export default function ProductDetailDemo({ data, makeListings = [] }: Props) {
               </span>
             </div>
           </div>
-          <a href="/listings/" className="pdd-banner__cta">FIND DEALS NOW</a>
+          <a href="/" className="pdd-banner__cta">FIND DEALS NOW</a>
         </div>
 
         {/* ── Similar Caravans ── */}
-        {makeListings.length > 0 && (
+        {makeSimilar.length > 0 && (
           <section className="pdd-section pdd-similar">
-            <h2 className="pdd-section__title">Similar Caravans</h2>
-            <div className="pdd-similar__wrap">
-              <div className="pdd-similar__grid">
-                {makeListings.slice(0, 4).map((r, i) => {
+            <h2 className="pdd-section__title">Similar Caravans in the {makeLabel} Range</h2>
+            <div className="pdd-similar__grid">
+                {makeSimilar.filter(r => r.slug !== product.slug).slice(0, 5).map((r, i) => {
                   const rName     = r.name ?? "";
-                  const imgUrl    = r.image_url?.[0] || r.image || undefined;
-                  const rPrice    = parseAmt(r.sale_price || r.regular_price);
-                  const rLoc      = r.location ?? "";
-                  const rCat      = r.categories?.[0] ?? "";
+                  const imgUrl    = r.thumbnail || r.first_image || r.image_format?.[0] || r.image_url?.[0] || r.image || undefined;
+                  const rPrice    = parseAmt(r.price || r.sale_price || r.regular_price);
+                  const rLoc      = r.state ? resolveState(r.state) : r.location ?? "";
+                  const rCat      = fmtCat(r.categories?.[0] || r.category || "");
                   const isNew     = r.condition?.toLowerCase() === "new";
                   const isDealer  = r.seller_type !== "private";
                   return (
@@ -586,37 +729,77 @@ export default function ProductDetailDemo({ data, makeListings = [] }: Props) {
                     </a>
                   );
                 })}
-              </div>
-              <div className="pdd-similar__viewall-col">
-                {make && (
-                  <a
-                    href={`/listings/${slugify(make)}/${state ? `?state=${slugify(state)}` : ""}`}
-                    className="pdd-similar__viewall-link"
-                  >
-                    View all {makeLabel} Caravans
-                    {product.region?.value
-                      ? <><br />in {product.region.value.replace(/-/g, " ")} &rsaquo;</>
-                      : state
-                      ? <><br />in {state} &rsaquo;</>
-                      : <> &rsaquo;</>}
+            </div>
+          </section>
+        )}
+
+        {/* ── Similar Caravans Around the Same Price ── */}
+        {priceSimilar.length > 0 && (
+          <section className="pdd-section pdd-similar">
+            <h2 className="pdd-section__title">Similar Caravans Around the Same Price</h2>
+            <div className="pdd-similar__grid">
+              {priceSimilar.slice(0, 5).map((r, i) => {
+                const rName    = r.name ?? "";
+                const imgUrl   = r.thumbnail || r.first_image || r.image_format?.[0] || r.image_url?.[0] || r.image || undefined;
+                const rPrice   = parseAmt(r.price || r.sale_price || r.regular_price);
+                const rLoc     = r.state ? resolveState(r.state) : r.location ?? "";
+                const rCat     = fmtCat(r.categories?.[0] || r.category || "");
+                const isNew    = r.condition?.toLowerCase() === "new";
+                const isDealer = r.seller_type !== "private";
+                return (
+                  <a key={i} href={r.slug ? `/product/${r.slug}/` : "#"} className="pdd-similar__card">
+                    <div className="pdd-similar__img">
+                      {imgUrl
+                        ? <Image src={imgUrl} alt={rName} fill style={{ objectFit: "cover" }} unoptimized />
+                        : <div className="pdd-similar__img-placeholder" />
+                      }
+                      {rCat && <span className="pdd-similar__cat-chip">{rCat}</span>}
+                    </div>
+                    <div className="pdd-similar__body">
+                      <p className="pdd-similar__name">{rName}</p>
+                      <div className="pdd-similar__meta">
+                        {rLoc && (
+                          <span className="pdd-similar__meta-item">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                            {rLoc}
+                          </span>
+                        )}
+                        {r.condition && (
+                          <span className="pdd-similar__meta-item">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+                            {isNew ? "New" : "Used"}
+                          </span>
+                        )}
+                        {r.seller_type && (
+                          <span className="pdd-similar__meta-item">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                            {isDealer ? "Dealer" : "Private"}
+                          </span>
+                        )}
+                      </div>
+                      <p className="pdd-similar__price">{rPrice ? fmt(rPrice) : "POA"}</p>
+                    </div>
                   </a>
-                )}
-              </div>
+                );
+              })}
             </div>
           </section>
         )}
 
         {/* ── Related Blogs + Related Searches ── */}
         <div className="pdd-related">
-          {blogPosts.length > 0 && (
+          {similarBlogs.length > 0 && (() => {
+            const displayBlogs = similarBlogs.slice(0, 3);
+            return (
             <section className="pdd-related__blogs">
               <h2 className="pdd-section__title">Related Blogs</h2>
               <div className="pdd-blogs">
-                {blogPosts.slice(0, 3).map((b, i) => (
-                  <a key={i} href={`/${b.slug ?? ""}/`} className="pdd-blog">
-                    {b.image && (
+                {displayBlogs.map((b, i) => (
+                  <a key={i} href={b.slug ? `/${b.slug}/` : (b.permalink ?? "#")} className="pdd-blog">
+                    {(b.thumbnail || b.first_image || b.image) && (
                       <div className="pdd-blog__img">
-                        <Image src={b.image} alt={b.title} fill style={{ objectFit: "cover" }} unoptimized />
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={b.thumbnail || b.first_image || b.image} alt={b.title} referrerPolicy="no-referrer" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                       </div>
                     )}
                     <div className="pdd-blog__body">
@@ -634,7 +817,8 @@ export default function ProductDetailDemo({ data, makeListings = [] }: Props) {
                 ))}
               </div>
             </section>
-          )}
+            );
+          })()}
 
           {relatedSearches.length > 0 && (
             <section className="pdd-related__searches">
@@ -658,6 +842,19 @@ export default function ProductDetailDemo({ data, makeListings = [] }: Props) {
        
 
       </div>
+    </div>
+
+    {/* Mobile fixed bottom bar */}
+    <div className="pdd-mobile-bottom-bar">
+      <button className="pdd-mobile-bottom-bar__cta" onClick={() => { setModalInitialIndex(0); setModalOpen(true); }}>
+        Contact Seller
+      </button>
+      <p className="pdd-mobile-bottom-bar__terms">
+        By clicking &apos;Send Enquiry&apos;, you agree to Marketplace Network{" "}
+        <a href="/privacy-collection-statement" target="_blank">Collection Statement</a>,{" "}
+        <a href="/privacy-policy" target="_blank">Privacy Policy</a> and{" "}
+        <a href="/terms-conditions" target="_blank">Terms and Conditions</a>.
+      </p>
     </div>
 
     {checklistOpen && (

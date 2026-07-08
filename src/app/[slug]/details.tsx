@@ -1,4 +1,4 @@
- "use client";
+"use client";
 import Image from "next/image";
 import { redirect } from "next/navigation";
 import FaqSection from "./FaqSection";
@@ -9,6 +9,138 @@ import { formatPostDate } from "@/utils/date";
 import { useBanners } from "@/components/BannerHandler";
 import { useBannerTracking } from "@/hooks/useBannerTracking";
 
+type BrowseLink = { text: string; href: string };
+type BrowseTab = {
+  label: string;
+  icon: string;
+  viewAll: { text: string; href: string };
+  links: BrowseLink[];
+  states?: BrowseLink[];
+  regions?: BrowseLink[];
+};
+
+const BROWSE_TABS: BrowseTab[] = [
+  {
+    label: "Location",
+    icon: "bi-geo-alt",
+    viewAll: { text: "View all locations", href: "/listings/" },
+    links: [],
+    states: [
+      { text: "Caravans for Sale in Victoria",          href: "/listings/victoria-state/" },
+      { text: "Caravans for Sale in New South Wales",   href: "/listings/new-south-wales-state/" },
+      { text: "Caravans for Sale in Queensland",        href: "/listings/queensland-state/" },
+      { text: "Caravans for Sale in South Australia",   href: "/listings/south-australia-state/" },
+      { text: "Caravans for Sale in Western Australia", href: "/listings/western-australia-state/" },
+      { text: "Caravans for Sale in Tasmania",          href: "/listings/tasmania-state/" },
+      { text: "Caravans for Sale in ACT",               href: "/listings/australian-capital-territory-state/" },
+      { text: "Caravans for Sale in Northern Territory",href: "/listings/northern-territory-state/" },
+    ],
+    regions: [
+      { text: "Melbourne",     href: "/listings/victoria-state/melbourne-region/" },
+      { text: "Sydney",        href: "/listings/new-south-wales-state/sydney-region/" },
+      { text: "Brisbane",      href: "/listings/queensland-state/brisbane-region/" },
+      { text: "Perth",         href: "/listings/western-australia-state/perth-region/" },
+      { text: "Adelaide",      href: "/listings/south-australia-state/adelaide-region/" },
+      { text: "Gold Coast",    href: "/listings/queensland-state/gold-coast-region/" },
+      { text: "Cairns",        href: "/listings/queensland-state/cairns-region/" },
+      { text: "Canberra",      href: "/listings/australian-capital-territory-state/australian-capital-territory-region/" },
+      { text: "Darwin",        href: "/listings/northern-territory-state/darwin-region/" },
+      { text: "Geelong",       href: "/listings/victoria-state/geelong-region/" },
+      { text: "Hobart",        href: "/listings/tasmania-state/hobart-region/" },
+      { text: "Newcastle",     href: "/listings/new-south-wales-state/newcastle-region/" },
+      { text: "Sunshine Coast",href: "/listings/queensland-state/sunshine-coast-region/" },
+      { text: "Townsville",    href: "/listings/queensland-state/townsville-region/" },
+      { text: "Wollongong",    href: "/listings/new-south-wales-state/illawarra-region/" },
+      { text: "Ballarat",      href: "/listings/victoria-state/ballarat-region/" },
+    ],
+  },
+  {
+    label: "Manufacturer",
+    icon: "bi-buildings",
+    viewAll: { text: "View all manufacturers", href: "/caravan-manufacturers/" },
+    links: [
+      { text: "Jayco Caravans for Sale",       href: "/listings/jayco/" },
+      { text: "Snowy River Caravans for Sale", href: "/listings/snowy-river/" },
+      { text: "Evernew Caravans for Sale",     href: "/listings/evernew/" },
+      { text: "Crusader Caravans for Sale",    href: "/listings/crusader/" },
+      { text: "New Age Caravans for Sale",     href: "/listings/new-age/" },
+      { text: "MDC Caravans for Sale",         href: "/listings/mdc/" },
+      { text: "Essential Caravans for Sale",   href: "/listings/essential/" },
+      { text: "Design RV Caravans for Sale",   href: "/listings/design-rv/" },
+      { text: "JB Caravans for Sale",          href: "/listings/jb/" },
+      { text: "Supreme Caravans for Sale",     href: "/listings/supreme/" },
+      { text: "Avan Caravans for Sale",        href: "/listings/avan/" },
+      { text: "Lotus Caravans for Sale",       href: "/listings/lotus/" },
+      { text: "Royal Flair Caravans for Sale", href: "/listings/royal-flair/" },
+      { text: "Windsor Caravans for Sale",     href: "/listings/windsor/" },
+      { text: "Golf Caravans for Sale",        href: "/listings/golf/" },
+      { text: "Nova Caravans for Sale",        href: "/listings/nova/" },
+      { text: "Retreat Caravans for Sale",     href: "/listings/retreat/" },
+      { text: "Adria Caravans for Sale",       href: "/listings/adria/" },
+      { text: "Coromal Caravans for Sale",     href: "/listings/coromal/" },
+    ],
+  },
+  {
+    label: "Condition",
+    icon: "bi-patch-check",
+    viewAll: { text: "Browse all caravans", href: "/listings/" },
+    links: [
+      { text: "New Caravans for Sale", href: "/listings/new-condition/" },
+      { text: "Used Caravans for Sale", href: "/listings/used-condition/" },
+    ],
+  },
+  {
+    label: "Weight",
+    icon: "bi-speedometer2",
+    viewAll: { text: "Browse by weight", href: "/listings/" },
+    links: [
+      { text: "Under 1500kg", href: "/listings/under-1500-kg-atm/" },
+      { text: "Under 2000kg", href: "/listings/under-2000-kg-atm/" },
+      { text: "Under 2500kg", href: "/listings/under-2500-kg-atm/" },
+      { text: "Under 3000kg", href: "/listings/under-3000-kg-atm/" },
+      { text: "Over 3000kg",  href: "/listings/over-3000-kg-atm/" },
+    ],
+  },
+  {
+    label: "Length",
+    icon: "bi-rulers",
+    viewAll: { text: "Browse by length", href: "/listings/" },
+    links: [
+      { text: "Under 16ft",  href: "/listings/under-16-length-in-feet/" },
+      { text: "16ft – 18ft", href: "/listings/between-16-18-length-in-feet/" },
+      { text: "18ft – 20ft", href: "/listings/between-18-20-length-in-feet/" },
+      { text: "20ft – 22ft", href: "/listings/between-20-22-length-in-feet/" },
+      { text: "Over 22ft",   href: "/listings/over-22-length-in-feet/" },
+    ],
+  },
+  {
+    label: "Price",
+    icon: "bi-currency-dollar",
+    viewAll: { text: "View all price ranges", href: "/listings/" },
+    links: [
+      { text: "Under $30,000",       href: "/listings/under-30000/" },
+      { text: "$30,000 – $40,000",   href: "/listings/between-30000-40000/" },
+      { text: "$40,000 – $50,000",   href: "/listings/between-40000-50000/" },
+      { text: "$50,000 – $70,000",   href: "/listings/between-50000-70000/" },
+      { text: "$70,000 – $80,000",   href: "/listings/between-70000-80000/" },
+      { text: "$80,000 – $100,000",  href: "/listings/between-80000-100000/" },
+      { text: "Over $100,000",       href: "/listings/over-100000/" },
+    ],
+  },
+  {
+    label: "Sleep",
+    icon: "bi-moon-stars",
+    viewAll: { text: "Browse by sleeping capacity", href: "/listings/" },
+    links: [
+      { text: "2 Berth",  href: "/listings/2-people-sleeping-capacity/" },
+      { text: "3 Berth",  href: "/listings/3-people-sleeping-capacity/" },
+      { text: "4 Berth",  href: "/listings/4-people-sleeping-capacity/" },
+      { text: "5 Berth",  href: "/listings/5-people-sleeping-capacity/" },
+      { text: "6+ Berth", href: "/listings/over-6-people-sleeping-capacity/" },
+    ],
+  },
+];
+
 type BlogDetail = {
   id: number;
   slug: string;
@@ -18,6 +150,7 @@ type BlogDetail = {
   image?: string;
   toc?: string; // HTML
   content?: string; // HTML
+  product_category?: string[];
 };
 type FaqItem = {
   heading: string;
@@ -56,10 +189,10 @@ export default function BlogDetailsPage({
   if (post?.toc) {
     const parser = new DOMParser();
     const doc = parser.parseFromString(post.toc, "text/html");
-    
+
     // ✅ Get the main ul element
     const mainUl = doc.querySelector("ul.ez-toc-list");
-    
+
     if (mainUl) {
       // Get only direct children using childNodes filter
       const items = Array.from(mainUl.children).filter(
@@ -94,10 +227,15 @@ export default function BlogDetailsPage({
   const cleanTitle = (s?: string) => decodeEntities(stripHtml(s));
   const plainTitle = cleanTitle(data?.data?.blog_detail?.title);
 
+  const rawCat = (data?.data?.blog_detail?.product_category?.[0] ?? "").trim();
+  const catLabel = rawCat ? rawCat.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase()) : "Luxury";
+  const catLink  = rawCat ? `/listings/${rawCat.toLowerCase()}-category/` : "/listings/";
+
   if (!post) {
     redirect("/404");
   }
   const [showFullToc, setShowFullToc] = useState(false);
+  const [browseTab, setBrowseTab] = useState(0);
 
   const blogContentRef = useRef<HTMLDivElement | null>(null);
 
@@ -209,154 +347,173 @@ export default function BlogDetailsPage({
   const { bannerRefs, trackClick } = useBannerTracking(matchedBanners);
   const rightBanners = matchedBanners.filter((b) => b.position === "right");
 
+  const readingTime = post?.content
+    ? `${Math.max(1, Math.round(stripHtml(post.content).split(/\s+/).length / 200))} min read`
+    : null;
+
   return (
     <div className="blog-page style-5 color-4">
-      <section className="all-news section-padding pt-50 blog bg-transparent single_blog style-3">
-        <div className="container">
-          <div className="blog-details-slider mb-30">
-            <div className="content-card">
-              <div className="img">
-                <div className="desktop_image hidden-xs">
-                  <Image
-                    src={post.banner_image || ""}
-                    alt="Desktop Banner"
-                    width={0}
-                    height={0}
-                    className="w-full h-auto"
-                    unoptimized
-                  />
-                </div>
-                <div className="mobile_image hidden-lg hidden-md hidden-sm">
-                  <Image
-                    src={post.image || ""}
-                    width={1024}
-                    height={683}
-                    alt="Mobile Banner"
-                    className="w-full h-auto"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="row">
-            <div className="col-lg-9">
-              <div className="d-flex small align-items-center justify-content-between mt-10">
-                <div className="l_side d-flex align-items-center">
-                  <i className="bi bi-clock me-1"></i>
-
-                  <span>{formatPostDate(post.date)}</span>
-                </div>
-              </div>
-
-              <h1 className="mb-20 mt-10 color-000">{plainTitle}</h1>
-              <div className="blog-content-info">
-                <div
-                  id="ez-toc-container"
-                  className="ez-toc-v2_0_69_1 counter-hierarchy ez-toc-counter ez-toc-custom ez-toc-container-direction"
-                >
-                  <div className="ez-toc-title-container">
-                    <p className="ez-toc-title ez-toc-toggle">
-                      Table of Contents
-                    </p>
-                  </div>
-                  <div className="toc-container">
-                    {tocItems.length > 0 ? (
-                      <div className="toc-content">
-                        <nav>
-                          <ul className="ez-toc-list ez-toc-list-level-1 ">
-                            {(showFullToc
-                              ? tocItems
-                              : tocItems.slice(0, 4)
-                            ).map((item, index) => (
-                              <li
-                                key={index}
-                                className="ez-toc-page-1 ez-toc-heading-level-2"
-                                dangerouslySetInnerHTML={{
-                                  __html: item.innerHTML,
-                                }}
-                              />
-                            ))}
-                          </ul>
-                        </nav>
-
-                        {tocItems.length > 4 && (
-                          <button
-                            className="mt-2 text-blue-600 underline more_less"
-                            onClick={() => setShowFullToc((prev) => !prev)}
-                          >
-                            {showFullToc ? (
-                              <>
-                                Show Less{" "}
-                                <i className="bi bi-chevron-up ml-1"></i>
-                              </>
-                            ) : (
-                              <>
-                                Show More{" "}
-                                <i className="bi bi-chevron-down ml-1"></i>
-                              </>
-                            )}
-                          </button>
-                        )}
-                      </div>
-                      
-                    ) : (
-                      <p>No TOC available</p>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <div className="blog-content-info toc_hide_details">
-                {" "}
-                {/* Content goes here: Use dangerouslySetInnerHTML if content is static and trusted */}
-                {/* Or convert entire content into JSX/MDX if editable */}
-                <div
-                  ref={blogContentRef}
-                  dangerouslySetInnerHTML={{
-                    __html: post.content || "<p>No content available</p>",
-                  }}
-                />
-              </div>
-            </div>
-
-            <div className="col-lg-3">
-              <div className="display_ad listing_sticky">
-                {false &&
-                  rightBanners.map((banner, index) => (
-                    <a
-                      key={banner.id}
-                      ref={(el) => {
-                        bannerRefs.current[index] = el;
-                      }}
-                      data-banner-id={banner.id}
-                      href={banner.target_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="banner_ad_now"
-                      onClick={() => trackClick(banner.id)}
-                    >
-                      <div
-                        className={
-                          isMobile ? "banner-mobile" : "banner-desktop"
-                        }
-                      >
-                        <Image
-                          src={banner.image_url}
-                          alt={banner.name}
-                          width={isMobile ? 600 : 1200}
-                          height={isMobile ? 300 : 200}
-                          priority
-                        />
-                      </div>
-                    </a>
-                  ))}
-              </div>
+      {/* ── Hero ── */}
+      <section className="blog-hero">
+        {/* Left: title + meta */}
+        <div className="blog-hero__left">
+          <div className="blog-hero__left-inner">
+            <h1 className="blog-hero__title">{plainTitle}</h1>
+            <div className="blog-hero__meta">
+              <span><i className="bi bi-calendar3" />{formatPostDate(post.date)}</span>
+              {readingTime && <span><i className="bi bi-clock" />{readingTime}</span>}
             </div>
           </div>
         </div>
+        {/* Right: banner image */}
+        <div className="blog-hero__right">
+          {post.banner_image ? (
+            <Image
+              src={post.banner_image}
+              alt={plainTitle}
+              width={0}
+              height={0}
+              sizes="100vw"
+              unoptimized
+              className="blog-hero__img"
+              priority
+            />
+          ) : (
+            <div className="blog-hero__no-image" />
+          )}
+        </div>
       </section>
-      <FaqSection data={data?.data?.faq || []} />
+
+      {/* ── Quick Browse Widget ── */}
+      <section className="blog-browse-section">
+        <div className="container">
+          <div className="blog-browse-layout">
+
+            {/* Left: Table of Contents */}
+            {post?.toc && (
+              <div className="blog-browse-toc" style={{ visibility: tocItems.length > 0 ? "visible" : "hidden" }}>
+                <h3 className="blog-browse-toc__heading">Table of Contents</h3>
+                <ul className="blog-browse-toc__list">
+                  {(showFullToc ? tocItems : tocItems.slice(0, 5)).map((item, index) => {
+                    const anchor = item.querySelector("a");
+                    if (!anchor) return null;
+                    return (
+                      <li key={index}>
+                        <a href={anchor.getAttribute("href") ?? "#"}>
+                          {anchor.textContent ?? ""}
+                        </a>
+                      </li>
+                    );
+                  })}
+                </ul>
+                {tocItems.length > 5 && (
+                  <button
+                    className="blog-browse-toc__more"
+                    onClick={() => setShowFullToc((prev) => !prev)}
+                  >
+                    {showFullToc ? <>Show Less <i className="bi bi-chevron-up" /></> : <>Show More <i className="bi bi-chevron-down" /></>}
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Right: CTA + tabs + links */}
+            <div className="blog-browse-main">
+              <div className="blog-browse-cta">
+                <div className="blog-browse-cta__text">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/images/category.svg" alt="" width={32} height={32} className="blog-browse-cta__icon-img" />
+                  <div>
+                    <h3 className="blog-browse-cta__heading">Ready to Browse {catLabel} Caravans?</h3>
+                    <p className="blog-browse-cta__desc">Explore hundreds of {catLabel.toLowerCase()} caravans for sale across Australia.</p>
+                  </div>
+                </div>
+                <a href={catLink} className="blog-browse-cta__btn">
+                  Browse {catLabel} Caravans <i className="bi bi-arrow-right" />
+                </a>
+              </div>
+
+              <div className="blog-browse-tabs">
+                {BROWSE_TABS.map((tab, i) => (
+                  <button
+                    key={tab.label}
+                    className={`blog-browse-tab${browseTab === i ? " active" : ""}`}
+                    onClick={() => setBrowseTab(i)}
+                  >
+                    <i className={`bi ${tab.icon}`} />
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+
+              <div className="blog-browse-links">
+                {BROWSE_TABS[browseTab].states ? (
+                  <>
+                    <p className="blog-browse-sublabel">By State</p>
+                    <div className="blog-browse-links__inner">
+                      {BROWSE_TABS[browseTab].states!.map((link) => (
+                        <a key={link.href} href={link.href} className="blog-browse-link">{link.text}</a>
+                      ))}
+                    </div>
+                    <p className="blog-browse-sublabel">By Region</p>
+                    <div className="blog-browse-links__pills">
+                      {BROWSE_TABS[browseTab].regions!.map((link) => (
+                        <a key={link.href} href={link.href} className="blog-browse-link blog-browse-link--pill">{link.text}</a>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  BROWSE_TABS[browseTab].links.map((link) => (
+                    <a key={link.href} href={link.href} className="blog-browse-link">{link.text}</a>
+                  ))
+                )}
+              </div>
+
+
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* ── Article body ── */}
+      <section className="blog-article-section">
+        <div className="container">
+          <div className="blog-article-layout">
+            {/* Main content */}
+            <div className="blog-article-main single_blog">
+              <div
+                ref={blogContentRef}
+                className="all-news toc_hide_details"
+                dangerouslySetInnerHTML={{
+                  __html: post.content || "<p>No content available</p>",
+                }}
+              />
+            </div>
+
+            {/* Sidebar: CTA cards */}
+            <aside className="blog-article-sidebar">
+              <div className="blog-sidebar-cta">
+                
+                <h3 className="blog-sidebar-cta__heading">Ready to Find Your Next Caravan?</h3>
+                <p className="blog-sidebar-cta__desc">Browse thousands of new and used caravans from trusted dealers and private sellers across Australia.</p>
+                <a href="/listings/" className="blog-sidebar-cta__btn">
+                  Search Caravans Now <i className="bi bi-arrow-right" />
+                </a>
+              </div>
+              <div className="blog-sidebar-cta blog-sidebar-cta--sell">
+                <h3 className="blog-sidebar-cta__heading">Sell Your Caravan Faster with Australia's Growing Caravan Marketplace</h3>
+                
+                <a href="/sell-my-caravan/" className="blog-sidebar-cta__btn">
+                  List Your Caravan Now <i className="bi bi-arrow-right" />
+                </a>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </section>
+
+      <FaqSection data={data?.data?.faq || []} catLabel={catLabel} catLink={catLink} />
       <RelatedNews blogs={data?.data?.related_blogs || []} />
     </div>
   );

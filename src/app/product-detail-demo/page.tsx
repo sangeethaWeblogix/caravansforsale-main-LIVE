@@ -33,64 +33,40 @@ const fetchProduct = cache(async () => {
   }
 });
 
-async function fetchMakeListings(make: string) {
-  const API_BASE = process.env.NEXT_PUBLIC_CFS_API_BASE!;
-  const API_KEY  = process.env.CFS_API_KEY;
+async function fetchSimilarProducts(productId: string | number, seed: number) {
+  const API_KEY = process.env.CFS_API_KEY;
   try {
-    // make slug: "Retreat Caravans" → "retreat-caravans"
-    const makeSlug = make.trim().toLowerCase().replace(/\s+/g, "-");
-    const params = new URLSearchParams({ make: makeSlug, page: "1" });
     const res = await fetch(
-      `${API_BASE}/new_optimize_code?${params.toString()}`,
+      `https://admin.caravansforsale.com.au/wp-json/cfs/v1/similar_products?product_id=${productId}&seed=${seed}`,
       {
-        next: { revalidate: 3600 },
+        cache: "no-store",
         headers: {
           Accept: "application/json",
           ...(API_KEY && { "X-API-Key": API_KEY }),
         },
       }
     );
-    console.log("[demo] fetchMakeListings status:", res.status, "| make:", makeSlug);
-    if (!res.ok) return [];
+    if (!res.ok) return null;
     const raw = await res.text();
-    const idx = raw.indexOf('{"');
+    const idx = raw.indexOf("{");
     const json = JSON.parse(idx > 0 ? raw.substring(idx) : raw);
-    const products = json?.data?.products ?? [];
-    console.log("[demo] make listings count:", products.length);
-    return products as {
-      id: number;
-      name: string;
-      slug?: string;
-      image: string;
-      image_url?: string[];
-      regular_price: string;
-      sale_price?: string;
-      location?: string;
-    }[];
-  } catch (e) {
-    console.error("[demo] fetchMakeListings error:", e);
-    return [];
+    return json?.sections ?? json?.data ?? json;
+  } catch {
+    return null;
   }
 }
 
 export default async function ProductDetailDemoPage() {
   const data = await fetchProduct();
 
-  const attrs: { label?: string; value?: string; url?: string }[] =
-    data?.data?.product_details?.attribute_urls ?? [];
-  const makeAttr = attrs.find((a) => (a.label ?? "").toLowerCase() === "make");
-  const make = makeAttr?.value ?? "";
-  // Extract slug from attribute URL (e.g. "/listings/retreat/" → "retreat")
-  // instead of slugifying display name ("Retreat Caravans" → wrong "retreat-caravans")
-  const makeSlug = makeAttr?.url
-    ? makeAttr.url.split("/").filter(Boolean).pop() ?? ""
-    : make.trim().toLowerCase().replace(/\s+/g, "-");
-
-  const makeListings = makeSlug ? await fetchMakeListings(makeSlug) : [];
+  const pd = data?.data?.product_details ?? {};
+  const productId = pd.id ?? pd.product_id ?? data?.data?.id ?? data?.id ?? "";
+  const seed = Math.ceil(Math.random() * 10);
+  const similarData = productId ? await fetchSimilarProducts(productId, seed) : null;
 
   return (
     <main>
-      <ProductDetailDemo data={data} makeListings={makeListings} />
+      <ProductDetailDemo data={data} similarData={similarData} />
     </main>
   );
 }

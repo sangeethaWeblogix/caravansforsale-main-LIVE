@@ -1,10 +1,9 @@
 // app/product-details/[slug]/page.tsx
-import { cache } from "react";
-import ClientLogger from "./product";
+import ProductDetailDemo from "../../product-detail-demo/ProductDetailDemo";
 import { redirect } from "next/navigation";
 import './product.css?=30006'
 
-export const revalidate = 3600;
+export const dynamic = "force-dynamic";
 
 // export async function generateStaticParams() {
 //   const API_BASE = process.env.NEXT_PUBLIC_CFS_API_BASE;
@@ -59,14 +58,14 @@ export const dynamicParams = true;
 type RouteParams = { slug: string };
 type PageProps = { params: Promise<RouteParams> };
 
-const fetchProductDetail = cache(async (slug: string) => {
+const fetchProductDetail = async (slug: string) => {
   const API_BASE = process.env.NEXT_PUBLIC_CFS_API_BASE!;
   const API_KEY = process.env.CFS_API_KEY;
-  // try {
+  try {
     const res = await fetch(
       `${API_BASE}/product-detail-new/?slug=${encodeURIComponent(slug)}`,
       {
-        next: { revalidate: 3600 },
+        cache: "no-store",
         headers: {
           Accept: "application/json",
           ...(API_KEY && { "X-API-Key": API_KEY }),
@@ -76,17 +75,35 @@ const fetchProductDetail = cache(async (slug: string) => {
     if (!res.ok) return null;
     const raw = await res.text();
     const idx = raw.indexOf('{"');
-    // try {
-      return JSON.parse(idx > 0 ? raw.substring(idx) : raw);
-    // } catch {
-    //   return null;
-    // }
-  // } catch (error) {
-  //   console.error("product fetch error:", error);
-  //   return null;
-  // }
-});
+    return JSON.parse(idx >= 0 ? raw.substring(idx) : raw);
+  } catch {
+    return null;
+  }
+};
 
+
+async function fetchSimilarProducts(productId: string | number, seed: number) {
+  const API_KEY = process.env.CFS_API_KEY;
+  try {
+    const res = await fetch(
+      `https://admin.caravansforsale.com.au/wp-json/cfs/v1/similar_products?product_id=${productId}&seed=${seed}`,
+      {
+        cache: "no-store",
+        headers: {
+          Accept: "application/json",
+          ...(API_KEY && { "X-API-Key": API_KEY }),
+        },
+      }
+    );
+    if (!res.ok) return null;
+    const raw = await res.text();
+    const idx = raw.indexOf("{");
+    const json = JSON.parse(idx > 0 ? raw.substring(idx) : raw);
+    return json?.sections ?? json?.data ?? json;
+  } catch {
+    return null;
+  }
+}
 
 export default async function ProductDetailPage({ params }: PageProps) {
   const { slug } = await params;
@@ -131,13 +148,28 @@ export default async function ProductDetailPage({ params }: PageProps) {
     },
   };
 
+  const productId = pd.id ?? pd.product_id ?? data?.data?.id ?? data?.id ?? "";
+  const seed = Math.ceil(Math.random() * 10);
+  const similarData = productId ? await fetchSimilarProducts(productId, seed) : null;
+
+  // Shuffle price section server-side (API doesn't shuffle it)
+  if (similarData?.similar_by_price?.products?.length) {
+    const arr = similarData.similar_by_price.products;
+    let s = seed * 9301 + 49297;
+    for (let i = arr.length - 1; i > 0; i--) {
+      s = (s * 9301 + 49297) % 233280;
+      const j = Math.floor((s / 233280) * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+  }
+
   return (
     <main className="mx-auto">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <ClientLogger data={data} />
+      <ProductDetailDemo data={data} similarData={similarData} />
     </main>
   );
 }

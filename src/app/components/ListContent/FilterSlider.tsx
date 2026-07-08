@@ -223,9 +223,11 @@ const [states, setStates] = useState<StateOption[]>(
     if (!tempMake) { setModelCounts([]); return; }
     const controller = new AbortController();
     setModelCountLoading(true);
-    const params = buildMakeCountParams(currentFilters);
+    // Use only make + group_by=model — matches what the KV warmer pre-warms.
+    // Including category or other filters causes a KV miss every time (warmer
+    // only covers {make, group_by=model}) and WP returns empty for that combo.
+    const params = new URLSearchParams();
     params.set("make", tempMake);
-    params.delete("group_by");
     params.set("group_by", "model");
     fetch(`/api/params-count/?${params.toString()}`, { signal: controller.signal })
       .then((r) => r.json())
@@ -244,9 +246,18 @@ const [states, setStates] = useState<StateOption[]>(
 
   const availableModels = makes.find((m) => m.slug === tempMake)?.models ?? [];
 
-  const makeSource = makeCounts.length > 0
-    ? makeCounts
-    : makes.map((m) => ({ name: m.name, slug: m.slug, count: 0 }));
+  const makeSource = (() => {
+    const raw = makeCounts.length > 0
+      ? makeCounts
+      : makes.map((m) => ({ name: m.name, slug: m.slug, count: 0 }));
+    // Deduplicate by slug (WP taxonomy can register the same make twice)
+    const seen = new Set<string>();
+    return raw.filter((m) => {
+      if (seen.has(m.slug)) return false;
+      seen.add(m.slug);
+      return true;
+    });
+  })();
   const filteredMakes = makeSearch
     ? makeSource.filter((m) => m.name.toLowerCase().includes(makeSearch.toLowerCase()))
     : makeSource;
@@ -1384,7 +1395,10 @@ const [states, setStates] = useState<StateOption[]>(
                 />
               </div>
             </div>
-            <div className="filter-body">
+            {/* key={makeSubView} forces a full DOM remount (and scroll-to-top)
+                when switching between the makes list and the models list so the
+                two lists are never visible at the same time. */}
+            <div className="filter-body" key={makeSubView}>
               {makeSubView === "makes" ? (
                 <ul className="loc-state-list">
                   {makeLoading ? (

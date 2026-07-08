@@ -130,16 +130,38 @@ export default function StateHome({ initialFilters }: Props) {
         const products: Listing[]      = json?.data?.products ?? json?.products ?? [];
         const premiumsRaw: Listing[]   = json?.data?.premium_products ?? json?.premium_products ?? [];
         const exclusivesRaw: Listing[] = json?.data?.exclusive_products ?? json?.exclusive_products ?? [];
+        const slotBucketPresent: boolean =
+          json?.data?.pagination?.slot_bucket_present ?? json?.pagination?.slot_bucket_present ?? false;
+        console.log("[StateHome] slot_bucket_present:", slotBucketPresent);
 
-        // Featured's "rest" fill pulls from the whole pool (not just
-        // slot_bucket "featured"), so on a small/narrow pool it can grab the
-        // same products the New/Used sections would also show. Exclude
-        // whatever Featured already claimed so a listing never appears twice
-        // across sections.
-        const featuredItems = buildFeaturedOrder(products, premiumsRaw, exclusivesRaw).slice(0, 8);
+        // When the API tags products with slot_bucket, use it to pick exactly
+        // which products feed Featured/New/Used. Featured's "rest" fill then
+        // only pulls from the featured bucket (not the whole pool), so it can
+        // no longer grab products New/Used should show. Premium and exclusive
+        // vans always come from their own top-level arrays and only ever
+        // render on the Featured tab (position 3 = exclusive, 4-5 = premium),
+        // regardless of slot_bucket_present.
+        const featuredSource = slotBucketPresent
+          ? products.filter((p) => p.slot_bucket === "featured")
+          : products;
+
+        const featuredItems = buildFeaturedOrder(featuredSource, premiumsRaw, exclusivesRaw).slice(0, 8);
         const featuredIds   = new Set(featuredItems.map((p) => p.id));
-        const newItems      = products.filter((p) => p.slot_bucket === "new"  && !p.is_premium && !p.is_exclusive && !featuredIds.has(p.id)).slice(0, 8);
-        const usedItems     = products.filter((p) => p.slot_bucket === "used" && !p.is_premium && !p.is_exclusive && !featuredIds.has(p.id)).slice(0, 8);
+
+        let newItems: Listing[];
+        let usedItems: Listing[];
+
+        if (slotBucketPresent) {
+          newItems  = products.filter((p) => p.slot_bucket === "new"  && !p.is_premium && !p.is_exclusive && !featuredIds.has(p.id)).slice(0, 8);
+          usedItems = products.filter((p) => p.slot_bucket === "used" && !p.is_premium && !p.is_exclusive && !featuredIds.has(p.id)).slice(0, 8);
+        } else {
+          // No bucket signal to split New vs Used by — fall back to a
+          // straight list: whatever Featured didn't claim fills New, then
+          // Used, in pool order.
+          const leftover = products.filter((p) => !p.is_premium && !p.is_exclusive && !featuredIds.has(p.id));
+          newItems  = leftover.slice(0, 8);
+          usedItems = leftover.slice(8, 16);
+        }
 
         setPool({ featured: featuredItems, new: newItems, used: usedItems });
         handleTotalPages(json?.pagination?.total_pages ?? 1);

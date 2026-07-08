@@ -30,6 +30,7 @@ export async function GET(request: NextRequest) {
         try {
           const body = await res.json();
           console.log("[WP API pool_test] 410 body:", body);
+          console.log("[WP API pool_test] 410 body:", body);
           return NextResponse.json(body, { status: 410 });
         } catch {
           return NextResponse.json({ success: false }, { status: 410 });
@@ -71,6 +72,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(data);
   } catch (err: any) {
     clearTimeout(timeoutId);
+    console.error("[WP API pool_test] Error:", err);
     const status = err?.name === "AbortError" ? 504 : 500;
     console.log(`[WP API pool_test] fetch error (${status}):`, err?.message);
     return NextResponse.json({ success: false }, { status });

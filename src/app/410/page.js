@@ -7,8 +7,6 @@ import { headers } from "next/headers";
 import { parseSlugToFilters } from "@/app/components/urlBuilder";
 import { getCachedListings } from "@/api/listings/api";
 import { fetchProductList, fetchCategoryCounts, fetchMakeCounts } from "@/api/productList/api";
-import { fetchBottomLinks } from "@/api/bottomLinks/api";
-
 export const metadata = {
   title: "410 - Page Permanently Removed | Caravans For Sale",
   description:
@@ -31,13 +29,12 @@ export default async function GonePage() {
 
       const filters = parseSlugToFilters(slugParts, {});
 
-      const [response, productListData, initialCategoryCounts, initialMakeCounts, initialBottomLinksData] =
+      const [response, productListData, initialCategoryCounts, initialMakeCounts] =
         await Promise.all([
           getCachedListings({ ...filters, page: 1 }),
           fetchProductList(),
           fetchCategoryCounts(),
           fetchMakeCounts(),
-          fetchBottomLinks({}),
         ]);
 
       const empExclusiveProducts = response?.data?.emp_exclusive_products;
@@ -51,7 +48,6 @@ export default async function GonePage() {
             productListData={productListData}
             initialCategoryCounts={initialCategoryCounts}
             initialMakeCounts={initialMakeCounts}
-            initialBottomLinksData={initialBottomLinksData}
             initialDistances={{}}
             page={1}
           />

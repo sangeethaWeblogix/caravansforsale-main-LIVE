@@ -191,6 +191,8 @@ const FilterModal: React.FC<CaravanFilterProps> = ({
   focusSection,
   productListData,
   initialCategoryCounts,
+  makes: makesProp,
+  states: statesProp = [],
 }) => {
   const router = useRouter();
   const pathname = usePathname();
@@ -214,14 +216,14 @@ const FilterModal: React.FC<CaravanFilterProps> = ({
   // இந்த state variables add பண்ணு (top-ல்)
   const [tempStateName, setTempStateName] = useState<string | null>(null);
   const [tempRegionName, setTempRegionName] = useState<string | null>(null);
-  const [makes, setMakes] = useState<Make[]>([]);
+  const [makes, setMakes] = useState<Make[]>(makesProp || []);
   const [model, setModel] = useState<Model[]>([]);
    const [modelOpen, setModelOpen] = useState(false);
    const [categories, setCategories] = useState<Option[]>(
   productListData?.data?.all_categories || []
 );
 
-const [states, setStates] = useState<StateOption[]>([]);
+const [states, setStates] = useState<StateOption[]>(statesProp);
 
     console.log("productstate", productListData )
 
@@ -744,15 +746,30 @@ const [states, setStates] = useState<StateOption[]>([]);
   //   loadFilters();
   // }, []);
 
+  // Keep states in sync when the prop is updated (e.g. after Listings loads states from the API)
+  useEffect(() => {
+    if (statesProp?.length) setStates(statesProp);
+  }, [statesProp]);
+
   useEffect(() => {
   if (productListData?.data) {
     setCategories(productListData.data.all_categories || []);
-    setStates(productListData.data.states || []);
-    if (productListData.data.make_options?.length) {
-      setMakes(productListData.data.make_options);
+    // Prefer productListData states only when they're populated; fall back to the prop
+    if (productListData.data.states?.length) {
+      setStates(productListData.data.states);
+    } else if (statesProp?.length) {
+      setStates(statesProp);
     }
+    const makeOpts = (productListData.data as any).make_options;
+    if (makeOpts?.length) {
+      setMakes(makeOpts);
+    } else if (makesProp?.length) {
+      setMakes(makesProp);
+    }
+  } else if (makesProp?.length) {
+    setMakes(makesProp);
   }
-}, [productListData]);
+}, [productListData, makesProp, statesProp]);
 
   // useEffect(() => {
   //   const load = async () => {
@@ -791,34 +808,27 @@ const [states, setStates] = useState<StateOption[]>([]);
     if (kms > 0) setRadiusKms(kms);
   }, [currentFilters.radius_kms]);
 
-  const hasOtherFilters = !!(
-    currentFilters.condition ||
-    currentFilters.category ||
-    currentFilters.state ||
-    currentFilters.region ||
-    currentFilters.suburb ||
-    currentFilters.from_price ||
-    currentFilters.to_price ||
-    currentFilters.minKg ||
-    currentFilters.maxKg ||
-    currentFilters.from_length ||
-    currentFilters.to_length ||
-    currentFilters.from_sleep ||
-    currentFilters.to_sleep ||
-    currentFilters.acustom_fromyears ||
-    currentFilters.acustom_toyears
-  );
-
   const displayedMakes = useMemo(() => {
-    const source: MakeCount[] =
-      hasOtherFilters && makeCounts.length > 0
+    // Always prefer live makeCounts from params-count (pre-warmed via KV) when
+    // available — this fixes the empty Make dropdown when no other filters are
+    // active (old code only used makeCounts when hasOtherFilters was true).
+    const raw: MakeCount[] =
+      makeCounts.length > 0
         ? makeCounts
         : makes.map((m) => ({ name: m.name, slug: m.slug, count: 0 }));
+    // Deduplicate by slug — WP taxonomy can register the same make twice,
+    // which causes the same name to appear twice in the dropdown.
+    const seen = new Set<string>();
+    const source = raw.filter((m) => {
+      if (seen.has(m.slug)) return false;
+      seen.add(m.slug);
+      return true;
+    });
     if (!searchText.trim()) return source;
     return source.filter((m) =>
       m.name.toLowerCase().includes(searchText.toLowerCase()),
     );
-  }, [makeCounts, makes, searchText, isSearching, hasOtherFilters]);
+  }, [makeCounts, makes, searchText, isSearching]);
 
   // ✅ validate region only if it exists under the given state
   const getValidRegionName = (
@@ -1816,8 +1826,6 @@ const [states, setStates] = useState<StateOption[]>([]);
       setTempRegionName(null);
       setTempRegionNameRaw(null);
     }
-
-    setTempRegionName(matchedRegion?.name || null);
     setTempCondition(currentFilters.condition ?? null);
     setTempCategory(currentFilters.category || null);
     setSelectedMakeTemp(currentFilters.make || null);
@@ -1999,13 +2007,26 @@ const [states, setStates] = useState<StateOption[]>([]);
     const controller = new AbortController();
     const { signal } = controller;
     // ─── CATEGORY COUNTS ───
-    const catParams = buildCountParamsMulti(activeFilters, ["category"]);
+    // Location filters (state/region/suburb) are excluded intentionally:
+    // category names are global, counts are not shown in the UI, and
+    // excluding location means this always hits the pre-warmed KV key
+    // (params-count:group_by=category) so it never blocks on a WP fallback.
+    const catParams = buildCountParamsMulti(activeFilters, [
+      "category",
+      "state",
+      "region",
+      "suburb",
+      "pincode",
+    ]);
     catParams.set("group_by", "category");
     setIsCategoryCountLoading(true);
     fetchParamsCount(`/api/params-count/?${catParams.toString()}`, signal)
       .then((json) => {
         if (!signal.aborted) {
-          setCategoryCounts((json.data as []) || []);
+          // Only overwrite if we got real data — never blank out categories with an empty array
+          if (Array.isArray(json.data) && (json.data as []).length > 0) {
+            setCategoryCounts(json.data as []);
+          }
           setIsCategoryCountLoading(false);
           categoryFirstLoadDoneRef.current = true;
         }
@@ -2476,7 +2497,7 @@ const [states, setStates] = useState<StateOption[]>([]);
                             }}
                           >
                             <option value="">Any</option>
-                            {model.map((mod, index) => (
+                            {(modelCounts.length > 0 ? modelCounts : model).map((mod, index) => (
                               <option key={index} value={mod.slug}>
                                 {mod.name || mod.slug}
                               </option>

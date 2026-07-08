@@ -230,7 +230,7 @@ export default function ListingContent({
       );
     } catch { }
 
-    router.push(href);
+    window.location.href = href;
   };
 
   useEffect(() => {
@@ -264,9 +264,6 @@ export default function ListingContent({
   ) => {
     e.preventDefault(); // stop <Link> default
     e.stopPropagation(); // stop bubbling to parent
-
-    // 🔁 show loader
-    setNavigating(true);
 
     // 🔁 tracking + session flag
     handleProductClick(productId);
@@ -1328,29 +1325,6 @@ const [currentBanner, setCurrentBanner] = useState<typeof rightBanners[0] | null
                 </div>
               </form>
             </div>
-          </div>
-        </div>
-      )}
-      {navigating && (
-        <div
-          className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
-          style={{
-            background: "rgba(255,255,255,0.6)",
-            backdropFilter: "blur(2px)",
-            zIndex: 9999,
-          }}
-          aria-live="polite"
-        >
-          <div className="text-center">
-            <Image
-              className="loader_image"
-              src="/images/loader.gif"
-              alt="Loading..."
-              width={80}
-              height={80}
-              unoptimized
-            />
-            <div className="mt-2 fw-semibold">Loading…</div>
           </div>
         </div>
       )}

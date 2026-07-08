@@ -1,4 +1,4 @@
-/* ── Hero section ── */
+  /* ── Hero section ── */
 .demo-hero {
   background: #f5f7fa;
   padding: 56px 0 48px;
@@ -688,10 +688,10 @@
 
 .demo-reach-heading {
   text-align: center;
-  margin-bottom: 36px;
+  margin-bottom: 8px;
 }
 
-.demo-reach-heading h2 {
+.demo-reach-heading h3 {
   font-size: 40px;
   font-weight: 800;
   color: #000000;
@@ -704,14 +704,24 @@
     font-size: 17px;
 }
 
+.demo-reach-row {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  margin-bottom: 28px;
+}
+
 .demo-reach-device {
     text-align: center;
-    margin-bottom: 40px;
+    margin-bottom: 0;
     display: flex;
     justify-content: center;
+    flex: 0 0 46%;
+    min-width: 0;
 }
 .demo-reach-device img {
-  max-width: 950px;
+  max-width: 100%;
+  width: 100%;
   height: auto;
 }
 
@@ -723,15 +733,18 @@
   border-radius: 18px;
   box-shadow: 0 4px 28px rgba(0,0,0,.09);
   overflow: hidden;
-  margin-bottom: 28px;
+  margin-bottom: 0;
+  flex: 1;
+  min-width: 0;
 }
 
-.demo-reach-card__left {
-  flex: 0 0 50%;
-  padding: 36px 40px;
-  display: flex;
-  flex-direction: column;
-  gap: 0;
+ .demo-reach-card__left {
+    flex-direction: column;
+    flex: 0 0 50%;
+
+    gap: 0;
+    padding: 25px;
+    display: flex;
 }
 
 .demo-reach-card__badge {
@@ -837,11 +850,11 @@
 }
 
 .demo-reach-card__right {
-  flex: 1;
-  padding: 36px 40px;
-  display: flex;
   flex-direction: column;
-  gap: 0;
+    flex: 1;
+    gap: 0;
+    padding: 25px;
+    display: flex;
 }
 
 /* FAQ items inside card */
@@ -1127,6 +1140,14 @@
   color: #f58333;
 }
 
+.demo-faq-item__q-text {
+  margin: 0;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+  color: inherit;
+}
+
 .demo-faq-item__icon {
   width: 32px;
   height: 32px;
@@ -1171,11 +1192,20 @@
 
 /* Responsive */
 @media (max-width: 991px) {
-  .demo-reach-heading h2 {
+  .demo-reach-heading h3 {
     font-size: 30px;
+  }
+  .demo-reach-row {
+    flex-direction: column;
+    gap: 24px;
+  }
+  .demo-reach-device {
+    flex: none;
+    width: 100%;
   }
   .demo-reach-card {
     flex-direction: column;
+    width: 100%;
   }
   .demo-reach-card__left {
     flex: none;
@@ -1206,7 +1236,7 @@
   .demo-reach-section {
     padding: 40px 0 32px;
   }
-  .demo-reach-heading h2 {
+  .demo-reach-heading h3 {
     font-size: 24px;
   }
   .demo-reach-card__amount {
@@ -1282,13 +1312,22 @@
   filter: invert(55%) sepia(80%) saturate(700%) hue-rotate(340deg) brightness(95%);
 }
 
+/* Reset browser default h3 styling so SEO tags don't break the design */
+.demo-state-item__label,
+.demo-city-label {
+  font-size: inherit;
+  font-weight: inherit;
+  margin: 0;
+  display: inline; /* or block, match original layout behavior */
+}
+
 .demo-state-item__label {
   line-height: 1.3;
 }
 
 /* ── City links ── */
 .demo-city-section {
-  padding: 60px 0;
+  padding: 8px 0 40px;
   background: #fff;
 }
 
