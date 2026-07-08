@@ -5,12 +5,12 @@ import type { SeoV2 } from "./StateListingGrid";
 const API_BASE = process.env.NEXT_PUBLIC_CFS_API_BASE;
 const API_KEY = process.env.CFS_API_KEY;
 
-/** Server-side counterpart to the Featured grid's client fetch — same
- * state=victoria&featured=1 lock, so generateMetadata's title/description
- * (and page source) match what the client later patches document.title to. */
+/** Server-side counterpart to the shared pool's client fetch — same params,
+ * so generateMetadata's title/description (and page source) match what the
+ * client later patches document.title to. */
 export async function fetchDemoSeo(filters: FilterState): Promise<SeoV2 | null> {
   try {
-    const qs = buildApiUrl("?per_page=1&featured=1", filters, 1);
+    const qs = buildApiUrl("?per_page=1", filters, 1);
     const res = await fetch(`${API_BASE}/pool_test${qs}`, {
       headers: {
         Accept: "application/json",

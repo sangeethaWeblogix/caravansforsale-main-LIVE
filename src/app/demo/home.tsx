@@ -113,7 +113,7 @@ export default function StateHome({ initialFilters }: Props) {
   // Page 1 uses ONE shared pool call (same shape as before, just no condition
   // lock + a bigger per_page) split by slot_bucket into Featured/New/Used —
   // instead of 3 separate condition-locked API calls.
-  const poolApiUrl = buildApiUrl("/api/pool-listings/?per_page=24&featured=1", filters, seed);
+  const poolApiUrl = buildApiUrl("/api/pool-listings/?per_page=24", filters, seed);
 
   useEffect(() => {
     if (page !== 1) return;
@@ -245,7 +245,7 @@ export default function StateHome({ initialFilters }: Props) {
         />
 
         <StateListingGrid
-          title="Featured Caravans for Sale in Victoria"
+          title="Featured Caravans for Sale"
           viewAllHref="/listings/?state=victoria&featured=1"
           items={pool.featured}
           loading={poolLoading}
@@ -254,14 +254,15 @@ export default function StateHome({ initialFilters }: Props) {
         />
 
         <StateListingGrid
-          title="New Caravans for Sale in Victoria"
-          viewAllHref="/listings/new-caravans/?state=victoria"
+          title="New Caravans for Sale "
+          viewAllHref="/listings/new-c
+          aravans/?state=victoria"
           items={pool.new}
           loading={poolLoading}
         />
 
         <StateListingGrid
-          title="Used Caravans for Sale in Victoria"
+          title="Used Caravans for Sale"
           viewAllHref="/listings/used-caravans/?state=victoria"
           items={pool.used}
           loading={poolLoading}

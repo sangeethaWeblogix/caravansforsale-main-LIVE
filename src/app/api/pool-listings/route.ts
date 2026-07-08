@@ -1,3 +1,4 @@
+
 import { NextRequest, NextResponse } from "next/server";
 
 const API_BASE = process.env.NEXT_PUBLIC_CFS_API_BASE;
@@ -28,21 +29,50 @@ export async function GET(request: NextRequest) {
       if (res.status === 410) {
         try {
           const body = await res.json();
+          console.log("[WP API pool_test] 410 body:", body);
           return NextResponse.json(body, { status: 410 });
         } catch {
           return NextResponse.json({ success: false }, { status: 410 });
         }
       }
+      console.log(`[WP API pool_test] non-OK status: ${res.status}`);
       return NextResponse.json({ success: false }, { status: res.status });
     }
 
     const raw = await res.text();
-    const jsonStart = raw.indexOf('{');
-    const data = JSON.parse(jsonStart > 0 ? raw.substring(jsonStart) : raw);
+
+    // Safe JSON-start detection: only strip a prefix if '{' is found
+    // AND it isn't already at index 0.
+    const jsonStart = raw.indexOf("{");
+    const cleaned =
+      jsonStart === -1
+        ? raw
+        : jsonStart === 0
+        ? raw
+        : raw.substring(jsonStart);
+
+    let data;
+    try {
+      data = JSON.parse(cleaned);
+    } catch (parseErr) {
+      console.log("[WP API pool_test] JSON parse failed. Raw response:", raw.substring(0, 500));
+      return NextResponse.json({ success: false, error: "invalid_json" }, { status: 502 });
+    }
+
+    // ---- Requested: log the fetched data to console ----
+    console.log("[WP API pool_test] data:", JSON.stringify(data, null, 2));
+    // If the payload is huge, log just a summary instead:
+    // console.log("[WP API pool_test] summary:", {
+    //   success: data?.success,
+    //   total_products: data?.pagination?.total_products,
+    //   returned: data?.products?.length,
+    // });
+
     return NextResponse.json(data);
   } catch (err: any) {
     clearTimeout(timeoutId);
     const status = err?.name === "AbortError" ? 504 : 500;
+    console.log(`[WP API pool_test] fetch error (${status}):`, err?.message);
     return NextResponse.json({ success: false }, { status });
   }
 }

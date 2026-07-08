@@ -24,6 +24,9 @@ export type Listing = {
   slug?: string;
   condition: string;
   location?: string;
+  state?: string;
+  region?: string;
+  suburb?: string;
   regular_price: string;
   sale_price?: string;
   categories?: string[];
@@ -100,6 +103,31 @@ function formatLength(len: string | undefined): string | null {
   if (isNaN(ft)) return null;
   const m = (ft * 0.3048).toFixed(1);
   return `${ft} ft (${m}m)`;
+}
+
+const AUS_ABBR: Record<string, string> = {
+  "VICTORIA": "VIC",
+  "NEW SOUTH WALES": "NSW",
+  "QUEENSLAND": "QLD",
+  "SOUTH AUSTRALIA": "SA",
+  "WESTERN AUSTRALIA": "WA",
+  "TASMANIA": "TAS",
+  "NORTHERN TERRITORY": "NT",
+  "AUSTRALIAN CAPITAL TERRITORY": "ACT",
+};
+
+const toTitleCase = (s: string) => s.replace(/\b\w/g, (c) => c.toUpperCase());
+
+/** The pool no longer locks state=victoria,
+ *  so a hardcoded "VIC" fallback is
+ * wrong for most listings — derive the label from the item's own state/region/suburb. */
+function getLocationLabel(item: Listing): string {
+  if (item.location) return item.location;
+  const stateName = item.state?.replace(/-/g, " ") ?? "";
+  const abbr = stateName ? (AUS_ABBR[stateName.toUpperCase()] ?? toTitleCase(stateName)) : "";
+  
+  if (abbr) return abbr;
+  return ""; // no state/region/suburb on this item — show nothing rather than a guessed fallback
 }
 
 /* ── Contact Seller Modal ── */
@@ -288,7 +316,7 @@ function ListingCard({
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
             <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>
           </svg>
-          {item.location || "VIC"}
+          {getLocationLabel(item)}
         </div>
 
         {/* Row 3: price */}

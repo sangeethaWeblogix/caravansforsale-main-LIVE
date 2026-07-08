@@ -49,7 +49,7 @@ export default function StateContent() {
               Use this Victorian caravan buyers guide as a starting point to browse listings by location, budget, size, weight
               and sleeping capacity.
             </p>
-            <a href="/caravan-buyers-guide/" className="lsd-content__link">Read more caravan buying tips &amp; guides →</a>
+            {/* <a href="/caravan-buyers-guide/" className="lsd-content__link">Read more caravan buying tips &amp; guides →</a> */}
           </div>
 
           {/* Right: FAQ */}
