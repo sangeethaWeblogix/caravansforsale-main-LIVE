@@ -111,7 +111,7 @@ export function getRegionByStateAndPageSlug(
   );
 }
 
-export function getRegionsByState(stateSlug: StateKey): RegionInfo[] {
+export function getRegionsByState(stateSlug: string): RegionInfo[] {
   return ALL_REGIONS.filter((r) => r.state.slug === stateSlug);
 }
 

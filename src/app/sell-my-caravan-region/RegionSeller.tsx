@@ -1,4 +1,4 @@
- "use client";
+  "use client";
 import "@fortawesome/fontawesome-free/css/fontawesome.min.css";
 import "@fortawesome/fontawesome-free/css/solid.min.css";
 import "@fortawesome/fontawesome-free/css/regular.min.css";
@@ -86,7 +86,7 @@ export default function RegionSeller({ region }: RegionSellerProps) {
       <section className="demo-hero">
         <div className="container">
           <h1 className="demo-hero__title">
-            Best Marketplace To Sell Your Caravan in {regionLabel}
+            Sell My Caravan in {regionLabel}
           </h1>
           <p className="demo-hero__subtitle">
             The fastest, safest way to reach active caravan buyers in {regionLabel}, {stateLabel}.
@@ -427,10 +427,11 @@ export default function RegionSeller({ region }: RegionSellerProps) {
             List Your Caravan Now
           </a>
           <p className="demo-cta-strip__alt-link">
-            Not in {regionLabel}? Sell your caravan across {stateLabel} <a href={`/sell-my-caravan/${stateSlug}/`}>here</a>.
+            Not in {regionLabel}? Sell your caravan across {stateLabel} <a href={`/sell-my-caravan-${stateSlug}/`}>here</a>.
           </p>
         </div>
       </section>
+
     </div>
   );
 }

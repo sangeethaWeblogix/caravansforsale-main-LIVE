@@ -23,15 +23,24 @@ interface StateSellerProps {
   state: StateData;
 }
 
+const DEMONYMS: Record<string, string> = {
+  victoria: "Victorian",
+  "new-south-wales": "New South Wales",
+  queensland: "Queensland",
+  "south-australia": "South Australian",
+  tasmania: "Tasmanian",
+  "western-australia": "Western Australian",
+};
+
 export default function StateSeller({ state }: StateSellerProps) {
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
 
   const stateLabel = state.label;
   const capital = state.capital;
   const abbr = state.abbr;
+  const demonym = DEMONYMS[state.slug] ?? stateLabel;
 
-  // Use StateKey type compatible string for getRegionsByState
-  const CITY_LINKS = getRegionsByState(state.slug as Parameters<typeof getRegionsByState>[0]);
+  const CITY_LINKS = getRegionsByState(state.slug);
 
   const HOW_TO_STEPS = [
     { num: 1, iconSet: "fa-regular", icon: "fa-file-lines", title: "Create Your Listing", desc: "Add your caravan details, description, price and location in minutes." },
@@ -67,7 +76,7 @@ export default function StateSeller({ state }: StateSellerProps) {
       a: <p>Upload clear photos of the outside, inside, kitchen, beds, seating area, bathroom, tyres, drawbar and any included accessories. Good photos help buyers understand the condition of your caravan and can increase enquiries.</p>,
     },
     {
-      q: `How should I price my caravan in ${stateLabel}?`,
+      q: "How should I price my caravan?",
       a: <p>Check similar caravans for sale in {stateLabel} before setting your price. Compare by make, model, year, condition, length, ATM, tare weight, sleeping capacity, features and location. A realistic asking price can help attract more genuine buyers.</p>,
     },
     {
@@ -91,7 +100,7 @@ export default function StateSeller({ state }: StateSellerProps) {
       <section className="demo-hero">
         <div className="container">
           <h1 className="demo-hero__title">
-            Best Marketplace To Sell Your Caravan in {stateLabel}
+            Sell My Caravan in {stateLabel}
           </h1>
           <p className="demo-hero__subtitle">
             The fastest, safest way to reach active caravan buyers across {capital} and regional {stateLabel}.
@@ -187,18 +196,21 @@ export default function StateSeller({ state }: StateSellerProps) {
             <div className="container">
               <div className="demo-city-grid">
                 {CITY_LINKS.map((c) => (
-                  <a
-                    key={c.label}
-                    href={`/sell-my-caravan/${state.slug}/${c.pageSlug}/`}
-                    className="demo-city-item"
-                    title={`Sell my caravan in ${c.label.trim()}`}
-                  >
+                  <div key={c.label} className="demo-city-item">
                     <span className="demo-city-icon">
                       <img src="/images/caravan.png" alt="" />
                     </span>
-                    <span className="demo-city-label">{c.label}</span>
+                    <h3 className="demo-city-label">
+                      <a
+                        href={`/sell-my-caravan/${state.slug}/${c.pageSlug}/`}
+                        title={`Sell my caravan in ${c.label.trim()}`}
+                        className="demo-city-label"
+                      >
+                        {c.label}
+                      </a>
+                    </h3>
                     <i className="fa-solid fa-chevron-right demo-city-arrow" />
-                  </a>
+                  </div>
                 ))}
               </div>
             </div>
@@ -381,12 +393,12 @@ export default function StateSeller({ state }: StateSellerProps) {
         <div className="container">
           <div className="row align-items-center g-4">
             <div className="col-md-6">
-              <img src="/images/your-caravan-desktop-seller-2.jpg" className="img-fluid demo-why-img" alt={`${stateLabel} caravan buyers`} />
+              <img src="/images/your-caravan-desktop-seller-2.jpg" className="img-fluid demo-why-img" alt={`${demonym} caravan buyers`} />
             </div>
             <div className="col-md-6">
-              <h2>Why {stateLabel} Caravan Buyers Visit CaravansForSale Every Month</h2>
+              <h2>Why {demonym} Caravan Buyers Visit CaravansForSale Every Month</h2>
               <p>
-                CaravansForSale.com.au helps {stateLabel} caravan sellers reach buyers searching for
+                CaravansForSale.com.au helps {demonym} caravan sellers reach buyers searching for
                 used caravans, off road caravans, family caravans, pop tops, hybrids and touring
                 caravans across {capital} and regional {stateLabel}.
               </p>
