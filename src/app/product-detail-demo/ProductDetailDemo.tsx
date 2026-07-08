@@ -438,16 +438,6 @@ const priceUpperIdx = !isPOA ? PRICE_STEPS.findIndex(s => s >= displayPrice) : -
     <div className="pdd-page">
       <div className="pdd-container">
 
-        {/* Breadcrumb */}
-        <nav className="pdd-breadcrumb">
-          {breadcrumb.map((b, i) => (
-            <span key={i}>
-              {i > 0 && <span className="pdd-breadcrumb__sep">›</span>}
-              {b.href ? <Link href={b.href}>{b.label}</Link> : <span>{b.label}</span>}
-            </span>
-          ))}
-        </nav>
-
         {/* Title */}
         <h1 className="pdd-title">{product.name}</h1>
 
@@ -457,6 +447,13 @@ const priceUpperIdx = !isPOA ? PRICE_STEPS.findIndex(s => s >= displayPrice) : -
           <a href="/sell-my-caravan/" className="pdd-subtitle__link">List Your Caravan</a>
           <span className="pdd-subtitle__badge">$49 Until Sold</span>
         </div>
+
+        {/* Seller type badge */}
+        {product.seller_type && (
+          <div className="pdd-seller-badge">
+            <span>{product.seller_type === "private" ? "Private Seller" : "Dealer"}</span>
+          </div>
+        )}
 
         {/* 2-col layout: content + sidebar */}
         <div className="pdd-layout">
@@ -589,7 +586,7 @@ const priceUpperIdx = !isPOA ? PRICE_STEPS.findIndex(s => s >= displayPrice) : -
             </section>
 
             <button className="pdd-btn-contact-inline" onClick={() => { setModalInitialIndex(0); setModalOpen(true); }}>
-              Contact Seller
+              CONTACT SELLER
             </button>
           </div>
 
