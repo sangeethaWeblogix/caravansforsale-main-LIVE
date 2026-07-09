@@ -8,7 +8,7 @@ import StateFilterBar, { FilterState } from "./StateFilterBar";
 import StateListingGrid, { SeoV2, Listing, buildFeaturedOrder } from "./StateListingGrid";
 import StateBrowseSection from "./StateBrowseSection";
 import StateContent from "./StateContent";
-import { buildDemoSlug, buildApiUrl } from "./urlUtils";
+import { buildDemoSlug, buildApiUrl, buildListingsSlug } from "./urlUtils";
 import "./main.css";
 
 // clickid pagination — same scheme as /listings/: no ?page=N in the URL,
@@ -290,7 +290,7 @@ export default function StateHome({ initialFilters }: Props) {
 
         <StateListingGrid
           title={seo?.meta_title ? `Featured ${seo.meta_title}` : "Featured Caravans for Sale"}
-          viewAllHref="/listings/?state=victoria&featured=1"
+          viewAllHref={`${buildListingsSlug(filters)}?featured=1`}
           items={pool.featured}
           loading={poolLoading}
           showSpotlight={!hasActiveFilters}
@@ -299,14 +299,14 @@ export default function StateHome({ initialFilters }: Props) {
 
         <StateListingGrid
           title={newSeo?.meta_title || "New Caravans for Sale"}
-          viewAllHref="/listings/new-caravans/?state=victoria"
+          viewAllHref={buildListingsSlug(filters, "New")}
           items={pool.new}
           loading={poolLoading}
         />
 
         <StateListingGrid
           title={usedSeo?.meta_title || "Used Caravans for Sale"}
-          viewAllHref="/listings/used-caravans/?state=victoria"
+          viewAllHref={buildListingsSlug(filters, "Used")}
           items={pool.used}
           loading={poolLoading}
         />

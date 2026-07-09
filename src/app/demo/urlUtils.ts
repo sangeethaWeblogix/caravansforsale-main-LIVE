@@ -41,6 +41,16 @@ export function buildDemoSlug(filters: FilterState): string {
   return buildSlugFromFilters(shared).replace(/^\/listings/, "/demo");
 }
 
+/** Real /listings/ URL for a "View all" link — keeps the active filters
+ * (e.g. category + state) and optionally locks the condition segment, so
+ * the Featured/New/Used sections each link to the matching filtered page. */
+export function buildListingsSlug(filters: FilterState, conditionOverride?: string): string {
+  const { keyword, condition, ...rest } = filters;
+  const shared = { ...rest, search: keyword || undefined, condition: conditionOverride ?? condition };
+  const path = buildSlugFromFilters(shared);
+  return path.endsWith("/") ? path : `${path}/`;
+}
+
 export function parseDemoFilters(
   slugParts: string[],
   query: Record<string, string | string[] | undefined>
