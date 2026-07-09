@@ -329,7 +329,7 @@ export default function StateHome({ initialFilters }: Props) {
 
         {maxPages > 1 && pagination}
 
-        <StateBrowseSection state={filters.state} />
+        <StateBrowseSection state={filters.state} category={filters.category} />
         <StateContent />
       </div>
     );
@@ -374,7 +374,7 @@ export default function StateHome({ initialFilters }: Props) {
 
       {maxPages > 1 && pagination}
 
-      <StateBrowseSection state={filters.state} />
+      <StateBrowseSection state={filters.state} category={filters.category} />
       <StateContent />
     </div>
   );

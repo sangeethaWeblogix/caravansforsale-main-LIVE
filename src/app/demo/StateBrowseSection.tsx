@@ -1,5 +1,16 @@
 import Image from "next/image";
-import { getRegionsByState } from "../sell-my-caravan-region/regions-data";
+
+function toStateSlug(state: string): string {
+  return state.trim().toLowerCase().replace(/ /g, "-");
+}
+
+function stateLabel(state: string): string {
+  return state
+    .trim()
+    .split(/\s+/)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+}
 
 const STATES = [
   { name: "Victoria",            href: "/listings/victoria-state/" },
@@ -64,84 +75,133 @@ const FILTERS_NO_STATE = [
   },
 ];
 
-function buildRegions(state: string) {
-  const stateSlug = state.trim().toLowerCase().replace(/ /g, "-");
-  return getRegionsByState(stateSlug).map((r) => ({
-    name: r.label,
-    href: `/listings/${r.state.slug}-state/${r.pageSlug}-region/`,
+// Same curated city list as HomeLocationSection's popular-location section —
+// reused both as "Popular Region" pills scoped to a category, and (filtered
+// down to one state) as the region list once a state is selected. Darwin is
+// skipped — Northern Territory isn't in this site's state registry
+// (STATES/regions-data only cover the 6 states above).
+const POPULAR_REGION_PATHS = [
+  { name: "Adelaide",       path: "south-australia-state/adelaide-region/" },
+  { name: "Brisbane",       path: "queensland-state/brisbane-region/" },
+  { name: "Gold Coast",     path: "queensland-state/gold-coast-region/" },
+  { name: "Melbourne",      path: "victoria-state/melbourne-region/" },
+  { name: "Perth",          path: "western-australia-state/perth-region/" },
+  { name: "Sydney",         path: "new-south-wales-state/sydney-region/" },
+  { name: "Cairns",         path: "queensland-state/cairns-region/" },
+  { name: "Canberra",       path: "new-south-wales-state/canberra-region/" },
+  { name: "Geelong",        path: "victoria-state/geelong-region/" },
+  { name: "Hobart",         path: "tasmania-state/hobart-region/" },
+  { name: "Newcastle",      path: "new-south-wales-state/newcastle-region/" },
+  { name: "Sunshine Coast", path: "queensland-state/sunshine-coast-region/" },
+  { name: "Townsville",     path: "queensland-state/townsville-region/" },
+  { name: "Wollongong",     path: "new-south-wales-state/illawarra-region/" },
+  { name: "Ballarat",       path: "victoria-state/ballarat-region/" },
+];
+
+const CATEGORY_LABELS: Record<string, string> = {
+  "off-road": "Off Road",
+  luxury: "Luxury",
+  hybrid: "Hybrid",
+  "pop-top": "Pop Top",
+  touring: "Touring",
+  family: "Family",
+};
+
+function categoryLabel(category: string): string {
+  return CATEGORY_LABELS[category] ?? category.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+// State pills stay useful on a category page too — just carry the category
+// filter along so picking a state narrows within that category.
+function buildStatesForCategory(category: string) {
+  return STATES.map((s) => ({
+    name: s.name,
+    href: `/listings/${category}-category${s.href.replace("/listings", "")}`,
   }));
 }
 
-function buildTypes(state: string) {
-  return [
-    { label: "Off Road Caravans", href: `/listings/off-road-category/?state=${state}` },
-    { label: "Luxury Caravans",   href: `/listings/luxury-category/?state=${state}` },
-    { label: "Hybrid Caravans",   href: `/listings/hybrid-category/?state=${state}` },
-    { label: "Pop Top Caravans",  href: `/listings/pop-top-category/?state=${state}` },
-    { label: "Touring Caravans",  href: `/listings/touring-category/?state=${state}` },
-    { label: "Family Caravans",   href: `/listings/family-category/?state=${state}` },
-  ];
+function buildPopularRegionsForCategory(category: string) {
+  return POPULAR_REGION_PATHS.map((r) => ({
+    name: r.name,
+    href: `/listings/${category}-category/${r.path}`,
+  }));
 }
 
-function buildFilters(state: string) {
-  return [
-    {
-      icon: "/images/Budget.png", title: "By Budget",
-      links: [
-        { text: "Under $50k",  href: `/listings/?max_price=50000&state=${state}` },
-        { text: "Under $75k",  href: `/listings/?max_price=75000&state=${state}` },
-        { text: "Under $100k", href: `/listings/?max_price=100000&state=${state}` },
-        { text: "Over $100k",  href: `/listings/?min_price=100000&state=${state}` },
-      ],
-    },
-    {
-      icon: "/images/ATM.png", title: "By Weight (ATM)",
-      links: [
-        { text: "Under 2000kg",    href: `/listings/?max_atm=2000&state=${state}` },
-        { text: "2000kg – 2500kg", href: `/listings/?min_atm=2000&max_atm=2500&state=${state}` },
-        { text: "2500kg – 3000kg", href: `/listings/?min_atm=2500&max_atm=3000&state=${state}` },
-        { text: "Over 3000kg",     href: `/listings/?min_atm=3000&state=${state}` },
-      ],
-    },
-    {
-      icon: "/images/Length.png", title: "By Size (Length)",
-      links: [
-        { text: "Under 18ft",  href: `/listings/?max_length=18&state=${state}` },
-        { text: "18ft – 20ft", href: `/listings/?min_length=18&max_length=20&state=${state}` },
-        { text: "20ft – 22ft", href: `/listings/?min_length=20&max_length=22&state=${state}` },
-        { text: "Over 22ft",   href: `/listings/?min_length=22&state=${state}` },
-      ],
-    },
-    {
-      icon: "/images/Sleeping.png", title: "By Sleeping Capacity",
-      links: [
-        { text: "2 Berth",           href: `/listings/2-berth-caravans/?state=${state}` },
-        { text: "3 – 4 Berth",       href: `/listings/3-4-berth-caravans/?state=${state}` },
-        { text: "5 – 6 Berth",       href: `/listings/5-6-berth-caravans/?state=${state}` },
-        { text: "Family (7+ Berth)", href: `/listings/7-plus-berth-caravans/?state=${state}` },
-      ],
-    },
-  ];
+// Once a state is picked, narrow the same popular-region list down to that
+// state's own regions (state+region combined in the href) — category first
+// if one's active too, matching buildSlugFromFilters' segment order.
+function buildPopularRegionsForState(state: string, category?: string) {
+  const stateSlug = toStateSlug(state);
+  const prefix = category ? `/listings/${category}-category` : "/listings";
+  return POPULAR_REGION_PATHS
+    .filter((r) => r.path.startsWith(`${stateSlug}-state/`))
+    .map((r) => ({ name: r.name, href: `${prefix}/${r.path}` }));
+}
+
+// Category pills on a state page carry the state along too — category
+// segment first, then state, matching buildSlugFromFilters' segment order.
+function buildTypesForState(state: string) {
+  const stateSlug = toStateSlug(state);
+  return TYPES_NO_STATE.map((t) => ({
+    label: t.label,
+    href: `${t.href}${stateSlug}-state/`,
+  }));
+}
+
+// Budget/ATM/length/sleep pills on a state page reuse the no-state slugs,
+// just prefixed with the state segment (state before these, per
+// buildSlugFromFilters' segment order).
+function buildFiltersForState(state: string) {
+  const stateSlug = toStateSlug(state);
+  return FILTERS_NO_STATE.map((f) => ({
+    ...f,
+    links: f.links.map((l) => ({
+      text: l.text,
+      href: `/listings/${stateSlug}-state${l.href.replace("/listings", "")}`,
+    })),
+  }));
 }
 
 interface Props {
   state?: string;
+  category?: string;
 }
 
-export default function StateBrowseSection({ state }: Props) {
-  const hasState = !!state;
-  const regions = hasState ? buildRegions(state!) : STATES;
-  const types = hasState ? buildTypes(state!) : TYPES_NO_STATE;
-  const filters = hasState ? buildFilters(state!) : FILTERS_NO_STATE;
+export default function StateBrowseSection({ state, category }: Props) {
+  const hasState    = !!state;
+  const hasCategory = !!category;
+
+  const regions = hasState
+    ? buildPopularRegionsForState(state!, category)
+    : hasCategory
+      ? buildStatesForCategory(category!)
+      : STATES;
+
+  const types   = hasState ? buildTypesForState(state!) : TYPES_NO_STATE;
+  const filters = hasState ? buildFiltersForState(state!) : FILTERS_NO_STATE;
+
+  const leftTitle = hasState
+    ? hasCategory
+      ? `Browse ${categoryLabel(category!)} Caravans by Region in ${stateLabel(state!)}`
+      : `Browse Caravans by Region in ${stateLabel(state!)}`
+    : hasCategory
+      ? `Browse ${categoryLabel(category!)} Caravans by State`
+      : "Browse Caravans by State";
+
+  const rightTitle = hasState && hasCategory
+    ? `Browse ${categoryLabel(category!)} Caravans by ${stateLabel(state!)}`
+    : hasCategory
+      ? `Browse ${categoryLabel(category!)} Caravans by Popular Region`
+      : "Browse Caravans by Category";
 
   return (
     <section className="lsd-browse">
       <div className="container">
 
-        {/* Row 1 — Region/State + Type */}
+        {/* Row 1 — Region/State + Type/Popular-region */}
         <div className="lsd-browse__row1">
           <div className="lsd-browse__panel">
-            <h3 className="lsd-browse__panel-title">{hasState ? "Browse by Region" : "Browse by State"}</h3>
+            <h3 className="lsd-browse__panel-title">{leftTitle}</h3>
             <div className="lsd-browse__pills">
               {regions.map((r) => (
                 <a key={r.name} href={r.href} className="lsd-browse__pill">{r.name}</a>
@@ -150,35 +210,53 @@ export default function StateBrowseSection({ state }: Props) {
 
           </div>
 
-          <div className="lsd-browse__divider-v" />
+          {/* Once state AND category are both locked in, there's nothing left
+              to switch to on this side — no second panel. */}
+          {!(hasState && hasCategory) && (
+            <>
+              <div className="lsd-browse__divider-v" />
 
-          <div className="lsd-browse__panel">
-            <h3 className="lsd-browse__panel-title">Browse by Type</h3>
-            <div className="lsd-browse__type-grid">
-              {types.map((t) => (
-                <a key={t.label} href={t.href} className="lsd-browse__type-card">{t.label}</a>
-              ))}
-            </div>
+              {hasCategory ? (
+                <div className="lsd-browse__panel">
+                  <h3 className="lsd-browse__panel-title">{rightTitle}</h3>
+                  <div className="lsd-browse__pills">
+                    {buildPopularRegionsForCategory(category!).map((r) => (
+                      <a key={r.name} href={r.href} className="lsd-browse__pill">{r.name}</a>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="lsd-browse__panel">
+                  <h3 className="lsd-browse__panel-title">{rightTitle}</h3>
+                  <div className="lsd-browse__type-grid">
+                    {types.map((t) => (
+                      <a key={t.label} href={t.href} className="lsd-browse__type-card">{t.label}</a>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </div>
 
+        {/* Row 2 — 4 Filter columns; not useful once a category is already locked in */}
+        {!hasCategory && (
+          <div className="lsd-browse__row2">
+            {filters.map((f) => (
+              <div key={f.title} className="lsd-browse__filter-col">
+                <div className="lsd-browse__filter-head">
+                  <Image src={f.icon} alt={f.title} width={20} height={20} unoptimized />
+                  <span className="lsd-browse__filter-title">{f.title}</span>
+                </div>
+                <div className="lsd-browse__filter-links">
+                  {f.links.map((l) => (
+                    <a key={l.text} href={l.href} className="lsd-browse__filter-link">{l.text}</a>
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
-        </div>
-
-        {/* Row 2 — 4 Filter columns */}
-        <div className="lsd-browse__row2">
-          {filters.map((f) => (
-            <div key={f.title} className="lsd-browse__filter-col">
-              <div className="lsd-browse__filter-head">
-                <Image src={f.icon} alt={f.title} width={20} height={20} unoptimized />
-                <span className="lsd-browse__filter-title">{f.title}</span>
-              </div>
-              <div className="lsd-browse__filter-links">
-                {f.links.map((l) => (
-                  <a key={l.text} href={l.href} className="lsd-browse__filter-link">{l.text}</a>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
+        )}
 
       </div>
     </section>
