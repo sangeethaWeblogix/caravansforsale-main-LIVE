@@ -473,7 +473,7 @@ const priceUpperIdx = !isPOA ? PRICE_STEPS.findIndex(s => s >= displayPrice) : -
                   <img src="/images/category.svg" width="20" height="20" alt="" />
                   <div className="pdd-specs-bar__text">
                     <span className="pdd-specs-bar__val">{shortCategory}</span>
-                    <span className="pdd-specs-bar__lbl">Type</span>
+                    <span className="pdd-specs-bar__lbl">Caravan Type</span>
                   </div>
                 </div>
               )}
@@ -509,7 +509,7 @@ const priceUpperIdx = !isPOA ? PRICE_STEPS.findIndex(s => s >= displayPrice) : -
                   <img src="/images/seller.svg" width="20" height="20" alt="" />
                   <div className="pdd-specs-bar__text">
                     <span className="pdd-specs-bar__val">{product.seller_type === "private" ? "Private Seller" : "Dealer"}</span>
-                    <span className="pdd-specs-bar__lbl">Seller</span>
+                    <span className="pdd-specs-bar__lbl">Seller Type</span>
                   </div>
                 </div>
               )}
