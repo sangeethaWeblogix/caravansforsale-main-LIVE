@@ -32,6 +32,11 @@ export default function RelatedNews({ blogs }: { blogs: BlogPost[] }) {
     >
       <div className="container">
         {/* Title */}
+        <div className="title">
+          <div className="tpof_tab">
+            <h2 className="hd-section-title">Related Blogs</h2>
+          </div>
+        </div>
 
         {/* Swiper Slider */}
         <div className="related-products-slider position-relative mt-6">
@@ -50,23 +55,10 @@ export default function RelatedNews({ blogs }: { blogs: BlogPost[] }) {
             }}
           >
             {blogs.map((post, index) => {
-              const href = getHref(post); // ✅ generate slug/url here
+              const href = getHref(post);
               return (
-                <>
-                  <div className="title">
-                    <div className="tpof_tab flex items-center justify-between">
-                      <h3 className="text-xl font-bold">
-                        Alternatives to Semi Caravans
-                      </h3>
-                      <div className="viewall_bttn">
-                        <Link href={href}>
-                          <i className="bi bi-chevron-right"></i>
-                        </Link>
-                      </div>
-                    </div>
-                  </div>
-                  <SwiperSlide key={index}>
-                    <Link href={post.link}>
+                <SwiperSlide key={index}>
+                    <Link href={href}>
                       <div className="product-card">
                         <div className="img">
                           <Image
@@ -85,7 +77,6 @@ export default function RelatedNews({ blogs }: { blogs: BlogPost[] }) {
                       </div>
                     </Link>
                   </SwiperSlide>
-                </>
               );
             })}
           </Swiper>

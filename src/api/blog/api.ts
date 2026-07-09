@@ -43,7 +43,7 @@ export const fetchBlogs = async (page: number = 1): Promise<BlogPageResult> => {
         Accept: "application/json",
         ...(API_KEY && { "X-API-Key": API_KEY }), // ✅ API key added
       },
-      next: { revalidate: 3600 }, // ✅ cache: no-store எடுத்துட்டேன்
+      cache: "no-store",
     });
 
     if (!res.ok) {
