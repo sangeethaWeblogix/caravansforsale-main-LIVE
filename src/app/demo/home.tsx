@@ -43,6 +43,11 @@ export default function StateHome({ initialFilters }: Props) {
   const [seed,     setSeed]     = useState(1);
   const [pool,     setPool]     = useState<{ featured: Listing[]; new: Listing[]; used: Listing[] }>({ featured: [], new: [], used: [] });
   const [poolLoading, setPoolLoading] = useState(true);
+  // false whenever the backend can't tell New apart from Used in this pool
+  // (e.g. a condition filter is already locked in) — in that case there's
+  // nothing to split, so page 1 shows one combined grid instead of a
+  // fabricated Featured/New/Used split.
+  const [slotBucketPresent, setSlotBucketPresent] = useState(true);
   console.log("seoo89", seo)
 
   // Push the API's seo_v2 into the browser tab title + meta description.
@@ -132,40 +137,32 @@ export default function StateHome({ initialFilters }: Props) {
         const products: Listing[]      = json?.data?.products ?? json?.products ?? [];
         const premiumsRaw: Listing[]   = json?.data?.premium_products ?? json?.premium_products ?? [];
         const exclusivesRaw: Listing[] = json?.data?.exclusive_products ?? json?.exclusive_products ?? [];
-        const slotBucketPresent: boolean =
+        const bucketPresent: boolean =
           json?.data?.pagination?.slot_bucket_present ?? json?.pagination?.slot_bucket_present ?? false;
-        console.log("[StateHome] slot_bucket_present:", slotBucketPresent);
+        console.log("[StateHome] slot_bucket_present:", bucketPresent);
+        setSlotBucketPresent(bucketPresent);
 
-        // When the API tags products with slot_bucket, use it to pick exactly
-        // which products feed Featured/New/Used. Featured's "rest" fill then
-        // only pulls from the featured bucket (not the whole pool), so it can
-        // no longer grab products New/Used should show. Premium and exclusive
-        // vans always come from their own top-level arrays and only ever
-        // render on the Featured tab (position 3 = exclusive, 4-5 = premium),
-        // regardless of slot_bucket_present.
-        const featuredSource = slotBucketPresent
-          ? products.filter((p) => p.slot_bucket === "featured")
-          : products;
+        if (bucketPresent) {
+          // The API tags products with slot_bucket — use it to pick exactly
+          // which products feed Featured/New/Used. Premium and exclusive vans
+          // always come from their own top-level arrays and only render on
+          // the Featured tab (position 3 = exclusive, 4-5 = premium).
+          const featuredSource = products.filter((p) => p.slot_bucket === "featured");
+          const featuredItems  = buildFeaturedOrder(featuredSource, premiumsRaw, exclusivesRaw).slice(0, 8);
+          const featuredIds    = new Set(featuredItems.map((p) => p.id));
 
-        const featuredItems = buildFeaturedOrder(featuredSource, premiumsRaw, exclusivesRaw).slice(0, 8);
-        const featuredIds   = new Set(featuredItems.map((p) => p.id));
+          const newItems  = products.filter((p) => p.slot_bucket === "new"  && !p.is_premium && !p.is_exclusive && !featuredIds.has(p.id)).slice(0, 8);
+          const usedItems = products.filter((p) => p.slot_bucket === "used" && !p.is_premium && !p.is_exclusive && !featuredIds.has(p.id)).slice(0, 8);
 
-        let newItems: Listing[];
-        let usedItems: Listing[];
-
-        if (slotBucketPresent) {
-          newItems  = products.filter((p) => p.slot_bucket === "new"  && !p.is_premium && !p.is_exclusive && !featuredIds.has(p.id)).slice(0, 8);
-          usedItems = products.filter((p) => p.slot_bucket === "used" && !p.is_premium && !p.is_exclusive && !featuredIds.has(p.id)).slice(0, 8);
+          setPool({ featured: featuredItems, new: newItems, used: usedItems });
         } else {
-          // No bucket signal to split New vs Used by — fall back to a
-          // straight list: whatever Featured didn't claim fills New, then
-          // Used, in pool order.
-          const leftover = products.filter((p) => !p.is_premium && !p.is_exclusive && !featuredIds.has(p.id));
-          newItems  = leftover.slice(0, 8);
-          usedItems = leftover.slice(8, 16);
+          // No bucket signal (e.g. a condition filter is already locked in,
+          // so every item is the same condition already) — nothing to split
+          // into New/Used, show one combined list instead.
+          const combined = buildFeaturedOrder(products, premiumsRaw, exclusivesRaw);
+          setPool({ featured: combined, new: [], used: [] });
         }
 
-        setPool({ featured: featuredItems, new: newItems, used: usedItems });
         handleTotalPages(json?.pagination?.total_pages ?? 1);
         const seoData = json?.data?.seo_v2 ?? json?.seo_v2;
         if (seoData) setSeo(seoData);
@@ -174,42 +171,30 @@ export default function StateHome({ initialFilters }: Props) {
       .finally(() => setPoolLoading(false));
   }, [poolApiUrl, page]);
 
-  // A condition filter already active (e.g. /used-condition) means every
-  // item in the pool is already that condition — showing the OTHER grid
-  // (locked to the opposite condition) would just relabel the same filtered
-  // set under the wrong heading. Only fetch/show the grid(s) that match
-  // whatever condition is (or isn't) already active.
-  const activeCondition = filters.condition?.toLowerCase();
-  const showNewGrid  = !activeCondition || activeCondition === "new";
-  const showUsedGrid = !activeCondition || activeCondition === "used";
-
   // New/Used grid headings need their own condition-locked seo_v2 (the shared
   // pool call above is unlocked, so its seo_v2 only covers the page overall).
   // Featured reuses that page-level seo since there's no dedicated "featured"
-  // seo concept on the backend.
+  // seo concept on the backend. Skipped entirely once the pool call itself
+  // reports no slot_bucket split (nothing to show these titles on).
   useEffect(() => {
-    if (page !== 1) return;
-
-    if (showNewGrid) {
-      const newUrl = `${buildApiUrl("/api/pool-listings/?per_page=1", filters, seed, "New")}&page=1`;
-      fetch(newUrl, { cache: "no-store" })
-        .then((r) => (r.ok ? r.json() : null))
-        .then((json) => setNewSeo(json?.data?.seo_v2 ?? json?.seo_v2 ?? null))
-        .catch(() => setNewSeo(null));
-    } else {
+    if (page !== 1 || !slotBucketPresent) {
       setNewSeo(null);
-    }
-
-    if (showUsedGrid) {
-      const usedUrl = `${buildApiUrl("/api/pool-listings/?per_page=1", filters, seed, "Used")}&page=1`;
-      fetch(usedUrl, { cache: "no-store" })
-        .then((r) => (r.ok ? r.json() : null))
-        .then((json) => setUsedSeo(json?.data?.seo_v2 ?? json?.seo_v2 ?? null))
-        .catch(() => setUsedSeo(null));
-    } else {
       setUsedSeo(null);
+      return;
     }
-  }, [filters, seed, page, showNewGrid, showUsedGrid]);
+    const newUrl  = `${buildApiUrl("/api/pool-listings/?per_page=1", filters, seed, "New")}&page=1`;
+    const usedUrl = `${buildApiUrl("/api/pool-listings/?per_page=1", filters, seed, "Used")}&page=1`;
+
+    fetch(newUrl, { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((json) => setNewSeo(json?.data?.seo_v2 ?? json?.seo_v2 ?? null))
+      .catch(() => setNewSeo(null));
+
+    fetch(usedUrl, { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((json) => setUsedSeo(json?.data?.seo_v2 ?? json?.seo_v2 ?? null))
+      .catch(() => setUsedSeo(null));
+  }, [filters, seed, page, slotBucketPresent]);
 
   const pushFiltersToUrl = (f: FilterState) => {
     window.history.pushState({}, "", buildDemoSlug(f));
@@ -305,30 +290,40 @@ export default function StateHome({ initialFilters }: Props) {
           onClearAll={handleClearAll}
         />
 
-        <StateListingGrid
-          title={seo?.meta_title ? `Featured ${seo.meta_title}` : "Featured Caravans for Sale"}
-          viewAllHref={`${buildListingsSlug(filters)}?featured=1`}
-          items={pool.featured}
-          loading={poolLoading}
-          showSpotlight={!hasActiveFilters}
-          hideViewAll
-        />
+        {slotBucketPresent ? (
+          <>
+            <StateListingGrid
+              title={seo?.meta_title ? `Featured ${seo.meta_title}` : "Featured Caravans for Sale"}
+              viewAllHref={`${buildListingsSlug(filters)}?featured=1`}
+              items={pool.featured}
+              loading={poolLoading}
+              showSpotlight={!hasActiveFilters}
+              hideViewAll
+            />
 
-        {showNewGrid && (
-          <StateListingGrid
-            title={newSeo?.meta_title || "New Caravans for Sale"}
-            viewAllHref={buildListingsSlug(filters, "New")}
-            items={pool.new}
-            loading={poolLoading}
-          />
-        )}
+            <StateListingGrid
+              title={newSeo?.meta_title || "New Caravans for Sale"}
+              viewAllHref={buildListingsSlug(filters, "New")}
+              items={pool.new}
+              loading={poolLoading}
+            />
 
-        {showUsedGrid && (
+            <StateListingGrid
+              title={usedSeo?.meta_title || "Used Caravans for Sale"}
+              viewAllHref={buildListingsSlug(filters, "Used")}
+              items={pool.used}
+              loading={poolLoading}
+            />
+          </>
+        ) : (
+          // Backend collapsed the New/Used split (e.g. a condition filter is
+          // already active) — one combined grid instead of a fabricated split.
           <StateListingGrid
-            title={usedSeo?.meta_title || "Used Caravans for Sale"}
-            viewAllHref={buildListingsSlug(filters, "Used")}
-            items={pool.used}
+            title={seo?.meta_title || "Caravans for Sale"}
+            viewAllHref={buildListingsSlug(filters)}
+            items={pool.featured}
             loading={poolLoading}
+            showSpotlight={!hasActiveFilters}
           />
         )}
 
