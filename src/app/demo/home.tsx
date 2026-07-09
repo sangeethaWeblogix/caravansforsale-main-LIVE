@@ -38,6 +38,8 @@ export default function StateHome({ initialFilters }: Props) {
   const [clickid,  setClickid]  = useState<string | null>(null);
   const [ready,    setReady]    = useState(false);
   const [seo,      setSeo]      = useState<SeoV2 | null>(null);
+  const [newSeo,   setNewSeo]   = useState<SeoV2 | null>(null);
+  const [usedSeo,  setUsedSeo]  = useState<SeoV2 | null>(null);
   const [seed,     setSeed]     = useState(1);
   const [pool,     setPool]     = useState<{ featured: Listing[]; new: Listing[]; used: Listing[] }>({ featured: [], new: [], used: [] });
   const [poolLoading, setPoolLoading] = useState(true);
@@ -172,6 +174,26 @@ export default function StateHome({ initialFilters }: Props) {
       .finally(() => setPoolLoading(false));
   }, [poolApiUrl, page]);
 
+  // New/Used grid headings need their own condition-locked seo_v2 (the shared
+  // pool call above is unlocked, so its seo_v2 only covers the page overall).
+  // Featured reuses that page-level seo since there's no dedicated "featured"
+  // seo concept on the backend.
+  useEffect(() => {
+    if (page !== 1) return;
+    const newUrl  = `${buildApiUrl("/api/pool-listings/?per_page=1", filters, seed, "New")}&page=1`;
+    const usedUrl = `${buildApiUrl("/api/pool-listings/?per_page=1", filters, seed, "Used")}&page=1`;
+
+    fetch(newUrl, { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((json) => setNewSeo(json?.data?.seo_v2 ?? json?.seo_v2 ?? null))
+      .catch(() => setNewSeo(null));
+
+    fetch(usedUrl, { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((json) => setUsedSeo(json?.data?.seo_v2 ?? json?.seo_v2 ?? null))
+      .catch(() => setUsedSeo(null));
+  }, [filters, seed, page]);
+
   const pushFiltersToUrl = (f: FilterState) => {
     window.history.pushState({}, "", buildDemoSlug(f));
   };
@@ -267,7 +289,7 @@ export default function StateHome({ initialFilters }: Props) {
         />
 
         <StateListingGrid
-          title="Featured Caravans for Sale"
+          title={seo?.meta_title ? `Featured ${seo.meta_title}` : "Featured Caravans for Sale"}
           viewAllHref="/listings/?state=victoria&featured=1"
           items={pool.featured}
           loading={poolLoading}
@@ -276,15 +298,14 @@ export default function StateHome({ initialFilters }: Props) {
         />
 
         <StateListingGrid
-          title="New Caravans for Sale "
-          viewAllHref="/listings/new-c
-          aravans/?state=victoria"
+          title={newSeo?.meta_title || "New Caravans for Sale"}
+          viewAllHref="/listings/new-caravans/?state=victoria"
           items={pool.new}
           loading={poolLoading}
         />
 
         <StateListingGrid
-          title="Used Caravans for Sale"
+          title={usedSeo?.meta_title || "Used Caravans for Sale"}
           viewAllHref="/listings/used-caravans/?state=victoria"
           items={pool.used}
           loading={poolLoading}
