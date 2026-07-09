@@ -181,6 +181,8 @@ export default function BlogDetailsPage({
   data: BlogDetailResponse;
 }) {
   const [tocItems, setTocItems] = useState<Element[]>([]);
+  const [showFullToc, setShowFullToc] = useState(false);
+  const [browseTab, setBrowseTab] = useState(0);
 
   // ✅ Run DOMParser only on client
   const post = data?.data?.blog_detail;
@@ -230,12 +232,6 @@ export default function BlogDetailsPage({
   const rawCat = (data?.data?.blog_detail?.product_category?.[0] ?? "").trim();
   const catLabel = rawCat ? rawCat.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase()) : "Luxury";
   const catLink  = rawCat ? `/listings/${rawCat.toLowerCase()}-category/` : "/listings/";
-
-  if (!post) {
-    redirect("/404");
-  }
-  const [showFullToc, setShowFullToc] = useState(false);
-  const [browseTab, setBrowseTab] = useState(0);
 
   const blogContentRef = useRef<HTMLDivElement | null>(null);
 
@@ -350,6 +346,10 @@ export default function BlogDetailsPage({
   const readingTime = post?.content
     ? `${Math.max(1, Math.round(stripHtml(post.content).split(/\s+/).length / 200))} min read`
     : null;
+
+  if (!post) {
+    redirect("/404");
+  }
 
   return (
     <div className="blog-page style-5 color-4">
