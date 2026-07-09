@@ -174,25 +174,42 @@ export default function StateHome({ initialFilters }: Props) {
       .finally(() => setPoolLoading(false));
   }, [poolApiUrl, page]);
 
+  // A condition filter already active (e.g. /used-condition) means every
+  // item in the pool is already that condition — showing the OTHER grid
+  // (locked to the opposite condition) would just relabel the same filtered
+  // set under the wrong heading. Only fetch/show the grid(s) that match
+  // whatever condition is (or isn't) already active.
+  const activeCondition = filters.condition?.toLowerCase();
+  const showNewGrid  = !activeCondition || activeCondition === "new";
+  const showUsedGrid = !activeCondition || activeCondition === "used";
+
   // New/Used grid headings need their own condition-locked seo_v2 (the shared
   // pool call above is unlocked, so its seo_v2 only covers the page overall).
   // Featured reuses that page-level seo since there's no dedicated "featured"
   // seo concept on the backend.
   useEffect(() => {
     if (page !== 1) return;
-    const newUrl  = `${buildApiUrl("/api/pool-listings/?per_page=1", filters, seed, "New")}&page=1`;
-    const usedUrl = `${buildApiUrl("/api/pool-listings/?per_page=1", filters, seed, "Used")}&page=1`;
 
-    fetch(newUrl, { cache: "no-store" })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((json) => setNewSeo(json?.data?.seo_v2 ?? json?.seo_v2 ?? null))
-      .catch(() => setNewSeo(null));
+    if (showNewGrid) {
+      const newUrl = `${buildApiUrl("/api/pool-listings/?per_page=1", filters, seed, "New")}&page=1`;
+      fetch(newUrl, { cache: "no-store" })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((json) => setNewSeo(json?.data?.seo_v2 ?? json?.seo_v2 ?? null))
+        .catch(() => setNewSeo(null));
+    } else {
+      setNewSeo(null);
+    }
 
-    fetch(usedUrl, { cache: "no-store" })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((json) => setUsedSeo(json?.data?.seo_v2 ?? json?.seo_v2 ?? null))
-      .catch(() => setUsedSeo(null));
-  }, [filters, seed, page]);
+    if (showUsedGrid) {
+      const usedUrl = `${buildApiUrl("/api/pool-listings/?per_page=1", filters, seed, "Used")}&page=1`;
+      fetch(usedUrl, { cache: "no-store" })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((json) => setUsedSeo(json?.data?.seo_v2 ?? json?.seo_v2 ?? null))
+        .catch(() => setUsedSeo(null));
+    } else {
+      setUsedSeo(null);
+    }
+  }, [filters, seed, page, showNewGrid, showUsedGrid]);
 
   const pushFiltersToUrl = (f: FilterState) => {
     window.history.pushState({}, "", buildDemoSlug(f));
@@ -297,19 +314,23 @@ export default function StateHome({ initialFilters }: Props) {
           hideViewAll
         />
 
-        <StateListingGrid
-          title={newSeo?.meta_title || "New Caravans for Sale"}
-          viewAllHref={buildListingsSlug(filters, "New")}
-          items={pool.new}
-          loading={poolLoading}
-        />
+        {showNewGrid && (
+          <StateListingGrid
+            title={newSeo?.meta_title || "New Caravans for Sale"}
+            viewAllHref={buildListingsSlug(filters, "New")}
+            items={pool.new}
+            loading={poolLoading}
+          />
+        )}
 
-        <StateListingGrid
-          title={usedSeo?.meta_title || "Used Caravans for Sale"}
-          viewAllHref={buildListingsSlug(filters, "Used")}
-          items={pool.used}
-          loading={poolLoading}
-        />
+        {showUsedGrid && (
+          <StateListingGrid
+            title={usedSeo?.meta_title || "Used Caravans for Sale"}
+            viewAllHref={buildListingsSlug(filters, "Used")}
+            items={pool.used}
+            loading={poolLoading}
+          />
+        )}
 
         {maxPages > 1 && pagination}
 
