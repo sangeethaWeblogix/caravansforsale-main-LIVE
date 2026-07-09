@@ -4,6 +4,8 @@ import BlogListClient from "./BlogListClient";
 import { redirect } from "next/navigation";
 import { Metadata } from "next";
 
+export const dynamic = "force-dynamic";
+
 type Params = Promise<{ page?: string }>;
  
 export const metadata: Metadata = {

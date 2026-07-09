@@ -584,7 +584,16 @@ button.more_less {
 }
 .related-products .title {
   font-size: 25px;
-  margin-bottom: 35px;
+  margin-bottom: 10px;
+}
+
+.related-products .hd-section-title {
+    letter-spacing: 0;
+    color: #000 !important;
+    margin: 0 !important;
+    font-size: 25px !important;
+    font-weight: 700 !important;
+    line-height: 1.5 !important;
 }
 
 .tpof_tab {
@@ -758,7 +767,7 @@ tr {
 .blog-hero__right {
   position: relative;
   overflow: hidden;
-  background: #1a3a6b;
+  background: #232323;
 }
 .blog-hero__img {
   position: absolute !important;

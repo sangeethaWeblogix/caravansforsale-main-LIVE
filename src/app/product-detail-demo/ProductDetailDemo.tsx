@@ -459,12 +459,6 @@ const priceUpperIdx = !isPOA ? PRICE_STEPS.findIndex(s => s >= displayPrice) : -
           <span className="pdd-subtitle__badge">$49 Until Sold</span>
         </div>
 
-        {/* Seller type badge */}
-        {product.seller_type && (
-          <div className="pdd-seller-badge">
-            <span>{product.seller_type === "private" ? "Private Seller" : "Dealer"}</span>
-          </div>
-        )}
 
         {/* 2-col layout: content + sidebar */}
         <div className="pdd-layout">
@@ -510,12 +504,12 @@ const priceUpperIdx = !isPOA ? PRICE_STEPS.findIndex(s => s >= displayPrice) : -
                   </div>
                 </div>
               )}
-              {shortLocation && (
+              {product.seller_type && (
                 <div className="pdd-specs-bar__item">
-                  <img src="/images/location.svg" width="20" height="20" alt="" />
+                  <img src="/images/seller.svg" width="20" height="20" alt="" />
                   <div className="pdd-specs-bar__text">
-                    <span className="pdd-specs-bar__val">{shortLocation}</span>
-                    <span className="pdd-specs-bar__lbl">Location</span>
+                    <span className="pdd-specs-bar__val">{product.seller_type === "private" ? "Private Seller" : "Dealer"}</span>
+                    <span className="pdd-specs-bar__lbl">Seller</span>
                   </div>
                 </div>
               )}

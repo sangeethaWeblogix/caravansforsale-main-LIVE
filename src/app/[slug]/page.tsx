@@ -16,27 +16,28 @@ const API_KEY = process.env.CFS_API_KEY; // ✅ Add at top of file
 type PageProps = { params: Promise<RouteParams> };
 
 async function fetchBlogDetail(slug: string) {
-  const res = await fetch(
-    `https://admin.caravansforsale.com.au/wp-json/cfs/v1/blog-detail-new/?slug=${encodeURIComponent(
-      slug
-    )}`,
-    {
-      cache: "no-store",
-      headers: {
-        Accept: "application/json",
-        ...(API_KEY && { "X-API-Key": API_KEY }),
-      },
-    }
-  );
+  try {
+    const res = await fetch(
+      `https://admin.caravansforsale.com.au/wp-json/cfs/v1/blog-detail-new/?slug=${encodeURIComponent(
+        slug
+      )}`,
+      {
+        cache: "no-store",
+        headers: {
+          Accept: "application/json",
+          ...(API_KEY && { "X-API-Key": API_KEY }),
+        },
+      }
+    );
 
-  if (!res.ok) {
-    // Genuine 404/410 — product doesn't exist
+    if (!res.ok) return null;
+
+    const raw = await res.text();
+    const idx = raw.indexOf('{"');
+    return JSON.parse(idx >= 0 ? raw.substring(idx) : raw);
+  } catch {
     return null;
   }
-
-  const raw = await res.text();
-  const idx = raw.indexOf('{"');
-  return JSON.parse(idx > 0 ? raw.substring(idx) : raw);
 }
 
 // ✅ SEO from product.seo (NO images)
@@ -174,13 +175,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
       </div>
     );
   }
-  let data;
-  // try {
-    data = await fetchBlogDetail(slug);
-  // } catch {
-  //   // Network/API failure → throw so ISR keeps old cached HTML
-  //   throw new Error("Product detail API failed");
-  // }
+  const data = await fetchBlogDetail(slug);
 
   if (slug.startsWith("thank-you-")) {
     return <Thankyou />;
