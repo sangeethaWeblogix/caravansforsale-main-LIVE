@@ -6,13 +6,12 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
-import {  type HomeBlogPost } from "@/api/home/api";
+import { useState, useEffect } from "react";
 import { formatPostDate } from "@/utils/date";
 import { toSlug } from "@/utils/seo/slug";
 import BlogCardSkeleton from "./components/homeBlogSkelton";
 
-interface BlogPost extends HomeBlogPost {
-  // ensure fields you use are present
+interface BlogPost {
   id: number;
   title: string;
   image: string;
@@ -22,19 +21,25 @@ interface BlogPost extends HomeBlogPost {
   link?: string;
 }
 
-interface Props {
-  blogPosts : HomeBlogPost[];
-}
+export default function HomeLatestBlogs() {
+  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [loaded, setLoaded] = useState(false);
 
-export default function HomeLatestBlogs({ blogPosts  }: Props) {
-   const posts = (blogPosts ?? []).filter(
-    (p): p is BlogPost => !!p && !!p.id && !!p.title && !!p.slug
-  ); 
+  useEffect(() => {
+    fetch("/api/home-blogs")
+      .then(r => r.ok ? r.json() : [])
+      .then((items: BlogPost[]) => {
+        setPosts(items.filter(p => !!p?.id && !!p?.title && !!p?.slug));
+      })
+      .catch(() => {})
+      .finally(() => setLoaded(true));
+  }, []);
+
   const getHref = (p: BlogPost) => {
     const slug = p.slug?.trim() || toSlug(p.title || "post");
     return `/${slug}/`;
   };
-    const loading = posts.length === 0;
+  const loading = !loaded;
 
 
   return (

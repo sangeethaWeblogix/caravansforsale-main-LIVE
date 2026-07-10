@@ -180,7 +180,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
   if (slug.startsWith("thank-you-")) {
     return <Thankyou />;
   }
-  if (!data) {
+  if (!data || !data?.data?.blog_detail) {
     redirect("/404");
   }
 

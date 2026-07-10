@@ -11,7 +11,6 @@ import { fetchUsedCaravansList } from "@/api/homeApi/usedCaravanList/api";
 import { fetchStateBasedCaravans } from "@/api/homeApi/state/api";
 import { fetchRequirements } from "@/api/postRquirements/api";
 
- import { fetchHomePage, type HomeBlogPost } from "@/api/home/api";
 
 export const revalidate = 86400;
 
@@ -102,9 +101,7 @@ export default async function Page() {
      priceBands,
      usedData,
      stateBands,
-      requirements, 
-            homeblog,
- 
+      requirements,
    ] = await Promise.all([
      fetchSleepBands(),
      fetchRegion(),
@@ -114,9 +111,7 @@ export default async function Page() {
      fetchPriceBasedCaravans(),
      fetchUsedCaravansList(),
      fetchStateBasedCaravans(),
-         fetchRequirements(), // ← add
-         fetchHomePage(),
-
+     fetchRequirements(),
    ]);
    return (
      <>
@@ -134,7 +129,6 @@ export default async function Page() {
        usedData={usedData}
        stateBands={stateBands}
        requirements={requirements}
-         homeblog={homeblog?.latest_posts ?? []}
        />
      </>
    );

@@ -51,8 +51,9 @@ export const fetchBlogs = async (page: number = 1): Promise<BlogPageResult> => {
       return { items: [], currentPage: page, totalPages: 1, total_pages: 1 };
     }
 
-    const data: BlogApiResponse = await res.json();
-    console.log("[Blog API] Response:", JSON.stringify(data).slice(0, 200)); // ✅ data வருதா பாக்க
+    const raw = await res.text();
+    const idx = raw.indexOf('{"');
+    const data = JSON.parse(idx >= 0 ? raw.substring(idx) : raw) as BlogApiResponse;
 
     const lp = data?.data?.latest_blog_posts ?? {
       items: [],
