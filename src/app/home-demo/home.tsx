@@ -209,7 +209,7 @@ export default function HomePage({
 
 
       {/* Latest Blog Section */}
-      <BlogSection blogPosts={homeblog} />
+      <BlogSection />
     </div>
   );
 }

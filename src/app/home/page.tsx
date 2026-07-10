@@ -11,7 +11,6 @@ import { fetchUsedCaravansList } from "@/api/homeApi/usedCaravanList/api";
 import { fetchStateBasedCaravans } from "@/api/homeApi/state/api";
 import { fetchRequirements } from "@/api/postRquirements/api";
 
-import { fetchHomePage, type HomeBlogPost } from "@/api/home/api";
 
  export const metadata: Metadata = {
    title: "Caravans For Sale – Australia’s Marketplace for New & Used Caravans",
@@ -50,8 +49,7 @@ import { fetchHomePage, type HomeBlogPost } from "@/api/home/api";
     priceBands,
     usedData,
     stateBands,
-     requirements,  
-     homeblog,
+     requirements,
   ] = await Promise.all([
     fetchSleepBands(),
     fetchRegion(),
@@ -61,9 +59,7 @@ import { fetchHomePage, type HomeBlogPost } from "@/api/home/api";
     fetchPriceBasedCaravans(),
     fetchUsedCaravansList(),
     fetchStateBasedCaravans(),
-        fetchRequirements(), // ← add
-        fetchHomePage(),
-
+    fetchRequirements(),
   ]);
 console.log("homestate", stateBands)
 
@@ -78,7 +74,6 @@ console.log("homestate", stateBands)
       usedData={usedData}
       stateBands={stateBands}
       requirements={requirements}
-      homeblog={homeblog?.latest_posts ?? []}
     />
   );
 }

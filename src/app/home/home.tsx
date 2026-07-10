@@ -4,8 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import SearchSection from "../searchSection";
-import { type HomeBlogPost } from "@/api/home/api";
-import "./main.css?=23";
+import "./main.css?=24";
 
 const Manufactures = dynamic(() => import("../manufacture"), { ssr: false });
 const BlogSection = dynamic(() => import("../blogSection"), { ssr: false });
@@ -34,7 +33,6 @@ interface Props {
   usedData: { by_category: Item[]; by_state: Item[]; by_region: Item[] };
   stateBands: Item[];
   requirements: any;
-  homeblog: HomeBlogPost[];
 }
 /* --------------------------------- Page ---------------------------------- */
 export default function HomePage({
@@ -47,7 +45,6 @@ export default function HomePage({
   usedData,
   stateBands,
   requirements,
-  homeblog,
 }: Props) {
   const [usedCategoryList, setUsedCategoryList] = useState<Item[]>([]);
   const [usedState, setUsedState] = useState<Item[]>([]);
@@ -114,7 +111,7 @@ export default function HomePage({
       </section>
 
       {/* Latest Blog Section */}
-      <BlogSection blogPosts={homeblog} />
+      <BlogSection />
     </div>
   );
 }
