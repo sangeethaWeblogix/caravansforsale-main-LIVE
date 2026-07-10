@@ -362,6 +362,7 @@ function ListingCard({
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="2" strokeLinecap="round">
               <circle cx="12" cy="12" r="10"/><line x1="12" y1="11" x2="12" y2="17"/><circle cx="12" cy="7.5" r="0.5" fill="#888" stroke="none"/>
             </svg>
+            
             {item.seller_type}
           </span>
         </div>

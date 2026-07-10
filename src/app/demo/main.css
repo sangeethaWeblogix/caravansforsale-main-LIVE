@@ -687,6 +687,15 @@ input.loc-search-input:focus { box-shadow: 0 0 0 1.5px #7e7e7e !important; }
 }
 .lsd-browse__pill:hover { background: #ec7200; border-color: #ec7200; color: #fff; text-decoration: none; }
 
+/* Caps long lists (e.g. Popular Make with 50+ entries) so one panel doesn't
+   dwarf the others — the pills still wrap, just within a scrollable area. */
+.lsd-browse__pills--scroll {
+  max-height: 220px;
+  overflow-y: auto;
+  align-content: flex-start;
+}
+
+
 .lsd-browse__view-all {
   display: inline-flex;
   align-items: center;
@@ -725,6 +734,16 @@ input.loc-search-input:focus { box-shadow: 0 0 0 1.5px #7e7e7e !important; }
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 16px;
+}
+
+/* 2-column variant (e.g. category-mode's Popular Make + Price) */
+.lsd-browse__row2--half {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+/* 3-column variant (e.g. state+region mode's Price/ATM/Sleep) */
+.lsd-browse__row2--three {
+  grid-template-columns: repeat(3, 1fr);
 }
 
 .lsd-browse__filter-col {
@@ -771,6 +790,13 @@ input.loc-search-input:focus { box-shadow: 0 0 0 1.5px #7e7e7e !important; }
 }
 .lsd-browse__filter-link:last-child { border-bottom: none; }
 .lsd-browse__filter-link:hover { color: #ec7200; text-decoration: none; }
+
+/* Caps long lists (e.g. Popular Make with 50+ entries) so one column doesn't
+   dwarf the others next to it. */
+.lsd-browse__filter-links--scroll {
+  max-height: 260px;
+  overflow-y: auto;
+}
 
 /* Browse responsive */
 @media (max-width: 1023px) {
