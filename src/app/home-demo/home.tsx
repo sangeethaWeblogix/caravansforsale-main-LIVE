@@ -137,13 +137,13 @@ export default function HomePage({
       {/* ── Banner Ad ── */}
       <div className="hd-banner-ad">
         <div className="container">
-          <div className="hd-banner-ad__inner">
+          <a href="/listings/aussie-fivestar/" className="hd-banner-ad__inner">
             <span className="hd-banner-ad__label">Advertisement</span>
             <picture>
-              <source media="(max-width: 767px)" srcSet="/images/banner_ad_top-masterpiece-m.jpg" />
-              <img src="/images/banner_ad_top-masterpiece.jpg" alt="Masterpiece Caravans" className="hd-banner-ad__img" />
+              <source media="(max-width: 767px)" srcSet="/images/Aussie-Fivestar-Caravans-1.jpg" />
+              <img src="/images/Aussie-Fivestar-Caravans.jpg" alt="Aussie Fivestar Caravans" className="hd-banner-ad__img" />
             </picture>
-          </div>
+          </a>
         </div>
       </div>
 
