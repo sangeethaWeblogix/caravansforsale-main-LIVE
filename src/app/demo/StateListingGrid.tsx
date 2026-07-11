@@ -62,6 +62,9 @@ interface Props {
   showSpotlight?: boolean;
   hideViewAll?: boolean;
   hideTitle?: boolean;
+  /** Render the title as the page's <h1> instead of <h2> — for pages where
+   * the usual hero (which normally carries the h1) is skipped entirely. */
+  titleAs?: "h1" | "h2";
   skeletonCount?: number;
   page?: number;
   onTotalPages?: (n: number) => void;
@@ -406,7 +409,7 @@ function SkeletonCard() {
 }
 
 /* ── Main grid component ── */
-export default function StateListingGrid({ title, viewAllHref, apiUrl, items: externalItems, loading: externalLoading, showSpotlight, hideViewAll, hideTitle, skeletonCount = 10, page = 1, onTotalPages, onSeo, maxItems }: Props) {
+export default function StateListingGrid({ title, viewAllHref, apiUrl, items: externalItems, loading: externalLoading, showSpotlight, hideViewAll, hideTitle, titleAs = "h2", skeletonCount = 10, page = 1, onTotalPages, onSeo, maxItems }: Props) {
 
   const [fetchedItems,  setFetchedItems]  = useState<Listing[]>([]);
   const [fetchLoading,  setFetchLoading]  = useState(true);
@@ -434,6 +437,8 @@ export default function StateListingGrid({ title, viewAllHref, apiUrl, items: ex
         const products: Listing[]      = json?.data?.products ?? json?.products ?? [];
         const premiumsRaw: Listing[]   = json?.data?.premium_products ?? json?.premium_products ?? [];
         const exclusivesRaw: Listing[] = json?.data?.exclusive_products ?? json?.exclusive_products ?? [];
+        const empExclusivesRaw: Listing[] = json?.data?.emp_exclusive_products ?? json?.emp_exclusive_products ?? [];
+        const totalCount: number = json?.data?.counts?.total_count ?? json?.counts?.total_count ?? products.length;
 
         // Split `products` by whatever slot_bucket value actually comes back —
         // the API isn't limited to just featured/new/used (e.g. "featured_core"
@@ -455,9 +460,13 @@ export default function StateListingGrid({ title, viewAllHref, apiUrl, items: ex
         // then the rest of the pool fills in after. New/Used grids: premium &
         // exclusive vans only ever show on the Featured tab — plain
         // condition-matched products here, nothing spliced in.
-        const merged: Listing[] = showSpotlight
-          ? buildFeaturedOrder(products, premiumsRaw, exclusivesRaw)
-          : products.filter((p) => !p.is_premium && !p.is_exclusive);
+        // No products at all — fall back to the emp_exclusive_products pool
+        // so the section isn't empty, all shown with the Spotlight Van design.
+        const merged: Listing[] = totalCount === 0 && empExclusivesRaw.length > 0
+          ? empExclusivesRaw.map((p) => ({ ...p, is_exclusive: true }))
+          : showSpotlight
+            ? buildFeaturedOrder(products, premiumsRaw, exclusivesRaw)
+            : products.filter((p) => !p.is_premium && !p.is_exclusive);
 
         setFetchedItems(maxItems ? merged.slice(0, maxItems) : merged);
         onTotalPages?.(json?.pagination?.total_pages ?? 1);
@@ -481,7 +490,9 @@ export default function StateListingGrid({ title, viewAllHref, apiUrl, items: ex
         <div className="container">
           {!hideTitle && (
             <div className="lsd-grid-header">
-              <h2 className="lsd-grid-title">{title}</h2>
+              {titleAs === "h1"
+                ? <h1 className="lsd-grid-title">{title}</h1>
+                : <h2 className="lsd-grid-title">{title}</h2>}
               {!hideViewAll && (
                 <Link href={viewAllHref} className="lsd-grid-viewall">
                   View all

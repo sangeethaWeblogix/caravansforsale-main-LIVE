@@ -48,6 +48,11 @@ export default function StateHome({ initialFilters }: Props) {
   // nothing to split, so page 1 shows one combined grid instead of a
   // fabricated Featured/New/Used split.
   const [slotBucketPresent, setSlotBucketPresent] = useState(true);
+  // Whether the current canonical /listings/ URL is in url.csv's curated
+  // indexed set — gates the full hero banner (image + description) and the
+  // Featured/New/Used split, both of which are only worth it on the pages
+  // that are actually meant to be indexed/crawled.
+  const [isIndexed, setIsIndexed] = useState(true);
   console.log("seoo89", seo)
 
   // Push the API's seo_v2 into the browser tab title + meta description.
@@ -117,6 +122,15 @@ export default function StateHome({ initialFilters }: Props) {
 
   const handleTotalPages = (n: number) => setMaxPages(prev => Math.max(prev, n));
 
+  useEffect(() => {
+    if (page !== 1) return;
+    const canonicalPath = buildListingsSlug(filters);
+    fetch(`/api/indexed-url/?path=${encodeURIComponent(canonicalPath)}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((json) => setIsIndexed(json?.indexed ?? false))
+      .catch(() => setIsIndexed(false));
+  }, [filters, page]);
+
   // Page 1 uses ONE shared pool call (same shape as before, just no condition
   // lock + a bigger per_page) split by slot_bucket into Featured/New/Used —
   // instead of 3 separate condition-locked API calls.
@@ -137,12 +151,19 @@ export default function StateHome({ initialFilters }: Props) {
         const products: Listing[]      = json?.data?.products ?? json?.products ?? [];
         const premiumsRaw: Listing[]   = json?.data?.premium_products ?? json?.premium_products ?? [];
         const exclusivesRaw: Listing[] = json?.data?.exclusive_products ?? json?.exclusive_products ?? [];
+        const empExclusivesRaw: Listing[] = json?.data?.emp_exclusive_products ?? json?.emp_exclusive_products ?? [];
+        const totalCount: number = json?.data?.counts?.total_count ?? json?.counts?.total_count ?? products.length;
         const bucketPresent: boolean =
           json?.data?.pagination?.slot_bucket_present ?? json?.pagination?.slot_bucket_present ?? false;
         console.log("[StateHome] slot_bucket_present:", bucketPresent);
         setSlotBucketPresent(bucketPresent);
 
-        if (bucketPresent) {
+        if (totalCount === 0 && empExclusivesRaw.length > 0) {
+          // No products at all — fall back to the emp_exclusive_products pool
+          // so the page isn't empty, all shown with the Spotlight Van design.
+          const empItems = empExclusivesRaw.map((p) => ({ ...p, is_exclusive: true }));
+          setPool({ featured: empItems, new: [], used: [] });
+        } else if (bucketPresent) {
           // The API tags products with slot_bucket — use it to pick exactly
           // which products feed Featured/New/Used. Premium and exclusive vans
           // always come from their own top-level arrays and only render on
@@ -171,13 +192,19 @@ export default function StateHome({ initialFilters }: Props) {
       .finally(() => setPoolLoading(false));
   }, [poolApiUrl, page]);
 
+  // Only split into Featured/New/Used when the backend actually supports the
+  // split (slot_bucket_present) AND this URL is one url.csv curates as
+  // indexed — non-indexed pages (condition-only, deep filter combos, etc.)
+  // always get a single combined grid regardless of what the backend returns.
+  const showSplitSections = isIndexed && slotBucketPresent;
+
   // New/Used grid headings need their own condition-locked seo_v2 (the shared
   // pool call above is unlocked, so its seo_v2 only covers the page overall).
   // Featured reuses that page-level seo since there's no dedicated "featured"
-  // seo concept on the backend. Skipped entirely once the pool call itself
-  // reports no slot_bucket split (nothing to show these titles on).
+  // seo concept on the backend. Skipped entirely once split sections aren't
+  // being shown (nothing to show these titles on).
   useEffect(() => {
-    if (page !== 1 || !slotBucketPresent) {
+    if (page !== 1 || !showSplitSections) {
       setNewSeo(null);
       setUsedSeo(null);
       return;
@@ -194,7 +221,7 @@ export default function StateHome({ initialFilters }: Props) {
       .then((r) => (r.ok ? r.json() : null))
       .then((json) => setUsedSeo(json?.data?.seo_v2 ?? json?.seo_v2 ?? null))
       .catch(() => setUsedSeo(null));
-  }, [filters, seed, page, slotBucketPresent]);
+  }, [filters, seed, page, showSplitSections]);
 
   const pushFiltersToUrl = (f: FilterState) => {
     window.history.pushState({}, "", buildDemoSlug(f));
@@ -281,7 +308,10 @@ export default function StateHome({ initialFilters }: Props) {
     console.log("seooo", seo?.h1)
     return (
       <div className="lsd-page">
-        <StateHero title={seo?.h1} />
+        {/* Non-indexed pages skip the hero entirely (no banner, no
+            breadcrumb, no whitespace) — the grid title below becomes the
+            page's <h1> instead. */}
+        {isIndexed && <StateHero title={seo?.h1} description={seo?.meta_description} />}
 
 
         <StateFilterBar
@@ -290,7 +320,7 @@ export default function StateHome({ initialFilters }: Props) {
           onClearAll={handleClearAll}
         />
 
-        {slotBucketPresent ? (
+        {showSplitSections ? (
           <>
             <StateListingGrid
               title={seo?.meta_title ? `Featured ${seo.meta_title}` : "Featured Caravans for Sale"}
@@ -318,8 +348,11 @@ export default function StateHome({ initialFilters }: Props) {
         ) : (
           // Backend collapsed the New/Used split (e.g. a condition filter is
           // already active) — one combined grid instead of a fabricated split.
+          // Non-indexed pages skip the hero, so this title carries the page's
+          // actual <h1> (with count) instead of the hero's h1.
           <StateListingGrid
-            title={seo?.meta_title || "Caravans for Sale"}
+            title={!isIndexed ? (seo?.h1 || "Caravans for Sale") : (seo?.meta_title || "Caravans for Sale")}
+            titleAs={!isIndexed ? "h1" : "h2"}
             viewAllHref={buildListingsSlug(filters)}
             items={pool.featured}
             loading={poolLoading}
@@ -342,13 +375,13 @@ export default function StateHome({ initialFilters }: Props) {
     <div className="lsd-page">
       <div className="lsd-paged-header">
         <div className="container">
-          <nav className="lsd-paged-breadcrumb" aria-label="Breadcrumb">
+          {/* <nav className="lsd-paged-breadcrumb" aria-label="Breadcrumb">
             <Link href="/">Home</Link>
             <svg width="10" height="16" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
             <Link href="/listings/">Caravans for Sale</Link>
             <svg width="10" height="16" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
             <span>Victoria</span>
-          </nav>
+          </nav> */}
           <h1 className="lsd-paged-title">{seo?.h1 || "Caravans for Sale in Victoria"}</h1>
         </div>
       </div>

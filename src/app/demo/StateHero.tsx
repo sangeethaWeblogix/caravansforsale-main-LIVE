@@ -35,9 +35,12 @@ const TRUST_ITEMS = [
 
 interface Props {
   title?: string;
+  description?: string;
 }
 
-export default function StateHero({ title }: Props) {
+// Only rendered at all for indexed pages (see home.tsx) — non-indexed pages
+// skip this component entirely rather than showing a stripped-down version.
+export default function StateHero({ title, description }: Props) {
   return (
     <section className="lsd-hero">
       {/* Background image — right side */}
@@ -52,22 +55,23 @@ export default function StateHero({ title }: Props) {
       <div className="container" style={{ position: "relative", zIndex: 2 }}>
         {/* Text content */}
         <div className="lsd-hero__content">
-          <nav className="lsd-breadcrumb" aria-label="breadcrumb">
+          {/* <nav className="lsd-breadcrumb" aria-label="breadcrumb">
             <a href="/">Home</a>
             <svg width="12" height="20" viewBox="0 0 24 24" fill="none" stroke="#3e3e3e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0,display:"block"}} aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
             <a href="/listings/">Caravans for Sale</a>
             <svg width="12" height="20" viewBox="0 0 24 24" fill="none" stroke="#3e3e3e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0,display:"block"}} aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
             <span>Victoria</span>
-          </nav>
+          </nav> */}
 
           <h1 className="lsd-hero__title">
             {title || "Caravans for Sale in Victoria"}
           </h1>
 
           <p className="lsd-hero__desc">
-            Browse new and used caravans for sale in Victoria from dealers and private sellers.
-            Find off road caravans, family caravans, luxury caravans, pop tops, hybrids and
-            touring caravans across Melbourne, Geelong, Ballarat, Bendigo and regional Victoria.
+            {description ||
+              "Browse new and used caravans for sale in Victoria from dealers and private sellers. " +
+              "Find off road caravans, family caravans, luxury caravans, pop tops, hybrids and " +
+              "touring caravans across Melbourne, Geelong, Ballarat, Bendigo and regional Victoria."}
           </p>
         </div>
 
