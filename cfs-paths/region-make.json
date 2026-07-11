@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "region-make",
-    "count": 1053,
+    "count": 1055,
     "paths": [
         "australian-capital-territory-state/australian-capital-territory-region/avida/",
         "australian-capital-territory-state/australian-capital-territory-region/crusader/",
@@ -690,15 +690,13 @@
         "victoria-state/bendigo-region/design-rv/",
         "victoria-state/bendigo-region/donway/",
         "victoria-state/bendigo-region/dreamhaven/",
-        "victoria-state/bendigo-region/evernew/",
-        "victoria-state/bendigo-region/franklin/",
         "victoria-state/bendigo-region/goldstar-rv/",
         "victoria-state/bendigo-region/inspired-rv/",
         "victoria-state/bendigo-region/jayco/",
         "victoria-state/bendigo-region/masterpiece/",
-        "victoria-state/bendigo-region/newlands/",
         "victoria-state/bendigo-region/regent/",
         "victoria-state/bendigo-region/roma/",
+        "victoria-state/bendigo-region/seascape/",
         "victoria-state/bendigo-region/snowy-river/",
         "victoria-state/bendigo-region/swag/",
         "victoria-state/bendigo-region/viscount/",
@@ -708,6 +706,7 @@
         "victoria-state/geelong-region/bellarine/",
         "victoria-state/geelong-region/blue-sky/",
         "victoria-state/geelong-region/cedar/",
+        "victoria-state/geelong-region/coromal/",
         "victoria-state/geelong-region/davsher/",
         "victoria-state/geelong-region/evernew/",
         "victoria-state/geelong-region/ezytrail/",
@@ -798,6 +797,7 @@
         "victoria-state/melbourne-region/ask-innovation/",
         "victoria-state/melbourne-region/atlantic/",
         "victoria-state/melbourne-region/atlas/",
+        "victoria-state/melbourne-region/aura/",
         "victoria-state/melbourne-region/aus-wide/",
         "victoria-state/melbourne-region/ausflex/",
         "victoria-state/melbourne-region/aussie-fivestar/",
@@ -805,6 +805,7 @@
         "victoria-state/melbourne-region/avan/",
         "victoria-state/melbourne-region/billabong/",
         "victoria-state/melbourne-region/blue-sky/",
+        "victoria-state/melbourne-region/bluewater/",
         "victoria-state/melbourne-region/boss-adventure/",
         "victoria-state/melbourne-region/boutique/",
         "victoria-state/melbourne-region/cadillac-rv/",
@@ -1042,6 +1043,7 @@
         "western-australia-state/perth-region/willow-rv/",
         "western-australia-state/perth-region/windsor/",
         "western-australia-state/perth-region/x-series-rv/",
+        "western-australia-state/perth-region/xtour/",
         "western-australia-state/perth-region/zone-rv/",
         "western-australia-state/western-australia-outback-south-region/avan/",
         "western-australia-state/western-australia-outback-south-region/coromal/",
@@ -1057,5 +1059,5 @@
         "western-australia-state/western-australia-outback-south-region/western/",
         "western-australia-state/western-australia-outback-south-region/windsor/"
     ],
-    "generated_at": "2026-07-10 15:43:56"
+    "generated_at": "2026-07-11 15:56:19"
 }

@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "state-make",
-    "count": 626,
+    "count": 628,
     "paths": [
         "australian-capital-territory-state/avida/",
         "australian-capital-territory-state/crusader/",
@@ -408,6 +408,7 @@
         "victoria-state/bellarine/",
         "victoria-state/billabong/",
         "victoria-state/blue-sky/",
+        "victoria-state/bluewater/",
         "victoria-state/boss-adventure/",
         "victoria-state/boutique/",
         "victoria-state/brilliant/",
@@ -628,7 +629,8 @@
         "western-australia-state/willow-rv/",
         "western-australia-state/windsor/",
         "western-australia-state/x-series-rv/",
+        "western-australia-state/xtour/",
         "western-australia-state/zone-rv/"
     ],
-    "generated_at": "2026-07-10 15:43:56"
+    "generated_at": "2026-07-11 15:56:19"
 }
