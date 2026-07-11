@@ -41,26 +41,59 @@ const ROUTES_CACHE_TTL = 300000; // 5 minutes
 
 // ============================================
 // GEO-BLOCK: Australia-only (defense-in-depth)
-// Mirrors the Cloudflare WAF custom rule. WAF runs before the Worker,
-// but this catches any edge cases where WAF is bypassed or misconfigured.
-// Add whitelisted IPs here to match your $whitelist_ips WAF variable.
+// Whitelist IPs are read from Cloudflare Custom List "whitelist_ips".
+// To add/remove IPs: Cloudflare dashboard → Configurations → Lists → whitelist_ips
+// Changes take effect within 5 minutes (cache TTL) — no redeployment needed.
+// Requires Worker secret: CF_API_TOKEN (Account Filter Lists: Read permission)
 // ============================================
-const WHITELIST_IPS = [
-  // Add your whitelisted IPs here, e.g.:
-  // '1.2.3.4',
-  // '5.6.7.8',
-];
 
-function isGeoBlocked(request) {
+const CF_ACCOUNT_ID = '22d65edb10b8bf056c919186882a46b7';
+const CF_WHITELIST_LIST_ID = '9801142e49d84a109155c8ab46295322';
+
+// In-memory whitelist cache (per isolate, refreshed every 5 minutes)
+let cachedWhitelistIPs = null;
+let whitelistCacheTimestamp = 0;
+const WHITELIST_CACHE_TTL = 300000; // 5 minutes
+
+async function getWhitelistIPs(env) {
+  const now = Date.now();
+  if (cachedWhitelistIPs !== null && (now - whitelistCacheTimestamp) < WHITELIST_CACHE_TTL) {
+    return cachedWhitelistIPs;
+  }
+  try {
+    const response = await fetch(
+      `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/rules/lists/${CF_WHITELIST_LIST_ID}/items?per_page=1000`,
+      {
+        headers: {
+          'Authorization': `Bearer ${env.CF_API_TOKEN}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+    const data = await response.json();
+    if (data.success && Array.isArray(data.result)) {
+      cachedWhitelistIPs = data.result.map(item => item.ip).filter(Boolean);
+    } else {
+      console.error('CF API whitelist fetch failed:', JSON.stringify(data.errors));
+      cachedWhitelistIPs = cachedWhitelistIPs || []; // keep stale cache on error
+    }
+  } catch (e) {
+    console.error('Failed to fetch whitelist from CF API:', e.message);
+    cachedWhitelistIPs = cachedWhitelistIPs || []; // keep stale cache on error
+  }
+  whitelistCacheTimestamp = now;
+  return cachedWhitelistIPs;
+}
+
+async function isGeoBlocked(request, env) {
   const country = request.cf?.country;
   if (country === 'AU') return false; // Allow Australia
 
   const clientIp = request.headers.get('CF-Connecting-IP') || '';
-  if (WHITELIST_IPS.includes(clientIp)) return false; // Allow whitelisted IPs
+  const whitelist = await getWhitelistIPs(env);
+  if (whitelist.includes(clientIp)) return false; // Allow whitelisted IPs
 
   // Only allow verified search engine crawlers (Googlebot, Bingbot etc.)
-  // Do NOT exempt all cf.client.bot — mobile carrier proxies (e.g. T-Mobile) also
-  // trigger cf.client.bot = true and would bypass the geo-block unintentionally.
   const botCategory = request.cf?.verifiedBotCategory || '';
   if (botCategory === 'Search Engine Crawlers') return false;
 
@@ -82,7 +115,7 @@ export default {
     // ============================================
     // GEO-BLOCK CHECK (defense-in-depth)
     // ============================================
-    if (isGeoBlocked(request)) {
+    if (await isGeoBlocked(request, env)) {
       return new Response(
         '<!DOCTYPE html><html><head><title>Access Restricted</title></head><body><h1>Access Restricted</h1><p>This website is only available in Australia.</p></body></html>',
         {
