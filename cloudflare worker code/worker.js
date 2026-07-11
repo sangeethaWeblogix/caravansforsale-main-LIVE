@@ -39,9 +39,62 @@ let cachedRoutesMapping = null;
 let cacheTimestamp = 0;
 const ROUTES_CACHE_TTL = 300000; // 5 minutes
 
+// ============================================
+// GEO-BLOCK: Australia-only (defense-in-depth)
+// Mirrors the Cloudflare WAF custom rule. WAF runs before the Worker,
+// but this catches any edge cases where WAF is bypassed or misconfigured.
+// Add whitelisted IPs here to match your $whitelist_ips WAF variable.
+// ============================================
+const WHITELIST_IPS = [
+  // Add your whitelisted IPs here, e.g.:
+  // '1.2.3.4',
+  // '5.6.7.8',
+];
+
+function isGeoBlocked(request) {
+  const country = request.cf?.country;
+  if (country === 'AU') return false; // Allow Australia
+
+  const clientIp = request.headers.get('CF-Connecting-IP') || '';
+  if (WHITELIST_IPS.includes(clientIp)) return false; // Allow whitelisted IPs
+
+  // Only allow verified search engine crawlers (Googlebot, Bingbot etc.)
+  // Do NOT exempt all cf.client.bot — mobile carrier proxies (e.g. T-Mobile) also
+  // trigger cf.client.bot = true and would bypass the geo-block unintentionally.
+  const botCategory = request.cf?.verifiedBotCategory || '';
+  if (botCategory === 'Search Engine Crawlers') return false;
+
+  return true; // Block everyone else
+}
+
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
+
+    // ============================================
+    // BYPASS: Cloudflare system paths (/cdn-cgi/)
+    // These are handled internally by Cloudflare and must never reach Vercel.
+    // ============================================
+    if (url.pathname.startsWith('/cdn-cgi/')) {
+      return fetch(request);
+    }
+
+    // ============================================
+    // GEO-BLOCK CHECK (defense-in-depth)
+    // ============================================
+    if (isGeoBlocked(request)) {
+      return new Response(
+        '<!DOCTYPE html><html><head><title>Access Restricted</title></head><body><h1>Access Restricted</h1><p>This website is only available in Australia.</p></body></html>',
+        {
+          status: 403,
+          headers: {
+            'Content-Type': 'text/html;charset=UTF-8',
+            'X-CFS-Cache': 'GEO-BLOCKED',
+            'Cache-Control': 'no-store',
+          }
+        }
+      );
+    }
 
     // Only process GET requests
     if (request.method !== 'GET') {
