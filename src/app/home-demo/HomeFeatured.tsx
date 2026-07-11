@@ -27,6 +27,7 @@ async function fetchFeaturedListings(): Promise<Listing[]> {
   const requestUrl = "/api/home-featured/?type=all";
   console.log("[HomeFeatured] API:", requestUrl);
   const res = await fetch(requestUrl, { cache: "no-store" });
+  console.log("[HomeFeatured] visitor IP forwarded:", res.headers.get("x-debug-visitor-ip"));
   if (!res.ok) return [];
   const json = await res.json();
   console.log("[HomeFeatured] API response:", json);

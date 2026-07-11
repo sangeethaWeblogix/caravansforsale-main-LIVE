@@ -38,7 +38,9 @@ export async function GET(request: NextRequest) {
     const raw = await res.text();
     const jsonStart = raw.indexOf('{');
     const data = JSON.parse(jsonStart > 0 ? raw.substring(jsonStart) : raw);
-    return NextResponse.json(data);
+    return NextResponse.json(data, {
+      headers: { "X-Debug-Visitor-IP": visitorIp || "(none)" },
+    });
   } catch (err: any) {
     clearTimeout(timeoutId);
     const status = err?.name === "AbortError" ? 504 : 500;

@@ -40,7 +40,10 @@ export default function HomeListingSlider({ title, viewAllHref, apiUrl, badgeVar
   useEffect(() => {
     console.log(`[HomeListingSlider] "${title}" API:`, apiUrl);
     fetch(apiUrl, { cache: "no-store" })
-      .then((r) => (r.ok ? r.json() : null))
+      .then((r) => {
+        console.log(`[HomeListingSlider] "${title}" visitor IP forwarded:`, r.headers.get("x-debug-visitor-ip"));
+        return r.ok ? r.json() : null;
+      })
       .then((json) => {
         console.log(`[HomeListingSlider] "${title}" API response:`, json);
         setItems(json?.data?.products ?? json?.products ?? (Array.isArray(json?.data) ? json.data : []) ?? []);
