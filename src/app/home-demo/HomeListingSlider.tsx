@@ -6,6 +6,7 @@ import type { Swiper as SwiperType } from "swiper";
 import "swiper/css";
 import Link from "next/link";
 import Image from "next/image";
+import { getLocationLabel } from "./locationUtils";
 
 type Listing = {
   id: number;
@@ -13,6 +14,7 @@ type Listing = {
   slug: string;
   condition: string;
   location: string;
+  state?: string;
   regular_price: string;
   sale_price: string;
   categories: string[];
@@ -36,12 +38,19 @@ export default function HomeListingSlider({ title, viewAllHref, apiUrl, badgeVar
   const [isEnd, setIsEnd] = useState(false);
 
   useEffect(() => {
+    console.log(`[HomeListingSlider] "${title}" API:`, apiUrl);
     fetch(apiUrl, { cache: "no-store" })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((json) => setItems(json?.data?.products ?? []))
+      .then((r) => {
+        console.log(`[HomeListingSlider] "${title}" visitor IP forwarded:`, r.headers.get("x-debug-visitor-ip"));
+        return r.ok ? r.json() : null;
+      })
+      .then((json) => {
+        console.log(`[HomeListingSlider] "${title}" API response:`, json);
+        setItems(json?.data?.products ?? json?.products ?? (Array.isArray(json?.data) ? json.data : []) ?? []);
+      })
       .catch(() => setItems([]))
       .finally(() => setLoading(false));
-  }, [apiUrl]);
+  }, [apiUrl, title]);
 
   if (loading) {
     return (
@@ -94,6 +103,7 @@ export default function HomeListingSlider({ title, viewAllHref, apiUrl, badgeVar
               const price = item.sale_price || item.regular_price || "POA";
               const image = item.image_format?.[0] ?? null;
               const type = item.categories?.[0] ?? "";
+              const location = getLocationLabel(item);
 
               return (
                 <SwiperSlide key={item.id ?? idx}>
@@ -113,10 +123,10 @@ export default function HomeListingSlider({ title, viewAllHref, apiUrl, badgeVar
                     <div className="hf-card__body">
                       <h3 className="hf-card__title">{item.name}</h3>
                       <div className="hf-card__meta">
-                        {item.location && (
+                        {location && (
                           <span className="hf-card__meta-item">
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                            {item.location}
+                            {location}
                           </span>
                         )}
                         <span className="hf-card__meta-item">
