@@ -363,7 +363,7 @@ export default function StateHome({ initialFilters }: Props) {
         {maxPages > 1 && pagination}
 
         <StateBrowseSection state={filters.state} region={filters.region} category={filters.category} />
-        <StateContent />
+        <StateContent footerDescription={seo?.footer_description} faq={seo?.faq} />
       </div>
     );
   }
@@ -408,7 +408,7 @@ export default function StateHome({ initialFilters }: Props) {
       {maxPages > 1 && pagination}
 
       <StateBrowseSection state={filters.state} region={filters.region} category={filters.category} />
-      <StateContent />
+      <StateContent footerDescription={seo?.footer_description} faq={seo?.faq} />
     </div>
   );
 }
