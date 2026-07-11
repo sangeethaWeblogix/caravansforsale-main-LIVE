@@ -36,12 +36,16 @@ export default function HomeListingSlider({ title, viewAllHref, apiUrl, badgeVar
   const [isEnd, setIsEnd] = useState(false);
 
   useEffect(() => {
+    console.log(`[HomeListingSlider] "${title}" API:`, apiUrl);
     fetch(apiUrl, { cache: "no-store" })
       .then((r) => (r.ok ? r.json() : null))
-      .then((json) => setItems(json?.data?.products ?? []))
+      .then((json) => {
+        console.log(`[HomeListingSlider] "${title}" API response:`, json);
+        setItems(json?.data?.products ?? json?.products ?? (Array.isArray(json?.data) ? json.data : []) ?? []);
+      })
       .catch(() => setItems([]))
       .finally(() => setLoading(false));
-  }, [apiUrl]);
+  }, [apiUrl, title]);
 
   if (loading) {
     return (

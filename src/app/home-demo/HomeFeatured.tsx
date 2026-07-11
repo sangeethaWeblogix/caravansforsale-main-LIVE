@@ -22,10 +22,13 @@ type Listing = {
 };
 
 async function fetchFeaturedListings(): Promise<Listing[]> {
-  const res = await fetch("/api/listings/?per_page=12", { cache: "no-store" });
+  const requestUrl = "/api/home-featured/?type=all";
+  console.log("[HomeFeatured] API:", requestUrl);
+  const res = await fetch(requestUrl, { cache: "no-store" });
   if (!res.ok) return [];
   const json = await res.json();
-  return json?.data?.products ?? [];
+  console.log("[HomeFeatured] API response:", json);
+  return json?.data?.products ?? json?.products ?? (Array.isArray(json?.data) ? json.data : []) ?? [];
 }
 
 export default function HomeFeatured() {
