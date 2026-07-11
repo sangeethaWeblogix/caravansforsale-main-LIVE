@@ -30,19 +30,14 @@ function FaqItem({ q, a }: Faq) {
           {open ? <line x1="5" y1="12" x2="19" y2="12"/> : <><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></>}
         </svg>
       </button>
-      {open && <p className="lsd-faq__a">{a}</p>}
+      {open && <div className="lsd-faq__a" dangerouslySetInnerHTML={{ __html: a }} />}
     </div>
   );
 }
 
 export default function StateContent({ footerDescription, faq }: Props) {
-  const paragraphs = (footerDescription ?? "")
-    .split(/\r?\n/)
-    .map((p) => p.trim())
-    .filter(Boolean);
-  const faqItems = parseFaq(faq);
-
-  const showLeft  = paragraphs.length > 0;
+  const showLeft  = !!footerDescription?.trim();
+  const faqItems  = parseFaq(faq);
   const showRight = faqItems.length > 0;
 
   if (!showLeft && !showRight) return null;
@@ -53,12 +48,10 @@ export default function StateContent({ footerDescription, faq }: Props) {
         <div className="lsd-content__grid">
 
           {showLeft && (
-            <div className="lsd-content__left">
-              <h2 className="lsd-content__title">Buying a Caravan</h2>
-              {paragraphs.map((p, i) => (
-                <p key={i} className="lsd-content__body">{p}</p>
-              ))}
-            </div>
+            <div
+              className="lsd-content__left lsd-content__body"
+              dangerouslySetInnerHTML={{ __html: footerDescription! }}
+            />
           )}
 
           {showRight && (

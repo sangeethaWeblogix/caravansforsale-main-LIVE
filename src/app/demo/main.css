@@ -835,6 +835,22 @@ input.loc-search-input:focus { box-shadow: 0 0 0 1.5px #7e7e7e !important; }
     line-height: 1.8;
 }
 
+.lsd-content__body h3 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #000000;
+  margin-bottom: 16px;
+}
+
+.lsd-content__body p { margin-bottom: 14px; }
+.lsd-content__body strong { font-weight: 700; }
+.lsd-content__body a {
+  color: #1c4d8e;
+  font-weight: 600;
+  text-decoration: none;
+}
+.lsd-content__body a:hover { color: #ec7200; text-decoration: underline; }
+
 .lsd-content__link {
   font-size: 14px;
   color: #1c4d8e;
@@ -876,6 +892,15 @@ input.loc-search-input:focus { box-shadow: 0 0 0 1.5px #7e7e7e !important; }
     font-size: 15px;
     line-height: 1.7;
 }
+.lsd-faq__a p { margin: 0 0 10px; }
+.lsd-faq__a p:last-child { margin-bottom: 0; }
+.lsd-faq__a strong { font-weight: 700; }
+.lsd-faq__a a {
+  color: #1c4d8e;
+  font-weight: 600;
+  text-decoration: none;
+}
+.lsd-faq__a a:hover { color: #ec7200; text-decoration: underline; }
 
 /* ── Trust Row ── */
 .lsd-trust {
