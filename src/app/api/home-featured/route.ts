@@ -7,6 +7,12 @@ export async function GET(request: NextRequest) {
   const type = request.nextUrl.searchParams.get("type") ?? "all";
   const url = `${API_BASE}/home_featured?type=${encodeURIComponent(type)}`;
 
+  const visitorIp =
+    request.headers.get("cf-connecting-ip") ||
+    request.headers.get("x-forwarded-for")?.split(",")[0].trim() ||
+    request.headers.get("x-real-ip") ||
+    "";
+
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 30000);
   const t0 = Date.now();
@@ -17,12 +23,13 @@ export async function GET(request: NextRequest) {
       headers: {
         Accept: "application/json",
         ...(API_KEY && { "X-API-Key": API_KEY }),
+        ...(visitorIp && { "X-Visitor-IP": visitorIp }),
       },
       cache: "no-store",
     });
 
     clearTimeout(timeoutId);
-    console.log(`[WP API] home_featured type=${type} — ${Date.now() - t0}ms`);
+    console.log(`[WP API] home_featured type=${type} ip=${visitorIp || "(none)"} — ${Date.now() - t0}ms`);
 
     if (!res.ok) {
       return NextResponse.json({ success: false }, { status: res.status });
