@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "state-make",
-    "count": 628,
+    "count": 629,
     "paths": [
         "australian-capital-territory-state/avida/",
         "australian-capital-territory-state/crusader/",
@@ -99,6 +99,7 @@
         "new-south-wales-state/signature/",
         "new-south-wales-state/silver-valley/",
         "new-south-wales-state/snowy-river/",
+        "new-south-wales-state/star-vision/",
         "new-south-wales-state/stoney-creek/",
         "new-south-wales-state/summit/",
         "new-south-wales-state/sunfinder/",
@@ -550,7 +551,6 @@
         "western-australia-state/billabong/",
         "western-australia-state/bushmaster/",
         "western-australia-state/bushtracker/",
-        "western-australia-state/complete-campsite/",
         "western-australia-state/concept/",
         "western-australia-state/coromal/",
         "western-australia-state/crusader/",
@@ -571,6 +571,7 @@
         "western-australia-state/goldstream-rv/",
         "western-australia-state/golf/",
         "western-australia-state/gypsy-king/",
+        "western-australia-state/ideal-rv/",
         "western-australia-state/jayco/",
         "western-australia-state/jb/",
         "western-australia-state/jurgens/",
@@ -632,5 +633,5 @@
         "western-australia-state/xtour/",
         "western-australia-state/zone-rv/"
     ],
-    "generated_at": "2026-07-11 15:56:19"
+    "generated_at": "2026-07-12 16:55:59"
 }
