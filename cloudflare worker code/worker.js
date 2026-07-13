@@ -3,12 +3,13 @@
  * 
  * Cache Priority:
  * 1. Images (30-day cache)
- * 2. /api/listings JSON cache — serve from KV, stale fallback when API down
+ * 2a. /api/listings JSON cache — serve from KV (old listing design, kept for compatibility)
+ * 2b. /api/pool-listings JSON cache — serve from KV (new listing design, json:pool: prefix)
  * 3. Static HTML from KV (routes-mapping lookup) — ONLY for clean paths (no query params)
  * 4. Pass through to origin (Vercel) — for filtered/sorted/paginated pages
  *
  * Features:
- * - JSON cache for /api/listings: KV-backed, passive (admin-controlled), API-down resilience.
+ * - JSON cache for /api/listings and /api/pool-listings: KV-backed, passive (admin-controlled).
  *   No stale-while-revalidate, no predictive pre-warming — KV is served as-is until the
  *   WP admin warmer overwrites it. Non-indexed (noindex) requests skip KV entirely.
  * - Bypasses HTML cache for ANY query params to prevent hydration errors
@@ -209,6 +210,17 @@ export default {
       }
 
       // ============================================
+      // PRIORITY 2b: JSON Cache for /api/pool-listings (new listing design)
+      // ============================================
+      // Same KV logic as /api/listings above, but uses json:pool: key prefix.
+      // Strips seed, per_page from key so variant/paging don't fragment the cache.
+      // Warmer populates json:pool: keys; MISS falls through to Vercel → WP.
+      // ============================================
+      if (url.pathname === '/api/pool-listings' || url.pathname === '/api/pool-listings/') {
+        return await handlePoolApiCache(request, url, env);
+      }
+
+      // ============================================
       // PRIORITY 3: Bypass HTML cache for ANY query parameters
       // ============================================
       // This is CRITICAL for preventing hydration errors.
@@ -393,6 +405,94 @@ async function handleJsonApiCache(request, url, env) {
 }
 
 // ============================================
+// JSON POOL CACHE (/api/pool-listings)
+// ============================================
+/**
+ * Builds a normalised KV cache key for pool-listings requests.
+ * Strips non-filter params (seed, per_page, clickid, msid, indexed) so every
+ * seed variant and page size maps to the same cache entry.
+ * Keeps `page` in the key because page > 1 has a different response shape
+ * (no slot_bucket) and the warmer only populates page=1 entries.
+ * Prefix: json:pool: (distinct from json:api: used by /api/listings).
+ */
+function buildPoolCacheKey(url) {
+  const params = new URLSearchParams(url.search);
+  params.delete('seed');
+  params.delete('per_page');
+  params.delete('clickid');
+  params.delete('msid');
+  params.delete('indexed');
+  const sorted = [...params.entries()]
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .map(([k, v]) => `${k}=${encodeURIComponent(v)}`)
+    .join('&');
+  return `json:pool:${sorted || '_root'}`;
+}
+
+/**
+ * Handle /api/pool-listings with KV-backed JSON cache.
+ * Identical flow to handleJsonApiCache — admin warmer is the sole writer.
+ * Flow: MISS → live-proxy to origin (Vercel → WP pool_test endpoint).
+ */
+async function handlePoolApiCache(request, url, env) {
+  const cacheKey = buildPoolCacheKey(url);
+
+  // ── KV lookup ─────────────────────────────────────────────────────
+  let kvResult;
+  try {
+    kvResult = await env.CFS_STATIC_PAGES.getWithMetadata(cacheKey);
+  } catch (kvErr) {
+    console.error('KV read error (pool cache):', kvErr.message);
+    kvResult = { value: null, metadata: null };
+  }
+
+  // ── HIT: serve immediately ────────────────────────────────────────
+  if (kvResult.value !== null) {
+    const meta = kvResult.metadata || {};
+    const originalStatus = meta.status || 200;
+    return new Response(kvResult.value, {
+      status: originalStatus,
+      headers: {
+        'Content-Type': 'application/json;charset=UTF-8',
+        'Cache-Control': 'public, max-age=60, s-maxage=60',
+        'X-Cache': 'HIT',
+        'X-CFS-Cache': 'HIT-POOL',
+        'X-CFS-Key': cacheKey,
+        'Access-Control-Allow-Origin': '*',
+      }
+    });
+  }
+
+  // ── MISS: live-proxy to origin; warmer will populate KV later ─────
+  let originResponse;
+  try {
+    originResponse = await fetch(request);
+  } catch (fetchErr) {
+    console.error('Origin fetch failed (pool cache miss):', fetchErr.message);
+    return new Response(JSON.stringify({ success: false, error: 'Service unavailable' }), {
+      status: 503,
+      headers: { 'Content-Type': 'application/json', 'X-CFS-Cache': 'ERROR-ORIGIN-DOWN' }
+    });
+  }
+
+  const body = await originResponse.text();
+  const status = originResponse.status;
+
+  const passthroughHeaders = {
+    'Content-Type': originResponse.headers.get('Content-Type') || 'application/json;charset=UTF-8',
+    'Cache-Control': 'public, max-age=60, s-maxage=60',
+    'X-Cache': 'MISS',
+    'X-CFS-Cache': 'MISS-POOL',
+    'X-CFS-Key': cacheKey,
+    'Access-Control-Allow-Origin': '*',
+  };
+  const location = originResponse.headers.get('Location');
+  if (location) passthroughHeaders['Location'] = location;
+
+  return new Response(body, { status, headers: passthroughHeaders });
+}
+
+// ============================================
 // IMAGE CACHING
 // ============================================
 async function handleImageRequest(request, ctx) {
@@ -452,7 +552,6 @@ async function getStaticHtmlFromKV(url, env) {
     // Select a random variant
     let kvKey;
     if (Array.isArray(variantKeys) && variantKeys.length > 0) {
-      // Use crypto for better randomness than Math.random()
       const randomIndex = Math.floor(Math.random() * variantKeys.length);
       kvKey = variantKeys[randomIndex];
     } else if (typeof variantKeys === 'string') {
