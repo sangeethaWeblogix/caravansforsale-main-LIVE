@@ -78,6 +78,7 @@
   font-weight: 500;
   color: #1a1a1a;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .hd-banner__trust-item svg {
