@@ -8,7 +8,7 @@ import StateFilterBar, { FilterState } from "./StateFilterBar";
 import StateListingGrid, { SeoV2, Listing, buildFeaturedOrder } from "./StateListingGrid";
 import StateBrowseSection from "./StateBrowseSection";
 import StateContent from "./StateContent";
-import { buildDemoSlug, buildApiUrl, buildListingsSlug } from "./urlUtils";
+import { buildDemoSlug, buildApiUrl, buildListingsSlug, buildFilterBreadcrumbs } from "./urlUtils";
 import "./main.css";
 
 // clickid pagination — same scheme as /listings/: no ?page=N in the URL,
@@ -308,11 +308,26 @@ export default function StateHome({ initialFilters }: Props) {
     console.log("seooo", seo?.h1)
     return (
       <div className="lsd-page">
-        {/* Non-indexed pages skip the hero entirely (no banner, no
-            breadcrumb, no whitespace) — the grid title below becomes the
-            page's <h1> instead. */}
-        {isIndexed && <StateHero title={seo?.h1} description={seo?.meta_description} />}
-
+        {/* Non-indexed pages skip the full hero banner (image + description),
+            but every URL still gets the breadcrumb trail — just as a plain
+            standalone bar instead of sitting inside the hero. */}
+        {isIndexed ? (
+          <StateHero title={seo?.h1} description={seo?.meta_description} loading={poolLoading} breadcrumbs={buildFilterBreadcrumbs(filters)} />
+        ) : (
+          <div className="container lsd-standalone-breadcrumb-wrap">
+            <nav className="lsd-breadcrumb" aria-label="Breadcrumb">
+              <Link href="/">Home</Link>
+              <svg width="12" height="20" viewBox="0 0 24 24" fill="none" stroke="#3e3e3e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0,display:"block"}} aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+              <Link href="/listings/">Caravans for Sale</Link>
+              {buildFilterBreadcrumbs(filters).map((crumb) => (
+                <span key={crumb.href}>
+                  <svg width="12" height="20" viewBox="0 0 24 24" fill="none" stroke="#3e3e3e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0,display:"block"}} aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+                  <Link href={crumb.href}>{crumb.label}</Link>
+                </span>
+              ))}
+            </nav>
+          </div>
+        )}
 
         <StateFilterBar
           currentFilters={filters}
@@ -375,13 +390,17 @@ export default function StateHome({ initialFilters }: Props) {
     <div className="lsd-page">
       <div className="lsd-paged-header">
         <div className="container">
-          {/* <nav className="lsd-paged-breadcrumb" aria-label="Breadcrumb">
+          <nav className="lsd-paged-breadcrumb" aria-label="Breadcrumb">
             <Link href="/">Home</Link>
             <svg width="10" height="16" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
             <Link href="/listings/">Caravans for Sale</Link>
-            <svg width="10" height="16" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
-            <span>Victoria</span>
-          </nav> */}
+            {buildFilterBreadcrumbs(filters).map((crumb) => (
+              <span key={crumb.href}>
+                <svg width="10" height="16" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+                <Link href={crumb.href}>{crumb.label}</Link>
+              </span>
+            ))}
+          </nav>
           <h1 className="lsd-paged-title">{seo?.h1 || "Caravans for Sale in Victoria"}</h1>
         </div>
       </div>

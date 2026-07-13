@@ -1,3 +1,5 @@
+import type { FilterBreadcrumb } from "./urlUtils";
+
 const TRUST_ITEMS = [
   {
     icon: (
@@ -36,11 +38,15 @@ const TRUST_ITEMS = [
 interface Props {
   title?: string;
   description?: string;
+  loading?: boolean;
+  /** Up to 3 active-filter crumbs, in priority order — rendered after
+   * Home > Caravans for Sale. See buildFilterBreadcrumbs in urlUtils.ts. */
+  breadcrumbs?: FilterBreadcrumb[];
 }
 
 // Only rendered at all for indexed pages (see home.tsx) — non-indexed pages
 // skip this component entirely rather than showing a stripped-down version.
-export default function StateHero({ title, description }: Props) {
+export default function StateHero({ title, description, loading, breadcrumbs }: Props) {
   return (
     <section className="lsd-hero">
       {/* Background image — right side */}
@@ -53,26 +59,40 @@ export default function StateHero({ title, description }: Props) {
       <div className="lsd-hero__gradient" />
 
       <div className="container" style={{ position: "relative", zIndex: 2 }}>
+        <nav className="lsd-breadcrumb" aria-label="breadcrumb">
+          <a href="/">Home</a>
+          <svg width="12" height="20" viewBox="0 0 24 24" fill="none" stroke="#3e3e3e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0,display:"block"}} aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+          <a href="/listings/">Caravans for Sale</a>
+          {breadcrumbs?.map((crumb) => (
+            <span key={crumb.href}>
+              <svg width="12" height="20" viewBox="0 0 24 24" fill="none" stroke="#3e3e3e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0,display:"block"}} aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+              <a href={crumb.href}>{crumb.label}</a>
+            </span>
+          ))}
+        </nav>
+
         {/* Text content */}
         <div className="lsd-hero__content">
-          {/* <nav className="lsd-breadcrumb" aria-label="breadcrumb">
-            <a href="/">Home</a>
-            <svg width="12" height="20" viewBox="0 0 24 24" fill="none" stroke="#3e3e3e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0,display:"block"}} aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
-            <a href="/listings/">Caravans for Sale</a>
-            <svg width="12" height="20" viewBox="0 0 24 24" fill="none" stroke="#3e3e3e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0,display:"block"}} aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
-            <span>Victoria</span>
-          </nav> */}
+          {loading ? (
+            <>
+              <div className="lsd-skeleton lsd-hero__title-skeleton" />
+              <div className="lsd-skeleton lsd-hero__desc-skeleton" />
+              <div className="lsd-skeleton lsd-hero__desc-skeleton lsd-hero__desc-skeleton--short" />
+            </>
+          ) : (
+            <>
+              <h1 className="lsd-hero__title">
+                {title || "Caravans for Sale in Victoria"}
+              </h1>
 
-          <h1 className="lsd-hero__title">
-            {title || "Caravans for Sale in Victoria"}
-          </h1>
-
-          <p className="lsd-hero__desc">
-            {description ||
-              "Browse new and used caravans for sale in Victoria from dealers and private sellers. " +
-              "Find off road caravans, family caravans, luxury caravans, pop tops, hybrids and " +
-              "touring caravans across Melbourne, Geelong, Ballarat, Bendigo and regional Victoria."}
-          </p>
+              <p className="lsd-hero__desc">
+                {description ||
+                  "Browse new and used caravans for sale in Victoria from dealers and private sellers. " +
+                  "Find off road caravans, family caravans, luxury caravans, pop tops, hybrids and " +
+                  "touring caravans across Melbourne, Geelong, Ballarat, Bendigo and regional Victoria."}
+              </p>
+            </>
+          )}
         </div>
 
         {/* Trust badges — single horizontal row */}

@@ -69,14 +69,22 @@
 .lsd-breadcrumb {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
+  row-gap: 4px;
   gap: 6px;
   font-size: 13px;
   color: #666;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
 }
-.lsd-breadcrumb a { color: #181818; text-decoration: none; }
+.lsd-breadcrumb a { color: #181818; text-decoration: none; white-space: nowrap; }
 .lsd-breadcrumb a:hover { text-decoration: underline; }
-.lsd-breadcrumb span { color: #999; }
+.lsd-breadcrumb > span { display: inline-flex; align-items: center; gap: 6px; }
+.lsd-breadcrumb > span a { color: #666; }
+.lsd-breadcrumb > span:last-child a { color: #181818; font-weight: 600; }
+
+/* Standalone breadcrumb bar — non-indexed pages (no hero banner) */
+.lsd-standalone-breadcrumb-wrap { padding: 16px 0 0; }
+.lsd-standalone-breadcrumb-wrap .lsd-breadcrumb { margin-bottom: 0; }
 
 .lsd-hero__title {
     color: #000000;
@@ -91,6 +99,20 @@
     font-size: 16px;
     line-height: 1.75;
 }
+
+.lsd-hero__title-skeleton {
+  height: 30px;
+  width: 70%;
+  border-radius: 6px;
+  margin-bottom: 14px;
+}
+.lsd-hero__desc-skeleton {
+  height: 16px;
+  width: 100%;
+  border-radius: 4px;
+  margin-bottom: 10px;
+}
+.lsd-hero__desc-skeleton--short { width: 60%; margin-bottom: 0; }
 
 /* Trust row — single horizontal bar */
 .lsd-hero__trust {

@@ -51,6 +51,109 @@ export function buildListingsSlug(filters: FilterState, conditionOverride?: stri
   return path.endsWith("/") ? path : `${path}/`;
 }
 
+const toTitleCase = (s: string) => s.replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+
+export interface FilterBreadcrumb {
+  label: string;
+  /** Direct link to the page for just this one filter dimension (e.g. the
+   * category crumb links straight to /listings/luxury-category/), not the
+   * combination of every active filter. */
+  href: string;
+}
+
+/** Priority order for the visible breadcrumb trail — Home > Listings > up to
+ * three of these, in this fixed order, regardless of the order the user
+ * actually applied the filters in. `label` reads the display text; `hrefFilters`
+ * picks out just the filter keys for this dimension so the crumb links to its
+ * own dedicated page instead of the full active-filter combination. */
+const BREADCRUMB_PRIORITY: Array<{
+  label: (f: FilterState) => string | null;
+  hrefFilters: (f: FilterState) => FilterState;
+}> = [
+  {
+    label: (f) => {
+      const raw = f.suburb || f.region || f.state;
+      return raw ? toTitleCase(String(raw)) : null;
+    },
+    hrefFilters: (f) => ({ state: f.state, region: f.region, suburb: f.suburb, pincode: f.pincode }),
+  },
+  {
+    label: (f) => (f.category ? toTitleCase(String(f.category)) : null),
+    hrefFilters: (f) => ({ category: f.category }),
+  },
+  {
+    label: (f) => (f.make ? toTitleCase(String(f.make)) : null),
+    hrefFilters: (f) => ({ make: f.make }),
+  },
+  {
+    label: (f) => {
+      if (!f.from_price && !f.to_price) return null;
+      if (f.from_price && f.to_price) return `$${Number(f.from_price).toLocaleString()} – $${Number(f.to_price).toLocaleString()}`;
+      if (f.from_price) return `From $${Number(f.from_price).toLocaleString()}`;
+      return `Upto $${Number(f.to_price).toLocaleString()}`;
+    },
+    hrefFilters: (f) => ({ from_price: f.from_price, to_price: f.to_price }),
+  },
+  {
+    label: (f) => {
+      if (!f.minKg && !f.maxKg) return null;
+      if (f.minKg && f.maxKg) return `${Number(f.minKg).toLocaleString()} – ${Number(f.maxKg).toLocaleString()} kg`;
+      if (f.minKg) return `From ${Number(f.minKg).toLocaleString()} kg`;
+      return `Upto ${Number(f.maxKg).toLocaleString()} kg`;
+    },
+    hrefFilters: (f) => ({ minKg: f.minKg, maxKg: f.maxKg }),
+  },
+  {
+    label: (f) => {
+      if (!f.from_sleep && !f.to_sleep) return null;
+      if (f.from_sleep && f.to_sleep) return `${f.from_sleep} – ${f.to_sleep} Berths`;
+      if (f.from_sleep) return `From ${f.from_sleep} Berths`;
+      return `Upto ${f.to_sleep} Berths`;
+    },
+    hrefFilters: (f) => ({ from_sleep: f.from_sleep, to_sleep: f.to_sleep }),
+  },
+  {
+    label: (f) => {
+      if (!f.from_length && !f.to_length) return null;
+      if (f.from_length && f.to_length) return `${f.from_length} – ${f.to_length} ft`;
+      if (f.from_length) return `From ${f.from_length} ft`;
+      return `Upto ${f.to_length} ft`;
+    },
+    hrefFilters: (f) => ({ from_length: f.from_length, to_length: f.to_length }),
+  },
+  {
+    label: (f) => {
+      if (!f.acustom_fromyears && !f.acustom_toyears) return null;
+      if (f.acustom_fromyears && f.acustom_toyears) return `${f.acustom_fromyears} – ${f.acustom_toyears}`;
+      if (f.acustom_fromyears) return `From ${f.acustom_fromyears}`;
+      return `Upto ${f.acustom_toyears}`;
+    },
+    hrefFilters: (f) => ({ acustom_fromyears: f.acustom_fromyears, acustom_toyears: f.acustom_toyears }),
+  },
+  {
+    label: (f) => (f.condition ? (f.condition.toLowerCase() === "new" ? "New" : "Used") : null),
+    hrefFilters: (f) => ({ condition: f.condition }),
+  },
+];
+
+/** Home > Caravans for Sale > up to 3 active filters — always rendered in
+ * BREADCRUMB_PRIORITY order (Location, Type, Make, Price, Weight, Sleeps,
+ * Size, Year, Condition) so the trail reads the same regardless of which
+ * filters the visitor picked or in what order. Each crumb links straight to
+ * its own single-filter page (e.g. clicking "Luxury" goes to
+ * /listings/luxury-category/, not the current combined-filter URL). */
+export function buildFilterBreadcrumbs(filters: FilterState): FilterBreadcrumb[] {
+  const crumbs: FilterBreadcrumb[] = [];
+  for (const entry of BREADCRUMB_PRIORITY) {
+    const label = entry.label(filters);
+    if (label) {
+      crumbs.push({ label, href: buildListingsSlug(entry.hrefFilters(filters)) });
+    }
+    if (crumbs.length === 3) break;
+  }
+  return crumbs;
+}
+
 export function parseDemoFilters(
   slugParts: string[],
   query: Record<string, string | string[] | undefined>
