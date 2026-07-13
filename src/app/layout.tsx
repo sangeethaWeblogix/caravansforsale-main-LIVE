@@ -279,6 +279,8 @@ import fetchListingsForHead, { buildListingsJsonLd, buildBreadcrumbs } from "@/u
               `,
             }}
           />
+          {/* ✅ Contentsquare */}
+          <script src="https://t.contentsquare.net/uxa/ad9d844b709b3.js" defer />
           {/* ✅ Google Tag Manager (Head) */}
            <script
   dangerouslySetInnerHTML={{
