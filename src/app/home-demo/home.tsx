@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo, useCallback } from "react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import { type HomeBlogPost } from "@/api/home/api";
@@ -68,8 +68,59 @@ export default function HomePage({
   const homeDkBanner = sortedHome.find(b => b.device_target === "desktop");
   const homeMbBanner = sortedHome.find(b => b.device_target === "mobile");
   const activeBanner = isMobile ? (homeMbBanner ?? homeDkBanner) : (homeDkBanner ?? homeMbBanner);
-  const activeBanners = activeBanner ? [activeBanner] : [];
+  const activeBanners = useMemo(() => activeBanner ? [activeBanner] : [], [activeBanner]);
+
+  const bannerClickUrl = useMemo(() => {
+    if (!activeBanner?.target_url) return "#";
+    try {
+      const url = new URL(activeBanner.target_url);
+      url.searchParams.set("utm_source", "caravansforsale");
+      url.searchParams.set("utm_medium", "display");
+      url.searchParams.set("utm_campaign", `${activeBanner.placement}_banner`);
+      url.searchParams.set("utm_content", `banner_${activeBanner.id}`);
+      return url.toString();
+    } catch {
+      return activeBanner.target_url;
+    }
+  }, [activeBanner]);
   const { bannerRefs, trackClick } = useBannerTracking(activeBanners);
+
+  const handleBannerClick = useCallback((e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (!activeBanner) return;
+    e.preventDefault();
+
+    // Unique click ID per click — like Google's gclid
+    const clickId = "ck_" + Math.random().toString(36).slice(2) + Date.now().toString(36);
+
+    // Append cfs_click_id to the UTM url
+    let finalUrl = bannerClickUrl;
+    try {
+      const u = new URL(bannerClickUrl);
+      u.searchParams.set("cfs_click_id", clickId);
+      finalUrl = u.toString();
+    } catch { /* fallback to base url */ }
+
+    // Open advertiser site in new tab with full tracking url
+    window.open(finalUrl, "_blank", "noopener,noreferrer");
+
+    // Track click internally in CFS WordPress
+    const body = JSON.stringify({
+      banner_id: Number(activeBanner.id),
+      event_type: "click",
+      click_id: clickId,
+      session_id: sessionStorage.getItem("blr_session") || "home_" + Date.now(),
+      page_url: window.location.href,
+      device_type: window.innerWidth < 768 ? "mobile" : "desktop",
+      user_agent: navigator.userAgent,
+      ip_address: "",
+    });
+    const trackUrl = `${process.env.NEXT_PUBLIC_CF7_BASE}/wp-json/ads-manager/v1/banners/track`;
+    if (navigator.sendBeacon) {
+      navigator.sendBeacon(trackUrl, new Blob([body], { type: "application/json" }));
+    } else {
+      fetch(trackUrl, { method: "POST", headers: { "Content-Type": "application/json" }, body, keepalive: true }).catch(() => {});
+    }
+  }, [activeBanner, bannerClickUrl]);
 
   const bannerSectionRef = useRef<HTMLDivElement | null>(null);
 
@@ -153,13 +204,13 @@ export default function HomePage({
             <div style={{ width: "100%", aspectRatio: "2000/517", background: "#f0f0f0", borderRadius: 8 }} />
           ) : activeBanner ? (
             <a
-              href={activeBanner.target_url}
+              href={bannerClickUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="hd-banner-ad__inner"
               ref={(el) => { bannerRefs.current[0] = el; }}
               data-banner-id={activeBanner.id}
-              onClick={() => trackClick(Number(activeBanner.id))}
+              onClick={handleBannerClick}
             >
               <span className="hd-banner-ad__label">Advertisement</span>
               <picture>
