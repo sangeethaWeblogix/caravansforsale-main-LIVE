@@ -43,15 +43,10 @@ export default function StateHome({ initialFilters }: Props) {
   const [seed,     setSeed]     = useState(1);
   const [pool,     setPool]     = useState<{ featured: Listing[]; new: Listing[]; used: Listing[] }>({ featured: [], new: [], used: [] });
   const [poolLoading, setPoolLoading] = useState(true);
-  // false whenever the backend can't tell New apart from Used in this pool
-  // (e.g. a condition filter is already locked in) — in that case there's
-  // nothing to split, so page 1 shows one combined grid instead of a
-  // fabricated Featured/New/Used split.
-  const [slotBucketPresent, setSlotBucketPresent] = useState(true);
   // Whether the current canonical /listings/ URL is in url.csv's curated
   // indexed set — gates the full hero banner (image + description) and the
-  // Featured/New/Used split, both of which are only worth it on the pages
-  // that are actually meant to be indexed/crawled.
+  // Featured/New/Used split: indexed pages split the pool by slot_bucket into
+  // three sections, non-indexed pages get one combined grid.
   const [isIndexed, setIsIndexed] = useState(true);
   console.log("seoo89", seo)
 
@@ -131,9 +126,8 @@ export default function StateHome({ initialFilters }: Props) {
       .catch(() => setIsIndexed(false));
   }, [filters, page]);
 
-  // Page 1 uses ONE shared pool call (same shape as before, just no condition
-  // lock + a bigger per_page) split by slot_bucket into Featured/New/Used —
-  // instead of 3 separate condition-locked API calls.
+  // Page 1 uses ONE shared pool call, split by slot_bucket into
+  // Featured/New/Used — instead of 3 separate condition-locked API calls.
   const poolApiUrl = buildApiUrl("/api/pool-listings/?per_page=24", filters, seed);
 
   useEffect(() => {
@@ -153,33 +147,27 @@ export default function StateHome({ initialFilters }: Props) {
         const exclusivesRaw: Listing[] = json?.data?.exclusive_products ?? json?.exclusive_products ?? [];
         const empExclusivesRaw: Listing[] = json?.data?.emp_exclusive_products ?? json?.emp_exclusive_products ?? [];
         const totalCount: number = json?.data?.counts?.total_count ?? json?.counts?.total_count ?? products.length;
-        const bucketPresent: boolean =
-          json?.data?.pagination?.slot_bucket_present ?? json?.pagination?.slot_bucket_present ?? false;
-        console.log("[StateHome] slot_bucket_present:", bucketPresent);
-        setSlotBucketPresent(bucketPresent);
 
         if (totalCount === 0 && empExclusivesRaw.length > 0) {
           // No products at all — fall back to the emp_exclusive_products pool
           // so the page isn't empty, all shown with the Spotlight Van design.
           const empItems = empExclusivesRaw.map((p) => ({ ...p, is_exclusive: true }));
           setPool({ featured: empItems, new: [], used: [] });
-        } else if (bucketPresent) {
-          // The API tags products with slot_bucket — use it to pick exactly
-          // which products feed Featured/New/Used. Premium and exclusive vans
-          // always come from their own top-level arrays and only render on
-          // the Featured tab (position 3 = exclusive, 4-5 = premium).
+        } else if (isIndexed) {
+          // Indexed pages split by slot_bucket into Featured/New/Used.
+          // Premium and exclusive vans always come from their own top-level
+          // arrays and only render on the Featured tab (position 3 =
+          // exclusive, 4-5 = premium).
           const featuredSource = products.filter((p) => p.slot_bucket === "featured");
-          const featuredItems  = buildFeaturedOrder(featuredSource, premiumsRaw, exclusivesRaw).slice(0, 8);
+          const featuredItems  = buildFeaturedOrder(featuredSource, premiumsRaw, exclusivesRaw);
           const featuredIds    = new Set(featuredItems.map((p) => p.id));
 
-          const newItems  = products.filter((p) => p.slot_bucket === "new"  && !p.is_premium && !p.is_exclusive && !featuredIds.has(p.id)).slice(0, 8);
-          const usedItems = products.filter((p) => p.slot_bucket === "used" && !p.is_premium && !p.is_exclusive && !featuredIds.has(p.id)).slice(0, 8);
+          const newItems  = products.filter((p) => p.slot_bucket === "new"  && !p.is_premium && !p.is_exclusive && !featuredIds.has(p.id));
+          const usedItems = products.filter((p) => p.slot_bucket === "used" && !p.is_premium && !p.is_exclusive && !featuredIds.has(p.id));
 
           setPool({ featured: featuredItems, new: newItems, used: usedItems });
         } else {
-          // No bucket signal (e.g. a condition filter is already locked in,
-          // so every item is the same condition already) — nothing to split
-          // into New/Used, show one combined list instead.
+          // Non-indexed pages get one combined grid instead of a split.
           const combined = buildFeaturedOrder(products, premiumsRaw, exclusivesRaw);
           setPool({ featured: combined, new: [], used: [] });
         }
@@ -190,21 +178,15 @@ export default function StateHome({ initialFilters }: Props) {
       })
       .catch(() => setPool({ featured: [], new: [], used: [] }))
       .finally(() => setPoolLoading(false));
-  }, [poolApiUrl, page]);
-
-  // Only split into Featured/New/Used when the backend actually supports the
-  // split (slot_bucket_present) AND this URL is one url.csv curates as
-  // indexed — non-indexed pages (condition-only, deep filter combos, etc.)
-  // always get a single combined grid regardless of what the backend returns.
-  const showSplitSections = isIndexed && slotBucketPresent;
+  }, [poolApiUrl, page, isIndexed]);
 
   // New/Used grid headings need their own condition-locked seo_v2 (the shared
   // pool call above is unlocked, so its seo_v2 only covers the page overall).
   // Featured reuses that page-level seo since there's no dedicated "featured"
-  // seo concept on the backend. Skipped entirely once split sections aren't
-  // being shown (nothing to show these titles on).
+  // seo concept on the backend. Skipped entirely on non-indexed pages
+  // (nothing to show these titles on there).
   useEffect(() => {
-    if (page !== 1 || !showSplitSections) {
+    if (page !== 1 || !isIndexed) {
       setNewSeo(null);
       setUsedSeo(null);
       return;
@@ -221,7 +203,7 @@ export default function StateHome({ initialFilters }: Props) {
       .then((r) => (r.ok ? r.json() : null))
       .then((json) => setUsedSeo(json?.data?.seo_v2 ?? json?.seo_v2 ?? null))
       .catch(() => setUsedSeo(null));
-  }, [filters, seed, page, showSplitSections]);
+  }, [filters, seed, page, isIndexed]);
 
   const pushFiltersToUrl = (f: FilterState) => {
     window.history.pushState({}, "", buildDemoSlug(f));
@@ -335,7 +317,7 @@ export default function StateHome({ initialFilters }: Props) {
           onClearAll={handleClearAll}
         />
 
-        {showSplitSections ? (
+        {isIndexed ? (
           <>
             <StateListingGrid
               title={seo?.meta_title ? `Featured ${seo.meta_title}` : "Featured Caravans for Sale"}
@@ -361,13 +343,11 @@ export default function StateHome({ initialFilters }: Props) {
             />
           </>
         ) : (
-          // Backend collapsed the New/Used split (e.g. a condition filter is
-          // already active) — one combined grid instead of a fabricated split.
-          // Non-indexed pages skip the hero, so this title carries the page's
-          // actual <h1> (with count) instead of the hero's h1.
+          // Non-indexed pages skip the hero, so this title carries the
+          // page's actual <h1> (with count) instead of the hero's h1.
           <StateListingGrid
-            title={!isIndexed ? (seo?.h1 || "Caravans for Sale") : (seo?.meta_title || "Caravans for Sale")}
-            titleAs={!isIndexed ? "h1" : "h2"}
+            title={seo?.h1 || "Caravans for Sale"}
+            titleAs="h1"
             viewAllHref={buildListingsSlug(filters)}
             items={pool.featured}
             loading={poolLoading}

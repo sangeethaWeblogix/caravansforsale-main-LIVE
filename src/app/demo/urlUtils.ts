@@ -28,7 +28,13 @@ export function buildApiUrl(base: string, filters: FilterState, seed: number, lo
   if (filters.acustom_toyears)    params.set("acustom_toyears",    String(filters.acustom_toyears));
   if (filters.from_length)        params.set("from_length",        String(filters.from_length));
   if (filters.to_length)          params.set("to_length",          String(filters.to_length));
-  if (filters.keyword)            params.set("keyword",            filters.keyword);
+  // Backend free-text search only recognizes `search` (see production's
+  // fetchListings) — not `keyword`. Sending `keyword` here silently no-ops
+  // and the pool call falls back to the full unfiltered listing set.
+  if (filters.keyword) {
+    const normalized = String(filters.keyword).replace(/\+/g, " ").trim().replace(/\s+/g, " ");
+    if (normalized) params.set("search", normalized);
+  }
   if (!lockCondition && filters.condition) params.set("condition", filters.condition);
   if (lockCondition) params.set("condition", lockCondition);
   return `${base}&${params.toString()}`;

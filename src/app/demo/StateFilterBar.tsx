@@ -2,7 +2,11 @@
 import "../components/filter.css";
 import { useState, useEffect, useRef } from "react";
 import CategorySkeleton from "../components/ListContent/CategorySkeleton";
+import SearchSuggestionSkeleton from "../components/Searchsuggestionskeleton ";
 import { fetchLocations } from "@/api/location/api";
+import { fetchHomeSearchList, fetchKeywordSuggestions } from "@/api/homeSearch/api";
+
+type KeywordItem = { label: string; url?: string };
 
 type LocationSuggestion = {
   key: string;
@@ -254,6 +258,54 @@ export default function StateFilterBar({ currentFilters, onFilterChange, onClear
   const [openModal, setOpenModal] = useState<
     "type"|"location"|"price"|"atm"|"make"|"condition"|"sleep"|"allFilters"|null
   >(null);
+
+  /* ── Keyword search suggestions — same /api/home-search/ endpoint the
+   * production filter modal uses: base/popular list on focus, live typed
+   * suggestions (debounced) once the query is 2+ chars. ── */
+  const [showKeywordSuggestions, setShowKeywordSuggestions] = useState(false);
+  const [baseKeywords,           setBaseKeywords]           = useState<KeywordItem[]>([]);
+  const [baseLoading,            setBaseLoading]            = useState(false);
+  const [keywordSuggestions,     setKeywordSuggestions]     = useState<KeywordItem[]>([]);
+  const [keywordLoading,         setKeywordLoading]         = useState(false);
+
+  useEffect(() => {
+    if (openModal !== "allFilters") return;
+    setBaseLoading(true);
+    fetchHomeSearchList()
+      .then((list) => {
+        const items: KeywordItem[] = list.map((x) => ({
+          label: (x.name ?? "").trim(),
+          url: x.url ?? "",
+        })).filter((i) => i.label);
+        const uniq = Array.from(new Map(items.map((i) => [i.label, i])).values());
+        setBaseKeywords(uniq);
+      })
+      .catch(() => setBaseKeywords([]))
+      .finally(() => setBaseLoading(false));
+  }, [openModal]);
+
+  useEffect(() => {
+    if (openModal !== "allFilters") return;
+    const q = tempKeyword.trim();
+    if (q.length < 2) { setKeywordSuggestions([]); setKeywordLoading(false); return; }
+
+    const ctrl = new AbortController();
+    setKeywordLoading(true);
+    const t = setTimeout(async () => {
+      try {
+        const list = await fetchKeywordSuggestions(q, ctrl.signal);
+        const items: KeywordItem[] = list.map((x) => ({ label: x.keyword.trim(), url: x.url }));
+        setKeywordSuggestions(Array.from(new Map(items.map((i) => [i.label, i])).values()));
+      } catch (e: unknown) {
+        if (e instanceof DOMException && e.name === "AbortError") return;
+        setKeywordSuggestions([]);
+      } finally {
+        setKeywordLoading(false);
+      }
+    }, 300);
+
+    return () => { ctrl.abort(); clearTimeout(t); };
+  }, [tempKeyword, openModal]);
 
   useEffect(() => {
     document.body.style.overflow = openModal ? "hidden" : "";
@@ -977,14 +1029,49 @@ export default function StateFilterBar({ currentFilters, onFilterChange, onClear
               {/* Keyword */}
               <div className="filter-item">
                 <h4>Search by Keyword</h4>
-                <div className="loc-search-wrap">
-                  <i className="bi bi-search loc-search-icon" />
-                  <input
-                    className="loc-search-input"
-                    placeholder="e.g. ensuite, solar, slide-out..."
-                    value={tempKeyword}
-                    onChange={e => setTempKeyword(e.target.value)}
-                  />
+                <div style={{ position:"relative" }}>
+                  <div className="loc-search-wrap">
+                    <i className="bi bi-search loc-search-icon" />
+                    <input
+                      className="loc-search-input"
+                      placeholder="e.g. ensuite, solar, slide-out..."
+                      autoComplete="off"
+                      value={tempKeyword}
+                      onFocus={() => setShowKeywordSuggestions(true)}
+                      onBlur={() => setTimeout(() => setShowKeywordSuggestions(false), 200)}
+                      onChange={e => setTempKeyword(e.target.value)}
+                    />
+                  </div>
+
+                  {showKeywordSuggestions && tempKeyword.trim().length < 2 && (
+                    baseLoading ? (
+                      <div className="location-suggestions"><SearchSuggestionSkeleton count={4} label="Popular searches" /></div>
+                    ) : baseKeywords.length > 0 ? (
+                      <ul className="location-suggestions">
+                        {baseKeywords.map((item, idx) => (
+                          <li key={`${item.label}-${idx}`} className="suggestion-item"
+                            onMouseDown={e => { e.preventDefault(); setTempKeyword(item.label); setShowKeywordSuggestions(false); }}
+                          >{item.label}</li>
+                        ))}
+                      </ul>
+                    ) : null
+                  )}
+
+                  {showKeywordSuggestions && tempKeyword.trim().length >= 2 && (
+                    keywordLoading ? (
+                      <div className="location-suggestions"><SearchSuggestionSkeleton count={4} label="Suggested searches" /></div>
+                    ) : keywordSuggestions.length > 0 ? (
+                      <ul className="location-suggestions">
+                        {keywordSuggestions.map((item, idx) => (
+                          <li key={`${item.label}-${idx}`} className="suggestion-item"
+                            onMouseDown={e => { e.preventDefault(); setTempKeyword(item.label); setShowKeywordSuggestions(false); }}
+                          >{item.label}</li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p style={{ fontSize:13, color:"#888", margin:0, paddingLeft:4 }}>No results found</p>
+                    )
+                  )}
                 </div>
               </div>
 
