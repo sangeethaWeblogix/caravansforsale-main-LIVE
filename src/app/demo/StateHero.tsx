@@ -1,4 +1,5 @@
 import type { FilterBreadcrumb } from "./urlUtils";
+import { sanitizeRichText } from "@/utils/sanitizeRichText";
 
 const TRUST_ITEMS = [
   {
@@ -85,12 +86,16 @@ export default function StateHero({ title, description, loading, breadcrumbs }: 
                 {title || "Caravans for Sale in Victoria"}
               </h1>
 
-              <p className="lsd-hero__desc">
-                {description ||
-                  "Browse new and used caravans for sale in Victoria from dealers and private sellers. " +
-                  "Find off road caravans, family caravans, luxury caravans, pop tops, hybrids and " +
-                  "touring caravans across Melbourne, Geelong, Ballarat, Bendigo and regional Victoria."}
-              </p>
+              <div
+                className="lsd-hero__desc"
+                dangerouslySetInnerHTML={{
+                  __html: description
+                    ? sanitizeRichText(description)
+                    : "<p>Browse new and used caravans for sale in Victoria from dealers and private sellers. " +
+                      "Find off road caravans, family caravans, luxury caravans, pop tops, hybrids and " +
+                      "touring caravans across Melbourne, Geelong, Ballarat, Bendigo and regional Victoria.</p>",
+                }}
+              />
             </>
           )}
         </div>

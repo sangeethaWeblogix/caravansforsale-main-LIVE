@@ -47,6 +47,7 @@ export type SeoV2 = {
   h1?: string;
   meta_title?: string;
   meta_description?: string;
+  short_description?: string;
   footer_description?: string;
   /** JSON-encoded string: `[{ "q": "...", "a": "..." }, ...]` */
   faq?: string;

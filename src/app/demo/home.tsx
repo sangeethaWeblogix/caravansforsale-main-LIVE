@@ -299,7 +299,7 @@ export default function StateHome({ initialFilters }: Props) {
             but every URL still gets the breadcrumb trail — just as a plain
             standalone bar instead of sitting inside the hero. */}
         {isIndexed ? (
-          <StateHero title={seo?.h1} description={seo?.meta_description} loading={poolLoading} breadcrumbs={buildFilterBreadcrumbs(filters)} />
+          <StateHero title={seo?.h1} description={seo?.short_description || seo?.meta_description} loading={poolLoading} breadcrumbs={buildFilterBreadcrumbs(filters)} />
         ) : (
           <div className="container lsd-standalone-breadcrumb-wrap">
             <nav className="lsd-breadcrumb" aria-label="Breadcrumb">

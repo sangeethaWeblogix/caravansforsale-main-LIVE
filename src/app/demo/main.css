@@ -99,6 +99,12 @@
     font-size: 16px;
     line-height: 1.75;
 }
+.lsd-hero__desc p {
+    margin: 0 0 8px;
+}
+.lsd-hero__desc p:last-child {
+    margin-bottom: 0;
+}
 
 .lsd-hero__title-skeleton {
   height: 30px;
