@@ -77,17 +77,28 @@ export default function StateHome({ initialFilters }: Props) {
       }
     }
 
-    // seed stays fixed for this browser session (persisted via sessionStorage)
-    // instead of changing every time the page changes — a fresh session (new
-    // tab/browser) gets a fresh random seed.
+    // Seed priority (highest → lowest):
+    //   1. window.__SHUFFLE_SEED__  — injected by Cloudflare Worker into pre-rendered HTML
+    //   2. ?shuffle_seed=N URL param — used by generate-priority-pages.js to produce variants
+    //   3. sessionStorage("demo_seed") — keeps seed stable across navigations in the same tab
+    //   4. random — fresh session fallback
     try {
-      const stored = sessionStorage.getItem("demo_seed");
-      if (stored) {
-        setSeed(parseInt(stored, 10));
+      const workerSeed = (window as unknown as Record<string, unknown>)["__SHUFFLE_SEED__"];
+      const urlSeed = new URLSearchParams(window.location.search).get("shuffle_seed");
+      if (typeof workerSeed === "number" && workerSeed >= 1) {
+        setSeed(workerSeed);
+      } else if (urlSeed && /^\d+$/.test(urlSeed)) {
+        const n = parseInt(urlSeed, 10);
+        if (n >= 1) setSeed(n);
       } else {
-        const fresh = Math.floor(Math.random() * SEED_MAX) + 1;
-        sessionStorage.setItem("demo_seed", String(fresh));
-        setSeed(fresh);
+        const stored = sessionStorage.getItem("demo_seed");
+        if (stored) {
+          setSeed(parseInt(stored, 10));
+        } else {
+          const fresh = Math.floor(Math.random() * SEED_MAX) + 1;
+          sessionStorage.setItem("demo_seed", String(fresh));
+          setSeed(fresh);
+        }
       }
     } catch {
       setSeed(Math.floor(Math.random() * SEED_MAX) + 1);
