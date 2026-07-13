@@ -114,7 +114,7 @@ export default function HomePage({
       user_agent: navigator.userAgent,
       ip_address: "",
     });
-    const trackUrl = `${process.env.NEXT_PUBLIC_CF7_BASE}/wp-json/ads-manager/v1/banners/track`;
+    const trackUrl = `${process.env.NEXT_PUBLIC_CF7_BASE || "https://admin.caravansforsale.com.au"}/wp-json/ads-manager/v1/banners/track`;
     if (navigator.sendBeacon) {
       navigator.sendBeacon(trackUrl, new Blob([body], { type: "application/json" }));
     } else {
