@@ -131,7 +131,12 @@ export default function StateHome({ initialFilters }: Props) {
   const poolApiUrl = buildApiUrl("/api/pool-listings/?per_page=24", filters, seed);
 
   useEffect(() => {
-    if (page !== 1) return;
+    // Wait for the real session seed to load (see the mount effect above) —
+    // firing this with the seed=1 placeholder first, then again once the
+    // real seed lands, hits the backend's randomized featured pick twice
+    // with two different seeds, so the grid visibly swaps its items right
+    // after the first paint.
+    if (!ready || page !== 1) return;
     setPoolLoading(true);
     const requestUrl = `${poolApiUrl}&page=${page}`;
     const absoluteUrl = new URL(requestUrl, window.location.origin).toString();
@@ -178,7 +183,7 @@ export default function StateHome({ initialFilters }: Props) {
       })
       .catch(() => setPool({ featured: [], new: [], used: [] }))
       .finally(() => setPoolLoading(false));
-  }, [poolApiUrl, page, isIndexed]);
+  }, [poolApiUrl, page, isIndexed, ready]);
 
   // New/Used grid headings need their own condition-locked seo_v2 (the shared
   // pool call above is unlocked, so its seo_v2 only covers the page overall).
@@ -186,7 +191,7 @@ export default function StateHome({ initialFilters }: Props) {
   // seo concept on the backend. Skipped entirely on non-indexed pages
   // (nothing to show these titles on there).
   useEffect(() => {
-    if (page !== 1 || !isIndexed) {
+    if (!ready || page !== 1 || !isIndexed) {
       setNewSeo(null);
       setUsedSeo(null);
       return;

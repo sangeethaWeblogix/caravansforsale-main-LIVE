@@ -709,6 +709,12 @@ input.loc-search-input:focus { box-shadow: 0 0 0 1.5px #7e7e7e !important; }
 }
 .lsd-browse__pill:hover { background: #ec7200; border-color: #ec7200; color: #fff; text-decoration: none; }
 
+.lsd-browse__pill-skeleton {
+  display: inline-block;
+  height: 30px;
+  border-radius: 999px;
+}
+
 /* Caps long lists (e.g. Popular Make with 50+ entries) so one panel doesn't
    dwarf the others — the pills still wrap, just within a scrollable area. */
 .lsd-browse__pills--scroll {

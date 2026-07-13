@@ -344,6 +344,23 @@ export default function StateBrowseSection({ state, region, category }: Props) {
       .filter((_, i) => (counts?.[i] ?? 1) > 0)
       .map((b) => ({ text: b.text, href: `${basePath}${b.href.replace("/listings", "")}` }));
 
+  // group_by-based panels (make/state/region/category) only know what to show
+  // once their /api/params-count/ response arrives — unlike the band panels
+  // above, there's no "show everything" fallback that's safe to filter later.
+  // While that fetch is still in flight (count state === null), render
+  // shimmer pills instead of nothing so a slow response doesn't look empty.
+  const pillSkeleton = (count = 8) => (
+    <>
+      {Array.from({ length: count }).map((_, i) => (
+        <span
+          key={i}
+          className="lsd-skeleton lsd-browse__pill-skeleton"
+          style={{ width: 56 + (i % 5) * 16 }}
+        />
+      ))}
+    </>
+  );
+
   const renderFilterCols = (panels: { icon: string; title: string; links: { text: string; href: string }[] }[], rowClass: string) => (
     <div className={`lsd-browse__row2 ${rowClass}`}>
       {panels.map((p) => (
@@ -414,7 +431,7 @@ export default function StateBrowseSection({ state, region, category }: Props) {
                 <span className="lsd-browse__filter-title">{`Browse ${label} Caravans by Popular Manufacturers`}</span>
               </div>
               <div className={`lsd-browse__pills${makePanel.length > 12 ? " lsd-browse__pills--scroll" : ""}`}>
-                {makePanel.map((l) => (
+                {makeCounts === null ? pillSkeleton() : makePanel.map((l) => (
                   <a key={l.text} href={l.href} className="lsd-browse__pill">{l.text}</a>
                 ))}
               </div>
@@ -472,7 +489,7 @@ export default function StateBrowseSection({ state, region, category }: Props) {
             <div className="lsd-browse__panel">
               <h3 className="lsd-browse__panel-title">{`Browse Caravans by Popular Manufacturers in ${regionName}`}</h3>
               <div className="lsd-browse__pills">
-                {makePanel.map((m) => (
+                {makeCounts === null ? pillSkeleton() : makePanel.map((m) => (
                   <a key={m.text} href={m.href} className="lsd-browse__pill">{m.text}</a>
                 ))}
               </div>
@@ -526,7 +543,7 @@ export default function StateBrowseSection({ state, region, category }: Props) {
             <div className="lsd-browse__panel">
               <h3 className="lsd-browse__panel-title">{`Browse ${label} Caravans by Region in ${stateName}`}</h3>
               <div className="lsd-browse__pills">
-                {regionPanel.map((r) => (
+                {regionCounts === null ? pillSkeleton() : regionPanel.map((r) => (
                   <a key={r.text} href={r.href} className="lsd-browse__pill">{r.text}</a>
                 ))}
               </div>
@@ -537,7 +554,7 @@ export default function StateBrowseSection({ state, region, category }: Props) {
             <div className="lsd-browse__panel">
               <h3 className="lsd-browse__panel-title">{`Browse ${label} Caravans by Popular Manufacturers in ${stateName}`}</h3>
               <div className={`lsd-browse__pills${makePanel.length > 12 ? " lsd-browse__pills--scroll" : ""}`}>
-                {makePanel.map((m) => (
+                {makeCounts === null ? pillSkeleton() : makePanel.map((m) => (
                   <a key={m.text} href={m.href} className="lsd-browse__pill">{m.text}</a>
                 ))}
               </div>
@@ -575,7 +592,7 @@ export default function StateBrowseSection({ state, region, category }: Props) {
 
           <h3 className="lsd-browse__panel-title">{`Browse ${label} Caravans by Popular Manufacturers in ${regionName}`}</h3>
           <div className="lsd-browse__pills" style={{ marginBottom: 20 }}>
-            {makePanel.map((m) => (
+            {makeCounts === null ? pillSkeleton() : makePanel.map((m) => (
               <a key={m.text} href={m.href} className="lsd-browse__pill">{m.text}</a>
             ))}
           </div>
