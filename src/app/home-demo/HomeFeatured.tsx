@@ -63,7 +63,15 @@ export default function HomeFeatured() {
     );
   }
 
-  if (!items.length) return null;
+  if (!items.length) {
+    return (
+      <section className="hf-section">
+        <div className="container">
+          <div style={{ minHeight: 340, background: "#f8f9fa", borderRadius: 8 }} />
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="hf-section">
