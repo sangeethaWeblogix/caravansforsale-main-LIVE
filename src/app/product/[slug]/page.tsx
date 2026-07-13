@@ -1,6 +1,7 @@
 // app/product-details/[slug]/page.tsx
 import ProductDetailDemo from "../../product-detail-demo/ProductDetailDemo";
 import { redirect } from "next/navigation";
+import { Metadata } from "next";
 import './product.css?=30006'
 
 export const dynamic = "force-dynamic";
@@ -57,6 +58,40 @@ export const dynamicParams = true;
 
 type RouteParams = { slug: string };
 type PageProps = { params: Promise<RouteParams> };
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const data = await fetchProductDetail(slug);
+  const pd = data?.data?.product_details ?? {};
+  const seo = data?.seo ?? data?.product?.seo ?? {};
+
+  const title = seo.metatitle || seo.meta_title || pd.name || data?.name || "Caravan for Sale";
+  const description = seo.metadescription || seo.meta_description || pd.short_description || "View caravan details on Caravans For Sale Australia.";
+  const canonicalUrl = `https://www.caravansforsale.com.au/product/${slug}/`;
+  const rawImages = pd.image_url ?? pd.images ?? [];
+  const images: string[] = (Array.isArray(rawImages) ? rawImages : [rawImages]).filter(Boolean);
+
+  return {
+    title,
+    description,
+    robots: seo.index === "noindex" ? "noindex, nofollow" : "index, follow",
+    alternates: { canonical: canonicalUrl },
+    verification: { google: "6tT6MT6AJgGromLaqvdnyyDQouJXq0VHS-7HC194xEo" },
+    openGraph: {
+      title,
+      description,
+      url: canonicalUrl,
+      siteName: "Caravans for Sale",
+      ...(images.length > 0 && { images: [{ url: images[0], alt: title }] }),
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+    },
+  };
+}
 
 const fetchProductDetail = async (slug: string) => {
   const API_BASE = process.env.NEXT_PUBLIC_CFS_API_BASE!;

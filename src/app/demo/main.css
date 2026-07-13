@@ -318,7 +318,7 @@ input.loc-search-input:focus { box-shadow: 0 0 0 1.5px #7e7e7e !important; }
 }
 
 .lsd-card.lsd-card--spotlight .lsd-card__body{
-  background: #f1f1f1;
+  background: #ffffff;
 }
 .lsd-card.lsd-card--spotlight .lsd-card__btn-view {
     background: #000;
@@ -448,20 +448,26 @@ input.loc-search-input:focus { box-shadow: 0 0 0 1.5px #7e7e7e !important; }
 }
 
 /* Spotlight — orange border + image label */
-.lsd-card--spotlight {  }
-.lsd-card--spotlight:hover { }
+.lsd-card--spotlight {
+    border-color: #ec7200;
+    box-shadow: 0px 0px 0px 1px #ec7200;
+}
+.lsd-card--spotlight:hover {
+  border-color: #ec7200;
+  box-shadow: 0px 0px 0px 2px #ec7200;
+}
 
 .lsd-card__spotlight-label {
     color: #fff;
     letter-spacing: .08em;
     text-align: center;
     z-index: 3;
-    background: #1b5cb1e0;
+    background: #ec7200;
     justify-content: center;
     align-items: center;
     gap: 5px;
     padding: 5px 10px;
-    font-size: 11px;
+    font-size: 13px;
     font-weight: 700;
     display: flex;
     position: absolute;

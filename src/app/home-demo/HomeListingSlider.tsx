@@ -89,20 +89,20 @@ export default function HomeListingSlider({ title, viewAllHref, apiUrl, badgeVar
             onSwiper={(s) => { swiperRef.current = s; }}
             onSlideChange={(s) => { setIsBeginning(s.isBeginning); setIsEnd(s.isEnd); }}
             spaceBetween={16}
-            slidesPerView={1.2}
+            slidesPerView={1}
             breakpoints={{
-              640:  { slidesPerView: 1.5, spaceBetween: 14 },
-              768:  { slidesPerView: 2.2, spaceBetween: 16 },
-              1024: { slidesPerView: 3.2, spaceBetween: 18 },
-              1280: { slidesPerView: 3.2, spaceBetween: 18 },
-              1440: { slidesPerView: 4.2, spaceBetween: 20 },
-              1920: { slidesPerView: 5,   spaceBetween: 20 },
+              640:  { slidesPerView: 2,   spaceBetween: 14 },
+              768:  { slidesPerView: 2,   spaceBetween: 16 },
+              1024: { slidesPerView: 3,   spaceBetween: 18 },
+              1280: { slidesPerView: 4,   spaceBetween: 18 },
+              1440: { slidesPerView: 4,   spaceBetween: 20 },
+              1920: { slidesPerView: 4,   spaceBetween: 20 },
             }}
           >
             {items.map((item, idx) => {
               const price = item.sale_price || item.regular_price || "POA";
               const image = item.image_format?.[0] ?? null;
-              const type = item.categories?.[0] ?? "";
+              const type = (item.categories?.[0] ?? "").replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase());
               const location = getLocationLabel(item);
 
               return (

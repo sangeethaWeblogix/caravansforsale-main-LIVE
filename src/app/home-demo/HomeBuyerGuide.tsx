@@ -61,10 +61,7 @@ export default function HomeBuyerGuide() {
 
               <div className="hbg-why-card">
                 <div className="hbg-why-icon">
-                  <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#ec7200" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
-                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                  </svg>
+                  <Image src="/images/seller.svg" alt="Dealers & Private Sellers" width={34} height={34} />
                 </div>
                 <h3 className="hbg-why-card-title">Dealers &amp; Private Sellers</h3>
                 <div className="hbg-why-card-sep" />
@@ -73,10 +70,7 @@ export default function HomeBuyerGuide() {
 
               <div className="hbg-why-card">
                 <div className="hbg-why-icon">
-                  <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#ec7200" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
-                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-                  </svg>
+                  <Image src="/images/australia.png" alt="Australia-Wide Coverage" width={34} height={34} />
                 </div>
                 <h3 className="hbg-why-card-title">Australia-Wide Coverage</h3>
                 <div className="hbg-why-card-sep" />
@@ -85,10 +79,7 @@ export default function HomeBuyerGuide() {
 
               <div className="hbg-why-card">
                 <div className="hbg-why-icon">
-                  <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#ec7200" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h4l3 3v5h-7V8z"/>
-                    <circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
-                  </svg>
+                  <Image src="/images/category.svg" alt="Caravan-Specific Marketplace" width={34} height={34} />
                 </div>
                 <h3 className="hbg-why-card-title">Caravan-Specific Marketplace</h3>
                 <div className="hbg-why-card-sep" />
@@ -97,9 +88,7 @@ export default function HomeBuyerGuide() {
 
               <div className="hbg-why-card">
                 <div className="hbg-why-icon">
-                  <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#ec7200" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-                  </svg>
+                  <Image src="/images/dollar.png" alt="Easy to Compare" width={34} height={34} />
                 </div>
                 <h3 className="hbg-why-card-title">Easy to Compare</h3>
                 <div className="hbg-why-card-sep" />

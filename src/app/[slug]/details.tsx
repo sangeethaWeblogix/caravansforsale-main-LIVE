@@ -3,6 +3,7 @@ import Image from "next/image";
 import { redirect } from "next/navigation";
 import FaqSection from "./FaqSection";
 import RelatedNews from "./RelatedNews";
+import BlogFeaturedListings from "./BlogFeaturedListings";
 import "./details.css";
 import { useEffect, useRef, useState } from "react";
 import { formatPostDate } from "@/utils/date";
@@ -141,6 +142,20 @@ const BROWSE_TABS: BrowseTab[] = [
   },
 ];
 
+type CategoryFeaturedProduct = {
+  id: number;
+  name: string;
+  slug: string;
+  condition: string;
+  location: string;
+  state?: string;
+  regular_price: string;
+  sale_price: string;
+  categories: string[];
+  image_format: string[];
+  seller_type?: string;
+};
+
 type BlogDetail = {
   id: number;
   slug: string;
@@ -148,10 +163,12 @@ type BlogDetail = {
   date: string;
   banner_image?: string;
   image?: string;
-  toc?: string; // HTML
-  content?: string; // HTML
+  toc?: string;
+  content?: string;
   product_category?: string[];
+  category_featured_products?: CategoryFeaturedProduct[];
 };
+
 type FaqItem = {
   heading: string;
   content: string;
@@ -513,8 +530,9 @@ export default function BlogDetailsPage({
         </div>
       </section>
 
-      <FaqSection data={data?.data?.faq || []} catLabel={catLabel} catLink={catLink} />
+      <BlogFeaturedListings products={data?.data?.blog_detail?.category_featured_products ?? []} category={catLabel} />
       <RelatedNews blogs={data?.data?.related_blogs || []} />
+      <FaqSection data={data?.data?.faq || []} catLabel={catLabel} catLink={catLink} />
     </div>
   );
 }

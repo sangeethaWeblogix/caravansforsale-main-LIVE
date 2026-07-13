@@ -1546,3 +1546,141 @@ tr {
     position: static;
   }
 }
+
+/* ── Blog Featured Listings ── */
+.bfl-section {
+  padding: 48px 0 56px;
+  background: #f6f7fb;
+}
+
+.bfl-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #000000;
+  margin-bottom: 24px;
+}
+
+.bfl-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+}
+
+.bfl-card {
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: 0 1px 4px rgba(0,0,0,.07);
+  transition: box-shadow .18s;
+}
+
+.bfl-card:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,.12);
+  text-decoration: none;
+  color: inherit;
+}
+
+.bfl-card__img {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4/3;
+  background: #e8eaed;
+  flex-shrink: 0;
+}
+
+.bfl-card__img-placeholder {
+  width: 100%;
+  height: 100%;
+  background: #e0e2e6;
+}
+
+.bfl-card__chip {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: rgba(0,0,0,.55);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 3px;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+}
+
+.bfl-card__body {
+  padding: 10px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.bfl-card__name {
+    color: #000;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    margin: 0 0 8px;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.35;
+    display: -webkit-box;
+    overflow: hidden;
+}
+
+.bfl-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  margin-bottom: 8px;
+}
+
+.bfl-card__meta-item {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  color: #666;
+}
+
+.bfl-card__price {
+  font-size: 16px;
+  font-weight: 700;
+  color: #000000;
+  margin: 0;
+  margin-top: auto;
+}
+
+.bfl-skeleton {
+  background: #e8eaed;
+  border-radius: 8px;
+  aspect-ratio: 3/4;
+  animation: bfl-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes bfl-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .5; }
+}
+
+@media (max-width: 1199px) {
+  .bfl-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .bfl-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .bfl-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

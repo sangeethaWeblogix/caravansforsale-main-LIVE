@@ -70,7 +70,7 @@ export default function HomeTypeSection() {
               </h3>
               <p className="htype-card__desc">{t.desc}</p>
               <span className="htype-card__count">
-                {t.count} listings <span aria-hidden>→</span>
+                {t.count} listings <i className="bi bi-chevron-right" />
               </span>
             </a>
           ))}

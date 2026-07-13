@@ -112,15 +112,15 @@ export default function HomePage({
               </p>
               <div className="hd-banner__trust">
                 <span className="hd-banner__trust-item">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                  <Image src="/images/category.svg" alt="" width={16} height={16} className="hd-banner__trust-icon" unoptimized />
                   Thousands of Listings
                 </span>
                 <span className="hd-banner__trust-item">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                  <Image src="/images/australia.png" alt="" width={16} height={16} className="hd-banner__trust-icon" unoptimized />
                   Australia Wide
                 </span>
                 <span className="hd-banner__trust-item">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                  <Image src="/images/seller.svg" alt="" width={16} height={16} className="hd-banner__trust-icon" unoptimized />
                   Dealers &amp; Private Sellers
                 </span>
               </div>
@@ -137,11 +137,11 @@ export default function HomePage({
       {/* ── Banner Ad ── */}
       <div className="hd-banner-ad">
         <div className="container">
-          <a href="/listings/aussie-fivestar/" className="hd-banner-ad__inner">
+          <a href="https://www.aussiefivestarcaravans.com.au/" target="_blank" rel="noopener noreferrer" className="hd-banner-ad__inner">
             <span className="hd-banner-ad__label">Advertisement</span>
             <picture>
-              <source media="(max-width: 767px)" srcSet="/images/Aussie-Fivestar-Caravans-1.jpg" />
-              <img src="/images/Aussie-Fivestar-Caravans.jpg" alt="Aussie Fivestar Caravans" className="hd-banner-ad__img" />
+              <source media="(max-width: 767px)" srcSet="/images/aussiefivestar-1157x598.jpg" />
+              <img src="/images/aussiefivestar-2000x517.jpg" alt="Aussie Fivestar Caravans" className="hd-banner-ad__img" />
             </picture>
           </a>
         </div>
