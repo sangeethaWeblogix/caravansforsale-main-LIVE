@@ -10,6 +10,8 @@ import HomeTypeSection from "./HomeTypeSection";
 import HomeLocationSection from "./HomeLocationSection";
 import HomeBuyerGuide from "./HomeBuyerGuide";
 import HomeListingSlider from "./HomeListingSlider";
+import { useBanners } from "@/components/BannerHandler";
+import { useBannerTracking } from "@/hooks/useBannerTracking";
 import "./main.css?=23";
 
 const BlogSection = dynamic(() => import("../blogSection"), { ssr: false });
@@ -58,6 +60,16 @@ export default function HomePage({
   const [usedState, setUsedState] = useState<Item[]>([]);
   const [usedRegion, setUsedRegion] = useState<Item[]>([]);
   const [adIndex, setAdIndex] = useState<number>(0);
+
+  const { matchedBanners, isMobile, isLoading: bannerLoading } = useBanners();
+  const sortedHome = [...matchedBanners]
+    .filter(b => b.placement === "home")
+    .sort((a, b) => Number(b.id) - Number(a.id));
+  const homeDkBanner = sortedHome.find(b => b.device_target === "desktop");
+  const homeMbBanner = sortedHome.find(b => b.device_target === "mobile");
+  const activeBanner = isMobile ? (homeMbBanner ?? homeDkBanner) : (homeDkBanner ?? homeMbBanner);
+  const activeBanners = activeBanner ? [activeBanner] : [];
+  const { bannerRefs, trackClick } = useBannerTracking(activeBanners);
 
   const bannerSectionRef = useRef<HTMLDivElement | null>(null);
 
@@ -137,13 +149,37 @@ export default function HomePage({
       {/* ── Banner Ad ── */}
       <div className="hd-banner-ad">
         <div className="container">
-          <a href="https://www.aussiefivestarcaravans.com.au/" target="_blank" rel="noopener noreferrer" className="hd-banner-ad__inner">
-            <span className="hd-banner-ad__label">Advertisement</span>
-            <picture>
-              <source media="(max-width: 767px)" srcSet="/images/aussiefivestar-1157x598.jpg" />
-              <img src="/images/aussiefivestar-2000x517.jpg" alt="Aussie Fivestar Caravans" className="hd-banner-ad__img" />
-            </picture>
-          </a>
+          {bannerLoading ? (
+            <div style={{ width: "100%", aspectRatio: "2000/517", background: "#f0f0f0", borderRadius: 8 }} />
+          ) : activeBanner ? (
+            <a
+              href={activeBanner.target_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hd-banner-ad__inner"
+              ref={(el) => { bannerRefs.current[0] = el; }}
+              data-banner-id={activeBanner.id}
+              onClick={() => trackClick(Number(activeBanner.id))}
+            >
+              <span className="hd-banner-ad__label">Advertisement</span>
+              <picture>
+                {homeMbBanner && <source media="(max-width: 767px)" srcSet={homeMbBanner.image_url} />}
+                <img
+                  src={(homeDkBanner ?? homeMbBanner)?.image_url}
+                  alt={activeBanner.name}
+                  className="hd-banner-ad__img"
+                />
+              </picture>
+            </a>
+          ) : (
+            <a href="https://www.aussiefivestarcaravans.com.au/" target="_blank" rel="noopener noreferrer" className="hd-banner-ad__inner">
+              <span className="hd-banner-ad__label">Advertisement</span>
+              <picture>
+                <source media="(max-width: 767px)" srcSet="/images/aussiefivestar-1157x598.jpg" />
+                <img src="/images/aussiefivestar-2000x517.jpg" alt="Aussie Fivestar Caravans" className="hd-banner-ad__img" />
+              </picture>
+            </a>
+          )}
         </div>
       </div>
 

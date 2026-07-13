@@ -15,12 +15,11 @@ const API_KEY = process.env.CFS_API_KEY; // ✅ Add at top of file
  type RouteParams = { slug: string };
 type PageProps = { params: Promise<RouteParams> };
 
-async function fetchBlogDetail(slug: string) {
+async function fetchBlogDetail(slug: string, seed?: number) {
   try {
+    const seedParam = seed ? `&seed=${seed}` : "";
     const res = await fetch(
-      `https://admin.caravansforsale.com.au/wp-json/cfs/v1/blog-detail-new/?slug=${encodeURIComponent(
-        slug
-      )}`,
+      `https://admin.caravansforsale.com.au/wp-json/cfs/v1/blog-detail-new/?slug=${encodeURIComponent(slug)}${seedParam}`,
       {
         cache: "no-store",
         headers: {
@@ -175,7 +174,8 @@ export default async function ProductDetailPage({ params }: PageProps) {
       </div>
     );
   }
-  const data = await fetchBlogDetail(slug);
+  const seed = Math.ceil(Math.random() * 10);
+  const data = await fetchBlogDetail(slug, seed);
 
   if (slug.startsWith("thank-you-")) {
     return <Thankyou />;
