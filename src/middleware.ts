@@ -178,6 +178,12 @@ export async function middleware(request: NextRequest) {
   const fullPath = url.pathname + url.search;
   const userAgent = request.headers.get('user-agent') || '';
 
+  // `.startsWith('/listings')` also matches `/listings-demo` (no slash boundary) —
+  // use this everywhere instead so the listings-only 410/SEO checks below don't
+  // run against the listings-demo reference route and misparse its slugs.
+  const isListingsPath = url.pathname === '/listings' || url.pathname.startsWith('/listings/');
+  const isListingsDemoPath = url.pathname === '/listings-demo' || url.pathname.startsWith('/listings-demo/');
+
   // Second pass from render410() — listing page renders its own exclusive-products check
   if (request.headers.get('x-skip-middleware') === '1') {
     return NextResponse.next({ request: { headers: request.headers } });
@@ -203,7 +209,7 @@ export async function middleware(request: NextRequest) {
   }
 
   /* 🚫 Listings: forbidden segments, unknown params, OR wrong URL order → 410 */
-  if (url.pathname.startsWith('/listings')) {
+  if (isListingsPath) {
     const segments = url.pathname.split('/').filter(Boolean);
     const hasForbiddenSegment = segments.some(s => /(page|feed)/i.test(s));
 
@@ -293,7 +299,7 @@ export async function middleware(request: NextRequest) {
 
   /* 🚫 Unknown multi-segment paths → 410 (e.g. /queensland-state/stoney-creek/ without /listings/ prefix) */
   const KNOWN_MULTI_SEGMENT = new Set([
-    'listings', 'product', 'api', '_next', 'blog', 'author', 'caravan-manufacturers',
+    'listings', 'listings-demo', 'product', 'api', '_next', 'blog', 'author', 'caravan-manufacturers',
     '410', '404', '410-new', 'images', 'fonts', 'icons',
     'demo', 'product-detail-demo',
     'sell-my-caravan',
@@ -303,8 +309,17 @@ export async function middleware(request: NextRequest) {
     return render410(request);
   }
 
+  /* 🙈 listings-demo is a reference/backup copy of the old listings system —
+     force noindex, nofollow on every URL under it, and skip the listings-only
+     410/SEO checks above entirely (they don't apply to this route). */
+  if (isListingsDemoPath) {
+    const response = NextResponse.next({ request: { headers: requestHeaders } });
+    response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+    return response;
+  }
+
   /* 🤖 Bot Detection — listing and product pages not early-returned so they get 0-product/410 check */
-  if (isBot(userAgent) && !url.pathname.startsWith('/listings') && !url.pathname.startsWith('/product/')) {
+  if (isBot(userAgent) && !isListingsPath && !url.pathname.startsWith('/product/')) {
     console.log(`🤖 Bot detected: ${userAgent.substring(0, 50)}...`);
     const response = NextResponse.next({ request: { headers: requestHeaders } });
     response.headers.set('X-Is-Bot', 'true');
@@ -362,7 +377,7 @@ export async function middleware(request: NextRequest) {
     !url.pathname.includes('.') &&
     !url.pathname.startsWith('/api') &&
     !url.pathname.startsWith('/_next') &&
-     !url.pathname.startsWith('/listings')
+     !isListingsPath
   ) {
     url.pathname = `${url.pathname}/`;
     return NextResponse.redirect(url, 308);
@@ -381,7 +396,7 @@ export async function middleware(request: NextRequest) {
   /* 3️⃣ SEO Middleware (LISTINGS ONLY) */
   let robotsHeader = "index, follow";
 
-  if (url.pathname.startsWith("/listings")) {
+  if (isListingsPath) {
     const cacheKey = fullPath;
 
     /* 🔹 Cache hit (fresh or stale-while-revalidate) */
@@ -523,7 +538,7 @@ export async function middleware(request: NextRequest) {
   /* 4️⃣ Create response */
   const response = NextResponse.next({ request: { headers: requestHeaders } });
 
-  if (url.pathname.startsWith("/listings")) {
+  if (isListingsPath) {
     response.headers.set("X-Robots-Tag", robotsHeader);
   }
 
