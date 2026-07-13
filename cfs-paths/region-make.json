@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "region-make",
-    "count": 1055,
+    "count": 1057,
     "paths": [
         "australian-capital-territory-state/australian-capital-territory-region/avida/",
         "australian-capital-territory-state/australian-capital-territory-region/crusader/",
@@ -102,6 +102,7 @@
         "new-south-wales-state/hunter-region/traveller/",
         "new-south-wales-state/hunter-region/vacationer/",
         "new-south-wales-state/illawarra-region/retreat/",
+        "new-south-wales-state/illawarra-region/star-vision/",
         "new-south-wales-state/illawarra-region/supreme/",
         "new-south-wales-state/illawarra-region/titan/",
         "new-south-wales-state/mid-north-coast-region/austrack-campers/",
@@ -414,7 +415,6 @@
         "queensland-state/sunshine-coast-region/austrack-campers/",
         "queensland-state/sunshine-coast-region/australian-off-road/",
         "queensland-state/sunshine-coast-region/bushtracker/",
-        "queensland-state/sunshine-coast-region/concept/",
         "queensland-state/sunshine-coast-region/creative/",
         "queensland-state/sunshine-coast-region/design-rv/",
         "queensland-state/sunshine-coast-region/empire/",
@@ -954,16 +954,18 @@
         "victoria-state/warrnambool-and-south-west-region/snowy-river/",
         "western-australia-state/bunbury-region/avan/",
         "western-australia-state/bunbury-region/golf/",
-        "western-australia-state/mandurah-region/avan/",
-        "western-australia-state/mandurah-region/complete-campsite/",
         "western-australia-state/mandurah-region/concept/",
         "western-australia-state/mandurah-region/coromal/",
         "western-australia-state/mandurah-region/crusader/",
+        "western-australia-state/mandurah-region/ideal-rv/",
         "western-australia-state/mandurah-region/jayco/",
-        "western-australia-state/mandurah-region/kokoda/",
+        "western-australia-state/mandurah-region/jb/",
+        "western-australia-state/mandurah-region/mdc/",
         "western-australia-state/mandurah-region/newlands/",
         "western-australia-state/mandurah-region/ranger/",
-        "western-australia-state/mandurah-region/silver-valley/",
+        "western-australia-state/mandurah-region/retreat/",
+        "western-australia-state/mandurah-region/supreme/",
+        "western-australia-state/mandurah-region/urban/",
         "western-australia-state/mandurah-region/viscount/",
         "western-australia-state/perth-region/adria/",
         "western-australia-state/perth-region/atlantic/",
@@ -1059,5 +1061,5 @@
         "western-australia-state/western-australia-outback-south-region/western/",
         "western-australia-state/western-australia-outback-south-region/windsor/"
     ],
-    "generated_at": "2026-07-11 15:56:19"
+    "generated_at": "2026-07-12 16:55:59"
 }
