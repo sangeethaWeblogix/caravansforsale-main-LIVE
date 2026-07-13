@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { sanitizeRichText } from "@/utils/sanitizeRichText";
 
 type Faq = { q: string; a: string };
 
@@ -50,7 +51,7 @@ export default function StateContent({ footerDescription, faq }: Props) {
           {showLeft && (
             <div
               className="lsd-content__left lsd-content__body"
-              dangerouslySetInnerHTML={{ __html: footerDescription! }}
+              dangerouslySetInnerHTML={{ __html: sanitizeRichText(footerDescription) }}
             />
           )}
 
