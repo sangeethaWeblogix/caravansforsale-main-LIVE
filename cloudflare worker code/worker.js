@@ -55,14 +55,14 @@ let cachedWhitelistIPs = null;
 let whitelistCacheTimestamp = 0;
 const WHITELIST_CACHE_TTL = 300000; // 5 minutes
 
-async function getWhitelistIPs(env) {
+async function getWhitelistEntries(env) {
   const now = Date.now();
   if (cachedWhitelistIPs !== null && (now - whitelistCacheTimestamp) < WHITELIST_CACHE_TTL) {
     return cachedWhitelistIPs;
   }
   try {
     const response = await fetch(
-      `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/rules/lists/${CF_WHITELIST_LIST_ID}/items?per_page=1000`,
+      `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/rules/lists/${CF_WHITELIST_LIST_ID}/items?per_page=100`,
       {
         headers: {
           'Authorization': `Bearer ${env.CF_API_TOKEN}`,
@@ -73,16 +73,66 @@ async function getWhitelistIPs(env) {
     const data = await response.json();
     if (data.success && Array.isArray(data.result)) {
       cachedWhitelistIPs = data.result.map(item => item.ip).filter(Boolean);
+      console.log(`Whitelist loaded: ${cachedWhitelistIPs.length} entries`);
     } else {
       console.error('CF API whitelist fetch failed:', JSON.stringify(data.errors));
-      cachedWhitelistIPs = cachedWhitelistIPs || []; // keep stale cache on error
+      cachedWhitelistIPs = cachedWhitelistIPs || [];
     }
   } catch (e) {
     console.error('Failed to fetch whitelist from CF API:', e.message);
-    cachedWhitelistIPs = cachedWhitelistIPs || []; // keep stale cache on error
+    cachedWhitelistIPs = cachedWhitelistIPs || [];
   }
   whitelistCacheTimestamp = now;
   return cachedWhitelistIPs;
+}
+
+// Check if an IP matches a whitelist entry (exact match or CIDR range)
+function ipMatchesEntry(clientIp, entry) {
+  if (!entry.includes('/')) return clientIp === entry; // exact match
+
+  // CIDR match
+  const [network, prefixStr] = entry.split('/');
+  const prefix = parseInt(prefixStr, 10);
+  const isIPv6 = network.includes(':');
+
+  try {
+    if (isIPv6) {
+      return ipv6InCidr(clientIp, network, prefix);
+    } else {
+      return ipv4InCidr(clientIp, network, prefix);
+    }
+  } catch (e) {
+    return false;
+  }
+}
+
+function ipv4InCidr(ip, network, prefix) {
+  const ipNum = ip.split('.').reduce((acc, octet) => (acc << 8) | parseInt(octet, 10), 0) >>> 0;
+  const netNum = network.split('.').reduce((acc, octet) => (acc << 8) | parseInt(octet, 10), 0) >>> 0;
+  const mask = prefix === 0 ? 0 : (~0 << (32 - prefix)) >>> 0;
+  return (ipNum & mask) === (netNum & mask);
+}
+
+function expandIPv6(ip) {
+  // Expand :: shorthand and pad each group to 4 hex digits
+  let parts = ip.split('::');
+  let left = parts[0] ? parts[0].split(':') : [];
+  let right = parts[1] ? parts[1].split(':') : [];
+  const missing = 8 - left.length - right.length;
+  const middle = Array(missing).fill('0000');
+  return [...left, ...middle, ...right].map(g => g.padStart(4, '0')).join('');
+}
+
+function ipv6InCidr(ip, network, prefix) {
+  const ipHex = expandIPv6(ip);
+  const netHex = expandIPv6(network);
+  // Compare the first `prefix` bits
+  const hexChars = Math.floor(prefix / 4);
+  const remainingBits = prefix % 4;
+  if (ipHex.slice(0, hexChars) !== netHex.slice(0, hexChars)) return false;
+  if (remainingBits === 0) return true;
+  const mask = 0xF & (~0 << (4 - remainingBits));
+  return (parseInt(ipHex[hexChars], 16) & mask) === (parseInt(netHex[hexChars], 16) & mask);
 }
 
 async function isGeoBlocked(request, env) {
@@ -90,13 +140,18 @@ async function isGeoBlocked(request, env) {
   if (country === 'AU') return false; // Allow Australia
 
   const clientIp = request.headers.get('CF-Connecting-IP') || '';
-  const whitelist = await getWhitelistIPs(env);
-  if (whitelist.includes(clientIp)) return false; // Allow whitelisted IPs
+  const whitelist = await getWhitelistEntries(env);
+  const isWhitelisted = whitelist.some(entry => ipMatchesEntry(clientIp, entry));
+  if (isWhitelisted) {
+    console.log(`Whitelist match for ${clientIp}`);
+    return false;
+  }
 
   // Only allow verified search engine crawlers (Googlebot, Bingbot etc.)
   const botCategory = request.cf?.verifiedBotCategory || '';
   if (botCategory === 'Search Engine Crawlers') return false;
 
+  console.log(`Geo-blocked: ${clientIp} (${country})`);
   return true; // Block everyone else
 }
 
