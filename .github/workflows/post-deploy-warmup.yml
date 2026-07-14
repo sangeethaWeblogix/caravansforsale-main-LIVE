@@ -108,17 +108,22 @@ jobs:
 
   # ==========================================
   # ALL LISTING URLS (url.csv) — 10 parallel batches of ~350 URLs each.
-  # Runs after the canary passes. This is the expensive part (17,310 KV
-  # uploads) — that's exactly why the whole workflow is manual now, so it
-  # only happens when a dev decides it's worth the WP admin load, not on
-  # every single deploy.
-  # Each variant is still independently validated (existing isErrorPage
-  # skip in the generation script) — a single bad listing page just leaves
-  # its previous KV entry in place rather than overwriting it with a broken
-  # render.
+  #
+  # Only runs on MANUAL triggers (workflow_dispatch), NOT on the daily cron.
+  #
+  # Why: the Worker now patches buildIds in KV HTML at serve-time, so KV
+  # stays warm through deployments without regenerating sitemap pages.
+  # The daily cron only needs to update priority pages + current-build-id
+  # (the warmup-priority job above).  Full sitemap regeneration is expensive
+  # (~17,000 KV writes, long WP admin crawl) and the data on these pages only
+  # changes when a product is added or removed — which is handled selectively
+  # by generate-affected-cache.yml triggered from WordPress.
+  # Run this manually when you've done a major design overhaul and want all
+  # sitemap pages to reflect the new frontend immediately.
   # ==========================================
   warmup-urls:
     needs: warmup-priority
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 90
     strategy:

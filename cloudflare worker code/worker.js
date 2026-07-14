@@ -447,31 +447,49 @@ async function getStaticHtmlFromKV(url, env) {
     }
     
     // Fetch from KV
-    const html = await env.CFS_STATIC_PAGES.get(kvKey);
+    const rawHtml = await env.CFS_STATIC_PAGES.get(kvKey);
 
-    if (!html) {
+    if (!rawHtml) {
       return null;
     }
 
-    // Build-ID mismatch check: if Vercel has been redeployed since the KV HTML was
-    // generated, the embedded __NEXT_DATA__ buildId will be stale. Serving stale HTML
-    // causes RSC client-side navigation to fail silently (filter apply doesn't update
-    // the page) because the client's router state and Vercel's live build are out of sync.
-    // Fix: bypass KV HTML and serve fresh from Vercel when buildIds differ.
+    // Build-ID handling:
     //
-    // "current-build-id" is written to KV by scripts/update-kv-build-id.js which runs
-    // automatically after every "next build" (see package.json). If it is absent the
-    // KV HTML is potentially stale — bypass conservatively rather than risk serving
-    // broken CSS/JS.
+    // "current-build-id" is written to KV by scripts/update-kv-build-id.js on
+    // every Vercel deployment. The KV HTML still embeds the OLD buildId until the
+    // next cache warmup regenerates it.
+    //
+    // Old behaviour (bypassing KV on mismatch) caused BYPASS-NO-CACHE for every
+    // page after every deployment. With a dev team doing 10 deployments/day, the
+    // site was never served from KV — always cold Vercel SSR.
+    //
+    // New behaviour: when buildIds differ, patch the old buildId strings inside the
+    // KV HTML and serve the patched version. This keeps KV warm across all
+    // deployments. The page content (listings, layout, text) is from the last cache
+    // warmup (slightly stale until the evening scheduled run — acceptable). The JS/CSS
+    // paths now point to the current Vercel build's files so the page loads and
+    // hydrates correctly.
+    //
+    // The buildId only appears in two places in the HTML:
+    //   1. __NEXT_DATA__ JSON  →  "buildId":"OLD"
+    //   2. Script src attrs    →  /_next/static/OLD/_buildManifest.js
+    //                             /_next/static/OLD/_ssgManifest.js
+    // replaceAll is safe because the buildId is a unique cryptographic hash.
+    //
+    // Only bypass (return null → PRIORITY 5) if current-build-id is missing entirely —
+    // that signals a misconfigured environment, not a routine deployment gap.
     const currentBuildId = await env.CFS_STATIC_PAGES.get('current-build-id');
     if (!currentBuildId) {
       console.log(`No current-build-id in KV — bypassing KV HTML conservatively for ${kvKey}`);
       return null; // Falls through to PRIORITY 5 (Vercel origin)
     }
-    const htmlBuildId = html.match(/"buildId":"([^"]+)"/)?.[1];
-    if (!htmlBuildId || htmlBuildId !== currentBuildId) {
-      console.log(`Build-ID mismatch: KV=${htmlBuildId}, live=${currentBuildId} — bypassing KV for ${kvKey}`);
-      return null; // Falls through to PRIORITY 5 (Vercel origin)
+
+    const htmlBuildId = rawHtml.match(/"buildId":"([^"]+)"/)?.[1];
+    let html = rawHtml;
+    if (htmlBuildId && htmlBuildId !== currentBuildId) {
+      // Patch stale buildId → current buildId so the client loads the right JS/CSS.
+      html = rawHtml.replaceAll(htmlBuildId, currentBuildId);
+      console.log(`Build-ID patched in KV HTML: ${htmlBuildId} → ${currentBuildId} (${kvKey})`);
     }
 
     // Inject shuffle seed so React hydration uses the same variant order.
