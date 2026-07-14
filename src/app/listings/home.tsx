@@ -154,6 +154,16 @@ export default function StateHome({ initialFilters }: Props) {
     // with two different seeds, so the grid visibly swaps its items right
     // after the first paint.
     if (!ready || page !== 1) return;
+    // `isIndexed` starts as the `true` default and flips to its real value
+    // once the async /api/indexed-url/ check resolves — since this effect
+    // depends on `isIndexed`, it fires once with that stale default and
+    // again with the real value. The two requests race with no cancellation,
+    // so if the stale-`isIndexed` response happens to land last, it overwrites
+    // the correct one with a near-empty result (that branch's slot_bucket
+    // filtering finds nothing, since this endpoint never sends slot_bucket).
+    // `cancelled` lets a newer run of this effect discard an in-flight older
+    // one's result instead of letting it win the race.
+    let cancelled = false;
     setPoolLoading(true);
     // Clear the previous filter's seo_v2 up front — otherwise a failed/slow
     // fetch for the new filter combo leaves the old state's title/description
@@ -166,6 +176,7 @@ export default function StateHome({ initialFilters }: Props) {
     fetch(requestUrl, { cache: "no-store" })
       .then((r) => (r.ok ? r.json() : null))
       .then((json) => {
+        if (cancelled) return;
         console.log("[StateHome] shared pool API response:", json);
 
         // seo_v2 is set first, independently of the product-pool bucketing
@@ -205,8 +216,10 @@ export default function StateHome({ initialFilters }: Props) {
 
         handleTotalPages(json?.pagination?.total_pages ?? 1);
       })
-      .catch(() => setPool({ featured: [], new: [], used: [] }))
-      .finally(() => setPoolLoading(false));
+      .catch(() => { if (!cancelled) setPool({ featured: [], new: [], used: [] }); })
+      .finally(() => { if (!cancelled) setPoolLoading(false); });
+
+    return () => { cancelled = true; };
   }, [poolApiUrl, page, isIndexed, ready]);
 
   // New/Used grid headings need their own condition-locked seo_v2 (the shared
