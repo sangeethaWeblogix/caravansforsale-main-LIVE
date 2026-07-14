@@ -1,4 +1,4 @@
-"use client";
+ "use client";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -76,17 +76,43 @@ interface Props {
   maxItems?: number;
 }
 
-/** Featured-tab ordering: slots 1 & 2 are regular featured vans, slot 3 is the
- * exclusive spotlight van, slots 4 & 5 are premium vans, then the rest of the
- * pool fills in after. Shared by the internal fetch path and any caller doing
- * its own shared fetch (e.g. StateHome splitting one response across grids). */
+/** Groups all incoming products (regular + premium + exclusive) purely by
+ * their own slot_bucket field, then arranges them in fixed hero order:
+ * featured x2 -> exclusive x1 (spotlight) -> premium x2 -> rest of the
+ * featured pool. Shared by the internal fetch path and any caller doing its
+ * own shared fetch (e.g. StateHome splitting one response across grids). */
 export function buildFeaturedOrder(products: Listing[], premiumsRaw: Listing[], exclusivesRaw: Listing[]): Listing[] {
-  const premiums   = premiumsRaw.map((p) => ({ ...p, is_premium: true }));
-  const exclusives = exclusivesRaw.map((p) => ({ ...p, is_exclusive: true }));
-  const heroFeatured = products.slice(0, 2);
-  const hero = [...heroFeatured, ...exclusives.slice(0, 1), ...premiums.slice(0, 2)];
+  // Tag each group so is_premium/is_exclusive/slot_bucket are guaranteed
+  // correct regardless of what the backend already set on these items.
+  const premiums   = premiumsRaw.map((p) => ({ ...p, is_premium: true, slot_bucket: "premium" }));
+  const exclusives = exclusivesRaw.map((p) => ({ ...p, is_exclusive: true, slot_bucket: "exclusive" }));
+
+  // Combine everything into one pool and group strictly by slot_bucket —
+  // no positional slicing on a mixed array, so featured/new/used items
+  // never accidentally leak into the wrong bucket.
+  const allItems = [...products, ...exclusives, ...premiums];
+  const bySlot = new Map<string, Listing[]>();
+  for (const item of allItems) {
+    const key = item.slot_bucket || "featured";
+    if (!bySlot.has(key)) bySlot.set(key, []);
+    bySlot.get(key)!.push(item);
+  }
+
+  const featuredPool  = bySlot.get("featured")  ?? [];
+  const exclusivePool = bySlot.get("exclusive") ?? [];
+  const premiumPool   = bySlot.get("premium")   ?? [];
+
+  // Fixed hero order: 2 featured, 1 exclusive (spotlight), 2 premium.
+  const hero = [
+    ...featuredPool.slice(0, 2),
+    ...exclusivePool.slice(0, 1),
+    ...premiumPool.slice(0, 2),
+  ];
   const heroIds = new Set(hero.map((p) => p.id));
-  const rest = products.filter((p) => !heroIds.has(p.id));
+
+  // Rest of the featured pool fills in after, skipping anything already placed.
+  const rest = featuredPool.slice(2).filter((p) => !heroIds.has(p.id));
+
   return [...hero, ...rest];
 }
 
@@ -128,14 +154,13 @@ const toTitleCase = (s: string) => s.replace(/\b\w/g, (c) => c.toUpperCase());
 /** The pool no longer locks state=victoria,
  *  so a hardcoded "VIC" fallback is
  * wrong for most listings — derive the label from the item's own state/region/suburb. */
- function getLocationLabel(item: Listing): string {
-   if (item.location) return item.location;
-   const raw = item.state || item.region || item.suburb || "";
-   if (!raw) return ""; // no state/region/suburb on this item — show nothing rather than a guessed fallback
-   const name = raw.replace(/-/g, " ");
-   return AUS_ABBR[name.toUpperCase()] ?? toTitleCase(name);
- }
- 
+function getLocationLabel(item: Listing): string {
+  if (item.location) return item.location;
+  const raw = item.state || item.region || item.suburb || "";
+  if (!raw) return ""; // no state/region/suburb on this item — show nothing rather than a guessed fallback
+  const name = raw.replace(/-/g, " ");
+  return AUS_ABBR[name.toUpperCase()] ?? toTitleCase(name);
+}
 
 /* ── Contact Seller Modal ── */
 function ContactModal({ item, onClose }: { item: Listing; onClose: () => void }) {
@@ -232,7 +257,6 @@ function ListingCard({
   spotlight?: boolean;
   onContact: (item: Listing) => void;
 }) {
-  console.log("ooo", item)
   const images = getImages(item);
   const [idx, setIdx] = useState(0);
   const href   = `/product/${item.slug ?? item.id}/`;
@@ -370,12 +394,9 @@ function ListingCard({
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="2" strokeLinecap="round">
               <circle cx="12" cy="12" r="10"/><line x1="12" y1="11" x2="12" y2="17"/><circle cx="12" cy="7.5" r="0.5" fill="#888" stroke="none"/>
             </svg>
-            
             {item.seller_type}
           </span>
         </div>
-
-        
 
         {/* Row 9: buttons */}
         <div className="lsd-card__actions">
@@ -427,8 +448,6 @@ export default function StateListingGrid({ title, viewAllHref, apiUrl, items: ex
     if (externalMode || !apiUrl) return;
     setFetchLoading(true);
     const requestUrl = `${apiUrl}&page=${page}`;
-    // Logged as an absolute URL so devtools renders it as a clickable link —
-    // click it to open the raw JSON response in a new tab.
     const absoluteUrl = new URL(requestUrl, window.location.origin).toString();
     console.log(`[StateListingGrid] "${title}" API:`, absoluteUrl);
 
@@ -437,36 +456,12 @@ export default function StateListingGrid({ title, viewAllHref, apiUrl, items: ex
       .then((json) => {
         console.log(`[StateListingGrid] "${title}" API response:`, json);
 
-        // pool_test returns products/premium_products/exclusive_products at the
-        // top level; new_optimize_code nests them under `data` — support both shapes.
         const products: Listing[]      = json?.data?.products ?? json?.products ?? [];
         const premiumsRaw: Listing[]   = json?.data?.premium_products ?? json?.premium_products ?? [];
         const exclusivesRaw: Listing[] = json?.data?.exclusive_products ?? json?.exclusive_products ?? [];
         const empExclusivesRaw: Listing[] = json?.data?.emp_exclusive_products ?? json?.emp_exclusive_products ?? [];
         const totalCount: number = json?.data?.counts?.total_count ?? json?.counts?.total_count ?? products.length;
 
-        // Split `products` by whatever slot_bucket value actually comes back —
-        // the API isn't limited to just featured/new/used (e.g. "featured_core"
-        // also shows up), so group dynamically rather than hardcoding 3 buckets.
-        const productsBySlotBucket = new Map<string, Listing[]>();
-        for (const p of products) {
-          const key = p.slot_bucket || "(none)";
-          if (!productsBySlotBucket.has(key)) productsBySlotBucket.set(key, []);
-          productsBySlotBucket.get(key)!.push(p);
-        }
-        for (const [bucket, items] of productsBySlotBucket) {
-          console.log(`[StateListingGrid] "${title}" slot_bucket=${bucket}:`, items);
-        }
-        console.log(`[StateListingGrid] "${title}" slot_bucket=premium:`, premiumsRaw);
-        console.log(`[StateListingGrid] "${title}" slot_bucket=exclusive:`, exclusivesRaw);
-
-        // Featured (and combined) grid: slots 1 & 2 are regular featured vans,
-        // slot 3 is the exclusive spotlight van, slots 4 & 5 are premium vans,
-        // then the rest of the pool fills in after. New/Used grids: premium &
-        // exclusive vans only ever show on the Featured tab — plain
-        // condition-matched products here, nothing spliced in.
-        // No products at all — fall back to the emp_exclusive_products pool
-        // so the section isn't empty, all shown with the Spotlight Van design.
         const merged: Listing[] = totalCount === 0 && empExclusivesRaw.length > 0
           ? empExclusivesRaw.map((p) => ({ ...p, is_exclusive: true }))
           : showSpotlight
@@ -485,8 +480,6 @@ export default function StateListingGrid({ title, viewAllHref, apiUrl, items: ex
   const items   = externalMode ? (externalItems as Listing[]) : fetchedItems;
   const loading = externalMode ? (externalLoading ?? false) : fetchLoading;
 
-  // No title/section at all once we know for sure there's nothing to show —
-  // an empty heading with a blank grid under it reads as broken, not "no results".
   if (!loading && items.length === 0) return null;
 
   return (

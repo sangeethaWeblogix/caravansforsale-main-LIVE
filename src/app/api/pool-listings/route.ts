@@ -61,9 +61,16 @@ export async function GET(request: NextRequest) {
     }
 
     console.log("[WP API pool_test] summary:", {
+      params: params.substring(0, 200),
       success: data?.success,
       total_products: data?.pagination?.total_products,
-      returned: data?.products?.length ?? data?.data?.products?.length,
+      pool_size: data?.pagination?.pool_size,
+      slot_bucket_present: data?.pagination?.slot_bucket_present,
+      products_returned: data?.products?.length ?? data?.data?.products?.length ?? 0,
+      premium_products: data?.premium_products?.length ?? data?.data?.premium_products?.length ?? 0,
+      exclusive_products: data?.exclusive_products?.length ?? data?.data?.exclusive_products?.length ?? 0,
+      emp_exclusive_products: data?.emp_exclusive_products?.length ?? data?.data?.emp_exclusive_products?.length ?? 0,
+      first_3_slot_buckets: (data?.products ?? data?.data?.products ?? []).slice(0, 3).map((p: any) => p?.slot_bucket),
     });
 
     return NextResponse.json(data);

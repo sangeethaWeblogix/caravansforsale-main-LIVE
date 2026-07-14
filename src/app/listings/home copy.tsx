@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -26,6 +27,12 @@ const readPage = (id: string): number | null => {
 };
 
 const SEED_MAX = 15;
+// Fixed seed used ONLY as a fallback source for premium/exclusive products
+// when the session's random seed's pool doesn't happen to contain any.
+// Premium/exclusive placement shouldn't depend on which random 500-item
+// pool the session seed picked — this fallback call exists purely to patch
+// that backend gap without touching the WordPress endpoint itself.
+const PREMIUM_FALLBACK_SEED = 1;
 
 interface Props {
   initialFilters: FilterState;
@@ -48,7 +55,6 @@ export default function StateHome({ initialFilters }: Props) {
   // Featured/New/Used split: indexed pages split the pool by slot_bucket into
   // three sections, non-indexed pages get one combined grid.
   const [isIndexed, setIsIndexed] = useState(true);
-  console.log("seoo89", seo)
 
   // Push the API's seo_v2 into the browser tab title + meta description.
   useEffect(() => {
@@ -130,8 +136,6 @@ export default function StateHome({ initialFilters }: Props) {
     return () => window.removeEventListener("popstate", handlePopState);
   }, []);
 
-  console.log("[StateHome] page:", page, "seed:", seed);
-
   const handleTotalPages = (n: number) => setMaxPages(prev => Math.max(prev, n));
 
   useEffect(() => {
@@ -173,9 +177,10 @@ export default function StateHome({ initialFilters }: Props) {
     const absoluteUrl = new URL(requestUrl, window.location.origin).toString();
     console.log("[StateHome] shared pool API:", absoluteUrl);
 
-    fetch(requestUrl, { cache: "no-store" })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((json) => {
+    (async () => {
+      try {
+        const res = await fetch(requestUrl, { cache: "no-store" });
+        const json = res.ok ? await res.json() : null;
         if (cancelled) return;
         console.log("[StateHome] shared pool API response:", json);
 
@@ -185,11 +190,39 @@ export default function StateHome({ initialFilters }: Props) {
         if (seoData) setSeo(seoData);
 
         const products: Listing[]      = json?.data?.products ?? json?.products ?? [];
-        const premiumsRaw: Listing[]   = json?.data?.premium_products ?? json?.premium_products ?? [];
-        const exclusivesRaw: Listing[] = json?.data?.exclusive_products ?? json?.exclusive_products ?? [];
+        let premiumsRaw: Listing[]     = json?.data?.premium_products ?? json?.premium_products ?? [];
+        let exclusivesRaw: Listing[]   = json?.data?.exclusive_products ?? json?.exclusive_products ?? [];
         const empExclusivesRaw: Listing[] = json?.data?.emp_exclusive_products ?? json?.emp_exclusive_products ?? [];
         const totalCount: number = json?.data?.counts?.total_count ?? json?.counts?.total_count ?? products.length;
-     console.log("shared  premium:", premiumsRaw);
+
+        // WORKAROUND: the backend's seeded random pool (per session `seed`)
+        // sometimes just doesn't contain any premium/exclusive items — it's
+        // seed-dependent whether they show up, which they shouldn't be.
+        // If either array came back empty, re-fetch with a fixed fallback
+        // seed and pull premium/exclusive from THAT response instead. This
+        // is a frontend patch for a backend gap; remove once the WordPress
+        // pool_test handler fetches premium/exclusive independent of seed.
+        if ((premiumsRaw.length === 0 || exclusivesRaw.length === 0) && seed !== PREMIUM_FALLBACK_SEED) {
+          try {
+            const fallbackUrl = `${buildApiUrl("/api/pool-listings/?per_page=24", filters, PREMIUM_FALLBACK_SEED)}&page=1`;
+            console.log("[StateHome] premium/exclusive fallback fetch:", fallbackUrl);
+            const fallbackRes = await fetch(fallbackUrl, { cache: "no-store" });
+            const fallbackJson = fallbackRes.ok ? await fallbackRes.json() : null;
+            if (cancelled) return;
+
+            if (premiumsRaw.length === 0) {
+              premiumsRaw = fallbackJson?.data?.premium_products ?? fallbackJson?.premium_products ?? [];
+            }
+            if (exclusivesRaw.length === 0) {
+              exclusivesRaw = fallbackJson?.data?.exclusive_products ?? fallbackJson?.exclusive_products ?? [];
+            }
+            console.log("[StateHome] fallback premium/exclusive:", { premiumsRaw, exclusivesRaw });
+          } catch (fallbackErr) {
+            console.log("[StateHome] premium/exclusive fallback fetch failed:", fallbackErr);
+            // Proceed with whatever we already had — don't block the page.
+          }
+        }
+
         if (totalCount === 0 && empExclusivesRaw.length > 0) {
           // No products at all — fall back to the emp_exclusive_products pool
           // so the page isn't empty, all shown with the Spotlight Van design.
@@ -197,12 +230,15 @@ export default function StateHome({ initialFilters }: Props) {
           setPool({ featured: empItems, new: [], used: [] });
         } else if (isIndexed) {
           // Indexed pages split by slot_bucket into Featured/New/Used.
-          // Premium and exclusive vans always come from their own top-level
-          // arrays and only render on the Featured tab (position 3 =
-          // exclusive, 4-5 = premium).
-          const featuredSource = products.filter((p) => p.slot_bucket === "featured");
-          const featuredItems  = buildFeaturedOrder(featuredSource, premiumsRaw, exclusivesRaw);
-          const featuredIds    = new Set(featuredItems.map((p) => p.id));
+          // buildFeaturedOrder groups strictly by each item's own slot_bucket
+          // field internally, so we pass the FULL products array — it safely
+          // pulls out only slot_bucket "featured" items for the hero +
+          // rest-of-pool. Premium/exclusive always come from their own
+          // top-level arrays (now backfilled above if needed) and only
+          // render on the Featured tab (position 3 = exclusive spotlight,
+          // 4-5 = premium).
+          const featuredItems = buildFeaturedOrder(products, premiumsRaw, exclusivesRaw);
+          const featuredIds   = new Set(featuredItems.map((p) => p.id));
 
           const newItems  = products.filter((p) => p.slot_bucket === "new"  && !p.is_premium && !p.is_exclusive && !featuredIds.has(p.id));
           const usedItems = products.filter((p) => p.slot_bucket === "used" && !p.is_premium && !p.is_exclusive && !featuredIds.has(p.id));
@@ -215,12 +251,40 @@ export default function StateHome({ initialFilters }: Props) {
         }
 
         handleTotalPages(json?.pagination?.total_pages ?? 1);
-      })
-      .catch(() => { if (!cancelled) setPool({ featured: [], new: [], used: [] }); })
-      .finally(() => { if (!cancelled) setPoolLoading(false); });
+      } catch {
+        if (!cancelled) setPool({ featured: [], new: [], used: [] });
+      } finally {
+        if (!cancelled) setPoolLoading(false);
+      }
+    })();
 
     return () => { cancelled = true; };
-  }, [poolApiUrl, page, isIndexed, ready]);
+  }, [poolApiUrl, page, isIndexed, ready, seed, filters]);
+
+  // New/Used grid headings need their own condition-locked seo_v2 (the shared
+  // pool call above is unlocked, so its seo_v2 only covers the page overall).
+  // Featured reuses that page-level seo since there's no dedicated "featured"
+  // seo concept on the backend. Skipped entirely on non-indexed pages
+  // (nothing to show these titles on there).
+  useEffect(() => {
+    if (!ready || page !== 1 || !isIndexed) {
+      setNewSeo(null);
+      setUsedSeo(null);
+      return;
+    }
+    const newUrl  = `${buildApiUrl("/api/pool-listings/?per_page=1", filters, seed, "New")}&page=1`;
+    const usedUrl = `${buildApiUrl("/api/pool-listings/?per_page=1", filters, seed, "Used")}&page=1`;
+
+    fetch(newUrl, { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((json) => setNewSeo(json?.data?.seo_v2 ?? json?.seo_v2 ?? null))
+      .catch(() => setNewSeo(null));
+
+    fetch(usedUrl, { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((json) => setUsedSeo(json?.data?.seo_v2 ?? json?.seo_v2 ?? null))
+      .catch(() => setUsedSeo(null));
+  }, [filters, seed, page, isIndexed]);
 
   const pushFiltersToUrl = (f: FilterState) => {
     window.history.pushState({}, "", buildListingsSlug(f));
@@ -309,7 +373,6 @@ export default function StateHome({ initialFilters }: Props) {
   );
 
   if (page === 1) {
-    console.log("seooo", seo?.h1)
     return (
       <div className="lsd-page">
         {/* Non-indexed pages skip the full hero banner (image + description),

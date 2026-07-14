@@ -38,6 +38,7 @@ export default async function LocationStateDemoPage({
 }) {
   const [{ slug }, query] = await Promise.all([params, searchParams]);
   const initialFilters = parseDemoFilters(slug ?? [], query);
+  console.log("[listings/[[...slug]]/page.tsx] slug:", slug, "query:", query, "initialFilters:", initialFilters);
 
   return <StateHome initialFilters={initialFilters} />;
 }

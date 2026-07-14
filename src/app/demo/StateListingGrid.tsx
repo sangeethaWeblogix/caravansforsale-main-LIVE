@@ -129,7 +129,7 @@ const toTitleCase = (s: string) => s.replace(/\b\w/g, (c) => c.toUpperCase());
  *  so a hardcoded "VIC" fallback is
  * wrong for most listings — derive the label from the item's own state/region/suburb. */
 function getLocationLabel(item: Listing): string {
-  if (item.location) return item.location;
+  if (item.state) return item.state;
   const stateName = item.state?.replace(/-/g, " ") ?? "";
   const abbr = stateName ? (AUS_ABBR[stateName.toUpperCase()] ?? toTitleCase(stateName)) : "";
   
