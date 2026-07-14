@@ -3,6 +3,19 @@ import { NextRequest, NextResponse } from "next/server";
 const API_BASE = process.env.NEXT_PUBLIC_CFS_API_BASE;
 const API_KEY = process.env.CFS_API_KEY;
 
+// Normalize each product so components always get image_format as string[]
+// home_featured returns `thumbnail` (imagestack R2 URL); also handle `image` fallback
+function normalizeProduct(p: any): any {
+  if (!p.image_format) {
+    const img = p.thumbnail ?? p.image ?? p.main_image ?? null;
+    p.image_format = img ? [img] : [];
+  } else if (typeof p.image_format === "string") {
+    p.image_format = [p.image_format];
+  }
+  if (!p.seller_type) p.seller_type = "dealer";
+  return p;
+}
+
 export async function GET(request: NextRequest) {
   const type = request.nextUrl.searchParams.get("type") ?? "all";
   const url = `${API_BASE}/home_featured?type=${encodeURIComponent(type)}`;
@@ -37,10 +50,16 @@ export async function GET(request: NextRequest) {
 
     const raw = await res.text();
     const jsonStart = raw.indexOf('{');
-    const data = JSON.parse(jsonStart > 0 ? raw.substring(jsonStart) : raw);
-    return NextResponse.json(data, {
-      headers: { "X-Debug-Visitor-IP": visitorIp || "(none)" },
-    });
+    const json = JSON.parse(jsonStart > 0 ? raw.substring(jsonStart) : raw);
+
+    // Response shape: { success, products: [...], meta: {...} }
+    const rawProducts: any[] = json?.products ?? json?.data?.products ?? [];
+    const products = rawProducts.map(normalizeProduct);
+
+    return NextResponse.json(
+      { success: true, products },
+      { headers: { "X-Debug-Visitor-IP": visitorIp || "(none)" } }
+    );
   } catch (err: any) {
     clearTimeout(timeoutId);
     const status = err?.name === "AbortError" ? 504 : 500;

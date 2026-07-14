@@ -408,8 +408,9 @@ async function runDiagnosticFetch(testPath) {
     console.log(`   Content-Type: ${response2.headers.get('content-type')}`);
     if (response2.status >= 300 && response2.status < 400) {
       console.log(`   ⚠️  SERVER IS REDIRECTING → redirect target: ${response2.headers.get('location')}`);
-      console.log(`   This means VERCEL_BASE_URL is not the final destination.`);
-      console.log(`   node-fetch follows this redirect, and the REDIRECT TARGET is causing Premature close.`);
+      console.log(`   This means VERCEL_BASE_URL is not the final destination (adds an extra round-trip per page).`);
+      console.log(`   Native fetch (used by this script) follows redirects fine — see Test 1 above for the real outcome.`);
+      console.log(`   To eliminate the extra round-trip, set VERCEL_BASE_URL to the direct *.vercel.app deployment URL.`);
     } else {
       console.log(`   No redirect detected at this URL.`);
     }

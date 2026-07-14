@@ -172,10 +172,10 @@ export default function HomePage({
           <div className="container">
             <div className="hd-banner__content">
               <h1 className="hd-banner__title">
-                Caravans for Sale<br />in Australia
+                Caravans for Sale<br></br>Across Australia
               </h1>
               <p className="hd-banner__subtitle">
-                Browse new and used caravans for sale from dealers and private sellers across Australia.
+                Browse thousands of new and used caravans for sale across Australia from trusted dealers and private sellers. Compare off-road, family, touring, luxury and pop-top caravans to find the right van for your next adventure.
               </p>
               <div className="hd-banner__trust">
                 <span className="hd-banner__trust-item">
