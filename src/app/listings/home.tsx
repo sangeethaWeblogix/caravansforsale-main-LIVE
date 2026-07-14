@@ -149,6 +149,10 @@ export default function StateHome({ initialFilters }: Props) {
     // after the first paint.
     if (!ready || page !== 1) return;
     setPoolLoading(true);
+    // Clear the previous filter's seo_v2 up front — otherwise a failed/slow
+    // fetch for the new filter combo leaves the old state's title/description
+    // on screen (e.g. Victoria's copy lingering after switching to NSW).
+    setSeo(null);
     const requestUrl = `${poolApiUrl}&page=${page}`;
     const absoluteUrl = new URL(requestUrl, window.location.origin).toString();
     console.log("[StateHome] shared pool API:", absoluteUrl);
@@ -157,6 +161,11 @@ export default function StateHome({ initialFilters }: Props) {
       .then((r) => (r.ok ? r.json() : null))
       .then((json) => {
         console.log("[StateHome] shared pool API response:", json);
+
+        // seo_v2 is set first, independently of the product-pool bucketing
+        // below, so a bad product shape can never suppress the title/description.
+        const seoData = json?.data?.seo_v2 ?? json?.seo_v2;
+        if (seoData) setSeo(seoData);
 
         const products: Listing[]      = json?.data?.products ?? json?.products ?? [];
         const premiumsRaw: Listing[]   = json?.data?.premium_products ?? json?.premium_products ?? [];
@@ -189,8 +198,6 @@ export default function StateHome({ initialFilters }: Props) {
         }
 
         handleTotalPages(json?.pagination?.total_pages ?? 1);
-        const seoData = json?.data?.seo_v2 ?? json?.seo_v2;
-        if (seoData) setSeo(seoData);
       })
       .catch(() => setPool({ featured: [], new: [], used: [] }))
       .finally(() => setPoolLoading(false));

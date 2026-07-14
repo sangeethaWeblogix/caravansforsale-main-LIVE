@@ -83,7 +83,7 @@ export default function StateHero({ title, description, loading, breadcrumbs }: 
           ) : (
             <>
               <h1 className="lsd-hero__title">
-                {title || "Caravans for Sale in Victoria"}
+                {title || "Caravans for Sale"}
               </h1>
 
               <div
@@ -91,9 +91,9 @@ export default function StateHero({ title, description, loading, breadcrumbs }: 
                 dangerouslySetInnerHTML={{
                   __html: description
                     ? sanitizeRichText(description)
-                    : "<p>Browse new and used caravans for sale in Victoria from dealers and private sellers. " +
+                    : "<p>Browse new and used caravans for sale from dealers and private sellers. " +
                       "Find off road caravans, family caravans, luxury caravans, pop tops, hybrids and " +
-                      "touring caravans across Melbourne, Geelong, Ballarat, Bendigo and regional Victoria.</p>",
+                      "touring caravans, and filter local inventory by price, condition, layout, berths, and travel dimensions.</p>",
                 }}
               />
             </>
