@@ -103,8 +103,15 @@ export default function HomePage({
     // Track click internally in CFS WordPress — fire BEFORE window.open().
     // On mobile browsers (esp. iOS Safari), a JS-triggered window.open() from a
     // preventDefault()'d anchor click can start unloading/navigating the page
-    // immediately, cutting off any code that runs after it. Sending the beacon
+    // immediately, cutting off any code that runs after it. Sending the request
     // first guarantees it's dispatched before that can happen.
+    //
+    // Use fetch(keepalive) instead of sendBeacon: sendBeacon is forced into
+    // no-cors mode, which only allows CORS-safelisted headers — our cross-origin
+    // "Content-Type: application/json" isn't one of them, so the WordPress REST
+    // API can fail to parse the body and silently drop the event. Plain fetch
+    // (same approach the working impression tracker uses) goes through normal
+    // CORS with a preflight, so the real content-type header survives.
     const body = JSON.stringify({
       banner_id: Number(activeBanner.id),
       event_type: "click",
@@ -116,11 +123,7 @@ export default function HomePage({
       ip_address: "",
     });
     const trackUrl = `${process.env.NEXT_PUBLIC_CF7_BASE || "https://admin.caravansforsale.com.au"}/wp-json/ads-manager/v1/banners/track`;
-    if (navigator.sendBeacon) {
-      navigator.sendBeacon(trackUrl, new Blob([body], { type: "application/json" }));
-    } else {
-      fetch(trackUrl, { method: "POST", headers: { "Content-Type": "application/json" }, body, keepalive: true }).catch(() => {});
-    }
+    fetch(trackUrl, { method: "POST", headers: { "Content-Type": "application/json" }, body, keepalive: true }).catch(() => {});
 
     // Open advertiser site in new tab with full tracking url
     window.open(finalUrl, "_blank", "noopener,noreferrer");
