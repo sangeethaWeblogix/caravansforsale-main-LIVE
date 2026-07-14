@@ -284,6 +284,12 @@ input.loc-search-input:focus { box-shadow: 0 0 0 1.5px #7e7e7e !important; }
   margin: 0;
 }
 
+.lsd-grid-title-skeleton {
+  width: 260px;
+  max-width: 60%;
+  height: 24px;
+}
+
 .lsd-grid-viewall {
   display: inline-flex;
   align-items: center;

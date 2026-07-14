@@ -494,7 +494,9 @@ export default function StateListingGrid({ title, viewAllHref, apiUrl, items: ex
         <div className="container">
           {!hideTitle && (
             <div className="lsd-grid-header">
-              {titleAs === "h1"
+              {loading ? (
+                <div className="lsd-skeleton lsd-grid-title-skeleton" />
+              ) : titleAs === "h1"
                 ? <h1 className="lsd-grid-title">{title}</h1>
                 : <h2 className="lsd-grid-title">{title}</h2>}
               {!hideViewAll && (
