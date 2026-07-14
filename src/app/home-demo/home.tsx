@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef, useMemo, useCallback } from "react";
 import dynamic from "next/dynamic";
-import Image from "next/image";
+
 import { type HomeBlogPost } from "@/api/home/api";
 import HomeFeatured from "./HomeFeatured";
 import HomeStateSection from "./HomeStateSection";
@@ -163,37 +163,69 @@ export default function HomePage({
 
       {/* ── Hero Banner ── */}
       <section className="hd-banner">
-        <picture>
-          <source media="(max-width: 767px)" srcSet="/images/banner_top_mb_new.webp" />
-          <img
-            src="/images/banner_top_dk_new.webp"
-            alt="Caravans for Sale in Australia"
-            className="hd-banner__img"
-          />
-        </picture>
-        <div className="hd-banner__overlay">
-          <div className="container">
-            <div className="hd-banner__content">
-              <h1 className="hd-banner__title">
-                Caravans for Sale<br></br>Across Australia
-              </h1>
-              <p className="hd-banner__subtitle">
-                Browse thousands of new and used caravans for sale across Australia from trusted dealers and private sellers. Compare off-road, family, touring, luxury and pop-top caravans to find the right van for your next adventure.
-              </p>
-              <div className="hd-banner__trust">
-                <span className="hd-banner__trust-item">
-                  <Image src="/images/category.svg" alt="" width={16} height={16} className="hd-banner__trust-icon" unoptimized />
-                  Thousands of Listings
-                </span>
-                <span className="hd-banner__trust-item">
-                  <Image src="/images/australia.png" alt="" width={16} height={16} className="hd-banner__trust-icon" unoptimized />
-                  Australia Wide
-                </span>
-                <span className="hd-banner__trust-item">
-                  <Image src="/images/seller.svg" alt="" width={16} height={16} className="hd-banner__trust-icon" unoptimized />
-                  Dealers &amp; Private Sellers
-                </span>
+        <div className="container">
+          <h1 className="hd-banner__title">
+            Caravans for Sale <span className="hd-banner__title--orange">Across Australia</span>
+          </h1>
+          <div className="hd-banner__divider">
+            <span className="hd-banner__divider-line" />
+            <img src="/images/aus_outline.svg" alt="" className="hd-banner__divider-icon" />
+            <span className="hd-banner__divider-line" />
+          </div>
+          <p className="hd-banner__subtitle">
+            Browse thousands of new and used caravans for sale across Australia from trusted dealers and private sellers. Compare off-road, family, touring, luxury and pop-top caravans to find the right van for your next adventure.
+          </p>
+          <div className="hd-banner__trust">
+            <div className="hd-banner__trust-item">
+              <div className="hd-banner__trust-icon-wrap">
+                <img src="/images/category.svg" alt="" className="hd-banner__trust-icon" width={26} height={26} />
               </div>
+              <div className="hd-banner__trust-text">
+                <strong>Thousands of Listings</strong>
+                <span>New &amp; used caravans across Australia</span>
+              </div>
+            </div>
+            <div className="hd-banner__trust-item">
+              <div className="hd-banner__trust-icon-wrap">
+                <img src="/images/australia.png" alt="" className="hd-banner__trust-icon" width={26} height={26} />
+              </div>
+              <div className="hd-banner__trust-text">
+                <strong>Australia Wide</strong>
+                <span>Find caravans from every state &amp; territory</span>
+              </div>
+            </div>
+            <div className="hd-banner__trust-item">
+              <div className="hd-banner__trust-icon-wrap">
+                <img src="/images/seller.svg" alt="" className="hd-banner__trust-icon" width={26} height={26} />
+              </div>
+              <div className="hd-banner__trust-text">
+                <strong>Dealers &amp; Private Sellers</strong>
+                <span>Buy with confidence from trusted sellers</span>
+              </div>
+            </div>
+          </div>
+          <a href="/listings/" className="hd-banner__cta">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            Browse Caravans for Sale
+          </a>
+          <div className="hd-banner__bottom">
+            <div className="hd-banner__bottom-item">
+              <img src="/images/icon1.png" alt="" className="hd-banner__bottom-icon" />
+              <div><strong>Trusted Marketplace</strong><span>Safe &amp; secure platform</span></div>
+            </div>
+            <div className="hd-banner__bottom-item">
+              <img src="/images/icon2.png" alt="" className="hd-banner__bottom-icon" />
+              <div><strong>Great Prices</strong><span>Compare &amp; save</span></div>
+            </div>
+            <div className="hd-banner__bottom-item">
+              <img src="/images/icon3.png" alt="" className="hd-banner__bottom-icon" />
+              <div><strong>Buy with Confidence</strong><span>Verified dealers &amp; sellers</span></div>
+            </div>
+            <div className="hd-banner__bottom-item">
+              <img src="/images/icon4.png" alt="" className="hd-banner__bottom-icon" />
+              <div><strong>Coast to Country</strong><span>Caravans Australia wide</span></div>
             </div>
           </div>
         </div>
@@ -205,7 +237,7 @@ export default function HomePage({
       <HomeFeatured />
 
       {/* ── Banner Ad ── */}
-      <div className="hd-banner-ad">
+      <div className="hd-banner-ad pb-4">
         <div className="container">
           {bannerLoading ? (
             <div style={{ width: "100%", aspectRatio: "2000/517", background: "#f0f0f0", borderRadius: 8 }} />

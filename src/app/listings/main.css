@@ -31,10 +31,9 @@
 
 /* ── Hero ── */
 .lsd-hero {
-    background: #f6f7fb;
+    background: #ffffff;
     flex-direction: column;
 
-    min-height: 300px;
     padding: 30px 0 0;
     display: flex;
     position: relative;
@@ -62,7 +61,6 @@
 .lsd-hero__content {
   position: relative;
   z-index: 2;
-  max-width: 660px;
   padding-bottom: 24px;
 }
 

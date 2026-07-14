@@ -81,10 +81,10 @@ export default function HomeListingSlider({ title, viewAllHref, apiUrl, badgeVar
     <section className="hf-section">
       <div className="container">
         <div className="hf-header">
-          <h2 className="hf-title">{title}</h2>
-          <Link href={viewAllHref} className="hf-view-all">
+          <h2 className="hf-title"><Link href={viewAllHref}>{title}</Link></h2>
+          {/* <Link href={viewAllHref} className="hf-view-all">
             View all <span aria-hidden>→</span>
-          </Link>
+          </Link> */}
         </div>
 
         <div className="hf-swiper-wrap">
@@ -97,7 +97,7 @@ export default function HomeListingSlider({ title, viewAllHref, apiUrl, badgeVar
             onSwiper={(s) => { swiperRef.current = s; }}
             onSlideChange={(s) => { setIsBeginning(s.isBeginning); setIsEnd(s.isEnd); }}
             spaceBetween={16}
-            slidesPerView={1}
+            slidesPerView={1.5}
             breakpoints={{
               640:  { slidesPerView: 2,   spaceBetween: 14 },
               768:  { slidesPerView: 2,   spaceBetween: 16 },

@@ -50,14 +50,6 @@ interface Props {
 export default function StateHero({ title, description, loading, breadcrumbs }: Props) {
   return (
     <section className="lsd-hero">
-      {/* Background image — right side */}
-      <img
-        src="/images/banner_top_dk_new.webp"
-        alt="Caravans for Sale in Victoria"
-        className="lsd-hero__bg"
-      />
-      {/* Gradient overlay to blend left side */}
-      <div className="lsd-hero__gradient" />
 
       <div className="container" style={{ position: "relative", zIndex: 2 }}>
         <nav className="lsd-breadcrumb" aria-label="breadcrumb">
