@@ -1,8 +1,9 @@
 {
     "success": true,
     "type": "models",
-    "count": 2727,
+    "count": 2729,
     "paths": [
+        "adria/1200-mini/",
         "adria/action-361-lt/",
         "adria/action-361lt/",
         "adria/adora-492-dt/",
@@ -2690,6 +2691,7 @@
         "winnebago/burke-580b/",
         "wonder-roo/premium-off-road-off-grid-caravan/",
         "wonder-roo/xtr/",
+        "wonderland/amaroo-hornet/",
         "x-series-rv/commander/",
         "x-series-rv/evader/",
         "x-series-rv/family-van-commander/",
@@ -2731,5 +2733,5 @@
         "zone-rv/sojourn-pioneer/",
         "zone-rv/venture-20-6/"
     ],
-    "generated_at": "2026-07-13 16:29:23"
+    "generated_at": "2026-07-14 15:56:56"
 }

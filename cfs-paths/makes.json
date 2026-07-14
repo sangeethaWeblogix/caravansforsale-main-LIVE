@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "makes",
-    "count": 258,
+    "count": 259,
     "paths": [
         "adria/",
         "apache/",
@@ -255,6 +255,7 @@
         "windsor/",
         "winnebago/",
         "wonder-roo/",
+        "wonderland/",
         "x-series-rv/",
         "xplore-rv/",
         "xtour/",
@@ -262,5 +263,5 @@
         "york/",
         "zone-rv/"
     ],
-    "generated_at": "2026-07-13 16:29:22"
+    "generated_at": "2026-07-14 15:56:55"
 }
