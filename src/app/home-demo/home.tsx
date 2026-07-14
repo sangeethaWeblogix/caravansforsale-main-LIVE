@@ -100,10 +100,11 @@ export default function HomePage({
       finalUrl = u.toString();
     } catch { /* fallback to base url */ }
 
-    // Open advertiser site in new tab with full tracking url
-    window.open(finalUrl, "_blank", "noopener,noreferrer");
-
-    // Track click internally in CFS WordPress
+    // Track click internally in CFS WordPress — fire BEFORE window.open().
+    // On mobile browsers (esp. iOS Safari), a JS-triggered window.open() from a
+    // preventDefault()'d anchor click can start unloading/navigating the page
+    // immediately, cutting off any code that runs after it. Sending the beacon
+    // first guarantees it's dispatched before that can happen.
     const body = JSON.stringify({
       banner_id: Number(activeBanner.id),
       event_type: "click",
@@ -120,6 +121,9 @@ export default function HomePage({
     } else {
       fetch(trackUrl, { method: "POST", headers: { "Content-Type": "application/json" }, body, keepalive: true }).catch(() => {});
     }
+
+    // Open advertiser site in new tab with full tracking url
+    window.open(finalUrl, "_blank", "noopener,noreferrer");
   }, [activeBanner, bannerClickUrl]);
 
   const bannerSectionRef = useRef<HTMLDivElement | null>(null);
