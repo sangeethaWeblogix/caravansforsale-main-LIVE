@@ -1209,6 +1209,8 @@
   }
   .pdd-gallery__prev { left: 10px; }
   .pdd-gallery__next { right: 10px; }
+  .pdd-similar__grid { grid-template-columns: 1fr; gap: 10px; }
+  .pdd-similar { margin-top: 32px; margin-bottom: 32px; }
   .pdd-gallery__mobile-counter {
     position: absolute;
     bottom: 10px;

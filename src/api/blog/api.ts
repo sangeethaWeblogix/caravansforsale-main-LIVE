@@ -26,6 +26,7 @@ export type BlogPageResult = {
   currentPage: number;
   totalPages: number;
   total_pages: number;
+  error?: boolean;
 };
 
 const FETCH_TIMEOUT_MS = 8000;
@@ -51,7 +52,7 @@ const fetchWithTimeout = async (url: string) => {
 export const fetchBlogs = async (page: number = 1): Promise<BlogPageResult> => {
   if (!API_BASE) {
     console.error("❌ CFS_API_BASE env missing"); // ✅ Server log
-    return { items: [], currentPage: page, totalPages: 1, total_pages: 1 };
+    return { items: [], currentPage: page, totalPages: 1, total_pages: 1, error: true };
   }
 
   const url = `${API_BASE}/blog?page=${page}`;
@@ -91,5 +92,5 @@ export const fetchBlogs = async (page: number = 1): Promise<BlogPageResult> => {
   }
 
   console.error("❌ fetchBlogs: all attempts failed", lastErr);
-  return { items: [], currentPage: page, totalPages: 1, total_pages: 1 };
+  return { items: [], currentPage: page, totalPages: 1, total_pages: 1, error: true };
 };

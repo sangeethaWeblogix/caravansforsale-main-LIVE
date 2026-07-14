@@ -224,15 +224,20 @@ export default function CaravanDetailModal({
             >
               {images.map((img, idx) => (
                 <SwiperSlide key={`slide-${idx}-${img}`}>
-                  <Image
-                    src={img}
-                    alt={`Slide ${idx + 1}`}
-                    width={0}
-                    height={0}
-                    sizes="100vw"
-                    unoptimized
-                    priority={idx < 2}
-                  />
+                  <div
+                    onClick={() => { if (window.innerWidth < 768) setIsFullscreen(true); }}
+                    style={{ cursor: "pointer" }}
+                  >
+                    <Image
+                      src={img}
+                      alt={`Slide ${idx + 1}`}
+                      width={0}
+                      height={0}
+                      sizes="100vw"
+                      unoptimized
+                      priority={idx < 2}
+                    />
+                  </div>
                 </SwiperSlide>
               ))}
             </Swiper>
