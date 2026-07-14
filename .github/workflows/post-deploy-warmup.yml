@@ -1,6 +1,7 @@
 name: Promote Deploy to Cache (Manual)
 
-# MANUAL ONLY — this workflow no longer fires automatically on push to main.
+# Runs MANUALLY (Actions tab) or automatically every evening at 8 PM AEST
+# (10:00 UTC) to close the buildId gap after any deployment that day.
 #
 # HISTORY / WHY THIS LOOKS THE WAY IT DOES:
 # This used to be "Post-Deploy Cache Warmup," auto-triggered on every push.
@@ -22,14 +23,17 @@ name: Promote Deploy to Cache (Manual)
 # Vercel — it does not touch KV, current-build-id, or routes-mapping at all.
 # The live site keeps serving whatever was already cached, completely
 # unaffected by the deploy, until one of these three things happens:
-#   1. A dev manually runs this workflow (Actions tab -> Run workflow) to
-#      promote the current Vercel deployment into the cache.
-#   2. The weekly generate-cache.yml cron does its full rebuild (Sunday).
-#   3. WordPress pushes a product/listing data change through the
+#   1. The daily 8 PM AEST cron (this file) promotes the current Vercel
+#      deployment into the cache — closes the buildId gap within 24 hours of
+#      any deployment made during the day.
+#   2. A dev manually runs this workflow (Actions tab -> Run workflow) to
+#      promote immediately after a deployment.
+#   3. The weekly generate-cache.yml cron does its full rebuild (Sunday).
+#   4. WordPress pushes a product/listing data change through the
 #      cfs-selective-cache-invalidator.php -> generate-affected-cache.yml
 #      path — this only refreshes the data on already-cached pages using
-#      whichever build was last promoted by (1) or (2); it never carries
-#      new frontend code into the cache on its own.
+#      whichever build was last promoted; it never carries new frontend code
+#      into the cache on its own.
 #
 # This job is still a canary + gate, same as before: current-build-id only
 # gets flipped if the homepage + /listings/ render perfectly cleanly against
@@ -38,6 +42,8 @@ name: Promote Deploy to Cache (Manual)
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '0 10 * * *'   # 08:00 PM AEST (UTC+10) / 09:00 PM AEDT (UTC+11)
 
 jobs:
 
@@ -102,17 +108,22 @@ jobs:
 
   # ==========================================
   # ALL LISTING URLS (url.csv) — 10 parallel batches of ~350 URLs each.
-  # Runs after the canary passes. This is the expensive part (17,310 KV
-  # uploads) — that's exactly why the whole workflow is manual now, so it
-  # only happens when a dev decides it's worth the WP admin load, not on
-  # every single deploy.
-  # Each variant is still independently validated (existing isErrorPage
-  # skip in the generation script) — a single bad listing page just leaves
-  # its previous KV entry in place rather than overwriting it with a broken
-  # render.
+  #
+  # Only runs on MANUAL triggers (workflow_dispatch), NOT on the daily cron.
+  #
+  # Why: the Worker now patches buildIds in KV HTML at serve-time, so KV
+  # stays warm through deployments without regenerating sitemap pages.
+  # The daily cron only needs to update priority pages + current-build-id
+  # (the warmup-priority job above).  Full sitemap regeneration is expensive
+  # (~17,000 KV writes, long WP admin crawl) and the data on these pages only
+  # changes when a product is added or removed — which is handled selectively
+  # by generate-affected-cache.yml triggered from WordPress.
+  # Run this manually when you've done a major design overhaul and want all
+  # sitemap pages to reflect the new frontend immediately.
   # ==========================================
   warmup-urls:
     needs: warmup-priority
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 90
     strategy:

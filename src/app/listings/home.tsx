@@ -307,7 +307,12 @@ export default function StateHome({ initialFilters }: Props) {
     </div>
   );
 
-  if (!ready) return null;
+  if (!ready) return (
+    <>
+      <style>{`.lsd-mob-white{display:none}@media(max-width:767px){.lsd-mob-white{display:block}}`}</style>
+      <div className="lsd-mob-white" style={{ minHeight: "100vh", background: "#fff" }} />
+    </>
+  );
 
   if (page === 1) {
     console.log("seooo", seo?.h1)

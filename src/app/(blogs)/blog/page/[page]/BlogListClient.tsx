@@ -128,8 +128,11 @@ const loading = !data || !blogPosts || blogPosts.length === 0 && data.totalPages
                   ))}
                 </>
               )}
-              {!loading && blogPosts.length === 0 && (
+              {!loading && blogPosts.length === 0 && !data.error && (
                 <div className="text-center py-5">No posts found.</div>
+              )}
+              {!loading && blogPosts.length === 0 && data.error && (
+                <div style={{ minHeight: 320, background: "#f8f9fa", borderRadius: 8 }} />
               )}
               {!loading &&
                 blogPosts.map((post, index) => {

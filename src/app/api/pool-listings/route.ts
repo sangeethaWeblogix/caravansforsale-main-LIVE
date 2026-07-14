@@ -6,7 +6,7 @@ const API_KEY = process.env.CFS_API_KEY;
 
 export async function GET(request: NextRequest) {
   const params = request.nextUrl.searchParams.toString();
-  const url = `${API_BASE}/pool_test?${params}`;
+  const url = `${API_BASE}/pool_test?${params}${params ? '&' : ''}engine=typesense`;
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 30000);
@@ -60,14 +60,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: false, error: "invalid_json" }, { status: 502 });
     }
 
-    // ---- Requested: log the fetched data to console ----
-    console.log("[WP API pool_test] data:", JSON.stringify(data, null, 2));
-    // If the payload is huge, log just a summary instead:
-    // console.log("[WP API pool_test] summary:", {
-    //   success: data?.success,
-    //   total_products: data?.pagination?.total_products,
-    //   returned: data?.products?.length,
-    // });
+    console.log("[WP API pool_test] summary:", {
+      success: data?.success,
+      total_products: data?.pagination?.total_products,
+      returned: data?.products?.length ?? data?.data?.products?.length,
+    });
 
     return NextResponse.json(data);
   } catch (err: any) {

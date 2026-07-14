@@ -9,6 +9,7 @@
  * cfs-params-cache-warmer.php exactly:
  *   - Sort all params alphabetically by key
  *   - Lowercase the `condition` value
+ *   - Append "-category" to `category` if missing (urlBuilder.ts strips it from URL slugs)
  *   - encodeURIComponent both key and value (= PHP rawurlencode)
  *   - Join with &, prefix with "params-count:"
  */
@@ -28,7 +29,14 @@ export interface ParamsCountKvResult {
 export function buildParamsKvKey(params: Record<string, string>): string {
   const entries = Object.entries(params).sort(([a], [b]) => a.localeCompare(b));
   const parts = entries.map(([k, v]) => {
-    const value = k === "condition" ? v.toLowerCase() : v;
+    let value = v;
+    // Normalise condition to lowercase (warmer stores it lowercased)
+    if (k === "condition") value = v.toLowerCase();
+    // Normalise category to always include the "-category" suffix.
+    // urlBuilder.ts strips it from URL slugs (e.g. "touring-category" → "touring"),
+    // but the PHP warmer stores keys with the full DB slug (e.g. "touring-category").
+    // Appending here ensures both URL-navigation and modal-selection paths hit the same key.
+    if (k === "category" && !v.endsWith("-category")) value = v + "-category";
     return `${encodeURIComponent(k)}=${encodeURIComponent(value)}`;
   });
   return `params-count:${parts.join("&")}`;

@@ -116,10 +116,10 @@ export function BannerProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export function useBanners() {
+export function useBanners(): BannerContextType {
   const context = useContext(BannerContext);
   if (!context) {
-    throw new Error("useBanners must be used inside BannerProvider");
+    return { matchedBanners: [], isMobile: false, currentHomeBannerIndex: 0, isLoading: true };
   }
   return context;
 }
