@@ -254,7 +254,7 @@ function ListingCard({
   ];
 
   return (
-    <Link href={href} className={`lsd-card${spotlight ? " lsd-card--spotlight" : ""}`}>
+    <Link href={href} prefetch={false} className={`lsd-card${spotlight ? " lsd-card--spotlight" : ""}`}>
       {/* Image */}
       <div className="lsd-card__img-wrap">
         {images.length > 0 ? (

@@ -112,7 +112,7 @@ export default function HomeFeatured() {
 
               return (
                 <SwiperSlide key={item.id ?? idx}>
-                  <Link href={`/product/${item.slug}/`} className="hf-card">
+                  <Link href={`/product/${item.slug}/`} prefetch={false} className="hf-card">
                     {/* Image */}
                     <div className="hf-card__img-wrap">
                       {image ? (
