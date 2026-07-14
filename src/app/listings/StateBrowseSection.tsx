@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { getRegionsByState } from "../sell-my-caravan-region/regions-data";
 
@@ -266,6 +266,23 @@ export default function StateBrowseSection({ state, region, category }: Props) {
   const categoryStateMode       = hasState && hasCategory && !hasRegion;
   const categoryStateRegionMode = hasState && hasCategory && hasRegion;
 
+  // Defer all API calls until the section is near the viewport.
+  // This removes ~22 pool-listings?per_page=1 calls from the page-load
+  // critical path — they only fire when the user scrolls down to this section.
+  const sectionRef = useRef<HTMLElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) setIsVisible(true); },
+      { rootMargin: "200px" }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
   // Every dynamic mode below shares this same count state — only one mode is
   // ever active for a given render, so there's no cross-talk between fetches.
   const [makeCounts,     setMakeCounts]     = useState<CountItem[] | null>(null);
@@ -279,7 +296,7 @@ export default function StateBrowseSection({ state, region, category }: Props) {
 
   // Category only — Popular Make/State/Region + Price.
   useEffect(() => {
-    if (!categoryOnly) return;
+    if (!categoryOnly || !isVisible) return;
     let cancelled = false;
     const scope = { category: category! };
     fetchGroupCounts("make", scope).then((d) => { if (!cancelled) setMakeCounts(d); });
@@ -289,11 +306,11 @@ export default function StateBrowseSection({ state, region, category }: Props) {
       .then((counts) => { if (!cancelled) setPriceCounts(counts); });
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [categoryOnly, category]);
+  }, [categoryOnly, category, isVisible]);
 
   // State + region (no category) — Popular Make/Category + Price/ATM/Sleep.
   useEffect(() => {
-    if (!stateRegionMode) return;
+    if (!stateRegionMode || !isVisible) return;
     let cancelled = false;
     const scope = { state: state!, region: region! };
     fetchGroupCounts("make", scope).then((d) => { if (!cancelled) setMakeCounts(d); });
@@ -306,11 +323,11 @@ export default function StateBrowseSection({ state, region, category }: Props) {
       .then((counts) => { if (!cancelled) setSleepCounts(counts); });
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stateRegionMode, state, region]);
+  }, [stateRegionMode, state, region, isVisible]);
 
   // Category + state (no region) — Region/Make + Price/ATM/Length/Sleep.
   useEffect(() => {
-    if (!categoryStateMode) return;
+    if (!categoryStateMode || !isVisible) return;
     let cancelled = false;
     const scope = { category: category!, state: state! };
     fetchGroupCounts("region", scope).then((d) => { if (!cancelled) setRegionCounts(d); });
@@ -321,11 +338,11 @@ export default function StateBrowseSection({ state, region, category }: Props) {
     });
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [categoryStateMode, category, state]);
+  }, [categoryStateMode, category, state, isVisible]);
 
   // Category + state + region (all three) — Make + Price/ATM/Length/Sleep.
   useEffect(() => {
-    if (!categoryStateRegionMode) return;
+    if (!categoryStateRegionMode || !isVisible) return;
     let cancelled = false;
     const scope = { category: category!, state: state!, region: region! };
     fetchGroupCounts("make", scope).then((d) => { if (!cancelled) setMakeCounts(d); });
@@ -335,7 +352,7 @@ export default function StateBrowseSection({ state, region, category }: Props) {
     });
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [categoryStateRegionMode, category, state, region]);
+  }, [categoryStateRegionMode, category, state, region, isVisible]);
 
   // Shared shape for the "By Budget/ATM/Length/Sleep"-style vertical-list
   // filter columns used by every dynamic mode below.
@@ -612,7 +629,7 @@ export default function StateBrowseSection({ state, region, category }: Props) {
   const rightTitle = hasState ? `Browse Caravans by Type in ${stateLabel(state!)}`   : "Browse Caravans by Type";
 
   return (
-    <section className="lsd-browse">
+    <section className="lsd-browse" ref={sectionRef}>
       <div className="container">
 
         {/* Row 1 — Region/State + Type */}
