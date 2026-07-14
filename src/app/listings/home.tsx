@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import Link from "next/link";
 import StateHero from "./StateHero";
@@ -222,6 +222,48 @@ export default function StateHome({ initialFilters }: Props) {
     return () => { cancelled = true; };
   }, [poolApiUrl, page, isIndexed, ready]);
 
+  // Pre-warm the next page's pool-listings response in the background so the
+  // Cloudflare Worker serves it from KV before the user clicks "Next".
+  // - No `cache: "no-store"` here — this is a warm call, not a live fetch.
+  //   The Cloudflare Worker always intercepts /api/pool-listings/ and checks
+  //   the json:pool: KV key first regardless of request cache headers.
+  // - De-duped by poolApiUrl + page so a filter change always re-prefetches
+  //   the correct next page for the new filter context.
+  const prefetchedPoolKeyRef = useRef<string>("");
+  useEffect(() => {
+    if (!ready || page >= maxPages) return;
+    const nextPage = page + 1;
+    const key = `${poolApiUrl}::page=${nextPage}`;
+    if (prefetchedPoolKeyRef.current === key) return;
+    prefetchedPoolKeyRef.current = key;
+    fetch(`${poolApiUrl}&page=${nextPage}`).catch(() => {});
+  }, [poolApiUrl, page, maxPages, ready]);
+
+  // New/Used grid headings need their own condition-locked seo_v2 (the shared
+  // pool call above is unlocked, so its seo_v2 only covers the page overall).
+  // Featured reuses that page-level seo since there's no dedicated "featured"
+  // seo concept on the backend. Skipped entirely on non-indexed pages
+  // (nothing to show these titles on there).
+  useEffect(() => {
+    if (!ready || page !== 1 || !isIndexed) {
+      setNewSeo(null);
+      setUsedSeo(null);
+      return;
+    }
+    const newUrl  = `${buildApiUrl("/api/pool-listings/?per_page=1", filters, seed, "New")}&page=1`;
+    const usedUrl = `${buildApiUrl("/api/pool-listings/?per_page=1", filters, seed, "Used")}&page=1`;
+
+    fetch(newUrl, { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((json) => setNewSeo(json?.data?.seo_v2 ?? json?.seo_v2 ?? null))
+      .catch(() => setNewSeo(null));
+
+    fetch(usedUrl, { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((json) => setUsedSeo(json?.data?.seo_v2 ?? json?.seo_v2 ?? null))
+      .catch(() => setUsedSeo(null));
+  }, [filters, seed, page, isIndexed]);
+
   const pushFiltersToUrl = (f: FilterState) => {
     window.history.pushState({}, "", buildListingsSlug(f));
   };
@@ -365,16 +407,14 @@ export default function StateHome({ initialFilters }: Props) {
             />
           </>
         ) : (
-          // Non-indexed pages skip the hero, so this title carries the
-          // page's actual <h1> (with count) instead of the hero's h1.
+          // Non-indexed pages get one combined grid with no slot_bucket split.
           <StateListingGrid
-            title={seo?.h1 || " "}
+            title={seo?.h1 || "Caravans for Sale"}
             titleAs="h1"
             viewAllHref={buildListingsSlug(filters)}
             items={pool.featured}
             loading={poolLoading}
             showSpotlight={!hasActiveFilters}
-            hideViewAll
           />
         )}
 
@@ -386,7 +426,7 @@ export default function StateHome({ initialFilters }: Props) {
     );
   }
 
-  // page > 1 — combined single grid across all listings
+  // page > 1 — single combined grid, StateListingGrid self-fetches via apiUrl
   const allUrl = buildApiUrl("/api/pool-listings/?per_page=24", filters, seed);
 
   return (
@@ -404,7 +444,7 @@ export default function StateHome({ initialFilters }: Props) {
               </span>
             ))}
           </nav>
-          <h1 className="lsd-paged-title">{seo?.h1 || "Caravans for Sale in Victoria"}</h1>
+          <h1 className="lsd-paged-title">{seo?.h1 || "Caravans for Sale"}</h1>
         </div>
       </div>
 
@@ -415,16 +455,12 @@ export default function StateHome({ initialFilters }: Props) {
       />
 
       <StateListingGrid
-        title="Caravans for Sale in Victoria"
-        viewAllHref="/listings/?state=victoria"
+        title=""
+        viewAllHref={buildListingsSlug(filters)}
         apiUrl={allUrl}
-        showSpotlight
-        hideViewAll
-        hideTitle
         page={page}
-        onTotalPages={handleTotalPages}
-        onSeo={setSeo}
-        maxItems={24}
+        showSpotlight={!hasActiveFilters}
+        onTotalPages={(n) => setMaxPages((prev) => Math.max(prev, n))}
       />
 
       {maxPages > 1 && pagination}
