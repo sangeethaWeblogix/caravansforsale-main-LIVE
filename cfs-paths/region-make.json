@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "region-make",
-    "count": 993,
+    "count": 996,
     "paths": [
         "australian-capital-territory-state/australian-capital-territory-region/avida/",
         "australian-capital-territory-state/australian-capital-territory-region/crusader/",
@@ -724,6 +724,7 @@
         "victoria-state/latrobe-gippsland-region/newlands/",
         "victoria-state/latrobe-gippsland-region/nextgen/",
         "victoria-state/latrobe-gippsland-region/nova/",
+        "victoria-state/latrobe-gippsland-region/olympic/",
         "victoria-state/latrobe-gippsland-region/on-the-move/",
         "victoria-state/latrobe-gippsland-region/roma/",
         "victoria-state/latrobe-gippsland-region/safari/",
@@ -835,6 +836,7 @@
         "victoria-state/melbourne-region/viscount/",
         "victoria-state/melbourne-region/wildtrail/",
         "victoria-state/melbourne-region/windsor/",
+        "victoria-state/melbourne-region/wonderland/",
         "victoria-state/melbourne-region/x-series-rv/",
         "victoria-state/melbourne-region/xplore-rv/",
         "victoria-state/melbourne-region/xtour/",
@@ -891,6 +893,7 @@
         "victoria-state/warrnambool-and-south-west-region/nova/",
         "victoria-state/warrnambool-and-south-west-region/roadstar/",
         "victoria-state/warrnambool-and-south-west-region/snowy-river/",
+        "western-australia-state/bunbury-region/adria/",
         "western-australia-state/bunbury-region/avan/",
         "western-australia-state/bunbury-region/golf/",
         "western-australia-state/mandurah-region/concept/",
@@ -997,5 +1000,5 @@
         "western-australia-state/western-australia-outback-south-region/western/",
         "western-australia-state/western-australia-outback-south-region/windsor/"
     ],
-    "generated_at": "2026-07-13 16:29:23"
+    "generated_at": "2026-07-14 15:56:56"
 }
