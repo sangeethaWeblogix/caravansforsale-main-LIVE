@@ -45,7 +45,10 @@ export async function GET(request: NextRequest) {
     console.log(`[WP API] home_featured type=${type} ip=${visitorIp || "(none)"} — ${Date.now() - t0}ms`);
 
     if (!res.ok) {
-      return NextResponse.json({ success: false }, { status: res.status });
+      return NextResponse.json(
+        { success: false },
+        { status: res.status, headers: { "Cache-Control": "no-store" } }
+      );
     }
 
     const raw = await res.text();
@@ -58,11 +61,19 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(
       { success: true, products },
-      { headers: { "X-Debug-Visitor-IP": visitorIp || "(none)" } }
+      {
+        headers: {
+          "X-Debug-Visitor-IP": visitorIp || "(none)",
+          "Cache-Control": "no-store",
+        },
+      }
     );
   } catch (err: any) {
     clearTimeout(timeoutId);
     const status = err?.name === "AbortError" ? 504 : 500;
-    return NextResponse.json({ success: false }, { status });
+    return NextResponse.json(
+      { success: false },
+      { status, headers: { "Cache-Control": "no-store" } }
+    );
   }
 }
