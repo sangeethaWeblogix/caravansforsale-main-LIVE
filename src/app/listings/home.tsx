@@ -375,6 +375,7 @@ export default function StateHome({ initialFilters }: Props) {
             items={pool.featured}
             loading={poolLoading}
             showSpotlight={!hasActiveFilters}
+            hideViewAll
           />
         )}
 
