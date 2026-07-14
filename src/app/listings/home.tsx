@@ -52,7 +52,13 @@ export default function StateHome({ initialFilters }: Props) {
 
   // Push the API's seo_v2 into the browser tab title + meta description.
   useEffect(() => {
-    if (!seo) return;
+    if (!seo) {
+      // Filter changed and the new page's SEO hasn't loaded yet — fall back
+      // to the generic title instead of leaving the previous page's title
+      // showing (stale tab title while the new fetch is in flight).
+      document.title = "Caravans For Sale – Australia's Marketplace for New & Used Caravans";
+      return;
+    }
     if (seo.meta_title) document.title = seo.meta_title;
     if (seo.meta_description) {
       let tag = document.querySelector('meta[name="description"]');
@@ -374,7 +380,7 @@ export default function StateHome({ initialFilters }: Props) {
           // Non-indexed pages skip the hero, so this title carries the
           // page's actual <h1> (with count) instead of the hero's h1.
           <StateListingGrid
-            title={seo?.h1 || "Caravans for Sale"}
+            title={seo?.h1 || " "}
             titleAs="h1"
             viewAllHref={buildListingsSlug(filters)}
             items={pool.featured}
