@@ -354,7 +354,7 @@ export default function StateHome({ initialFilters }: Props) {
         {isIndexed ? (
           <>
             <StateListingGrid
-              title={seo?.meta_title ? `Featured ${seo.meta_title}` : "Featured Caravans for Sale"}
+              title={seo?.meta_title ? `Featured ${seo.meta_title}` : ""}
               viewAllHref={`${buildListingsSlug(filters)}?featured=1`}
               items={pool.featured}
               loading={poolLoading}
@@ -363,14 +363,14 @@ export default function StateHome({ initialFilters }: Props) {
             />
 
             <StateListingGrid
-              title={newSeo?.meta_title || "New Caravans for Sale"}
+              title={newSeo?.meta_title || ""}
               viewAllHref={buildListingsSlug(filters, "New")}
               items={pool.new}
               loading={poolLoading}
             />
 
             <StateListingGrid
-              title={usedSeo?.meta_title || "Used Caravans for Sale"}
+              title={usedSeo?.meta_title || ""}
               viewAllHref={buildListingsSlug(filters, "Used")}
               items={pool.used}
               loading={poolLoading}
