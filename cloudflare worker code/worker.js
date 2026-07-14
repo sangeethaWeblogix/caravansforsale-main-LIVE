@@ -225,7 +225,7 @@ export default {
       // - React hydration always matches server HTML
       // ============================================
       if (url.search && url.search.length > 0) {
-        const response = await fetch(request);
+        const response = await fetchFresh(request);
         return addDebugHeaders(response, 'BYPASS-HAS-PARAMS', null, null);
       }
 
@@ -242,7 +242,10 @@ export default {
         || request.headers.get('Next-Router-State-Tree') !== null
         || request.headers.get('Next-Router-Prefetch') !== null;
       if (isRscRequest) {
-        const response = await fetch(request);
+        // RSC payloads must always come from Vercel origin — never from Cloudflare's edge
+        // cache, which may hold an RSC response for the previous buildId. A stale RSC
+        // response makes the client render nothing (silent failure) until hard-refresh.
+        const response = await fetchFresh(request);
         return addDebugHeaders(response, 'BYPASS-RSC', null, null);
       }
 
@@ -257,7 +260,12 @@ export default {
       // ============================================
       // PRIORITY 5: Pass Through to Origin
       // ============================================
-      const response = await fetch(request);
+      // Use fetchFresh (Cache-Control: no-cache) so Cloudflare does not serve
+      // a stale edge-cached copy of the page from a previous buildId.  This is
+      // the most common cause of "all pages blank on navigation, works after
+      // hard-refresh": the BYPASS path returns old Cloudflare-cached HTML with
+      // the old buildId, the client loads old JS, and RSC navigation fails.
+      const response = await fetchFresh(request);
       return addDebugHeaders(response, 'BYPASS-NO-CACHE', null, null);
 
     } catch (error) {
@@ -525,6 +533,28 @@ async function getRoutesMapping(env) {
 // ============================================
 // UTILITY FUNCTIONS
 // ============================================
+
+/**
+ * Fetch from origin while bypassing Cloudflare's edge cache.
+ *
+ * Plain `fetch(request)` inside a Worker checks Cloudflare's edge cache first.
+ * If Cloudflare has a page cached from before the latest Vercel deployment (it uses
+ * the old buildId), the Worker serves that stale HTML.  The client then loads old
+ * JS, its RSC router-state-tree has the old buildId, and every client-side
+ * navigation silently fails — the page goes blank until the user hard-refreshes.
+ *
+ * Adding `Cache-Control: no-cache` to the sub-request tells Cloudflare to bypass
+ * its cache and always reach Vercel origin for fresh HTML / RSC payloads.
+ *
+ * Used for every BYPASS path (RSC, HAS-PARAMS, NO-CACHE) so that post-deployment
+ * transitions are always served with the correct buildId HTML.
+ */
+function fetchFresh(request) {
+  const headers = new Headers(request.headers);
+  headers.set('Cache-Control', 'no-cache');
+  return fetch(new Request(request, { headers }));
+}
+
 function addDebugHeaders(response, cacheStatus, kvKey, errorMsg) {
   const headers = new Headers(response.headers);
   

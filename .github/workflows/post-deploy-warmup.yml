@@ -1,6 +1,7 @@
 name: Promote Deploy to Cache (Manual)
 
-# MANUAL ONLY — this workflow no longer fires automatically on push to main.
+# Runs MANUALLY (Actions tab) or automatically every evening at 8 PM AEST
+# (10:00 UTC) to close the buildId gap after any deployment that day.
 #
 # HISTORY / WHY THIS LOOKS THE WAY IT DOES:
 # This used to be "Post-Deploy Cache Warmup," auto-triggered on every push.
@@ -22,14 +23,17 @@ name: Promote Deploy to Cache (Manual)
 # Vercel — it does not touch KV, current-build-id, or routes-mapping at all.
 # The live site keeps serving whatever was already cached, completely
 # unaffected by the deploy, until one of these three things happens:
-#   1. A dev manually runs this workflow (Actions tab -> Run workflow) to
-#      promote the current Vercel deployment into the cache.
-#   2. The weekly generate-cache.yml cron does its full rebuild (Sunday).
-#   3. WordPress pushes a product/listing data change through the
+#   1. The daily 8 PM AEST cron (this file) promotes the current Vercel
+#      deployment into the cache — closes the buildId gap within 24 hours of
+#      any deployment made during the day.
+#   2. A dev manually runs this workflow (Actions tab -> Run workflow) to
+#      promote immediately after a deployment.
+#   3. The weekly generate-cache.yml cron does its full rebuild (Sunday).
+#   4. WordPress pushes a product/listing data change through the
 #      cfs-selective-cache-invalidator.php -> generate-affected-cache.yml
 #      path — this only refreshes the data on already-cached pages using
-#      whichever build was last promoted by (1) or (2); it never carries
-#      new frontend code into the cache on its own.
+#      whichever build was last promoted; it never carries new frontend code
+#      into the cache on its own.
 #
 # This job is still a canary + gate, same as before: current-build-id only
 # gets flipped if the homepage + /listings/ render perfectly cleanly against
@@ -38,6 +42,8 @@ name: Promote Deploy to Cache (Manual)
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '0 10 * * *'   # 08:00 PM AEST (UTC+10) / 09:00 PM AEDT (UTC+11)
 
 jobs:
 
