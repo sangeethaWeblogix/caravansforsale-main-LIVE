@@ -632,14 +632,14 @@ export default function StateHome({ initialFilters, browseData, initialPool, ini
             />
 
             <StateListingGrid
-              title={newSeo?.meta_title || ""}
+              title={newSeo?.meta_title || (seo?.meta_title ? `New ${seo.meta_title}` : "New Caravans")}
               viewAllHref={buildListingsSlug(filters, "New")}
               items={pool.new}
               loading={poolLoading}
             />
 
             <StateListingGrid
-              title={usedSeo?.meta_title || ""}
+              title={usedSeo?.meta_title || (seo?.meta_title ? `Used ${seo.meta_title}` : "Used Caravans")}
               viewAllHref={buildListingsSlug(filters, "Used")}
               items={pool.used}
               loading={poolLoading}
@@ -704,30 +704,4 @@ export default function StateHome({ initialFilters, browseData, initialPool, ini
         onClearAll={handleClearAll}
       />
 
-      <StateListingGrid
-        title=""
-        viewAllHref={buildListingsSlug(filters)}
-        apiUrl={allUrl}
-        page={page}
-        showSpotlight={true}
-        hideViewAll={!isIndexed}
-        onTotalPages={(n) => setMaxPages((prev) => Math.max(prev, n))}
-      />
-
-      {maxPages > 1 && pagination}
-
-      <StateBrowseSection state={filters.state} region={filters.region} category={filters.category} />
-      <StateContent footerDescription={seo?.footer_description} faq={seo?.faq} />
-      <div className="lsd-sell-cta">
-        <div className="lsd-sell-cta__inner">
-          <h2 className="lsd-sell-cta__title">Looking to Sell Your Caravan?</h2>
-          <p className="lsd-sell-cta__body">
-            If you&apos;re upgrading or no longer need your current caravan,{" "}
-            <a href="/sell-my-caravan/" className="lsd-sell-cta__link">sell your caravan</a>{" "}
-            by creating a listing on CaravansForSale.com.au and connect with active buyers across Australia. Your advertisement stays online until it&apos;s sold for a one-time fee of $49.
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-}
+      <StateList
