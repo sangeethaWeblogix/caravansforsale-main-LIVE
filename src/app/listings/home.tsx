@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useRef, useState } from "react";
@@ -388,7 +389,7 @@ export default function StateHome({ initialFilters }: Props) {
               viewAllHref={`${buildListingsSlug(filters)}?featured=1`}
               items={pool.featured}
               loading={poolLoading}
-              showSpotlight={!hasActiveFilters}
+              showSpotlight={true}
               hideViewAll
             />
 
@@ -414,7 +415,7 @@ export default function StateHome({ initialFilters }: Props) {
             viewAllHref={buildListingsSlug(filters)}
             items={pool.featured}
             loading={poolLoading}
-            showSpotlight={!hasActiveFilters}
+            showSpotlight={true}
           />
         )}
 
@@ -459,7 +460,7 @@ export default function StateHome({ initialFilters }: Props) {
         viewAllHref={buildListingsSlug(filters)}
         apiUrl={allUrl}
         page={page}
-        showSpotlight={!hasActiveFilters}
+        showSpotlight={true}
         onTotalPages={(n) => setMaxPages((prev) => Math.max(prev, n))}
       />
 
