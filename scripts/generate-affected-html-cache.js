@@ -54,7 +54,7 @@ const CF_KV_NAMESPACE_ID = process.env.CF_KV_NAMESPACE_ID;
 const CF_API_TOKEN       = process.env.CF_API_TOKEN;
 const SITE_BASE          = 'https://www.caravansforsale.com.au';
 
-const HTML_VARIANTS      = 5;
+const HTML_VARIANTS      = 7;
 const HTML_CONCURRENCY   = 6;
 const HTML_FETCH_TIMEOUT = 30000;
 const KV_UPLOAD_RETRIES  = 3;
