@@ -72,9 +72,19 @@ function loadAffectedUrls() {
     console.error('ERROR: Provide AFFECTED_URLS_JSON or AFFECTED_URLS_FILE (JSON array of full URLs).');
     process.exit(1);
   }
-  const list = JSON.parse(raw);
-  if (!Array.isArray(list)) {
-    console.error('ERROR: Affected URLs payload must be a JSON array.');
+  raw = raw.trim();
+  // Accept either a JSON array  ["https://..."]
+  // or a plain URL              https://...
+  // or a newline-separated list https://...\nhttps://...
+  let list;
+  if (raw.startsWith('[')) {
+    list = JSON.parse(raw);
+  } else {
+    // Split on newlines/commas, strip surrounding quotes, filter blanks
+    list = raw.split(/[\n,]+/).map(u => u.trim().replace(/^["']|["']$/g, '')).filter(Boolean);
+  }
+  if (!Array.isArray(list) || list.length === 0) {
+    console.error('ERROR: Could not parse any URLs from AFFECTED_URLS_JSON.');
     process.exit(1);
   }
   return list;
