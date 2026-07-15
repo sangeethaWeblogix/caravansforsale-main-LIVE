@@ -3,6 +3,9 @@ import { NextRequest, NextResponse } from "next/server";
 
 const API_BASE = process.env.NEXT_PUBLIC_CFS_API_BASE;
 const API_KEY = process.env.CFS_API_KEY;
+// Bypasses LiteSpeed sgcaptcha on admin.caravansforsale.com.au for server-to-server calls.
+// Must match the X-Warmer-Key secret in admin's .htaccess (see htaccess-warmer-bypass.txt).
+const WARMER_BYPASS_KEY = process.env.WARMER_BYPASS_KEY;
 
 const BASE_PARAM_KEYS = new Set(["per_page", "orderby", "seed", "page"]);
 
@@ -13,6 +16,7 @@ async function fetchPoolTest(url: string, signal: AbortSignal) {
       Accept: "application/json",
       "User-Agent": "Mozilla/5.0 (compatible; CFS-SSR/1.0; +https://www.caravansforsale.com.au)",
       ...(API_KEY && { "X-API-Key": API_KEY }),
+      ...(WARMER_BYPASS_KEY && { "X-Warmer-Key": WARMER_BYPASS_KEY }),
     },
     cache: "no-store",
   });
