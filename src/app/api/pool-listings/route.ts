@@ -41,9 +41,7 @@ export async function GET(request: NextRequest) {
   // the base pagination/ordering params (i.e. the default /listings/ view).
   // Only route through Typesense once a real filter is applied.
   const hasRealFilter = [...searchParams.keys()].some((key) => !BASE_PARAM_KEYS.has(key));
-  // pool_test_proxy: same callback as pool_test but __return_true permission,
-  // so server-to-server calls from Vercel are never blocked by auth layers.
-  const url = `${API_BASE}/pool_test_proxy?${params}${hasRealFilter ? `${params ? "&" : ""}engine=typesense` : ""}`;
+  const url = `${API_BASE}/pool_test?${params}${hasRealFilter ? `${params ? "&" : ""}engine=typesense` : ""}`;
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 30000);
@@ -71,79 +69,4 @@ export async function GET(request: NextRequest) {
 
     if (!data) {
       console.log("[WP API pool_test] JSON parse failed. Raw response:", raw.substring(0, 500));
-      return NextResponse.json({ success: false, error: "invalid_json" }, { status: 502 });
-    }
-
-    // Typesense engine drops premium_products/exclusive_products entirely.
-    // When we routed through Typesense, fire a second lightweight call to the
-    // base (non-typesense) endpoint just to recover those two arrays, and
-    // merge them into the Typesense payload so they're always present.
- if (hasRealFilter) {
-      const premiumParams = new URLSearchParams();
-      searchParams.forEach((value, key) => {
-        if (BASE_PARAM_KEYS.has(key)) premiumParams.set(key, value);
-      });
-      // premium/exclusive/emp_exclusive appear on every page from the base
-      // (non-typesense) engine, so just pass through the same page/per_page
-      // the user actually requested — no need to force page 1.
-      if (!premiumParams.has("per_page")) premiumParams.set("per_page", "1");
-
-      const premiumUrl = `${API_BASE}/pool_test_proxy?${premiumParams.toString()}`;
-      const premiumController = new AbortController();
-      const premiumTimeout = setTimeout(() => premiumController.abort(), 15000);
-
-      try {
-        const { res: pRes, data: pData } = await fetchPoolTest(premiumUrl, premiumController.signal);
-        clearTimeout(premiumTimeout);
-
-        if (pRes.ok && pData) {
-          const premium = pData?.premium_products ?? pData?.data?.premium_products;
-          const exclusive = pData?.exclusive_products ?? pData?.data?.exclusive_products;
-          const empExclusive = pData?.emp_exclusive_products ?? pData?.data?.emp_exclusive_products;
-
-          if (data?.data) {
-            data.data.premium_products = premium ?? data.data.premium_products;
-            data.data.exclusive_products = exclusive ?? data.data.exclusive_products;
-            data.data.emp_exclusive_products = empExclusive ?? data.data.emp_exclusive_products;
-          } else {
-            data.premium_products = premium ?? data.premium_products;
-            data.exclusive_products = exclusive ?? data.exclusive_products;
-            data.emp_exclusive_products = empExclusive ?? data.emp_exclusive_products;
-          }
-
-          console.log("[WP API pool_test] merged premium/exclusive from base engine:", {
-            page: premiumParams.get("page"),
-            premium_count: premium?.length ?? 0,
-            exclusive_count: exclusive?.length ?? 0,
-            emp_exclusive_count: empExclusive?.length ?? 0,
-          });
-        } else {
-          console.log("[WP API pool_test] premium/exclusive merge fetch failed, status:", pRes.status);
-        }
-      } catch (mergeErr: any) {
-        clearTimeout(premiumTimeout);
-        console.log("[WP API pool_test] premium/exclusive merge fetch error:", mergeErr?.message);
-      }
-    }
-    console.log("[WP API pool_test] summary:", {
-      params: params.substring(0, 200),
-      success: data?.success,
-      total_products: data?.pagination?.total_products,
-      pool_size: data?.pagination?.pool_size,
-      slot_bucket_present: data?.pagination?.slot_bucket_present,
-      products_returned: data?.products?.length ?? data?.data?.products?.length ?? 0,
-      premium_products: data?.premium_products?.length ?? data?.data?.premium_products?.length ?? 0,
-      exclusive_products: data?.exclusive_products?.length ?? data?.data?.exclusive_products?.length ?? 0,
-      emp_exclusive_products: data?.emp_exclusive_products?.length ?? data?.data?.emp_exclusive_products?.length ?? 0,
-      first_3_slot_buckets: (data?.products ?? data?.data?.products ?? []).slice(0, 3).map((p: any) => p?.slot_bucket),
-    });
-
-    return NextResponse.json(data);
-  } catch (err: any) {
-    clearTimeout(timeoutId);
-    console.error("[WP API pool_test] Error:", err);
-    const status = err?.name === "AbortError" ? 504 : 500;
-    console.log(`[WP API pool_test] fetch error (${status}):`, err?.message);
-    return NextResponse.json({ success: false }, { status });
-  }
-}
+      return NextResponse.json({ success: false, error: "invalid_json" }, { status: 502 

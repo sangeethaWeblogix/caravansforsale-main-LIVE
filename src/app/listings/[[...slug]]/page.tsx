@@ -102,10 +102,7 @@ async function fetchInitialPool(
 
   const BASE_KEYS = new Set(["per_page", "orderby", "seed", "page"]);
   const hasRealFilter = [...params.keys()].some((k) => !BASE_KEYS.has(k));
-  // pool_test_proxy has __return_true permission (no API key required) — used
-  // for server-to-server SSR calls from Vercel where the auth header may be
-  // stripped by server-level security layers. Same callback as pool_test.
-  const url = API_BASE + "/pool_test_proxy?" + params.toString() + (hasRealFilter ? "&engine=typesense" : "");
+  const url = API_BASE + "/pool_test?" + params.toString() + (hasRealFilter ? "&engine=typesense" : "");
 
   try {
     const res = await fetch(url, {
@@ -166,19 +163,3 @@ export default async function LocationStateDemoPage({
 }: {
   params: Params;
   searchParams: SearchParams;
-}) {
-  const [{ slug }, query] = await Promise.all([params, searchParams]);
-  const initialFilters = parseDemoFilters(slug ?? [], query);
-  console.log("[listings/[[...slug]]/page.tsx] slug:", slug, "query:", query, "initialFilters:", initialFilters);
-
-  const browseData = await fetchBrowseSectionData(initialFilters);
-
-  // Seed from ?shuffle_seed=N (set by cache generator per variant), else 1.
-  const rawSeed = query["shuffle_seed"];
-  const seed = typeof rawSeed === "string" && /^\d+$/.test(rawSeed) ? parseInt(rawSeed, 10) : 1;
-
-  const canonicalPath = buildListingsSlug(initialFilters);
-  const initialPool = await fetchInitialPool(initialFilters, seed, canonicalPath);
-
-  return <StateHome initialFilters={initialFilters} browseData={browseData} initialPool={initialPool} />;
-}
