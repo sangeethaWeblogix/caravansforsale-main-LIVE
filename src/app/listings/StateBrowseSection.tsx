@@ -1,220 +1,27 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { getRegionsByState } from "../sell-my-caravan-region/regions-data";
-
-function toStateSlug(state: string): string {
-  return state.trim().toLowerCase().replace(/ /g, "-");
-}
-
-function stateLabel(state: string): string {
-  return state
-    .trim()
-    .split(/\s+/)
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(" ");
-}
-
-// API group_by=region responses come back as raw hyphenated slugs with only
-// the first letter capitalized (e.g. "Latrobe-gippsland") — clean that up
-// for display.
-function cleanRegionName(name: string): string {
-  return name
-    .replace(/-/g, " ")
-    .replace(/\b\w/g, (c) => c.toUpperCase());
-}
-
-const STATES = [
-  { name: "Victoria",            href: "/listings/victoria-state/" },
-  { name: "New South Wales",     href: "/listings/new-south-wales-state/" },
-  { name: "Queensland",          href: "/listings/queensland-state/" },
-  { name: "South Australia",     href: "/listings/south-australia-state/" },
-  { name: "Western Australia",   href: "/listings/western-australia-state/" },
-  { name: "Tasmania",            href: "/listings/tasmania-state/" },
-];
-
-const TYPES_NO_STATE = [
-  { label: "Off Road Caravans", href: "/listings/off-road-category/" },
-  { label: "Luxury Caravans",   href: "/listings/luxury-category/" },
-  { label: "Hybrid Caravans",   href: "/listings/hybrid-category/" },
-  { label: "Pop Top Caravans",  href: "/listings/pop-top-category/" },
-  { label: "Touring Caravans",  href: "/listings/touring-category/" },
-  { label: "Family Caravans",   href: "/listings/family-category/" },
-];
-
-const FILTERS_NO_STATE = [
-  {
-    icon: "/images/Budget.png", title: "By Budget",
-    links: [
-      { text: "Under $30,000",      href: "/listings/under-30000/" },
-      { text: "$30,000 – $40,000",  href: "/listings/between-30000-40000/" },
-      { text: "$40,000 – $50,000",  href: "/listings/between-40000-50000/" },
-      { text: "$50,000 – $70,000",  href: "/listings/between-50000-70000/" },
-      { text: "$70,000 – $80,000",  href: "/listings/between-70000-80000/" },
-      { text: "$80,000 – $100,000", href: "/listings/between-80000-100000/" },
-      { text: "Over $100,000",      href: "/listings/over-100000/" },
-    ],
-  },
-  {
-    icon: "/images/ATM.png", title: "By Weight (ATM)",
-    links: [
-      { text: "Under 1500kg", href: "/listings/under-1500-kg-atm/" },
-      { text: "Under 2000kg", href: "/listings/under-2000-kg-atm/" },
-      { text: "Under 2500kg", href: "/listings/under-2500-kg-atm/" },
-      { text: "Under 3000kg", href: "/listings/under-3000-kg-atm/" },
-      { text: "Over 3000kg",  href: "/listings/over-3000-kg-atm/" },
-    ],
-  },
-  {
-    icon: "/images/Length.png", title: "By Size (Length)",
-    links: [
-      { text: "Under 16ft",  href: "/listings/under-16-length-in-feet/" },
-      { text: "16ft – 18ft", href: "/listings/between-16-18-length-in-feet/" },
-      { text: "18ft – 20ft", href: "/listings/between-18-20-length-in-feet/" },
-      { text: "20ft – 22ft", href: "/listings/between-20-22-length-in-feet/" },
-      { text: "Over 22ft",   href: "/listings/over-22-length-in-feet/" },
-    ],
-  },
-  {
-    icon: "/images/Sleeping.png", title: "By Sleeping Capacity",
-    links: [
-      { text: "2 Berth",  href: "/listings/2-people-sleeping-capacity/" },
-      { text: "3 Berth",  href: "/listings/3-people-sleeping-capacity/" },
-      { text: "4 Berth",  href: "/listings/4-people-sleeping-capacity/" },
-      { text: "5 Berth",  href: "/listings/5-people-sleeping-capacity/" },
-      { text: "6+ Berth", href: "/listings/over-5-people-sleeping-capacity/" },
-    ],
-  },
-];
-
-// Same curated city list as HomeLocationSection's popular-location section —
-// reused as "Popular Region" pills scoped to a category-only page. Darwin is
-// skipped — Northern Territory isn't in this site's state registry
-// (STATES/regions-data only cover the 6 states above).
-const POPULAR_REGION_PATHS = [
-  { name: "Adelaide",       path: "south-australia-state/adelaide-region/" },
-  { name: "Brisbane",       path: "queensland-state/brisbane-region/" },
-  { name: "Gold Coast",     path: "queensland-state/gold-coast-region/" },
-  { name: "Melbourne",      path: "victoria-state/melbourne-region/" },
-  { name: "Perth",          path: "western-australia-state/perth-region/" },
-  { name: "Sydney",         path: "new-south-wales-state/sydney-region/" },
-  { name: "Cairns",         path: "queensland-state/cairns-region/" },
-  { name: "Canberra",       path: "new-south-wales-state/canberra-region/" },
-  { name: "Geelong",        path: "victoria-state/geelong-region/" },
-  { name: "Hobart",         path: "tasmania-state/hobart-region/" },
-  { name: "Newcastle",      path: "new-south-wales-state/newcastle-region/" },
-  { name: "Sunshine Coast", path: "queensland-state/sunshine-coast-region/" },
-  { name: "Townsville",     path: "queensland-state/townsville-region/" },
-  { name: "Wollongong",     path: "new-south-wales-state/illawarra-region/" },
-  { name: "Ballarat",       path: "victoria-state/ballarat-region/" },
-];
-
-// Price/ATM/length/sleep band definitions doubling as the query params used
-// to look up each band's own count (no bucketed group_by exists on the
-// backend for numeric fields, so counts come from pool-listings'
-// total_products for each band individually).
-const PRICE_BANDS = [
-  { text: "Under $30,000",      href: "/listings/under-30000/",          query: "to_price=30000" },
-  { text: "$30,000 – $40,000",  href: "/listings/between-30000-40000/",  query: "from_price=30000&to_price=40000" },
-  { text: "$40,000 – $50,000",  href: "/listings/between-40000-50000/",  query: "from_price=40000&to_price=50000" },
-  { text: "$50,000 – $70,000",  href: "/listings/between-50000-70000/",  query: "from_price=50000&to_price=70000" },
-  { text: "$70,000 – $80,000",  href: "/listings/between-70000-80000/",  query: "from_price=70000&to_price=80000" },
-  { text: "$80,000 – $100,000", href: "/listings/between-80000-100000/", query: "from_price=80000&to_price=100000" },
-  { text: "Over $100,000",      href: "/listings/over-100000/",          query: "from_price=100000" },
-];
-
-const ATM_BANDS = [
-  { text: "Under 1500kg", href: "/listings/under-1500-kg-atm/", query: "to_atm=1500" },
-  { text: "Under 2000kg", href: "/listings/under-2000-kg-atm/", query: "to_atm=2000" },
-  { text: "Under 2500kg", href: "/listings/under-2500-kg-atm/", query: "to_atm=2500" },
-  { text: "Under 3000kg", href: "/listings/under-3000-kg-atm/", query: "to_atm=3000" },
-  { text: "Over 3000kg",  href: "/listings/over-3000-kg-atm/",  query: "from_atm=3000" },
-];
-
-const LENGTH_BANDS = [
-  { text: "Under 16ft",  href: "/listings/under-16-length-in-feet/",           query: "to_length=16" },
-  { text: "16ft – 18ft", href: "/listings/between-16-18-length-in-feet/",      query: "from_length=16&to_length=18" },
-  { text: "18ft – 20ft", href: "/listings/between-18-20-length-in-feet/",      query: "from_length=18&to_length=20" },
-  { text: "20ft – 22ft", href: "/listings/between-20-22-length-in-feet/",      query: "from_length=20&to_length=22" },
-  { text: "Over 22ft",   href: "/listings/over-22-length-in-feet/",            query: "from_length=22" },
-];
-
-const SLEEP_BANDS = [
-  { text: "2 Berth",  href: "/listings/2-people-sleeping-capacity/",      query: "from_sleep=2&to_sleep=2" },
-  { text: "3 Berth",  href: "/listings/3-people-sleeping-capacity/",      query: "from_sleep=3&to_sleep=3" },
-  { text: "4 Berth",  href: "/listings/4-people-sleeping-capacity/",      query: "from_sleep=4&to_sleep=4" },
-  { text: "5 Berth",  href: "/listings/5-people-sleeping-capacity/",      query: "from_sleep=5&to_sleep=5" },
-  { text: "6+ Berth", href: "/listings/over-5-people-sleeping-capacity/", query: "from_sleep=6" },
-];
-
-const CATEGORY_LABELS: Record<string, string> = {
-  "off-road": "Off Road",
-  luxury: "Luxury",
-  hybrid: "Hybrid",
-  "pop-top": "Pop Top",
-  touring: "Touring",
-  family: "Family",
-};
-
-function categoryLabel(category: string): string {
-  return CATEGORY_LABELS[category] ?? category.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-}
-
-// State pills stay useful on a category page too — just carry the category
-// filter along so picking a state narrows within that category.
-function buildStatesForCategory(category: string) {
-  return STATES.map((s) => ({
-    name: s.name,
-    slug: toStateSlug(s.name),
-    href: `/listings/${category}-category${s.href.replace("/listings", "")}`,
-  }));
-}
-
-function buildPopularRegionsForCategory(category: string) {
-  return POPULAR_REGION_PATHS.map((r) => ({
-    name: r.name,
-    slug: r.path.match(/([a-z0-9-]+)-region\/$/)?.[1] ?? "",
-    href: `/listings/${category}-category/${r.path}`,
-  }));
-}
-
-// State is the ONLY active filter — show every real region of that state
-// (not just the curated popular subset), since there's nothing else to
-// narrow the browsing by.
-function buildAllRegionsForState(state: string) {
-  const stateSlug = toStateSlug(state);
-  return getRegionsByState(stateSlug).map((r) => ({
-    name: r.label,
-    href: `/listings/${r.state.slug}-state/${r.pageSlug}-region/`,
-  }));
-}
-
-// Category pills on a state page carry the state along too — category
-// segment first, then state, matching buildSlugFromFilters' segment order.
-function buildTypesForState(state: string) {
-  const stateSlug = toStateSlug(state);
-  return TYPES_NO_STATE.map((t) => ({
-    label: t.label,
-    href: `${t.href}${stateSlug}-state/`,
-  }));
-}
-
-// Budget/ATM/length/sleep pills on a state page reuse the no-state slugs,
-// just prefixed with the state segment (state before these, per
-// buildSlugFromFilters' segment order).
-function buildFiltersForState(state: string) {
-  const stateSlug = toStateSlug(state);
-  return FILTERS_NO_STATE.map((f) => ({
-    ...f,
-    links: f.links.map((l) => ({
-      text: l.text,
-      href: `/listings/${stateSlug}-state${l.href.replace("/listings", "")}`,
-    })),
-  }));
-}
-
-type CountItem = { name: string; slug: string; count: number };
+import {
+  toStateSlug,
+  stateLabel,
+  cleanRegionName,
+  STATES,
+  TYPES_NO_STATE,
+  FILTERS_NO_STATE,
+  PRICE_BANDS,
+  ATM_BANDS,
+  LENGTH_BANDS,
+  SLEEP_BANDS,
+  categoryLabel,
+  buildStatesForCategory,
+  buildPopularRegionsForCategory,
+  buildAllRegionsForState,
+  buildTypesForState,
+  buildFiltersForState,
+  type CountItem,
+  type BrowseSectionData,
+} from "./browseSectionShared";
 
 async function fetchGroupCounts(groupBy: string, scope: Record<string, string>): Promise<CountItem[]> {
   try {
@@ -254,9 +61,13 @@ interface Props {
   state?: string;
   region?: string;
   category?: string;
+  /** Server-fetched counts (SSR/ISR) for the current filters — when present,
+   * seeds the pills/links straight into the first render (so they land in
+   * page source for crawlers) and skips the redundant client-side refetch. */
+  initialData?: BrowseSectionData;
 }
 
-export default function StateBrowseSection({ state, region, category }: Props) {
+export default function StateBrowseSection({ state, region, category, initialData }: Props) {
   const hasState    = !!state;
   const hasRegion   = !!region;
   const hasCategory = !!category;
@@ -268,18 +79,30 @@ export default function StateBrowseSection({ state, region, category }: Props) {
 
   // Every dynamic mode below shares this same count state — only one mode is
   // ever active for a given render, so there's no cross-talk between fetches.
-  const [makeCounts,     setMakeCounts]     = useState<CountItem[] | null>(null);
-  const [stateCounts,    setStateCounts]    = useState<CountItem[] | null>(null);
-  const [regionCounts,   setRegionCounts]   = useState<CountItem[] | null>(null);
-  const [categoryCounts, setCategoryCounts] = useState<CountItem[] | null>(null);
-  const [priceCounts,    setPriceCounts]    = useState<number[] | null>(null);
-  const [atmCounts,      setAtmCounts]      = useState<number[] | null>(null);
-  const [lengthCounts,   setLengthCounts]   = useState<number[] | null>(null);
-  const [sleepCounts,    setSleepCounts]    = useState<number[] | null>(null);
+  // Seeded from server-fetched initialData when available (SSR), so the
+  // first render already has real data instead of null/skeleton.
+  const [makeCounts,     setMakeCounts]     = useState<CountItem[] | null>(initialData?.makeCounts ?? null);
+  const [stateCounts,    setStateCounts]    = useState<CountItem[] | null>(initialData?.stateCounts ?? null);
+  const [regionCounts,   setRegionCounts]   = useState<CountItem[] | null>(initialData?.regionCounts ?? null);
+  const [categoryCounts, setCategoryCounts] = useState<CountItem[] | null>(initialData?.categoryCounts ?? null);
+  const [priceCounts,    setPriceCounts]    = useState<number[] | null>(initialData?.priceCounts ?? null);
+  const [atmCounts,      setAtmCounts]      = useState<number[] | null>(initialData?.atmCounts ?? null);
+  const [lengthCounts,   setLengthCounts]   = useState<number[] | null>(initialData?.lengthCounts ?? null);
+  const [sleepCounts,    setSleepCounts]    = useState<number[] | null>(initialData?.sleepCounts ?? null);
+
+  // initialData only covers the filters the server rendered this page with —
+  // filter changes happen via client-side pushState (see home.tsx), not a
+  // fresh server request, so once state/region/category drift from this
+  // captured snapshot the effects below must fall back to fetching live.
+  const initialFiltersRef = useRef({ state, region, category });
+  const isInitialFilters =
+    state === initialFiltersRef.current.state &&
+    region === initialFiltersRef.current.region &&
+    category === initialFiltersRef.current.category;
 
   // Category only — Popular Make/State/Region + Price.
   useEffect(() => {
-    if (!categoryOnly) return;
+    if (!categoryOnly || (initialData && isInitialFilters)) return;
     let cancelled = false;
     const scope = { category: category! };
     fetchGroupCounts("make", scope).then((d) => { if (!cancelled) setMakeCounts(d); });
@@ -293,7 +116,7 @@ export default function StateBrowseSection({ state, region, category }: Props) {
 
   // State + region (no category) — Popular Make/Category + Price/ATM/Sleep.
   useEffect(() => {
-    if (!stateRegionMode) return;
+    if (!stateRegionMode || (initialData && isInitialFilters)) return;
     let cancelled = false;
     const scope = { state: state!, region: region! };
     fetchGroupCounts("make", scope).then((d) => { if (!cancelled) setMakeCounts(d); });
@@ -310,7 +133,7 @@ export default function StateBrowseSection({ state, region, category }: Props) {
 
   // Category + state (no region) — Region/Make + Price/ATM/Length/Sleep.
   useEffect(() => {
-    if (!categoryStateMode) return;
+    if (!categoryStateMode || (initialData && isInitialFilters)) return;
     let cancelled = false;
     const scope = { category: category!, state: state! };
     fetchGroupCounts("region", scope).then((d) => { if (!cancelled) setRegionCounts(d); });
@@ -325,7 +148,7 @@ export default function StateBrowseSection({ state, region, category }: Props) {
 
   // Category + state + region (all three) — Make + Price/ATM/Length/Sleep.
   useEffect(() => {
-    if (!categoryStateRegionMode) return;
+    if (!categoryStateRegionMode || (initialData && isInitialFilters)) return;
     let cancelled = false;
     const scope = { category: category!, state: state!, region: region! };
     fetchGroupCounts("make", scope).then((d) => { if (!cancelled) setMakeCounts(d); });

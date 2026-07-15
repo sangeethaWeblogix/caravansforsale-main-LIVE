@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import StateHome from "../home";
 import { parseDemoFilters } from "../urlUtils";
 import { metaFromSlug } from "@/utils/seo/meta";
+import { fetchBrowseSectionData } from "../fetchBrowseSectionData";
 import "../../globals.css";
 
 export const revalidate = 86400;
@@ -40,5 +41,7 @@ export default async function LocationStateDemoPage({
   const initialFilters = parseDemoFilters(slug ?? [], query);
   console.log("[listings/[[...slug]]/page.tsx] slug:", slug, "query:", query, "initialFilters:", initialFilters);
 
-  return <StateHome initialFilters={initialFilters} />;
+  const browseData = await fetchBrowseSectionData(initialFilters);
+
+  return <StateHome initialFilters={initialFilters} browseData={browseData} />;
 }

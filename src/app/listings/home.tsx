@@ -8,6 +8,7 @@ import StateHero from "./StateHero";
 import StateFilterBar, { FilterState } from "./StateFilterBar";
 import StateListingGrid, { SeoV2, Listing, buildFeaturedOrder } from "./StateListingGrid";
 import StateBrowseSection from "./StateBrowseSection";
+import type { BrowseSectionData } from "./browseSectionShared";
 import StateContent from "./StateContent";
 import { buildApiUrl, buildListingsSlug, buildFilterBreadcrumbs } from "./urlUtils";
 import { useBanners } from "@/components/BannerHandler";
@@ -32,9 +33,12 @@ const SEED_MAX = 15;
 
 interface Props {
   initialFilters: FilterState;
+  /** Server-fetched (SSR/ISR) counts for StateBrowseSection's initial filters —
+   * seeds its pills/links so they're present in page source for crawlers. */
+  browseData?: BrowseSectionData;
 }
 
-export default function StateHome({ initialFilters }: Props) {
+export default function StateHome({ initialFilters, browseData }: Props) {
   const [filters,  setFilters]  = useState<FilterState>(initialFilters);
   const [page,     setPage]     = useState(1);
   const [maxPages, setMaxPages] = useState(1);
@@ -385,13 +389,6 @@ export default function StateHome({ initialFilters }: Props) {
     </div>
   );
 
-  if (!ready) return (
-    <>
-      <style>{`.lsd-mob-white{display:none}@media(max-width:767px){.lsd-mob-white{display:block}}`}</style>
-      <div className="lsd-mob-white" style={{ minHeight: "100vh", background: "#fff" }} />
-    </>
-  );
-
   if (page === 1) {
     console.log("seooo", seo?.h1)
     return (
@@ -463,7 +460,7 @@ export default function StateHome({ initialFilters }: Props) {
 
         {maxPages > 1 && pagination}
 
-        <StateBrowseSection state={filters.state} region={filters.region} category={filters.category} />
+        <StateBrowseSection state={filters.state} region={filters.region} category={filters.category} initialData={browseData} />
         <StateContent footerDescription={seo?.footer_description} faq={seo?.faq} />
         <div className="lsd-sell-cta">
           <div className="lsd-sell-cta__inner">
