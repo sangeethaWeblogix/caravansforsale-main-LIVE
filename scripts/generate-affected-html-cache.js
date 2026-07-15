@@ -54,7 +54,7 @@ const CF_KV_NAMESPACE_ID = process.env.CF_KV_NAMESPACE_ID;
 const CF_API_TOKEN       = process.env.CF_API_TOKEN;
 const SITE_BASE          = 'https://www.caravansforsale.com.au';
 
-const HTML_VARIANTS      = 5;
+const HTML_VARIANTS      = 7;
 const HTML_CONCURRENCY   = 6;
 const HTML_FETCH_TIMEOUT = 30000;
 const KV_UPLOAD_RETRIES  = 3;
@@ -72,9 +72,19 @@ function loadAffectedUrls() {
     console.error('ERROR: Provide AFFECTED_URLS_JSON or AFFECTED_URLS_FILE (JSON array of full URLs).');
     process.exit(1);
   }
-  const list = JSON.parse(raw);
-  if (!Array.isArray(list)) {
-    console.error('ERROR: Affected URLs payload must be a JSON array.');
+  raw = raw.trim();
+  // Accept either a JSON array  ["https://..."]
+  // or a plain URL              https://...
+  // or a newline-separated list https://...\nhttps://...
+  let list;
+  if (raw.startsWith('[')) {
+    list = JSON.parse(raw);
+  } else {
+    // Split on newlines/commas, strip surrounding quotes, filter blanks
+    list = raw.split(/[\n,]+/).map(u => u.trim().replace(/^["']|["']$/g, '')).filter(Boolean);
+  }
+  if (!Array.isArray(list) || list.length === 0) {
+    console.error('ERROR: Could not parse any URLs from AFFECTED_URLS_JSON.');
     process.exit(1);
   }
   return list;
@@ -100,6 +110,72 @@ function pathToSlug(p) {
   s = s.replace(/[^a-z0-9-]/g, '');
   if (s.length > 150) s = s.substring(0, 150);
   return s || 'home';
+}
+
+// ── Pool data pre-loading ─────────────────────────────────────────────────────
+/**
+ * Parse a /listings/… path into pool-listings API query params.
+ * Mirrors the parameter order of buildApiUrl() in src/app/listings/urlUtils.ts
+ * so the injected URL matches what home.tsx constructs at runtime.
+ */
+function buildPoolRequestUrl(urlPath, seed) {
+  let s = urlPath;
+  if (s.startsWith('/listings/')) s = s.substring(10);
+  s = s.replace(/^\/+|\/+$/g, '');
+  const segments = s.split('/').filter(Boolean);
+
+  let category, condition, state, region, fromPrice, toPrice;
+
+  for (const seg of segments) {
+    if (seg.endsWith('-category')) {
+      category = seg.replace('-category', '');
+    } else if (seg.endsWith('-condition')) {
+      const raw = seg.replace('-condition', '').toLowerCase();
+      condition = raw === 'new' ? 'New' : raw === 'used' ? 'Used' : raw;
+    } else if (seg.endsWith('-state')) {
+      state = seg.replace('-state', '').replace(/-/g, ' ').toLowerCase();
+    } else if (seg.endsWith('-region')) {
+      region = seg.replace('-region', '').replace(/-/g, ' ').toLowerCase();
+    } else if (/^under-\d+$/.test(seg)) {
+      toPrice = seg.replace('under-', '');
+    } else if (/^over-\d+$/.test(seg)) {
+      fromPrice = seg.replace('over-', '');
+    }
+  }
+
+  // Build params in same order as buildApiUrl() so the string matches exactly
+  const params = new URLSearchParams();
+  params.set('orderby', 'default');
+  params.set('seed', String(seed));
+  if (state)     params.set('state', state);
+  if (category)  params.set('category', category);
+  if (region)    params.set('region', region);
+  if (fromPrice) params.set('from_price', fromPrice);
+  if (toPrice)   params.set('to_price', toPrice);
+  if (condition) params.set('condition', condition);
+
+  return `/api/pool-listings/?per_page=24&${params.toString()}&page=1`;
+}
+
+/**
+ * Fetch pool-listings JSON for one variant and return the object to embed,
+ * or null on any error (HTML will still be cached without pre-loaded data).
+ */
+async function fetchPoolData(urlPath, seed) {
+  const requestUrl = buildPoolRequestUrl(urlPath, seed);
+  const fetchUrl = `${VERCEL_BASE_URL}${requestUrl}`;
+  try {
+    const res = await fetchWithTimeout(fetchUrl, {
+      headers: { 'User-Agent': 'CFS-AffectedCacheGenerator/1.0', 'Accept': 'application/json' },
+    }, 15000);
+    if (!res.ok) return null;
+    const json = await res.json();
+    const products = json?.data?.products ?? json?.products ?? [];
+    if (!products.length) return null;
+    return { url: requestUrl, json };
+  } catch {
+    return null;
+  }
 }
 
 // ── Error page detection ──────────────────────────────────────────────────────
@@ -222,6 +298,18 @@ async function generateHtmlVariants(urlPath, slug) {
       if (errMatch) { console.log(`   [HTML-v${v}] Error page: "${errMatch}"`); continue; }
 
       html = injectPerformanceTags(html);
+
+      // Fetch pool-listings data for this variant and embed it into the HTML
+      // so home.tsx can render products immediately on hydration without a
+      // client-side API call. Falls back gracefully if the fetch fails.
+      const poolData = await fetchPoolData(urlPath, v);
+      if (poolData) {
+        const poolJson = JSON.stringify(poolData).replace(/<\/script>/gi, '<\\/script>');
+        html = html.replace('</head>', `<script>window.__INITIAL_POOL__ = ${poolJson};</script>\n</head>`);
+        console.log(`   [HTML-v${v}] Pool pre-loaded (${(poolData.json?.data?.products ?? poolData.json?.products ?? []).length} products)`);
+      } else {
+        console.log(`   [HTML-v${v}] Pool pre-load skipped (no data)`);
+      }
 
       await uploadToKV(kvKey, html, 'text/html', {
         path:    urlPath,

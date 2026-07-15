@@ -16,7 +16,7 @@ on:
   workflow_dispatch:
     inputs:
       urls_json:
-        description: 'JSON array of full URLs to rebuild, e.g. ["https://www.caravansforsale.com.au/listings/victoria-state/"]'
+        description: 'URL(s) to rebuild. Plain URL, JSON array, or newline-separated. e.g. https://www.caravansforsale.com.au/listings/victoria-state/'
         required: true
         type: string
 
