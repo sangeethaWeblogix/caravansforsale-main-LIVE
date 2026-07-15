@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useEnquiryForm } from "@/app/components/ListContent/enquiryform";
 
@@ -236,6 +236,7 @@ function ListingCard({
   const images = getImages(item);
   const [idx, setIdx] = useState(0);
   const href   = `/product/${item.slug ?? item.id}/`;
+  const cardRef = useRef<HTMLAnchorElement>(null);
 
   const prevImg = (e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); setIdx((i) => (i - 1 + images.length) % images.length); };
   const nextImg = (e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); setIdx((i) => (i + 1) % images.length); };
@@ -254,8 +255,65 @@ function ListingCard({
     { icon: "",                     text: "" },
   ];
 
+  
+  // Remove all the lazy loading state and just load all images immediately
+   const getIP = async () => {
+    try {
+      const res = await fetch("https://api.ipify.org?format=json");
+     const data = await res.json();
+      return data.ip || "";
+    } catch {
+      return "";
+   }
+   };
+ const postTrackClick = async (product_id: number) => {
+    try {
+      await fetch("/api/track-click", {
+        method: "POST",
+       headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ product_id }),
+      });
+   } catch {}
+   };
+
+     const postTrackEvent = async (product_id: number) => {
+    try {
+       await fetch("/api/track", {
+        method: "POST",
+         headers: { "Content-Type": "application/json" },
+         body: JSON.stringify({ product_id }),
+       });
+     } catch {}
+   };
+
+    useEffect(() => {
+    const el = cardRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+       (entries) => {
+        entries.forEach((entry) => {
+           if (entry.isIntersecting) {
+            const id = Number(entry.target.getAttribute("data-product-id"));
+            if (id) postTrackEvent(id);
+            observer.unobserve(entry.target);
+          }
+        });
+     },
+       { threshold: 0.3 },
+    );
+     observer.observe(el);
+     return () => observer.disconnect();
+   }, [item]);
+
   return (
-    <Link href={href} prefetch={false} className={`lsd-card${spotlight ? " lsd-card--spotlight" : ""}`}>
+    <Link
+      ref={cardRef}
+      href={href}
+      prefetch={false}
+      className={`lsd-card${spotlight ? " lsd-card--spotlight" : ""}`}
+      data-product-id={item.id}
+      onClick={() => postTrackClick(item.id)}
+    >
       {/* Image */}
       <div className="lsd-card__img-wrap">
         {images.length > 0 ? (
