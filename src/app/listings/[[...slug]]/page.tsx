@@ -108,12 +108,21 @@ async function fetchInitialPool(
     const res = await fetch(url, {
       headers: {
         Accept: "application/json",
+        "User-Agent": "Mozilla/5.0 (compatible; CFS-SSR/1.0; +https://www.caravansforsale.com.au)",
         ...(API_KEY && { "X-API-Key": API_KEY }),
       },
       next: { revalidate: 3600 },
     });
-    if (!res.ok) return null;
+    if (!res.ok) {
+      console.error("[listings/page] fetchInitialPool non-OK:", res.status);
+      return null;
+    }
     const raw = await res.text();
+    // Detect bot-challenge redirect (sgcaptcha / similar)
+    if (raw.includes("sgcaptcha") || raw.includes("well-known") || !raw.includes("{")) {
+      console.error("[listings/page] fetchInitialPool: bot-challenge detected, raw start:", raw.substring(0, 120));
+      return null;
+    }
     const jsonStart = raw.indexOf("{");
     const json = JSON.parse(jsonStart > 0 ? raw.substring(jsonStart) : raw);
 
