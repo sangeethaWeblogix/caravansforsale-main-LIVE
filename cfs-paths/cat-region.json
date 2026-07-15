@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "cat-region",
-    "count": 257,
+    "count": 258,
     "paths": [
         "family-category/australian-capital-territory-state/australian-capital-territory-region/",
         "family-category/new-south-wales-state/capital-region/",
@@ -135,6 +135,7 @@
         "off-road-category/new-south-wales-state/hunter-region/",
         "off-road-category/new-south-wales-state/illawarra-region/",
         "off-road-category/new-south-wales-state/mid-north-coast-region/",
+        "off-road-category/new-south-wales-state/murray-region/",
         "off-road-category/new-south-wales-state/new-england-region/",
         "off-road-category/new-south-wales-state/newcastle-region/",
         "off-road-category/new-south-wales-state/orana-region/",
@@ -261,5 +262,5 @@
         "touring-category/western-australia-state/perth-region/",
         "touring-category/western-australia-state/western-australia-outback-south-region/"
     ],
-    "generated_at": "2026-07-14 15:56:56"
+    "generated_at": "2026-07-15 15:45:04"
 }
