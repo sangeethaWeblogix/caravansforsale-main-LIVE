@@ -30,27 +30,54 @@ const readPage = (id: string): number | null => {
 
 const SEED_MAX = 15;
 
+/** Full pool data fetched server-side in page.tsx and passed as a prop so the
+ *  SSR / KV-cached HTML contains real product listings from the first byte. */
+export type InitialPool = {
+  seo: SeoV2 | null;
+  featured: Listing[];
+  new: Listing[];
+  used: Listing[];
+  maxPages: number;
+  isIndexed: boolean;
+};
+
 interface Props {
   initialFilters: FilterState;
+  /** Full pool fetched server-side — products + seo for SSR rendering. */
+  initialPool?: InitialPool | null;
+  /** @deprecated replaced by initialPool.seo */
+  initialSeo?: SeoV2 | null;
 }
 
-export default function StateHome({ initialFilters }: Props) {
+export default function StateHome({ initialFilters, initialPool, initialSeo }: Props) {
   const [filters,  setFilters]  = useState<FilterState>(initialFilters);
   const [page,     setPage]     = useState(1);
-  const [maxPages, setMaxPages] = useState(1);
+  const [maxPages, setMaxPages] = useState(initialPool?.maxPages ?? 1);
   const [clickid,  setClickid]  = useState<string | null>(null);
   const [ready,    setReady]    = useState(false);
-  const [seo,      setSeo]      = useState<SeoV2 | null>(null);
+  const [seo,      setSeo]      = useState<SeoV2 | null>(initialPool?.seo ?? initialSeo ?? null);
   const [newSeo,   setNewSeo]   = useState<SeoV2 | null>(null);
   const [usedSeo,  setUsedSeo]  = useState<SeoV2 | null>(null);
   const [seed,     setSeed]     = useState(1);
-  const [pool,     setPool]     = useState<{ featured: Listing[]; new: Listing[]; used: Listing[] }>({ featured: [], new: [], used: [] });
-  const [poolLoading, setPoolLoading] = useState(true);
+  const [pool,     setPool]     = useState<{ featured: Listing[]; new: Listing[]; used: Listing[] }>(
+    initialPool
+      ? { featured: initialPool.featured, new: initialPool.new, used: initialPool.used }
+      : { featured: [], new: [], used: [] }
+  );
+  const [poolLoading, setPoolLoading] = useState(!initialPool);
   // Whether the current canonical /listings/ URL is in url.csv's curated
   // indexed set — gates the full hero banner (image + description) and the
   // Featured/New/Used split: indexed pages split the pool by slot_bucket into
   // three sections, non-indexed pages get one combined grid.
-  const [isIndexed, setIsIndexed] = useState(true);
+  const [isIndexed, setIsIndexed] = useState(initialPool?.isIndexed ?? true);
+  // Tracks whether we already consumed window.__INITIAL_POOL__ (injected by
+  // the cache generator into pre-rendered HTML). Once consumed we let the
+  // normal fetch path take over so filter-changes and page-turns fetch live.
+  const initialPoolConsumed = useRef(false);
+  // Tracks whether the server-fetched initialPool prop has been "consumed"
+  // (i.e., the first pool useEffect run has been skipped). After that, normal
+  // live fetches run on filter/seed changes.
+  const initialPropConsumed = useRef(initialPool == null);
   console.log("seoo89", seo)
 
   // ── Top banner ad (impression + click tracking) ──
@@ -196,6 +223,13 @@ export default function StateHome({ initialFilters }: Props) {
     // with two different seeds, so the grid visibly swaps its items right
     // after the first paint.
     if (!ready || page !== 1) return;
+    // Skip the very first effect run when the server already provided
+    // initialPool — data is already in state, no re-fetch needed.
+    // Subsequent runs (filter/seed changes) proceed normally.
+    if (!initialPropConsumed.current) {
+      initialPropConsumed.current = true;
+      return;
+    }
     // `isIndexed` starts as the `true` default and flips to its real value
     // once the async /api/indexed-url/ check resolves — since this effect
     // depends on `isIndexed`, it fires once with that stale default and
@@ -213,8 +247,46 @@ export default function StateHome({ initialFilters }: Props) {
     setSeo(null);
     const requestUrl = `${poolApiUrl}&page=${page}`;
     const absoluteUrl = new URL(requestUrl, window.location.origin).toString();
-    console.log("[StateHome] shared pool API:", absoluteUrl);
 
+    // ── Pre-loaded pool data (injected by cache generator into HTML) ──────────
+    const win = window as unknown as Record<string, unknown>;
+    const preload = win.__INITIAL_POOL__ as { url: string; json: unknown } | undefined;
+    if (preload && !initialPoolConsumed.current && preload.url === requestUrl) {
+      initialPoolConsumed.current = true;
+      win.__INITIAL_POOL__ = undefined;
+      console.log("[StateHome] using pre-loaded pool data:", requestUrl);
+      Promise.resolve(preload.json as Record<string, unknown>)
+        .then((json) => {
+          if (cancelled) return;
+          const seoData = (json as any)?.data?.seo_v2 ?? (json as any)?.seo_v2;
+          if (seoData) setSeo(seoData);
+          const products: Listing[]        = (json as any)?.data?.products ?? (json as any)?.products ?? [];
+          const premiumsRaw: Listing[]     = (json as any)?.data?.premium_products ?? (json as any)?.premium_products ?? [];
+          const exclusivesRaw: Listing[]   = (json as any)?.data?.exclusive_products ?? (json as any)?.exclusive_products ?? [];
+          const empExclusivesRaw: Listing[]= (json as any)?.data?.emp_exclusive_products ?? (json as any)?.emp_exclusive_products ?? [];
+          const totalCount: number         = (json as any)?.data?.counts?.total_count ?? (json as any)?.counts?.total_count ?? products.length;
+          if (totalCount === 0 && empExclusivesRaw.length > 0) {
+            const empItems = empExclusivesRaw.map((p) => ({ ...p, is_exclusive: true }));
+            setPool({ featured: empItems, new: [], used: [] });
+          } else if (isIndexed) {
+            const featuredSource = products.filter((p) => p.slot_bucket === "featured");
+            const featuredItems  = buildFeaturedOrder(featuredSource, premiumsRaw, exclusivesRaw);
+            const featuredIds    = new Set(featuredItems.map((p) => p.id));
+            const newItems  = products.filter((p) => p.slot_bucket === "new"  && !p.is_premium && !p.is_exclusive && !featuredIds.has(p.id));
+            const usedItems = products.filter((p) => p.slot_bucket === "used" && !p.is_premium && !p.is_exclusive && !featuredIds.has(p.id));
+            setPool({ featured: featuredItems, new: newItems, used: usedItems });
+          } else {
+            const combined = buildFeaturedOrder(products, premiumsRaw, exclusivesRaw);
+            setPool({ featured: combined, new: [], used: [] });
+          }
+          handleTotalPages((json as any)?.pagination?.total_pages ?? 1);
+        })
+        .finally(() => { if (!cancelled) setPoolLoading(false); });
+      return () => { cancelled = true; };
+    }
+    // ─────────────────────────────────────────────────────────────────────────
+
+    console.log("[StateHome] shared pool API:", absoluteUrl);
     fetch(requestUrl, { cache: "no-store" })
       .then((r) => (r.ok ? r.json() : null))
       .then((json) => {
@@ -385,12 +457,133 @@ export default function StateHome({ initialFilters }: Props) {
     </div>
   );
 
-  if (!ready) return (
-    <>
-      <style>{`.lsd-mob-white{display:none}@media(max-width:767px){.lsd-mob-white{display:block}}`}</style>
-      <div className="lsd-mob-white" style={{ minHeight: "100vh", background: "#fff" }} />
-    </>
-  );
+  if (!ready) {
+    // Full server-fetched pool: render real products so KV-cached HTML is
+    // fully populated. This is the primary path for cache-generated variants.
+    if (initialPool) {
+      const ip = initialPool;
+      return (
+        <div className="lsd-page">
+          {ip.isIndexed ? (
+            <StateHero
+              title={ip.seo?.h1}
+              description={ip.seo?.short_description || ip.seo?.meta_description}
+              loading={false}
+              breadcrumbs={buildFilterBreadcrumbs(filters)}
+            />
+          ) : (
+            <div className="container lsd-standalone-breadcrumb-wrap">
+              <nav className="lsd-breadcrumb" aria-label="Breadcrumb">
+                <Link href="/">Home</Link>
+                <svg width="12" height="20" viewBox="0 0 24 24" fill="none" stroke="#3e3e3e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0,display:"block"}} aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+                <Link href="/listings/">Caravans for Sale</Link>
+                {buildFilterBreadcrumbs(filters).map((crumb) => (
+                  <span key={crumb.href}>
+                    <svg width="12" height="20" viewBox="0 0 24 24" fill="none" stroke="#3e3e3e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0,display:"block"}} aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+                    <Link href={crumb.href}>{crumb.label}</Link>
+                  </span>
+                ))}
+              </nav>
+            </div>
+          )}
+          <StateFilterBar
+            currentFilters={filters}
+            onFilterChange={handleFilterChange}
+            onClearAll={handleClearAll}
+          />
+          {ip.isIndexed ? (
+            <>
+              <StateListingGrid
+                title={ip.seo?.meta_title ? `Featured ${ip.seo.meta_title}` : ""}
+                viewAllHref={`${buildListingsSlug(filters)}?featured=1`}
+                items={ip.featured}
+                loading={false}
+                showSpotlight={true}
+                hideViewAll
+              />
+              <StateListingGrid
+                title=""
+                viewAllHref={buildListingsSlug(filters, "New")}
+                items={ip.new}
+                loading={false}
+              />
+              <StateListingGrid
+                title=""
+                viewAllHref={buildListingsSlug(filters, "Used")}
+                items={ip.used}
+                loading={false}
+              />
+            </>
+          ) : (
+            <StateListingGrid
+              title={ip.seo?.h1 || "Caravans for Sale"}
+              titleAs="h1"
+              viewAllHref={buildListingsSlug(filters)}
+              items={ip.featured}
+              loading={false}
+              showSpotlight={true}
+              hideViewAll
+            />
+          )}
+          <StateBrowseSection state={filters.state} region={filters.region} category={filters.category} />
+          <StateContent footerDescription={ip.seo?.footer_description} faq={ip.seo?.faq} />
+          <div className="lsd-sell-cta">
+            <div className="lsd-sell-cta__inner">
+              <h2 className="lsd-sell-cta__title">Looking to Sell Your Caravan?</h2>
+              <p className="lsd-sell-cta__body">
+                If you&apos;re upgrading or no longer need your current caravan,{" "}
+                <a href="/sell-my-caravan/" className="lsd-sell-cta__link">sell your caravan</a>{" "}
+                by creating a listing on CaravansForSale.com.au and connect with active buyers across Australia. Your advertisement stays online until it&apos;s sold for a one-time fee of $49.
+              </p>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    // Has server-fetched SEO only (no products): render structure with skeleton.
+    if (initialSeo) return (
+      <div className="lsd-page">
+        <StateHero
+          title={initialSeo.h1}
+          description={initialSeo.short_description || initialSeo.meta_description}
+          loading={false}
+          breadcrumbs={buildFilterBreadcrumbs(filters)}
+        />
+        <StateFilterBar
+          currentFilters={filters}
+          onFilterChange={handleFilterChange}
+          onClearAll={handleClearAll}
+        />
+        <StateListingGrid
+          title={initialSeo.meta_title ? `Featured ${initialSeo.meta_title}` : ""}
+          viewAllHref=""
+          items={[]}
+          loading={true}
+          showSpotlight={true}
+          hideViewAll
+        />
+        <StateBrowseSection state={filters.state} region={filters.region} category={filters.category} />
+        <StateContent footerDescription={initialSeo.footer_description} faq={initialSeo.faq} />
+        <div className="lsd-sell-cta">
+          <div className="lsd-sell-cta__inner">
+            <h2 className="lsd-sell-cta__title">Looking to Sell Your Caravan?</h2>
+            <p className="lsd-sell-cta__body">
+              If you&apos;re upgrading or no longer need your current caravan,{" "}
+              <a href="/sell-my-caravan/" className="lsd-sell-cta__link">sell your caravan</a>{" "}
+              by creating a listing on CaravansForSale.com.au and connect with active buyers across Australia. Your advertisement stays online until it&apos;s sold for a one-time fee of $49.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+    // No server data at all — minimal white overlay (mobile flash prevention).
+    return (
+      <>
+        <style>{`.lsd-mob-white{display:none}@media(max-width:767px){.lsd-mob-white{display:block}}`}</style>
+        <div className="lsd-mob-white" style={{ minHeight: "100vh", background: "#fff" }} />
+      </>
+    );
+  }
 
   if (page === 1) {
     console.log("seooo", seo?.h1)
