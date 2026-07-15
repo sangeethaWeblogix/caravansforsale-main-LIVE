@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "state-make",
-    "count": 597,
+    "count": 595,
     "paths": [
         "australian-capital-territory-state/avida/",
         "australian-capital-territory-state/crusader/",
@@ -260,7 +260,6 @@
         "queensland-state/zone-rv/",
         "south-australia-state/adria/",
         "south-australia-state/aus-rv/",
-        "south-australia-state/aussie-wide/",
         "south-australia-state/avan/",
         "south-australia-state/billabong/",
         "south-australia-state/blue-sky/",
@@ -375,7 +374,6 @@
         "victoria-state/ausflex/",
         "victoria-state/aussie-fivestar/",
         "victoria-state/aussie-land-rv/",
-        "victoria-state/aussie-wide/",
         "victoria-state/avan/",
         "victoria-state/bailey/",
         "victoria-state/bellarine/",
@@ -601,5 +599,5 @@
         "western-australia-state/xtour/",
         "western-australia-state/zone-rv/"
     ],
-    "generated_at": "2026-07-14 15:56:56"
+    "generated_at": "2026-07-15 15:45:03"
 }

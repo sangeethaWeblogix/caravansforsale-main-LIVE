@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "makes",
-    "count": 259,
+    "count": 258,
     "paths": [
         "adria/",
         "apache/",
@@ -17,7 +17,6 @@
         "ausflex/",
         "aussie-fivestar/",
         "aussie-land-rv/",
-        "aussie-wide/",
         "austrack-campers/",
         "australian-off-road/",
         "australis/",
@@ -263,5 +262,5 @@
         "york/",
         "zone-rv/"
     ],
-    "generated_at": "2026-07-14 15:56:55"
+    "generated_at": "2026-07-15 15:45:03"
 }

@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "region-make",
-    "count": 996,
+    "count": 993,
     "paths": [
         "australian-capital-territory-state/australian-capital-territory-region/avida/",
         "australian-capital-territory-state/australian-capital-territory-region/crusader/",
@@ -60,6 +60,7 @@
         "new-south-wales-state/coffs-harbour-region/xtreme/",
         "new-south-wales-state/hunter-region/atlas/",
         "new-south-wales-state/hunter-region/avida/",
+        "new-south-wales-state/hunter-region/cadillac-rv/",
         "new-south-wales-state/hunter-region/concept/",
         "new-south-wales-state/hunter-region/coromal/",
         "new-south-wales-state/hunter-region/cosy-cab/",
@@ -113,6 +114,7 @@
         "new-south-wales-state/mid-north-coast-region/vacationer/",
         "new-south-wales-state/mid-north-coast-region/windsor/",
         "new-south-wales-state/murray-region/jayco/",
+        "new-south-wales-state/murray-region/masterpiece/",
         "new-south-wales-state/new-england-region/atlantic/",
         "new-south-wales-state/new-england-region/austrack-campers/",
         "new-south-wales-state/new-england-region/avan/",
@@ -484,7 +486,6 @@
         "queensland-state/wide-bay-region/zone-rv/",
         "south-australia-state/adelaide-region/adria/",
         "south-australia-state/adelaide-region/aus-rv/",
-        "south-australia-state/adelaide-region/aussie-wide/",
         "south-australia-state/adelaide-region/avan/",
         "south-australia-state/adelaide-region/billabong/",
         "south-australia-state/adelaide-region/blue-tongue/",
@@ -555,7 +556,6 @@
         "south-australia-state/adelaide-region/xtour/",
         "south-australia-state/adelaide-region/york/",
         "south-australia-state/south-australia-outback-region/jayco/",
-        "south-australia-state/south-australia-south-east-region/aussie-wide/",
         "south-australia-state/south-australia-south-east-region/avan/",
         "south-australia-state/south-australia-south-east-region/blue-sky/",
         "south-australia-state/south-australia-south-east-region/creative/",
@@ -599,7 +599,6 @@
         "tasmania-state/north-west-region/pro-rv/",
         "tasmania-state/north-west-region/red-centre/",
         "tasmania-state/north-west-region/seascape/",
-        "victoria-state/ballarat-region/aussie-wide/",
         "victoria-state/ballarat-region/coromal/",
         "victoria-state/ballarat-region/crusader/",
         "victoria-state/ballarat-region/design-rv/",
@@ -863,7 +862,6 @@
         "victoria-state/north-west-region/jayco/",
         "victoria-state/north-west-region/snowy-river/",
         "victoria-state/shepparton-region/argonaut/",
-        "victoria-state/shepparton-region/aussie-wide/",
         "victoria-state/shepparton-region/avan/",
         "victoria-state/shepparton-region/bushmaster/",
         "victoria-state/shepparton-region/coromal/",
@@ -893,7 +891,6 @@
         "victoria-state/warrnambool-and-south-west-region/nova/",
         "victoria-state/warrnambool-and-south-west-region/roadstar/",
         "victoria-state/warrnambool-and-south-west-region/snowy-river/",
-        "western-australia-state/bunbury-region/adria/",
         "western-australia-state/bunbury-region/avan/",
         "western-australia-state/bunbury-region/golf/",
         "western-australia-state/mandurah-region/concept/",
@@ -1000,5 +997,5 @@
         "western-australia-state/western-australia-outback-south-region/western/",
         "western-australia-state/western-australia-outback-south-region/windsor/"
     ],
-    "generated_at": "2026-07-14 15:56:56"
+    "generated_at": "2026-07-15 15:45:03"
 }

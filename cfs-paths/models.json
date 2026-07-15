@@ -1,9 +1,8 @@
 {
     "success": true,
     "type": "models",
-    "count": 2729,
+    "count": 2720,
     "paths": [
-        "adria/1200-mini/",
         "adria/action-361-lt/",
         "adria/action-361lt/",
         "adria/adora-492-dt/",
@@ -82,14 +81,6 @@
         "aussie-land-rv/nester/",
         "aussie-land-rv/posh/",
         "aussie-land-rv/rambler/",
-        "aussie-wide/akubra/",
-        "aussie-wide/bunderra/",
-        "aussie-wide/drifter/",
-        "aussie-wide/drover/",
-        "aussie-wide/jackaroo/",
-        "aussie-wide/outback/",
-        "aussie-wide/stockman/",
-        "aussie-wide/waratah/",
         "austrack-campers/talawana-x15/",
         "austrack-campers/talawana-x16bls-family/",
         "austrack-campers/tanami-x13/",
@@ -2733,5 +2724,5 @@
         "zone-rv/sojourn-pioneer/",
         "zone-rv/venture-20-6/"
     ],
-    "generated_at": "2026-07-14 15:56:56"
+    "generated_at": "2026-07-15 15:45:03"
 }
