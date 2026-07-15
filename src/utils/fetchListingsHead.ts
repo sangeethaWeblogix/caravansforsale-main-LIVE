@@ -93,6 +93,33 @@ function cleanPrice(raw: string): string {
   return raw.replace(/[$,]/g, "").trim();
 }
 
+function stripHtml(raw: string): string {
+  return raw
+    .replace(/<\/(h[1-6]|p|div|li|br)\s*>/gi, ". ")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#0?39;|&apos;/gi, "'")
+    .replace(/\s*\.\s*\.\s*/g, ". ") // collapse doubled periods from adjacent block tags
+    .replace(/\s+/g, " ")
+    .replace(/\s+\./g, ".")
+    .trim();
+}
+
+type Faq = { q: string; a: string };
+
+function parseFaq(raw?: string): Faq[] {
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((f): f is Faq => !!f?.q && !!f?.a);
+  } catch {
+    return [];
+  }
+}
+
 function buildProductListItem(item: Item, position: number) {
   const rawPrice = item.sale_price && item.sale_price !== "" ? item.sale_price : item.regular_price;
   const price = cleanPrice(rawPrice ?? "");
@@ -156,6 +183,15 @@ export function buildListingsJsonLd(
     ...(response.data?.emp_exclusive_products || []),
   ];
 const weburl = "https://www.caravansforsale.com.au"
+
+  const footerDescription = response?.seo_v2?.footer_description
+    ? stripHtml(response.seo_v2.footer_description)
+    : "";
+  const pageDescription =
+    footerDescription || response?.seo_v2?.meta_description || "";
+
+  const faqItems = parseFaq(response?.seo_v2?.faq);
+
   const collectionPageLd = {
     "@context": "https://schema.org",
     "@graph": [
@@ -165,16 +201,33 @@ const weburl = "https://www.caravansforsale.com.au"
         name: pageTitle,
         url: pageUrl,
         inLanguage: "en-AU",
+        ...(pageDescription && { description: pageDescription }),
         ...(totalProducts > 0 && { numberOfItems: totalProducts }),
       },
       {
         "@type": "BreadcrumbList",
-        itemListElement: breadcrumbs.map((b) => ({
+        itemListElement: breadcrumbs.map((b, i) => ({
           "@type": "ListItem",
+          position: i + 1,
           name: b.name,
           item: b.url,
         })),
       },
+      ...(faqItems.length > 0
+        ? [
+            {
+              "@type": "FAQPage",
+              mainEntity: faqItems.map((f) => ({
+                "@type": "Question",
+                name: stripHtml(f.q),
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: stripHtml(f.a),
+                },
+              })),
+            },
+          ]
+        : []),
     ],
   };
 

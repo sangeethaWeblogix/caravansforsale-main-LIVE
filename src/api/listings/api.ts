@@ -74,6 +74,10 @@ export interface ApiSEO {
   list_page_metatitle?: string;
   meta_title?: string;
   meta_description?: string;
+  short_description?: string;
+  footer_description?: string;
+  /** JSON-encoded string: `[{ "q": "...", "a": "..." }, ...]` */
+  faq?: string;
   cacheable?: boolean; // NEW: Cache hint for CDN
 }
 
