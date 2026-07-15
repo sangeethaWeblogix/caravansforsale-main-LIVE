@@ -163,3 +163,19 @@ export default async function LocationStateDemoPage({
 }: {
   params: Params;
   searchParams: SearchParams;
+}) {
+  const [{ slug }, query] = await Promise.all([params, searchParams]);
+  const initialFilters = parseDemoFilters(slug ?? [], query);
+  console.log("[listings/[[...slug]]/page.tsx] slug:", slug, "query:", query, "initialFilters:", initialFilters);
+
+  const browseData = await fetchBrowseSectionData(initialFilters);
+
+  // Seed from ?shuffle_seed=N (set by cache generator per variant), else 1.
+  const rawSeed = query["shuffle_seed"];
+  const seed = typeof rawSeed === "string" && /^\d+$/.test(rawSeed) ? parseInt(rawSeed, 10) : 1;
+
+  const canonicalPath = buildListingsSlug(initialFilters);
+  const initialPool = await fetchInitialPool(initialFilters, seed, canonicalPath);
+
+  return <StateHome initialFilters={initialFilters} browseData={browseData} initialPool={initialPool} />;
+}
