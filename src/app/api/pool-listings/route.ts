@@ -11,6 +11,7 @@ async function fetchPoolTest(url: string, signal: AbortSignal) {
     signal,
     headers: {
       Accept: "application/json",
+      "User-Agent": "Mozilla/5.0 (compatible; CFS-SSR/1.0; +https://www.caravansforsale.com.au)",
       ...(API_KEY && { "X-API-Key": API_KEY }),
     },
     cache: "no-store",
