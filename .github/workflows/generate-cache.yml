@@ -34,9 +34,10 @@ on:
           - urls
 
 # Source: src/app/url.csv (3,462 URLs × 7 variants = 24,234 KV uploads)
-# Split across 10 sequential batches of 350 URLs each (max-parallel: 1).
-# Each batch runs after the previous finishes, with a 10-minute cooldown between
-# them to avoid simultaneous Vercel + KV load. Estimated total: ~6–7 hours.
+# Split across 10 batches of 350 URLs each (max-parallel: 4).
+# Up to 4 batches run simultaneously, with a 2-minute stagger between starts
+# to avoid all runners hammering Vercel/KV at the exact same moment.
+# Estimated total: ~1.5 hours (was ~6–8 hours with max-parallel: 1).
 
 jobs:
 
@@ -80,9 +81,8 @@ jobs:
         run: node scripts/generate-priority-pages.js
 
   # ==========================================
-  # ALL LISTING URLS (url.csv) — 10 sequential batches of ~350 URLs each
-  # Batches run one after another (max-parallel: 1) with a 10-min cooldown
-  # between each to prevent simultaneous Vercel/KV load spikes.
+  # ALL LISTING URLS (url.csv) — 10 batches of ~350 URLs, max-parallel: 4
+  # Up to 4 batches run at the same time; 2-min stagger between starts.
   # ==========================================
   generate-urls:
     runs-on: ubuntu-latest
@@ -95,13 +95,13 @@ jobs:
       matrix:
         batch: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
       fail-fast: false
-      max-parallel: 1
+      max-parallel: 4
     steps:
       - name: Cooldown before batch (skip for batch 1)
         if: matrix.batch != 1
         run: |
-          echo "Waiting 10 minutes before starting batch ${{ matrix.batch }}..."
-          sleep 600
+          echo "Waiting 2 minutes before starting batch ${{ matrix.batch }}..."
+          sleep 120
 
       - name: Checkout
         uses: actions/checkout@v4

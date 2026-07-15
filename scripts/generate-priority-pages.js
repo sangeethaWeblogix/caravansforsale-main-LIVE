@@ -207,17 +207,41 @@ async function generatePageVariant(page, variantNumber, browser) {
     await browserPage.setViewport({ width: 1920, height: 1080 });
     
     console.log(`   🌐 Using Puppeteer...`);
-    
+
     const fetchStart = Date.now();
-    await browserPage.goto(url, { 
-      waitUntil: 'networkidle2',  // tolerates up to 2 in-flight requests (avoids timeout from analytics/polling)
-      timeout: 60000              // increased from 45s to 60s
-    });
-    
+
+    // Use 'load' instead of 'networkidle2'.
+    // ?shuffle_seed=N forces a dynamic RSC render on Vercel; analytics/polling scripts
+    // keep the network connection count above 2 indefinitely, causing networkidle2 to
+    // wait the full 60s and then timeout. 'load' fires as soon as the page and its
+    // static resources are ready — the 5s extra wait handles JS-driven rendering.
+    // Retry once on timeout: dynamic RSC renders can be slow on cold Vercel functions.
+    let html;
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        if (attempt > 1) {
+          console.log(`   🔁 Retry attempt ${attempt}...`);
+          await browserPage.goto('about:blank');
+          await new Promise(resolve => setTimeout(resolve, 3000));
+        }
+        await browserPage.goto(url, {
+          waitUntil: 'load',
+          timeout: 60000
+        });
+        break; // success — exit retry loop
+      } catch (err) {
+        if (attempt < 2 && err.message.includes('timeout')) {
+          console.warn(`   ⚠️  Navigation timeout on attempt ${attempt}, retrying...`);
+          continue;
+        }
+        throw err; // non-timeout error or last attempt — propagate
+      }
+    }
+
     // Wait for dynamic content to finish rendering
-    await new Promise(resolve => setTimeout(resolve, 3000)); // increased from 2s to 3s
-    
-    let html = await browserPage.content();
+    await new Promise(resolve => setTimeout(resolve, 5000));
+
+    html = await browserPage.content();
     await browserPage.close();
     
     const fetchDuration = Math.round((Date.now() - fetchStart) / 1000);
