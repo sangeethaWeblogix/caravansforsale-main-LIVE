@@ -530,6 +530,23 @@ export default function BlogDetailsPage({
         </div>
       </section>
 
+      {/* ── Buy or Sell CTA ── */}
+      <section className="bds-cta-section">
+        <div className="bds-cta-card">
+          <h2 className="bds-cta-title">Ready to Buy or Sell a Caravan?</h2>
+          <p className="bds-cta-body">
+            <strong>Looking to buy?</strong> Browse{" "}
+            <a href="/" className="bds-cta-link">caravans for sale</a>{" "}
+            from dealers and private sellers across Australia, with listings available by make, model, price, location and caravan type.
+          </p>
+          <p className="bds-cta-body">
+            <strong>Looking to sell?</strong> If you&apos;re upgrading to a newer caravan or no longer need your current one,{" "}
+            <a href="/sell-my-caravan/" className="bds-cta-link">sell your caravan</a>{" "}
+            by creating a listing on CaravansForSale.com.au. Your advertisement stays online until it&apos;s sold for a one-time fee of $49.
+          </p>
+        </div>
+      </section>
+
       <BlogFeaturedListings products={data?.data?.blog_detail?.category_featured_products ?? []} category={catLabel} />
       <RelatedNews blogs={data?.data?.related_blogs || []} />
       <FaqSection data={data?.data?.faq || []} catLabel={catLabel} catLink={catLink} />

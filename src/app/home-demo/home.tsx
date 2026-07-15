@@ -12,7 +12,7 @@ import HomeBuyerGuide from "./HomeBuyerGuide";
 import HomeListingSlider from "./HomeListingSlider";
 import { useBanners } from "@/components/BannerHandler";
 import { useBannerTracking } from "@/hooks/useBannerTracking";
-import "./main.css?=23";
+import "./main.css?=24";
 
 const BlogSection = dynamic(() => import("../blogSection"), { ssr: false });
 const PostRequirement = dynamic(() => import("../postRequirement"), { ssr: false });

@@ -48,6 +48,32 @@ export default function HomeBuyerGuide() {
         </div>
       </section>
 
+      {/* ── Sell CTA Card ── */}
+      <section className="hbg-sell-section">
+        <div className="container">
+          <div className="hbg-sell-card">
+
+            {/* Icon row */}
+            <div className="hbg-sell-icon-row">
+              <span className="hbg-sell-line" />
+              <div className="hbg-sell-icon-wrap">
+                <Image src="/images/category.svg" alt="" width={24} height={24} style={{ opacity: 0.4 }} />
+              </div>
+              <span className="hbg-sell-line" />
+            </div>
+
+            <h2 className="hbg-sell-title">Looking to Sell Your Caravan?</h2>
+            <p className="hbg-sell-body">
+              If you&apos;re upgrading or no longer need your current caravan,{" "}
+              <a href="/sell-my-caravan/" className="hbg-sell-link">sell your caravan</a>{" "}
+              by creating a listing on CaravansForSale.com.au and connect with active buyers across Australia. Your advertisement stays online until it&apos;s sold for a one-time fee of $49.
+            </p>
+
+
+          </div>
+        </div>
+      </section>
+
       {/* ── Why Australians ── */}
       <section className="hbg-why-section">
         <div className="container">

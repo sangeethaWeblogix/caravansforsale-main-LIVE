@@ -1090,3 +1090,38 @@ input.loc-search-input:focus { box-shadow: 0 0 0 1.5px #7e7e7e !important; }
 }
 .lsd-page .pagination-icons button:hover { background: #fff9f4; }
 .lsd-page .pagination-icons button:disabled { opacity: 0.5; cursor: not-allowed; color: #212529; }
+
+/* ── Listings Sell CTA ── */
+.lsd-sell-cta {
+  padding: 0 15px 48px;
+}
+.lsd-sell-cta__inner {
+    background: #f8f9fa;
+    border: 1px solid #e8e8e8;
+    border-radius: 14px;
+    margin: 0 auto;
+    padding: 30px 30px;
+}
+.lsd-sell-cta__title {
+    color: #000000;
+    margin: 0 0 12px;
+    font-size: 1.4rem;
+    font-weight: 600;
+}
+.lsd-sell-cta__body {
+    color: #000000;
+    margin: 0;
+    font-size: 16px;
+    line-height: 1.75;
+}
+.lsd-sell-cta__link {
+  color: #1153a6;
+  font-weight: 500;
+  text-decoration: none;
+}
+.lsd-sell-cta__link:hover { text-decoration: underline; }
+@media (max-width: 767px) {
+  .lsd-sell-cta { padding: 0 16px 36px; }
+  .lsd-sell-cta__inner { padding: 28px 20px; border-radius: 12px; }
+  .lsd-sell-cta__title { font-size: 1.2rem; }
+}

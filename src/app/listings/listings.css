@@ -1184,3 +1184,40 @@ input[type="number"]::-webkit-outer-spin-button {
     padding: 10px 14px;
   }
 }
+
+/* ── Listings Sell CTA ── */
+.lsd-sell-cta {
+  padding: 0 0 48px;
+}
+.lsd-sell-cta__inner {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 40px 48px;
+  background: #f8f9fa;
+  border: 1px solid #e8e8e8;
+  border-radius: 14px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+}
+.lsd-sell-cta__title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 12px;
+}
+.lsd-sell-cta__body {
+  font-size: 0.97rem;
+  color: #555;
+  line-height: 1.75;
+  margin: 0;
+}
+.lsd-sell-cta__link {
+  color: #e8650a;
+  font-weight: 600;
+  text-decoration: none;
+}
+.lsd-sell-cta__link:hover { text-decoration: underline; }
+@media (max-width: 767px) {
+  .lsd-sell-cta { padding: 0 16px 36px; }
+  .lsd-sell-cta__inner { padding: 28px 20px; border-radius: 12px; }
+  .lsd-sell-cta__title { font-size: 1.2rem; }
+}

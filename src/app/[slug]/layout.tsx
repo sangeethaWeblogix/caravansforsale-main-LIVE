@@ -73,6 +73,12 @@ function safeJsonLdString(json: object) {
   return JSON.stringify(json, null, 2).replace(/</g, "\\u003c");
 }
 
+function safeIso(dateStr?: string) {
+  if (!dateStr) return new Date().toISOString();
+  const d = new Date(dateStr);
+  return isNaN(d.getTime()) ? new Date().toISOString() : d.toISOString();
+}
+
 
 export default async function Layout({
   children,
@@ -129,12 +135,8 @@ export default async function Layout({
       "@type": "Organization",
       name: "Caravans for Sale",
     },
-   datePublished: post.date
-      ? new Date(post.date).toISOString()
-      : new Date().toISOString(),
-    dateModified: post.date
-      ? new Date(post.date).toISOString()
-      : new Date().toISOString(),
+    datePublished: safeIso(post.date),
+    dateModified: safeIso(post.date),
   };
 
   return (

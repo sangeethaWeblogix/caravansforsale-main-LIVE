@@ -10,7 +10,7 @@ import StateListingGrid, { SeoV2, Listing, buildFeaturedOrder } from "./StateLis
 import StateBrowseSection from "./StateBrowseSection";
 import StateContent from "./StateContent";
 import { buildApiUrl, buildListingsSlug, buildFilterBreadcrumbs } from "./urlUtils";
-import "./main.css";
+import "./main.css?=2";
 
 // clickid pagination — same scheme as /listings/: no ?page=N in the URL,
 // instead a random ?clickid= id maps (via localStorage, with a `pN` suffix
@@ -424,6 +424,16 @@ export default function StateHome({ initialFilters }: Props) {
 
         <StateBrowseSection state={filters.state} region={filters.region} category={filters.category} />
         <StateContent footerDescription={seo?.footer_description} faq={seo?.faq} />
+        <div className="lsd-sell-cta">
+          <div className="lsd-sell-cta__inner">
+            <h2 className="lsd-sell-cta__title">Looking to Sell Your Caravan?</h2>
+            <p className="lsd-sell-cta__body">
+              If you&apos;re upgrading or no longer need your current caravan,{" "}
+              <a href="/sell-my-caravan/" className="lsd-sell-cta__link">sell your caravan</a>{" "}
+              by creating a listing on CaravansForSale.com.au and connect with active buyers across Australia. Your advertisement stays online until it&apos;s sold for a one-time fee of $49.
+            </p>
+          </div>
+        </div>
       </div>
     );
   }
@@ -470,6 +480,16 @@ export default function StateHome({ initialFilters }: Props) {
 
       <StateBrowseSection state={filters.state} region={filters.region} category={filters.category} />
       <StateContent footerDescription={seo?.footer_description} faq={seo?.faq} />
+      <div className="lsd-sell-cta">
+        <div className="lsd-sell-cta__inner">
+          <h2 className="lsd-sell-cta__title">Looking to Sell Your Caravan?</h2>
+          <p className="lsd-sell-cta__body">
+            If you&apos;re upgrading or no longer need your current caravan,{" "}
+            <a href="/sell-my-caravan/" className="lsd-sell-cta__link">sell your caravan</a>{" "}
+            by creating a listing on CaravansForSale.com.au and connect with active buyers across Australia. Your advertisement stays online until it&apos;s sold for a one-time fee of $49.
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
