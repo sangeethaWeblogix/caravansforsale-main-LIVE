@@ -6,8 +6,8 @@ import { parseDemoFilters, buildListingsSlug } from "../urlUtils";
 import { metaFromSlug } from "@/utils/seo/meta";
 import { fetchBrowseSectionData } from "../fetchBrowseSectionData";
 import type { FilterState } from "../StateFilterBar";
-import type { SeoV2, Listing } from "../StateListingGrid";
-import { buildFeaturedOrder } from "../StateListingGrid";
+import type { SeoV2, Listing } from "../listingShared";
+import { buildFeaturedOrder } from "../listingShared";
 import "../../globals.css";
 
 export const revalidate = 86400;
