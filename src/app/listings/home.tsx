@@ -416,6 +416,7 @@ export default function StateHome({ initialFilters }: Props) {
             items={pool.featured}
             loading={poolLoading}
             showSpotlight={true}
+            hideViewAll
           />
         )}
 
@@ -461,6 +462,7 @@ export default function StateHome({ initialFilters }: Props) {
         apiUrl={allUrl}
         page={page}
         showSpotlight={true}
+        hideViewAll={!isIndexed}
         onTotalPages={(n) => setMaxPages((prev) => Math.max(prev, n))}
       />
 
