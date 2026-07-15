@@ -10,34 +10,10 @@ import Image from "next/image";
 import { redirect } from "next/navigation"; // ✅ Import notFound
 import Thankyou from './ThankYouClient '
 import { Metadata } from "next";
-const API_KEY = process.env.CFS_API_KEY; // ✅ Add at top of file
+import { fetchBlogDetail } from "./fetchBlogDetail";
 
  type RouteParams = { slug: string };
 type PageProps = { params: Promise<RouteParams> };
-
-async function fetchBlogDetail(slug: string, seed?: number) {
-  try {
-    const seedParam = seed ? `&seed=${seed}` : "";
-    const res = await fetch(
-      `https://admin.caravansforsale.com.au/wp-json/cfs/v1/blog-detail-new/?slug=${encodeURIComponent(slug)}${seedParam}`,
-      {
-        cache: "no-store",
-        headers: {
-          Accept: "application/json",
-          ...(API_KEY && { "X-API-Key": API_KEY }),
-        },
-      }
-    );
-
-    if (!res.ok) return null;
-
-    const raw = await res.text();
-    const idx = raw.indexOf('{"');
-    return JSON.parse(idx >= 0 ? raw.substring(idx) : raw);
-  } catch {
-    return null;
-  }
-}
 
 // ✅ SEO from product.seo (NO images)
 export async function generateMetadata({
