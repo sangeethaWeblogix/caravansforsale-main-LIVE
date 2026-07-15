@@ -41,7 +41,9 @@ export async function GET(request: NextRequest) {
   // the base pagination/ordering params (i.e. the default /listings/ view).
   // Only route through Typesense once a real filter is applied.
   const hasRealFilter = [...searchParams.keys()].some((key) => !BASE_PARAM_KEYS.has(key));
-  const url = `${API_BASE}/pool_test?${params}${hasRealFilter ? `${params ? "&" : ""}engine=typesense` : ""}`;
+  // pool_test_proxy: same callback as pool_test but __return_true permission,
+  // so server-to-server calls from Vercel are never blocked by auth layers.
+  const url = `${API_BASE}/pool_test_proxy?${params}${hasRealFilter ? `${params ? "&" : ""}engine=typesense` : ""}`;
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 30000);
@@ -86,7 +88,7 @@ export async function GET(request: NextRequest) {
       // the user actually requested — no need to force page 1.
       if (!premiumParams.has("per_page")) premiumParams.set("per_page", "1");
 
-      const premiumUrl = `${API_BASE}/pool_test?${premiumParams.toString()}`;
+      const premiumUrl = `${API_BASE}/pool_test_proxy?${premiumParams.toString()}`;
       const premiumController = new AbortController();
       const premiumTimeout = setTimeout(() => premiumController.abort(), 15000);
 

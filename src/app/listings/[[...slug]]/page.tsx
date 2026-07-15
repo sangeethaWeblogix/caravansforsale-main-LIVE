@@ -102,7 +102,10 @@ async function fetchInitialPool(
 
   const BASE_KEYS = new Set(["per_page", "orderby", "seed", "page"]);
   const hasRealFilter = [...params.keys()].some((k) => !BASE_KEYS.has(k));
-  const url = API_BASE + "/pool_test?" + params.toString() + (hasRealFilter ? "&engine=typesense" : "");
+  // pool_test_proxy has __return_true permission (no API key required) — used
+  // for server-to-server SSR calls from Vercel where the auth header may be
+  // stripped by server-level security layers. Same callback as pool_test.
+  const url = API_BASE + "/pool_test_proxy?" + params.toString() + (hasRealFilter ? "&engine=typesense" : "");
 
   try {
     const res = await fetch(url, {
@@ -111,7 +114,7 @@ async function fetchInitialPool(
         "User-Agent": "Mozilla/5.0 (compatible; CFS-SSR/1.0; +https://www.caravansforsale.com.au)",
         ...(API_KEY && { "X-API-Key": API_KEY }),
       },
-      next: { revalidate: 3600 },
+      cache: "no-store",
     });
     if (!res.ok) {
       console.error("[listings/page] fetchInitialPool non-OK:", res.status);
