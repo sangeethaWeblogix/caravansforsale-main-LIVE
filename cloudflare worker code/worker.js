@@ -216,49 +216,35 @@ async function handlePoolApiCache(request, url, env) {
     });
   }
 
-  // ── MISS: call WordPress directly from CF Worker ─────────────────
-  // CF Worker runs on Cloudflare's infrastructure — SiteGround does not
-  // flag Cloudflare IPs the same way it flags Vercel's server IPs.
-  // This bypasses the SiteGround anti-bot that blocks Vercel → WP calls.
-  const WP_BASE = (env.WP_API_BASE || 'https://admin.caravansforsale.com.au/wp-json/cfs/v1');
-  const WP_API_KEY = env.WP_API_KEY;
-
-  // Replicate the engine=typesense logic from route.ts:
-  // only add typesense when a real filter param (beyond base pagination) is present.
-  const BASE_POOL_PARAMS = new Set(['per_page', 'orderby', 'seed', 'page']);
-  const reqParams = new URLSearchParams(url.search);
-  const hasRealFilter = [...reqParams.keys()].some(k => !BASE_POOL_PARAMS.has(k));
-  const paramsStr = url.search; // already includes leading '?'
-  const engineSuffix = hasRealFilter ? (paramsStr ? '&engine=typesense' : '?engine=typesense') : '';
-  const wpUrl = `${WP_BASE}/pool_test${paramsStr}${engineSuffix}`;
-
+  // ── MISS: pass through to Vercel (Next.js route.ts calls WP with X-API-Key) ──
+  // Cloudflare Worker IPs (2a06:98c0::/29) are blocked by SiteGround's sgcaptcha
+  // nginx module when calling WP directly. Vercel's IPs are not in that blocklist.
+  //
+  // Worker subrequests do NOT re-invoke this Worker (Cloudflare's design — subrequests
+  // bypass Worker routes and go directly to origin). So fetchFresh(request) here sends
+  // the request straight to Vercel without any infinite loop.
+  //
+  // Vercel's route.ts sends X-API-Key (via CFS_API_KEY env var) → Cloudflare WAF
+  // fires the "Allow wp-json API calls with key" Skip rule → SiteGround receives the
+  // request with a Vercel IP (not a Worker IP) → sgcaptcha does not trigger → 200 JSON.
   try {
-    const wpResponse = await fetch(wpUrl, {
-      headers: {
-        Accept: 'application/json',
-        ...(WP_API_KEY && { 'X-API-Key': WP_API_KEY }),
-      },
-    });
+    const vercelResponse = await fetchFresh(request);
 
-    const body = await wpResponse.text();
-    const status = wpResponse.status;
+    const responseHeaders = new Headers(vercelResponse.headers);
+    responseHeaders.set('X-Cache', 'MISS');
+    responseHeaders.set('X-CFS-Cache', 'MISS-POOL-VERCEL');
+    responseHeaders.set('X-CFS-Key', cacheKey);
+    responseHeaders.set('Access-Control-Allow-Origin', '*');
 
-    return new Response(body, {
-      status,
-      headers: {
-        'Content-Type': 'application/json;charset=UTF-8',
-        'Cache-Control': 'no-store',
-        'X-Cache': 'MISS',
-        'X-CFS-Cache': 'MISS-POOL-WP-DIRECT',
-        'X-CFS-Key': cacheKey,
-        'Access-Control-Allow-Origin': '*',
-      }
+    return new Response(vercelResponse.body, {
+      status: vercelResponse.status,
+      headers: responseHeaders,
     });
   } catch (fetchErr) {
-    console.error('WordPress direct fetch failed (pool cache miss):', fetchErr.message);
+    console.error('Vercel pass-through failed (pool cache miss):', fetchErr.message);
     return new Response(JSON.stringify({ success: false, error: 'Service unavailable' }), {
       status: 503,
-      headers: { 'Content-Type': 'application/json', 'X-CFS-Cache': 'ERROR-WP-DOWN' }
+      headers: { 'Content-Type': 'application/json', 'X-CFS-Cache': 'ERROR-VERCEL-DOWN' }
     });
   }
 }
