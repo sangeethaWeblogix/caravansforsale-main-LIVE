@@ -158,6 +158,9 @@ const nextConfig: NextConfig = {
       { source: "/sell-my-caravan-region/mandurah-region/", destination: "/sell-my-caravan/western-australia/mandurah/", permanent: true },
       { source: "/sell-my-caravan-region/western-australia-outback-south-region/", destination: "/sell-my-caravan/western-australia/outback-south/", permanent: true },
       { source: "/sell-my-caravan-region/bunbury-region/", destination: "/sell-my-caravan/western-australia/bunbury/", permanent: true },
+
+      // ── Blog URL redirects ────────────────────────────────────────────────
+      { source: "/best-off-road-caravans-in-australia-2026/", destination: "/best-off-road-caravans-australia/", permanent: true },
     ];
   },
   async headers() {
