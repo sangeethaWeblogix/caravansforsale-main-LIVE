@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "makes",
-    "count": 258,
+    "count": 257,
     "paths": [
         "adria/",
         "apache/",
@@ -113,7 +113,6 @@
         "hilltop/",
         "hinterland/",
         "hitch-hika/",
-        "hurricane-rv/",
         "iconic/",
         "ideal-rv/",
         "imperial/",
@@ -262,5 +261,5 @@
         "york/",
         "zone-rv/"
     ],
-    "generated_at": "2026-07-15 15:45:03"
+    "generated_at": "2026-07-16 15:54:03"
 }
