@@ -96,6 +96,13 @@ export default function StateHome({ initialFilters, browseData, initialPool, ini
     totalPages: number;
     isIndexed: boolean;  // is_indexed value from the preload — authoritative source
   } | null>(null);
+  // Set to true synchronously in the mount effect when window.__INITIAL_POOL__
+  // is detected. This lets the /api/indexed-url/ callback (which can fire as a
+  // microtask from browser-cached responses, BEFORE the pool effect macro task
+  // runs and saves the snapshot) suppress setIsIndexed calls that would corrupt
+  // the layout before the preload is even consumed. Cleared when the pool effect
+  // first runs (at which point preloadSnapshotRef takes over as the guard).
+  const preloadReadRef = useRef(false);
   console.log("seoo89", seo)
 
   // ── Top banner ad (impression + click tracking) ──
@@ -207,6 +214,12 @@ export default function StateHome({ initialFilters, browseData, initialPool, ini
       const preload = win.__INITIAL_POOL__ as { is_indexed?: boolean } | undefined;
       if (typeof preload?.is_indexed === "boolean") {
         setIsIndexed(preload.is_indexed);
+        // Raise the sentinel SYNCHRONOUSLY so that any /api/indexed-url/ fetch
+        // callback (even one served from browser cache as a microtask, which
+        // fires before the pool-effect macro task) sees it and skips calling
+        // setIsIndexed. Without this, a cached indexed-url response fires before
+        // preloadSnapshotRef is set, bypasses that guard, and corrupts isIndexed.
+        preloadReadRef.current = true;
       }
     } catch {
       // ignore — isIndexed will be corrected by the async /api/indexed-url/ check
@@ -242,16 +255,16 @@ export default function StateHome({ initialFilters, browseData, initialPool, ini
     fetch(`/api/indexed-url/?path=${encodeURIComponent(canonicalPath)}`)
       .then((r) => (r.ok ? r.json() : null))
       .then((json) => {
-        // If a preload snapshot is active for this URL, the embedded is_indexed
-        // value is authoritative. Applying the async check result would trigger
-        // a pool re-run that overrides the correct preload layout.
-        // Note: snapshot is cleared on filter change, so this only suppresses
-        // the check on the initial page load when preload data was consumed.
-        if (preloadSnapshotRef.current !== null) return;
+        // Suppress if either:
+        //  (a) preloadSnapshotRef is set — snapshot already consumed, authoritative
+        //  (b) preloadReadRef is set — preload detected on mount but pool effect
+        //      macro task hasn't run yet; this covers cached-response microtasks
+        //      that fire before the pool effect saves the snapshot
+        if (preloadSnapshotRef.current !== null || preloadReadRef.current) return;
         setIsIndexed(json?.indexed ?? false);
       })
       .catch(() => {
-        if (preloadSnapshotRef.current !== null) return;
+        if (preloadSnapshotRef.current !== null || preloadReadRef.current) return;
         setIsIndexed(false);
       });
   }, [filters, page]);
@@ -380,7 +393,10 @@ export default function StateHome({ initialFilters, browseData, initialPool, ini
     }
 
     // Filter changed (or no snapshot) — clear the snapshot and do a live fetch.
+    // Also clear preloadReadRef so subsequent /api/indexed-url/ callbacks (for
+    // the new filter context) can update isIndexed normally.
     preloadSnapshotRef.current = null;
+    preloadReadRef.current = false;
 
     let cancelled = false;
     setPoolLoading(true);
