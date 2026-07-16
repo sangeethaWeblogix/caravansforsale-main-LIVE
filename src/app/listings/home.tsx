@@ -183,6 +183,21 @@ export default function StateHome({ initialFilters, browseData, initialPool, ini
       setSeed(Math.floor(Math.random() * SEED_MAX) + 1);
     }
 
+    // For KV-cached pages (no SSR initialPool prop), read is_indexed from the
+    // preload object embedded by the cache generator. Batching setIsIndexed here
+    // with setReady means the pool effect fires once with the correct isIndexed
+    // value, preventing the secondary pool re-fetch that occurs when the async
+    // /api/indexed-url/ check resolves to a different value than the default.
+    try {
+      const win = window as unknown as Record<string, unknown>;
+      const preload = win.__INITIAL_POOL__ as { is_indexed?: boolean } | undefined;
+      if (typeof preload?.is_indexed === "boolean") {
+        setIsIndexed(preload.is_indexed);
+      }
+    } catch {
+      // ignore — isIndexed will be corrected by the async /api/indexed-url/ check
+    }
+
     setReady(true);
   }, []);
 

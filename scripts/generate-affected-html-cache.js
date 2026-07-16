@@ -234,6 +234,26 @@ function buildPoolRequestUrl(urlPath, seed) {
 }
 
 /**
+ * Check whether a /listings/ path is in url.csv's curated indexed set by
+ * calling the Vercel /api/indexed-url/ endpoint. Returns true/false, or null
+ * on any error (caller will omit is_indexed from the preload and let the
+ * client-side async check handle it as before).
+ */
+async function fetchIsIndexed(urlPath) {
+  const fetchUrl = `${VERCEL_BASE_URL}/api/indexed-url/?path=${encodeURIComponent(urlPath)}`;
+  try {
+    const res = await fetchWithTimeout(fetchUrl, {
+      headers: { 'User-Agent': 'CFS-AffectedCacheGenerator/1.0', 'Accept': 'application/json' },
+    }, 10000);
+    if (!res.ok) return null;
+    const json = await res.json();
+    return typeof json?.indexed === 'boolean' ? json.indexed : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Fetch pool-listings JSON for one variant and return the object to embed,
  * or null on any error (HTML will still be cached without pre-loaded data).
  */
@@ -350,6 +370,15 @@ async function uploadToKV(key, value, contentType, metadata) {
 async function generateHtmlVariants(urlPath, slug) {
   const variantKeys = [];
 
+  // Fetch isIndexed once per URL (same for all variants) so home.tsx can
+  // initialise isIndexed state correctly from the preload, avoiding the
+  // secondary pool re-fetch that occurs when the client-side async check
+  // returns a different value than the default (true).
+  const isIndexed = await fetchIsIndexed(urlPath);
+  if (isIndexed !== null) {
+    console.log(`   [isIndexed] ${urlPath} -> ${isIndexed}`);
+  }
+
   for (let v = 1; v <= HTML_VARIANTS; v++) {
     const fetchUrl = `${VERCEL_BASE_URL}${urlPath}?shuffle_seed=${v}`;
     const kvKey    = `${slug}-v${v}`;
@@ -380,6 +409,10 @@ async function generateHtmlVariants(urlPath, slug) {
       // client-side API call. Falls back gracefully if the fetch fails.
       const poolData = await fetchPoolData(urlPath, v);
       if (poolData) {
+        // Embed is_indexed so home.tsx can initialise isIndexed state correctly
+        // on hydration, preventing the secondary pool re-fetch that fires when
+        // the async /api/indexed-url/ check returns a different value.
+        if (isIndexed !== null) poolData.is_indexed = isIndexed;
         const poolJson = JSON.stringify(poolData).replace(/<\/script>/gi, '<\\/script>');
         html = html.replace('</head>', `<script>window.__INITIAL_POOL__ = ${poolJson};</script>\n</head>`);
         console.log(`   [HTML-v${v}] Pool pre-loaded (${(poolData.json?.data?.products ?? poolData.json?.products ?? []).length} products)`);
