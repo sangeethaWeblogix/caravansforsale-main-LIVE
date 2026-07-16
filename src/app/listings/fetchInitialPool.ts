@@ -11,19 +11,39 @@
 
 import { Listing, SeoV2, buildFeaturedOrder } from "./listingShared";
 import type { InitialPool } from "./home";
+import type { FilterState } from "./StateFilterBar";
 
 const CF_ACCOUNT_ID   = process.env.CF_ACCOUNT_ID;
 const CF_NAMESPACE_ID = process.env.CF_KV_NAMESPACE_ID;
 const CF_API_TOKEN    = process.env.CF_API_TOKEN;
 const APP_URL         = process.env.NEXT_PUBLIC_APP_URL || "https://www.caravansforsale.com.au";
 
-/** Build the canonical KV key for pool data — must match worker.js buildPoolCacheKey(). */
-function buildPoolKvKey(filters: { state?: string; region?: string; category?: string; condition?: string }): string {
+/**
+ * Build the canonical KV key for pool data — must match worker.js buildPoolCacheKey().
+ * Only state/region/category/condition are part of the KV key (the worker only caches
+ * these combinations). All other filters (sleeping capacity, ATM, length, make, etc.)
+ * are NOT in the KV key because those pages aren't pre-cached in json:pool: KV.
+ */
+function buildPoolKvKey(filters: FilterState): string {
   const params: Record<string, string> = {};
-  if (filters.state)     params.state     = filters.state;
-  if (filters.region)    params.region    = filters.region;
-  if (filters.category)  params.category  = filters.category;
-  if (filters.condition) params.condition = filters.condition;
+  if (filters.state)     params.state     = String(filters.state);
+  if (filters.region)    params.region    = String(filters.region);
+  if (filters.category)  params.category  = String(filters.category);
+  if (filters.condition) params.condition = String(filters.condition);
+
+  // If there are non-cacheable filters present, skip KV entirely — no point
+  // looking up json:pool:_root for a sleeping-capacity or ATM page.
+  const hasNonCacheable = !!(
+    filters.from_sleep || filters.to_sleep ||
+    filters.minKg || filters.maxKg ||
+    filters.from_length || filters.to_length ||
+    filters.from_price || filters.to_price ||
+    filters.make || filters.model ||
+    filters.suburb || filters.pincode ||
+    filters.acustom_fromyears || filters.acustom_toyears ||
+    filters.keyword
+  );
+  if (hasNonCacheable) return "";   // empty string = skip KV lookup
 
   const sorted = Object.entries(params)
     .sort(([a], [b]) => a.localeCompare(b))
@@ -31,6 +51,34 @@ function buildPoolKvKey(filters: { state?: string; region?: string; category?: s
     .join("&");
 
   return `json:pool:${sorted || "_root"}`;
+}
+
+/** Build the /api/pool-listings/ query string from the full FilterState. */
+function buildApiParams(filters: FilterState): URLSearchParams {
+  const params = new URLSearchParams({ orderby: "default", per_page: "24", page: "1", seed: "1" });
+  if (filters.state)              params.set("state",             String(filters.state));
+  if (filters.region)             params.set("region",            String(filters.region));
+  if (filters.category)           params.set("category",          String(filters.category));
+  if (filters.condition)          params.set("condition",         String(filters.condition));
+  if (filters.make)               params.set("make",              String(filters.make));
+  if (filters.model)              params.set("model",             String(filters.model));
+  if (filters.suburb)             params.set("suburb",            String(filters.suburb));
+  if (filters.pincode)            params.set("pincode",           String(filters.pincode));
+  if (filters.from_price)         params.set("from_price",        String(filters.from_price));
+  if (filters.to_price)           params.set("to_price",          String(filters.to_price));
+  if (filters.minKg)              params.set("from_atm",          String(filters.minKg));
+  if (filters.maxKg)              params.set("to_atm",            String(filters.maxKg));
+  if (filters.from_sleep)         params.set("from_sleep",        String(filters.from_sleep));
+  if (filters.to_sleep)           params.set("to_sleep",          String(filters.to_sleep));
+  if (filters.from_length)        params.set("from_length",       String(filters.from_length));
+  if (filters.to_length)          params.set("to_length",         String(filters.to_length));
+  if (filters.acustom_fromyears)  params.set("acustom_fromyears", String(filters.acustom_fromyears));
+  if (filters.acustom_toyears)    params.set("acustom_toyears",   String(filters.acustom_toyears));
+  if (filters.keyword) {
+    const kw = String(filters.keyword).replace(/\+/g, " ").trim().replace(/\s+/g, " ");
+    if (kw) params.set("search", kw);
+  }
+  return params;
 }
 
 /** Parse a raw pool_test JSON response into the InitialPool shape. */
@@ -90,12 +138,8 @@ async function fetchFromKV(kvKey: string): Promise<any | null> {
 }
 
 /** Live fetch from /api/pool-listings/ — goes via Cloudflare orange-cloud → WP. */
-async function fetchFromApi(filters: { state?: string; region?: string; category?: string; condition?: string }): Promise<any | null> {
-  const params = new URLSearchParams({ orderby: "default", per_page: "24", page: "1", seed: "1" });
-  if (filters.state)     params.set("state",     filters.state);
-  if (filters.region)    params.set("region",    filters.region);
-  if (filters.category)  params.set("category",  filters.category);
-  if (filters.condition) params.set("condition", filters.condition);
+async function fetchFromApi(filters: FilterState): Promise<any | null> {
+  const params = buildApiParams(filters);
   try {
     const res = await fetch(`${APP_URL}/api/pool-listings/?${params.toString()}`, {
       cache: "no-store",
@@ -112,23 +156,28 @@ async function fetchFromApi(filters: { state?: string; region?: string; category
  * Returns null on failure — caller should render without initial pool.
  */
 export async function fetchInitialPool(
-  filters: { state?: string; region?: string; category?: string; condition?: string },
+  filters: FilterState,
   isIndexed = true
 ): Promise<InitialPool | null> {
   const kvKey = buildPoolKvKey(filters);
 
-  // 1. Try KV first (fast, no WP call)
-  const kvJson = await fetchFromKV(kvKey);
-  if (kvJson) {
-    const parsed = parsePoolJson(kvJson, isIndexed);
-    if (parsed) {
-      console.log(`[fetchInitialPool] KV HIT: ${kvKey} (${parsed.featured.length + parsed.new.length + parsed.used.length} products)`);
-      return parsed;
+  // 1. Try KV first — only for state/region/category/condition combinations
+  //    (other filter types aren't pre-cached in json:pool: KV).
+  if (kvKey) {
+    const kvJson = await fetchFromKV(kvKey);
+    if (kvJson) {
+      const parsed = parsePoolJson(kvJson, isIndexed);
+      if (parsed) {
+        console.log(`[fetchInitialPool] KV HIT: ${kvKey} (${parsed.featured.length + parsed.new.length + parsed.used.length} products)`);
+        return parsed;
+      }
     }
+    console.log(`[fetchInitialPool] KV MISS: ${kvKey}`);
+  } else {
+    console.log(`[fetchInitialPool] KV skipped (non-cacheable filters)`);
   }
 
   // 2. Fall back to live API (goes through Cloudflare orange-cloud → WP)
-  console.log(`[fetchInitialPool] KV MISS: ${kvKey} — falling back to API`);
   const apiJson = await fetchFromApi(filters);
   if (apiJson) {
     const parsed = parsePoolJson(apiJson, isIndexed);
@@ -138,6 +187,6 @@ export async function fetchInitialPool(
     }
   }
 
-  console.log(`[fetchInitialPool] both KV and API failed for ${kvKey}`);
+  console.log(`[fetchInitialPool] both KV and API failed for filters: ${JSON.stringify(filters)}`);
   return null;
 }
