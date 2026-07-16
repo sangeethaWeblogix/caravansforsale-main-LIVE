@@ -82,6 +82,19 @@ export default function StateHome({ initialFilters, browseData, initialPool, ini
   // (i.e., the first pool useEffect run has been skipped). After that, normal
   // live fetches run on filter/seed changes.
   const initialPropConsumed = useRef(initialPool == null);
+  // Snapshot of the most-recently-consumed preload data, keyed by poolApiUrl.
+  // Used to re-bucket without a live fetch when only `isIndexed` changes (e.g.
+  // the async /api/indexed-url/ check resolves to a different value than the
+  // preload's is_indexed). Cleared whenever poolApiUrl changes (filter change).
+  const preloadSnapshotRef = useRef<{
+    poolApiUrl: string;
+    products: Listing[];
+    premiumsRaw: Listing[];
+    exclusivesRaw: Listing[];
+    empExclusivesRaw: Listing[];
+    seoData: unknown;
+    totalPages: number;
+  } | null>(null);
   console.log("seoo89", seo)
 
   // ── Top banner ad (impression + click tracking) ──
@@ -299,11 +312,55 @@ export default function StateHome({ initialFilters, browseData, initialPool, ini
         setPool({ featured: combined, new: [], used: [] });
       }
 
-      handleTotalPages((json as any)?.pagination?.total_pages ?? 1);
+      const totalPages = (json as any)?.pagination?.total_pages ?? 1;
+      handleTotalPages(totalPages);
       setPoolLoading(false);
+
+      // Save a snapshot so that if isIndexed changes later (e.g. /api/indexed-url/
+      // returns a different value than the embedded is_indexed), the pool effect
+      // can re-bucket from this data instead of making a live fetch that would
+      // overwrite the correct preload content.
+      preloadSnapshotRef.current = {
+        poolApiUrl,
+        products,
+        premiumsRaw,
+        exclusivesRaw,
+        empExclusivesRaw,
+        seoData: seoData ?? null,
+        totalPages,
+      };
+
       return;  // no async work, no cleanup needed
     }
     // ─────────────────────────────────────────────────────────────────────────
+
+    // If only isIndexed changed (same filter context / poolApiUrl) and we have
+    // a preload snapshot, re-bucket from it instead of making a live request.
+    // This prevents the async /api/indexed-url/ check from overwriting correct
+    // preload data when it disagrees with the embedded is_indexed value.
+    if (preloadSnapshotRef.current && preloadSnapshotRef.current.poolApiUrl === poolApiUrl) {
+      const snap = preloadSnapshotRef.current;
+      if (snap.seoData) setSeo(snap.seoData as Parameters<typeof setSeo>[0]);
+      const { products, premiumsRaw, exclusivesRaw, empExclusivesRaw } = snap;
+      const totalCount = products.length; // snapshot already has the real products
+      if (totalCount === 0 && empExclusivesRaw.length > 0) {
+        setPool({ featured: empExclusivesRaw.map((p) => ({ ...p, is_exclusive: true })), new: [], used: [] });
+      } else if (isIndexed) {
+        const featuredSource = products.filter((p) => p.slot_bucket === "featured");
+        const featuredItems  = buildFeaturedOrder(featuredSource, premiumsRaw, exclusivesRaw);
+        const featuredIds    = new Set(featuredItems.map((p) => p.id));
+        const newItems  = products.filter((p) => p.slot_bucket === "new"  && !p.is_premium && !p.is_exclusive && !featuredIds.has(p.id));
+        const usedItems = products.filter((p) => p.slot_bucket === "used" && !p.is_premium && !p.is_exclusive && !featuredIds.has(p.id));
+        setPool({ featured: featuredItems, new: newItems, used: usedItems });
+      } else {
+        setPool({ featured: buildFeaturedOrder(products, premiumsRaw, exclusivesRaw), new: [], used: [] });
+      }
+      handleTotalPages(snap.totalPages);
+      return;
+    }
+
+    // Filter changed (or no snapshot) — clear the snapshot and do a live fetch.
+    preloadSnapshotRef.current = null;
 
     let cancelled = false;
     setPoolLoading(true);
