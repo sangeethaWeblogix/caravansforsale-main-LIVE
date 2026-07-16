@@ -275,11 +275,14 @@ input.loc-search-input:focus {
     border-bottom: 1px solid #f0f0f0;
     align-items: center;
     gap: 12px;
-    padding: 12px 4px;
+    padding: 11px 8px;
     transition: background .1s;
     display: flex;
+    min-height: 48px;
 }
 .loc-state-item:last-child { border-bottom: none; }
+.loc-state-item:hover { background: #fafafa; }
+.loc-state-item.selected { background: #fff9f4; }
 
 .search-bar button.loc-arrow-btn {
     background: transparent;
@@ -321,23 +324,25 @@ input.loc-search-input:focus {
 }
 
 .loc-arrow-btn {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
-  background: #1a73e8;
-  border: none;
+  background: transparent;
+  border: 1.5px solid #ddd;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: background 0.15s;
+  transition: border-color 0.15s, color 0.15s;
   padding: 0;
+  color: #555;
 }
-.loc-arrow-btn:hover { background: #1558b0; }
+.loc-arrow-btn:hover { border-color: #ec7200; color: #ec7200; }
 .loc-arrow-btn svg { display: block; }
 
-.search-bar button.loc-region-pill {
+.search-bar button.loc-region-pill,
+.loc-region-pill {
   background: #ec7200;
   color: #fff;
   border: none;
@@ -348,6 +353,10 @@ input.loc-search-input:focus {
   cursor: pointer;
   white-space: nowrap;
   flex-shrink: 0;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 .loc-region-pill:hover { background: #cf6503; }
 

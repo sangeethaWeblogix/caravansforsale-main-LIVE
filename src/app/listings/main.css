@@ -202,7 +202,7 @@ button.chip-clear-all:hover { color: #d46b1a; }
 .filter-item.condition-field ul { display: flex; gap: 35px; align-items: center; }
 .filter-item.condition-field .loc-state-item { border-bottom: none; padding: 6px 0; }
 .filter-item ul { list-style: none; padding: 0; margin: 0; }
-.filter-item ul li { padding-bottom: 12px; }
+.filter-item ul li { padding-bottom: 0px; }
 .condition-field.filter-item ul li { border-bottom: none; }
 .filter-item ul li:last-child { padding-bottom: 0; }
 .cfs-select-input.form-select:disabled { opacity: 0.3; background-color: #f1f1f1; }
@@ -238,7 +238,7 @@ button.chip-clear-all:hover { color: #d46b1a; }
 
 /* Loc modal styles */
 .loc-state-list { list-style: none; padding: 0; margin: 0; }
-.loc-state-item { cursor: pointer; border-bottom: 1px solid #f0f0f0; align-items: center; gap: 12px; padding: 12px 4px; transition: background .1s; display: flex; }
+.loc-state-item { cursor: pointer; border-bottom: 1px solid #f0f0f0; align-items: center; gap: 12px; padding: 0px 4px; transition: background .1s; display: flex; }
 .loc-state-item:last-child { border-bottom: none; }
 .loc-state-name { flex: 1; font-size: 16px; font-weight: 500; color: #222; }
 .loc-checkbox { width: 22px; height: 22px; border: 2px solid #ccc; border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: border-color 0.15s, background 0.15s; background: #fff; }
@@ -1124,4 +1124,29 @@ input.loc-search-input:focus { box-shadow: 0 0 0 1.5px #7e7e7e !important; }
   .lsd-sell-cta { padding: 0 16px 36px; }
   .lsd-sell-cta__inner { padding: 28px 20px; border-radius: 12px; }
   .lsd-sell-cta__title { font-size: 1.2rem; }
+}
+
+/* ── Promo banner cards (empty grid slot filler) ── */
+.lsd-promo-spacer { visibility: hidden; pointer-events: none; }
+.lsd-promo-card {
+    border-radius: 12px;
+    text-decoration: none;
+    transition: transform .18s, box-shadow .18s;
+    display: block;
+    overflow: hidden;
+    border: 1.5px solid #e8ecf0;
+    position: relative;
+}
+.lsd-promo-card:hover {
+  /* transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12); */
+}
+.lsd-promo-card__img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  display: block;
 }

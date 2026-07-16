@@ -189,54 +189,43 @@ const loading = !data || !blogPosts || blogPosts.length === 0 && data.totalPages
 
               {/* Pagination */}
               {!loading && totalPages > 1 && (
-                <nav
-                  className="pagination style-5 color-4 justify-content-center mt-20 d-flex align-items-center gap-2 flex-wrap"
-                  aria-label="Blog pagination"
-                >
-                  {/* Prev */}
+                <nav className="blg-pagination" aria-label="Blog pagination">
                   {currentPage > 1 ? (
-                    <Link
-                      href={prevUrl}
-                      className="prev page-numbers px-3 py-1 border rounded"
-                    >
-                      « prev
+                    <Link href={prevUrl} className="blg-pagination__arrow" aria-label="Previous page">
+                      <i className="bi bi-chevron-left" />
                     </Link>
                   ) : (
-                    <span className="prev page-numbers px-3 py-1 border rounded disabled opacity-50">
-                      « prev
+                    <span className="blg-pagination__arrow blg-pagination__arrow--disabled" aria-label="Previous page">
+                      <i className="bi bi-chevron-left" />
                     </span>
                   )}
 
-                  {/* Numbered */}
-                  {pages.map((p, i) =>
-                    p === "…" ? (
-                      <span key={`ellipsis-${i}`} className="px-2">
-                        …
-                      </span>
-                    ) : (
-                      <Link
-                        key={`page-${p}`}
-                        href={p === 1 ? "/blog/" : `/blog/page/${p}/`}
-                        aria-current={p === currentPage ? "page" : undefined}
-                        className={`page-numbers px-3 py-1 border rounded ${p === currentPage ? "current fw-bold" : ""
-                          }`}
-                      >
-                        {p}
-                      </Link>
-                    )
-                  )}
+                  <div className="blg-pagination__pages">
+                    {pages.map((p, i) =>
+                      p === "…" ? (
+                        <span key={`ellipsis-${i}`} className="blg-pagination__ellipsis">
+                          …
+                        </span>
+                      ) : (
+                        <Link
+                          key={`page-${p}`}
+                          href={p === 1 ? "/blog/" : `/blog/page/${p}/`}
+                          aria-current={p === currentPage ? "page" : undefined}
+                          className={`blg-pagination__num${p === currentPage ? " blg-pagination__num--active" : ""}`}
+                        >
+                          {p}
+                        </Link>
+                      )
+                    )}
+                  </div>
 
-                  {/* Next */}
                   {currentPage < totalPages ? (
-                    <Link
-                      href={nextUrl}
-                      className="next page-numbers px-3 py-1 border rounded"
-                    >
-                      next »
+                    <Link href={nextUrl} className="blg-pagination__arrow" aria-label="Next page">
+                      <i className="bi bi-chevron-right" />
                     </Link>
                   ) : (
-                    <span className="next page-numbers px-3 py-1 border rounded disabled opacity-50">
-                      next »
+                    <span className="blg-pagination__arrow blg-pagination__arrow--disabled" aria-label="Next page">
+                      <i className="bi bi-chevron-right" />
                     </span>
                   )}
                 </nav>

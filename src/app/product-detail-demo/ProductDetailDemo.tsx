@@ -645,34 +645,26 @@ const priceUpperIdx = !isPOA ? PRICE_STEPS.findIndex(s => s >= displayPrice) : -
           </aside>
         </div>
 
-        {/* ── Full-width banner ── */}
-        <div className="pdd-banner">
-          <div className="pdd-banner__text">
-            <p className="pdd-banner__sub">DEDICATED TO REVOLUTIONISING</p>
-            <p className="pdd-banner__main">YOUR CARAVAN BUYING EXPERIENCE</p>
-            <div className="pdd-banner__features">
-              <span>
-                <span className="pdd-banner__icon-circle">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="2" width="20" height="14" rx="2.5"/><rect x="3" y="5" width="5" height="4" rx="1"/><rect x="14" y="5" width="5" height="8" rx="1"/><circle cx="7" cy="18" r="3"/><line x1="20" y1="14" x2="20" y2="21"/><line x1="18" y1="21" x2="22" y2="21"/></svg>
-                </span>
-                Australia&apos;s largest range
-              </span>
-              <span>
-                <span className="pdd-banner__icon-circle">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                </span>
-                Trusted dealers
-              </span>
-              <span>
-                <span className="pdd-banner__icon-circle">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-                </span>
-                Safe &amp; secure platform
-              </span>
+        {/* ── Sell CTA ── */}
+        <section className="hbg-sell-section">
+          
+            <div className="hbg-sell-card">
+              <div className="hbg-sell-icon-row">
+                <span className="hbg-sell-line" />
+                <div className="hbg-sell-icon-wrap">
+                  <Image src="/images/category.svg" alt="" width={24} height={24} style={{ opacity: 0.4 }} />
+                </div>
+                <span className="hbg-sell-line" />
+              </div>
+              <h2 className="hbg-sell-title">Looking for More Caravans?</h2>
+              <p className="hbg-sell-body">
+                This caravan is just one of thousands of listings available on Australia&apos;s caravan marketplace. Browse our complete range of{" "}
+                <a href="/" className="hbg-sell-link">caravans for sale</a>{" "}
+                across Australia, including new caravans, used caravans, off-road caravans, hybrid caravans and family caravans from trusted dealers and private sellers.
+              </p>
             </div>
-          </div>
-          <a href="/" className="pdd-banner__cta">FIND DEALS NOW</a>
-        </div>
+          
+        </section>
 
         {/* ── Similar Caravans ── */}
         {makeSimilar.length > 0 && (
@@ -833,7 +825,34 @@ const priceUpperIdx = !isPOA ? PRICE_STEPS.findIndex(s => s >= displayPrice) : -
           )}
         </div>
 
-       
+        {/* ── Full-width banner ── */}
+        <div className="pdd-banner">
+          <div className="pdd-banner__text">
+            <p className="pdd-banner__sub">DEDICATED TO REVOLUTIONISING</p>
+            <p className="pdd-banner__main">YOUR CARAVAN BUYING EXPERIENCE</p>
+            <div className="pdd-banner__features">
+              <span>
+                <span className="pdd-banner__icon-circle">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="2" width="20" height="14" rx="2.5"/><rect x="3" y="5" width="5" height="4" rx="1"/><rect x="14" y="5" width="5" height="8" rx="1"/><circle cx="7" cy="18" r="3"/><line x1="20" y1="14" x2="20" y2="21"/><line x1="18" y1="21" x2="22" y2="21"/></svg>
+                </span>
+                Australia&apos;s largest range
+              </span>
+              <span>
+                <span className="pdd-banner__icon-circle">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                </span>
+                Trusted dealers
+              </span>
+              <span>
+                <span className="pdd-banner__icon-circle">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+                </span>
+                Safe &amp; secure platform
+              </span>
+            </div>
+          </div>
+          <a href="/" className="pdd-banner__cta">FIND DEALS NOW</a>
+        </div>
 
       </div>
     </div>
