@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "cat-region",
-    "count": 258,
+    "count": 261,
     "paths": [
         "family-category/australian-capital-territory-state/australian-capital-territory-region/",
         "family-category/new-south-wales-state/capital-region/",
@@ -10,6 +10,7 @@
         "family-category/new-south-wales-state/coffs-harbour-region/",
         "family-category/new-south-wales-state/hunter-region/",
         "family-category/new-south-wales-state/mid-north-coast-region/",
+        "family-category/new-south-wales-state/murray-region/",
         "family-category/new-south-wales-state/new-england-region/",
         "family-category/new-south-wales-state/newcastle-region/",
         "family-category/new-south-wales-state/richmond-tweed-region/",
@@ -56,6 +57,7 @@
         "hybrid-category/new-south-wales-state/new-england-region/",
         "hybrid-category/new-south-wales-state/newcastle-region/",
         "hybrid-category/new-south-wales-state/richmond-tweed-region/",
+        "hybrid-category/new-south-wales-state/riverina-region/",
         "hybrid-category/new-south-wales-state/southern-highlands-region/",
         "hybrid-category/new-south-wales-state/sydney-region/",
         "hybrid-category/queensland-state/brisbane-region/",
@@ -183,6 +185,7 @@
         "pop-top-category/new-south-wales-state/new-england-region/",
         "pop-top-category/new-south-wales-state/newcastle-region/",
         "pop-top-category/new-south-wales-state/richmond-tweed-region/",
+        "pop-top-category/new-south-wales-state/riverina-region/",
         "pop-top-category/new-south-wales-state/southern-highlands-region/",
         "pop-top-category/new-south-wales-state/sydney-region/",
         "pop-top-category/northern-territory-state/darwin-region/",
@@ -262,5 +265,5 @@
         "touring-category/western-australia-state/perth-region/",
         "touring-category/western-australia-state/western-australia-outback-south-region/"
     ],
-    "generated_at": "2026-07-15 15:45:04"
+    "generated_at": "2026-07-16 15:54:03"
 }
