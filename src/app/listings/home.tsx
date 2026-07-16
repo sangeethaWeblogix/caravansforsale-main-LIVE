@@ -334,7 +334,12 @@ export default function StateHome({ initialFilters, browseData, initialPool, ini
 
         handleTotalPages(json?.pagination?.total_pages ?? 1);
       })
-      .catch((err) => { console.warn('[StateHome] pool fetch failed, retaining existing data:', (err as any)?.message); })
+      .catch((err) => {
+        console.warn('[StateHome] pool fetch failed, retaining existing data:', (err as any)?.message);
+        // setSeo(null) was called at the top of this effect — restore from initialPool
+        // so the H1/description don't vanish when the live re-fetch fails.
+        if (!cancelled && initialPool?.seo) setSeo(initialPool.seo);
+      })
       .finally(() => { if (!cancelled) setPoolLoading(false); });
 
     return () => { cancelled = true; };
