@@ -4,22 +4,11 @@ import { NextRequest, NextResponse } from "next/server";
 const API_BASE = process.env.NEXT_PUBLIC_CFS_API_BASE;
 const API_KEY = process.env.CFS_API_KEY;
 
-// engine=typesense is only appended when a "real filter" (beyond these base keys)
-// is present. Typesense handles text/keyword search (make, model, search) but does
-// NOT support range filters (sleep, atm, length, price, year) or location filters
-// (state, region, suburb, pincode) — those return products:[] from typesense.
-// Keep all non-text filters in this set so typesense is only triggered for
-// make/model/search queries.
+// engine=typesense is appended whenever any filter beyond pagination is present.
+// If typesense returns products:[] (empty), we automatically fall back to the
+// WP native engine (same request without engine=typesense).
 const BASE_PARAM_KEYS = new Set([
   "per_page", "orderby", "seed", "page",
-  // Structured/range filters — WP native engine handles these correctly:
-  "state", "category", "region", "condition",
-  "from_sleep", "to_sleep",
-  "from_atm", "to_atm",
-  "from_length", "to_length",
-  "from_price", "to_price",
-  "acustom_fromyears", "acustom_toyears",
-  "suburb", "pincode",
 ]);
 
 async function fetchPoolTest(url: string, signal: AbortSignal) {
@@ -59,7 +48,32 @@ export async function GET(request: NextRequest) {
   const t0 = Date.now();
 
   try {
-    const { res, data, raw } = await fetchPoolTest(url, controller.signal);
+    let { res, data, raw } = await fetchPoolTest(url, controller.signal);
+
+    // Fallback: if typesense returned empty products, retry without engine=typesense
+    if (
+      hasRealFilter &&
+      res.ok &&
+      data &&
+      (data?.products?.length === 0 || data?.data?.products?.length === 0)
+    ) {
+      const fallbackUrl = `${API_BASE}/pool_test?${params}`;
+      console.log(`[WP API pool_test] typesense empty, falling back to WP engine | ${params.substring(0, 80)}`);
+      const controller2 = new AbortController();
+      const timeout2 = setTimeout(() => controller2.abort(), 30000);
+      try {
+        const fallback = await fetchPoolTest(fallbackUrl, controller2.signal);
+        clearTimeout(timeout2);
+        if (fallback.res.ok && fallback.data) {
+          res = fallback.res;
+          data = fallback.data;
+          raw = fallback.raw;
+        }
+      } catch (fbErr: any) {
+        clearTimeout(timeout2);
+        console.log("[WP API pool_test] fallback fetch error:", fbErr?.message);
+      }
+    }
 
     clearTimeout(timeoutId);
     console.log(`[WP API pool_test] ${Date.now() - t0}ms | ${params.substring(0, 80)}`);
@@ -87,6 +101,10 @@ export async function GET(request: NextRequest) {
       const premiumParams = new URLSearchParams();
       searchParams.forEach((value, key) => {
         if (BASE_PARAM_KEYS.has(key)) premiumParams.set(key, value);
+      });
+      // Pass make/model so exclusive_products are scoped to the current page context
+      ["make", "model"].forEach((key) => {
+        if (searchParams.has(key)) premiumParams.set(key, searchParams.get(key)!);
       });
       if (!premiumParams.has("per_page")) premiumParams.set("per_page", "1");
 
