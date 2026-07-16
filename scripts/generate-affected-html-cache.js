@@ -415,7 +415,10 @@ async function generateHtmlVariants(urlPath, slug) {
         if (isIndexed !== null) poolData.is_indexed = isIndexed;
         const poolJson = JSON.stringify(poolData).replace(/<\/script>/gi, '<\\/script>');
         html = html.replace('</head>', `<script>window.__INITIAL_POOL__ = ${poolJson};</script>\n</head>`);
-        console.log(`   [HTML-v${v}] Pool pre-loaded (${(poolData.json?.data?.products ?? poolData.json?.products ?? []).length} products)`);
+        const _regularCount   = (poolData.json?.data?.products ?? poolData.json?.products ?? []).length;
+        const _exclusiveCount = (poolData.json?.data?.exclusive_products ?? poolData.json?.exclusive_products ?? []).length;
+        const _premiumCount   = (poolData.json?.data?.premium_products ?? poolData.json?.premium_products ?? []).length;
+        console.log(`   [HTML-v${v}] Pool pre-loaded (${_regularCount} regular + ${_exclusiveCount} exclusive + ${_premiumCount} premium = ${_regularCount + _exclusiveCount + _premiumCount} total products)`);
       } else {
         console.log(`   [HTML-v${v}] Pool pre-load skipped (no data)`);
       }

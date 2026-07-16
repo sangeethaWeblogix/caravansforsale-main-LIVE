@@ -258,52 +258,59 @@ export default function StateHome({ initialFilters, browseData, initialPool, ini
     // filtering finds nothing, since this endpoint never sends slot_bucket).
     // `cancelled` lets a newer run of this effect discard an in-flight older
     // one's result instead of letting it win the race.
-    let cancelled = false;
-    setPoolLoading(true);
-    // Clear the previous filter's seo_v2 up front — otherwise a failed/slow
-    // fetch for the new filter combo leaves the old state's title/description
-    // on screen (e.g. Victoria's copy lingering after switching to NSW).
-    setSeo(null);
     const requestUrl = `${poolApiUrl}&page=${page}`;
     const absoluteUrl = new URL(requestUrl, window.location.origin).toString();
 
     // ── Pre-loaded pool data (injected by cache generator into HTML) ──────────
+    // Check preload FIRST — before setSeo(null) — so we never produce an
+    // intermediate render with seo=null when data is already in memory.
+    // Processing synchronously means React batches all setState calls into a
+    // single render: seo, pool, and poolLoading all update together, so the
+    // "Featured Caravans…" heading is present from the very first client paint.
     const win = window as unknown as Record<string, unknown>;
     const preload = win.__INITIAL_POOL__ as { url: string; json: unknown } | undefined;
     if (preload && !initialPoolConsumed.current && preload.url === requestUrl) {
       initialPoolConsumed.current = true;
       win.__INITIAL_POOL__ = undefined;
       console.log("[StateHome] using pre-loaded pool data:", requestUrl);
-      Promise.resolve(preload.json as Record<string, unknown>)
-        .then((json) => {
-          if (cancelled) return;
-          const seoData = (json as any)?.data?.seo_v2 ?? (json as any)?.seo_v2;
-          if (seoData) setSeo(seoData);
-          const products: Listing[]        = (json as any)?.data?.products ?? (json as any)?.products ?? [];
-          const premiumsRaw: Listing[]     = (json as any)?.data?.premium_products ?? (json as any)?.premium_products ?? [];
-          const exclusivesRaw: Listing[]   = (json as any)?.data?.exclusive_products ?? (json as any)?.exclusive_products ?? [];
-          const empExclusivesRaw: Listing[]= (json as any)?.data?.emp_exclusive_products ?? (json as any)?.emp_exclusive_products ?? [];
-          const totalCount: number         = (json as any)?.data?.counts?.total_count ?? (json as any)?.counts?.total_count ?? products.length;
-          if (totalCount === 0 && empExclusivesRaw.length > 0) {
-            const empItems = empExclusivesRaw.map((p) => ({ ...p, is_exclusive: true }));
-            setPool({ featured: empItems, new: [], used: [] });
-          } else if (isIndexed) {
-            const featuredSource = products.filter((p) => p.slot_bucket === "featured");
-            const featuredItems  = buildFeaturedOrder(featuredSource, premiumsRaw, exclusivesRaw);
-            const featuredIds    = new Set(featuredItems.map((p) => p.id));
-            const newItems  = products.filter((p) => p.slot_bucket === "new"  && !p.is_premium && !p.is_exclusive && !featuredIds.has(p.id));
-            const usedItems = products.filter((p) => p.slot_bucket === "used" && !p.is_premium && !p.is_exclusive && !featuredIds.has(p.id));
-            setPool({ featured: featuredItems, new: newItems, used: usedItems });
-          } else {
-            const combined = buildFeaturedOrder(products, premiumsRaw, exclusivesRaw);
-            setPool({ featured: combined, new: [], used: [] });
-          }
-          handleTotalPages((json as any)?.pagination?.total_pages ?? 1);
-        })
-        .finally(() => { if (!cancelled) setPoolLoading(false); });
-      return () => { cancelled = true; };
+
+      const json = preload.json as Record<string, unknown>;
+      const seoData = (json as any)?.data?.seo_v2 ?? (json as any)?.seo_v2;
+      if (seoData) setSeo(seoData);
+
+      const products: Listing[]        = (json as any)?.data?.products ?? (json as any)?.products ?? [];
+      const premiumsRaw: Listing[]     = (json as any)?.data?.premium_products ?? (json as any)?.premium_products ?? [];
+      const exclusivesRaw: Listing[]   = (json as any)?.data?.exclusive_products ?? (json as any)?.exclusive_products ?? [];
+      const empExclusivesRaw: Listing[]= (json as any)?.data?.emp_exclusive_products ?? (json as any)?.emp_exclusive_products ?? [];
+      const totalCount: number         = (json as any)?.data?.counts?.total_count ?? (json as any)?.counts?.total_count ?? products.length;
+
+      if (totalCount === 0 && empExclusivesRaw.length > 0) {
+        const empItems = empExclusivesRaw.map((p) => ({ ...p, is_exclusive: true }));
+        setPool({ featured: empItems, new: [], used: [] });
+      } else if (isIndexed) {
+        const featuredSource = products.filter((p) => p.slot_bucket === "featured");
+        const featuredItems  = buildFeaturedOrder(featuredSource, premiumsRaw, exclusivesRaw);
+        const featuredIds    = new Set(featuredItems.map((p) => p.id));
+        const newItems  = products.filter((p) => p.slot_bucket === "new"  && !p.is_premium && !p.is_exclusive && !featuredIds.has(p.id));
+        const usedItems = products.filter((p) => p.slot_bucket === "used" && !p.is_premium && !p.is_exclusive && !featuredIds.has(p.id));
+        setPool({ featured: featuredItems, new: newItems, used: usedItems });
+      } else {
+        const combined = buildFeaturedOrder(products, premiumsRaw, exclusivesRaw);
+        setPool({ featured: combined, new: [], used: [] });
+      }
+
+      handleTotalPages((json as any)?.pagination?.total_pages ?? 1);
+      setPoolLoading(false);
+      return;  // no async work, no cleanup needed
     }
     // ─────────────────────────────────────────────────────────────────────────
+
+    let cancelled = false;
+    setPoolLoading(true);
+    // Clear the previous filter's seo_v2 up front — otherwise a failed/slow
+    // fetch for the new filter combo leaves the old state's title/description
+    // on screen (e.g. Victoria's copy lingering after switching to NSW).
+    setSeo(null);
 
     console.log("[StateHome] shared pool API:", absoluteUrl);
     fetch(requestUrl, { cache: "no-store" })
