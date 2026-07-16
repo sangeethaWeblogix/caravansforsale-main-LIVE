@@ -216,7 +216,8 @@ function ListingCard({
 
   const price    = formatPrice(item.sale_price || item.regular_price);
   const isNew    = item.condition?.toLowerCase() === "new";
-  const type     = item.categories?.[0] ?? "";
+  const type     = toTitleCase((item.categories?.[0] ?? "").replace(/-/g, " "));
+  const sellerType = toTitleCase(item.seller_type ?? "");
   const lenFmt   = formatLength(item.length);
   const isDealer = item.seller_type !== "private";
 
@@ -402,7 +403,7 @@ function ListingCard({
               <circle cx="12" cy="12" r="10"/><line x1="12" y1="11" x2="12" y2="17"/><circle cx="12" cy="7.5" r="0.5" fill="#888" stroke="none"/>
             </svg>
             
-            {item.seller_type}
+            {sellerType}
           </span>
         </div>
 

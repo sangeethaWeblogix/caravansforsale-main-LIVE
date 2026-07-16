@@ -62,8 +62,10 @@ export default async function LocationStateDemoPage({
   const canonicalPath = buildListingsSlug(initialFilters);
   const isIndexed = isPathIndexed(canonicalPath);
 
+  console.log(">>> PAGE.TSX isIndexed=", isIndexed, "canonicalPath=", canonicalPath);
+
   const [browseData, initialPool] = await Promise.all([
-    fetchBrowseSectionData(initialFilters),
+    fetchBrowseSectionData(initialFilters, isIndexed),
     fetchInitialPool(initialFilters, isIndexed),
   ]);
 

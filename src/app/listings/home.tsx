@@ -54,6 +54,7 @@ interface Props {
 }
 
 export default function StateHome({ initialFilters, browseData, initialPool, initialSeo }: Props) {
+  console.log("[StateHome] browseData=", JSON.stringify(browseData), "isIndexed=", initialPool?.isIndexed);
   const [filters,  setFilters]  = useState<FilterState>(initialFilters);
   const [page,     setPage]     = useState(1);
   const [maxPages, setMaxPages] = useState(initialPool?.maxPages ?? 1);
@@ -630,12 +631,14 @@ export default function StateHome({ initialFilters, browseData, initialPool, ini
                 viewAllHref={buildListingsSlug(filters, "New")}
                 items={ip.new}
                 loading={false}
+                hideViewAll={page > 1}
               />
               <StateListingGrid
                 title=""
                 viewAllHref={buildListingsSlug(filters, "Used")}
                 items={ip.used}
                 loading={false}
+                hideViewAll={page > 1}
               />
             </>
           ) : (
@@ -649,7 +652,7 @@ export default function StateHome({ initialFilters, browseData, initialPool, ini
               hideViewAll
             />
           )}
-          <StateBrowseSection state={filters.state} region={filters.region} category={filters.category} />
+          <StateBrowseSection state={filters.state} region={filters.region} category={filters.category} initialData={browseData} />
           <StateContent footerDescription={ip.seo?.footer_description} faq={ip.seo?.faq} />
           <div className="lsd-sell-cta">
             <div className="lsd-sell-cta__inner">
@@ -686,7 +689,7 @@ export default function StateHome({ initialFilters, browseData, initialPool, ini
           showSpotlight={true}
           hideViewAll
         />
-        <StateBrowseSection state={filters.state} region={filters.region} category={filters.category} />
+        <StateBrowseSection state={filters.state} region={filters.region} category={filters.category} initialData={browseData} />
         <StateContent footerDescription={initialSeo.footer_description} faq={initialSeo.faq} />
         <div className="lsd-sell-cta">
           <div className="lsd-sell-cta__inner">
@@ -830,13 +833,13 @@ export default function StateHome({ initialFilters, browseData, initialPool, ini
         apiUrl={allUrl}
         page={page}
         showSpotlight={true}
-        hideViewAll={!isIndexed}
+        hideViewAll
         onTotalPages={(n) => setMaxPages((prev) => Math.max(prev, n))}
       />
 
       {maxPages > 1 && pagination}
 
-      <StateBrowseSection state={filters.state} region={filters.region} category={filters.category} />
+      <StateBrowseSection state={filters.state} region={filters.region} category={filters.category} initialData={browseData} />
       <StateContent footerDescription={seo?.footer_description} faq={seo?.faq} />
       <div className="lsd-sell-cta">
         <div className="lsd-sell-cta__inner">
