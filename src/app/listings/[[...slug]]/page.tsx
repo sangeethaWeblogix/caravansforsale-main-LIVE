@@ -3,6 +3,7 @@ import StateHome from "../home";
 import { parseDemoFilters } from "../urlUtils";
 import { metaFromSlug } from "@/utils/seo/meta";
 import { fetchBrowseSectionData } from "../fetchBrowseSectionData";
+import { fetchInitialPool } from "../fetchInitialPool";
 import "../../globals.css";
 
 export const revalidate = 86400;
@@ -34,7 +35,10 @@ export default async function LocationStateDemoPage({
   const initialFilters = parseDemoFilters(slug ?? [], query);
   console.log("[listings/[[...slug]]/page.tsx] slug:", slug, "query:", query, "initialFilters:", initialFilters);
 
-  const browseData = await fetchBrowseSectionData(initialFilters);
+  const [browseData, initialPool] = await Promise.all([
+    fetchBrowseSectionData(initialFilters),
+    fetchInitialPool(initialFilters),
+  ]);
 
-  return <StateHome initialFilters={initialFilters} browseData={browseData} />;
+  return <StateHome initialFilters={initialFilters} browseData={browseData} initialPool={initialPool} />;
 }

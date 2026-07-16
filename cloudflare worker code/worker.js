@@ -23,7 +23,7 @@
  * - Routes-mapping values are ALWAYS arrays: ["{slug}-v1", ..., "{slug}-v5"]
  */
 
-const VARIANT_COUNT = 5; // Must match generation scripts
+const VARIANT_COUNT = 7; // Must match generation scripts (HTML_VARIANTS in generate-affected-html-cache.js)
 const IMAGE_CACHE_TTL = 2592000; // 30 days
 // HTML_CACHE_TTL intentionally removed — KV HTML must NOT be cached by browser or CDN.
 // Caching the HTML response would lock users into the same variant for the cache duration,
@@ -216,33 +216,51 @@ async function handlePoolApiCache(request, url, env) {
     });
   }
 
-  // ── MISS: live-proxy to origin; warmer will populate KV later ─────
-  let originResponse;
+  // ── MISS: call WordPress directly from CF Worker ─────────────────
+  // CF Worker runs on Cloudflare's infrastructure — SiteGround does not
+  // flag Cloudflare IPs the same way it flags Vercel's server IPs.
+  // This bypasses the SiteGround anti-bot that blocks Vercel → WP calls.
+  const WP_BASE = (env.WP_API_BASE || 'https://admin.caravansforsale.com.au/wp-json/cfs/v1');
+  const WP_API_KEY = env.WP_API_KEY;
+
+  // Replicate the engine=typesense logic from route.ts:
+  // only add typesense when a real filter param (beyond base pagination) is present.
+  const BASE_POOL_PARAMS = new Set(['per_page', 'orderby', 'seed', 'page']);
+  const reqParams = new URLSearchParams(url.search);
+  const hasRealFilter = [...reqParams.keys()].some(k => !BASE_POOL_PARAMS.has(k));
+  const paramsStr = url.search; // already includes leading '?'
+  const engineSuffix = hasRealFilter ? (paramsStr ? '&engine=typesense' : '?engine=typesense') : '';
+  const wpUrl = `${WP_BASE}/pool_test${paramsStr}${engineSuffix}`;
+
   try {
-    originResponse = await fetch(request);
+    const wpResponse = await fetch(wpUrl, {
+      headers: {
+        Accept: 'application/json',
+        ...(WP_API_KEY && { 'X-API-Key': WP_API_KEY }),
+      },
+    });
+
+    const body = await wpResponse.text();
+    const status = wpResponse.status;
+
+    return new Response(body, {
+      status,
+      headers: {
+        'Content-Type': 'application/json;charset=UTF-8',
+        'Cache-Control': 'no-store',
+        'X-Cache': 'MISS',
+        'X-CFS-Cache': 'MISS-POOL-WP-DIRECT',
+        'X-CFS-Key': cacheKey,
+        'Access-Control-Allow-Origin': '*',
+      }
+    });
   } catch (fetchErr) {
-    console.error('Origin fetch failed (pool cache miss):', fetchErr.message);
+    console.error('WordPress direct fetch failed (pool cache miss):', fetchErr.message);
     return new Response(JSON.stringify({ success: false, error: 'Service unavailable' }), {
       status: 503,
-      headers: { 'Content-Type': 'application/json', 'X-CFS-Cache': 'ERROR-ORIGIN-DOWN' }
+      headers: { 'Content-Type': 'application/json', 'X-CFS-Cache': 'ERROR-WP-DOWN' }
     });
   }
-
-  const body = await originResponse.text();
-  const status = originResponse.status;
-
-  const passthroughHeaders = {
-    'Content-Type': originResponse.headers.get('Content-Type') || 'application/json;charset=UTF-8',
-    'Cache-Control': 'public, max-age=60, s-maxage=60',
-    'X-Cache': 'MISS',
-    'X-CFS-Cache': 'MISS-POOL',
-    'X-CFS-Key': cacheKey,
-    'Access-Control-Allow-Origin': '*',
-  };
-  const location = originResponse.headers.get('Location');
-  if (location) passthroughHeaders['Location'] = location;
-
-  return new Response(body, { status, headers: passthroughHeaders });
 }
 
 // ============================================
