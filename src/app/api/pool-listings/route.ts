@@ -131,4 +131,19 @@ export async function GET(request: NextRequest) {
     console.log("[WP API pool_test] summary:", {
       params: params.substring(0, 200),
       success: data?.success,
-      total_
+      total_products: data?.pagination?.total_products,
+      pool_size: data?.pagination?.pool_size,
+      products_returned: data?.products?.length ?? data?.data?.products?.length ?? 0,
+      premium_products: data?.premium_products?.length ?? data?.data?.premium_products?.length ?? 0,
+      exclusive_products: data?.exclusive_products?.length ?? data?.data?.exclusive_products?.length ?? 0,
+    });
+
+    return NextResponse.json(data);
+  } catch (err: any) {
+    clearTimeout(timeoutId);
+    console.error("[WP API pool_test] Error:", err);
+    const status = err?.name === "AbortError" ? 504 : 500;
+    console.log(`[WP API pool_test] fetch error (${status}):`, err?.message);
+    return NextResponse.json({ success: false }, { status });
+  }
+}
