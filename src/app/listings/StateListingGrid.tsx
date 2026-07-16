@@ -46,9 +46,9 @@ interface Props {
 }
 
 const PROMO_BANNERS = [
-  { src: "/images/sell-my-caravan.jpg?=5", href: "/sell-my-caravan/", alt: "Sell My Caravan" },
-  { src: "/images/home.jpg?=2",            href: "https://www.aussiefivestarcaravans.com.au/", alt: "Aussie Five Star Caravans" },
-  { src: "/images/dealer-advertising.jpg?=6", href: "/dealer-advertising/", alt: "Dealer Advertising" },
+  { src: "/images/sell-my-caravan.jpg?=11", href: "/sell-my-caravan/", alt: "Sell My Caravan" },
+  { src: "/images/home.jpg?=3",            href: "https://www.aussiefivestarcaravans.com.au/", alt: "Aussie Five Star Caravans" },
+  { src: "/images/dealer-advertising.jpg?=7", href: "/dealer-advertising/", alt: "Dealer Advertising" },
 ];
 
 function seededSample(size: number, count: number, seed: number): number[] {

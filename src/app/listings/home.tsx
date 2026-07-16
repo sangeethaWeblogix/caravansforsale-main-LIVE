@@ -13,7 +13,7 @@ import StateContent from "./StateContent";
 import { buildApiUrl, buildListingsSlug, buildFilterBreadcrumbs } from "./urlUtils";
 import { useBanners } from "@/components/BannerHandler";
 import { useBannerTracking } from "@/hooks/useBannerTracking";
-import "./main.css?=6";
+import "./main.css?=7";
 
 // clickid pagination — same scheme as /listings/: no ?page=N in the URL,
 // instead a random ?clickid= id maps (via localStorage, with a `pN` suffix

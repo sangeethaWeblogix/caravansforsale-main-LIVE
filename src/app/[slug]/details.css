@@ -792,7 +792,7 @@ tr {
 }
 .blog-browse-layout {
   display: grid;
-  grid-template-columns: 340px 1fr;
+  grid-template-columns: 1fr;
   gap: 24px;
   align-items: start;
 }
@@ -1058,12 +1058,6 @@ tr {
   .blog-browse-layout {
     grid-template-columns: 1fr;
   }
-  .blog-browse-toc {
-    order: 2;
-  }
-  .blog-browse-main {
-    order: 1;
-  }
   .blog-browse-cta {
     flex-direction: column;
     align-items: flex-start;
@@ -1118,8 +1112,19 @@ tr {
   min-width: 0;
 }
 .blog-article-sidebar {
+  align-self: stretch;
+}
+.blog-sidebar-toc {
+  margin-bottom: 24px;
+}
+.blog-sidebar-sticky {
   position: sticky;
   top: 90px;
+}
+/* Mobile TOC — shown only on mobile */
+.blog-mobile-toc {
+  display: none;
+  padding: 0 16px 16px;
 }
 
 /* ── TOC card ── */
@@ -1345,6 +1350,14 @@ tr {
 
 /* ── Mobile: single column, TOC above content ── */
 @media (max-width: 991px) {
+  .blog-mobile-toc {
+    display: block;
+    padding: 16px;
+    padding-bottom: 0px;
+  }
+  .blog-sidebar-toc {
+    display: none;
+  }
   .blog-article-layout {
     grid-template-columns: 1fr;
     gap: 32px;
@@ -1520,8 +1533,14 @@ tr {
     font-size: 15px;
     line-height: 1.55;
 }
+.blog-faq-cta__btns {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 4px;
+}
 .blog-faq-cta__btn {
-  display: inline-block;
+  display: block;
   background: #f58333;
   color: #fff;
   padding: 11px 20px;
@@ -1531,7 +1550,6 @@ tr {
   text-decoration: none;
   text-align: center;
   transition: background 0.15s;
-  margin-top: 4px;
 }
 .blog-faq-cta__btn:hover {
   background: #d96e1f;

@@ -248,9 +248,16 @@ export default function BlogDetailsPage({
   const plainTitle = cleanTitle(data?.data?.blog_detail?.title);
 
   const rawCatRaw = data?.data?.blog_detail?.product_category;
-  const rawCat = (Array.isArray(rawCatRaw) ? rawCatRaw[0] : rawCatRaw ?? "").trim();
-  const catLabel = rawCat ? rawCat.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase()) : "";
-  const catLink  = rawCat ? `/listings/${rawCat.toLowerCase()}-category/` : "/listings/";
+  const rawCats = Array.isArray(rawCatRaw) ? rawCatRaw : rawCatRaw ? [rawCatRaw] : [];
+  const cats = rawCats
+    .map(c => c.trim())
+    .filter(Boolean)
+    .map(c => ({
+      label: c.replace(/-/g, " ").replace(/\b\w/g, (ch: string) => ch.toUpperCase()),
+      link: `/listings/${c.toLowerCase()}-category/`,
+    }));
+  const catLabel = cats[0]?.label ?? "";
+  const catLink  = cats[0]?.link ?? "/listings/";
 
   const blogContentRef = useRef<HTMLDivElement | null>(null);
 
@@ -403,38 +410,41 @@ export default function BlogDetailsPage({
         </div>
       </section>
 
-      {/* ── Quick Browse Widget ── */}
-      <section className="blog-browse-section">
+      {/* ── Mobile TOC (shown only on mobile, hidden on desktop) ── */}
+      {post?.toc && tocItems.length > 0 && (
+        <div className="blog-mobile-toc">
+          <div className="blog-browse-toc">
+            <h3 className="blog-browse-toc__heading">Table of Contents</h3>
+            <ul className="blog-browse-toc__list">
+              {(showFullToc ? tocItems : tocItems.slice(0, 5)).map((item, index) => {
+                const anchor = item.querySelector("a");
+                if (!anchor) return null;
+                return (
+                  <li key={index}>
+                    <a href={anchor.getAttribute("href") ?? "#"}>
+                      {anchor.textContent ?? ""}
+                    </a>
+                  </li>
+                );
+              })}
+            </ul>
+            {tocItems.length > 5 && (
+              <button
+                className="blog-browse-toc__more"
+                onClick={() => setShowFullToc((prev) => !prev)}
+              >
+                {showFullToc ? <>Show Less <i className="bi bi-chevron-up" /></> : <>Show More <i className="bi bi-chevron-down" /></>}
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── Quick Browse Widget (hidden) ── */}
+      {false && <section className="blog-browse-section">
         <div className="container">
           <div className="blog-browse-layout">
 
-            {/* Left: Table of Contents */}
-            {post?.toc && (
-              <div className="blog-browse-toc" style={{ visibility: tocItems.length > 0 ? "visible" : "hidden" }}>
-                <h3 className="blog-browse-toc__heading">Table of Contents</h3>
-                <ul className="blog-browse-toc__list">
-                  {(showFullToc ? tocItems : tocItems.slice(0, 5)).map((item, index) => {
-                    const anchor = item.querySelector("a");
-                    if (!anchor) return null;
-                    return (
-                      <li key={index}>
-                        <a href={anchor.getAttribute("href") ?? "#"}>
-                          {anchor.textContent ?? ""}
-                        </a>
-                      </li>
-                    );
-                  })}
-                </ul>
-                {tocItems.length > 5 && (
-                  <button
-                    className="blog-browse-toc__more"
-                    onClick={() => setShowFullToc((prev) => !prev)}
-                  >
-                    {showFullToc ? <>Show Less <i className="bi bi-chevron-up" /></> : <>Show More <i className="bi bi-chevron-down" /></>}
-                  </button>
-                )}
-              </div>
-            )}
 
             {/* Right: CTA + tabs + links */}
             <div className="blog-browse-main">
@@ -497,7 +507,7 @@ export default function BlogDetailsPage({
 
           </div>
         </div>
-      </section>
+      </section>}
 
       {/* ── Article body ── */}
       <section className="blog-article-section">
@@ -514,22 +524,48 @@ export default function BlogDetailsPage({
               />
             </div>
 
-            {/* Sidebar: CTA cards */}
+            {/* Sidebar: TOC + CTA cards */}
             <aside className="blog-article-sidebar">
-              <div className="blog-sidebar-cta">
-                
-                <h3 className="blog-sidebar-cta__heading">Ready to Find Your Next Caravan?</h3>
-                <p className="blog-sidebar-cta__desc">Browse thousands of new and used caravans from trusted dealers and private sellers across Australia.</p>
-                <a href="/listings/" className="blog-sidebar-cta__btn">
-                  Search Caravans Now <i className="bi bi-arrow-right" />
-                </a>
-              </div>
-              <div className="blog-sidebar-cta blog-sidebar-cta--sell">
-                <h3 className="blog-sidebar-cta__heading">Sell Your Caravan Faster with Australia's Growing Caravan Marketplace</h3>
-                
-                <a href="/sell-my-caravan/" className="blog-sidebar-cta__btn">
-                  List Your Caravan Now <i className="bi bi-arrow-right" />
-                </a>
+              {post?.toc && tocItems.length > 0 && (
+                <div className="blog-browse-toc blog-sidebar-toc">
+                  <h3 className="blog-browse-toc__heading">Table of Contents</h3>
+                  <ul className="blog-browse-toc__list">
+                    {(showFullToc ? tocItems : tocItems.slice(0, 5)).map((item, index) => {
+                      const anchor = item.querySelector("a");
+                      if (!anchor) return null;
+                      return (
+                        <li key={index}>
+                          <a href={anchor.getAttribute("href") ?? "#"}>
+                            {anchor.textContent ?? ""}
+                          </a>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                  {tocItems.length > 5 && (
+                    <button
+                      className="blog-browse-toc__more"
+                      onClick={() => setShowFullToc((prev) => !prev)}
+                    >
+                      {showFullToc ? <>Show Less <i className="bi bi-chevron-up" /></> : <>Show More <i className="bi bi-chevron-down" /></>}
+                    </button>
+                  )}
+                </div>
+              )}
+              <div className="blog-sidebar-sticky">
+                <div className="blog-sidebar-cta">
+                  <h3 className="blog-sidebar-cta__heading">Ready to Find Your Next Caravan?</h3>
+                  <p className="blog-sidebar-cta__desc">Browse thousands of new and used caravans from trusted dealers and private sellers across Australia.</p>
+                  <a href="/listings/" className="blog-sidebar-cta__btn">
+                    Search Caravans Now <i className="bi bi-arrow-right" />
+                  </a>
+                </div>
+                <div className="blog-sidebar-cta blog-sidebar-cta--sell">
+                  <h3 className="blog-sidebar-cta__heading">Sell Your Caravan Faster with Australia's Growing Caravan Marketplace</h3>
+                  <a href="/sell-my-caravan/" className="blog-sidebar-cta__btn">
+                    List Your Caravan Now <i className="bi bi-arrow-right" />
+                  </a>
+                </div>
               </div>
             </aside>
           </div>
@@ -553,9 +589,9 @@ export default function BlogDetailsPage({
         </div>
       </section>
 
+      <FaqSection data={data?.data?.blog_detail?.faq ?? []} cats={cats} />
       <BlogFeaturedListings products={data?.data?.blog_detail?.category_featured_products ?? []} category={catLabel} />
       <RelatedNews blogs={data?.data?.related_blogs ?? []} />
-      <FaqSection data={data?.data?.blog_detail?.faq ?? []} catLabel={catLabel} catLink={catLink} />
     </div>
   );
 }
