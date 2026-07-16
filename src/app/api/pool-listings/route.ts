@@ -4,14 +4,18 @@ import { NextRequest, NextResponse } from "next/server";
 const API_BASE = process.env.NEXT_PUBLIC_CFS_API_BASE;
 const API_KEY = process.env.CFS_API_KEY;
 
-const BASE_PARAM_KEYS = new Set(["per_page", "orderby", "seed", "page"]);
+// engine=typesense is appended whenever any filter beyond pagination is present.
+// If typesense returns products:[] (empty), we automatically fall back to the
+// WP native engine (same request without engine=typesense).
+const BASE_PARAM_KEYS = new Set([
+  "per_page", "orderby", "seed", "page",
+]);
 
 async function fetchPoolTest(url: string, signal: AbortSignal) {
   const res = await fetch(url, {
     signal,
     headers: {
       Accept: "application/json",
-      "User-Agent": "Mozilla/5.0 (compatible; CFS-SSR/1.0; +https://www.caravansforsale.com.au)",
       ...(API_KEY && { "X-API-Key": API_KEY }),
     },
     cache: "no-store",
@@ -36,21 +40,40 @@ export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const params = searchParams.toString();
 
-  // The WP Typesense engine drops `premium_products`/`exclusive_products`
-  // from the response specifically when the query has no filters beyond
-  // the base pagination/ordering params (i.e. the default /listings/ view).
-  // Only route through Typesense once a real filter is applied.
   const hasRealFilter = [...searchParams.keys()].some((key) => !BASE_PARAM_KEYS.has(key));
-  // pool_test_proxy: same callback as pool_test but __return_true permission,
-  // so server-to-server calls from Vercel are never blocked by auth layers.
-  const url = `${API_BASE}/pool_test_proxy?${params}${hasRealFilter ? `${params ? "&" : ""}engine=typesense` : ""}`;
+  const url = `${API_BASE}/pool_test?${params}${hasRealFilter ? `${params ? "&" : ""}engine=typesense` : ""}`;
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 30000);
   const t0 = Date.now();
 
   try {
-    const { res, data, raw } = await fetchPoolTest(url, controller.signal);
+    let { res, data, raw } = await fetchPoolTest(url, controller.signal);
+
+    // Fallback: if typesense returned empty products, retry without engine=typesense
+    if (
+      hasRealFilter &&
+      res.ok &&
+      data &&
+      (data?.products?.length === 0 || data?.data?.products?.length === 0)
+    ) {
+      const fallbackUrl = `${API_BASE}/pool_test?${params}`;
+      console.log(`[WP API pool_test] typesense empty, falling back to WP engine | ${params.substring(0, 80)}`);
+      const controller2 = new AbortController();
+      const timeout2 = setTimeout(() => controller2.abort(), 30000);
+      try {
+        const fallback = await fetchPoolTest(fallbackUrl, controller2.signal);
+        clearTimeout(timeout2);
+        if (fallback.res.ok && fallback.data) {
+          res = fallback.res;
+          data = fallback.data;
+          raw = fallback.raw;
+        }
+      } catch (fbErr: any) {
+        clearTimeout(timeout2);
+        console.log("[WP API pool_test] fallback fetch error:", fbErr?.message);
+      }
+    }
 
     clearTimeout(timeoutId);
     console.log(`[WP API pool_test] ${Date.now() - t0}ms | ${params.substring(0, 80)}`);
@@ -74,21 +97,18 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: false, error: "invalid_json" }, { status: 502 });
     }
 
-    // Typesense engine drops premium_products/exclusive_products entirely.
-    // When we routed through Typesense, fire a second lightweight call to the
-    // base (non-typesense) endpoint just to recover those two arrays, and
-    // merge them into the Typesense payload so they're always present.
- if (hasRealFilter) {
+    if (hasRealFilter) {
       const premiumParams = new URLSearchParams();
       searchParams.forEach((value, key) => {
         if (BASE_PARAM_KEYS.has(key)) premiumParams.set(key, value);
       });
-      // premium/exclusive/emp_exclusive appear on every page from the base
-      // (non-typesense) engine, so just pass through the same page/per_page
-      // the user actually requested — no need to force page 1.
+      // Pass make/model so exclusive_products are scoped to the current page context
+      ["make", "model"].forEach((key) => {
+        if (searchParams.has(key)) premiumParams.set(key, searchParams.get(key)!);
+      });
       if (!premiumParams.has("per_page")) premiumParams.set("per_page", "1");
 
-      const premiumUrl = `${API_BASE}/pool_test_proxy?${premiumParams.toString()}`;
+      const premiumUrl = `${API_BASE}/pool_test?${premiumParams.toString()}`;
       const premiumController = new AbortController();
       const premiumTimeout = setTimeout(() => premiumController.abort(), 15000);
 
@@ -125,17 +145,15 @@ export async function GET(request: NextRequest) {
         console.log("[WP API pool_test] premium/exclusive merge fetch error:", mergeErr?.message);
       }
     }
+
     console.log("[WP API pool_test] summary:", {
       params: params.substring(0, 200),
       success: data?.success,
       total_products: data?.pagination?.total_products,
       pool_size: data?.pagination?.pool_size,
-      slot_bucket_present: data?.pagination?.slot_bucket_present,
       products_returned: data?.products?.length ?? data?.data?.products?.length ?? 0,
       premium_products: data?.premium_products?.length ?? data?.data?.premium_products?.length ?? 0,
       exclusive_products: data?.exclusive_products?.length ?? data?.data?.exclusive_products?.length ?? 0,
-      emp_exclusive_products: data?.emp_exclusive_products?.length ?? data?.data?.emp_exclusive_products?.length ?? 0,
-      first_3_slot_buckets: (data?.products ?? data?.data?.products ?? []).slice(0, 3).map((p: any) => p?.slot_bucket),
     });
 
     return NextResponse.json(data);

@@ -116,6 +116,7 @@ function pathToSlug(p) {
 /**
  * Parse a /listings/… path into pool-listings API query params.
  * Mirrors the parameter order of buildApiUrl() in src/app/listings/urlUtils.ts
+ * AND the slug parsing logic of parseSlugToFilters() in src/app/components/urlBuilder.ts
  * so the injected URL matches what home.tsx constructs at runtime.
  */
 function buildPoolRequestUrl(urlPath, seed) {
@@ -124,7 +125,16 @@ function buildPoolRequestUrl(urlPath, seed) {
   s = s.replace(/^\/+|\/+$/g, '');
   const segments = s.split('/').filter(Boolean);
 
-  let category, condition, state, region, fromPrice, toPrice;
+  // Parse all segment types — must mirror urlBuilder.ts parseSlugToFilters()
+  let category, condition, state, region, suburb, pincode;
+  let fromPrice, toPrice, minKg, maxKg, fromLength, toLength;
+  let fromSleep, toSleep, fromYear, toYear, make, model;
+
+  const hasReservedSuffix = (seg) =>
+    /-(category|condition|state|region|suburb)$/.test(seg) ||
+    /-(kg-atm|length-in-feet|people-sleeping-capacity)$/.test(seg) ||
+    /^over-\d+/.test(seg) || /^under-\d+/.test(seg) || /^between-/.test(seg) ||
+    /^\d{4}$/.test(seg) || seg.includes('-caravans-range');
 
   for (const seg of segments) {
     if (seg.endsWith('-category')) {
@@ -136,10 +146,64 @@ function buildPoolRequestUrl(urlPath, seed) {
       state = seg.replace('-state', '').replace(/-/g, ' ').toLowerCase();
     } else if (seg.endsWith('-region')) {
       region = seg.replace('-region', '').replace(/-/g, ' ').toLowerCase();
-    } else if (/^under-\d+$/.test(seg)) {
-      toPrice = seg.replace('under-', '');
+    } else if (/^([a-z0-9-]+)-(\d{4})-suburb$/.test(seg)) {
+      const m = seg.match(/^([a-z0-9-]+)-(\d{4})-suburb$/);
+      suburb = m[1].replace(/-/g, ' ').toLowerCase();
+      pincode = m[2];
+    } else if (seg.endsWith('-suburb')) {
+      suburb = seg.replace(/-suburb$/, '').replace(/-/g, ' ').toLowerCase();
+    } else if (/^\d{4}$/.test(seg)) {
+      pincode = seg;
+    } else if (seg.includes('-kg-atm')) {
+      const between = seg.match(/^between-(\d+)-kg-(\d+)-kg-atm$/);
+      if (between) { minKg = between[1]; maxKg = between[2]; }
+      else {
+        const over = seg.match(/^over-(\d+)-kg-atm$/);
+        if (over) minKg = over[1];
+        else { const under = seg.match(/^under-(\d+)-kg-atm$/); if (under) maxKg = under[1]; }
+      }
+    } else if (seg.includes('length-in-feet')) {
+      const between = seg.match(/^between-(\d+)-(\d+)-length-in-feet$/);
+      if (between) { fromLength = between[1]; toLength = between[2]; }
+      else {
+        const over = seg.match(/^over-(\d+)-length-in-feet$/);
+        if (over) fromLength = over[1];
+        else { const under = seg.match(/^under-(\d+)-length-in-feet$/); if (under) toLength = under[1]; }
+      }
+    } else if (seg.includes('-people-sleeping-capacity')) {
+      const between = seg.match(/^between-(\d+)-(\d+)-people-sleeping-capacity$/);
+      if (between) { fromSleep = between[1]; toSleep = between[2]; }
+      else {
+        const over = seg.match(/^over-(\d+)-people-sleeping-capacity$/);
+        if (over) fromSleep = over[1];
+        else {
+          const under = seg.match(/^under-(\d+)-people-sleeping-capacity$/);
+          if (under) toSleep = under[1];
+          else {
+            const single = seg.match(/^(\d+)-people-sleeping-capacity$/);
+            if (single) { fromSleep = single[1]; toSleep = single[1]; }
+          }
+        }
+      }
     } else if (/^over-\d+$/.test(seg)) {
       fromPrice = seg.replace('over-', '');
+    } else if (/^under-\d+$/.test(seg)) {
+      toPrice = seg.replace('under-', '');
+    } else if (/^between-\d+-\d+$/.test(seg)) {
+      const m = seg.match(/between-(\d+)-(\d+)/);
+      if (m) { fromPrice = m[1]; toPrice = m[2]; }
+    } else if (seg.includes('-caravans-range')) {
+      const both = seg.match(/^(\d{4})-(\d{4})-caravans-range$/);
+      if (both) { fromYear = both[1]; toYear = both[2]; }
+      else {
+        const from = seg.match(/^year-from-(\d{4})-caravans-range$/);
+        if (from) fromYear = from[1];
+        else { const to = seg.match(/^year-to-(\d{4})-caravans-range$/); if (to) toYear = to[1]; }
+      }
+    } else if (!hasReservedSuffix(seg) && isNaN(Number(seg))) {
+      // make / model fallback (same as urlBuilder.ts)
+      if (!make) make = seg;
+      else if (!model) model = seg;
     }
   }
 
@@ -147,14 +211,46 @@ function buildPoolRequestUrl(urlPath, seed) {
   const params = new URLSearchParams();
   params.set('orderby', 'default');
   params.set('seed', String(seed));
-  if (state)     params.set('state', state);
-  if (category)  params.set('category', category);
-  if (region)    params.set('region', region);
-  if (fromPrice) params.set('from_price', fromPrice);
-  if (toPrice)   params.set('to_price', toPrice);
-  if (condition) params.set('condition', condition);
+  if (state)      params.set('state',             state);
+  if (category)   params.set('category',          category);
+  if (make)       params.set('make',              make);
+  if (model)      params.set('model',             model);
+  if (region)     params.set('region',            region);
+  if (suburb)     params.set('suburb',            suburb);
+  if (pincode)    params.set('pincode',           pincode);
+  if (fromPrice)  params.set('from_price',        fromPrice);
+  if (toPrice)    params.set('to_price',          toPrice);
+  if (minKg)      params.set('from_atm',          minKg);
+  if (maxKg)      params.set('to_atm',            maxKg);
+  if (fromSleep)  params.set('from_sleep',        fromSleep);
+  if (toSleep)    params.set('to_sleep',          toSleep);
+  if (fromYear)   params.set('acustom_fromyears', fromYear);
+  if (toYear)     params.set('acustom_toyears',   toYear);
+  if (fromLength) params.set('from_length',       fromLength);
+  if (toLength)   params.set('to_length',         toLength);
+  if (condition)  params.set('condition',         condition);
 
   return `/api/pool-listings/?per_page=24&${params.toString()}&page=1`;
+}
+
+/**
+ * Check whether a /listings/ path is in url.csv's curated indexed set by
+ * calling the Vercel /api/indexed-url/ endpoint. Returns true/false, or null
+ * on any error (caller will omit is_indexed from the preload and let the
+ * client-side async check handle it as before).
+ */
+async function fetchIsIndexed(urlPath) {
+  const fetchUrl = `${VERCEL_BASE_URL}/api/indexed-url/?path=${encodeURIComponent(urlPath)}`;
+  try {
+    const res = await fetchWithTimeout(fetchUrl, {
+      headers: { 'User-Agent': 'CFS-AffectedCacheGenerator/1.0', 'Accept': 'application/json' },
+    }, 10000);
+    if (!res.ok) return null;
+    const json = await res.json();
+    return typeof json?.indexed === 'boolean' ? json.indexed : null;
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -274,6 +370,15 @@ async function uploadToKV(key, value, contentType, metadata) {
 async function generateHtmlVariants(urlPath, slug) {
   const variantKeys = [];
 
+  // Fetch isIndexed once per URL (same for all variants) so home.tsx can
+  // initialise isIndexed state correctly from the preload, avoiding the
+  // secondary pool re-fetch that occurs when the client-side async check
+  // returns a different value than the default (true).
+  const isIndexed = await fetchIsIndexed(urlPath);
+  if (isIndexed !== null) {
+    console.log(`   [isIndexed] ${urlPath} -> ${isIndexed}`);
+  }
+
   for (let v = 1; v <= HTML_VARIANTS; v++) {
     const fetchUrl = `${VERCEL_BASE_URL}${urlPath}?shuffle_seed=${v}`;
     const kvKey    = `${slug}-v${v}`;
@@ -304,6 +409,10 @@ async function generateHtmlVariants(urlPath, slug) {
       // client-side API call. Falls back gracefully if the fetch fails.
       const poolData = await fetchPoolData(urlPath, v);
       if (poolData) {
+        // Embed is_indexed so home.tsx can initialise isIndexed state correctly
+        // on hydration, preventing the secondary pool re-fetch that fires when
+        // the async /api/indexed-url/ check returns a different value.
+        if (isIndexed !== null) poolData.is_indexed = isIndexed;
         const poolJson = JSON.stringify(poolData).replace(/<\/script>/gi, '<\\/script>');
         html = html.replace('</head>', `<script>window.__INITIAL_POOL__ = ${poolJson};</script>\n</head>`);
         console.log(`   [HTML-v${v}] Pool pre-loaded (${(poolData.json?.data?.products ?? poolData.json?.products ?? []).length} products)`);

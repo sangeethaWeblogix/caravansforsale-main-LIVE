@@ -8,6 +8,7 @@
   import NavbarSkeleton from "./navbar/NavbarSkeleton";
   import Footer from "./footer/Footer";
   import React, { Suspense } from "react";
+  import Script from "next/script";
   import { Metadata } from "next";
   import { Montserrat } from "next/font/google";
   import ScrollToTop from "./navigation/ScrollToTopGlobal";
@@ -268,22 +269,24 @@ import fetchListingsForHead, { buildListingsJsonLd, buildBreadcrumbs } from "@/u
             />
           )}
           {/* ✅ Google Tag Manager (Head) */}
-           <script
-  dangerouslySetInnerHTML={{
-    __html: `
-      (function(w,d,s,l,i){
-        w[l]=w[l]||[];
-        w[l].push({'gtm.start': new Date().getTime(),event:'gtm.js'});
-        var f=d.getElementsByTagName(s)[0],
-            j=d.createElement(s),
-            dl=l!='dataLayer'?'&l='+l:'';
-        j.async=true;
-        j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;
-        f?f.parentNode.insertBefore(j,f):document.head.appendChild(j);
-      })(window,document,'script','dataLayer','GTM-N3362FGQ');
-    `,
-  }}
-/>
+          <Script
+            id="gtm-head"
+            strategy="afterInteractive"
+            dangerouslySetInnerHTML={{
+              __html: `
+                (function(w,d,s,l,i){
+                  w[l]=w[l]||[];
+                  w[l].push({'gtm.start': new Date().getTime(),event:'gtm.js'});
+                  var f=d.getElementsByTagName(s)[0],
+                    j=d.createElement(s),
+                    dl=l!='dataLayer'?'&l='+l:'';
+                  j.async=true;
+                  j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;
+                  f?f.parentNode.insertBefore(j,f):d.head.appendChild(j);
+                })(window,document,'script','dataLayer','GTM-N3362FGQ');
+              `,
+            }}
+          />
 
 
 

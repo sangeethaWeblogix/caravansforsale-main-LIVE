@@ -23,7 +23,7 @@
  * - Routes-mapping values are ALWAYS arrays: ["{slug}-v1", ..., "{slug}-v5"]
  */
 
-const VARIANT_COUNT = 5; // Must match generation scripts
+const VARIANT_COUNT = 7; // Must match generation scripts (HTML_VARIANTS in generate-affected-html-cache.js)
 const IMAGE_CACHE_TTL = 2592000; // 30 days
 // HTML_CACHE_TTL intentionally removed — KV HTML must NOT be cached by browser or CDN.
 // Caching the HTML response would lock users into the same variant for the cache duration,
@@ -216,33 +216,37 @@ async function handlePoolApiCache(request, url, env) {
     });
   }
 
-  // ── MISS: live-proxy to origin; warmer will populate KV later ─────
-  let originResponse;
+  // ── MISS: pass through to Vercel (Next.js route.ts calls WP with X-API-Key) ──
+  // Cloudflare Worker IPs (2a06:98c0::/29) are blocked by SiteGround's sgcaptcha
+  // nginx module when calling WP directly. Vercel's IPs are not in that blocklist.
+  //
+  // Worker subrequests do NOT re-invoke this Worker (Cloudflare's design — subrequests
+  // bypass Worker routes and go directly to origin). So fetchFresh(request) here sends
+  // the request straight to Vercel without any infinite loop.
+  //
+  // Vercel's route.ts sends X-API-Key (via CFS_API_KEY env var) → Cloudflare WAF
+  // fires the "Allow wp-json API calls with key" Skip rule → SiteGround receives the
+  // request with a Vercel IP (not a Worker IP) → sgcaptcha does not trigger → 200 JSON.
   try {
-    originResponse = await fetch(request);
+    const vercelResponse = await fetchFresh(request);
+
+    const responseHeaders = new Headers(vercelResponse.headers);
+    responseHeaders.set('X-Cache', 'MISS');
+    responseHeaders.set('X-CFS-Cache', 'MISS-POOL-VERCEL');
+    responseHeaders.set('X-CFS-Key', cacheKey);
+    responseHeaders.set('Access-Control-Allow-Origin', '*');
+
+    return new Response(vercelResponse.body, {
+      status: vercelResponse.status,
+      headers: responseHeaders,
+    });
   } catch (fetchErr) {
-    console.error('Origin fetch failed (pool cache miss):', fetchErr.message);
+    console.error('Vercel pass-through failed (pool cache miss):', fetchErr.message);
     return new Response(JSON.stringify({ success: false, error: 'Service unavailable' }), {
       status: 503,
-      headers: { 'Content-Type': 'application/json', 'X-CFS-Cache': 'ERROR-ORIGIN-DOWN' }
+      headers: { 'Content-Type': 'application/json', 'X-CFS-Cache': 'ERROR-VERCEL-DOWN' }
     });
   }
-
-  const body = await originResponse.text();
-  const status = originResponse.status;
-
-  const passthroughHeaders = {
-    'Content-Type': originResponse.headers.get('Content-Type') || 'application/json;charset=UTF-8',
-    'Cache-Control': 'public, max-age=60, s-maxage=60',
-    'X-Cache': 'MISS',
-    'X-CFS-Cache': 'MISS-POOL',
-    'X-CFS-Key': cacheKey,
-    'Access-Control-Allow-Origin': '*',
-  };
-  const location = originResponse.headers.get('Location');
-  if (location) passthroughHeaders['Location'] = location;
-
-  return new Response(body, { status, headers: passthroughHeaders });
 }
 
 // ============================================

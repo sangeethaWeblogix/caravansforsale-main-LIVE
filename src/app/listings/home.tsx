@@ -13,7 +13,7 @@ import StateContent from "./StateContent";
 import { buildApiUrl, buildListingsSlug, buildFilterBreadcrumbs } from "./urlUtils";
 import { useBanners } from "@/components/BannerHandler";
 import { useBannerTracking } from "@/hooks/useBannerTracking";
-import "./main.css?=2";
+import "./main.css?=6";
 
 // clickid pagination — same scheme as /listings/: no ?page=N in the URL,
 // instead a random ?clickid= id maps (via localStorage, with a `pN` suffix
@@ -183,6 +183,21 @@ export default function StateHome({ initialFilters, browseData, initialPool, ini
       setSeed(Math.floor(Math.random() * SEED_MAX) + 1);
     }
 
+    // For KV-cached pages (no SSR initialPool prop), read is_indexed from the
+    // preload object embedded by the cache generator. Batching setIsIndexed here
+    // with setReady means the pool effect fires once with the correct isIndexed
+    // value, preventing the secondary pool re-fetch that occurs when the async
+    // /api/indexed-url/ check resolves to a different value than the default.
+    try {
+      const win = window as unknown as Record<string, unknown>;
+      const preload = win.__INITIAL_POOL__ as { is_indexed?: boolean } | undefined;
+      if (typeof preload?.is_indexed === "boolean") {
+        setIsIndexed(preload.is_indexed);
+      }
+    } catch {
+      // ignore — isIndexed will be corrected by the async /api/indexed-url/ check
+    }
+
     setReady(true);
   }, []);
 
@@ -334,7 +349,12 @@ export default function StateHome({ initialFilters, browseData, initialPool, ini
 
         handleTotalPages(json?.pagination?.total_pages ?? 1);
       })
-      .catch(() => { if (!cancelled) setPool({ featured: [], new: [], used: [] }); })
+      .catch((err) => {
+        console.warn('[StateHome] pool fetch failed, retaining existing data:', (err as any)?.message);
+        // setSeo(null) was called at the top of this effect — restore from initialPool
+        // so the H1/description don't vanish when the live re-fetch fails.
+        if (!cancelled && initialPool?.seo) setSeo(initialPool.seo);
+      })
       .finally(() => { if (!cancelled) setPoolLoading(false); });
 
     return () => { cancelled = true; };
