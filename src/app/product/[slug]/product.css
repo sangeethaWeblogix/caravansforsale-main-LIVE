@@ -1141,3 +1141,27 @@ text-align: left;
     min-height: 520px;
   }
 }
+
+/* ── Sell CTA section (reused from home page) ── */
+.hbg-sell-section { padding: 60px 0 0px; background: #fff; }
+.hbg-sell-card { background: #f8f9fa; border: 1px solid #e8e8e8; border-radius: 16px; padding: 25px 60px; text-align: center; }
+.hbg-sell-icon-row { display: flex; align-items: center; justify-content: center; gap: 16px; margin-bottom: 20px; }
+.hbg-sell-line { display: block; width: 70px; height: 1px; background: #d0d0d0; }
+.hbg-sell-icon-wrap { width: 52px; height: 52px; border-radius: 50%; background: #fff; border: 1.5px solid #d0d0d0; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.hbg-sell-icon-wrap img { width: 40px; height: 40px; }
+.hbg-sell-title { color: #000; margin: 0 0 14px; font-size: 1.45rem; font-weight: 600; line-height: 1.25; }
+.hbg-sell-body {
+    color: #000;
+    margin: 0 auto;
+    font-size: 1rem;
+    line-height: 1.75;
+    max-width: 1024px;
+}
+.hbg-sell-link { color: #1153a6; font-weight: 500; text-decoration: none; }
+.hbg-sell-link:hover { text-decoration: underline; }
+@media (max-width: 767px) {
+  .hbg-sell-section { padding: 0 0 32px; }
+  .hbg-sell-card { padding: 36px 20px; border-radius: 12px; }
+  .hbg-sell-title { font-size: 1.35rem; }
+  .hbg-sell-body { font-size: 0.95rem; }
+}

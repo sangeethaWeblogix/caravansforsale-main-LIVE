@@ -45,6 +45,24 @@ interface Props {
   maxItems?: number;
 }
 
+const PROMO_BANNERS = [
+  { src: "/images/sell-my-caravan.jpg?=5", href: "/sell-my-caravan/", alt: "Sell My Caravan" },
+  { src: "/images/home.jpg?=2",            href: "https://www.aussiefivestarcaravans.com.au/", alt: "Aussie Five Star Caravans" },
+  { src: "/images/dealer-advertising.jpg?=6", href: "/dealer-advertising/", alt: "Dealer Advertising" },
+];
+
+function seededSample(size: number, count: number, seed: number): number[] {
+  const arr = Array.from({ length: size }, (_, i) => i);
+  let s = Math.abs(seed) || 1;
+  for (let i = arr.length - 1; i > 0; i--) {
+    s = (s * 1664525 + 1013904223) & 0x7fffffff;
+    const j = s % (i + 1);
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr.slice(0, count).sort((a, b) => a - b);
+}
+
+
 function getImages(item: Listing): string[] {
   if (item.image_format?.length) return item.image_format;
   if (item.image_url?.length)    return item.image_url;
@@ -498,6 +516,16 @@ export default function StateListingGrid({ title, viewAllHref, apiUrl, items: ex
   const items   = externalMode ? (externalItems as Listing[]) : fetchedItems;
   const loading = externalMode ? (externalLoading ?? false) : fetchLoading;
 
+  // Promo banner slots — fill empty last-row cells with priority banners
+  const emptyInLastRow = (!loading && items.length > 0 && cols > 0)
+    ? (cols - (items.length % cols)) % cols
+    : 0;
+  const bannerPositions: number[] = emptyInLastRow === 0
+    ? []
+    : emptyInLastRow <= 3
+      ? Array.from({ length: emptyInLastRow }, (_, i) => i)
+      : [0, 1, 2];
+
   // No title/section at all once we know for sure there's nothing to show —
   // an empty heading with a blank grid under it reads as broken, not "no results".
   if (!loading && items.length === 0) return null;
@@ -533,6 +561,21 @@ export default function StateListingGrid({ title, viewAllHref, apiUrl, items: ex
                     onContact={setContactItem}
                   />
                 ))}
+
+            {!loading && bannerPositions.length > 0 &&
+              Array.from({ length: emptyInLastRow }, (_, i) => {
+                const bi = bannerPositions.indexOf(i);
+                if (bi === -1) {
+                  return <div key={`spacer-${i}`} className="lsd-promo-spacer" aria-hidden="true" />;
+                }
+                const b = PROMO_BANNERS[bi];
+                return (
+                  <a key={`promo-${i}`} href={b.href} className="lsd-promo-card" aria-label={b.alt}>
+                    <img src={b.src} alt={b.alt} className="lsd-promo-card__img" />
+                  </a>
+                );
+              })
+            }
           </div>
 
         </div>

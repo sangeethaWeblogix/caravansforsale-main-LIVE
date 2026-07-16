@@ -84,6 +84,7 @@ export default async function Layout({
 
   const post = data?.data?.blog_detail ?? {};
   const seo = data?.seo ?? {};
+  const faqs: { heading: string; content: string }[] = data?.data?.blog_detail?.faq ?? [];
 
   const canonical = `https://www.caravansforsale.com.au/${slug}/`;
   const title = seo.metatitle || post.title || "Caravans for Sale Blog";
@@ -97,33 +98,51 @@ export default async function Layout({
     post.image ||
     "https://www.caravansforsale.com.au/load.svg";
 
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "BlogPosting",
-    mainEntityOfPage: {
-      "@type": "WebPage",
-      "@id": canonical,
+  const schemas = [
+    {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      mainEntityOfPage: { "@type": "WebPage", "@id": canonical },
+      headline: title,
+      description: description,
+      image: bannerImage,
+      author: { "@type": "Person", name: "Tom" },
+      publisher: { "@type": "Organization", name: "Caravans for Sale" },
+      datePublished: safeIso(post.date),
+      dateModified: safeIso(post.date),
     },
-    headline: title,
-    description: description,
-    image: bannerImage,
-    author: {
-      "@type": "Person",
-      name: "Tom",
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Home", item: "https://www.caravansforsale.com.au/" },
+        { "@type": "ListItem", position: 2, name: "Blog", item: "https://www.caravansforsale.com.au/blog/" },
+        { "@type": "ListItem", position: 3, name: title, item: canonical },
+      ],
     },
-    publisher: {
-      "@type": "Organization",
-      name: "Caravans for Sale",
-    },
-    datePublished: safeIso(post.date),
-    dateModified: safeIso(post.date),
-  };
+    ...(faqs.length > 0
+      ? [
+          {
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: faqs.map((faq) => ({
+              "@type": "Question",
+              name: faq.heading,
+              acceptedAnswer: {
+                "@type": "Answer",
+                text: faq.content.replace(/<[^>]*>/g, "").trim(),
+              },
+            })),
+          },
+        ]
+      : []),
+  ];
 
   return (
     <ThemeRegistry>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: safeJsonLdString(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: safeJsonLdString(schemas) }}
       />
       <div>{children}</div>
     </ThemeRegistry>

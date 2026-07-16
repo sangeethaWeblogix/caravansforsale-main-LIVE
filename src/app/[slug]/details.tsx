@@ -165,8 +165,9 @@ type BlogDetail = {
   image?: string;
   toc?: string;
   content?: string;
-  product_category?: string[];
+  product_category?: string | string[];
   category_featured_products?: CategoryFeaturedProduct[];
+  faq?: { heading: string; content: string }[];
 };
 
 type FaqItem = {
@@ -246,8 +247,9 @@ export default function BlogDetailsPage({
   const cleanTitle = (s?: string) => decodeEntities(stripHtml(s));
   const plainTitle = cleanTitle(data?.data?.blog_detail?.title);
 
-  const rawCat = (data?.data?.blog_detail?.product_category?.[0] ?? "").trim();
-  const catLabel = rawCat ? rawCat.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase()) : "Luxury";
+  const rawCatRaw = data?.data?.blog_detail?.product_category;
+  const rawCat = (Array.isArray(rawCatRaw) ? rawCatRaw[0] : rawCatRaw ?? "").trim();
+  const catLabel = rawCat ? rawCat.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase()) : "";
   const catLink  = rawCat ? `/listings/${rawCat.toLowerCase()}-category/` : "/listings/";
 
   const blogContentRef = useRef<HTMLDivElement | null>(null);
@@ -441,12 +443,16 @@ export default function BlogDetailsPage({
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src="/images/category.svg" alt="" width={32} height={32} className="blog-browse-cta__icon-img" />
                   <div>
-                    <h3 className="blog-browse-cta__heading">Ready to Browse {catLabel} Caravans?</h3>
-                    <p className="blog-browse-cta__desc">Explore hundreds of {catLabel.toLowerCase()} caravans for sale across Australia.</p>
+                    <h3 className="blog-browse-cta__heading">
+                      {catLabel ? `Ready to Browse ${catLabel} Caravans?` : "Ready to Browse Caravans?"}
+                    </h3>
+                    <p className="blog-browse-cta__desc">
+                      {catLabel ? `Explore hundreds of ${catLabel.toLowerCase()} caravans for sale across Australia.` : "Explore thousands of caravans for sale across Australia."}
+                    </p>
                   </div>
                 </div>
                 <a href={catLink} className="blog-browse-cta__btn">
-                  Browse {catLabel} Caravans <i className="bi bi-arrow-right" />
+                  {catLabel ? `Browse ${catLabel} Caravans` : "Browse Caravans"} <i className="bi bi-arrow-right" />
                 </a>
               </div>
 
@@ -548,8 +554,8 @@ export default function BlogDetailsPage({
       </section>
 
       <BlogFeaturedListings products={data?.data?.blog_detail?.category_featured_products ?? []} category={catLabel} />
-      <RelatedNews blogs={data?.data?.related_blogs || []} />
-      <FaqSection data={data?.data?.faq || []} catLabel={catLabel} catLink={catLink} />
+      <RelatedNews blogs={data?.data?.related_blogs ?? []} />
+      <FaqSection data={data?.data?.blog_detail?.faq ?? []} catLabel={catLabel} catLink={catLink} />
     </div>
   );
 }

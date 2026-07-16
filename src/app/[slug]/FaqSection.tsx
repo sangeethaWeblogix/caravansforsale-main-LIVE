@@ -7,7 +7,7 @@ type FaqItem = {
   content: string;
 };
 
-export default function FaqSection({ data, catLabel = "Luxury", catLink = "/listings/" }: { data: FaqItem[]; catLabel?: string; catLink?: string }) {
+export default function FaqSection({ data, catLabel = "", catLink = "/listings/" }: { data: FaqItem[]; catLabel?: string; catLink?: string }) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
   if (!data || data.length === 0) return null;
@@ -56,9 +56,15 @@ export default function FaqSection({ data, catLabel = "Luxury", catLink = "/list
           {/* Right: CTA card */}
           <div className="blog-faq-cta">
             <div className="blog-faq-cta__icon"><img src="/images/category.svg" alt="" width={36} height={36} /></div>
-            <h3 className="blog-faq-cta__heading">Ready to Find Your Dream {catLabel} Caravan?</h3>
-            <p className="blog-faq-cta__desc">Explore thousands of {catLabel.toLowerCase()} caravans for sale across Australia and start your journey in style.</p>
-            <a href={catLink} className="blog-faq-cta__btn">Browse {catLabel} Caravans →</a>
+            <h3 className="blog-faq-cta__heading">
+              {catLabel ? `Ready to Find Your Dream ${catLabel} Caravan?` : "Ready to Find Your Dream Caravan?"}
+            </h3>
+            <p className="blog-faq-cta__desc">
+              {catLabel ? `Explore thousands of ${catLabel.toLowerCase()} caravans for sale across Australia and start your journey in style.` : "Explore thousands of caravans for sale across Australia and start your journey in style."}
+            </p>
+            <a href={catLink} className="blog-faq-cta__btn">
+              {catLabel ? `Browse ${catLabel} Caravans →` : "Browse Caravans →"}
+            </a>
           </div>
 
         </div>
