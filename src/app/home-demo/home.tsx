@@ -84,50 +84,48 @@ export default function HomePage({
     }
   }, [activeBanner]);
   const { bannerRefs, trackClick } = useBannerTracking(activeBanners);
+const [clientIp, setClientIp] = useState<string>("");
+async function fetchClientIp(): Promise<string> {
+  try {
+    const res = await fetch("https://api.ipify.org?format=json");
+    const data = await res.json();
+    return data.ip || "";
+  } catch {
+    return "";
+  }
+}
 
-  const handleBannerClick = useCallback((e: React.MouseEvent<HTMLAnchorElement>) => {
-    if (!activeBanner) return;
-    e.preventDefault();
+useEffect(() => {
+  fetchClientIp().then(setClientIp);
+}, []);
+const handleBannerClick = useCallback((e: React.MouseEvent<HTMLAnchorElement>) => {
+  if (!activeBanner) return;
+  e.preventDefault();
 
-    // Unique click ID per click — like Google's gclid
-    const clickId = "ck_" + Math.random().toString(36).slice(2) + Date.now().toString(36);
+  const clickId = "ck_" + Math.random().toString(36).slice(2) + Date.now().toString(36);
 
-    // Append cfs_click_id to the UTM url
-    let finalUrl = bannerClickUrl;
-    try {
-      const u = new URL(bannerClickUrl);
-      u.searchParams.set("cfs_click_id", clickId);
-      finalUrl = u.toString();
-    } catch { /* fallback to base url */ }
+  let finalUrl = bannerClickUrl;
+  try {
+    const u = new URL(bannerClickUrl);
+    u.searchParams.set("cfs_click_id", clickId);
+    finalUrl = u.toString();
+  } catch { /* fallback to base url */ }
 
-    // Track click internally in CFS WordPress — fire BEFORE window.open().
-    // On mobile browsers (esp. iOS Safari), a JS-triggered window.open() from a
-    // preventDefault()'d anchor click can start unloading/navigating the page
-    // immediately, cutting off any code that runs after it. Sending the request
-    // first guarantees it's dispatched before that can happen.
-    //
-    // Use fetch(keepalive) instead of sendBeacon: sendBeacon is forced into
-    // no-cors mode, which only allows CORS-safelisted headers — our cross-origin
-    // "Content-Type: application/json" isn't one of them, so the WordPress REST
-    // API can fail to parse the body and silently drop the event. Plain fetch
-    // (same approach the working impression tracker uses) goes through normal
-    // CORS with a preflight, so the real content-type header survives.
-    const body = JSON.stringify({
-      banner_id: Number(activeBanner.id),
-      event_type: "click",
-      click_id: clickId,
-      session_id: sessionStorage.getItem("blr_session") || "home_" + Date.now(),
-      page_url: window.location.href,
-      device_type: window.innerWidth < 768 ? "mobile" : "desktop",
-      user_agent: navigator.userAgent,
-      ip_address: "",
-    });
-    const trackUrl = `${process.env.NEXT_PUBLIC_CF7_BASE || "https://admin.caravansforsale.com.au"}/wp-json/ads-manager/v1/banners/track`;
-    fetch(trackUrl, { method: "POST", headers: { "Content-Type": "application/json" }, body, keepalive: true }).catch(() => {});
+  const body = JSON.stringify({
+    banner_id: Number(activeBanner.id),
+    event_type: "click",
+    click_id: clickId,
+    session_id: sessionStorage.getItem("blr_session") || "home_" + Date.now(),
+    page_url: window.location.href,
+    device_type: window.innerWidth < 768 ? "mobile" : "desktop",
+    user_agent: navigator.userAgent,
+    ip_address: clientIp,   // 👈 fix: hardcoded "" -> state value
+  });
+  const trackUrl = `${process.env.NEXT_PUBLIC_CF7_BASE || "https://admin.caravansforsale.com.au"}/wp-json/ads-manager/v1/banners/track`;
+  fetch(trackUrl, { method: "POST", headers: { "Content-Type": "application/json" }, body, keepalive: true }).catch(() => {});
 
-    // Open advertiser site in new tab with full tracking url
-    window.open(finalUrl, "_blank", "noopener,noreferrer");
-  }, [activeBanner, bannerClickUrl]);
+  window.open(finalUrl, "_blank", "noopener,noreferrer");
+}, [activeBanner, bannerClickUrl, clientIp]);   // 👈 clientIp dependency-la add pannunga
 
   const bannerSectionRef = useRef<HTMLDivElement | null>(null);
 
