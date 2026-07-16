@@ -94,6 +94,7 @@ export default function StateHome({ initialFilters, browseData, initialPool, ini
     empExclusivesRaw: Listing[];
     seoData: unknown;
     totalPages: number;
+    isIndexed: boolean;  // is_indexed value from the preload — authoritative source
   } | null>(null);
   console.log("seoo89", seo)
 
@@ -240,8 +241,19 @@ export default function StateHome({ initialFilters, browseData, initialPool, ini
     const canonicalPath = buildListingsSlug(filters);
     fetch(`/api/indexed-url/?path=${encodeURIComponent(canonicalPath)}`)
       .then((r) => (r.ok ? r.json() : null))
-      .then((json) => setIsIndexed(json?.indexed ?? false))
-      .catch(() => setIsIndexed(false));
+      .then((json) => {
+        // If a preload snapshot is active for this URL, the embedded is_indexed
+        // value is authoritative. Applying the async check result would trigger
+        // a pool re-run that overrides the correct preload layout.
+        // Note: snapshot is cleared on filter change, so this only suppresses
+        // the check on the initial page load when preload data was consumed.
+        if (preloadSnapshotRef.current !== null) return;
+        setIsIndexed(json?.indexed ?? false);
+      })
+      .catch(() => {
+        if (preloadSnapshotRef.current !== null) return;
+        setIsIndexed(false);
+      });
   }, [filters, page]);
 
   // Page 1 uses ONE shared pool call, split by slot_bucket into
@@ -328,6 +340,7 @@ export default function StateHome({ initialFilters, browseData, initialPool, ini
         empExclusivesRaw,
         seoData: seoData ?? null,
         totalPages,
+        isIndexed,  // record the is_indexed value used when consuming the preload
       };
 
       return;  // no async work, no cleanup needed
@@ -342,10 +355,13 @@ export default function StateHome({ initialFilters, browseData, initialPool, ini
       const snap = preloadSnapshotRef.current;
       if (snap.seoData) setSeo(snap.seoData as Parameters<typeof setSeo>[0]);
       const { products, premiumsRaw, exclusivesRaw, empExclusivesRaw } = snap;
-      const totalCount = products.length; // snapshot already has the real products
-      if (totalCount === 0 && empExclusivesRaw.length > 0) {
+      // Use snap.isIndexed (the is_indexed embedded in the preload), NOT the
+      // current isIndexed state — which may have been overridden by the async
+      // /api/indexed-url/ check. The preload value is authoritative.
+      const snapIsIndexed = snap.isIndexed;
+      if (empExclusivesRaw.length > 0 && products.length === 0) {
         setPool({ featured: empExclusivesRaw.map((p) => ({ ...p, is_exclusive: true })), new: [], used: [] });
-      } else if (isIndexed) {
+      } else if (snapIsIndexed) {
         const featuredSource = products.filter((p) => p.slot_bucket === "featured");
         const featuredItems  = buildFeaturedOrder(featuredSource, premiumsRaw, exclusivesRaw);
         const featuredIds    = new Set(featuredItems.map((p) => p.id));
@@ -356,6 +372,10 @@ export default function StateHome({ initialFilters, browseData, initialPool, ini
         setPool({ featured: buildFeaturedOrder(products, premiumsRaw, exclusivesRaw), new: [], used: [] });
       }
       handleTotalPages(snap.totalPages);
+      // Also restore isIndexed state to the preload's value in case the async
+      // check overrode it. This prevents the isIndexed state from drifting and
+      // causing further re-renders with the wrong layout.
+      if (isIndexed !== snapIsIndexed) setIsIndexed(snapIsIndexed);
       return;
     }
 
