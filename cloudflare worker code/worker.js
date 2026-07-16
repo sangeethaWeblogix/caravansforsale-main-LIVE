@@ -440,27 +440,4 @@ async function getRoutesMapping(env) {
  * transitions are always served with the correct buildId HTML.
  */
 function fetchFresh(request) {
-  const headers = new Headers(request.headers);
-  headers.set('Cache-Control', 'no-cache');
-  return fetch(new Request(request, { headers }));
-}
-
-function addDebugHeaders(response, cacheStatus, kvKey, errorMsg) {
-  const headers = new Headers(response.headers);
-  
-  headers.set('X-CFS-Cache', cacheStatus);
-  
-  if (kvKey) {
-    headers.set('X-CFS-Key', kvKey);
-  }
-  
-  if (errorMsg) {
-    headers.set('X-CFS-Error', errorMsg.substring(0, 100));
-  }
-  
-  return new Response(response.body, {
-    status: response.status,
-    statusText: response.statusText,
-    headers
-  });
-}
+  const headers = new Headers(r

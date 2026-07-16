@@ -4,7 +4,23 @@ import { NextRequest, NextResponse } from "next/server";
 const API_BASE = process.env.NEXT_PUBLIC_CFS_API_BASE;
 const API_KEY = process.env.CFS_API_KEY;
 
-const BASE_PARAM_KEYS = new Set(["per_page", "orderby", "seed", "page"]);
+// engine=typesense is only appended when a "real filter" (beyond these base keys)
+// is present. Typesense handles text/keyword search (make, model, search) but does
+// NOT support range filters (sleep, atm, length, price, year) or location filters
+// (state, region, suburb, pincode) — those return products:[] from typesense.
+// Keep all non-text filters in this set so typesense is only triggered for
+// make/model/search queries.
+const BASE_PARAM_KEYS = new Set([
+  "per_page", "orderby", "seed", "page",
+  // Structured/range filters — WP native engine handles these correctly:
+  "state", "category", "region", "condition",
+  "from_sleep", "to_sleep",
+  "from_atm", "to_atm",
+  "from_length", "to_length",
+  "from_price", "to_price",
+  "acustom_fromyears", "acustom_toyears",
+  "suburb", "pincode",
+]);
 
 async function fetchPoolTest(url: string, signal: AbortSignal) {
   const res = await fetch(url, {
@@ -115,19 +131,4 @@ export async function GET(request: NextRequest) {
     console.log("[WP API pool_test] summary:", {
       params: params.substring(0, 200),
       success: data?.success,
-      total_products: data?.pagination?.total_products,
-      pool_size: data?.pagination?.pool_size,
-      products_returned: data?.products?.length ?? data?.data?.products?.length ?? 0,
-      premium_products: data?.premium_products?.length ?? data?.data?.premium_products?.length ?? 0,
-      exclusive_products: data?.exclusive_products?.length ?? data?.data?.exclusive_products?.length ?? 0,
-    });
-
-    return NextResponse.json(data);
-  } catch (err: any) {
-    clearTimeout(timeoutId);
-    console.error("[WP API pool_test] Error:", err);
-    const status = err?.name === "AbortError" ? 504 : 500;
-    console.log(`[WP API pool_test] fetch error (${status}):`, err?.message);
-    return NextResponse.json({ success: false }, { status });
-  }
-}
+      total_
