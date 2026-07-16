@@ -334,7 +334,7 @@ export default function StateHome({ initialFilters, browseData, initialPool, ini
 
         handleTotalPages(json?.pagination?.total_pages ?? 1);
       })
-      .catch(() => { if (!cancelled) setPool({ featured: [], new: [], used: [] }); })
+      .catch((err) => { console.warn('[StateHome] pool fetch failed, retaining existing data:', (err as any)?.message); })
       .finally(() => { if (!cancelled) setPoolLoading(false); });
 
     return () => { cancelled = true; };
