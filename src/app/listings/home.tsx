@@ -75,11 +75,6 @@ export default function StateHome({ initialFilters, browseData, initialPool, ini
   // three sections, non-indexed pages get one combined grid.
   const [isIndexed, setIsIndexed] = useState(initialPool?.isIndexed ?? true);
 
-  // DEBUG — remove after verification
-  useEffect(() => {
-    console.log("[StateHome] isIndexed=", initialPool?.isIndexed, "browseData keys=", Object.keys(browseData ?? {}), "priceCounts=", (browseData as any)?.priceCounts);
-  }, []);
-
   // Tracks whether we already consumed window.__INITIAL_POOL__ (injected by
   // the cache generator into pre-rendered HTML). Once consumed we let the
   // normal fetch path take over so filter-changes and page-turns fetch live.
