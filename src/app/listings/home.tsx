@@ -625,6 +625,7 @@ export default function StateHome({ initialFilters, browseData, initialPool, ini
                 loading={false}
                 showSpotlight={true}
                 hideViewAll
+                hideBanners={!!filters.make}
               />
               <StateListingGrid
                 title=""
@@ -632,6 +633,7 @@ export default function StateHome({ initialFilters, browseData, initialPool, ini
                 items={ip.new}
                 loading={false}
                 hideViewAll={page > 1}
+                hideBanners={!!filters.make}
               />
               <StateListingGrid
                 title=""
@@ -639,6 +641,7 @@ export default function StateHome({ initialFilters, browseData, initialPool, ini
                 items={ip.used}
                 loading={false}
                 hideViewAll={page > 1}
+                hideBanners={!!filters.make}
               />
             </>
           ) : (
@@ -650,6 +653,7 @@ export default function StateHome({ initialFilters, browseData, initialPool, ini
               loading={false}
               showSpotlight={true}
               hideViewAll
+              hideBanners={!!filters.make}
             />
           )}
           <StateBrowseSection state={filters.state} region={filters.region} category={filters.category} initialData={browseData} />
@@ -752,6 +756,7 @@ export default function StateHome({ initialFilters, browseData, initialPool, ini
               loading={poolLoading}
               showSpotlight={true}
               hideViewAll
+              hideBanners={!!filters.make}
             />
 
             <StateListingGrid
@@ -759,6 +764,7 @@ export default function StateHome({ initialFilters, browseData, initialPool, ini
               viewAllHref={buildListingsSlug(filters, "New")}
               items={pool.new}
               loading={poolLoading}
+              hideBanners={!!filters.make}
             />
 
             <StateListingGrid
@@ -766,6 +772,7 @@ export default function StateHome({ initialFilters, browseData, initialPool, ini
               viewAllHref={buildListingsSlug(filters, "Used")}
               items={pool.used}
               loading={poolLoading}
+              hideBanners={!!filters.make}
             />
           </>
         ) : (
@@ -778,6 +785,7 @@ export default function StateHome({ initialFilters, browseData, initialPool, ini
             loading={poolLoading}
             showSpotlight={true}
             hideViewAll
+            hideBanners={!!filters.make}
           />
         )}
 

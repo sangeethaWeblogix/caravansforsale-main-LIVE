@@ -32,6 +32,11 @@ interface Props {
   stateBands: Item[];
   requirements: any;
   homeblog: any[];
+  offRoadCount: number;
+  offRoadPriceMin: number;
+  offRoadPriceMax: number;
+  offRoadUsedPriceMin: number;
+  offRoadUsedPriceMax: number;
 }
 
 const CITY_LINKS = [
@@ -161,32 +166,82 @@ const GUIDES = [
   },
 ];
 
-export default function OffRoadCaravansPage({ stateBands }: Props) {
+export default function OffRoadCaravansPage({ stateBands, offRoadCount, offRoadPriceMin, offRoadPriceMax, offRoadUsedPriceMin, offRoadUsedPriceMax }: Props) {
   return (
     <div style={{ overflowX: "hidden" }}>
 
-      {/* ── Hero ── */}
-      <section className="or-hero">
-        <picture>
-          <source media="(max-width: 767px)" srcSet="/images/banner_top_mb_new.webp" />
-          <img src="/images/banner_top_dk_new.webp" alt="Off Road Caravans in Australia" className="or-hero__img" />
-        </picture>
-        <div className="or-hero__overlay">
-          <div className="container">
-            <div className="or-hero__content">
-              <h1 className="or-hero__title">Off Road Caravans<br />in Australia</h1>
-              <p className="or-hero__subtitle">
-                Compare brands, browse listings by state, and explore<br />
-                the best off-road caravan guides, reviews and buying advice.
-              </p>
-              <div className="or-hero__btns">
-                <a href="/listings/off-road-category/" className="or-btn or-btn--primary">Browse Listings →</a>
-                <a href="/blog/" className="or-btn or-btn--outline">Explore Guides →</a>
+      {/* ── Hero Banner ── */}
+      <section className="hd-banner">
+        <div className="container">
+          <h1 className="hd-banner__title">
+            Off Road Caravans <span className="hd-banner__title--orange">in Australia</span>
+          </h1>
+          <div className="hd-banner__divider">
+            <span className="hd-banner__divider-line" />
+            <img src="/images/aus_outline.svg" alt="" className="hd-banner__divider-icon" />
+            <span className="hd-banner__divider-line" />
+          </div>
+          <p className="hd-banner__subtitle">
+            Compare brands, browse listings by state, and explore the best off-road caravan guides, reviews and buying advice.
+          </p>
+          <div className="hd-banner__trust">
+            <div className="hd-banner__trust-item">
+              <div className="hd-banner__trust-icon-wrap">
+                <img src="/images/category.svg" alt="" className="hd-banner__trust-icon" width={26} height={26} />
               </div>
+              <div className="hd-banner__trust-text">
+                <strong>Thousands of Listings</strong>
+                <span>New &amp; used off road caravans across Australia</span>
+              </div>
+            </div>
+            <div className="hd-banner__trust-item">
+              <div className="hd-banner__trust-icon-wrap">
+                <img src="/images/australia.png" alt="" className="hd-banner__trust-icon" width={26} height={26} />
+              </div>
+              <div className="hd-banner__trust-text">
+                <strong>Australia Wide</strong>
+                <span>Find off road caravans from every state &amp; territory</span>
+              </div>
+            </div>
+            <div className="hd-banner__trust-item">
+              <div className="hd-banner__trust-icon-wrap">
+                <img src="/images/seller.svg" alt="" className="hd-banner__trust-icon" width={26} height={26} />
+              </div>
+              <div className="hd-banner__trust-text">
+                <strong>Dealers &amp; Private Sellers</strong>
+                <span>Buy with confidence from trusted sellers</span>
+              </div>
+            </div>
+          </div>
+          <a href="/listings/off-road-category/" className="hd-banner__cta">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            Browse Off Road Caravans
+          </a>
+          <div className="hd-banner__bottom">
+            <div className="hd-banner__bottom-item">
+              <img src="/images/icon1.png" alt="" className="hd-banner__bottom-icon" />
+              <div><strong>Trusted Marketplace</strong><span>Safe &amp; secure platform</span></div>
+            </div>
+            <div className="hd-banner__bottom-item">
+              <img src="/images/icon2.png" alt="" className="hd-banner__bottom-icon" />
+              <div><strong>Great Prices</strong><span>Compare &amp; save</span></div>
+            </div>
+            <div className="hd-banner__bottom-item">
+              <img src="/images/icon3.png" alt="" className="hd-banner__bottom-icon" />
+              <div><strong>Buy with Confidence</strong><span>Verified dealers &amp; sellers</span></div>
+            </div>
+            <div className="hd-banner__bottom-item">
+              <img src="/images/icon4.png" alt="" className="hd-banner__bottom-icon" />
+              <div><strong>Coast to Country</strong><span>Caravans Australia wide</span></div>
             </div>
           </div>
         </div>
       </section>
+
+      {/* ── Featured Listings ── */}
+      <HomeFeatured />
 
       {/* ── Browse by State ── */}
       <HomeStateSection stateBands={stateBands} title="Browse Off Road Caravans by State" />
@@ -194,8 +249,45 @@ export default function OffRoadCaravansPage({ stateBands }: Props) {
       {/* ── Location + Search Your Way ── */}
       <HomeLocationSection />
 
-      {/* ── Featured Listings ── */}
-      <HomeFeatured />
+      {/* ── Market Snapshot ── */}
+      <section className="or-snapshot">
+        <div className="container">
+          <div className="or-snapshot__card">
+            <h2 className="or-snapshot__title">Off Road Caravan Market Snapshot</h2>
+            <div className="or-snapshot__row">
+              <div className="or-snapshot__item">
+                <img src="/images/caravan_black.png" alt="" className="or-snapshot__icon" />
+                <div className="or-snapshot__value">{offRoadCount.toLocaleString()}</div>
+                <div className="or-snapshot__label">Off Road Caravans<br />For Sale Now</div>
+              </div>
+              <div className="or-snapshot__divider" />
+              <div className="or-snapshot__item">
+                <img src="/images/dollar_au.png" alt="" className="or-snapshot__icon or-snapshot__icon--sm" />
+                <div className="or-snapshot__value">{offRoadPriceMin && offRoadPriceMax ? `$${offRoadPriceMin.toLocaleString()} – $${offRoadPriceMax.toLocaleString()}` : "–"}</div>
+                <div className="or-snapshot__label">Off Road Caravan<br />Price Range</div>
+              </div>
+              <div className="or-snapshot__divider" />
+              <div className="or-snapshot__item">
+                <img src="/images/good.png" alt="" className="or-snapshot__icon" />
+                <div className="or-snapshot__value">{offRoadUsedPriceMin && offRoadUsedPriceMax ? `$${offRoadUsedPriceMin.toLocaleString()} – $${offRoadUsedPriceMax.toLocaleString()}` : "–"}</div>
+                <div className="or-snapshot__label">Used Off Road<br />Price Range</div>
+              </div>
+              <div className="or-snapshot__divider" />
+              <div className="or-snapshot__item">
+                <img src="/images/ruler.png" alt="" className="or-snapshot__icon" />
+                <div className="or-snapshot__value">18 – 22 ft</div>
+                <div className="or-snapshot__label">Most Popular<br />Length</div>
+              </div>
+              <div className="or-snapshot__divider" />
+              <div className="or-snapshot__item">
+                <img src="/images/double.png" alt="" className="or-snapshot__icon" />
+                <div className="or-snapshot__value">2 – 4 People</div>
+                <div className="or-snapshot__label">Most Popular<br />Sleeps</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* ── Guides Section ── */}
       <section className="or-guides-section">

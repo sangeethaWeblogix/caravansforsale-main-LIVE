@@ -43,6 +43,7 @@ interface Props {
   onTotalPages?: (n: number) => void;
   onSeo?: (seo: SeoV2) => void;
   maxItems?: number;
+  hideBanners?: boolean;
 }
 
 const PROMO_BANNERS = [
@@ -446,7 +447,7 @@ function SkeletonCard() {
 }
 
 /* ── Main grid component ── */
-export default function StateListingGrid({ title, viewAllHref, apiUrl, items: externalItems, loading: externalLoading, showSpotlight, hideViewAll, hideTitle, titleAs = "h2", skeletonCount = 10, page = 1, onTotalPages, onSeo, maxItems }: Props) {
+export default function StateListingGrid({ title, viewAllHref, apiUrl, items: externalItems, loading: externalLoading, showSpotlight, hideViewAll, hideTitle, titleAs = "h2", skeletonCount = 10, page = 1, onTotalPages, onSeo, maxItems, hideBanners }: Props) {
 
   const [fetchedItems,  setFetchedItems]  = useState<Listing[]>([]);
   const [fetchLoading,  setFetchLoading]  = useState(true);
@@ -526,6 +527,9 @@ export default function StateListingGrid({ title, viewAllHref, apiUrl, items: ex
     : emptyInLastRow <= 3
       ? Array.from({ length: emptyInLastRow }, (_, i) => i)
       : [0, 1, 2];
+  const activeBanners = (hideBanners || !!(apiUrl?.includes('make=')))
+    ? PROMO_BANNERS.filter(b => !b.src.includes('home.jpg'))
+    : PROMO_BANNERS;
 
   // No title/section at all once we know for sure there's nothing to show —
   // an empty heading with a blank grid under it reads as broken, not "no results".
@@ -569,7 +573,10 @@ export default function StateListingGrid({ title, viewAllHref, apiUrl, items: ex
                 if (bi === -1) {
                   return <div key={`spacer-${i}`} className="lsd-promo-spacer" aria-hidden="true" />;
                 }
-                const b = PROMO_BANNERS[bi];
+                const b = activeBanners[bi];
+                if (!b) {
+                  return <div key={`spacer-${i}`} className="lsd-promo-spacer" aria-hidden="true" />;
+                }
                 return (
                   <a key={`promo-${i}`} href={b.href} className="lsd-promo-card" aria-label={b.alt}>
                     <img src={b.src} alt={b.alt} className="lsd-promo-card__img" />
