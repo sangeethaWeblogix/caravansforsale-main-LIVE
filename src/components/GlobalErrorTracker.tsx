@@ -53,9 +53,32 @@ export default function GlobalErrorTracker() {
     window.addEventListener("error", onError);
     window.addEventListener("unhandledrejection", onUnhandledRejection);
 
+    // Intercept RSC navigation requests — if the old deployment has been removed
+    // (Vercel returns 410 GONE), the browser would silently blank out sections.
+    // Detect this and do a hard reload so the new deployment's HTML is served.
+    const originalFetch = window.fetch;
+    let reloading = false;
+    window.fetch = async function (...args: Parameters<typeof fetch>) {
+      const res = await originalFetch.apply(this, args);
+      if (res.status === 410 && !reloading) {
+        const reqUrl =
+          typeof args[0] === "string"
+            ? args[0]
+            : args[0] instanceof Request
+            ? args[0].url
+            : "";
+        if (reqUrl.includes("_rsc=")) {
+          reloading = true;
+          window.location.reload();
+        }
+      }
+      return res;
+    };
+
     return () => {
       window.removeEventListener("error", onError);
       window.removeEventListener("unhandledrejection", onUnhandledRejection);
+      window.fetch = originalFetch;
     };
   }, []);
 
