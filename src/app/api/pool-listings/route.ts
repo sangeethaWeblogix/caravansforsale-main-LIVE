@@ -89,6 +89,9 @@ export async function GET(request: NextRequest) {
         }
       }
       console.log(`[WP API pool_test] non-OK status: ${res.status}`);
+      if (data?.ts_debug || data?.message) {
+        console.error(`[WP API pool_test] error message: ${data?.message}`, "ts_debug:", data?.ts_debug);
+      }
       return NextResponse.json({ success: false }, { status: res.status });
     }
 

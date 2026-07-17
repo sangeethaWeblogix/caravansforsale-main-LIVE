@@ -18,7 +18,8 @@ function normalizeProduct(p: any): any {
 
 export async function GET(request: NextRequest) {
   const type = request.nextUrl.searchParams.get("type") ?? "all";
-  const url = `${API_BASE}/home_featured?type=${encodeURIComponent(type)}`;
+  const seed = request.nextUrl.searchParams.get("seed");
+  const url = `${API_BASE}/home_featured?type=${encodeURIComponent(type)}${seed ? `&seed=${encodeURIComponent(seed)}` : ""}`;
 
   const visitorIp =
     request.headers.get("cf-connecting-ip") ||
