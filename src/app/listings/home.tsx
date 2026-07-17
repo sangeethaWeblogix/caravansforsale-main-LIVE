@@ -54,7 +54,6 @@ interface Props {
 }
 
 export default function StateHome({ initialFilters, browseData, initialPool, initialSeo }: Props) {
-  console.log("[StateHome] browseData=", JSON.stringify(browseData), "isIndexed=", initialPool?.isIndexed);
   const [filters,  setFilters]  = useState<FilterState>(initialFilters);
   const [page,     setPage]     = useState(1);
   const [maxPages, setMaxPages] = useState(initialPool?.maxPages ?? 1);
@@ -75,6 +74,12 @@ export default function StateHome({ initialFilters, browseData, initialPool, ini
   // Featured/New/Used split: indexed pages split the pool by slot_bucket into
   // three sections, non-indexed pages get one combined grid.
   const [isIndexed, setIsIndexed] = useState(initialPool?.isIndexed ?? true);
+
+  // DEBUG — remove after verification
+  useEffect(() => {
+    console.log("[StateHome] isIndexed=", initialPool?.isIndexed, "browseData keys=", Object.keys(browseData ?? {}), "priceCounts=", (browseData as any)?.priceCounts);
+  }, []);
+
   // Tracks whether we already consumed window.__INITIAL_POOL__ (injected by
   // the cache generator into pre-rendered HTML). Once consumed we let the
   // normal fetch path take over so filter-changes and page-turns fetch live.

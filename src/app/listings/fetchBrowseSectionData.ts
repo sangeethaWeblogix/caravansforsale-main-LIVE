@@ -65,7 +65,6 @@ async function fetchBandExistsServer(scope: Record<string, string>, query: strin
   try {
     const qs = new URLSearchParams({ ...scope });
     new URLSearchParams(query).forEach((v, k) => qs.set(k, v));
-    console.log("[fetchBandExistsServer] product_exists_check →", qs.toString());
     const res = await fetch(`${API_BASE}/product_exists_check?${qs.toString()}`, {
       headers: wpHeaders(),
       next: { revalidate: 3600 },
@@ -111,7 +110,6 @@ export async function fetchBrowseSectionData(
   const categoryStateMode       = hasState && hasCategory && !hasRegion;
   const categoryStateRegionMode = hasState && hasCategory && hasRegion;
 
-  console.log("[fetchBrowseSectionData] isIndexed=", isIndexed, "| state=", state, "region=", region, "category=", category);
   // Choose band-count fetcher based on whether this page is indexed
   const fetchBand = isIndexed ? fetchBandCountServer : fetchBandExistsServer;
 
