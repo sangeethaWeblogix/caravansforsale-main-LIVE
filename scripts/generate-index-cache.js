@@ -263,35 +263,78 @@ function buildPoolRequestUrl(urlPath, seed) {
   s = s.replace(/^\/+|\/+$/g, '');
   const segments = s.split('/').filter(Boolean);
 
-  let category, condition, state, region, fromPrice, toPrice;
+  let category, condition, state, region, make, model,
+      fromPrice, toPrice, fromAtm, toAtm,
+      fromSleep, toSleep, fromYear, toYear,
+      fromLength, toLength, suburb, pincode;
 
-  for (const seg of segments) {
-    if (seg.endsWith('-category')) {
-      category = seg.replace('-category', '');
-    } else if (seg.endsWith('-condition')) {
-      const raw = seg.replace('-condition', '').toLowerCase();
+  for (const rawSeg of segments) {
+    const seg = rawSeg.toLowerCase();
+    let m;
+
+    if (seg.endsWith('-category'))  { category = seg.replace('-category', ''); continue; }
+    if (seg.endsWith('-condition')) {
+      const raw = seg.replace('-condition', '');
       condition = raw === 'new' ? 'New' : raw === 'used' ? 'Used' : raw;
-    } else if (seg.endsWith('-state')) {
-      state = seg.replace('-state', '').replace(/-/g, ' ').toLowerCase();
-    } else if (seg.endsWith('-region')) {
-      region = seg.replace('-region', '').replace(/-/g, ' ').toLowerCase();
-    } else if (/^under-\d+$/.test(seg)) {
-      toPrice = seg.replace('under-', '');
-    } else if (/^over-\d+$/.test(seg)) {
-      fromPrice = seg.replace('over-', '');
+      continue;
     }
+    if (seg.endsWith('-state'))  { state  = seg.replace('-state', '').replace(/-/g, ' '); continue; }
+    if (seg.endsWith('-region')) { region = seg.replace('-region', '').replace(/-/g, ' '); continue; }
+    if (seg.endsWith('-make'))   { make   = seg.slice(0, -5); continue; }
+    if (seg.endsWith('-model'))  { model  = seg.slice(0, -6); continue; }
+
+    const suburbPin = seg.match(/^([a-z0-9-]+)-(\d{4})-suburb$/);
+    if (suburbPin) { suburb = suburbPin[1].replace(/-/g, ' '); pincode = suburbPin[2]; continue; }
+    if (seg.endsWith('-suburb')) { suburb = seg.slice(0, -7).replace(/-/g, ' '); continue; }
+    if (/^\d{4}$/.test(seg))    { pincode = seg; continue; }
+
+    m = seg.match(/^between-(\d+)-kg-(\d+)-kg-atm$/);  if (m) { fromAtm = m[1]; toAtm = m[2]; continue; }
+    m = seg.match(/^between-(\d+)-(\d+)-kg-atm$/);     if (m) { fromAtm = m[1]; toAtm = m[2]; continue; }
+    m = seg.match(/^between-(\d+)-kg-(\d+)-atm$/);     if (m) { fromAtm = m[1]; toAtm = m[2]; continue; }
+    m = seg.match(/^between-(\d+)-and-(\d+)-kg-atm$/); if (m) { fromAtm = m[1]; toAtm = m[2]; continue; }
+    m = seg.match(/^under-(\d+)-kg-atm$/);             if (m) { toAtm = m[1]; continue; }
+    m = seg.match(/^over-(\d+)-kg-atm$/);              if (m) { fromAtm = m[1]; continue; }
+
+    m = seg.match(/^between-(\d+)-(\d+)-length-in-feet$/);        if (m) { fromLength = m[1]; toLength = m[2]; continue; }
+    m = seg.match(/^between-(\d+)-ft-(\d+)-ft-length-in-feet$/);  if (m) { fromLength = m[1]; toLength = m[2]; continue; }
+    m = seg.match(/^between-(\d+)-and-(\d+)-length-in-feet$/);    if (m) { fromLength = m[1]; toLength = m[2]; continue; }
+
+    m = seg.match(/^(\d+)-to-(\d+)-people-sleeping-capacity$/);      if (m) { fromSleep = m[1]; toSleep = m[2]; continue; }
+    m = seg.match(/^between-(\d+)-(\d+)-people-sleeping-capacity$/); if (m) { fromSleep = m[1]; toSleep = m[2]; continue; }
+    m = seg.match(/^(\d+)-people-sleeping-capacity$/);               if (m) { fromSleep = m[1]; toSleep = m[1]; continue; }
+
+    m = seg.match(/^between-(\d+)-(\d+)$/);     if (m) { fromPrice = m[1]; toPrice = m[2]; continue; }
+    m = seg.match(/^between-(\d+)-and-(\d+)$/); if (m) { fromPrice = m[1]; toPrice = m[2]; continue; }
+    m = seg.match(/^under-(\d+)$/);             if (m) { toPrice = m[1]; continue; }
+    m = seg.match(/^over-(\d+)$/);              if (m) { fromPrice = m[1]; continue; }
+
+    m = seg.match(/^(\d{4})-(\d{4})$/);
+    if (m) { fromYear = m[1]; toYear = m[2]; continue; }
   }
 
-  // Build params in same order as buildApiUrl() so the string matches exactly
+  // Build params in EXACT same order as buildApiUrl() in src/app/listings/urlUtils.ts
+  // so preload.url === requestUrl check in home.tsx always passes for every URL type.
   const params = new URLSearchParams();
   params.set('orderby', 'default');
   params.set('seed', String(seed));
-  if (state)     params.set('state', state);
-  if (category)  params.set('category', category);
-  if (region)    params.set('region', region);
-  if (fromPrice) params.set('from_price', fromPrice);
-  if (toPrice)   params.set('to_price', toPrice);
-  if (condition) params.set('condition', condition);
+  if (state)      params.set('state',             state);
+  if (category)   params.set('category',          category);
+  if (make)       params.set('make',              make);
+  if (model)      params.set('model',             model);
+  if (region)     params.set('region',            region);
+  if (suburb)     params.set('suburb',            suburb);
+  if (pincode)    params.set('pincode',           pincode);
+  if (fromPrice)  params.set('from_price',        fromPrice);
+  if (toPrice)    params.set('to_price',          toPrice);
+  if (fromAtm)    params.set('from_atm',          fromAtm);
+  if (toAtm)      params.set('to_atm',            toAtm);
+  if (fromSleep)  params.set('from_sleep',        fromSleep);
+  if (toSleep)    params.set('to_sleep',          toSleep);
+  if (fromYear)   params.set('acustom_fromyears', fromYear);
+  if (toYear)     params.set('acustom_toyears',   toYear);
+  if (fromLength) params.set('from_length',       fromLength);
+  if (toLength)   params.set('to_length',         toLength);
+  if (condition)  params.set('condition',         condition);
 
   return `/api/pool-listings/?per_page=24&${params.toString()}&page=1`;
 }

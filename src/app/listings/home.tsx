@@ -212,15 +212,18 @@ export default function StateHome({ initialFilters, browseData, initialPool, ini
     // /api/indexed-url/ check resolves to a different value than the default.
     try {
       const win = window as unknown as Record<string, unknown>;
-      const preload = win.__INITIAL_POOL__ as { is_indexed?: boolean } | undefined;
-      if (typeof preload?.is_indexed === "boolean") {
-        setIsIndexed(preload.is_indexed);
-        // Raise the sentinel SYNCHRONOUSLY so that any /api/indexed-url/ fetch
-        // callback (even one served from browser cache as a microtask, which
-        // fires before the pool-effect macro task) sees it and skips calling
-        // setIsIndexed. Without this, a cached indexed-url response fires before
-        // preloadSnapshotRef is set, bypasses that guard, and corrupts isIndexed.
+      const preload = win.__INITIAL_POOL__ as { url?: string; is_indexed?: boolean } | undefined;
+      if (preload?.url) {
+        // Raise the sentinel SYNCHRONOUSLY whenever __INITIAL_POOL__ exists —
+        // regardless of whether is_indexed is present (pool_test doesn't return
+        // is_indexed at the top level, so that check was always false before).
+        // The pool effect will either consume the preload (URL match) or fall
+        // through to a live fetch. Either way, /api/indexed-url/ must not fire
+        // setIsIndexed until after that first pool-effect run completes.
         preloadReadRef.current = true;
+        if (typeof preload.is_indexed === "boolean") {
+          setIsIndexed(preload.is_indexed);
+        }
       }
     } catch {
       // ignore — isIndexed will be corrected by the async /api/indexed-url/ check
