@@ -20,6 +20,35 @@ type BrowseTab = {
   regions?: BrowseLink[];
 };
 
+const CAT_MAJOR_CITIES = [
+  { name: "Adelaide",       img: "/images/Adelaide.png",   state: "south-australia-state",           region: "adelaide-region" },
+  { name: "Brisbane",       img: "/images/Brisbane.png",   state: "queensland-state",                region: "brisbane-region" },
+  { name: "Gold Coast",     img: "/images/Gold-Coast.png", state: "queensland-state",                region: "gold-coast-region" },
+  { name: "Melbourne",      img: "/images/Melbourne.png",  state: "victoria-state",                  region: "melbourne-region" },
+  { name: "Perth",          img: "/images/Perth.png",      state: "western-australia-state",         region: "perth-region" },
+  { name: "Sydney",         img: "/images/Sydney.png",     state: "new-south-wales-state",           region: "sydney-region" },
+];
+const CAT_MINOR_CITIES = [
+  { name: "Cairns",         state: "queensland-state",                   region: "cairns-region" },
+  { name: "Canberra",       state: "australian-capital-territory-state", region: "" },
+  { name: "Darwin",         state: "northern-territory-state",           region: "darwin-region" },
+  { name: "Geelong",        state: "victoria-state",                     region: "geelong-region" },
+  { name: "Hobart",         state: "tasmania-state",                     region: "hobart-region" },
+  { name: "Newcastle",      state: "new-south-wales-state",              region: "newcastle-region" },
+  { name: "Sunshine Coast", state: "queensland-state",                   region: "sunshine-coast-region" },
+  { name: "Townsville",     state: "queensland-state",                   region: "townsville-region" },
+  { name: "Wollongong",     state: "new-south-wales-state",              region: "illawarra-region" },
+  { name: "Ballarat",       state: "victoria-state",                     region: "ballarat-region" },
+];
+const CAT_STATES = [
+  { name: "Victoria",          slug: "victoria-state",                  img: "/images/vic_map.svg" },
+  { name: "New South Wales",   slug: "new-south-wales-state",           img: "/images/nsw_map.svg" },
+  { name: "Queensland",        slug: "queensland-state",                img: "/images/qld_map.svg" },
+  { name: "South Australia",   slug: "south-australia-state",           img: "/images/sa_map.svg" },
+  { name: "Western Australia", slug: "western-australia-state",         img: "/images/wa_map.svg" },
+  { name: "Tasmania",          slug: "tasmania-state",                  img: "/images/tas_map.svg" },
+];
+
 const BROWSE_TABS: BrowseTab[] = [
   {
     label: "Location",
@@ -572,6 +601,54 @@ export default function BlogDetailsPage({
         </div>
       </section>
 
+      <FaqSection data={data?.data?.blog_detail?.faq ?? []} cats={cats} />
+
+      {/* ── Browse by Popular Location ── */}
+      {cats.length > 0 && (
+        <section className="bds-cat-loc">
+          <div className="container">
+            <h2 className="bds-cat-title">Find {catLabel} Caravans by Popular Location</h2>
+            <div className="bds-cat-loc__major">
+              {CAT_MAJOR_CITIES.map((city) => (
+                <a key={city.name} href={`${catLink}${city.state}/${city.region}/`} className="bds-cat-city-card">
+                  <div className="bds-cat-city-img-wrap">
+                    <img src={city.img} alt={city.name} className="bds-cat-city-img" loading="lazy" />
+                  </div>
+                  <span className="bds-cat-city-name">{catLabel} Caravans in {city.name} <i className="bi bi-chevron-right bds-cat-city-arrow" /></span>
+                </a>
+              ))}
+            </div>
+            <div className="bds-cat-loc__minor">
+              {CAT_MINOR_CITIES.map((city) => (
+                <a key={city.name} href={`${catLink}${city.state}/${city.region ? city.region + "/" : ""}`} className="bds-cat-minor-pill">
+                  {catLabel} Caravans in {city.name}
+                </a>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ── Browse by State ── */}
+      {cats.length > 0 && (
+        <section className="bds-cat-state">
+          <div className="container">
+            <h2 className="bds-cat-title">Find {catLabel} Caravans by State</h2>
+            <div className="bds-cat-state__grid">
+              {CAT_STATES.map((s) => (
+                <a key={s.name} href={`${catLink}${s.slug}/`} className="bds-cat-state-card">
+                  <img src={s.img} alt={s.name} className="bds-cat-state-img" loading="lazy" />
+                  <span className="bds-cat-state-name">{catLabel} Caravans in {s.name}</span>
+                </a>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      <BlogFeaturedListings products={data?.data?.blog_detail?.category_featured_products ?? []} category={catLabel} />
+      <RelatedNews blogs={data?.data?.related_blogs ?? []} />
+
       {/* ── Buy or Sell CTA ── */}
       <section className="bds-cta-section">
         <div className="bds-cta-card">
@@ -588,10 +665,6 @@ export default function BlogDetailsPage({
           </p>
         </div>
       </section>
-
-      <FaqSection data={data?.data?.blog_detail?.faq ?? []} cats={cats} />
-      <BlogFeaturedListings products={data?.data?.blog_detail?.category_featured_products ?? []} category={catLabel} />
-      <RelatedNews blogs={data?.data?.related_blogs ?? []} />
     </div>
   );
 }
