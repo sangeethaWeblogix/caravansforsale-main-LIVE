@@ -46,9 +46,16 @@ export async function GET(request: NextRequest) {
     console.log(`[WP API] home_featured type=${type} ip=${visitorIp || "(none)"} — ${Date.now() - t0}ms`);
 
     if (!res.ok) {
+      console.error(`[WP API] home_featured type=${type} non-OK status: ${res.status}`);
       return NextResponse.json(
         { success: false },
-        { status: res.status, headers: { "Cache-Control": "no-store" } }
+        {
+          status: res.status,
+          headers: {
+            "X-Debug-Visitor-IP": visitorIp || "(none)",
+            "Cache-Control": "no-store",
+          },
+        }
       );
     }
 
@@ -72,9 +79,16 @@ export async function GET(request: NextRequest) {
   } catch (err: any) {
     clearTimeout(timeoutId);
     const status = err?.name === "AbortError" ? 504 : 500;
+    console.error(`[WP API] home_featured type=${type} fetch error (${status}):`, err?.message);
     return NextResponse.json(
       { success: false },
-      { status, headers: { "Cache-Control": "no-store" } }
+      {
+        status,
+        headers: {
+          "X-Debug-Visitor-IP": visitorIp || "(none)",
+          "Cache-Control": "no-store",
+        },
+      }
     );
   }
 }
