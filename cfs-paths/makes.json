@@ -1,9 +1,10 @@
 {
     "success": true,
     "type": "makes",
-    "count": 257,
+    "count": 254,
     "paths": [
         "adria/",
+        "alpha-rv/",
         "apache/",
         "arctic/",
         "argonaut/",
@@ -34,7 +35,6 @@
         "boroma/",
         "boss-adventure/",
         "boutique/",
-        "brilliant/",
         "bruder/",
         "bushmaster/",
         "bushtracker/",
@@ -91,7 +91,6 @@
         "fusion/",
         "future/",
         "galaxy/",
-        "gazal/",
         "gold-class/",
         "golden-eagle/",
         "goldfields-campers/",
@@ -137,7 +136,6 @@
         "lifestyle-campers/",
         "long-haul-campers/",
         "lotus/",
-        "lunar/",
         "majestic/",
         "malibu/",
         "mars-campers/",
@@ -203,7 +201,6 @@
         "snowy-river/",
         "southern-cross/",
         "spaceline/",
-        "spinifex/",
         "sportscruiser/",
         "stallion/",
         "star-vision/",
@@ -261,5 +258,5 @@
         "york/",
         "zone-rv/"
     ],
-    "generated_at": "2026-07-16 15:54:03"
+    "generated_at": "2026-07-17 15:53:54"
 }
