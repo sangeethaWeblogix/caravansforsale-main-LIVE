@@ -23,8 +23,8 @@ type Listing = {
   berths?: string | number;
 };
 
-async function fetchFeaturedListings(): Promise<Listing[]> {
-  const requestUrl = "/api/home-featured/?type=all";
+async function fetchFeaturedListings(seed?: number): Promise<Listing[]> {
+  const requestUrl = `/api/home-featured/?type=all${seed ? `&seed=${seed}` : ""}`;
   console.log("[HomeFeatured] API:", requestUrl);
   const res = await fetch(requestUrl, { cache: "no-store" });
   console.log("[HomeFeatured] visitor IP forwarded:", res.headers.get("x-debug-visitor-ip"));
@@ -34,7 +34,11 @@ async function fetchFeaturedListings(): Promise<Listing[]> {
   return json?.data?.products ?? json?.products ?? (Array.isArray(json?.data) ? json.data : []) ?? [];
 }
 
-export default function HomeFeatured() {
+interface Props {
+  seed?: number;
+}
+
+export default function HomeFeatured({ seed }: Props) {
   const [items, setItems] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
   const swiperRef = useRef<SwiperType | null>(null);
@@ -42,11 +46,12 @@ export default function HomeFeatured() {
   const [isEnd, setIsEnd] = useState(false);
 
   useEffect(() => {
-    fetchFeaturedListings()
+    if (!seed) return;
+    fetchFeaturedListings(seed)
       .then(setItems)
       .catch(() => setItems([]))
       .finally(() => setLoading(false));
-  }, []);
+  }, [seed]);
 
   if (loading) {
     return (

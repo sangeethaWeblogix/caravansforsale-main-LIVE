@@ -28,9 +28,10 @@ interface Props {
   viewAllHref: string;
   apiUrl: string;
   badgeVariant: "new" | "used";
+  seed?: number;
 }
 
-export default function HomeListingSlider({ title, viewAllHref, apiUrl, badgeVariant }: Props) {
+export default function HomeListingSlider({ title, viewAllHref, apiUrl, badgeVariant, seed }: Props) {
   const [items, setItems] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
   const swiperRef = useRef<SwiperType | null>(null);
@@ -38,8 +39,10 @@ export default function HomeListingSlider({ title, viewAllHref, apiUrl, badgeVar
   const [isEnd, setIsEnd] = useState(false);
 
   useEffect(() => {
-    console.log(`[HomeListingSlider] "${title}" API:`, apiUrl);
-    fetch(apiUrl, { cache: "no-store" })
+    if (!seed) return;
+    const requestUrl = `${apiUrl}&seed=${seed}`;
+    console.log(`[HomeListingSlider] "${title}" API:`, requestUrl);
+    fetch(requestUrl, { cache: "no-store" })
       .then((r) => {
         console.log(`[HomeListingSlider] "${title}" visitor IP forwarded:`, r.headers.get("x-debug-visitor-ip"));
         return r.ok ? r.json() : null;
@@ -50,7 +53,7 @@ export default function HomeListingSlider({ title, viewAllHref, apiUrl, badgeVar
       })
       .catch(() => setItems([]))
       .finally(() => setLoading(false));
-  }, [apiUrl, title]);
+  }, [apiUrl, title, seed]);
 
   if (loading) {
     return (

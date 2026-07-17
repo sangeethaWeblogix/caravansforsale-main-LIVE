@@ -112,7 +112,7 @@ const loading = !data || !blogPosts || blogPosts.length === 0 && data.totalPages
           >
             <div className="section-head mb-60 style-5">
               <h2>
-                Valuable News, Reviews &amp; Advice From Caravan Marketplace
+                Valuable News, Reviews &amp; Advice From Marketplace Network 
               </h2>
             </div>
 
