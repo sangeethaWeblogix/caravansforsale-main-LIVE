@@ -1470,7 +1470,7 @@ tr {
   background: none;
   border: none;
   text-align: left;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
   color: #000000;
   cursor: pointer;
@@ -1814,7 +1814,14 @@ tr {
 }
 .bds-cat-state-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.12); }
 .bds-cat-state-img { width: 60px; height: 60px; object-fit: contain; margin-bottom: 14px; }
-.bds-cat-state-name { font-size: 13px; font-weight: 600; color: #1a1a1a; margin: 0; text-align: center; line-height: 1.4; }
+.bds-cat-state-name {
+    color: #000000;
+    text-align: center;
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.4;
+}
 .bds-cat-state-count { font-size: 13px; color: #3a3a3a; margin: 0 0 12px; line-height: 1.4; }
 .bds-cat-state-link { font-size: 14px; font-weight: 500; color: #1153a6; }
 .bds-cat-state-link i { color: #f47920;}
