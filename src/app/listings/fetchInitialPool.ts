@@ -3,7 +3,9 @@
  *
  * Priority:
  *  1. Cloudflare KV REST API (pre-warmed by WP admin warmer) — fast, no WP needed
- *  2. /api/pool-listings/ — live fetch through Cloudflare → WP (orange-cloud bypasses SiteGround anti-bot)
+ *  2. WordPress pool_test directly (when seed > 0) — bypasses Cloudflare's pool cache
+ *     which strips `seed` from its cache key, returning the same pool for all seeds.
+ *  3. /api/pool-listings/ — live fetch through Cloudflare → WP (seed=0 fallback)
  *
  * The parsed result is passed as `initialPool` to StateHome so the SSR HTML
  * contains real product listings from the first byte.
@@ -17,6 +19,9 @@ const CF_ACCOUNT_ID   = process.env.CF_ACCOUNT_ID;
 const CF_NAMESPACE_ID = process.env.CF_KV_NAMESPACE_ID;
 const CF_API_TOKEN    = process.env.CF_API_TOKEN;
 const APP_URL         = process.env.NEXT_PUBLIC_APP_URL || "https://www.caravansforsale.com.au";
+// Direct WP API — used when seed > 0 to bypass Cloudflare's pool cache (which strips seed).
+const WP_API_BASE     = process.env.NEXT_PUBLIC_CFS_API_BASE;
+const WP_API_KEY      = process.env.CFS_API_KEY;
 
 /**
  * Build the canonical KV key for pool data — must match worker.js buildPoolCacheKey().
@@ -54,8 +59,8 @@ function buildPoolKvKey(filters: FilterState): string {
 }
 
 /** Build the /api/pool-listings/ query string from the full FilterState. */
-function buildApiParams(filters: FilterState): URLSearchParams {
-  const params = new URLSearchParams({ orderby: "default", per_page: "24", page: "1", seed: "1" });
+function buildApiParams(filters: FilterState, seed: number): URLSearchParams {
+  const params = new URLSearchParams({ orderby: "default", per_page: "24", page: "1", seed: String(seed || 1) });
   if (filters.state)              params.set("state",             String(filters.state));
   if (filters.region)             params.set("region",            String(filters.region));
   if (filters.category)           params.set("category",          String(filters.category));
@@ -137,9 +142,45 @@ async function fetchFromKV(kvKey: string): Promise<any | null> {
   }
 }
 
-/** Live fetch from /api/pool-listings/ — goes via Cloudflare orange-cloud → WP. */
-async function fetchFromApi(filters: FilterState): Promise<any | null> {
-  const params = buildApiParams(filters);
+/**
+ * Live fetch — two paths:
+ *  - seed > 0: call WordPress pool_test directly (bypasses Cloudflare pool cache
+ *    which strips `seed` from its key, so all seeds would hit the same entry).
+ *  - seed = 0: call via /api/pool-listings/ through Cloudflare (normal fallback).
+ */
+async function fetchFromApi(filters: FilterState, seed: number): Promise<any | null> {
+  const params = buildApiParams(filters, seed);
+
+  // When a specific seed is requested, the Cloudflare Worker's pool cache must be
+  // bypassed — it normalises its cache key by deleting `seed`, so every seed would
+  // return the same cached pool. Call WordPress directly instead.
+  if (seed > 0 && WP_API_BASE) {
+    const hasRealFilter = !!(
+      filters.state || filters.region || filters.category || filters.condition ||
+      filters.make || filters.model || filters.suburb || filters.pincode ||
+      filters.from_price || filters.to_price || filters.minKg || filters.maxKg ||
+      filters.from_sleep || filters.to_sleep || filters.from_length || filters.to_length ||
+      filters.acustom_fromyears || filters.acustom_toyears || filters.keyword
+    );
+    if (hasRealFilter) params.set("engine", "typesense");
+    try {
+      const res = await fetch(`${WP_API_BASE}/pool_test?${params.toString()}`, {
+        headers: {
+          Accept: "application/json",
+          ...(WP_API_KEY && { "X-API-Key": WP_API_KEY }),
+        },
+        cache: "no-store",
+      });
+      if (!res.ok) return null;
+      const raw = await res.text();
+      const jsonStart = raw.indexOf("{");
+      return jsonStart >= 0 ? JSON.parse(raw.substring(jsonStart)) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  // Default: go through /api/pool-listings/ (Cloudflare orange-cloud → WP).
   try {
     const res = await fetch(`${APP_URL}/api/pool-listings/?${params.toString()}`, {
       cache: "no-store",
@@ -153,17 +194,24 @@ async function fetchFromApi(filters: FilterState): Promise<any | null> {
 
 /**
  * Fetch the initial pool for SSR/ISR rendering.
- * Returns null on failure — caller should render without initial pool.
+ *
+ * @param seed  When non-zero, skip the KV json:pool: cache (which is seed-agnostic)
+ *              and go straight to the live API with this seed. Used by the HTML cache
+ *              warmer which passes ?shuffle_seed=N so each KV HTML variant gets a
+ *              genuinely different product pool.
  */
 export async function fetchInitialPool(
   filters: FilterState,
-  isIndexed = true
+  isIndexed = true,
+  seed = 0
 ): Promise<InitialPool | null> {
   const kvKey = buildPoolKvKey(filters);
 
   // 1. Try KV first — only for state/region/category/condition combinations
   //    (other filter types aren't pre-cached in json:pool: KV).
-  if (kvKey) {
+  //    Skip KV when a specific seed is requested: the json:pool: cache is
+  //    seed-agnostic and would return the same pool for all 7 variants.
+  if (kvKey && !seed) {
     const kvJson = await fetchFromKV(kvKey);
     if (kvJson) {
       const parsed = parsePoolJson(kvJson, isIndexed);
@@ -173,16 +221,18 @@ export async function fetchInitialPool(
       }
     }
     console.log(`[fetchInitialPool] KV MISS: ${kvKey}`);
-  } else {
+  } else if (!kvKey) {
     console.log(`[fetchInitialPool] KV skipped (non-cacheable filters)`);
+  } else {
+    console.log(`[fetchInitialPool] KV skipped (seed=${seed} requested, using live API)`);
   }
 
   // 2. Fall back to live API (goes through Cloudflare orange-cloud → WP)
-  const apiJson = await fetchFromApi(filters);
+  const apiJson = await fetchFromApi(filters, seed);
   if (apiJson) {
     const parsed = parsePoolJson(apiJson, isIndexed);
     if (parsed) {
-      console.log(`[fetchInitialPool] API OK (${parsed.featured.length + parsed.new.length + parsed.used.length} products)`);
+      console.log(`[fetchInitialPool] API OK seed=${seed} (${parsed.featured.length + parsed.new.length + parsed.used.length} products)`);
       return parsed;
     }
   }

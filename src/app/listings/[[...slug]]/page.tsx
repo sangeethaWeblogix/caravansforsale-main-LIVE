@@ -62,10 +62,16 @@ export default async function LocationStateDemoPage({
   const canonicalPath = buildListingsSlug(initialFilters);
   const isIndexed = isPathIndexed(canonicalPath);
 
+  // shuffle_seed is injected by the HTML cache warmer (e.g. ?shuffle_seed=3) so
+  // each KV HTML variant gets a genuinely different product pool from WordPress.
+  const shuffleSeed = typeof query.shuffle_seed === "string"
+    ? (parseInt(query.shuffle_seed, 10) || 0)
+    : 0;
+
   const [browseData, initialPool] = await Promise.all([
     fetchBrowseSectionData(initialFilters, isIndexed),
-    fetchInitialPool(initialFilters, isIndexed),
+    fetchInitialPool(initialFilters, isIndexed, shuffleSeed),
   ]);
 
-  return <StateHome initialFilters={initialFilters} browseData={browseData} initialPool={initialPool} />;
+  return <StateHome initialFilters={initialFilters} browseData={browseData} initialPool={initialPool} serverIsIndexed={isIndexed} />;
 }

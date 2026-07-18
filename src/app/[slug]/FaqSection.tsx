@@ -62,7 +62,7 @@ export default function FaqSection({
                       aria-expanded={isOpen}
                     >
                       <span>{faq.heading}</span>
-                      <i className={`bi ${isOpen ? "bi-dash" : "bi-plus"}`} />
+                      <i className={`bi ${isOpen ? "bi-chevron-up" : "bi-chevron-down"}`} />
                     </button>
                     {isOpen && (
                       <div

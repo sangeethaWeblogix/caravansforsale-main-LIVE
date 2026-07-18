@@ -51,9 +51,16 @@ interface Props {
   /** Server-fetched (SSR/ISR) counts for StateBrowseSection's initial filters —
    * seeds its pills/links so they're present in page source for crawlers. */
   browseData?: BrowseSectionData;
+  /**
+   * Server-determined isIndexed value — passed separately so non-indexed pages
+   * that have initialPool=null still initialise isIndexed correctly without
+   * waiting for the async /api/indexed-url/ client check (which causes an
+   * extra pool re-fetch when it flips the default true → false).
+   */
+  serverIsIndexed?: boolean;
 }
 
-export default function StateHome({ initialFilters, browseData, initialPool, initialSeo }: Props) {
+export default function StateHome({ initialFilters, browseData, initialPool, initialSeo, serverIsIndexed }: Props) {
   const [filters,  setFilters]  = useState<FilterState>(initialFilters);
   const [page,     setPage]     = useState(1);
   const [maxPages, setMaxPages] = useState(initialPool?.maxPages ?? 1);
@@ -73,7 +80,7 @@ export default function StateHome({ initialFilters, browseData, initialPool, ini
   // indexed set — gates the full hero banner (image + description) and the
   // Featured/New/Used split: indexed pages split the pool by slot_bucket into
   // three sections, non-indexed pages get one combined grid.
-  const [isIndexed, setIsIndexed] = useState(initialPool?.isIndexed ?? true);
+  const [isIndexed, setIsIndexed] = useState(initialPool?.isIndexed ?? serverIsIndexed ?? true);
 
   // Tracks whether we already consumed window.__INITIAL_POOL__ (injected by
   // the cache generator into pre-rendered HTML). Once consumed we let the
@@ -82,7 +89,14 @@ export default function StateHome({ initialFilters, browseData, initialPool, ini
   // Tracks whether the server-fetched initialPool prop has been "consumed"
   // (i.e., the first pool useEffect run has been skipped). After that, normal
   // live fetches run on filter/seed changes.
-  const initialPropConsumed = useRef(initialPool == null);
+  //
+  // For non-indexed pages (serverIsIndexed === false) we start as already-consumed
+  // even when initialPool is non-null. This means the pool effect never skips and
+  // always fires a live fetch with the fresh random seed picked on every mount —
+  // giving different products on each refresh. The SSR initialPool still provides
+  // a fallback render while the fetch is in flight, preventing the blank-page
+  // problem that occurs when initialPool is null and the API is slow or errors.
+  const initialPropConsumed = useRef(initialPool == null || serverIsIndexed === false);
   // Snapshot of the most-recently-consumed preload data, keyed by poolApiUrl.
   // Used to re-bucket without a live fetch when only `isIndexed` changes (e.g.
   // the async /api/indexed-url/ check resolves to a different value than the
@@ -181,8 +195,10 @@ export default function StateHome({ initialFilters, browseData, initialPool, ini
     // Seed priority (highest → lowest):
     //   1. window.__SHUFFLE_SEED__  — injected by Cloudflare Worker into pre-rendered HTML
     //   2. ?shuffle_seed=N URL param — used by generate-priority-pages.js to produce variants
-    //   3. sessionStorage("demo_seed") — keeps seed stable across navigations in the same tab
-    //   4. random — fresh session fallback
+    //   3. random — fresh seed on every page mount so non-indexed (live API) pages
+    //      show different products on each refresh. sessionStorage is intentionally
+    //      NOT used here: persisting the seed across reloads caused the same variant
+    //      slot to be hit every time, making products appear frozen.
     try {
       const workerSeed = (window as unknown as Record<string, unknown>)["__SHUFFLE_SEED__"];
       const urlSeed = new URLSearchParams(window.location.search).get("shuffle_seed");
@@ -192,14 +208,7 @@ export default function StateHome({ initialFilters, browseData, initialPool, ini
         const n = parseInt(urlSeed, 10);
         if (n >= 1) setSeed(n);
       } else {
-        const stored = sessionStorage.getItem("demo_seed");
-        if (stored) {
-          setSeed(parseInt(stored, 10));
-        } else {
-          const fresh = Math.floor(Math.random() * SEED_MAX) + 1;
-          sessionStorage.setItem("demo_seed", String(fresh));
-          setSeed(fresh);
-        }
+        setSeed(Math.floor(Math.random() * SEED_MAX) + 1);
       }
     } catch {
       setSeed(Math.floor(Math.random() * SEED_MAX) + 1);
@@ -212,15 +221,18 @@ export default function StateHome({ initialFilters, browseData, initialPool, ini
     // /api/indexed-url/ check resolves to a different value than the default.
     try {
       const win = window as unknown as Record<string, unknown>;
-      const preload = win.__INITIAL_POOL__ as { is_indexed?: boolean } | undefined;
-      if (typeof preload?.is_indexed === "boolean") {
-        setIsIndexed(preload.is_indexed);
-        // Raise the sentinel SYNCHRONOUSLY so that any /api/indexed-url/ fetch
-        // callback (even one served from browser cache as a microtask, which
-        // fires before the pool-effect macro task) sees it and skips calling
-        // setIsIndexed. Without this, a cached indexed-url response fires before
-        // preloadSnapshotRef is set, bypasses that guard, and corrupts isIndexed.
+      const preload = win.__INITIAL_POOL__ as { url?: string; is_indexed?: boolean } | undefined;
+      if (preload?.url) {
+        // Raise the sentinel SYNCHRONOUSLY whenever __INITIAL_POOL__ exists —
+        // regardless of whether is_indexed is present (pool_test doesn't return
+        // is_indexed at the top level, so that check was always false before).
+        // The pool effect will either consume the preload (URL match) or fall
+        // through to a live fetch. Either way, /api/indexed-url/ must not fire
+        // setIsIndexed until after that first pool-effect run completes.
         preloadReadRef.current = true;
+        if (typeof preload.is_indexed === "boolean") {
+          setIsIndexed(preload.is_indexed);
+        }
       }
     } catch {
       // ignore — isIndexed will be corrected by the async /api/indexed-url/ check
