@@ -89,7 +89,14 @@ export default function StateHome({ initialFilters, browseData, initialPool, ini
   // Tracks whether the server-fetched initialPool prop has been "consumed"
   // (i.e., the first pool useEffect run has been skipped). After that, normal
   // live fetches run on filter/seed changes.
-  const initialPropConsumed = useRef(initialPool == null);
+  //
+  // For non-indexed pages (serverIsIndexed === false) we start as already-consumed
+  // even when initialPool is non-null. This means the pool effect never skips and
+  // always fires a live fetch with the fresh random seed picked on every mount —
+  // giving different products on each refresh. The SSR initialPool still provides
+  // a fallback render while the fetch is in flight, preventing the blank-page
+  // problem that occurs when initialPool is null and the API is slow or errors.
+  const initialPropConsumed = useRef(initialPool == null || serverIsIndexed === false);
   // Snapshot of the most-recently-consumed preload data, keyed by poolApiUrl.
   // Used to re-bucket without a live fetch when only `isIndexed` changes (e.g.
   // the async /api/indexed-url/ check resolves to a different value than the

@@ -68,16 +68,9 @@ export default async function LocationStateDemoPage({
     ? (parseInt(query.shuffle_seed, 10) || 0)
     : 0;
 
-  // For non-indexed pages, skip SSR pool fetch entirely and pass null.
-  // Non-indexed pages are not crawled by Google so there is no SEO value
-  // in SSR product data. Passing null means initialPropConsumed starts true,
-  // so the client pool effect never skips — it always fires a live fetch
-  // with the fresh random seed picked on each mount, giving different
-  // products on every refresh instead of being frozen on the seed=1 pool
-  // cached by Next.js ISR for 24 hours.
   const [browseData, initialPool] = await Promise.all([
     fetchBrowseSectionData(initialFilters, isIndexed),
-    isIndexed ? fetchInitialPool(initialFilters, isIndexed, shuffleSeed) : null,
+    fetchInitialPool(initialFilters, isIndexed, shuffleSeed),
   ]);
 
   return <StateHome initialFilters={initialFilters} browseData={browseData} initialPool={initialPool} serverIsIndexed={isIndexed} />;
