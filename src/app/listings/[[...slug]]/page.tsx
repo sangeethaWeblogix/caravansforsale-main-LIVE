@@ -62,10 +62,23 @@ export default async function LocationStateDemoPage({
   const canonicalPath = buildListingsSlug(initialFilters);
   const isIndexed = isPathIndexed(canonicalPath);
 
+  // shuffle_seed is injected by the HTML cache warmer (e.g. ?shuffle_seed=3) so
+  // each KV HTML variant gets a genuinely different product pool from WordPress.
+  const shuffleSeed = typeof query.shuffle_seed === "string"
+    ? (parseInt(query.shuffle_seed, 10) || 0)
+    : 0;
+
+  // For non-indexed pages, skip SSR pool fetch entirely and pass null.
+  // Non-indexed pages are not crawled by Google so there is no SEO value
+  // in SSR product data. Passing null means initialPropConsumed starts true,
+  // so the client pool effect never skips — it always fires a live fetch
+  // with the fresh random seed picked on each mount, giving different
+  // products on every refresh instead of being frozen on the seed=1 pool
+  // cached by Next.js ISR for 24 hours.
   const [browseData, initialPool] = await Promise.all([
     fetchBrowseSectionData(initialFilters, isIndexed),
-    fetchInitialPool(initialFilters, isIndexed),
+    isIndexed ? fetchInitialPool(initialFilters, isIndexed, shuffleSeed) : null,
   ]);
 
-  return <StateHome initialFilters={initialFilters} browseData={browseData} initialPool={initialPool} />;
+  return <StateHome initialFilters={initialFilters} browseData={browseData} initialPool={initialPool} serverIsIndexed={isIndexed} />;
 }
