@@ -287,7 +287,7 @@ const handleBannerClick = useCallback((e: React.MouseEvent<HTMLAnchorElement>) =
       {/* ── New Caravans for Sale ── */}
       <HomeListingSlider
         title="New Caravans for Sale"
-        viewAllHref="/listings/new-caravans/"
+        viewAllHref="/listings/new-condition/"
         apiUrl="/api/home-featured/?type=new"
         badgeVariant="new"
         seed={seed ?? undefined}
@@ -313,7 +313,7 @@ const handleBannerClick = useCallback((e: React.MouseEvent<HTMLAnchorElement>) =
       {/* ── Used Caravans for Sale ── */}
       <HomeListingSlider
         title="Used Caravans for Sale"
-        viewAllHref="/listings/used-caravans/"
+        viewAllHref="/listings/used-condition/"
         apiUrl="/api/home-featured/?type=used"
         badgeVariant="used"
         seed={seed ?? undefined}
