@@ -482,13 +482,17 @@ export default function StateHome({ initialFilters, browseData, initialPool, ini
   //   the correct next page for the new filter context.
   const prefetchedPoolKeyRef = useRef<string>("");
   useEffect(() => {
-    if (!ready || page >= maxPages) return;
+    // Skip pre-warm for non-indexed pages: page=2+ requests are never in KV
+    // (worker keeps `page` in its cache key; warmer only warms page=1), so
+    // every pre-warm call hits WordPress directly. Rapid refreshes on non-indexed
+    // URLs pile up WordPress hits → SiteGround rate-limiting → 502.
+    if (!ready || page >= maxPages || !isIndexed) return;
     const nextPage = page + 1;
     const key = `${poolApiUrl}::page=${nextPage}`;
     if (prefetchedPoolKeyRef.current === key) return;
     prefetchedPoolKeyRef.current = key;
     fetch(`${poolApiUrl}&page=${nextPage}`).catch(() => {});
-  }, [poolApiUrl, page, maxPages, ready]);
+  }, [poolApiUrl, page, maxPages, ready, isIndexed]);
 
   // New/Used grid headings need their own condition-locked seo_v2 (the shared
   // pool call above is unlocked, so its seo_v2 only covers the page overall).

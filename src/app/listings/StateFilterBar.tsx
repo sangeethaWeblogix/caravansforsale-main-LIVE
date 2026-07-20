@@ -188,6 +188,7 @@ export default function StateFilterBar({ currentFilters, onFilterChange, onClear
   const [makeSubView,   setMakeSubView]   = useState<"makes" | "models">("makes");
   const [makeCounts,       setMakeCounts]       = useState<{name: string; slug: string; count: number}[]>([]);
   const [modelCounts,      setModelCounts]      = useState<{name: string; slug: string; count: number}[]>([]);
+  const [stateCounts,      setStateCounts]      = useState<{slug: string; count: number}[]>([]);
   const [modelCountLoading, setModelCountLoading] = useState(false);
   const [lastModelName,    setLastModelName]    = useState<string | null>(null);
 
@@ -206,6 +207,42 @@ export default function StateFilterBar({ currentFilters, onFilterChange, onClear
     currentFilters.category, currentFilters.condition, currentFilters.state, currentFilters.region,
     currentFilters.suburb, currentFilters.pincode, currentFilters.from_price, currentFilters.to_price,
     currentFilters.minKg, currentFilters.maxKg, currentFilters.acustom_fromyears, currentFilters.acustom_toyears,
+    currentFilters.from_length, currentFilters.to_length, currentFilters.from_sleep, currentFilters.to_sleep,
+    currentFilters.keyword,
+  ]);
+
+  // Live state counts — only used when a make filter is active (e.g. /listings/jayco/).
+  // Calls /api/params-count/?make={make}&group_by=state so the state list narrows
+  // to only the states that actually have listings for that make.
+  // Result is pre-warmed in KV by cfs-params-cache-warmer.php section 4.
+  useEffect(() => {
+    if (!currentFilters.make) { setStateCounts([]); return; }
+    const controller = new AbortController();
+    const params = new URLSearchParams();
+    params.set("make", currentFilters.make);
+    if (currentFilters.category)          params.set("category", currentFilters.category);
+    if (currentFilters.condition)         params.set("condition", currentFilters.condition);
+    if (currentFilters.from_price)        params.set("from_price", String(currentFilters.from_price));
+    if (currentFilters.to_price)          params.set("to_price", String(currentFilters.to_price));
+    if (currentFilters.minKg)             params.set("from_atm", String(currentFilters.minKg));
+    if (currentFilters.maxKg)             params.set("to_atm", String(currentFilters.maxKg));
+    if (currentFilters.acustom_fromyears) params.set("acustom_fromyears", String(currentFilters.acustom_fromyears));
+    if (currentFilters.acustom_toyears)   params.set("acustom_toyears", String(currentFilters.acustom_toyears));
+    if (currentFilters.from_length)       params.set("from_length", String(currentFilters.from_length));
+    if (currentFilters.to_length)         params.set("to_length", String(currentFilters.to_length));
+    if (currentFilters.from_sleep)        params.set("from_sleep", String(currentFilters.from_sleep));
+    if (currentFilters.to_sleep)          params.set("to_sleep", String(currentFilters.to_sleep));
+    if (currentFilters.keyword)           params.set("keyword", currentFilters.keyword);
+    params.set("group_by", "state");
+    fetch(`/api/params-count/?${params.toString()}`, { signal: controller.signal })
+      .then(r => r.json())
+      .then(json => { if (!controller.signal.aborted) setStateCounts(json.data || []); })
+      .catch(e => { if (e.name !== "AbortError") console.error(e); });
+    return () => controller.abort();
+  }, [
+    currentFilters.make, currentFilters.category, currentFilters.condition,
+    currentFilters.from_price, currentFilters.to_price, currentFilters.minKg, currentFilters.maxKg,
+    currentFilters.acustom_fromyears, currentFilters.acustom_toyears,
     currentFilters.from_length, currentFilters.to_length, currentFilters.from_sleep, currentFilters.to_sleep,
     currentFilters.keyword,
   ]);
@@ -336,6 +373,13 @@ export default function StateFilterBar({ currentFilters, onFilterChange, onClear
   };
 
   const filteredRegions = states.find(s => s.name.toLowerCase() === tempState?.toLowerCase())?.regions ?? [];
+
+  // When a make filter is active, narrow the state list to only states with
+  // count > 0 for that make. Falls back to the full list when no make is set
+  // (global /listings/ page) or before the first API response arrives.
+  const visibleStates = stateCounts.length > 0
+    ? states.filter(s => stateCounts.some(sc => sc.slug === s.value && sc.count > 0))
+    : states;
 
   const makeSource  = makeCounts.length > 0 ? makeCounts : makes.map(m => ({ name: m.name, slug: m.slug, count: 0 }));
   const filteredMakes = makeSearch
@@ -757,7 +801,7 @@ export default function StateFilterBar({ currentFilters, onFilterChange, onClear
                     <select className="cfs-select-input form-select" value={tempState ?? ""}
                       onChange={e => { setTempState(e.target.value || null); setTempRegion(null); }}>
                       <option value="">Any</option>
-                      {states.map(s => (
+                      {visibleStates.map(s => (
                         <option key={s.value} value={s.name}>
                           {AUS_ABBR[s.name.toUpperCase()] ?? s.name}
                         </option>
@@ -1234,7 +1278,7 @@ export default function StateFilterBar({ currentFilters, onFilterChange, onClear
 
                   {/* State list */}
                   <ul className="loc-state-list" style={{ display: tempSuburbSuggestion ? "none" : undefined }}>
-                    {states.map(s => {
+                    {visibleStates.map(s => {
                       const abbr = AUS_ABBR[s.name.toUpperCase()] ?? s.name.substring(0,3).toUpperCase();
                       const isSelected = tempState?.toLowerCase() === s.name.toLowerCase();
                       return (

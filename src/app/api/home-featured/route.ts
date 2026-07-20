@@ -46,9 +46,10 @@ export async function GET(request: NextRequest) {
     console.log(`[WP API] home_featured type=${type} ip=${visitorIp || "(none)"} — ${Date.now() - t0}ms`);
 
     if (!res.ok) {
-      console.error(`[WP API] home_featured type=${type} non-OK status: ${res.status}`);
+      const errBody = await res.text().catch(() => "(unreadable)");
+      console.error(`[WP API] home_featured type=${type} non-OK status: ${res.status} body: ${errBody}`);
       return NextResponse.json(
-        { success: false },
+        { success: false, _wp_error: errBody },
         {
           status: res.status,
           headers: {
