@@ -221,7 +221,7 @@ export default function StateHome({ initialFilters, browseData, initialPool, ini
     // /api/indexed-url/ check resolves to a different value than the default.
     try {
       const win = window as unknown as Record<string, unknown>;
-      const preload = win.__INITIAL_POOL__ as { url?: string; is_indexed?: boolean } | undefined;
+      const preload = win.__INITIAL_POOL__ as { url?: string; is_indexed?: boolean; json?: unknown } | undefined;
       if (preload?.url) {
         // Raise the sentinel SYNCHRONOUSLY whenever __INITIAL_POOL__ exists —
         // regardless of whether is_indexed is present (pool_test doesn't return
@@ -233,6 +233,16 @@ export default function StateHome({ initialFilters, browseData, initialPool, ini
         if (typeof preload.is_indexed === "boolean") {
           setIsIndexed(preload.is_indexed);
         }
+        // The cache warmer fetches fresh pool data at warm-time and embeds it as
+        // __INITIAL_POOL__, but the pool effect's URL-match check (which includes
+        // the shuffle seed) never fires for KV-cached pages because the client
+        // always generates a new random seed. As a result, the stale seo_v2 baked
+        // into the SSR HTML (from when the KV cache was generated) was used
+        // permanently — showing an out-of-date listing count on every page load.
+        // seo_v2 (heading, count, description) is seed-agnostic, so update it here
+        // unconditionally from the fresh preload data without needing a URL match.
+        const freshSeo = (preload.json as any)?.data?.seo_v2 ?? (preload.json as any)?.seo_v2;
+        if (freshSeo) setSeo(freshSeo);
       }
     } catch {
       // ignore — isIndexed will be corrected by the async /api/indexed-url/ check
