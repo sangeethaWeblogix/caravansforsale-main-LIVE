@@ -103,7 +103,8 @@ async function fetchClientIp(): Promise<string> {
     const res = await fetch("https://api.ipify.org?format=json");
     const data = await res.json();
     return data.ip || "";
-  } catch {
+  } catch (err) {
+    console.error("[home] fetchClientIp failed:", err);
     return "";
   }
 }
@@ -135,7 +136,8 @@ const handleBannerClick = useCallback((e: React.MouseEvent<HTMLAnchorElement>) =
     ip_address: clientIp,   // 👈 fix: hardcoded "" -> state value
   });
   const trackUrl = `${process.env.NEXT_PUBLIC_CF7_BASE || "https://admin.caravansforsale.com.au"}/wp-json/ads-manager/v1/banners/track`;
-  fetch(trackUrl, { method: "POST", headers: { "Content-Type": "application/json" }, body, keepalive: true }).catch(() => {});
+  fetch(trackUrl, { method: "POST", headers: { "Content-Type": "application/json" }, body, keepalive: true })
+    .catch((err) => console.error("[home] banner click tracking failed:", err));
 
   window.open(finalUrl, "_blank", "noopener,noreferrer");
 }, [activeBanner, bannerClickUrl, clientIp]);   // 👈 clientIp dependency-la add pannunga

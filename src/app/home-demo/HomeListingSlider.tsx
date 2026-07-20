@@ -45,13 +45,20 @@ export default function HomeListingSlider({ title, viewAllHref, apiUrl, badgeVar
     fetch(requestUrl, { cache: "no-store" })
       .then((r) => {
         console.log(`[HomeListingSlider] "${title}" visitor IP forwarded:`, r.headers.get("x-debug-visitor-ip"));
-        return r.ok ? r.json() : null;
+        if (!r.ok) {
+          console.error(`[HomeListingSlider] "${title}" API error: HTTP ${r.status} for ${requestUrl}`);
+          return null;
+        }
+        return r.json();
       })
       .then((json) => {
         console.log(`[HomeListingSlider] "${title}" API response:`, json);
         setItems(json?.data?.products ?? json?.products ?? (Array.isArray(json?.data) ? json.data : []) ?? []);
       })
-      .catch(() => setItems([]))
+      .catch((err) => {
+        console.error(`[HomeListingSlider] "${title}" fetch failed:`, err);
+        setItems([]);
+      })
       .finally(() => setLoading(false));
   }, [apiUrl, title, seed]);
 

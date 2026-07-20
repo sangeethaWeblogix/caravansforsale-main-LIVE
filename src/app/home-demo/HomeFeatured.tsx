@@ -28,7 +28,10 @@ async function fetchFeaturedListings(seed?: number): Promise<Listing[]> {
   console.log("[HomeFeatured] API:", requestUrl);
   const res = await fetch(requestUrl, { cache: "no-store" });
   console.log("[HomeFeatured] visitor IP forwarded:", res.headers.get("x-debug-visitor-ip"));
-  if (!res.ok) return [];
+  if (!res.ok) {
+    console.error(`[HomeFeatured] API error: HTTP ${res.status} for ${requestUrl}`);
+    return [];
+  }
   const json = await res.json();
   console.log("[HomeFeatured] API response:", json);
   return json?.data?.products ?? json?.products ?? (Array.isArray(json?.data) ? json.data : []) ?? [];
@@ -49,7 +52,10 @@ export default function HomeFeatured({ seed }: Props) {
     if (!seed) return;
     fetchFeaturedListings(seed)
       .then(setItems)
-      .catch(() => setItems([]))
+      .catch((err) => {
+        console.error("[HomeFeatured] fetch failed:", err);
+        setItems([]);
+      })
       .finally(() => setLoading(false));
   }, [seed]);
 
