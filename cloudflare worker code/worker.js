@@ -354,8 +354,9 @@ async function getStaticHtmlFromKV(url, env) {
       // Guard: if the stored HTML is a Cloudflare challenge/block page (happens when
       // the cache generator ran from a non-AU IP and fetched through www instead of
       // the Vercel preview URL), skip this variant and try the next.
-      // Real Next.js pages always contain __NEXT_DATA__; challenge pages never do.
-      if (!rawHtml.includes('__NEXT_DATA__')) {
+      // Real Next.js pages (both Pages Router and App Router) always reference
+      // /_next/static/ for their JS/CSS assets; challenge pages never do.
+      if (!rawHtml.includes('/_next/static/')) {
         console.log(`KV HTML for ${kvKey} is not a valid Next.js page — trying next variant`);
         continue;
       }
@@ -373,10 +374,12 @@ async function getStaticHtmlFromKV(url, env) {
       // point to the current Vercel build's files so the page loads and hydrates.
       //
       // The buildId appears in two places in the HTML:
-      //   1. __NEXT_DATA__ JSON  →  "buildId":"OLD"
-      //   2. Script src attrs    →  /_next/static/OLD/_buildManifest.js
+      //   App Router:   /_next/static/{buildId}/_buildManifest.js  (script src)
+      //   Pages Router: "buildId":"OLD"  (in __NEXT_DATA__ JSON)
       // replaceAll is safe because the buildId is a unique cryptographic hash.
-      const htmlBuildId = rawHtml.match(/"buildId":"([^"]+)"/)?.[1];
+      const htmlBuildId =
+        rawHtml.match(/\/_next\/static\/([^/]+)\/_buildManifest\.js/)?.[1] || // App Router
+        rawHtml.match(/"buildId":"([^"]+)"/)?.[1]; // Pages Router fallback
       let html = rawHtml;
       if (htmlBuildId && htmlBuildId !== currentBuildId) {
         // Patch stale buildId → current buildId so the client loads the right JS/CSS.
