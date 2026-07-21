@@ -3,7 +3,7 @@
 
   import "bootstrap/dist/css/bootstrap.min.css";
   import "bootstrap-icons/font/bootstrap-icons.css";
-  import "./globals.css?=41";
+  import "./globals.css?=42";
   import Navbar from "./navbar/Navbar";
   import NavbarSkeleton from "./navbar/NavbarSkeleton";
   import Footer from "./footer/Footer";

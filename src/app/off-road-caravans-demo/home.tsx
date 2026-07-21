@@ -1,11 +1,47 @@
 "use client";
 
+import { useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import HomeFeatured from "./HomeFeatured";
 import HomeStateSection from "./HomeStateSection";
 import HomeLocationSection from "./HomeLocationSection";
 import "./main.css";
 
+const OR_FAQ = [
+  { q: "What is an off road caravan?", a: "An off road caravan is a caravan built to handle rough, unsealed tracks and remote terrain. They typically feature heavy-duty chassis, independent suspension, reinforced bodywork, larger water and battery capacity, and off-road tyres to handle Australia's outback and bush conditions." },
+  { q: "What is the difference between semi off road and full off road caravans?", a: "Semi off road caravans are built for light unsealed roads and easy bush tracks, with upgraded suspension and stronger construction. Full off road caravans are engineered for extreme terrain — think river crossings, rocky tracks and remote touring — with independent suspension, heavy-duty chassis and full off-grid capability." },
+  { q: "Can off road caravans go off grid?", a: "Yes. Most off road caravans come with or can be fitted with solar panels, lithium batteries, large fresh water tanks and composting or cassette toilets, allowing extended stays in remote areas without external power or water hookups." },
+  { q: "Do I need a special vehicle to tow an off road caravan?", a: "Yes. Off road caravans are heavier and wider than standard caravans. You'll need a high-capacity 4WD with a tow bar rated to the caravan's ATM. Always check the caravan's ATM and the tow vehicle's GVM and tow rating before purchasing." },
+  { q: "Are off road caravans suitable for families?", a: "Absolutely. Many off road models come in family-friendly layouts with bunk beds, multiple sleeping berths, full kitchens and ensuites. Brands like Jayco, New Age and Trakmaster offer popular family off road models across a range of budgets." },
+  { q: "What is the average price of an off road caravan in Australia?", a: "Off road caravan prices in Australia typically range from around $40,000 for entry-level semi off road models to over $150,000 for premium full off road expedition caravans. The most popular mid-range models sit between $60,000 and $100,000." },
+];
+
+function FaqItem({ q, a }: { q: string; a: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className={`or-faq__item${open ? " or-faq__item--open" : ""}`}>
+      <button className="or-faq__q" onClick={() => setOpen(!open)}>
+        <span>{q}</span>
+        <i className={`bi ${open ? "bi-chevron-up" : "bi-chevron-down"} or-faq__icon`} />
+      </button>
+      {open && <div className="or-faq__a">{a}</div>}
+    </div>
+  );
+}
+
+function stripHtml(html: string): string {
+  return html.replace(/<[^>]*>/g, "").replace(/&[a-z]+;/gi, " ").trim();
+}
+
+interface OffRoadBlog {
+  id: number;
+  title: string;
+  excerpt: string;
+  link: string;
+  image: string;
+  slug: string;
+  date: string;
+}
 
 interface Item {
   label: string;
@@ -32,6 +68,10 @@ interface Props {
   stateBands: Item[];
   requirements: any;
   homeblog: any[];
+  offRoadBlogs: OffRoadBlog[];
+  offRoadPopularBlogs: OffRoadBlog[];
+  offRoadBrandBlogs: OffRoadBlog[];
+  offRoadModelBlogs: OffRoadBlog[];
   offRoadCount: number;
   offRoadPriceMin: number;
   offRoadPriceMax: number;
@@ -106,67 +146,11 @@ const SEARCH_FILTERS = [
   },
 ];
 
-const GUIDES = [
-  {
-    heading: "Core & Intent-Driven Content Pillars",
-    links: [
-      { text: "Best off road caravan australia 2026",        desc: "Top models, trends and key features reviewed.",   href: "/blog/" },
-      { text: "Best australian made off road caravans",      desc: "The best locally made hybrid caravan picks.",     href: "/australian-made-off-road-caravans-remote-touring/" },
-      { text: "Best semi off road caravans australia",       desc: "Top semi off-road caravans for Aussie roads.",    href: "/best-semi-off-road-caravans/" },
-      { text: "Best family off road caravans",               desc: "Spacious, practical caravans for family travel.", href: "/blog/" },
-      { text: "Best off-road caravan for couples australia", desc: "Comfort, features and easy towing for two.",      href: "/blog/" },
-      { text: "19ft off road caravan",                       desc: "Best 19ft off road caravans for all terrains.",   href: "/blog/" },
-      { text: "Best single axle off road caravan",           desc: "Top single axle caravans for off-road travel.",   href: "/blog/" },
-    ],
-  },
-  {
-    heading: "Style, Weight & Feature Specifics",
-    links: [
-      { text: "Pop top off road caravans australia",         desc: "Top pop top caravans for off-road adventures.",   href: "/blog/" },
-      { text: "Best lightweight off road caravan australia", desc: "Lightweight caravans that go further.",           href: "/blog/" },
-      { text: "Best off grid caravan australia",             desc: "Independent caravans for off-grid living.",       href: "/blog/" },
-      { text: "Off road caravan with ensuite",               desc: "Caravans with ensuites for extra comfort.",       href: "/blog/" },
-      { text: "Off road aluminium caravans",                 desc: "Durable aluminium caravans built tough.",         href: "/blog/" },
-      { text: "Best off road caravans under $50,000",        desc: "Top value caravans under fifty grand.",           href: "/blog/" },
-      { text: "Best off road caravans under $80,000",        desc: "Good quality caravans under eighty grand.",       href: "/blog/" },
-      { text: "Second hand off road caravans",               desc: "Best used caravans and what to check.",           href: "/blog/" },
-      { text: "New off road caravans for all budgets",       desc: "New caravans across every budget range.",         href: "/blog/" },
-    ],
-  },
-  {
-    heading: "Brand-Specific Reviews & Comparisons",
-    links: [
-      { text: "Australian off road (aor) reviews",         desc: "In-depth AOR caravan reviews and feedback.",     href: "/blog/" },
-      { text: "Lotus off grid caravan",                    desc: "Lotus off grid range reviewed.",                 href: "/blog/" },
-      { text: "Kokoda off road caravans",                  desc: "Kokoda models, specs and reviews.",              href: "/blog/" },
-      { text: "Urban off road caravans",                   desc: "Urban off road caravans reviewed.",              href: "/blog/" },
-      { text: "Gibb 14 hybrid offroad caravan",            desc: "Gibb 14 hybrid features and review.",            href: "/blog/" },
-      { text: "Airlie 21 quad hard top off road caravan",  desc: "Airlie 21 quad hard top full review.",           href: "/blog/" },
-      { text: "Ceduna 15 MK3 quad hard top hybrid",        desc: "Ceduna 15 MK3 hybrid review.",                  href: "/blog/" },
-      { text: "Atlas off road caravans",                   desc: "Atlas off road caravan reviews.",                href: "/blog/" },
-      { text: "JB off road caravans",                      desc: "JB caravans compared and reviewed.",             href: "/blog/" },
-      { text: "New age off road caravans",                 desc: "New Age off road range review.",                 href: "/blog/" },
-      { text: "Nomadic off road caravans",                 desc: "Nomadic caravans and buyer insights.",           href: "/blog/" },
-      { text: "Off track rv",                              desc: "Off Track RV caravans reviewed.",                href: "/blog/" },
-    ],
-  },
-  {
-    heading: "Location-Based / Dealer Intents",
-    links: [
-      { text: "Off road caravans melbourne",   desc: "Where to buy in Melbourne.",             href: "/listings/victoria-state/melbourne-region/?category=off-road" },
-      { text: "Off road caravans sydney",      desc: "Top dealers and buying tips in Sydney.", href: "/listings/new-south-wales-state/sydney-region/?category=off-road" },
-      { text: "Off road caravans brisbane",    desc: "Brisbane dealers and local guide.",      href: "/listings/queensland-state/brisbane-region/?category=off-road" },
-      { text: "Off road caravans adelaide",    desc: "Adelaide dealers and buying guide.",     href: "/listings/south-australia-state/adelaide-region/?category=off-road" },
-      { text: "Offroad caravan perth",         desc: "Perth dealers and buying guide.",        href: "/listings/western-australia-state/perth-region/?category=off-road" },
-      { text: "Off road caravans canberra",    desc: "Canberra dealers and buying guide.",     href: "/listings/australian-capital-territory-state/?category=off-road" },
-      { text: "Offroad caravan heatherbrae",   desc: "Heatherbrae dealers and info.",          href: "/blog/" },
-      { text: "Offroad caravans rossiea",      desc: "Rossiea dealers and local insights.",    href: "/blog/" },
-      { text: "Best offroad caravans mildura", desc: "Mildura and Geelong dealer picks.",      href: "/blog/" },
-    ],
-  },
-];
-
-export default function OffRoadCaravansPage({ stateBands, offRoadCount, offRoadPriceMin, offRoadPriceMax, offRoadUsedPriceMin, offRoadUsedPriceMax }: Props) {
+export default function OffRoadCaravansPage({ stateBands, offRoadBlogs, offRoadPopularBlogs, offRoadBrandBlogs, offRoadModelBlogs, offRoadCount, offRoadPriceMin, offRoadPriceMax, offRoadUsedPriceMin, offRoadUsedPriceMax }: Props) {
+  const carouselRef = useRef<HTMLDivElement>(null);
+  const scrollCarousel = (dir: number) => {
+    carouselRef.current?.scrollBy({ left: dir * 320, behavior: "smooth" });
+  };
   return (
     <div style={{ overflowX: "hidden" }}>
 
@@ -174,7 +158,7 @@ export default function OffRoadCaravansPage({ stateBands, offRoadCount, offRoadP
       <section className="hd-banner">
         <div className="container">
           <h1 className="hd-banner__title">
-            Off Road Caravans <span className="hd-banner__title--orange">in Australia</span>
+            Off Road Caravans <span className="hd-banner__title--orange">Australia</span>
           </h1>
           <div className="hd-banner__divider">
             <span className="hd-banner__divider-line" />
@@ -182,7 +166,7 @@ export default function OffRoadCaravansPage({ stateBands, offRoadCount, offRoadP
             <span className="hd-banner__divider-line" />
           </div>
           <p className="hd-banner__subtitle">
-            Compare brands, browse listings by state, and explore the best off-road caravan guides, reviews and buying advice.
+            Discover Australia’s largest collection of off road caravans. Compare full off road, semi off road and hybrid caravans, browse live listings, read expert reviews and explore detailed buying guides to find the right caravan for your next adventure.
           </p>
           <div className="hd-banner__trust">
             <div className="hd-banner__trust-item">
@@ -217,7 +201,7 @@ export default function OffRoadCaravansPage({ stateBands, offRoadCount, offRoadP
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
             </svg>
-            Browse Off Road Caravans
+            Explore Off Road Caravans
           </a>
           <div className="hd-banner__bottom">
             <div className="hd-banner__bottom-item">
@@ -289,42 +273,118 @@ export default function OffRoadCaravansPage({ stateBands, offRoadCount, offRoadP
         </div>
       </section>
 
-      {/* ── Guides Section ── */}
-      <section className="or-guides-section">
-        <div className="container">
-          <h2 className="or-section-title">Off Road Caravan Guides, Reviews &amp; Buying Advice</h2>
-          <p className="or-guides-intro">In-depth guides, reviews and expert advice to help you choose the right off road caravan for your adventures.</p>
-          <div className="or-guides-grid">
-            {GUIDES.map((col) => (
-              <div key={col.heading} className="or-guides-col">
-                <h3 className="or-guides-heading">{col.heading}</h3>
-                {col.links.map((l) => (
-                  <div key={l.text} className="or-guides-item">
-                    <a href={l.href} className="or-guides-link">{l.text}</a>
-                    <span className="or-guides-desc">{l.desc}</span>
-                    <a href={l.href} className="or-guides-read">Read Guide →</a>
+      {/* ── Popular Buying Guides ── */}
+      {offRoadPopularBlogs.length > 0 && (
+        <section className="or-pop-guides">
+          <div className="container">
+            <h2 className="or-section-title">Popular Buying Guides</h2>
+            <div className="or-pop-guides__grid">
+              {offRoadPopularBlogs.slice(0, 10).map((b) => (
+                <a key={b.id} href={b.link || `/${b.slug}/`} className="or-pop-guides__card">
+                  <div className="or-pop-guides__img-wrap">
+                    <img src={b.image || "/images/placeholder.jpg"} alt={b.title} className="or-pop-guides__img" loading="lazy" />
                   </div>
+                  <div className="or-pop-guides__body">
+                    <h3 className="or-pop-guides__title">{b.title}</h3>
+                    {b.excerpt && <p className="or-pop-guides__desc">{stripHtml(b.excerpt)}</p>}
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ── Brand Reviews + Model Reviews ── */}
+      {(offRoadBrandBlogs.length > 0 || offRoadModelBlogs.length > 0) && (
+        <section className="or-reviews-section">
+          <div className="container">
+            <div className="or-reviews-cols">
+              <div className="or-reviews-col">
+                <h2 className="or-section-title">Brand Reviews</h2>
+                {offRoadBrandBlogs.slice(0, 4).map((b) => (
+                  <a key={b.id} href={b.link || `/${b.slug}/`} className="or-reviews-item">
+                    <img src={b.image || "/images/placeholder.jpg"} alt={b.title} className="or-reviews-thumb" loading="lazy" />
+                    <div className="or-reviews-item__body">
+                      <span className="or-reviews-item__title">{b.title}</span>
+                    </div>
+                  </a>
                 ))}
               </div>
-            ))}
+              <div className="or-reviews-col">
+                <h2 className="or-section-title">Model Reviews</h2>
+                {offRoadModelBlogs.slice(0, 4).map((b) => (
+                  <a key={b.id} href={b.link || `/${b.slug}/`} className="or-reviews-item">
+                    <img src={b.image || "/images/placeholder.jpg"} alt={b.title} className="or-reviews-thumb" loading="lazy" />
+                    <div className="or-reviews-item__body">
+                      <span className="or-reviews-item__title">{b.title}</span>
+                    </div>
+                  </a>
+                ))}
+              </div>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
-      {/* ── CTA Banner ── */}
+      {/* ── Latest Off Road Caravan Articles ── */}
+      {offRoadBlogs.length > 0 && (
+        <section className="or-latest-section">
+          <div className="container">
+            <h2 className="or-section-title">Latest Off Road Caravan Articles</h2>
+            <div className="or-latest-wrap">
+              <button className="or-latest-arrow or-latest-arrow--prev" onClick={() => scrollCarousel(-1)} aria-label="Previous"><i className="bi bi-chevron-left" /></button>
+              <div className="or-latest-carousel" ref={carouselRef}>
+                {offRoadBlogs.map((b) => (
+                  <a key={b.id} href={b.link || `/${b.slug}/`} className="or-latest-card">
+                    <div className="or-latest-img-wrap">
+                      <img src={b.image || "/images/placeholder.jpg"} alt={b.title} className="or-latest-img" loading="lazy" />
+                    </div>
+                    <div className="or-latest-body">
+                      <h3 className="or-latest-title">{b.title}</h3>
+                      {b.excerpt && <p className="or-latest-desc">{stripHtml(b.excerpt)}</p>}
+                    </div>
+                  </a>
+                ))}
+              </div>
+              <button className="or-latest-arrow or-latest-arrow--next" onClick={() => scrollCarousel(1)} aria-label="Next"><i className="bi bi-chevron-right" /></button>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ── Sell CTA ── */}
       <section className="or-cta-banner">
         <div className="container">
-          <div className="or-cta-inner">
-            <div className="or-cta-text">
-              <span className="or-cta-eyebrow">READY FOR YOUR NEXT ADVENTURE?</span>
-              <h2 className="or-cta-title">Find Your Next Off Road Caravan</h2>
-              <p className="or-cta-sub">Browse thousands of listings from trusted sellers across Australia.</p>
+          <div className="or-cta-inner or-cta-inner--sell">
+            <div className="or-cta-sell-left">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#f47920" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/>
+              </svg>
+              <div>
+                <strong className="or-cta-sell-title">Looking to Sell Your Off Road Caravan?</strong>
+                <span className="or-cta-sell-sub">Reach thousands of serious buyers across Australia.</span>
+              </div>
             </div>
-            <a href="/listings/off-road-category/" className="or-btn or-btn--primary">Browse All Listings →</a>
+            <a href="/sell-my-caravan/" className="or-btn or-btn--outline">Sell My Caravan</a>
           </div>
         </div>
       </section>
 
+      {/* ── FAQ ── */}
+      <section className="or-faq-section">
+        <div className="container">
+          <h2 className="or-section-title">Frequently Asked Questions</h2>
+          <div className="or-faq-grid">
+            <div className="or-faq-col">
+              {OR_FAQ.slice(0, 3).map((f) => <FaqItem key={f.q} q={f.q} a={f.a} />)}
+            </div>
+            <div className="or-faq-col">
+              {OR_FAQ.slice(3).map((f) => <FaqItem key={f.q} q={f.q} a={f.a} />)}
+            </div>
+          </div>
+        </div>
+      </section>
 
     </div>
   );

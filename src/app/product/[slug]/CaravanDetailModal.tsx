@@ -224,20 +224,19 @@ export default function CaravanDetailModal({
             >
               {images.map((img, idx) => (
                 <SwiperSlide key={`slide-${idx}-${img}`}>
-                  <div
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={img} alt="" aria-hidden="true" className="cfs-slide-blur-bg" />
+                  <Image
+                    src={img}
+                    alt={`Slide ${idx + 1}`}
+                    width={0}
+                    height={0}
+                    sizes="100vw"
+                    unoptimized
+                    priority={idx < 2}
                     onClick={() => { if (window.innerWidth < 768) setIsFullscreen(true); }}
                     style={{ cursor: "pointer" }}
-                  >
-                    <Image
-                      src={img}
-                      alt={`Slide ${idx + 1}`}
-                      width={0}
-                      height={0}
-                      sizes="100vw"
-                      unoptimized
-                      priority={idx < 2}
-                    />
-                  </div>
+                  />
                 </SwiperSlide>
               ))}
             </Swiper>
@@ -279,6 +278,8 @@ export default function CaravanDetailModal({
             >
               {images.map((img, idx) => (
                 <SwiperSlide key={`fs-${idx}`}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={img} alt="" aria-hidden="true" className="cfs-slide-blur-bg" />
                   <Image
                     src={img}
                     alt={`Slide ${idx + 1}`}
