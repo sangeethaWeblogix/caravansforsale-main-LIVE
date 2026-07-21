@@ -284,6 +284,14 @@ const ERROR_SIGNATURES = [
   'temporarily unavailable',
   'Application error: a client-side exception has occurred',
   'This page could not be found',
+  // Cloudflare challenge / block pages — these must never be cached in KV.
+  // Occurs when VERCEL_BASE_URL points to www (behind Cloudflare) and the
+  // GitHub Actions runner IP is blocked by the geo-security rule.
+  'Sorry, you have been blocked',
+  'Checking your browser before accessing',
+  'Attention Required! | Cloudflare',
+  'cf-error-details',
+  'cloudflare-static/email-decode.min.js',
 ];
 
 function isErrorPage(html) {

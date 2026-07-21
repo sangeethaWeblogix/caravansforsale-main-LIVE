@@ -325,6 +325,15 @@ async function getStaticHtmlFromKV(url, env) {
       return null;
     }
 
+    // Guard: if the stored HTML is a Cloudflare challenge/block page (happens when
+    // the cache generator ran from a non-AU IP and fetched through www instead of
+    // the Vercel preview URL), skip KV and fall through to origin.
+    // Real Next.js pages always contain __NEXT_DATA__; challenge pages never do.
+    if (!rawHtml.includes('__NEXT_DATA__')) {
+      console.log(`KV HTML for ${kvKey} is not a valid Next.js page — bypassing KV`);
+      return null;
+    }
+
     // Build-ID handling:
     //
     // "current-build-id" is written to KV by scripts/update-kv-build-id.js on
