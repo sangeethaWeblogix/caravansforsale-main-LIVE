@@ -150,7 +150,9 @@ export default async function ProductDetailPage({ params }: PageProps) {
   const data = await fetchProductDetail(slug);
 
   if (!data || Object.keys(data).length === 0) {
-    redirect("/404");
+    // Middleware handles 410 for the common path; this covers the rare case where
+    // the middleware check timed out and let the request through.
+    redirect("/410/");
   }
 
   const pd = data?.data?.product_details ?? {};
