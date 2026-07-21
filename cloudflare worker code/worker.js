@@ -127,7 +127,7 @@ export default {
       // ============================================
       // PRIORITY 4: Serve Static HTML from KV (clean paths only)
       // ============================================
-      const cachedHtml = await getStaticHtmlFromKV(url, env);
+      const { response: cachedHtml, missReason } = await getStaticHtmlFromKV(url, env);
       if (cachedHtml) {
         return cachedHtml;
       }
@@ -141,7 +141,7 @@ export default {
       // hard-refresh": the BYPASS path returns old Cloudflare-cached HTML with
       // the old buildId, the client loads old JS, and RSC navigation fails.
       const response = await fetchFresh(request, env);
-      return addDebugHeaders(response, 'BYPASS-NO-CACHE', null, null);
+      return addDebugHeaders(response, 'BYPASS-NO-CACHE', null, missReason);
 
     } catch (error) {
       console.error('Worker error:', error.message);
@@ -293,6 +293,9 @@ async function handleImageRequest(request, ctx) {
 // ============================================
 // KV STATIC HTML RETRIEVAL
 // ============================================
+// Returns { response, missReason }.
+// response is non-null on a KV hit; missReason explains why we fell through
+// (surfaces as X-CFS-Error on BYPASS-NO-CACHE for easy debugging).
 async function getStaticHtmlFromKV(url, env) {
   try {
     // Normalize path - ensure it ends with /
@@ -300,116 +303,125 @@ async function getStaticHtmlFromKV(url, env) {
     if (!normalizedPath.endsWith('/')) {
       normalizedPath += '/';
     }
-    
+
     // Load routes mapping (with in-memory caching)
     const routesMapping = await getRoutesMapping(env);
     if (!routesMapping) {
-      return null;
+      return { response: null, missReason: 'no-routes-mapping' };
     }
-    
+
     const variantKeys = routesMapping[normalizedPath];
-    
+
     if (!variantKeys) {
-      return null;
+      return { response: null, missReason: 'path-not-in-routes-mapping' };
     }
-    
-    // Select a random variant
-    let kvKey;
+
+    // Build the ordered list of variant keys to try, starting at a random index
+    // so the shuffle effect is preserved, but falling back to other variants
+    // when a randomly chosen key is missing from KV (e.g. a partial cache-warm
+    // run wrote routes-mapping but failed to upload all HTML entries).
+    let candidates;
     if (Array.isArray(variantKeys) && variantKeys.length > 0) {
-      const randomIndex = Math.floor(Math.random() * variantKeys.length);
-      kvKey = variantKeys[randomIndex];
+      const startIndex = Math.floor(Math.random() * variantKeys.length);
+      candidates = [
+        ...variantKeys.slice(startIndex),
+        ...variantKeys.slice(0, startIndex),
+      ];
     } else if (typeof variantKeys === 'string') {
-      // Legacy: single string value (shouldn't happen with current generation, but safe fallback)
-      kvKey = variantKeys;
+      // Legacy: single string value
+      candidates = [variantKeys];
     } else {
-      return null;
-    }
-    
-    // Fetch from KV
-    const rawHtml = await env.CFS_STATIC_PAGES.get(kvKey);
-
-    if (!rawHtml) {
-      return null;
+      return { response: null, missReason: 'invalid-variant-keys' };
     }
 
-    // Guard: if the stored HTML is a Cloudflare challenge/block page (happens when
-    // the cache generator ran from a non-AU IP and fetched through www instead of
-    // the Vercel preview URL), skip KV and fall through to origin.
-    // Real Next.js pages always contain __NEXT_DATA__; challenge pages never do.
-    if (!rawHtml.includes('__NEXT_DATA__')) {
-      console.log(`KV HTML for ${kvKey} is not a valid Next.js page — bypassing KV`);
-      return null;
-    }
-
-    // Build-ID handling:
-    //
-    // "current-build-id" is written to KV by scripts/update-kv-build-id.js on
-    // every Vercel deployment. The KV HTML still embeds the OLD buildId until the
-    // next cache warmup regenerates it.
-    //
-    // Old behaviour (bypassing KV on mismatch) caused BYPASS-NO-CACHE for every
-    // page after every deployment. With a dev team doing 10 deployments/day, the
-    // site was never served from KV — always cold Vercel SSR.
-    //
-    // New behaviour: when buildIds differ, patch the old buildId strings inside the
-    // KV HTML and serve the patched version. This keeps KV warm across all
-    // deployments. The page content (listings, layout, text) is from the last cache
-    // warmup (slightly stale until the evening scheduled run — acceptable). The JS/CSS
-    // paths now point to the current Vercel build's files so the page loads and
-    // hydrates correctly.
-    //
-    // The buildId only appears in two places in the HTML:
-    //   1. __NEXT_DATA__ JSON  →  "buildId":"OLD"
-    //   2. Script src attrs    →  /_next/static/OLD/_buildManifest.js
-    //                             /_next/static/OLD/_ssgManifest.js
-    // replaceAll is safe because the buildId is a unique cryptographic hash.
-    //
-    // Only bypass (return null → PRIORITY 5) if current-build-id is missing entirely —
-    // that signals a misconfigured environment, not a routine deployment gap.
+    // Read current-build-id once (shared across all variant attempts)
     const currentBuildId = await env.CFS_STATIC_PAGES.get('current-build-id');
     if (!currentBuildId) {
-      console.log(`No current-build-id in KV — bypassing KV HTML conservatively for ${kvKey}`);
-      return null; // Falls through to PRIORITY 5 (Vercel origin)
+      console.log(`No current-build-id in KV — bypassing KV HTML for ${normalizedPath}`);
+      return { response: null, missReason: 'no-current-build-id' };
     }
 
-    const htmlBuildId = rawHtml.match(/"buildId":"([^"]+)"/)?.[1];
-    let html = rawHtml;
-    if (htmlBuildId && htmlBuildId !== currentBuildId) {
-      // Patch stale buildId → current buildId so the client loads the right JS/CSS.
-      html = rawHtml.replaceAll(htmlBuildId, currentBuildId);
-      console.log(`Build-ID patched in KV HTML: ${htmlBuildId} → ${currentBuildId} (${kvKey})`);
-    }
-
-    // Inject shuffle seed so React hydration uses the same variant order.
-    // e.g. kvKey = "listings-home-v3" → seed = 3
-    const variantNumber = kvKey.match(/-v(\d+)$/)?.[1] || '1';
-    const htmlWithSeed = html.replace(
-      '</head>',
-      `<script>window.__SHUFFLE_SEED__ = ${variantNumber};</script>\n</head>`
-    );
-    
-    // Return with appropriate headers.
-    // IMPORTANT: Cache-Control must be no-store so neither the browser nor Cloudflare's
-    // CDN edge caches this response. If it were cached (e.g. max-age=3600), the browser
-    // would serve the exact same variant for 1 hour on every refresh, and the worker's
-    // random variant selection would have no effect after the first request.
-    // The KV store is already the cache — no second caching layer is needed here.
-    return new Response(htmlWithSeed, {
-      status: 200,
-      headers: {
-        'Content-Type': 'text/html;charset=UTF-8',
-        'Cache-Control': 'no-store',
-        'X-CFS-Cache': 'HIT-KV',
-        'X-CFS-Route': normalizedPath,
-        'X-CFS-Key': kvKey,
-        'X-CFS-Source': 'cloudflare-kv',
-        'Vary': 'Accept-Encoding'
+    // Try each variant in order; skip missing/invalid entries rather than
+    // falling all the way through to Vercel origin immediately.
+    for (const kvKey of candidates) {
+      // Fetch from KV
+      const rawHtml = await env.CFS_STATIC_PAGES.get(kvKey);
+      if (!rawHtml) {
+        console.log(`KV miss for variant ${kvKey} — trying next variant`);
+        continue;
       }
-    });
-    
+
+      // Guard: if the stored HTML is a Cloudflare challenge/block page (happens when
+      // the cache generator ran from a non-AU IP and fetched through www instead of
+      // the Vercel preview URL), skip this variant and try the next.
+      // Real Next.js pages always contain __NEXT_DATA__; challenge pages never do.
+      if (!rawHtml.includes('__NEXT_DATA__')) {
+        console.log(`KV HTML for ${kvKey} is not a valid Next.js page — trying next variant`);
+        continue;
+      }
+
+      // Build-ID handling:
+      //
+      // "current-build-id" is written to KV by scripts/update-kv-build-id.js on
+      // every Vercel deployment. The KV HTML still embeds the OLD buildId until the
+      // next cache warmup regenerates it.
+      //
+      // When buildIds differ, patch the old buildId strings inside the KV HTML and
+      // serve the patched version. This keeps KV warm across all deployments. The
+      // page content (listings, layout, text) is from the last cache warmup (slightly
+      // stale until the evening scheduled run — acceptable). The JS/CSS paths now
+      // point to the current Vercel build's files so the page loads and hydrates.
+      //
+      // The buildId appears in two places in the HTML:
+      //   1. __NEXT_DATA__ JSON  →  "buildId":"OLD"
+      //   2. Script src attrs    →  /_next/static/OLD/_buildManifest.js
+      // replaceAll is safe because the buildId is a unique cryptographic hash.
+      const htmlBuildId = rawHtml.match(/"buildId":"([^"]+)"/)?.[1];
+      let html = rawHtml;
+      if (htmlBuildId && htmlBuildId !== currentBuildId) {
+        // Patch stale buildId → current buildId so the client loads the right JS/CSS.
+        html = rawHtml.replaceAll(htmlBuildId, currentBuildId);
+        console.log(`Build-ID patched in KV HTML: ${htmlBuildId} → ${currentBuildId} (${kvKey})`);
+      }
+
+      // Inject shuffle seed so React hydration uses the same variant order.
+      // e.g. kvKey = "listings-home-v3" → seed = 3
+      const variantNumber = kvKey.match(/-v(\d+)$/)?.[1] || '1';
+      const htmlWithSeed = html.replace(
+        '</head>',
+        `<script>window.__SHUFFLE_SEED__ = ${variantNumber};</script>\n</head>`
+      );
+
+      // Return with appropriate headers.
+      // IMPORTANT: Cache-Control must be no-store so neither the browser nor Cloudflare's
+      // CDN edge caches this response. If it were cached (e.g. max-age=3600), the browser
+      // would serve the exact same variant for 1 hour on every refresh, and the worker's
+      // random variant selection would have no effect after the first request.
+      // The KV store is already the cache — no second caching layer is needed here.
+      return {
+        response: new Response(htmlWithSeed, {
+          status: 200,
+          headers: {
+            'Content-Type': 'text/html;charset=UTF-8',
+            'Cache-Control': 'no-store',
+            'X-CFS-Cache': 'HIT-KV',
+            'X-CFS-Route': normalizedPath,
+            'X-CFS-Key': kvKey,
+            'X-CFS-Source': 'cloudflare-kv',
+            'Vary': 'Accept-Encoding'
+          }
+        }),
+        missReason: null,
+      };
+    }
+
+    // All variants were missing or invalid
+    console.log(`All ${candidates.length} KV variants missing/invalid for ${normalizedPath}`);
+    return { response: null, missReason: `all-${candidates.length}-variants-missing` };
+
   } catch (error) {
     console.error('KV lookup error:', error.message);
-    return null;
+    return { response: null, missReason: `kv-error:${error.message.substring(0, 80)}` };
   }
 }
 

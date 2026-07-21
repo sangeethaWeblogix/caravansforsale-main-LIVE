@@ -219,6 +219,25 @@ export default function StateHome({ initialFilters, browseData, initialPool, ini
     // with setReady means the pool effect fires once with the correct isIndexed
     // value, preventing the secondary pool re-fetch that occurs when the async
     // /api/indexed-url/ check resolves to a different value than the default.
+    //
+    // Resilience: if served from Vercel (BYPASS-NO-CACHE) rather than KV, neither
+    // __SHUFFLE_SEED__ nor __INITIAL_POOL__ are injected. In that case the pool
+    // effect's "skip first run" guard (initialPropConsumed) prevents the random
+    // seed from taking effect, so products appear frozen. Force the guard to true
+    // now so the pool effect always makes a live fetch with the fresh random seed.
+    try {
+      const win = window as unknown as Record<string, unknown>;
+      const hasWorkerSeed = typeof win["__SHUFFLE_SEED__"] === "number";
+      const hasInitialPool = !!(win["__INITIAL_POOL__"] as { url?: string } | undefined)?.url;
+      if (!hasWorkerSeed && !hasInitialPool && initialPool != null) {
+        // SSR bypass path: initialPool was provided by Vercel but no KV preload
+        // exists — skip the "consume initialPool" guard so the live fetch fires.
+        initialPropConsumed.current = true;
+      }
+    } catch {
+      // ignore
+    }
+
     try {
       const win = window as unknown as Record<string, unknown>;
       const preload = win.__INITIAL_POOL__ as { url?: string; is_indexed?: boolean; json?: unknown } | undefined;
