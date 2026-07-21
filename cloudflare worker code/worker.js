@@ -24,6 +24,12 @@
  */
 
 const VARIANT_COUNT = 7; // Must match generation scripts (HTML_VARIANTS in generate-affected-html-cache.js)
+
+// Secret header added to every Worker subrequest so the Cloudflare WAF geo-block
+// rule can skip it. Without this, fetchFresh() subrequests arrive at the WAF with
+// a Cloudflare Worker IP (non-AU, not in $whitelist_ips) and get blocked.
+// Add a WAF Skip rule: http.request.headers["x-cfs-worker-token"] eq "<same value>"
+const WORKER_BYPASS_TOKEN = typeof CFS_WORKER_TOKEN !== 'undefined' ? CFS_WORKER_TOKEN : '';
 const IMAGE_CACHE_TTL = 2592000; // 30 days
 // HTML_CACHE_TTL intentionally removed — KV HTML must NOT be cached by browser or CDN.
 // Caching the HTML response would lock users into the same variant for the cache duration,
@@ -451,6 +457,9 @@ async function getRoutesMapping(env) {
 function fetchFresh(request) {
   const headers = new Headers(request.headers);
   headers.set('Cache-Control', 'no-cache');
+  // Identify this as a Worker subrequest so the Cloudflare WAF geo-block rule
+  // can skip it (WAF Skip rule: http.request.headers["x-cfs-worker-token"] eq WORKER_BYPASS_TOKEN).
+  if (WORKER_BYPASS_TOKEN) headers.set('X-CFS-Worker-Token', WORKER_BYPASS_TOKEN);
   return fetch(new Request(request, { headers }));
 }
 
