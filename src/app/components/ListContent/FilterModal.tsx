@@ -210,6 +210,7 @@ const FilterModal: React.FC<CaravanFilterProps> = ({
   });
    const [visibleCount, setVisibleCount] = useState(10);
   const [modelCounts, setModelCounts] = useState<ModelCount[]>([]);
+  const [regionCounts, setRegionCounts] = useState<{ name: string; slug: string; count: number }[]>([]);
   const [isCategoryCountLoading, setIsCategoryCountLoading] = useState(true);
   const categoryFirstLoadDoneRef = useRef(false); // ← add this ref
 
@@ -2055,6 +2056,21 @@ const [states, setStates] = useState<StateOption[]>(statesProp);
     } else {
       setModelCounts([]);
     }
+    // ─── REGION COUNTS (when make + state both active) ───
+    // Used to hide regions with 0 products from the region dropdown.
+    if (activeFilters.make && activeFilters.state) {
+      const regionParams = new URLSearchParams();
+      regionParams.set("group_by", "region");
+      regionParams.set("make", activeFilters.make);
+      regionParams.set("state", activeFilters.state);
+      fetchParamsCount(`/api/params-count/?${regionParams.toString()}`, signal)
+        .then((json) => {
+          if (!signal.aborted) setRegionCounts((json.data as { name: string; slug: string; count: number }[]) || []);
+        })
+        .catch((e) => { if (e.name !== "AbortError") console.error(e); });
+    } else {
+      setRegionCounts([]);
+    }
     return () => controller.abort();
   }, [
     currentFilters.category, currentFilters.make, currentFilters.model, currentFilters.condition,
@@ -2201,7 +2217,15 @@ const [states, setStates] = useState<StateOption[]>(statesProp);
                                   s.name.toLowerCase() ===
                                   tempStateName?.toLowerCase(),
                               )?.regions || []
-                            ).map((region, idx) => (
+                            ).filter((region) => {
+                              // When make+state are both active, hide regions with 0 products
+                              if (regionCounts.length === 0) return true;
+                              return regionCounts.some(
+                                (rc) =>
+                                  rc.slug === region.value ||
+                                  rc.name.toLowerCase() === region.name.toLowerCase(),
+                              );
+                            }).map((region, idx) => (
                               <option key={idx} value={region.name}>
                                 {region.name}
                               </option>
