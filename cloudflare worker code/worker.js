@@ -28,8 +28,9 @@ const VARIANT_COUNT = 7; // Must match generation scripts (HTML_VARIANTS in gene
 // Secret header added to every Worker subrequest so the Cloudflare WAF geo-block
 // rule can skip it. Without this, fetchFresh() subrequests arrive at the WAF with
 // a Cloudflare Worker IP (non-AU, not in $whitelist_ips) and get blocked.
-// Add a WAF Skip rule: http.request.headers["x-cfs-worker-token"] eq "<same value>"
-const WORKER_BYPASS_TOKEN = typeof CFS_WORKER_TOKEN !== 'undefined' ? CFS_WORKER_TOKEN : '';
+// Add a WAF Skip rule: http.request.headers["x-cfs-worker-token"][0] eq "<same value>"
+// NOTE: In Module-format Workers, secrets are on `env`, not global scope.
+// fetchFresh(request, env) reads env.CFS_WORKER_TOKEN directly.
 const IMAGE_CACHE_TTL = 2592000; // 30 days
 // HTML_CACHE_TTL intentionally removed — KV HTML must NOT be cached by browser or CDN.
 // Caching the HTML response would lock users into the same variant for the cache duration,
@@ -99,7 +100,7 @@ export default {
       // - React hydration always matches server HTML
       // ============================================
       if (url.search && url.search.length > 0) {
-        const response = await fetchFresh(request);
+        const response = await fetchFresh(request, env);
         return addDebugHeaders(response, 'BYPASS-HAS-PARAMS', null, null);
       }
 
@@ -119,7 +120,7 @@ export default {
         // RSC payloads must always come from Vercel origin — never from Cloudflare's edge
         // cache, which may hold an RSC response for the previous buildId. A stale RSC
         // response makes the client render nothing (silent failure) until hard-refresh.
-        const response = await fetchFresh(request);
+        const response = await fetchFresh(request, env);
         return addDebugHeaders(response, 'BYPASS-RSC', null, null);
       }
 
@@ -139,7 +140,7 @@ export default {
       // the most common cause of "all pages blank on navigation, works after
       // hard-refresh": the BYPASS path returns old Cloudflare-cached HTML with
       // the old buildId, the client loads old JS, and RSC navigation fails.
-      const response = await fetchFresh(request);
+      const response = await fetchFresh(request, env);
       return addDebugHeaders(response, 'BYPASS-NO-CACHE', null, null);
 
     } catch (error) {
@@ -234,7 +235,7 @@ async function handlePoolApiCache(request, url, env) {
   // fires the "Allow wp-json API calls with key" Skip rule → SiteGround receives the
   // request with a Vercel IP (not a Worker IP) → sgcaptcha does not trigger → 200 JSON.
   try {
-    const vercelResponse = await fetchFresh(request);
+    const vercelResponse = await fetchFresh(request, env);
 
     const responseHeaders = new Headers(vercelResponse.headers);
     responseHeaders.set('X-Cache', 'MISS');
@@ -454,12 +455,14 @@ async function getRoutesMapping(env) {
  * Used for every BYPASS path (RSC, HAS-PARAMS, NO-CACHE) so that post-deployment
  * transitions are always served with the correct buildId HTML.
  */
-function fetchFresh(request) {
+function fetchFresh(request, env) {
   const headers = new Headers(request.headers);
   headers.set('Cache-Control', 'no-cache');
   // Identify this as a Worker subrequest so the Cloudflare WAF geo-block rule
-  // can skip it (WAF Skip rule: http.request.headers["x-cfs-worker-token"] eq WORKER_BYPASS_TOKEN).
-  if (WORKER_BYPASS_TOKEN) headers.set('X-CFS-Worker-Token', WORKER_BYPASS_TOKEN);
+  // can skip it (WAF Skip rule: http.request.headers["x-cfs-worker-token"][0] eq "<token>").
+  // In Module-format Workers, secrets live on env — NOT as global variables.
+  const bypassToken = env?.CFS_WORKER_TOKEN;
+  if (bypassToken) headers.set('X-CFS-Worker-Token', bypassToken);
   return fetch(new Request(request, { headers }));
 }
 
