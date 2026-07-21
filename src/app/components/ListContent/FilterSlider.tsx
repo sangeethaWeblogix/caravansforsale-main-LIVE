@@ -647,9 +647,30 @@ const [states, setStates] = useState<StateOption[]>(
     setSuburbLocationSuggestions([]);
     setShowSuburbSuggestions(false);
     setTempSuburbRadius(f.radius_kms ? Number(f.radius_kms) : RADIUS_OPTIONS[0]);
-    setLocationSubView("states");
 
-    // Fetch state counts
+    // If both make and state are active, jump straight to the regions sub-view
+    // (the user can always tap "← Location" to go back to the states list).
+    // Region counts are pre-fetched by the useEffect, so they'll be ready.
+    if (f.make && f.state) {
+      setLocationSubView("regions");
+      // Re-fetch to ensure fresh counts in case the useEffect data is stale
+      setRegionCountsLoading(true);
+      setRegionCounts([]);
+      const regionParams = new URLSearchParams({
+        group_by: "region",
+        state: f.state.toLowerCase(),
+        make: f.make.toLowerCase(),
+      });
+      if (f.category) regionParams.set("category", f.category);
+      fetch(`/api/params-count/?${regionParams}`)
+        .then((r) => r.json())
+        .then((json) => { setRegionCounts(json.data ?? []); setRegionCountsLoading(false); })
+        .catch(() => setRegionCountsLoading(false));
+    } else {
+      setLocationSubView("states");
+    }
+
+    // Fetch state counts (still needed for states sub-view)
     setStateCountsLoading(true);
     const stateParams = new URLSearchParams({ group_by: "state" });
     if (currentFilters.category) stateParams.set("category", currentFilters.category);
@@ -681,8 +702,11 @@ const [states, setStates] = useState<StateOption[]>(
     }
     setLocationSubView("regions");
     setRegionCountsLoading(true);
+    setRegionCounts([]); // clear stale counts while loading
     const params = new URLSearchParams({ group_by: "region", state: target.toLowerCase() });
     if (currentFilters.category) params.set("category", currentFilters.category);
+    // Include make so counts reflect only products for this make in this state
+    if (currentFilters.make) params.set("make", currentFilters.make);
     fetch(`/api/params-count/?${params}`)
       .then((r) => r.json())
       .then((json) => { setRegionCounts(json.data ?? []); setRegionCountsLoading(false); })
@@ -754,6 +778,30 @@ const [states, setStates] = useState<StateOption[]>(
       cachedCategoryCountsRef.current = categoryCounts;
     }
   }, [categoryCounts]);
+
+  // Pre-fetch region counts when both make and state are active (e.g. page load
+  // on /listings/apache/victoria-state/). This populates regionCounts so the
+  // Location filter immediately shows only regions that have products.
+  useEffect(() => {
+    const make = currentFilters.make;
+    const state = currentFilters.state;
+    if (!make || !state) {
+      setRegionCounts([]);
+      return;
+    }
+    const controller = new AbortController();
+    const params = new URLSearchParams({
+      group_by: "region",
+      state: state.toLowerCase(),
+      make: make.toLowerCase(),
+    });
+    if (currentFilters.category) params.set("category", currentFilters.category);
+    fetch(`/api/params-count/?${params}`, { signal: controller.signal })
+      .then((r) => r.json())
+      .then((json) => { setRegionCounts(json.data ?? []); })
+      .catch((e) => { if (e.name !== "AbortError") console.error("[FilterSlider] region count prefetch failed", e); });
+    return () => controller.abort();
+  }, [currentFilters.make, currentFilters.state, currentFilters.category]);
 
   // utils/formatSuburb.ts (or wherever suburb label is formatted)
 
@@ -1282,24 +1330,45 @@ const [states, setStates] = useState<StateOption[]>(
                 /* Regions sub-view */
                 <>
                   <div className="loc-region-heading">Region of {tempState}</div>
-                  <ul className="loc-state-list">
-                    {filteredRegions.map((r) => {
-                      const count = regionCounts.find((c) => c.name?.toLowerCase() === r.name.toLowerCase())?.count;
-                      const isSelected = tempRegion?.toLowerCase() === r.name.toLowerCase();
-                      return (
-                        <li
-                          key={r.name}
-                          className={`loc-state-item${isSelected ? " selected" : ""}`}
-                          onClick={() => setTempRegion(isSelected ? null : r.name)}
-                        >
-                          <span className={`loc-checkbox${isSelected ? " checked" : ""}`}>
-                            {isSelected && <i className="bi bi-check" style={{ color: "#fff", fontSize: 14, lineHeight: 1 }}></i>}
-                          </span>
-                          <span className="loc-state-name">{r.name}</span>
+                  {regionCountsLoading ? (
+                    <ul className="loc-state-list">
+                      {[1, 2, 3].map((i) => (
+                        <li key={i} className="loc-state-item" style={{ opacity: 0.4 }}>
+                          <span className="loc-checkbox" />
+                          <span className="loc-state-name" style={{ background: "#eee", borderRadius: 4, color: "transparent", userSelect: "none" }}>Loading...</span>
                         </li>
-                      );
-                    })}
-                  </ul>
+                      ))}
+                    </ul>
+                  ) : (
+                    <ul className="loc-state-list">
+                      {filteredRegions
+                        .filter((r) => {
+                          // When make is active and we have count data, hide zero-count regions
+                          if (!currentFilters.make || regionCounts.length === 0) return true;
+                          const rc = regionCounts.find(
+                            (c) =>
+                              c.name?.toLowerCase() === r.name.toLowerCase() ||
+                              c.slug === r.value,
+                          );
+                          return rc ? rc.count > 0 : false;
+                        })
+                        .map((r) => {
+                          const isSelected = tempRegion?.toLowerCase() === r.name.toLowerCase();
+                          return (
+                            <li
+                              key={r.name}
+                              className={`loc-state-item${isSelected ? " selected" : ""}`}
+                              onClick={() => setTempRegion(isSelected ? null : r.name)}
+                            >
+                              <span className={`loc-checkbox${isSelected ? " checked" : ""}`}>
+                                {isSelected && <i className="bi bi-check" style={{ color: "#fff", fontSize: 14, lineHeight: 1 }}></i>}
+                              </span>
+                              <span className="loc-state-name">{r.name}</span>
+                            </li>
+                          );
+                        })}
+                    </ul>
+                  )}
                 </>
               )}
             </div>
