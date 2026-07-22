@@ -21,7 +21,7 @@ export default function Navbar() {
   const [hamOpen, setHamOpen] = useState(false);
   const hamRef = useRef<HTMLDivElement | null>(null);
   const [exploreOpen, setExploreOpen] = useState(false);
-  const exploreRef = useRef<HTMLDivElement | null>(null);
+  const exploreRef = useRef<HTMLLIElement | null>(null);
   const [mobileExploreOpen, setMobileExploreOpen] = useState(false);
 
   useEffect(() => {
