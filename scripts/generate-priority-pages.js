@@ -532,7 +532,11 @@ async function generateStaticPages() {
       });
       if (sampleRes.ok) {
         const sampleHtml = await sampleRes.text();
-        const buildIdMatch = sampleHtml.match(/"buildId":"([^"]+)"/);
+        // App Router embeds buildId in script src: /_next/static/{buildId}/_buildManifest.js
+        // Pages Router embeds it in __NEXT_DATA__: "buildId":"..."
+        const buildIdMatch =
+          sampleHtml.match(/\/_next\/static\/([^/]+)\/_buildManifest\.js/) ||
+          sampleHtml.match(/"buildId":"([^"]+)"/);
         if (buildIdMatch) {
           const buildId = buildIdMatch[1];
           const stored = await uploadToKV('current-build-id', buildId);

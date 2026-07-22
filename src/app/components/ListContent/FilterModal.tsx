@@ -2056,21 +2056,6 @@ const [states, setStates] = useState<StateOption[]>(statesProp);
     } else {
       setModelCounts([]);
     }
-    // ─── REGION COUNTS (when make + state both active) ───
-    // Used to hide regions with 0 products from the region dropdown.
-    if (activeFilters.make && activeFilters.state) {
-      const regionParams = new URLSearchParams();
-      regionParams.set("group_by", "region");
-      regionParams.set("make", activeFilters.make);
-      regionParams.set("state", activeFilters.state);
-      fetchParamsCount(`/api/params-count/?${regionParams.toString()}`, signal)
-        .then((json) => {
-          if (!signal.aborted) setRegionCounts((json.data as { name: string; slug: string; count: number }[]) || []);
-        })
-        .catch((e) => { if (e.name !== "AbortError") console.error(e); });
-    } else {
-      setRegionCounts([]);
-    }
     return () => controller.abort();
   }, [
     currentFilters.category, currentFilters.make, currentFilters.model, currentFilters.condition,
@@ -2086,6 +2071,74 @@ const [states, setStates] = useState<StateOption[]>(statesProp);
     filters.keyword,
     tempCategory, selectedMakeTemp, tempModel, tempCondition,
     tempStateName, tempRegionName, modalKeyword, selectedSuggestion,
+  ]);
+
+  // ─── REGION COUNTS — dedicated effect ───
+  // Separated from the main count useEffect so its AbortController lifecycle
+  // doesn't get entangled with category/make/model fetches. Fires whenever the
+  // effective state (committed or temp) or any other filter changes.
+  useEffect(() => {
+    // Resolve the active state: temp selection takes priority over committed URL value
+    const activeState = tempStateName
+      ? tempStateName.toLowerCase()
+      : (currentFilters.state ?? filters.state ?? "");
+    if (!activeState) {
+      setRegionCounts([]);
+      return;
+    }
+    // tempStateName is the display name ("New South Wales") — convert to slug
+    const stateSlug = activeState.replace(/\s+/g, "-");
+    const activeMake = selectedMakeTemp || currentFilters.make || filters.make;
+
+    const controller = new AbortController();
+    const params = new URLSearchParams({ group_by: "region", state: stateSlug });
+    if (activeMake)                               params.set("make", activeMake);
+    if (tempCategory || currentFilters.category || filters.category)
+      params.set("category", (tempCategory || currentFilters.category || filters.category)!);
+    if (tempCondition || currentFilters.condition || filters.condition)
+      params.set("condition", (tempCondition || currentFilters.condition || filters.condition)!);
+    if (currentFilters.from_price || filters.from_price)
+      params.set("from_price", String(currentFilters.from_price || filters.from_price));
+    if (currentFilters.to_price || filters.to_price)
+      params.set("to_price", String(currentFilters.to_price || filters.to_price));
+    if (currentFilters.minKg || filters.minKg)
+      params.set("from_atm", String(currentFilters.minKg || filters.minKg));
+    if (currentFilters.maxKg || filters.maxKg)
+      params.set("to_atm", String(currentFilters.maxKg || filters.maxKg));
+    if (currentFilters.from_sleep || filters.from_sleep)
+      params.set("from_sleep", String(currentFilters.from_sleep || filters.from_sleep));
+    if (currentFilters.to_sleep || filters.to_sleep)
+      params.set("to_sleep", String(currentFilters.to_sleep || filters.to_sleep));
+    if (currentFilters.from_length || filters.from_length)
+      params.set("from_length", String(currentFilters.from_length || filters.from_length));
+    if (currentFilters.to_length || filters.to_length)
+      params.set("to_length", String(currentFilters.to_length || filters.to_length));
+    if (currentFilters.acustom_fromyears || filters.acustom_fromyears)
+      params.set("acustom_fromyears", String(currentFilters.acustom_fromyears || filters.acustom_fromyears));
+    if (currentFilters.acustom_toyears || filters.acustom_toyears)
+      params.set("acustom_toyears", String(currentFilters.acustom_toyears || filters.acustom_toyears));
+
+    fetch(`/api/params-count/?${params.toString()}`, { signal: controller.signal })
+      .then((r) => r.json())
+      .then((json) => {
+        if (!controller.signal.aborted) {
+          setRegionCounts((json.data as { name: string; slug: string; count: number }[]) || []);
+        }
+      })
+      .catch((e) => { if (e.name !== "AbortError") console.error("[FilterModal] region count fetch failed:", e); });
+
+    return () => controller.abort();
+  }, [
+    tempStateName, currentFilters.state, filters.state,
+    selectedMakeTemp, currentFilters.make, filters.make,
+    tempCategory, currentFilters.category, filters.category,
+    tempCondition, currentFilters.condition, filters.condition,
+    currentFilters.from_price, filters.from_price, currentFilters.to_price, filters.to_price,
+    currentFilters.minKg, filters.minKg, currentFilters.maxKg, filters.maxKg,
+    currentFilters.from_sleep, filters.from_sleep, currentFilters.to_sleep, filters.to_sleep,
+    currentFilters.from_length, filters.from_length, currentFilters.to_length, filters.to_length,
+    currentFilters.acustom_fromyears, filters.acustom_fromyears,
+    currentFilters.acustom_toyears, filters.acustom_toyears,
   ]);
 
   useEffect(() => {
@@ -2218,12 +2271,14 @@ const [states, setStates] = useState<StateOption[]>(statesProp);
                                   tempStateName?.toLowerCase(),
                               )?.regions || []
                             ).filter((region) => {
-                              // When make+state are both active, hide regions with 0 products
+                              // When make+state are both active, hide regions with 0 products.
+                              // API returns hyphenated names from DB (e.g. "Mornington-peninsula"),
+                              // static data uses spaces ("mornington peninsula"). Normalize both sides.
                               if (regionCounts.length === 0) return true;
                               return regionCounts.some(
                                 (rc) =>
-                                  rc.slug === region.value ||
-                                  rc.name.toLowerCase() === region.name.toLowerCase(),
+                                  rc.slug.replace(/-/g, " ") === (region.value ?? "").toLowerCase() ||
+                                  rc.name.toLowerCase().replace(/-/g, " ") === region.name.toLowerCase(),
                               );
                             }).map((region, idx) => (
                               <option key={idx} value={region.name}>

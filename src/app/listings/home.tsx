@@ -31,6 +31,32 @@ const readPage = (id: string): number | null => {
 
 const SEED_MAX = 15;
 
+// ── Seeded shuffle ────────────────────────────────────────────────────────────
+// Mulberry32 PRNG — deterministic, fast, well-distributed.
+// Used to shuffle the pool in the live-fetch path so that even when the
+// pool-listings KV cache serves identical JSON for every seed (the cache key
+// strips `seed`), each refresh still displays a different product order.
+function mulberry32(seed: number) {
+  return () => {
+    seed += 0x6D2B79F5;
+    let t = seed ^ (seed >>> 15);
+    t = Math.imul(t, 1 | seed);
+    t ^= t + Math.imul(t ^ (t >>> 7), 61 | t);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function seededShuffle<T>(arr: T[], seed: number): T[] {
+  if (arr.length <= 1) return arr;
+  const out = [...arr];
+  const rand = mulberry32(seed);
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
 /** Full pool data fetched server-side in page.tsx and passed as a prop so the
  *  SSR / KV-cached HTML contains real product listings from the first byte. */
 export type InitialPool = {
@@ -472,20 +498,33 @@ export default function StateHome({ initialFilters, browseData, initialPool, ini
           setPool({ featured: empItems, new: [], used: [] });
         } else if (isIndexed) {
           // Indexed pages split by slot_bucket into Featured/New/Used.
-          // Premium and exclusive vans always come from their own top-level
-          // arrays and only render on the Featured tab (position 3 =
-          // exclusive, 4-5 = premium).
-          const featuredSource = products.filter((p) => p.slot_bucket === "featured");
+          // seededShuffle reorders each bucket using the client's random seed so
+          // different products appear on each refresh even when the pool-listings
+          // KV cache serves the same JSON for every seed value.
+          const featuredSource = seededShuffle(
+            products.filter((p) => p.slot_bucket === "featured"),
+            seed
+          );
           const featuredItems  = buildFeaturedOrder(featuredSource, premiumsRaw, exclusivesRaw);
           const featuredIds    = new Set(featuredItems.map((p) => p.id));
 
-          const newItems  = products.filter((p) => p.slot_bucket === "new"  && !p.is_premium && !p.is_exclusive && !featuredIds.has(p.id));
-          const usedItems = products.filter((p) => p.slot_bucket === "used" && !p.is_premium && !p.is_exclusive && !featuredIds.has(p.id));
+          const newItems  = seededShuffle(
+            products.filter((p) => p.slot_bucket === "new"  && !p.is_premium && !p.is_exclusive && !featuredIds.has(p.id)),
+            seed + 1000
+          );
+          const usedItems = seededShuffle(
+            products.filter((p) => p.slot_bucket === "used" && !p.is_premium && !p.is_exclusive && !featuredIds.has(p.id)),
+            seed + 2000
+          );
 
           setPool({ featured: featuredItems, new: newItems, used: usedItems });
         } else {
           // Non-indexed pages get one combined grid instead of a split.
-          const combined = buildFeaturedOrder(products, premiumsRaw, exclusivesRaw);
+          const combined = buildFeaturedOrder(
+            seededShuffle(products, seed),
+            premiumsRaw,
+            exclusivesRaw
+          );
           setPool({ featured: combined, new: [], used: [] });
         }
 
