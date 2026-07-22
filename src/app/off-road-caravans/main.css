@@ -4025,7 +4025,7 @@ main .section-head .category_icon li img {
   .or-snapshot {padding: 40px 0px;}
   .or-snapshot__title {font-size: 22px;}
   .or-pop-guides__grid {gap: 10px;}
-  .or-faq-grid{display:block}
+  .or-faq-grid{display:block !important;}
 }
 
 /* ── FAQ ── */
