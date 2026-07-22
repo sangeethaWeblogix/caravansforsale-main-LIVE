@@ -189,6 +189,7 @@ export default function StateFilterBar({ currentFilters, onFilterChange, onClear
   const [makeCounts,       setMakeCounts]       = useState<{name: string; slug: string; count: number}[]>([]);
   const [modelCounts,      setModelCounts]      = useState<{name: string; slug: string; count: number}[]>([]);
   const [stateCounts,      setStateCounts]      = useState<{slug: string; count: number}[]>([]);
+  const [regionCountsByState, setRegionCountsByState] = useState<Record<string, {name: string; slug: string; count: number}[]>>({});
   const [modelCountLoading, setModelCountLoading] = useState(false);
   const [lastModelName,    setLastModelName]    = useState<string | null>(null);
 
@@ -246,6 +247,47 @@ export default function StateFilterBar({ currentFilters, onFilterChange, onClear
     currentFilters.from_length, currentFilters.to_length, currentFilters.from_sleep, currentFilters.to_sleep,
     currentFilters.keyword,
   ]);
+
+  // After state counts arrive, pre-fetch region counts for every state returned.
+  // This fires automatically whenever stateCounts changes (i.e. whenever make or
+  // other filters change), so the region dropdown is already populated when the
+  // user drills into a state — no extra fetch needed on click.
+  useEffect(() => {
+    if (!stateCounts.length || !currentFilters.make) {
+      setRegionCountsByState({});
+      return;
+    }
+    const controllers: AbortController[] = [];
+    stateCounts.forEach((sc) => {
+      if (!sc.slug) return;
+      const ctrl = new AbortController();
+      controllers.push(ctrl);
+      const params = new URLSearchParams({ group_by: "region", state: sc.slug.toLowerCase() });
+      params.set("make", currentFilters.make!.toLowerCase());
+      if (currentFilters.category)          params.set("category", currentFilters.category);
+      if (currentFilters.condition)         params.set("condition", currentFilters.condition);
+      if (currentFilters.from_price)        params.set("from_price", String(currentFilters.from_price));
+      if (currentFilters.to_price)          params.set("to_price", String(currentFilters.to_price));
+      if (currentFilters.minKg)             params.set("from_atm", String(currentFilters.minKg));
+      if (currentFilters.maxKg)             params.set("to_atm", String(currentFilters.maxKg));
+      if (currentFilters.acustom_fromyears) params.set("acustom_fromyears", String(currentFilters.acustom_fromyears));
+      if (currentFilters.acustom_toyears)   params.set("acustom_toyears", String(currentFilters.acustom_toyears));
+      if (currentFilters.from_length)       params.set("from_length", String(currentFilters.from_length));
+      if (currentFilters.to_length)         params.set("to_length", String(currentFilters.to_length));
+      if (currentFilters.from_sleep)        params.set("from_sleep", String(currentFilters.from_sleep));
+      if (currentFilters.to_sleep)          params.set("to_sleep", String(currentFilters.to_sleep));
+      if (currentFilters.keyword)           params.set("keyword", currentFilters.keyword);
+      fetch(`/api/params-count/?${params}`, { signal: ctrl.signal })
+        .then(r => r.json())
+        .then(json => {
+          if (!ctrl.signal.aborted) {
+            setRegionCountsByState(prev => ({ ...prev, [sc.slug]: json.data ?? [] }));
+          }
+        })
+        .catch(e => { if (e.name !== "AbortError") console.error("[StateFilterBar] region prefetch failed", e); });
+    });
+    return () => controllers.forEach(c => c.abort());
+  }, [stateCounts]);
 
   // Live model counts — scoped to whichever make is currently selected in the modal.
   useEffect(() => {
@@ -372,7 +414,15 @@ export default function StateFilterBar({ currentFilters, onFilterChange, onClear
     return st.regions.find(r => r.name.toLowerCase() === regionName.toLowerCase() || r.value.toLowerCase() === regionName.toLowerCase())?.name;
   };
 
-  const filteredRegions = states.find(s => s.name.toLowerCase() === tempState?.toLowerCase())?.regions ?? [];
+  // All regions for the currently-viewed state from the static list
+  const allRegionsForState = states.find(s => s.name.toLowerCase() === tempState?.toLowerCase())?.regions ?? [];
+  // When a make is active, narrow to only regions that have listings for that make
+  // (using the pre-fetched regionCountsByState data). Falls back to the full list
+  // while the prefetch is in-flight or when no make is selected.
+  const activeRegionCounts = tempState ? regionCountsByState[tempState.toLowerCase()] : undefined;
+  const filteredRegions = (currentFilters.make && activeRegionCounts)
+    ? allRegionsForState.filter(r => activeRegionCounts.some(rc => rc.slug === r.value && rc.count > 0))
+    : allRegionsForState;
 
   // When a make filter is active, narrow the state list to only states with
   // count > 0 for that make. Falls back to the full list when no make is set

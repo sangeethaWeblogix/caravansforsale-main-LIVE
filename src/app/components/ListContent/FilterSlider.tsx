@@ -648,24 +648,45 @@ const [states, setStates] = useState<StateOption[]>(
     setShowSuburbSuggestions(false);
     setTempSuburbRadius(f.radius_kms ? Number(f.radius_kms) : RADIUS_OPTIONS[0]);
 
-    // If both make and state are active, jump straight to the regions sub-view
-    // (the user can always tap "← Location" to go back to the states list).
-    // Region counts are pre-fetched by the useEffect, so they'll be ready.
-    if (f.make && f.state) {
+    // Jump straight to the regions sub-view whenever a state is active.
+    // Use the preloaded regionCounts from the useEffect where possible.
+    // Re-fetch only when the preloaded data doesn't match the current filter context.
+    const effectiveMake = f.make ?? currentFilters.make;
+    if (f.state) {
       setLocationSubView("regions");
-      // Re-fetch to ensure fresh counts in case the useEffect data is stale
-      setRegionCountsLoading(true);
-      setRegionCounts([]);
-      const regionParams = new URLSearchParams({
-        group_by: "region",
-        state: f.state.toLowerCase(),
-        make: f.make.toLowerCase(),
-      });
-      if (f.category) regionParams.set("category", f.category);
-      fetch(`/api/params-count/?${regionParams}`)
-        .then((r) => r.json())
-        .then((json) => { setRegionCounts(json.data ?? []); setRegionCountsLoading(false); })
-        .catch(() => setRegionCountsLoading(false));
+      // Check if preloaded data is already correct for the current full filter context.
+      const preloadedForSameState =
+        currentFilters.state?.toLowerCase() === f.state.toLowerCase();
+      if (!preloadedForSameState || regionCounts.length === 0) {
+        // Need fresh data — show loading skeleton while fetching
+        setRegionCountsLoading(true);
+        setRegionCounts([]);
+        const regionParams = new URLSearchParams({ group_by: "region", state: f.state.toLowerCase() });
+        if (effectiveMake) regionParams.set("make", effectiveMake.toLowerCase());
+        if (f.category) regionParams.set("category", f.category);
+        if (f.condition) regionParams.set("condition", f.condition.toLowerCase());
+        if (f.from_price) regionParams.set("from_price", String(f.from_price));
+        if (f.to_price) regionParams.set("to_price", String(f.to_price));
+        if (f.minKg) regionParams.set("from_atm", String(f.minKg));
+        if (f.maxKg) regionParams.set("to_atm", String(f.maxKg));
+        if (f.acustom_fromyears) regionParams.set("acustom_fromyears", String(f.acustom_fromyears));
+        if (f.acustom_toyears) regionParams.set("acustom_toyears", String(f.acustom_toyears));
+        if (f.from_length) regionParams.set("from_length", String(f.from_length));
+        if (f.to_length) regionParams.set("to_length", String(f.to_length));
+        if (f.from_sleep) regionParams.set("from_sleep", String(f.from_sleep));
+        if (f.to_sleep) regionParams.set("to_sleep", String(f.to_sleep));
+        if (f.search) regionParams.set("search", f.search);
+        if (f.keyword) regionParams.set("keyword", f.keyword);
+        console.log("[FilterSlider] handleLocationOpen region fetch →", `/api/params-count/?${regionParams}`);
+        fetch(`/api/params-count/?${regionParams}`)
+          .then((r) => r.json())
+          .then((json) => {
+            console.log("[FilterSlider] handleLocationOpen region fetch ←", json);
+            setRegionCounts(json.data ?? []);
+            setRegionCountsLoading(false);
+          })
+          .catch(() => setRegionCountsLoading(false));
+      }
     } else {
       setLocationSubView("states");
     }
@@ -703,13 +724,31 @@ const [states, setStates] = useState<StateOption[]>(
     setLocationSubView("regions");
     setRegionCountsLoading(true);
     setRegionCounts([]); // clear stale counts while loading
+    const effectiveFilters = getEffectiveFilters();
     const params = new URLSearchParams({ group_by: "region", state: target.toLowerCase() });
-    if (currentFilters.category) params.set("category", currentFilters.category);
-    // Include make so counts reflect only products for this make in this state
-    if (currentFilters.make) params.set("make", currentFilters.make);
+    if (effectiveFilters.make) params.set("make", effectiveFilters.make.toLowerCase());
+    if (effectiveFilters.category) params.set("category", effectiveFilters.category);
+    if (effectiveFilters.condition) params.set("condition", effectiveFilters.condition.toLowerCase());
+    if (effectiveFilters.from_price) params.set("from_price", String(effectiveFilters.from_price));
+    if (effectiveFilters.to_price) params.set("to_price", String(effectiveFilters.to_price));
+    if (effectiveFilters.minKg) params.set("from_atm", String(effectiveFilters.minKg));
+    if (effectiveFilters.maxKg) params.set("to_atm", String(effectiveFilters.maxKg));
+    if (effectiveFilters.acustom_fromyears) params.set("acustom_fromyears", String(effectiveFilters.acustom_fromyears));
+    if (effectiveFilters.acustom_toyears) params.set("acustom_toyears", String(effectiveFilters.acustom_toyears));
+    if (effectiveFilters.from_length) params.set("from_length", String(effectiveFilters.from_length));
+    if (effectiveFilters.to_length) params.set("to_length", String(effectiveFilters.to_length));
+    if (effectiveFilters.from_sleep) params.set("from_sleep", String(effectiveFilters.from_sleep));
+    if (effectiveFilters.to_sleep) params.set("to_sleep", String(effectiveFilters.to_sleep));
+    if (effectiveFilters.search) params.set("search", effectiveFilters.search);
+    if (effectiveFilters.keyword) params.set("keyword", effectiveFilters.keyword);
+    console.log("[FilterSlider] handleRegionViewOpen fetch →", `/api/params-count/?${params}`);
     fetch(`/api/params-count/?${params}`)
       .then((r) => r.json())
-      .then((json) => { setRegionCounts(json.data ?? []); setRegionCountsLoading(false); })
+      .then((json) => {
+        console.log("[FilterSlider] handleRegionViewOpen fetch ←", json);
+        setRegionCounts(json.data ?? []);
+        setRegionCountsLoading(false);
+      })
       .catch(() => setRegionCountsLoading(false));
   };
 
@@ -729,9 +768,17 @@ const [states, setStates] = useState<StateOption[]>(
     setOpenModal(null);
   };
 
-  const filteredRegions =
+  const allRegionsForState =
     states.find((s) => s.name.toLowerCase() === tempState?.toLowerCase())
       ?.regions ?? [];
+  // When regionCounts is populated (fetched with active filters), narrow the
+  // list to only regions that have listings. Falls back to the full static list
+  // while the fetch is in-flight (regionCounts is cleared to [] on each fetch).
+  const filteredRegions = regionCounts.length > 0
+    ? allRegionsForState.filter((r) =>
+        regionCounts.some((rc) => rc.slug === r.value && rc.count > 0)
+      )
+    : allRegionsForState;
 
   const hasTypeChange = tempCategory !== (currentFilters.category ?? null);
   const hasLocationChange =
@@ -779,29 +826,58 @@ const [states, setStates] = useState<StateOption[]>(
     }
   }, [categoryCounts]);
 
-  // Pre-fetch region counts when both make and state are active (e.g. page load
-  // on /listings/apache/victoria-state/). This populates regionCounts so the
-  // Location filter immediately shows only regions that have products.
+  // Pre-fetch region counts whenever a state is active (e.g. page load on
+  // /listings/apache/victoria-state/ or any filter combo with a state set).
+  // Passes ALL active filters so counts reflect the full current filter context.
   useEffect(() => {
-    const make = currentFilters.make;
     const state = currentFilters.state;
-    if (!make || !state) {
+    if (!state) {
       setRegionCounts([]);
+      setRegionCountsLoading(false);
       return;
     }
     const controller = new AbortController();
-    const params = new URLSearchParams({
-      group_by: "region",
-      state: state.toLowerCase(),
-      make: make.toLowerCase(),
-    });
+    setRegionCountsLoading(true);
+    const params = new URLSearchParams({ group_by: "region", state: state.toLowerCase() });
+    if (currentFilters.make) params.set("make", currentFilters.make.toLowerCase());
     if (currentFilters.category) params.set("category", currentFilters.category);
+    if (currentFilters.condition) params.set("condition", currentFilters.condition.toLowerCase());
+    if (currentFilters.from_price) params.set("from_price", String(currentFilters.from_price));
+    if (currentFilters.to_price) params.set("to_price", String(currentFilters.to_price));
+    if (currentFilters.minKg) params.set("from_atm", String(currentFilters.minKg));
+    if (currentFilters.maxKg) params.set("to_atm", String(currentFilters.maxKg));
+    if (currentFilters.acustom_fromyears) params.set("acustom_fromyears", String(currentFilters.acustom_fromyears));
+    if (currentFilters.acustom_toyears) params.set("acustom_toyears", String(currentFilters.acustom_toyears));
+    if (currentFilters.from_length) params.set("from_length", String(currentFilters.from_length));
+    if (currentFilters.to_length) params.set("to_length", String(currentFilters.to_length));
+    if (currentFilters.from_sleep) params.set("from_sleep", String(currentFilters.from_sleep));
+    if (currentFilters.to_sleep) params.set("to_sleep", String(currentFilters.to_sleep));
+    if (currentFilters.search) params.set("search", currentFilters.search);
+    if (currentFilters.keyword) params.set("keyword", currentFilters.keyword);
+    console.log("[FilterSlider] region prefetch →", `/api/params-count/?${params}`);
     fetch(`/api/params-count/?${params}`, { signal: controller.signal })
       .then((r) => r.json())
-      .then((json) => { setRegionCounts(json.data ?? []); })
-      .catch((e) => { if (e.name !== "AbortError") console.error("[FilterSlider] region count prefetch failed", e); });
+      .then((json) => {
+        if (!controller.signal.aborted) {
+          console.log("[FilterSlider] region prefetch ←", json);
+          setRegionCounts(json.data ?? []);
+          setRegionCountsLoading(false);
+        }
+      })
+      .catch((e) => {
+        if (e.name !== "AbortError") {
+          console.error("[FilterSlider] region count prefetch failed", e);
+          setRegionCountsLoading(false);
+        }
+      });
     return () => controller.abort();
-  }, [currentFilters.make, currentFilters.state, currentFilters.category]);
+  }, [
+    currentFilters.state, currentFilters.make, currentFilters.category,
+    currentFilters.condition, currentFilters.from_price, currentFilters.to_price,
+    currentFilters.minKg, currentFilters.maxKg, currentFilters.acustom_fromyears,
+    currentFilters.acustom_toyears, currentFilters.from_length, currentFilters.to_length,
+    currentFilters.from_sleep, currentFilters.to_sleep, currentFilters.search, currentFilters.keyword,
+  ]);
 
   // utils/formatSuburb.ts (or wherever suburb label is formatted)
 
@@ -1343,17 +1419,28 @@ const [states, setStates] = useState<StateOption[]>(
                     <ul className="loc-state-list">
                       {filteredRegions
                         .filter((r) => {
-                          // When make is active and we have count data, hide zero-count regions
-                          if (!currentFilters.make || regionCounts.length === 0) return true;
+                          // When make is active and we have count data, hide zero-count regions.
+                          // Use getEffectiveFilters() for make so local overrides are respected.
+                          // API returns hyphenated names from DB (e.g. "Mornington-peninsula"),
+                          // static data uses spaces ("Mornington Peninsula" / "mornington peninsula").
+                          // Normalize both sides by replacing hyphens → spaces before comparing.
+                          // Use currentFilters.make as primary (reliable from URL), fall back to localOverride.
+                          const effectiveMake = currentFilters.make ?? getEffectiveFilters().make;
+                          if (!effectiveMake || regionCounts.length === 0) return true;
                           const rc = regionCounts.find(
                             (c) =>
-                              c.name?.toLowerCase() === r.name.toLowerCase() ||
-                              c.slug === r.value,
+                              c.name?.toLowerCase().replace(/-/g, " ") === r.name.toLowerCase() ||
+                              c.slug.replace(/-/g, " ") === (r.value ?? "").toLowerCase(),
                           );
                           return rc ? rc.count > 0 : false;
                         })
                         .map((r) => {
                           const isSelected = tempRegion?.toLowerCase() === r.name.toLowerCase();
+                          const rc = regionCounts.find(
+                            (c) =>
+                              c.name?.toLowerCase().replace(/-/g, " ") === r.name.toLowerCase() ||
+                              c.slug.replace(/-/g, " ") === (r.value ?? "").toLowerCase(),
+                          );
                           return (
                             <li
                               key={r.name}
@@ -1364,6 +1451,11 @@ const [states, setStates] = useState<StateOption[]>(
                                 {isSelected && <i className="bi bi-check" style={{ color: "#fff", fontSize: 14, lineHeight: 1 }}></i>}
                               </span>
                               <span className="loc-state-name">{r.name}</span>
+                              {rc && (
+                                <span style={{ marginLeft: "auto", fontSize: 12, color: "#888", paddingRight: 4 }}>
+                                  {rc.count}
+                                </span>
+                              )}
                             </li>
                           );
                         })}
