@@ -153,7 +153,7 @@ function isNonEmpty(s: unknown): s is string {
 /* ── Mosaic gallery ── */
 const Gallery = memo(function Gallery({ images, onOpen }: { images: string[]; onOpen: (index: number) => void }) {
   const extra = images.length - 3;
-  const [mobileSlide, setMobileSlide] = useState(1);
+  const [mobileSlide, setMobileSlide] = useState(0);
   const go = (dir: 1 | -1) =>
     setMobileSlide(p => Math.max(0, Math.min(images.length - 1, p + dir)));
 
