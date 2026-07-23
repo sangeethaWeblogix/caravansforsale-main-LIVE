@@ -69,7 +69,7 @@ export default async function LocationStateDemoPage({
     : 0;
 
   const [browseData, initialPool] = await Promise.all([
-    fetchBrowseSectionData(initialFilters, isIndexed),
+    fetchBrowseSectionData(initialFilters),
     fetchInitialPool(initialFilters, isIndexed, shuffleSeed),
   ]);
 
