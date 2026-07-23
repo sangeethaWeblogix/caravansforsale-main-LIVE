@@ -18,10 +18,10 @@ type Listing = {
 };
 
 async function fetchFeaturedListings(): Promise<Listing[]> {
-  const res = await fetch("/api/listings/?per_page=12", { cache: "no-store" });
+  const res = await fetch("/api/home-featured/?type=all&category=off-road", { cache: "no-store" });
   if (!res.ok) return [];
   const json = await res.json();
-  return json?.data?.products ?? [];
+  return json?.products ?? json?.data?.products ?? [];
 }
 
 export default function HomeFeatured() {
@@ -60,7 +60,7 @@ export default function HomeFeatured() {
             const isNew = item.condition?.toLowerCase() === "new";
             const price = item.sale_price || item.regular_price || "POA";
             const image = item.image_format?.[0] ?? null;
-            const type = item.categories?.[0] ?? "";
+            const type = (item.categories?.[0] ?? "").replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase()) + " Caravan";
 
             return (
               <Link key={item.id ?? idx} href={`/product/${item.slug}/`} className="hf-card">
