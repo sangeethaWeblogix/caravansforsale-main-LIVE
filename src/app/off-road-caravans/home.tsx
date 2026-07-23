@@ -33,6 +33,11 @@ function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, "").replace(/&[a-z]+;/gi, " ").trim();
 }
 
+function fixLink(link?: string): string {
+  if (!link) return "";
+  return link.replace(/^(https?:\/\/)(www\.)+/i, "$1www.");
+}
+
 interface OffRoadBlog {
   id: number;
   title: string;
@@ -280,7 +285,7 @@ export default function OffRoadCaravansPage({ stateBands, offRoadBlogs, offRoadP
             <h2 className="or-section-title">Popular Buying Guides</h2>
             <div className="or-pop-guides__grid">
               {offRoadPopularBlogs.slice(0, 10).map((b) => (
-                <a key={b.id} href={b.link || `/${b.slug}/`} className="or-pop-guides__card">
+                <a key={b.id} href={fixLink(b.link) || `/${b.slug}/`} className="or-pop-guides__card">
                   <div className="or-pop-guides__img-wrap">
                     <img src={b.image || "/images/placeholder.jpg"} alt={b.title} className="or-pop-guides__img" loading="lazy" />
                   </div>
@@ -303,7 +308,7 @@ export default function OffRoadCaravansPage({ stateBands, offRoadBlogs, offRoadP
               <div className="or-reviews-col">
                 <h2 className="or-section-title">Brand Reviews</h2>
                 {offRoadBrandBlogs.slice(0, 4).map((b) => (
-                  <a key={b.id} href={b.link || `/${b.slug}/`} className="or-reviews-item">
+                  <a key={b.id} href={fixLink(b.link) || `/${b.slug}/`} className="or-reviews-item">
                     <img src={b.image || "/images/placeholder.jpg"} alt={b.title} className="or-reviews-thumb" loading="lazy" />
                     <div className="or-reviews-item__body">
                       <span className="or-reviews-item__title">{b.title}</span>
@@ -314,7 +319,7 @@ export default function OffRoadCaravansPage({ stateBands, offRoadBlogs, offRoadP
               <div className="or-reviews-col">
                 <h2 className="or-section-title">Model Reviews</h2>
                 {offRoadModelBlogs.slice(0, 4).map((b) => (
-                  <a key={b.id} href={b.link || `/${b.slug}/`} className="or-reviews-item">
+                  <a key={b.id} href={fixLink(b.link) || `/${b.slug}/`} className="or-reviews-item">
                     <img src={b.image || "/images/placeholder.jpg"} alt={b.title} className="or-reviews-thumb" loading="lazy" />
                     <div className="or-reviews-item__body">
                       <span className="or-reviews-item__title">{b.title}</span>
@@ -336,7 +341,7 @@ export default function OffRoadCaravansPage({ stateBands, offRoadBlogs, offRoadP
               <button className="or-latest-arrow or-latest-arrow--prev" onClick={() => scrollCarousel(-1)} aria-label="Previous"><i className="bi bi-chevron-left" /></button>
               <div className="or-latest-carousel" ref={carouselRef}>
                 {offRoadBlogs.map((b) => (
-                  <a key={b.id} href={b.link || `/${b.slug}/`} className="or-latest-card">
+                  <a key={b.id} href={fixLink(b.link) || `/${b.slug}/`} className="or-latest-card">
                     <div className="or-latest-img-wrap">
                       <img src={b.image || "/images/placeholder.jpg"} alt={b.title} className="or-latest-img" loading="lazy" />
                     </div>
