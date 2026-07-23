@@ -36,11 +36,6 @@ interface Props {
   stateBands: Item[];
   requirements: any;
   homeblog: any[];
-  offRoadCount: number;
-  offRoadPriceMin: number;
-  offRoadPriceMax: number;
-  offRoadUsedPriceMin: number;
-  offRoadUsedPriceMax: number;
 }
 
 const CITY_LINKS = [
