@@ -708,7 +708,6 @@ tr {
 .blog-hero {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  height: 420px;
   overflow: hidden;
 }
 .blog-hero__left {
@@ -770,12 +769,8 @@ tr {
   background: #232323;
 }
 .blog-hero__img {
-  position: absolute !important;
-  top: 0;
-  left: 0;
   width: 100% !important;
-  height: 100% !important;
-  object-fit: cover !important;
+  
   display: block;
 }
 .blog-hero__no-image {

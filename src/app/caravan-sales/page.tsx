@@ -74,6 +74,32 @@ async function fetchOffRoadPrice(orderby: "price_asc" | "price_desc", condition?
 
 export const revalidate = 86400;
 
+const CANONICAL = "https://www.caravansforsale.com.au/caravan-sales/";
+
+const schemaJsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "CollectionPage",
+      "@id": CANONICAL,
+      "url": CANONICAL,
+      "name": "Caravan Sales Australia | New & Used Caravans for Sale",
+      "description": "Find the best caravan sales across Australia. Browse thousands of new and used caravans from trusted dealers and private sellers.",
+      "inLanguage": "en-AU",
+      "breadcrumb": { "@id": `${CANONICAL}#breadcrumb` },
+      "isPartOf": { "@type": "WebSite", "url": "https://www.caravansforsale.com.au/" },
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": `${CANONICAL}#breadcrumb`,
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home",          "item": "https://www.caravansforsale.com.au/" },
+        { "@type": "ListItem", "position": 2, "name": "Caravan Sales", "item": CANONICAL },
+      ],
+    },
+  ],
+};
+
 export default async function OffRoadCaravansDemoPage() {
   const [
     sleepBands,
@@ -110,7 +136,12 @@ export default async function OffRoadCaravansDemoPage() {
   ]);
 
   return (
-    <Home
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaJsonLd) }}
+      />
+      <Home
       sleepBands={sleepBands}
       regionBands={regionBands}
       manufactureBands={manufactureBands}
@@ -127,5 +158,6 @@ export default async function OffRoadCaravansDemoPage() {
       offRoadUsedPriceMin={offRoadUsedPriceMin}
       offRoadUsedPriceMax={offRoadUsedPriceMax}
     />
+    </>
   );
 }
