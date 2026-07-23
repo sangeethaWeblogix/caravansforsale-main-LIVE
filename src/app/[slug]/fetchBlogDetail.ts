@@ -33,6 +33,9 @@ export const fetchBlogDetail = cache(async (slug: string, seed?: number) => {
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
     try {
       const res = await fetchWithTimeout(url);
+      if (res.status === 404) {
+        return null;
+      }
       if (!res.ok) {
         lastErr = new Error(`blog-detail-new status ${res.status}`);
         continue;
