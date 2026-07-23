@@ -27,23 +27,35 @@ const wpHeaders = (): Record<string, string> => ({
   ...(API_KEY ? { "X-API-Key": API_KEY } : {}),
 });
 
-async function fetchOffRoadCount(): Promise<number> {
+type SnapshotData = {
+  total_count: number;
+  price_min: number;
+  price_max: number;
+  used_price_min: number;
+  used_price_max: number;
+};
+
+async function fetchOffRoadSnapshot(): Promise<SnapshotData> {
+  const empty = { total_count: 0, price_min: 0, price_max: 0, used_price_min: 0, used_price_max: 0 };
   try {
     const res = await fetch(
-      `${APP_URL}/api/pool-listings/?category=off-road&per_page=1&page=1&orderby=default&seed=1`,
-      { next: { revalidate: 3600 } }
+      `${API_BASE}/market_snapshot?category=off-road`,
+      { headers: wpHeaders(), next: { revalidate: 3600 } }
     );
-    if (!res.ok) return 0;
-    const json = await res.json();
-    return (
-      json?.data?.counts?.total_count ??
-      json?.counts?.total_count ??
-      json?.data?.pagination?.total_products ??
-      json?.pagination?.total_products ??
-      0
-    );
+    if (!res.ok) return empty;
+    const raw = await res.text();
+    const jsonStart = raw.indexOf("{");
+    const json = JSON.parse(jsonStart <= 0 ? raw : raw.substring(jsonStart));
+    if (!json?.success) return empty;
+    return {
+      total_count:    json.total_count    ?? 0,
+      price_min:      json.price_min      ?? 0,
+      price_max:      json.price_max      ?? 0,
+      used_price_min: json.used_price_min ?? 0,
+      used_price_max: json.used_price_max ?? 0,
+    };
   } catch {
-    return 0;
+    return empty;
   }
 }
 
@@ -103,30 +115,6 @@ async function fetchOffRoadModelBlogs(seed: number): Promise<any[]> {
   } catch { return []; }
 }
 
-async function fetchOffRoadPrice(orderby: "price_asc" | "price_desc", condition?: string): Promise<number> {
-  try {
-    const params = new URLSearchParams({
-      category: "off-road",
-      orderby,
-      per_page: "1",
-      page: "1",
-    });
-    if (condition) params.set("condition", condition);
-    const res = await fetch(`${API_BASE}/pool_test?${params.toString()}`, {
-      headers: wpHeaders(),
-      next: { revalidate: 3600 },
-    });
-    if (!res.ok) return 0;
-    const raw = await res.text();
-    const jsonStart = raw.indexOf("{");
-    const json = JSON.parse(jsonStart <= 0 ? raw : raw.substring(jsonStart));
-    const products: any[] = json?.data?.products ?? json?.products ?? [];
-    const price = products[0]?.regular_price ?? products[0]?.sale_price ?? "";
-    return parseInt(String(price).replace(/[^0-9]/g, ""), 10) || 0;
-  } catch {
-    return 0;
-  }
-}
 
 export const revalidate = 86400;
 
@@ -205,11 +193,7 @@ export default async function OffRoadCaravansDemoPage() {
     stateBands,
     requirements,
     homeblog,
-    offRoadCount,
-    offRoadPriceMin,
-    offRoadPriceMax,
-    offRoadUsedPriceMin,
-    offRoadUsedPriceMax,
+    snapshot,
     offRoadBlogs,
     offRoadPopularBlogs,
     offRoadBrandBlogs,
@@ -225,11 +209,7 @@ export default async function OffRoadCaravansDemoPage() {
     fetchStateBasedCaravans(),
     fetchRequirements(),
     fetchHomePage(),
-    fetchOffRoadCount(),
-    fetchOffRoadPrice("price_asc"),
-    fetchOffRoadPrice("price_desc"),
-    fetchOffRoadPrice("price_asc", "used"),
-    fetchOffRoadPrice("price_desc", "used"),
+    fetchOffRoadSnapshot(),
     fetchOffRoadBlogs(),
     fetchOffRoadPopularBlogs(seed),
     fetchOffRoadBrandBlogs(seed),
@@ -253,11 +233,11 @@ export default async function OffRoadCaravansDemoPage() {
       stateBands={stateBands}
       requirements={requirements}
       homeblog={homeblog?.latest_posts ?? []}
-      offRoadCount={offRoadCount}
-      offRoadPriceMin={offRoadPriceMin}
-      offRoadPriceMax={offRoadPriceMax}
-      offRoadUsedPriceMin={offRoadUsedPriceMin}
-      offRoadUsedPriceMax={offRoadUsedPriceMax}
+      offRoadCount={snapshot.total_count}
+      offRoadPriceMin={snapshot.price_min}
+      offRoadPriceMax={snapshot.price_max}
+      offRoadUsedPriceMin={snapshot.used_price_min}
+      offRoadUsedPriceMax={snapshot.used_price_max}
       offRoadBlogs={offRoadBlogs}
       offRoadPopularBlogs={offRoadPopularBlogs}
       offRoadBrandBlogs={offRoadBrandBlogs}
