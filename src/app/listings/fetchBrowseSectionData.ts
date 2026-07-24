@@ -53,7 +53,7 @@ async function fetchBandCountServer(scope: Record<string, string>, query: string
   // 2. Live fallback — product_exists_check returns { success, exists, count }
   try {
     const qs = new URLSearchParams(bandParams);
-    console.log(`[band] ${API_BASE}/product_exists_check?${qs.toString()}`);
+    console.error(`[band] KV miss — calling product_exists_check | params="${qs.toString()}"`);
     const res = await fetch(`${API_BASE}/product_exists_check?${qs.toString()}`, {
       headers: wpHeaders(),
       next: { revalidate: 3600 },
