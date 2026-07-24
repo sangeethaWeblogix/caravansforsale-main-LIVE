@@ -1,5 +1,7 @@
 const API_BASE = process.env.NEXT_PUBLIC_CFS_API_BASE;
 const API_KEY = process.env.CFS_API_KEY;
+const SERVER_UA =
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36";
 
 export const TYPE_CATEGORIES = ["off-road", "luxury", "hybrid", "pop-top", "touring", "family"] as const;
 export type TypeCategory = (typeof TYPE_CATEGORIES)[number];
@@ -11,7 +13,7 @@ async function fetchCategoryCount(category: TypeCategory): Promise<number> {
       next: { revalidate: 3600 },
       headers: {
         Accept: "application/json",
-        "User-Agent": "Mozilla/5.0 (compatible; CFS-SSR/1.0; +https://www.caravansforsale.com.au)",
+        "User-Agent": SERVER_UA,
         ...(API_KEY && { "X-API-Key": API_KEY }),
       },
     });
