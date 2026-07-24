@@ -12,6 +12,7 @@ async function fetchWithTimeout(url: string) {
       cache: "no-store",
       headers: {
         Accept: "application/json",
+        "User-Agent": "CaravansForsale-NextJS/1.0 (internal API)",
         ...(API_KEY && { "X-API-Key": API_KEY }),
       },
       signal: controller.signal,
@@ -41,6 +42,11 @@ export const fetchBlogDetail = cache(async (slug: string, seed?: number) => {
         continue;
       }
       const raw = await res.text();
+      if (raw.includes("sgcaptcha") || raw.trimStart().startsWith("<html")) {
+        console.error(`[fetchBlogDetail] Bot challenge blocked request | slug="${slug}" | attempt=${attempt}`);
+        lastErr = new Error("sgcaptcha bot challenge");
+        continue;
+      }
       const idx = raw.indexOf('{"');
       return JSON.parse(idx >= 0 ? raw.substring(idx) : raw);
     } catch (err) {
@@ -48,6 +54,6 @@ export const fetchBlogDetail = cache(async (slug: string, seed?: number) => {
     }
   }
 
-  console.error("fetchBlogDetail: all attempts failed", lastErr);
+  console.error(`[fetchBlogDetail] All ${MAX_ATTEMPTS} attempts failed | slug="${slug}" |`, lastErr);
   return null;
 });
