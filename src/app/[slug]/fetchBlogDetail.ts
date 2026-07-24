@@ -12,7 +12,7 @@ async function fetchWithTimeout(url: string) {
       cache: "no-store",
       headers: {
         Accept: "application/json",
-        "User-Agent": "CaravansForsale-NextJS/1.0 (internal API)",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
         ...(API_KEY && { "X-API-Key": API_KEY }),
       },
       signal: controller.signal,

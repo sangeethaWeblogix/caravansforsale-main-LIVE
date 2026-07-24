@@ -11,7 +11,7 @@ export async function GET() {
         const url = `http://admin.caravansforsale.com.au/wp-json/ads-manager/v1/banners?placement=${placement}&limit=50&paged=1`; // ✅ http://
 
         const res = await fetch(url, {
-          headers: { "User-Agent": "Mozilla/5.0" },
+          headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36" },
           cache: "no-store",
         });
 
