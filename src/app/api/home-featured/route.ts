@@ -63,7 +63,25 @@ export async function GET(request: NextRequest) {
 
     const raw = await res.text();
     const jsonStart = raw.indexOf('{');
-    const json = JSON.parse(jsonStart > 0 ? raw.substring(jsonStart) : raw);
+    let json: any;
+    try {
+      json = JSON.parse(jsonStart > 0 ? raw.substring(jsonStart) : raw);
+    } catch {
+      console.error(
+        `[WP API] home_featured type=${type} unparseable body (first 500 chars): ` +
+          raw.slice(0, 500)
+      );
+      return NextResponse.json(
+        { success: false },
+        {
+          status: 502,
+          headers: {
+            "X-Debug-Visitor-IP": visitorIp || "(none)",
+            "Cache-Control": "no-store",
+          },
+        }
+      );
+    }
 
     // Response shape: { success, products: [...], meta: {...} }
     const rawProducts: any[] = json?.products ?? json?.data?.products ?? [];
