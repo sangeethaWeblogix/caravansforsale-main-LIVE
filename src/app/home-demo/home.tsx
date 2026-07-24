@@ -34,33 +34,19 @@ interface Item {
 }
 
 interface Props {
-  sleepBands: Item[];
-  regionBands: Item[];
-  manufactureBands: Item[];
-  atmBands: Item[];
-  lengthBands: Item[];
-  priceBands: Item[];
-  usedData: { by_category: Item[]; by_state: Item[]; by_region: Item[] };
   stateBands: Item[];
   requirements: any;
   homeblog: HomeBlogPost[];
 }
 /* --------------------------------- Page ---------------------------------- */
 export default function HomePage({
-  sleepBands,
-  regionBands,
-  manufactureBands,
-  atmBands,
-  lengthBands,
-  priceBands,
-  usedData,
+  
   stateBands,
   requirements,
-  homeblog,
-}: Props) {
-  const [usedCategoryList, setUsedCategoryList] = useState<Item[]>([]);
-  const [usedState, setUsedState] = useState<Item[]>([]);
-  const [usedRegion, setUsedRegion] = useState<Item[]>([]);
+    homeblog,
+
+ }: Props) {
+   
   const [adIndex, setAdIndex] = useState<number>(0);
   // Fresh random seed (1-15) every page load/refresh — drives the backend's
   // randomized featured pick so the same visitor sees a different set each visit.

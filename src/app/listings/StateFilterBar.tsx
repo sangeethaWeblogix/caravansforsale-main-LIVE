@@ -1,7 +1,7 @@
 "use client";
 import "../components/filter.css";
 import { useState, useEffect, useRef } from "react";
-import CategorySkeleton from "../components/ListContent/CategorySkeleton";
+import CategorySkeleton from "../components/CategorySkeleton";
 import SearchSuggestionSkeleton from "../components/Searchsuggestionskeleton ";
 import { fetchLocations } from "@/api/location/api";
 import { fetchHomeSearchList, fetchKeywordSuggestions } from "@/api/homeSearch/api";
