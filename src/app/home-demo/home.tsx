@@ -4,6 +4,7 @@ import { useEffect, useState, useRef, useMemo, useCallback } from "react";
 import dynamic from "next/dynamic";
 
 import { type HomeBlogPost } from "@/api/home/api";
+import { type TypeCounts } from "@/api/homeApi/typeCounts/api";
 import HomeFeatured from "./HomeFeatured";
 import HomeStateSection from "./HomeStateSection";
 import HomeTypeSection from "./HomeTypeSection";
@@ -37,13 +38,15 @@ interface Props {
   stateBands: Item[];
   requirements: any;
   homeblog: HomeBlogPost[];
+  typeCounts?: TypeCounts;
 }
 /* --------------------------------- Page ---------------------------------- */
 export default function HomePage({
-  
+
   stateBands,
   requirements,
     homeblog,
+  typeCounts,
 
  }: Props) {
    
@@ -317,7 +320,7 @@ const handleBannerClick = useCallback((e: React.MouseEvent<HTMLAnchorElement>) =
       </div>
 
       {/* ── Browse by Type ── */}
-      <HomeTypeSection />
+      <HomeTypeSection typeCounts={typeCounts} />
 
       {/* ── Find by Location ── */}
       <HomeLocationSection />

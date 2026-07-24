@@ -5,6 +5,7 @@ import { Metadata } from "next";
 import { fetchStateBasedCaravans } from "@/api/homeApi/state/api";
 import { fetchRequirements } from "@/api/postRquirements/api";
 import { fetchHomePage } from "@/api/home/api";
+import { fetchTypeCounts } from "@/api/homeApi/typeCounts/api";
 
 export const dynamic = "force-dynamic";
 
@@ -87,16 +88,15 @@ const homeJsonLd = {
 
 export default async function Page() {
   const [
-      
-   
     stateBands,
     requirements,
     homeblog,
+    typeCounts,
   ] = await Promise.all([
-    
     fetchStateBasedCaravans(),
     fetchRequirements(),
     fetchHomePage(),
+    fetchTypeCounts(),
   ]);
 
   return (
@@ -106,10 +106,10 @@ export default async function Page() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(homeJsonLd) }}
       />
       <Home
-      
         stateBands={stateBands}
         requirements={requirements}
         homeblog={homeblog?.latest_posts ?? []}
+        typeCounts={typeCounts}
       />
     </>
   );
