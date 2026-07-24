@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import Link from "next/link";
 import StateHero from "./StateHero";
@@ -11,8 +11,8 @@ import StateBrowseSection from "./StateBrowseSection";
 import type { BrowseSectionData } from "./browseSectionShared";
 import StateContent from "./StateContent";
 import { buildApiUrl, buildListingsSlug, buildFilterBreadcrumbs } from "./urlUtils";
-import { useBanners } from "@/components/BannerHandler";
-import { useBannerTracking } from "@/hooks/useBannerTracking";
+// import { useBanners } from "@/components/BannerHandler";
+// import { useBannerTracking } from "@/hooks/useBannerTracking";
 import "./main.css?=7";
 
 // clickid pagination — same scheme as /listings/: no ?page=N in the URL,
@@ -146,44 +146,44 @@ export default function StateHome({ initialFilters, browseData, initialPool, ini
   const preloadReadRef = useRef(false);
   console.log("seoo89", seo)
 
-  // ── Top banner ad (impression + click tracking) ──
-  const { matchedBanners } = useBanners();
-  const topBanners = useMemo(
-    () => matchedBanners.filter((b) => b.placement === "listings" && b.position === "top"),
-    [matchedBanners],
-  );
-  const [topBanner, setTopBanner] = useState<(typeof topBanners)[0] | null>(null);
-  const topBannerInitRef = useRef(false);
+  // ── Top banner ad (impression + click tracking) ── commented out: banner API call disabled on listing page
+  // const { matchedBanners } = useBanners();
+  // const topBanners = useMemo(
+  //   () => matchedBanners.filter((b) => b.placement === "listings" && b.position === "top"),
+  //   [matchedBanners],
+  // );
+  // const [topBanner, setTopBanner] = useState<(typeof topBanners)[0] | null>(null);
+  // const topBannerInitRef = useRef(false);
 
-  useEffect(() => {
-    if (topBannerInitRef.current || topBanners.length === 0) return;
-    topBannerInitRef.current = true;
-    setTopBanner(topBanners[Math.floor(Math.random() * topBanners.length)]);
-  }, [topBanners]);
+  // useEffect(() => {
+  //   if (topBannerInitRef.current || topBanners.length === 0) return;
+  //   topBannerInitRef.current = true;
+  //   setTopBanner(topBanners[Math.floor(Math.random() * topBanners.length)]);
+  // }, [topBanners]);
 
-  const topBannerList = useMemo(() => (topBanner ? [topBanner] : []), [topBanner]);
-  // Impression tracking (IntersectionObserver) — same hook/API as the rest of the site.
-  const { bannerRefs, trackClick } = useBannerTracking(topBannerList);
+  // const topBannerList = useMemo(() => (topBanner ? [topBanner] : []), [topBanner]);
+  // // Impression tracking (IntersectionObserver) — same hook/API as the rest of the site.
+  // const { bannerRefs, trackClick } = useBannerTracking(topBannerList);
 
-  const handleTopBannerClick = useCallback(() => {
-    if (!topBanner) return;
-    trackClick(topBanner.id);
-  }, [topBanner, trackClick]);
+  // const handleTopBannerClick = useCallback(() => {
+  //   if (!topBanner) return;
+  //   trackClick(topBanner.id);
+  // }, [topBanner, trackClick]);
 
-  const topBannerBlock = topBanner && (
-    <div className="container lsd-top-banner">
-      <a
-        href={topBanner.target_url}
-        target="_blank"
-        rel="noopener noreferrer"
-        data-banner-id={topBanner.id}
-        ref={(el) => { bannerRefs.current[0] = el; }}
-        onClick={handleTopBannerClick}
-      >
-        <img src={topBanner.image_url} alt={topBanner.name} style={{ width: "100%", height: "auto", display: "block" }} />
-      </a>
-    </div>
-  );
+  // const topBannerBlock = topBanner && (
+  //   <div className="container lsd-top-banner">
+  //     <a
+  //       href={topBanner.target_url}
+  //       target="_blank"
+  //       rel="noopener noreferrer"
+  //       data-banner-id={topBanner.id}
+  //       ref={(el) => { bannerRefs.current[0] = el; }}
+  //       onClick={handleTopBannerClick}
+  //     >
+  //       <img src={topBanner.image_url} alt={topBanner.name} style={{ width: "100%", height: "auto", display: "block" }} />
+  //     </a>
+  //   </div>
+  // );
 
   // Push the API's seo_v2 into the browser tab title + meta description.
   useEffect(() => {
