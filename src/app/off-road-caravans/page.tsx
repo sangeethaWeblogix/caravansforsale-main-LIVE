@@ -1,20 +1,13 @@
 import type { Metadata } from "next";
 import Home from "./home";
 import "../globals.css";
-import { fetchSleepBands } from "@/api/homeApi/sleep/api";
-
+ 
 export const metadata: Metadata = {
   title: "Off Road Caravans Australia | New & Used Off Road Caravans for Sale",
   description:
     "Discover Australia's largest collection of off road caravans. Compare full off road, semi off road and hybrid caravans, browse live listings, reviews and expert buying guides.",
 };
-import { fetchRegion } from "@/api/homeApi/region/api";
-import { fetchManufactures } from "@/api/homeApi/manufacture/api";
-import { fetchPriceBasedCaravans } from "@/api/homeApi/price/api";
-import { fetchAtmBasedCaravans } from "@/api/homeApi/weight/api";
-import { fetchLengthBasedCaravans } from "@/api/homeApi/length/api";
-import { fetchUsedCaravansList } from "@/api/homeApi/usedCaravanList/api";
-import { fetchStateBasedCaravans } from "@/api/homeApi/state/api";
+ import { fetchStateBasedCaravans } from "@/api/homeApi/state/api";
 import { fetchRequirements } from "@/api/postRquirements/api";
 import { fetchHomePage } from "@/api/home/api";
 
@@ -183,14 +176,7 @@ export default async function OffRoadCaravansDemoPage() {
   const seed = Math.floor(Math.random() * 7) + 1;
 
   const [
-    sleepBands,
-    regionBands,
-    manufactureBands,
-    atmBands,
-    lengthBands,
-    priceBands,
-    usedData,
-    stateBands,
+     stateBands,
     requirements,
     homeblog,
     snapshot,
@@ -199,13 +185,7 @@ export default async function OffRoadCaravansDemoPage() {
     offRoadBrandBlogs,
     offRoadModelBlogs,
   ] = await Promise.all([
-    fetchSleepBands(),
-    fetchRegion(),
-    fetchManufactures(),
-    fetchAtmBasedCaravans(),
-    fetchLengthBasedCaravans(),
-    fetchPriceBasedCaravans(),
-    fetchUsedCaravansList(),
+    
     fetchStateBasedCaravans(),
     fetchRequirements(),
     fetchHomePage(),
@@ -223,14 +203,7 @@ export default async function OffRoadCaravansDemoPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaJsonLd) }}
       />
       <Home
-      sleepBands={sleepBands}
-      regionBands={regionBands}
-      manufactureBands={manufactureBands}
-      atmBands={atmBands}
-      lengthBands={lengthBands}
-      priceBands={priceBands}
-      usedData={usedData}
-      stateBands={stateBands}
+       stateBands={stateBands}
       requirements={requirements}
       homeblog={homeblog?.latest_posts ?? []}
       offRoadCount={snapshot.total_count}
