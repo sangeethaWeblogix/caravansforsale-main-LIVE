@@ -26,13 +26,6 @@ interface Item {
 }
 
 interface Props {
-  sleepBands: Item[];
-  regionBands: Item[];
-  manufactureBands: Item[];
-  atmBands: Item[];
-  lengthBands: Item[];
-  priceBands: Item[];
-  usedData: { by_category: Item[]; by_state: Item[]; by_region: Item[] };
   stateBands: Item[];
   requirements: any;
   homeblog: any[];
