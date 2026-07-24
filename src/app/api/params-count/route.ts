@@ -37,8 +37,11 @@ async function fetchFromWP(
 
     // Detect SiteGround / Cloudflare bot challenge
     if (raw.includes("sgcaptcha") || raw.trimStart().startsWith("<html")) {
+      // Extract the blocked IP from SiteGround's challenge URL (y=ipc:IP:timestamp)
+      const ipcMatch = raw.match(/ipc:([0-9.]+):/);
+      const blockedIp = ipcMatch?.[1] ?? "unknown";
       console.error(
-        `[params-count] BOT CHALLENGE blocked request | params="${paramsStr}" | kv_key="${kvKey}" | Fix: whitelist server IP in SiteGround.`
+        `[params-count] BOT CHALLENGE blocked request | server_ip="${blockedIp}" | params="${paramsStr}" | kv_key="${kvKey}" | This is your Vercel server IP — whitelist it in SiteGround.`
       );
       return NextResponse.json({}, { status: 503 });
     }
