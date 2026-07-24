@@ -1,5 +1,11 @@
 // app/410/page.tsx
 import "./page.css";
+import ListingsPage from "@/app/components/ListContent/Listings";
+import "../listings/listings.css";
+import { headers } from "next/headers";
+import { parseSlugToFilters } from "@/app/components/urlBuilder";
+import { getCachedListings } from "@/api/listings/api";
+import { fetchProductList, fetchCategoryCounts, fetchMakeCounts } from "@/api/productList/api";
 
 export const metadata = {
   title: "410 - Page Permanently Removed | Caravans For Sale",
@@ -8,7 +14,50 @@ export const metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function GonePage() {
+export default async function GonePage() {
+  // The middleware rewrites to /410/ but the original URL is still in x-pathname
+  const headersList = await headers();
+  const originalPathname = headersList.get("x-pathname") || "";
+
+  // Only attempt data fetch if this came from a /listings/... rewrite
+  if (originalPathname.startsWith("/listings")) {
+    try {
+      const slugParts = originalPathname
+        .replace("/listings", "")
+        .split("/")
+        .filter(Boolean);
+
+      const filters = parseSlugToFilters(slugParts, {});
+
+      const [response, productListData, initialCategoryCounts, initialMakeCounts] =
+        await Promise.all([
+          getCachedListings({ ...filters, page: 1 }),
+          fetchProductList(),
+          fetchCategoryCounts(),
+          fetchMakeCounts(),
+        ]);
+
+      const empExclusiveProducts = response?.data?.emp_exclusive_products;
+      const hasEmpExclusive =
+        Array.isArray(empExclusiveProducts) && empExclusiveProducts.length > 0;
+
+      if (hasEmpExclusive) {
+        return (
+          <ListingsPage
+            initialData={response}
+            productListData={productListData}
+            initialCategoryCounts={initialCategoryCounts}
+            initialMakeCounts={initialMakeCounts}
+            initialDistances={{}}
+            page={1}
+          />
+        );
+      }
+    } catch {
+      // Fall through to 410 UI
+    }
+  }
+
   return (
     <div className="page-wrap-410">
       <div className="card-410">
