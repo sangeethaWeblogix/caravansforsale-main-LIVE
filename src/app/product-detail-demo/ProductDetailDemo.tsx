@@ -396,6 +396,8 @@ export default function ProductDetailDemo({ data, similarData }: Props) {
   const makeLabel = make.replace(/\s+caravans?$/i, "").trim() || make;
 
   const catKeyword = categoryNames[0]?.toLowerCase().replace(/\s*caravans?$/i, "").trim() ?? "";
+  const isOffRoad = catKeyword.includes("off road") || catKeyword.includes("off-road");
+  const offRoadSeed = Number(product.id ?? 0);
 
 const priceUpperIdx = !isPOA ? PRICE_STEPS.findIndex(s => s >= displayPrice) : -1;
   const priceHi = priceUpperIdx >= 0 ? PRICE_STEPS[priceUpperIdx] : 0;
@@ -651,6 +653,22 @@ const priceUpperIdx = !isPOA ? PRICE_STEPS.findIndex(s => s >= displayPrice) : -
             </div>
           </aside>
         </div>
+
+        {/* ── Off Road Extra Content ── */}
+        {isOffRoad && (
+          <section className="lsd-offroad-extra">
+            
+              <h2 className="lsd-offroad-extra__title">
+                {offRoadSeed % 2 === 0 ? "Find Your Ideal Off Road Caravan" : "Search and Compare Off Road Caravans"}
+              </h2>
+              <p className="lsd-offroad-extra__body">
+                Browse live caravan listings from across the country, then compare{" "}
+                <a href="https://www.caravansforsale.com.au/off-road-caravans/">off road caravans in Australia</a>{" "}
+                using search filters by price, location, weight, length and sleeping capacity while exploring manufacturer and model reviews.
+              </p>
+            
+          </section>
+        )}
 
         {/* ── Sell CTA ── */}
         <section className="hbg-sell-section">
