@@ -264,12 +264,19 @@ async function fetchPoolData(urlPath, seed) {
     const res = await fetchWithTimeout(fetchUrl, {
       headers: { 'User-Agent': 'CFS-AffectedCacheGenerator/1.0', 'Accept': 'application/json' },
     }, 15000);
-    if (!res.ok) return null;
+    if (!res.ok) {
+      console.log(`   [pool-fetch] HTTP ${res.status} for ${requestUrl}`);
+      return null;
+    }
     const json = await res.json();
     const products = json?.data?.products ?? json?.products ?? [];
-    if (!products.length) return null;
+    if (!products.length) {
+      console.log(`   [pool-fetch] empty products for ${requestUrl}`);
+      return null;
+    }
     return { url: requestUrl, json };
-  } catch {
+  } catch (e) {
+    console.log(`   [pool-fetch] error for ${requestUrl}: ${e.message}`);
     return null;
   }
 }
@@ -438,7 +445,7 @@ async function generateHtmlVariants(urlPath, slug) {
         const _premiumCount   = (poolData.json?.data?.premium_products ?? poolData.json?.premium_products ?? []).length;
         console.log(`   [HTML-v${v}] Pool pre-loaded (${_regularCount} regular + ${_exclusiveCount} exclusive + ${_premiumCount} premium = ${_regularCount + _exclusiveCount + _premiumCount} total products)`);
       } else {
-        console.log(`   [HTML-v${v}] Pool pre-load skipped (no data)`);
+        console.log(`   [HTML-v${v}] Pool pre-load skipped (no data) — ${urlPath} seed=${v}`);
       }
 
       await uploadToKV(kvKey, html, 'text/html', {
