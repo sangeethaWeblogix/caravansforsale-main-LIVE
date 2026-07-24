@@ -16,12 +16,22 @@ async function fetchPoolTest(url: string, signal: AbortSignal) {
     signal,
     headers: {
       Accept: "application/json",
+      "User-Agent": "CaravansForsale-NextJS/1.0 (internal API)",
       ...(API_KEY && { "X-API-Key": API_KEY }),
     },
     cache: "no-store",
   });
 
   const raw = await res.text();
+
+  // Detect SiteGround bot challenge
+  if (raw.includes("sgcaptcha") || raw.trimStart().startsWith("<html")) {
+    console.error(
+      `[WP API pool_test] BOT CHALLENGE blocked request | url="${url.substring(0, 120)}"`
+    );
+    return { res, data: null, raw, botChallenge: true };
+  }
+
   const jsonStart = raw.indexOf("{");
   const cleaned =
     jsonStart === -1 ? raw : jsonStart === 0 ? raw : raw.substring(jsonStart);
@@ -30,10 +40,11 @@ async function fetchPoolTest(url: string, signal: AbortSignal) {
   try {
     data = JSON.parse(cleaned);
   } catch {
+    console.error(`[WP API pool_test] JSON parse failed | url="${url.substring(0, 120)}" | preview="${raw.slice(0, 200)}"`);
     data = null;
   }
 
-  return { res, data, raw };
+  return { res, data, raw, botChallenge: false };
 }
 
 export async function GET(request: NextRequest) {
@@ -48,7 +59,12 @@ export async function GET(request: NextRequest) {
   const t0 = Date.now();
 
   try {
-    let { res, data, raw } = await fetchPoolTest(url, controller.signal);
+    let { res, data, raw, botChallenge } = await fetchPoolTest(url, controller.signal);
+
+    if (botChallenge) {
+      clearTimeout(timeoutId);
+      return NextResponse.json({ success: false, error: "bot_challenge" }, { status: 503 });
+    }
 
     // Fallback: if typesense returned empty products, retry without engine=typesense
     if (
@@ -64,10 +80,11 @@ export async function GET(request: NextRequest) {
       try {
         const fallback = await fetchPoolTest(fallbackUrl, controller2.signal);
         clearTimeout(timeout2);
-        if (fallback.res.ok && fallback.data) {
+        if (!fallback.botChallenge && fallback.res.ok && fallback.data) {
           res = fallback.res;
           data = fallback.data;
           raw = fallback.raw;
+          botChallenge = false;
         }
       } catch (fbErr: any) {
         clearTimeout(timeout2);
