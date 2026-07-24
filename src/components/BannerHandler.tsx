@@ -43,30 +43,35 @@ export function BannerProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchAllBanners() {
-      try {
-        setIsLoading(true);
-        const cached = sessionStorage.getItem("banners_cache");
-        if (cached) {
-          setAllBanners(JSON.parse(cached));
-          setIsLoading(false);
-          return;
-        }
-        const res = await fetch("/api/banners/");
-        if (!res.ok) {
-          setAllBanners([]);
-          return;
-        }
-        const data = await res.json();
-        const banners = Array.isArray(data) ? data : [];
-        setAllBanners(banners);
-      } catch (error) {
-        console.error("Banner fetch error:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    fetchAllBanners();
+    // TODO: Re-enable when ads-manager WP plugin is active and returning banners.
+    // The /api/banners/ → ads-manager/v1/banners WP endpoint is currently 404ing,
+    // causing error logs on every page load. Uncomment the fetch below to restore.
+    setIsLoading(false);
+
+    // async function fetchAllBanners() {
+    //   try {
+    //     setIsLoading(true);
+    //     const cached = sessionStorage.getItem("banners_cache");
+    //     if (cached) {
+    //       setAllBanners(JSON.parse(cached));
+    //       setIsLoading(false);
+    //       return;
+    //     }
+    //     const res = await fetch("/api/banners/");
+    //     if (!res.ok) {
+    //       setAllBanners([]);
+    //       return;
+    //     }
+    //     const data = await res.json();
+    //     const banners = Array.isArray(data) ? data : [];
+    //     setAllBanners(banners);
+    //   } catch (error) {
+    //     console.error("Banner fetch error:", error);
+    //   } finally {
+    //     setIsLoading(false);
+    //   }
+    // }
+    // fetchAllBanners();
   }, []);
 
   useEffect(() => {
