@@ -37,6 +37,7 @@ export async function GET(request: NextRequest) {
       signal: controller.signal,
       headers: {
         Accept: "application/json",
+        "User-Agent": "CaravansForsale-NextJS/1.0 (internal API)",
         ...(API_KEY && { "X-API-Key": API_KEY }),
         ...(visitorIp && { "X-Visitor-IP": visitorIp }),
       },
@@ -62,6 +63,26 @@ export async function GET(request: NextRequest) {
     }
 
     const raw = await res.text();
+
+    // Detect Cloudflare bot challenge (returns HTML with sgcaptcha or cf-chl)
+    if (raw.includes("sgcaptcha") || raw.includes("cf-chl") || raw.trimStart().startsWith("<html")) {
+      console.error(
+        `[WP API] home_featured type=${type} CLOUDFLARE CHALLENGE blocked request — ` +
+        `ip=${visitorIp || "(none)"}, url=${url}. ` +
+        `Fix: add a WAF bypass rule in Cloudflare for X-API-Key header.`
+      );
+      return NextResponse.json(
+        { success: false, _cf_blocked: true },
+        {
+          status: 503,
+          headers: {
+            "X-Debug-Visitor-IP": visitorIp || "(none)",
+            "Cache-Control": "no-store",
+          },
+        }
+      );
+    }
+
     const jsonStart = raw.indexOf('{');
     let json: any;
     try {
