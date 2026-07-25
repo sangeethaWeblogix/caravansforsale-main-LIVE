@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-export const config = { regions: ["syd1"] };
+export const preferredRegion = "syd1";
 import { fetchParamsCountFromKV, buildParamsKvKey } from "@/lib/paramsCountKv";
 
 const API_KEY = process.env.CFS_API_KEY;
