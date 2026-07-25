@@ -82,29 +82,26 @@ export default function HomeLatestBlogs() {
                   const href = getHref(post);
                   return (
                     <SwiperSlide key={post.id}>
-                      <div className="side-posts">
-                        <div className="item">
-                          <a href={href}>
-                            <div className="img img-cover">
-                              {post.image && (
-                                <Image
-                                  src={post.image}
-                                  alt={post.title}
-                                  width={300}
-                                  height={200}
-                                  priority
-                                />
-                              )}
-                            </div>
-                            <div className="info">
-                              <h3 className="title">{post.title}</h3>
-                              <div className="date-author">
-                                {formatPostDate(post.date ?? "")}
-                              </div>
-                            </div>
-                          </a>
+                      <a href={href} className="blog-card">
+                        <div className="blog-card__img">
+                          {post.image && (
+                            <Image
+                              src={post.image}
+                              alt={post.title}
+                              fill
+                              style={{ objectFit: "cover" }}
+                              sizes="(max-width: 768px) 100vw, 33vw"
+                              priority
+                            />
+                          )}
                         </div>
-                      </div>
+                        <div className="blog-card__info">
+                          <h3 className="blog-card__title">{post.title}</h3>
+                          <div className="blog-card__date">
+                            {formatPostDate(post.date ?? "")}
+                          </div>
+                        </div>
+                      </a>
                     </SwiperSlide>
                   );
                 })}
