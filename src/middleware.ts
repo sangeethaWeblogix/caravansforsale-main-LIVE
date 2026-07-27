@@ -357,13 +357,19 @@ export async function middleware(request: NextRequest) {
             return render410(request);
           }
           const rawText = await apiRes.text();
-          const jsonIdx = rawText.indexOf('{"');
-          const data = JSON.parse(jsonIdx >= 0 ? rawText.substring(jsonIdx) : rawText);
-          if (!data || Object.keys(data).length === 0) {
-            productCache.set(cacheKey, { exists: false, expires: Date.now() + CACHE_TTL });
-            return render410(request);
+          const isChallenge = rawText.includes('sgcaptcha') || rawText.includes('well-known') || !rawText.includes('{"');
+          if (isChallenge) {
+            // WP origin bot-challenge (HTML page returned with 200 OK) — not a real
+            // "product missing" signal, don't cache/410 off it; let the page component handle it.
+          } else {
+            const jsonIdx = rawText.indexOf('{"');
+            const data = JSON.parse(jsonIdx >= 0 ? rawText.substring(jsonIdx) : rawText);
+            if (!data || Object.keys(data).length === 0) {
+              productCache.set(cacheKey, { exists: false, expires: Date.now() + CACHE_TTL });
+              return render410(request);
+            }
+            productCache.set(cacheKey, { exists: true, expires: Date.now() + CACHE_TTL });
           }
-          productCache.set(cacheKey, { exists: true, expires: Date.now() + CACHE_TTL });
         } catch (error: any) {
           if (error?.name !== 'AbortError') {
             console.error('Middleware product 410 check error:', error);
