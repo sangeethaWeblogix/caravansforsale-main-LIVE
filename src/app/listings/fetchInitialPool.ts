@@ -98,8 +98,12 @@ function parsePoolJson(json: any, isIndexed: boolean): InitialPool | null {
   if (!products.length && !premiumsRaw.length) return null;
 
   const totalProducts = json?.data?.pagination?.total_products ?? json?.pagination?.total_products ?? totalCount;
-  const perPage = 24;
-  const maxPages = Math.max(1, Math.ceil(totalProducts / perPage));
+  // Use total_pages from the API response (computed by backend using actual per_page).
+  // Fallback to manual calculation with per_page=21 if the field is absent.
+  const apiTotalPages = json?.data?.pagination?.total_pages ?? json?.pagination?.total_pages;
+  const maxPages = apiTotalPages
+    ? Math.max(1, apiTotalPages)
+    : Math.max(1, Math.ceil(totalProducts / 21));
 
   let featured: Listing[] = [];
   let newItems: Listing[]  = [];
@@ -155,14 +159,7 @@ async function fetchFromApi(filters: FilterState, seed: number): Promise<any | n
   // bypassed — it normalises its cache key by deleting `seed`, so every seed would
   // return the same cached pool. Call WordPress directly instead.
   if (seed > 0 && WP_API_BASE) {
-    const hasRealFilter = !!(
-      filters.state || filters.region || filters.category || filters.condition ||
-      filters.make || filters.model || filters.suburb || filters.pincode ||
-      filters.from_price || filters.to_price || filters.minKg || filters.maxKg ||
-      filters.from_sleep || filters.to_sleep || filters.from_length || filters.to_length ||
-      filters.acustom_fromyears || filters.acustom_toyears || filters.keyword
-    );
-    if (hasRealFilter) params.set("engine", "typesense");
+    // engine=typesense removed — backend hardcodes SQL engine; the param is ignored.
     try {
       const res = await fetch(`${WP_API_BASE}/pool_test?${params.toString()}`, {
         headers: {
