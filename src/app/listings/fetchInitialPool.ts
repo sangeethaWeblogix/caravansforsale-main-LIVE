@@ -60,7 +60,7 @@ function buildPoolKvKey(filters: FilterState): string {
 
 /** Build the /api/pool-listings/ query string from the full FilterState. */
 function buildApiParams(filters: FilterState, seed: number): URLSearchParams {
-  const params = new URLSearchParams({ orderby: "default", per_page: "24", page: "1", seed: String(seed || 1) });
+  const params = new URLSearchParams({ orderby: "default", per_page: "21", page: "1", seed: String(seed || 1) });
   if (filters.state)              params.set("state",             String(filters.state));
   if (filters.region)             params.set("region",            String(filters.region));
   if (filters.category)           params.set("category",          String(filters.category));
