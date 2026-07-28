@@ -571,9 +571,10 @@ export default function BlogDetailsPage({
                 }}
               />
               <div className="blog-content-share">
+                <span className="blog-content-share__label">Share this article</span>
                 <button onClick={handleShare} className="blog-content-share__btn">
                   <i className={`bi ${copyDone ? "bi-check-lg" : "bi-share"}`} />
-                  {copyDone ? "Copied!" : "Share Article"}
+                  {copyDone ? "Copied!" : "Share"}
                 </button>
               </div>
             </div>

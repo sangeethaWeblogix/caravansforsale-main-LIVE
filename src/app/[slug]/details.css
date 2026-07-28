@@ -723,7 +723,7 @@ tr {
 .blog-hero__title {
   color: #fff !important;
   font-size: 30px !important;
-  font-weight: 800 !important;
+  font-weight: 700 !important;
   line-height: 1.25 !important;
   margin-bottom: 16px !important;
 }
@@ -1843,9 +1843,17 @@ tr {
 
 /* ── Blog content end share button ── */
 .blog-content-share {
+  display: flex;
+  align-items: center;
+  gap: 16px;
   padding: 24px 0 8px;
   border-top: 1px solid #e8e8e8;
   margin-top: 32px;
+}
+.blog-content-share__label {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1a1a1a;
 }
 .blog-content-share__btn {
   display: inline-flex;
