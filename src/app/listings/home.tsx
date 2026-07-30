@@ -339,7 +339,7 @@ export default function StateHome({ initialFilters, browseData, initialPool, ini
 
   // Page 1 uses ONE shared pool call, split by slot_bucket into
   // Featured/New/Used — instead of 3 separate condition-locked API calls.
-  const poolApiUrl = buildApiUrl("/api/pool-listings/?per_page=24", filters, seed);
+  const poolApiUrl = buildApiUrl("/api/pool-listings/?per_page=21", filters, seed);
 
   useEffect(() => {
     // Wait for the real session seed to load (see the mount effect above) —
@@ -910,7 +910,7 @@ export default function StateHome({ initialFilters, browseData, initialPool, ini
   }
 
   // page > 1 — single combined grid, StateListingGrid self-fetches via apiUrl
-  const allUrl = buildApiUrl("/api/pool-listings/?per_page=24", filters, seed);
+  const allUrl = buildApiUrl("/api/pool-listings/?per_page=21", filters, seed);
 
   return (
     <div className="lsd-page">
