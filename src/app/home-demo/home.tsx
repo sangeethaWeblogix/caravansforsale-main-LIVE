@@ -72,19 +72,7 @@ export default function HomePage({
   const activeBanner = isMobile ? (homeMbBanner ?? homeDkBanner) : (homeDkBanner ?? homeMbBanner);
   const activeBanners = useMemo(() => activeBanner ? [activeBanner] : [], [activeBanner]);
 
-  const bannerClickUrl = useMemo(() => {
-    if (!activeBanner?.target_url) return "#";
-    try {
-      const url = new URL(activeBanner.target_url);
-      url.searchParams.set("utm_source", "caravansforsale");
-      url.searchParams.set("utm_medium", "display");
-      url.searchParams.set("utm_campaign", `${activeBanner.placement}_banner`);
-      url.searchParams.set("utm_content", `banner_${activeBanner.id}`);
-      return url.toString();
-    } catch {
-      return activeBanner.target_url;
-    }
-  }, [activeBanner]);
+  const bannerClickUrl = activeBanner?.target_url ?? "#";
   const { bannerRefs, trackClick } = useBannerTracking(activeBanners);
 const [clientIp, setClientIp] = useState<string>("");
 async function fetchClientIp(): Promise<string> {
@@ -105,13 +93,7 @@ const handleBannerClick = useCallback((e: React.MouseEvent<HTMLAnchorElement>) =
   e.preventDefault();
 
   const clickId = "ck_" + Math.random().toString(36).slice(2) + Date.now().toString(36);
-
-  let finalUrl = bannerClickUrl;
-  try {
-    const u = new URL(bannerClickUrl);
-    u.searchParams.set("cfs_click_id", clickId);
-    finalUrl = u.toString();
-  } catch { /* fallback to base url */ }
+  const finalUrl = bannerClickUrl;
 
   const body = JSON.stringify({
     banner_id: Number(activeBanner.id),
