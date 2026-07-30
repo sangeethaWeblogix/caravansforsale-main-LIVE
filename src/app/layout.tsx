@@ -111,12 +111,17 @@ import fetchListingsForHead, { buildListingsJsonLd, buildBreadcrumbs } from "@/u
       }
     }
 
-    if (isListingSlug) {
+    // Bare /listings/ went through the same async-generateMetadata + streaming
+    // bug as slugged pages (title landed in <head>, description/canonical/robots/
+    // og/twitter landed after </head>) because it was excluded from the fix below.
+    const hasSlugMeta = isListingSlug || isMainListings;
+
+    if (hasSlugMeta) {
       const slugString = pathname.replace(/^\/listings\//, "").replace(/\/$/, "");
-      const slugParts = slugString.split("/").filter(Boolean);
+      const slugParts = isMainListings ? [] : slugString.split("/").filter(Boolean);
 
       // Middleware signals 0 products via x-robots: noindex — use it directly, no API call needed
-      if (xRobots === "noindex") {
+      if (isListingSlug && xRobots === "noindex") {
         slugRobots = "noindex";
         slugCanonical = `https://www.caravansforsale.com.au/listings/${slugParts.join("/")}/`;
         slugDescription = "Browse caravans for sale across Australia. Compare prices on off-road, hybrid, pop top, touring, luxury models with size, weight & sleeping capacity.";
@@ -176,16 +181,16 @@ import fetchListingsForHead, { buildListingsJsonLd, buildBreadcrumbs } from "@/u
           {isProductPage && productMeta.canonical && <meta property="og:url" content={productMeta.canonical} />}
           {isProductPage && productMeta.title && <meta name="twitter:title" content={productMeta.title} />}
           {isProductPage && productMeta.description && <meta name="twitter:description" content={productMeta.description} />}
-          {/* Per-slug SEO tags for /listings/* — rendered before streaming starts */}
+          {/* Per-slug SEO tags for /listings/* (incl. bare /listings/) — rendered before streaming starts */}
           {/* <title> is set by generateMetadata in [...slug]/page.tsx via fast metaFromSlug (no API call) */}
-          {isListingSlug && slugDescription && <meta name="description" content={slugDescription} />}
-          {isListingSlug && slugCanonical && <link rel="canonical" href={slugCanonical} />}
-          {isListingSlug && <meta name="robots" content={slugRobots} />}
-          {isListingSlug && slugTitle && <meta property="og:title" content={slugTitle} />}
-          {isListingSlug && slugDescription && <meta property="og:description" content={slugDescription} />}
-          {isListingSlug && slugCanonical && <meta property="og:url" content={slugCanonical} />}
-          {isListingSlug && slugTitle && <meta name="twitter:title" content={slugTitle} />}
-          {isListingSlug && slugDescription && <meta name="twitter:description" content={slugDescription} />}
+          {hasSlugMeta && slugDescription && <meta name="description" content={slugDescription} />}
+          {hasSlugMeta && slugCanonical && <link rel="canonical" href={slugCanonical} />}
+          {hasSlugMeta && <meta name="robots" content={slugRobots} />}
+          {hasSlugMeta && slugTitle && <meta property="og:title" content={slugTitle} />}
+          {hasSlugMeta && slugDescription && <meta property="og:description" content={slugDescription} />}
+          {hasSlugMeta && slugCanonical && <meta property="og:url" content={slugCanonical} />}
+          {hasSlugMeta && slugTitle && <meta name="twitter:title" content={slugTitle} />}
+          {hasSlugMeta && slugDescription && <meta name="twitter:description" content={slugDescription} />}
           {/* Contact page JSON-LD */}
           {isContactPage && (
             <script

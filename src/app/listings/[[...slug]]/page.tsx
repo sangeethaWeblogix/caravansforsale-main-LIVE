@@ -41,7 +41,10 @@ export async function generateMetadata({
   const [{ slug }, query] = await Promise.all([params, searchParams]);
   const slugArr = slug ?? [];
   const meta = await metaFromSlug(slugArr, query);
-  return slugArr.length === 0 ? meta : { title: meta.title };
+  // Only title is returned here — description/canonical/robots/og/twitter are
+  // injected directly into <head> JSX by the root layout (see src/app/layout.tsx)
+  // to avoid the Next.js 15 async-metadata + streaming = metadata-in-body issue.
+  return { title: meta.title };
 }
 
 export default async function LocationStateDemoPage({
