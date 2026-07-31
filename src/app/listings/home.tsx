@@ -87,7 +87,7 @@ interface Props {
 }
 
 export default function StateHome({ initialFilters, browseData, initialPool, initialSeo, serverIsIndexed }: Props) {
-  const [filters, setFilters] = useState<FilterState>(initialFilters);
+  const [filters, setFilters] = useState<FilterState>(initialFilters ?? {});
   const [page, setPage] = useState(1);
   const [maxPages, setMaxPages] = useState(initialPool?.maxPages ?? 1);
   const [clickid, setClickid] = useState<string | null>(null);
@@ -802,11 +802,14 @@ export default function StateHome({ initialFilters, browseData, initialPool, ini
       </div>
     );
     // No server data at all — minimal white overlay (mobile flash prevention).
+    // IMPORTANT: must return a <div> (not a Fragment) so the root element matches
+    // the server-rendered HTML root on KV-cached pages. A Fragment root here causes
+    // React to abandon hydration, leaving the DOM without event listeners attached.
     return (
-      <>
+      <div className="lsd-page">
         <style>{`.lsd-mob-white{display:none}@media(max-width:767px){.lsd-mob-white{display:block}}`}</style>
         <div className="lsd-mob-white" style={{ minHeight: "100vh", background: "#fff" }} />
-      </>
+      </div>
     );
   }
 

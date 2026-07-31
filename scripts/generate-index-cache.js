@@ -336,7 +336,11 @@ function buildPoolRequestUrl(urlPath, seed) {
   if (toLength)   params.set('to_length',         toLength);
   if (condition)  params.set('condition',         condition);
 
-  return `/api/pool-listings/?per_page=24&${params.toString()}&page=1`;
+  // MUST match the per_page used in buildApiUrl() (urlUtils.ts) — home.tsx uses
+  // per_page=21 to build requestUrl, and preload.url === requestUrl must be true
+  // for the __INITIAL_POOL__ preload to be consumed. Any mismatch makes the
+  // preload URL check fail silently and the preload is never used.
+  return `/api/pool-listings/?per_page=21&${params.toString()}&page=1`;
 }
 
 /**

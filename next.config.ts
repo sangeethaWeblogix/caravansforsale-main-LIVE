@@ -22,7 +22,7 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "wb79vudhmjvv4ng6.public.blob.vercel-storage.com", pathname: "/**" },
     ],
     formats: ["image/avif", "image/webp"],
-    minimumCacheTTL: 86400,
+    minimumCacheTTL: 3600,
   },
   compress: true,
 

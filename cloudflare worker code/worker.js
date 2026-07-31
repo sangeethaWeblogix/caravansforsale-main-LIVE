@@ -363,29 +363,34 @@ async function getStaticHtmlFromKV(url, env) {
 
       // Build-ID handling:
       //
-      // "current-build-id" is written to KV by scripts/update-kv-build-id.js on
-      // every Vercel deployment. The KV HTML still embeds the OLD buildId until the
-      // next cache warmup regenerates it.
-      //
-      // When buildIds differ, patch the old buildId strings inside the KV HTML and
-      // serve the patched version. This keeps KV warm across all deployments. The
-      // page content (listings, layout, text) is from the last cache warmup (slightly
-      // stale until the evening scheduled run — acceptable). The JS/CSS paths now
-      // point to the current Vercel build's files so the page loads and hydrates.
-      //
-      // The buildId appears in two places in the HTML:
-      //   App Router:   /_next/static/{buildId}/_buildManifest.js  (script src)
-      //   Pages Router: "buildId":"OLD"  (in __NEXT_DATA__ JSON)
-      // replaceAll is safe because the buildId is a unique cryptographic hash.
+      // "current-build-id" is written to KV by generate-priority-pages.js on every
+      // successful post-deploy canary run. KV HTML entries are re-generated nightly
+      // by generate-index-cache.js. Between a new deployment and the nightly rebuild,
+      // some KV entries will have the OLD buildId — those are bypassed below.
       const htmlBuildId =
         rawHtml.match(/\/_next\/static\/([^/]+)\/_buildManifest\.js/)?.[1] || // App Router
         rawHtml.match(/"buildId":"([^"]+)"/)?.[1]; // Pages Router fallback
-      let html = rawHtml;
+
+      // Build-ID mismatch: KV HTML was cached before the latest Vercel deployment.
+      //
+      // Previously we patched the buildId in-place (replaceAll) so the client
+      // would load the new build's JS/CSS via the patched _buildManifest.js URL.
+      // However, patching only fixes the manifest URL — the RSC __next_f payload
+      // chunks inside the HTML still reference the OLD deployment's chunk URLs and
+      // module IDs. When the new JS bundle and the old RSC payload disagree on
+      // module IDs, React cannot resolve the client components during hydration.
+      // The result: the server HTML is shown but React never attaches event
+      // listeners, leaving all interactive elements (filters, buttons) non-functional.
+      //
+      // Correct fix: treat a buildId mismatch as a KV miss and let the request
+      // fall through to Vercel origin. The user gets fresh, coherent HTML (matching
+      // JS bundle + RSC payload) until the nightly generate-index-cache.js run
+      // re-caches the page with the new buildId.
       if (htmlBuildId && htmlBuildId !== currentBuildId) {
-        // Patch stale buildId → current buildId so the client loads the right JS/CSS.
-        html = rawHtml.replaceAll(htmlBuildId, currentBuildId);
-        console.log(`Build-ID patched in KV HTML: ${htmlBuildId} → ${currentBuildId} (${kvKey})`);
+        console.log(`Build-ID mismatch for ${kvKey}: cached=${htmlBuildId} current=${currentBuildId} — bypassing KV, serving fresh from Vercel`);
+        continue; // try next variant; all will mismatch → falls through to Vercel origin
       }
+      const html = rawHtml;
 
       // Inject shuffle seed so React hydration uses the same variant order.
       // e.g. kvKey = "listings-home-v3" → seed = 3
