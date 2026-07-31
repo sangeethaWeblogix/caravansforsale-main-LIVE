@@ -16,7 +16,11 @@ export async function GET() {
         });
 
         if (!res.ok) {
-          console.error(`❌ ${placement}: ${res.status}`);
+          // 404 means the placement hasn't been configured in WordPress yet — not an error.
+          // Log other unexpected failures as warnings so they're visible but not alarming.
+          if (res.status !== 404) {
+            console.warn(`⚠️ banners/${placement}: ${res.status}`);
+          }
           return [];
         }
 
