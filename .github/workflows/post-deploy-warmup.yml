@@ -44,6 +44,13 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '0 10 * * *'   # 08:00 PM AEST (UTC+10) / 09:00 PM AEDT (UTC+11)
+  push:
+    branches:
+      - main
+    # warmup-urls has `if: github.event_name == 'workflow_dispatch'` so it will NOT
+    # run on push — only warmup-priority (canary + current-build-id flip) and
+    # update-routes-mapping run automatically. That's 2 pages × up to 7 Puppeteer
+    # renders, not the full 3,462-URL crawl that caused WP CPU concerns previously.
 
 jobs:
 

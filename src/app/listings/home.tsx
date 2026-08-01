@@ -209,6 +209,22 @@ export default function StateHome({ initialFilters, browseData, initialPool, ini
   // Restore page from ?clickid= on mount (hard refresh / shared link) before
   // the grids below fetch anything, so they fetch the right page just once.
   useEffect(() => {
+    // Stale-build self-heal: the Cloudflare Worker injects window.__STALE_BUILD_ID__=true
+    // into KV HTML served on a buildId mismatch, along with a script that sets a
+    // 'CFS-Stale-Bypass=1' cookie and calls location.reload() after 2 s if the flag
+    // is still set (React never mounted — hydration failed). The reload goes to the same
+    // URL; the worker detects the cookie, bypasses KV, and serves fresh Vercel HTML.
+    // Deleting the flag HERE is the signal that hydration succeeded — this effect only
+    // runs after React has mounted all components and attached all event handlers.
+    // Clearing the cookie client-side is a belt-and-suspenders guard; the worker's
+    // Set-Cookie response header already clears it server-side.
+    try {
+      delete (window as unknown as Record<string, unknown>)["__STALE_BUILD_ID__"];
+      document.cookie = "CFS-Stale-Bypass=; path=/; max-age=0; SameSite=Lax";
+    } catch {
+      // ignore — non-critical cleanup
+    }
+
     const cid = new URLSearchParams(window.location.search).get("clickid");
     if (cid) {
       const saved = readPage(cid);
