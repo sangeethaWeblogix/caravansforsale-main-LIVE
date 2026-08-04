@@ -212,8 +212,8 @@ function ListingCard({
   const href   = `/product/${item.slug ?? item.id}/`;
   const cardRef = useRef<HTMLAnchorElement>(null);
 
-  const prevImg = (e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); setIdx((i) => (i - 1 + images.length) % images.length); };
-  const nextImg = (e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); setIdx((i) => (i + 1) % images.length); };
+  const prevImg = (e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); setIdx((i) => Math.max(i - 1, 0)); };
+  const nextImg = (e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); setIdx((i) => Math.min(i + 1, images.length - 1)); };
 
   const price    = formatPrice(item.sale_price || item.regular_price);
   const isNew    = item.condition?.toLowerCase() === "new";
@@ -319,7 +319,7 @@ function ListingCard({
         )}
 
         {images.length > 1 && idx === images.length - 1 && (
-          <span className="lsd-card__view-more" onClick={(e) => e.preventDefault()}>
+          <span className="lsd-card__view-more">
             View more
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           </span>
@@ -327,16 +327,20 @@ function ListingCard({
 
         {images.length > 1 && (
           <>
+            {idx > 0 && (
             <button className="lsd-card__arr lsd-card__arr--prev" onClick={prevImg} aria-label="Previous">
               <svg width="8" height="14" viewBox="0 0 8 14" fill="none">
                 <path d="M7 1L1 7l6 6" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </button>
+            )}
+            {idx < images.length - 1 && (
             <button className="lsd-card__arr lsd-card__arr--next" onClick={nextImg} aria-label="Next">
               <svg width="8" height="14" viewBox="0 0 8 14" fill="none">
                 <path d="M1 1l6 6-6 6" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </button>
+            )}
             <div className="lsd-card__dots" onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>
               {images.map((_, i) => (
                 <span key={i} className={`lsd-card__dot${i === idx ? " lsd-card__dot--active" : ""}`} />
