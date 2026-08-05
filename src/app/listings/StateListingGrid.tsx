@@ -75,7 +75,7 @@ function formatPrice(p: string | undefined): string {
   if (!p) return "POA";
   const n = Number(p.replace(/[^0-9.]/g, ""));
   if (isNaN(n) || n === 0) return p;
-  return `$${n.toLocaleString()}`;
+  return `$${n.toLocaleString("en-AU")}`;
 }
 
 function formatLength(len: string | undefined): string | null {
