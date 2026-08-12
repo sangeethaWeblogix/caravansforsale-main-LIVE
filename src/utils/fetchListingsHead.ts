@@ -86,7 +86,7 @@ async function fetchPoolListingsForHead(
   if (filters.condition) params.set("condition", String(filters.condition));
   if (filters.search || filters.keyword) params.set("search", String(filters.search ?? filters.keyword));
 
-  const url = `${API_BASE}/pool_test?${params.toString()}&engine=typesense`;
+  const url = `${API_BASE}/pool_test?${params.toString()}`;
 
   const cached = headPoolCache.get(url);
   if (cached && cached.expires > Date.now()) return cached.data;

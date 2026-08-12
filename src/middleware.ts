@@ -145,7 +145,7 @@ async function refreshSeoCache(cacheKey: string, url: URL, request: NextRequest)
     const slugParts = url.pathname.replace("/listings", "").split("/").filter(Boolean);
     const filters = parseSlugToFilters(slugParts, Object.fromEntries(url.searchParams));
     const apiParams = buildApiParams(filters);
-    const apiUrl = `${API_WP}/pool_test?${apiParams.toString()}&engine=typesense`;
+    const apiUrl = `${API_WP}/pool_test?${apiParams.toString()}`;
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000);
     const apiRes = await fetch(apiUrl, {
@@ -441,7 +441,7 @@ export async function middleware(request: NextRequest) {
         // Build API params using the same mapping as fetchListings (api/listings/api.ts).
         // Raw filter keys (minKg, maxKg, sleeps) must be converted to API names (from_atm, to_atm, sleep).
         const apiParams = buildApiParams(filters);
-        const apiUrl = `${API_WP}/pool_test?${apiParams.toString()}&engine=typesense`;
+        const apiUrl = `${API_WP}/pool_test?${apiParams.toString()}`;
 
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 5000);
