@@ -67,6 +67,19 @@ export default function CaravanDetailModal({
   const [activeDrag, setActiveDrag] = useState(false);
   const dragStart = useRef({ x: 0, y: 0 });
   const panStart = useRef({ x: 0, y: 0 });
+  const wrapRef = useRef<HTMLDivElement>(null);
+
+  const clampPan = (px: number, py: number, zoom: number) => {
+    const el = wrapRef.current;
+    if (!el || zoom <= 1) return { px: 0, py: 0 };
+    const { width, height } = el.getBoundingClientRect();
+    const maxX = (width * (zoom - 1)) / 2;
+    const maxY = (height * (zoom - 1)) / 2;
+    return {
+      px: Math.max(-maxX, Math.min(maxX, px)),
+      py: Math.max(-maxY, Math.min(maxY, py)),
+    };
+  };
   const MIN_ZOOM = 1;
   const MAX_ZOOM = 3;
   const ZOOM_STEP = 0.5;
@@ -272,6 +285,7 @@ export default function CaravanDetailModal({
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={img} alt="" aria-hidden="true" className="cfs-slide-blur-bg" />
                   <div
+                    ref={wrapRef}
                     className="cfs-img-zoom-wrap"
                     style={{
                       transform: `translate(${panX}px, ${panY}px) scale(${zoomLevel})`,
@@ -289,8 +303,8 @@ export default function CaravanDetailModal({
                     }}
                     onMouseMove={(e) => {
                       if (!isDragging.current) return;
-                      setPanX(panStart.current.x + e.clientX - dragStart.current.x);
-                      setPanY(panStart.current.y + e.clientY - dragStart.current.y);
+                      const { px, py } = clampPan(panStart.current.x + e.clientX - dragStart.current.x, panStart.current.y + e.clientY - dragStart.current.y, zoomLevel);
+                      setPanX(px); setPanY(py);
                     }}
                     onMouseUp={() => { isDragging.current = false; setActiveDrag(false); }}
                     onMouseLeave={() => { isDragging.current = false; setActiveDrag(false); }}
@@ -306,8 +320,8 @@ export default function CaravanDetailModal({
                       if (!isDragging.current) return;
                       e.stopPropagation();
                       const t = e.touches[0];
-                      setPanX(panStart.current.x + t.clientX - dragStart.current.x);
-                      setPanY(panStart.current.y + t.clientY - dragStart.current.y);
+                      const { px, py } = clampPan(panStart.current.x + t.clientX - dragStart.current.x, panStart.current.y + t.clientY - dragStart.current.y, zoomLevel);
+                      setPanX(px); setPanY(py);
                     }}
                     onTouchEnd={() => { isDragging.current = false; setActiveDrag(false); }}
                   >
