@@ -1165,7 +1165,7 @@ export default function ClientLogger({
                         <div className="product-card">
                           <div className="img">
                             <Image
-                              src={post.image}
+                              src={post.image || "/images/download.svg"}
                               alt={post.title}
                               width={400}
                               height={250}

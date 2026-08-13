@@ -280,7 +280,7 @@ export default function OffRoadCaravansPage({ stateBands, offRoadBlogs, offRoadP
               {offRoadPopularBlogs.slice(0, 10).map((b) => (
                 <a key={b.id} href={fixLink(b.link) || `/${b.slug}/`} className="or-pop-guides__card">
                   <div className="or-pop-guides__img-wrap">
-                    <img src={b.image || "/images/placeholder.jpg"} alt={b.title} className="or-pop-guides__img" loading="lazy" />
+                    <img src={b.image || "/images/download.svg"} alt={b.title} className="or-pop-guides__img" loading="lazy" />
                   </div>
                   <div className="or-pop-guides__body">
                     <h3 className="or-pop-guides__title">{b.title}</h3>
@@ -302,7 +302,7 @@ export default function OffRoadCaravansPage({ stateBands, offRoadBlogs, offRoadP
                 <h2 className="or-section-title">Brand Reviews</h2>
                 {offRoadBrandBlogs.slice(0, 4).map((b) => (
                   <a key={b.id} href={fixLink(b.link) || `/${b.slug}/`} className="or-reviews-item">
-                    <img src={b.image || "/images/placeholder.jpg"} alt={b.title} className="or-reviews-thumb" loading="lazy" />
+                    <img src={b.image || "/images/download.svg"} alt={b.title} className="or-reviews-thumb" loading="lazy" />
                     <div className="or-reviews-item__body">
                       <span className="or-reviews-item__title">{b.title}</span>
                     </div>
@@ -313,7 +313,7 @@ export default function OffRoadCaravansPage({ stateBands, offRoadBlogs, offRoadP
                 <h2 className="or-section-title">Model Reviews</h2>
                 {offRoadModelBlogs.slice(0, 4).map((b) => (
                   <a key={b.id} href={fixLink(b.link) || `/${b.slug}/`} className="or-reviews-item">
-                    <img src={b.image || "/images/placeholder.jpg"} alt={b.title} className="or-reviews-thumb" loading="lazy" />
+                    <img src={b.image || "/images/download.svg"} alt={b.title} className="or-reviews-thumb" loading="lazy" />
                     <div className="or-reviews-item__body">
                       <span className="or-reviews-item__title">{b.title}</span>
                     </div>
@@ -336,7 +336,7 @@ export default function OffRoadCaravansPage({ stateBands, offRoadBlogs, offRoadP
                 {offRoadBlogs.map((b) => (
                   <a key={b.id} href={fixLink(b.link) || `/${b.slug}/`} className="or-latest-card">
                     <div className="or-latest-img-wrap">
-                      <img src={b.image || "/images/placeholder.jpg"} alt={b.title} className="or-latest-img" loading="lazy" />
+                      <img src={b.image || "/images/download.svg"} alt={b.title} className="or-latest-img" loading="lazy" />
                     </div>
                     <div className="or-latest-body">
                       <h3 className="or-latest-title">{b.title}</h3>

@@ -104,7 +104,7 @@ const FeaturedProductsSlider = () => {
                   <div className="product-card">
                     <div className="img">
                       <Image
-                        src={product.image}
+                        src={product.image || "/images/download.svg"}
                         alt={product.title}
                         height={100}
                         width={100}
