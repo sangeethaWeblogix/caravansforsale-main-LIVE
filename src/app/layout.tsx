@@ -21,6 +21,7 @@ import { headers } from "next/headers";
 import { metaFromSlug } from "@/utils/seo/meta";
 import { fetchProductMeta } from "@/utils/fetchProductMeta";
 import fetchListingsForHead, { buildListingsJsonLd, buildBreadcrumbs } from "@/utils/fetchListingsHead";
+import GlobalImageFallback from "@/components/GlobalImageFallback";
 
   const montserrat = Montserrat({
     subsets: ["latin"],
@@ -330,6 +331,8 @@ import fetchListingsForHead, { buildListingsJsonLd, buildBreadcrumbs } from "@/u
           showSpinner={false}
         /> */}
           <GlobalErrorTracker />
+                    <GlobalImageFallback />
+
           <BannerProvider>
           {children}
           </BannerProvider>
