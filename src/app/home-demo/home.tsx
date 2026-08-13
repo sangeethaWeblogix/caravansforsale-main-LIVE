@@ -43,6 +43,7 @@ interface Props {
   featuredNew: FeaturedListing[];
   featuredUsed: FeaturedListing[];
   blogPosts: BlogPost[];
+  visitorIp: string;
 }
 /* --------------------------------- Page ---------------------------------- */
 export default function HomePage({
@@ -55,6 +56,7 @@ export default function HomePage({
   featuredNew,
   featuredUsed,
   blogPosts,
+  visitorIp,
 
  }: Props) {
 
@@ -70,21 +72,8 @@ export default function HomePage({
   const activeBanners = useMemo(() => activeBanner ? [activeBanner] : [], [activeBanner]);
 
   const bannerClickUrl = activeBanner?.target_url ?? "#";
-  const { bannerRefs, trackClick } = useBannerTracking(activeBanners);
-const [clientIp, setClientIp] = useState<string>("");
-async function fetchClientIp(): Promise<string> {
-  try {
-    const res = await fetch("https://api.ipify.org?format=json");
-    const data = await res.json();
-    return data.ip || "";
-  } catch {
-    return "";
-  }
-}
+  const { bannerRefs, trackClick } = useBannerTracking(activeBanners, visitorIp);
 
-useEffect(() => {
-  fetchClientIp().then(setClientIp);
-}, []);
 const handleBannerClick = useCallback((e: React.MouseEvent<HTMLAnchorElement>) => {
   if (!activeBanner) return;
   e.preventDefault();
@@ -100,14 +89,14 @@ const handleBannerClick = useCallback((e: React.MouseEvent<HTMLAnchorElement>) =
     page_url: window.location.href,
     device_type: window.innerWidth < 768 ? "mobile" : "desktop",
     user_agent: navigator.userAgent,
-    ip_address: clientIp,   // 👈 fix: hardcoded "" -> state value
+    ip_address: visitorIp,
   });
   const trackUrl = `${process.env.NEXT_PUBLIC_CF7_BASE || "https://admin.caravansforsale.com.au"}/wp-json/ads-manager/v1/banners/track`;
   fetch(trackUrl, { method: "POST", headers: { "Content-Type": "application/json" }, body, keepalive: true })
     .catch((err) => console.error("[home] banner click tracking failed:", err));
 
   window.open(finalUrl, "_blank", "noopener,noreferrer");
-}, [activeBanner, bannerClickUrl, clientIp]);   // 👈 clientIp dependency-la add pannunga
+}, [activeBanner, bannerClickUrl, visitorIp]);
 
   const bannerSectionRef = useRef<HTMLDivElement | null>(null);
 

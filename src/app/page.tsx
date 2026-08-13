@@ -135,6 +135,7 @@ export default async function Page() {
         featuredNew={featuredNew}
         featuredUsed={featuredUsed}
         blogPosts={blogPosts.items}
+        visitorIp={visitorIp}
       />
     </>
   );

@@ -44,6 +44,7 @@ export default async function HomeDemoPage() {
       featuredNew={featuredNew}
       featuredUsed={featuredUsed}
       blogPosts={blogPosts.items}
+      visitorIp=""
     />
   );
 }
