@@ -230,7 +230,13 @@ function buildPoolRequestUrl(urlPath, seed) {
   if (toLength)   params.set('to_length',         toLength);
   if (condition)  params.set('condition',         condition);
 
-  return `/api/pool-listings/?per_page=24&${params.toString()}&page=1`;
+  // MUST match per_page=21 used by buildApiUrl() in src/app/listings/urlUtils.ts
+  // (home.tsx calls buildApiUrl("/api/pool-listings/?per_page=21", ...)). home.tsx
+  // only consumes the preloaded PRODUCT data if preload.url === requestUrl — an
+  // exact string match including per_page. Getting this wrong doesn't break
+  // is_indexed/seo_v2 (those are read unconditionally, no URL match needed) but
+  // silently defeats the product-preload optimisation, forcing a live re-fetch.
+  return `/api/pool-listings/?per_page=21&${params.toString()}&page=1`;
 }
 
 /**
