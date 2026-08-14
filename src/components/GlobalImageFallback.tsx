@@ -8,7 +8,8 @@ const FALLBACK_SRC = "/images/download.svg";
  *
  * Attaches a single capture-phase error listener to the document that fires
  * whenever ANY <img> on the page fails to load (404, network error, removed
- * from R2, etc.). Replaces the broken src with the local fallback placeholder.
+ * from R2, etc.
+ * ). Replaces the broken src with the local fallback placeholder.
  *
  * Registered once in layout.tsx — covers every page, every component,
  * including Next.js <Image>, raw <img> tags, and dynamically injected images.

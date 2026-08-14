@@ -17,7 +17,7 @@ const wpHeaders = (): Record<string, string> => ({
 });
 
 /** KV first (shared pre-warmed cache), WP params_count fallback. */
-async function fetchGroupCountsServer(
+export async function fetchGroupCountsServer(
   groupBy: string,
   scope: Record<string, string>
 ): Promise<CountItem[]> {

@@ -146,6 +146,40 @@ async function fetchFromKV(kvKey: string): Promise<any | null> {
   }
 }
 
+/** Server-side counterpart of home.tsx's newSeo/usedSeo effect — fetches the
+ * condition-locked seo_v2 (heading/description for the New/Used grid headings)
+ * so the client can skip that redundant mount-time fetch entirely. */
+async function fetchConditionSeoV2(
+  filters: FilterState,
+  seed: number,
+  condition: "New" | "Used"
+): Promise<SeoV2 | null> {
+  const params = buildApiParams({ ...filters, condition }, seed);
+  params.set("per_page", "1");
+  try {
+    if (seed > 0 && WP_API_BASE) {
+      const res = await fetch(`${WP_API_BASE}/pool_test?${params.toString()}`, {
+        headers: {
+          Accept: "application/json",
+          ...(WP_API_KEY && { "X-API-Key": WP_API_KEY }),
+        },
+        cache: "no-store",
+      });
+      if (!res.ok) return null;
+      const raw = await res.text();
+      const jsonStart = raw.indexOf("{");
+      const json = jsonStart >= 0 ? JSON.parse(raw.substring(jsonStart)) : null;
+      return json?.data?.seo_v2 ?? json?.seo_v2 ?? null;
+    }
+    const res = await fetch(`${APP_URL}/api/pool-listings/?${params.toString()}`, { cache: "no-store" });
+    if (!res.ok) return null;
+    const json = await res.json();
+    return json?.data?.seo_v2 ?? json?.seo_v2 ?? null;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Live fetch — two paths:
  *  - seed > 0: call WordPress pool_test directly (bypasses Cloudflare pool cache
@@ -203,6 +237,7 @@ export async function fetchInitialPool(
   seed = 0
 ): Promise<InitialPool | null> {
   const kvKey = buildPoolKvKey(filters);
+  let parsed: InitialPool | null = null;
 
   // 1. Try KV first — only for state/region/category/condition combinations
   //    (other filter types aren't pre-cached in json:pool: KV).
@@ -211,13 +246,12 @@ export async function fetchInitialPool(
   if (kvKey && !seed) {
     const kvJson = await fetchFromKV(kvKey);
     if (kvJson) {
-      const parsed = parsePoolJson(kvJson, isIndexed);
+      parsed = parsePoolJson(kvJson, isIndexed);
       if (parsed) {
         console.log(`[fetchInitialPool] KV HIT: ${kvKey} (${parsed.featured.length + parsed.new.length + parsed.used.length} products)`);
-        return parsed;
       }
     }
-    console.log(`[fetchInitialPool] KV MISS: ${kvKey}`);
+    if (!parsed) console.log(`[fetchInitialPool] KV MISS: ${kvKey}`);
   } else if (!kvKey) {
     console.log(`[fetchInitialPool] KV skipped (non-cacheable filters)`);
   } else {
@@ -225,15 +259,33 @@ export async function fetchInitialPool(
   }
 
   // 2. Fall back to live API (goes through Cloudflare orange-cloud → WP)
-  const apiJson = await fetchFromApi(filters, seed);
-  if (apiJson) {
-    const parsed = parsePoolJson(apiJson, isIndexed);
-    if (parsed) {
-      console.log(`[fetchInitialPool] API OK seed=${seed} (${parsed.featured.length + parsed.new.length + parsed.used.length} products)`);
-      return parsed;
+  if (!parsed) {
+    const apiJson = await fetchFromApi(filters, seed);
+    if (apiJson) {
+      parsed = parsePoolJson(apiJson, isIndexed);
+      if (parsed) {
+        console.log(`[fetchInitialPool] API OK seed=${seed} (${parsed.featured.length + parsed.new.length + parsed.used.length} products)`);
+      }
     }
   }
 
-  console.log(`[fetchInitialPool] both KV and API failed for filters: ${JSON.stringify(filters)}`);
-  return null;
+  if (!parsed) {
+    console.log(`[fetchInitialPool] both KV and API failed for filters: ${JSON.stringify(filters)}`);
+    return null;
+  }
+
+  // Condition-locked New/Used seo_v2 for the grid headings — indexed pages
+  // only (non-indexed pages render one combined grid with no New/Used
+  // headings). Fetched here so the client never needs its own mount-time
+  // /api/pool-listings/?condition=New|Used round trip for this text.
+  if (isIndexed) {
+    const [newSeo, usedSeo] = await Promise.all([
+      fetchConditionSeoV2(filters, seed, "New"),
+      fetchConditionSeoV2(filters, seed, "Used"),
+    ]);
+    parsed.newSeo = newSeo;
+    parsed.usedSeo = usedSeo;
+  }
+
+  return parsed;
 }

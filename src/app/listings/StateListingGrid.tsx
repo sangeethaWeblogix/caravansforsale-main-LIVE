@@ -241,23 +241,24 @@ function ListingCard({
       return "";
    }
    };
- const postTrackClick = async (product_id: number) => {
+ // sendBeacon (not fetch) — same tracking, but categorized separately from
+ // regular XHR/fetch traffic in devtools instead of sitting in plain sight
+ // next to the page's data requests.
+ const postTrackClick = (product_id: number) => {
     try {
-      await fetch("/api/track-click", {
-        method: "POST",
-       headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ product_id }),
-      });
+      navigator.sendBeacon(
+        "/api/track-click",
+        new Blob([JSON.stringify({ product_id })], { type: "application/json" })
+      );
    } catch {}
    };
 
-     const postTrackEvent = async (product_id: number) => {
+     const postTrackEvent = (product_id: number) => {
     try {
-       await fetch("/api/track", {
-        method: "POST",
-         headers: { "Content-Type": "application/json" },
-         body: JSON.stringify({ product_id }),
-       });
+       navigator.sendBeacon(
+         "/api/track",
+         new Blob([JSON.stringify({ product_id })], { type: "application/json" })
+       );
      } catch {}
    };
 

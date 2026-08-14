@@ -61,6 +61,9 @@ function seededShuffle<T>(arr: T[], seed: number): T[] {
  *  SSR / KV-cached HTML contains real product listings from the first byte. */
 export type InitialPool = {
   seo: SeoV2 | null;
+  /** Condition-locked seo_v2 for the New/Used grid headings — indexed pages only. */
+  newSeo?: SeoV2 | null;
+  usedSeo?: SeoV2 | null;
   featured: Listing[];
   new: Listing[];
   used: Listing[];
@@ -84,17 +87,36 @@ interface Props {
    * extra pool re-fetch when it flips the default true → false).
    */
   serverIsIndexed?: boolean;
+  /** Server-fetched (SSR) static filter data — passed through to StateFilterBar
+   * so it skips the redundant client-side /api/product-list/ + /api/make-details/
+   * mount fetch. */
+  initialCategories?: { name: string; slug: string }[];
+  initialStates?: any[];
+  initialMakes?: { name: string; slug: string; models?: { name: string; slug: string }[] }[];
+  /** Server-fetched (SSR) category/make counts — only present for the plain
+   * /listings/ page (no active filters). See StateFilterBar for the guard
+   * that keeps every other filter combination fetching live, unchanged. */
+  initialCategoryCounts?: { name: string; slug: string; count: number }[];
+  initialMakeCounts?: { name: string; slug: string; count: number }[];
 }
 
-export default function StateHome({ initialFilters, browseData, initialPool, initialSeo, serverIsIndexed }: Props) {
+export default function StateHome({
+  initialFilters, browseData, initialPool, initialSeo, serverIsIndexed,
+  initialCategories, initialStates, initialMakes, initialCategoryCounts, initialMakeCounts,
+}: Props) {
   const [filters, setFilters] = useState<FilterState>(initialFilters ?? {});
   const [page, setPage] = useState(1);
   const [maxPages, setMaxPages] = useState(initialPool?.maxPages ?? 1);
   const [clickid, setClickid] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
   const [seo, setSeo] = useState<SeoV2 | null>(initialPool?.seo ?? initialSeo ?? null);
-  const [newSeo, setNewSeo] = useState<SeoV2 | null>(null);
-  const [usedSeo, setUsedSeo] = useState<SeoV2 | null>(null);
+  const [newSeo, setNewSeo] = useState<SeoV2 | null>(initialPool?.newSeo ?? null);
+  const [usedSeo, setUsedSeo] = useState<SeoV2 | null>(initialPool?.usedSeo ?? null);
+  // Skip the very first New/Used seo_v2 fetch when the server already
+  // provided it (indexed pages with SSR pool data) — same redundancy-removal
+  // pattern as indexedUrlConsumed above. Non-indexed / missing-SSR-data pages
+  // fetch live immediately, unchanged.
+  const conditionSeoConsumed = useRef(!(initialPool?.isIndexed && (initialPool?.newSeo !== undefined || initialPool?.usedSeo !== undefined)));
   const [seed, setSeed] = useState(1);
   const [pool, setPool] = useState<{ featured: Listing[]; new: Listing[]; used: Listing[] }>(
     initialPool
@@ -116,13 +138,11 @@ export default function StateHome({ initialFilters, browseData, initialPool, ini
   // (i.e., the first pool useEffect run has been skipped). After that, normal
   // live fetches run on filter/seed changes.
   //
-  // For non-indexed pages (serverIsIndexed === false) we start as already-consumed
-  // even when initialPool is non-null. This means the pool effect never skips and
-  // always fires a live fetch with the fresh random seed picked on every mount —
-  // giving different products on each refresh. The SSR initialPool still provides
-  // a fallback render while the fetch is in flight, preventing the blank-page
-  // problem that occurs when initialPool is null and the API is slow or errors.
-  const initialPropConsumed = useRef(initialPool == null || serverIsIndexed === false);
+  // Whenever the server provided initialPool, it's trusted as-is and the mount
+  // effect below skips its live refetch entirely — no client-side reshuffle.
+  // Only a missing initialPool (SSR fetch failed/empty) forces a live fetch,
+  // so the page still has something to render.
+  const initialPropConsumed = useRef(initialPool == null);
   // Snapshot of the most-recently-consumed preload data, keyed by poolApiUrl.
   // Used to re-bucket without a live fetch when only `isIndexed` changes (e.g.
   // the async /api/indexed-url/ check resolves to a different value than the
@@ -144,6 +164,11 @@ export default function StateHome({ initialFilters, browseData, initialPool, ini
   // the layout before the preload is even consumed. Cleared when the pool effect
   // first runs (at which point preloadSnapshotRef takes over as the guard).
   const preloadReadRef = useRef(false);
+  // Skip the very first /api/indexed-url/ check when the server already
+  // determined isIndexed (serverIsIndexed prop) — re-fetching the identical
+  // url.csv lookup client-side on mount is redundant. Later filter changes
+  // (client-side navigation, no fresh SSR) still need the live check.
+  const indexedUrlConsumed = useRef(serverIsIndexed === undefined);
   console.log("seoo89", seo)
 
   // ── Top banner ad (impression + click tracking) ── commented out: banner API call disabled on listing page
@@ -261,24 +286,6 @@ export default function StateHome({ initialFilters, browseData, initialPool, ini
     // with setReady means the pool effect fires once with the correct isIndexed
     // value, preventing the secondary pool re-fetch that occurs when the async
     // /api/indexed-url/ check resolves to a different value than the default.
-    //
-    // Resilience: if served from Vercel (BYPASS-NO-CACHE) rather than KV, neither
-    // __SHUFFLE_SEED__ nor __INITIAL_POOL__ are injected. In that case the pool
-    // effect's "skip first run" guard (initialPropConsumed) prevents the random
-    // seed from taking effect, so products appear frozen. Force the guard to true
-    // now so the pool effect always makes a live fetch with the fresh random seed.
-    try {
-      const win = window as unknown as Record<string, unknown>;
-      const hasWorkerSeed = typeof win["__SHUFFLE_SEED__"] === "number";
-      const hasInitialPool = !!(win["__INITIAL_POOL__"] as { url?: string } | undefined)?.url;
-      if (!hasWorkerSeed && !hasInitialPool && initialPool != null) {
-        // SSR bypass path: initialPool was provided by Vercel but no KV preload
-        // exists — skip the "consume initialPool" guard so the live fetch fires.
-        initialPropConsumed.current = true;
-      }
-    } catch {
-      // ignore
-    }
 
     try {
       const win = window as unknown as Record<string, unknown>;
@@ -335,6 +342,10 @@ export default function StateHome({ initialFilters, browseData, initialPool, ini
 
   useEffect(() => {
     if (page !== 1) return;
+    if (!indexedUrlConsumed.current) {
+      indexedUrlConsumed.current = true;
+      return;
+    }
     const canonicalPath = buildListingsSlug(filters);
     fetch(`/api/indexed-url/?path=${encodeURIComponent(canonicalPath)}`)
       .then((r) => (r.ok ? r.json() : null))
@@ -557,27 +568,6 @@ export default function StateHome({ initialFilters, browseData, initialPool, ini
     return () => { cancelled = true; };
   }, [poolApiUrl, page, isIndexed, ready]);
 
-  // Pre-warm the next page's pool-listings response in the background so the
-  // Cloudflare Worker serves it from KV before the user clicks "Next".
-  // - No `cache: "no-store"` here — this is a warm call, not a live fetch.
-  //   The Cloudflare Worker always intercepts /api/pool-listings/ and checks
-  //   the json:pool: KV key first regardless of request cache headers.
-  // - De-duped by poolApiUrl + page so a filter change always re-prefetches
-  //   the correct next page for the new filter context.
-  const prefetchedPoolKeyRef = useRef<string>("");
-  useEffect(() => {
-    // Skip pre-warm for non-indexed pages: page=2+ requests are never in KV
-    // (worker keeps `page` in its cache key; warmer only warms page=1), so
-    // every pre-warm call hits WordPress directly. Rapid refreshes on non-indexed
-    // URLs pile up WordPress hits → SiteGround rate-limiting → 502.
-    if (!ready || page >= maxPages || !isIndexed) return;
-    const nextPage = page + 1;
-    const key = `${poolApiUrl}::page=${nextPage}`;
-    if (prefetchedPoolKeyRef.current === key) return;
-    prefetchedPoolKeyRef.current = key;
-    fetch(`${poolApiUrl}&page=${nextPage}`).catch(() => { });
-  }, [poolApiUrl, page, maxPages, ready, isIndexed]);
-
   // New/Used grid headings need their own condition-locked seo_v2 (the shared
   // pool call above is unlocked, so its seo_v2 only covers the page overall).
   // Featured reuses that page-level seo since there's no dedicated "featured"
@@ -587,6 +577,10 @@ export default function StateHome({ initialFilters, browseData, initialPool, ini
     if (!ready || page !== 1 || !isIndexed) {
       setNewSeo(null);
       setUsedSeo(null);
+      return;
+    }
+    if (!conditionSeoConsumed.current) {
+      conditionSeoConsumed.current = true;
       return;
     }
     const newUrl = `${buildApiUrl("/api/pool-listings/?per_page=1", filters, seed, "New")}&page=1`;
@@ -715,6 +709,11 @@ export default function StateHome({ initialFilters, browseData, initialPool, ini
             currentFilters={filters}
             onFilterChange={handleFilterChange}
             onClearAll={handleClearAll}
+            initialCategories={initialCategories}
+            initialStates={initialStates}
+            initialMakes={initialMakes}
+            initialCategoryCounts={initialCategoryCounts}
+            initialMakeCounts={initialMakeCounts}
           />
           {ip.isIndexed ? (
             <>
@@ -792,6 +791,11 @@ export default function StateHome({ initialFilters, browseData, initialPool, ini
           currentFilters={filters}
           onFilterChange={handleFilterChange}
           onClearAll={handleClearAll}
+          initialCategories={initialCategories}
+          initialStates={initialStates}
+          initialMakes={initialMakes}
+          initialCategoryCounts={initialCategoryCounts}
+          initialMakeCounts={initialMakeCounts}
         />
         <StateListingGrid
           title={initialSeo.meta_title ? `Featured ${initialSeo.meta_title}` : ""}
@@ -858,6 +862,11 @@ export default function StateHome({ initialFilters, browseData, initialPool, ini
           currentFilters={filters}
           onFilterChange={handleFilterChange}
           onClearAll={handleClearAll}
+          initialCategories={initialCategories}
+          initialStates={initialStates}
+          initialMakes={initialMakes}
+          initialCategoryCounts={initialCategoryCounts}
+          initialMakeCounts={initialMakeCounts}
         />
 
         {isIndexed ? (
@@ -954,6 +963,11 @@ export default function StateHome({ initialFilters, browseData, initialPool, ini
         currentFilters={filters}
         onFilterChange={handleFilterChange}
         onClearAll={handleClearAll}
+        initialCategories={initialCategories}
+        initialStates={initialStates}
+        initialMakes={initialMakes}
+        initialCategoryCounts={initialCategoryCounts}
+        initialMakeCounts={initialMakeCounts}
       />
 
       <StateListingGrid

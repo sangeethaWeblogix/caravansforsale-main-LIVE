@@ -423,11 +423,10 @@ const priceUpperIdx = !isPOA ? PRICE_STEPS.findIndex(s => s >= displayPrice) : -
   useEffect(() => {
     const productId = product.id ?? pd.id;
     if (!productId) return;
-    fetch("/api/track-product/", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ product_id: Number(productId) }),
-    }).catch(() => {});
+    navigator.sendBeacon(
+      "/api/track-product/",
+      new Blob([JSON.stringify({ product_id: Number(productId) })], { type: "application/json" })
+    );
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [product.id]);
 

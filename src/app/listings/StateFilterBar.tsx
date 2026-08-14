@@ -5,6 +5,7 @@ import CategorySkeleton from "../components/CategorySkeleton";
 import SearchSuggestionSkeleton from "../components/Searchsuggestionskeleton ";
 import { fetchLocations } from "@/api/location/api";
 import { fetchHomeSearchList, fetchKeywordSuggestions } from "@/api/homeSearch/api";
+import { buildCategoryCountScope, buildMakeCountScope } from "./paramsCountScope";
 
 type KeywordItem = { label: string; url?: string };
 
@@ -16,7 +17,7 @@ type LocationSuggestion = {
   postcode?: string | number;
 };
 
-interface StateOption {
+export interface StateOption {
   value: string;
   name: string;
   regions?: { name: string; value: string }[];
@@ -49,6 +50,18 @@ interface Props {
   currentFilters: FilterState;
   onFilterChange: (f: FilterState) => void;
   onClearAll: () => void;
+  /** Server-fetched (SSR) static filter data — categories/states from
+   * /params-product-list, makes from /make_details. When present, skips the
+   * redundant client-side mount fetch of /api/product-list/ + /api/make-details/. */
+  initialCategories?: { name: string; slug: string }[];
+  initialStates?: StateOption[];
+  initialMakes?: { name: string; slug: string; models?: { name: string; slug: string }[] }[];
+  /** Server-fetched (SSR) category/make counts, scoped to initialFilters via
+   * the same buildCategoryCountScope/buildMakeCountScope as this component —
+   * skips the redundant client-side mount fetch. Any filter change after
+   * mount still fetches live, exactly as before. */
+  initialCategoryCounts?: { name: string; slug: string; count: number }[];
+  initialMakeCounts?: { name: string; slug: string; count: number }[];
 }
 
 const PRICE_OPTIONS  = [10000,20000,30000,40000,50000,60000,70000,80000,90000,100000,125000,150000,175000,200000,225000,250000,275000,300000];
@@ -57,44 +70,37 @@ const SLEEP_OPTIONS  = [1,2,3,4,5,6,7];
 const YEAR_OPTIONS   = [2027,2026,2025,2024,2023,2022,2021,2020,2019,2018,2017,2016,2015,2014,2013,2012,2011,2010,2009,2008,2007,2006,2005,2004,2000,1975];
 const LENGTH_OPTIONS = [12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28];
 
-/** Same param shape as FilterSlider's buildMakeCountParams — make/model excluded
- * on purpose (they're what group_by is counting), everything else included so
- * the make/model list narrows to what's actually available under the other
- * active filters, matching production's live /api/params-count/ behaviour. */
+/** make/model excluded on purpose (they're what group_by is counting) —
+ * see buildMakeCountScope in paramsCountScope.ts (shared with page.tsx's SSR fetch). */
 const buildMakeCountParams = (filters: FilterState): URLSearchParams => {
-  const params = new URLSearchParams();
-  if (filters.category)          params.set("category", filters.category);
-  if (filters.condition)         params.set("condition", filters.condition);
-  if (filters.state)             params.set("state", String(filters.state).toLowerCase());
-  if (filters.region)            params.set("region", filters.region);
-  if (filters.suburb)            params.set("suburb", filters.suburb);
-  if (filters.pincode)           params.set("pincode", filters.pincode);
-  if (filters.from_price)        params.set("from_price", String(filters.from_price));
-  if (filters.to_price)          params.set("to_price", String(filters.to_price));
-  if (filters.minKg)             params.set("from_atm", String(filters.minKg));
-  if (filters.maxKg)             params.set("to_atm", String(filters.maxKg));
-  if (filters.acustom_fromyears) params.set("acustom_fromyears", String(filters.acustom_fromyears));
-  if (filters.acustom_toyears)   params.set("acustom_toyears", String(filters.acustom_toyears));
-  if (filters.from_length)       params.set("from_length", String(filters.from_length));
-  if (filters.to_length)         params.set("to_length", String(filters.to_length));
-  if (filters.from_sleep)        params.set("from_sleep", String(filters.from_sleep));
-  if (filters.to_sleep)          params.set("to_sleep", String(filters.to_sleep));
-  if (filters.keyword)           params.set("keyword", filters.keyword);
+  const params = buildMakeCountScope(filters);
   params.set("group_by", "make");
   return params;
 };
 
-export default function StateFilterBar({ currentFilters, onFilterChange, onClearAll }: Props) {
+export default function StateFilterBar({
+  currentFilters, onFilterChange, onClearAll,
+  initialCategories, initialStates, initialMakes,
+  initialCategoryCounts, initialMakeCounts,
+}: Props) {
   /* ── Data ── */
-  const [categories, setCategories] = useState<{name: string; slug: string}[]>([]);
-  const [states,     setStates]     = useState<StateOption[]>([]);
-  const [makes,      setMakes]      = useState<{name: string; slug: string; models?: {name: string; slug: string}[]}[]>([]);
-  const [catLoading, setCatLoading] = useState(true);
-  const [categoryCounts, setCategoryCounts] = useState<{name: string; slug: string; count: number}[]>([]);
+  const [categories, setCategories] = useState<{name: string; slug: string}[]>(initialCategories ?? []);
+  const [states,     setStates]     = useState<StateOption[]>(initialStates ?? []);
+  const [makes,      setMakes]      = useState<{name: string; slug: string; models?: {name: string; slug: string}[]}[]>(initialMakes ?? []);
+  const [catLoading, setCatLoading] = useState(!initialCategories);
+  const [categoryCounts, setCategoryCounts] = useState<{name: string; slug: string; count: number}[]>(initialCategoryCounts ?? []);
   const [catCountLoading, setCatCountLoading] = useState(false);
   const cachedCategoryCountsRef = useRef<{name: string; slug: string; count: number}[]>([]);
 
+  // currentFilters at mount, snapshotted once — used below to detect whether
+  // the user has changed any filter since first paint (see isInitialFilters).
+  const initialFiltersSnapshotRef = useRef(currentFilters);
+  const isInitialFilters = JSON.stringify(currentFilters) === JSON.stringify(initialFiltersSnapshotRef.current);
+
   useEffect(() => {
+    // Static category/state/make lists don't depend on currentFilters — safe
+    // to skip entirely whenever the server already supplied them.
+    if (initialCategories) return;
     fetch("/api/product-list/")
       .then(r => r.ok ? r.json() : null)
       .then((res: any) => {
@@ -108,34 +114,20 @@ export default function StateFilterBar({ currentFilters, onFilterChange, onClear
       .then(r => r.ok ? r.json() : null)
       .then((json: any) => setMakes(json?.data?.make_options || []))
       .catch(() => {});
-  }, []);
+  }, [initialCategories]);
 
   // Live category counts — same /api/params-count/?group_by=category endpoint
   // production's Listings.tsx uses, scoped to every OTHER active filter (make,
   // model, state, etc. — but not category itself) so the Caravan Type list only
   // shows types that actually have matching results under the current filters.
   useEffect(() => {
+    // The server already fetched this exact scope for initialFilters — skip
+    // the identical client refetch on mount. Once any filter changes,
+    // isInitialFilters flips to false and this proceeds as a normal live fetch.
+    if (initialCategoryCounts && isInitialFilters) return;
     const controller = new AbortController();
     setCatCountLoading(true);
-    const params = new URLSearchParams();
-    if (currentFilters.make)               params.set("make", currentFilters.make);
-    if (currentFilters.model)              params.set("model", currentFilters.model);
-    if (currentFilters.condition)          params.set("condition", currentFilters.condition);
-    if (currentFilters.state)              params.set("state", String(currentFilters.state).toLowerCase());
-    if (currentFilters.region)             params.set("region", currentFilters.region);
-    if (currentFilters.suburb)             params.set("suburb", currentFilters.suburb);
-    if (currentFilters.pincode)            params.set("pincode", currentFilters.pincode);
-    if (currentFilters.from_price)         params.set("from_price", String(currentFilters.from_price));
-    if (currentFilters.to_price)           params.set("to_price", String(currentFilters.to_price));
-    if (currentFilters.minKg)              params.set("from_atm", String(currentFilters.minKg));
-    if (currentFilters.maxKg)              params.set("to_atm", String(currentFilters.maxKg));
-    if (currentFilters.acustom_fromyears)  params.set("acustom_fromyears", String(currentFilters.acustom_fromyears));
-    if (currentFilters.acustom_toyears)    params.set("acustom_toyears", String(currentFilters.acustom_toyears));
-    if (currentFilters.from_length)        params.set("from_length", String(currentFilters.from_length));
-    if (currentFilters.to_length)          params.set("to_length", String(currentFilters.to_length));
-    if (currentFilters.from_sleep)         params.set("from_sleep", String(currentFilters.from_sleep));
-    if (currentFilters.to_sleep)           params.set("to_sleep", String(currentFilters.to_sleep));
-    if (currentFilters.keyword)            params.set("keyword", currentFilters.keyword);
+    const params = buildCategoryCountScope(currentFilters);
     params.set("group_by", "category");
     fetch(`/api/params-count/?${params.toString()}`, { signal: controller.signal })
       .then(r => r.json())
@@ -186,7 +178,7 @@ export default function StateFilterBar({ currentFilters, onFilterChange, onClear
   const [makeSearch,    setMakeSearch]    = useState("");
   const [modelSearch,   setModelSearch]   = useState("");
   const [makeSubView,   setMakeSubView]   = useState<"makes" | "models">("makes");
-  const [makeCounts,       setMakeCounts]       = useState<{name: string; slug: string; count: number}[]>([]);
+  const [makeCounts,       setMakeCounts]       = useState<{name: string; slug: string; count: number}[]>(initialMakeCounts ?? []);
   const [modelCounts,      setModelCounts]      = useState<{name: string; slug: string; count: number}[]>([]);
   const [stateCounts,      setStateCounts]      = useState<{slug: string; count: number}[]>([]);
   const [regionCountsByState, setRegionCountsByState] = useState<Record<string, {name: string; slug: string; count: number}[]>>({});
@@ -197,6 +189,8 @@ export default function StateFilterBar({ currentFilters, onFilterChange, onClear
   // re-fetched whenever any other active filter changes so the make list
   // narrows to what's actually available (not just the full static make list).
   useEffect(() => {
+    // Same skip-when-SSR-provided-and-still-on-initialFilters guard as the category counts above.
+    if (initialMakeCounts && isInitialFilters) return;
     const controller = new AbortController();
     const params = buildMakeCountParams(currentFilters);
     fetch(`/api/params-count/?${params.toString()}`, { signal: controller.signal })
