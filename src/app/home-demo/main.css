@@ -2962,11 +2962,11 @@ main .section-head .category_icon li img {
 }
 
 .hd-banner-ad__label {
-    color: #999;
+    color: #e8e8e8;
     letter-spacing: .5px;
     text-transform: uppercase;
     z-index: 1;
-    background: #5e5e5e85;
+    background: rgb(94 94 94 / 42%);
     border-radius: 4px;
     padding: 2px 6px;
     font-size: 9px;

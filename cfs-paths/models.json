@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "models",
-    "count": 2895,
+    "count": 2894,
     "paths": [
         "adria/action-361-lt/",
         "adria/action-361lt/",
@@ -309,7 +309,6 @@
         "concept/rs-off-road/",
         "concept/rs-offroad/",
         "concept/rs206/",
-        "concept/xtc-705/",
         "concept/xtc-semi-off-road/",
         "condor/land-bruiser-21/",
         "condor/ultimate-family/",
@@ -2899,5 +2898,5 @@
         "zone-rv/summit/",
         "zone-rv/venture/"
     ],
-    "generated_at": "2026-08-13 15:45:02"
+    "generated_at": "2026-08-14 15:43:25"
 }
