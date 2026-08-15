@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "state-make",
-    "count": 638,
+    "count": 637,
     "paths": [
         "australian-capital-territory-state/avida/",
         "australian-capital-territory-state/crusader/",
@@ -24,7 +24,6 @@
         "new-south-wales-state/cadillac-rv/",
         "new-south-wales-state/coach-rv/",
         "new-south-wales-state/concept/",
-        "new-south-wales-state/condor/",
         "new-south-wales-state/coromal/",
         "new-south-wales-state/cosy-cab/",
         "new-south-wales-state/crusader/",
@@ -642,5 +641,5 @@
         "western-australia-state/xtour/",
         "western-australia-state/zone-rv/"
     ],
-    "generated_at": "2026-08-14 15:43:25"
+    "generated_at": "2026-08-15 15:43:13"
 }
