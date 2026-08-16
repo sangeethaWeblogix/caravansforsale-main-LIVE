@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "cat-region",
-    "count": 261,
+    "count": 256,
     "paths": [
         "family-category/australian-capital-territory-state/australian-capital-territory-region/",
         "family-category/new-south-wales-state/central-coast-region/",
@@ -43,7 +43,6 @@
         "family-category/victoria-state/mornington-peninsula-region/",
         "family-category/victoria-state/north-west-region/",
         "family-category/victoria-state/shepparton-region/",
-        "family-category/western-australia-state/bunbury-region/",
         "family-category/western-australia-state/mandurah-region/",
         "family-category/western-australia-state/perth-region/",
         "family-category/western-australia-state/western-australia-outback-south-region/",
@@ -82,7 +81,6 @@
         "hybrid-category/victoria-state/melbourne-region/",
         "hybrid-category/victoria-state/mornington-peninsula-region/",
         "hybrid-category/victoria-state/north-west-region/",
-        "hybrid-category/western-australia-state/bunbury-region/",
         "hybrid-category/western-australia-state/mandurah-region/",
         "hybrid-category/western-australia-state/perth-region/",
         "hybrid-category/western-australia-state/western-australia-outback-south-region/",
@@ -127,7 +125,6 @@
         "luxury-category/victoria-state/mornington-peninsula-region/",
         "luxury-category/victoria-state/north-west-region/",
         "luxury-category/victoria-state/shepparton-region/",
-        "luxury-category/western-australia-state/bunbury-region/",
         "luxury-category/western-australia-state/mandurah-region/",
         "luxury-category/western-australia-state/perth-region/",
         "luxury-category/western-australia-state/western-australia-outback-south-region/",
@@ -172,7 +169,6 @@
         "off-road-category/victoria-state/mornington-peninsula-region/",
         "off-road-category/victoria-state/north-west-region/",
         "off-road-category/victoria-state/shepparton-region/",
-        "off-road-category/western-australia-state/bunbury-region/",
         "off-road-category/western-australia-state/mandurah-region/",
         "off-road-category/western-australia-state/perth-region/",
         "off-road-category/western-australia-state/western-australia-outback-south-region/",
@@ -260,10 +256,9 @@
         "touring-category/victoria-state/north-west-region/",
         "touring-category/victoria-state/shepparton-region/",
         "touring-category/victoria-state/warrnambool-and-south-west-region/",
-        "touring-category/western-australia-state/bunbury-region/",
         "touring-category/western-australia-state/mandurah-region/",
         "touring-category/western-australia-state/perth-region/",
         "touring-category/western-australia-state/western-australia-outback-south-region/"
     ],
-    "generated_at": "2026-08-15 15:43:13"
+    "generated_at": "2026-08-16 15:45:03"
 }

@@ -111,7 +111,6 @@
         "new-south-wales-state/tuff-track/",
         "new-south-wales-state/urban/",
         "new-south-wales-state/vacationer/",
-        "new-south-wales-state/vibe/",
         "new-south-wales-state/victory/",
         "new-south-wales-state/viscount/",
         "new-south-wales-state/vivid/",
@@ -119,12 +118,14 @@
         "new-south-wales-state/wonder-roo/",
         "new-south-wales-state/x-series-rv/",
         "northern-territory-state/avan/",
+        "northern-territory-state/boroma/",
         "northern-territory-state/crusader/",
         "northern-territory-state/dreamhaven/",
         "northern-territory-state/essential/",
         "northern-territory-state/jayco/",
         "northern-territory-state/jurgens/",
         "northern-territory-state/lotus/",
+        "northern-territory-state/network-rv/",
         "northern-territory-state/new-age/",
         "northern-territory-state/snowy-river/",
         "queensland-state/adria/",
@@ -611,7 +612,6 @@
         "western-australia-state/royal-flair/",
         "western-australia-state/rp/",
         "western-australia-state/signature/",
-        "western-australia-state/silver-valley/",
         "western-australia-state/snowy-river/",
         "western-australia-state/southern-cross/",
         "western-australia-state/stoney-creek/",
@@ -641,5 +641,5 @@
         "western-australia-state/xtour/",
         "western-australia-state/zone-rv/"
     ],
-    "generated_at": "2026-08-15 15:43:13"
+    "generated_at": "2026-08-16 15:45:02"
 }

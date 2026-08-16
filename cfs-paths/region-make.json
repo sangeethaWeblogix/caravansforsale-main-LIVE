@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "region-make",
-    "count": 1077,
+    "count": 1075,
     "paths": [
         "australian-capital-territory-state/australian-capital-territory-region/avida/",
         "australian-capital-territory-state/australian-capital-territory-region/crusader/",
@@ -216,7 +216,6 @@
         "new-south-wales-state/southern-highlands-region/sunfinder/",
         "new-south-wales-state/southern-highlands-region/supreme/",
         "new-south-wales-state/southern-highlands-region/vacationer/",
-        "new-south-wales-state/southern-highlands-region/vibe/",
         "new-south-wales-state/southern-highlands-region/viscount/",
         "new-south-wales-state/southern-highlands-region/windsor/",
         "new-south-wales-state/southern-highlands-region/x-series-rv/",
@@ -246,12 +245,14 @@
         "new-south-wales-state/sydney-region/traveller/",
         "new-south-wales-state/sydney-region/viscount/",
         "northern-territory-state/darwin-region/avan/",
+        "northern-territory-state/darwin-region/boroma/",
         "northern-territory-state/darwin-region/crusader/",
         "northern-territory-state/darwin-region/dreamhaven/",
         "northern-territory-state/darwin-region/essential/",
         "northern-territory-state/darwin-region/jayco/",
         "northern-territory-state/darwin-region/jurgens/",
         "northern-territory-state/darwin-region/lotus/",
+        "northern-territory-state/darwin-region/network-rv/",
         "northern-territory-state/darwin-region/new-age/",
         "northern-territory-state/darwin-region/snowy-river/",
         "queensland-state/brisbane-region/adria/",
@@ -960,8 +961,6 @@
         "victoria-state/shepparton-region/suncoast/",
         "victoria-state/shepparton-region/windsor/",
         "victoria-state/warrnambool-and-south-west-region/new-age/",
-        "western-australia-state/bunbury-region/avan/",
-        "western-australia-state/bunbury-region/golf/",
         "western-australia-state/mandurah-region/avan/",
         "western-australia-state/mandurah-region/concept/",
         "western-australia-state/mandurah-region/crusader/",
@@ -1039,7 +1038,6 @@
         "western-australia-state/perth-region/retreat/",
         "western-australia-state/perth-region/royal-flair/",
         "western-australia-state/perth-region/rp/",
-        "western-australia-state/perth-region/silver-valley/",
         "western-australia-state/perth-region/snowy-river/",
         "western-australia-state/perth-region/southern-cross/",
         "western-australia-state/perth-region/stoney-creek/",
@@ -1081,5 +1079,5 @@
         "western-australia-state/western-australia-outback-south-region/western/",
         "western-australia-state/western-australia-outback-south-region/windsor/"
     ],
-    "generated_at": "2026-08-15 15:43:13"
+    "generated_at": "2026-08-16 15:45:02"
 }
