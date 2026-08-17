@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "makes",
-    "count": 254,
+    "count": 252,
     "paths": [
         "adria/",
         "adventura/",
@@ -106,7 +106,6 @@
         "highline/",
         "hike/",
         "hilltop/",
-        "hinterland/",
         "hitch-hika/",
         "iconic/",
         "ideal-rv/",
@@ -130,7 +129,6 @@
         "legacy/",
         "legend/",
         "lifestyle-campers/",
-        "little-gem/",
         "living-edge/",
         "long-haul-campers/",
         "lotus/",
@@ -258,5 +256,5 @@
         "york/",
         "zone-rv/"
     ],
-    "generated_at": "2026-08-16 15:45:02"
+    "generated_at": "2026-08-17 15:43:25"
 }

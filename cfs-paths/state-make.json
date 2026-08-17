@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "state-make",
-    "count": 637,
+    "count": 632,
     "paths": [
         "australian-capital-territory-state/avida/",
         "australian-capital-territory-state/crusader/",
@@ -48,7 +48,6 @@
         "new-south-wales-state/harvok/",
         "new-south-wales-state/highclere/",
         "new-south-wales-state/highline/",
-        "new-south-wales-state/hinterland/",
         "new-south-wales-state/jawa/",
         "new-south-wales-state/jayco/",
         "new-south-wales-state/jb/",
@@ -108,7 +107,6 @@
         "new-south-wales-state/torus-rv/",
         "new-south-wales-state/trail/",
         "new-south-wales-state/traveller/",
-        "new-south-wales-state/tuff-track/",
         "new-south-wales-state/urban/",
         "new-south-wales-state/vacationer/",
         "new-south-wales-state/victory/",
@@ -157,7 +155,6 @@
         "queensland-state/crusader/",
         "queensland-state/cub/",
         "queensland-state/design-rv/",
-        "queensland-state/domain/",
         "queensland-state/dreamhaven/",
         "queensland-state/ecotourer/",
         "queensland-state/elite/",
@@ -174,7 +171,6 @@
         "queensland-state/franklin/",
         "queensland-state/golden-eagle/",
         "queensland-state/goldstar-rv/",
-        "queensland-state/goldstream-rv/",
         "queensland-state/goldy/",
         "queensland-state/golf/",
         "queensland-state/grand/",
@@ -193,7 +189,6 @@
         "queensland-state/leader/",
         "queensland-state/legend/",
         "queensland-state/lifestyle-campers/",
-        "queensland-state/little-gem/",
         "queensland-state/long-haul-campers/",
         "queensland-state/lotus/",
         "queensland-state/majestic/",
@@ -641,5 +636,5 @@
         "western-australia-state/xtour/",
         "western-australia-state/zone-rv/"
     ],
-    "generated_at": "2026-08-16 15:45:02"
+    "generated_at": "2026-08-17 15:43:25"
 }
