@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "makes",
-    "count": 252,
+    "count": 255,
     "paths": [
         "adria/",
         "adventura/",
@@ -45,6 +45,7 @@
         "centaur/",
         "coach-rv/",
         "compass/",
+        "complete-campsite/",
         "concept/",
         "condor/",
         "coromal/",
@@ -106,6 +107,7 @@
         "highline/",
         "hike/",
         "hilltop/",
+        "hinterland/",
         "hitch-hika/",
         "iconic/",
         "ideal-rv/",
@@ -129,6 +131,7 @@
         "legacy/",
         "legend/",
         "lifestyle-campers/",
+        "little-gem/",
         "living-edge/",
         "long-haul-campers/",
         "lotus/",
@@ -256,5 +259,5 @@
         "york/",
         "zone-rv/"
     ],
-    "generated_at": "2026-08-17 15:43:25"
+    "generated_at": "2026-08-18 15:45:02"
 }
