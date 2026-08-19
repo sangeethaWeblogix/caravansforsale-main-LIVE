@@ -1,10 +1,9 @@
 {
     "success": true,
     "type": "regions",
-    "count": 46,
+    "count": 45,
     "paths": [
         "australian-capital-territory-state/australian-capital-territory-region/",
-        "new-south-wales-state/capital-region/",
         "new-south-wales-state/central-coast-region/",
         "new-south-wales-state/central-west-region/",
         "new-south-wales-state/coffs-harbour-region/",
@@ -50,5 +49,5 @@
         "western-australia-state/perth-region/",
         "western-australia-state/western-australia-outback-south-region/"
     ],
-    "generated_at": "2026-08-18 15:45:02"
+    "generated_at": "2026-08-19 15:45:02"
 }
