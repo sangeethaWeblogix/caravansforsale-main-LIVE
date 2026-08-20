@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "cat-state",
-    "count": 45,
+    "count": 46,
     "paths": [
         "family-category/australian-capital-territory-state/",
         "family-category/new-south-wales-state/",
@@ -28,6 +28,7 @@
         "off-road-category/australian-capital-territory-state/",
         "off-road-category/new-south-wales-state/",
         "off-road-category/northern-territory-state/",
+        "off-road-category/qld-state/",
         "off-road-category/queensland-state/",
         "off-road-category/south-australia-state/",
         "off-road-category/tasmania-state/",
@@ -49,5 +50,5 @@
         "touring-category/victoria-state/",
         "touring-category/western-australia-state/"
     ],
-    "generated_at": "2026-08-19 15:45:03"
+    "generated_at": "2026-08-20 15:45:04"
 }
