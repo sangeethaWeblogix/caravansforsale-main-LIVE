@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "region-make",
-    "count": 1054,
+    "count": 1053,
     "paths": [
         "australian-capital-territory-state/australian-capital-territory-region/avida/",
         "australian-capital-territory-state/australian-capital-territory-region/crusader/",
@@ -252,7 +252,6 @@
         "northern-territory-state/darwin-region/network-rv/",
         "northern-territory-state/darwin-region/new-age/",
         "northern-territory-state/darwin-region/snowy-river/",
-        "qld-state/wide-bay-region/jb/",
         "queensland-state/brisbane-region/adria/",
         "queensland-state/brisbane-region/aussie-fivestar/",
         "queensland-state/brisbane-region/boss-adventure/",
@@ -475,6 +474,7 @@
         "queensland-state/wide-bay-region/golf/",
         "queensland-state/wide-bay-region/hardkorr-campers/",
         "queensland-state/wide-bay-region/jayco/",
+        "queensland-state/wide-bay-region/jb/",
         "queensland-state/wide-bay-region/jurgens/",
         "queensland-state/wide-bay-region/lagoon/",
         "queensland-state/wide-bay-region/leader/",
@@ -574,7 +574,6 @@
         "south-australia-state/south-australia-south-east-region/creative/",
         "south-australia-state/south-australia-south-east-region/crusader/",
         "south-australia-state/south-australia-south-east-region/empire/",
-        "south-australia-state/south-australia-south-east-region/island-star/",
         "south-australia-state/south-australia-south-east-region/jayco/",
         "south-australia-state/south-australia-south-east-region/lagoon/",
         "south-australia-state/south-australia-south-east-region/new-age/",
@@ -1058,5 +1057,5 @@
         "western-australia-state/western-australia-outback-south-region/western/",
         "western-australia-state/western-australia-outback-south-region/windsor/"
     ],
-    "generated_at": "2026-08-20 15:45:03"
+    "generated_at": "2026-08-21 15:45:02"
 }
