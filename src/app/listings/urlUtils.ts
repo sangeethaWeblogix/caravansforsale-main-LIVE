@@ -106,7 +106,10 @@ const BREADCRUMB_PRIORITY: Array<{
   {
     label: (f) => {
       if (!f.from_sleep && !f.to_sleep) return null;
-      if (f.from_sleep && f.to_sleep) return `${f.from_sleep} – ${f.to_sleep} Berths`;
+      if (f.from_sleep && f.to_sleep) {
+        if (String(f.from_sleep) === String(f.to_sleep)) return `${f.from_sleep} Berth`;
+        return `${f.from_sleep} – ${f.to_sleep} Berths`;
+      }
       if (f.from_sleep) return `From ${f.from_sleep} Berths`;
       return `Upto ${f.to_sleep} Berths`;
     },

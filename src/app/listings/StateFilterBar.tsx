@@ -796,7 +796,9 @@ export default function StateFilterBar({
               <span className={`active-chip${removingChip === "sleep" ? " chip-removing" : ""}`}>
                 <span className="chip-label" onClick={handleSleepOpen}>
                   {currentFilters.from_sleep && currentFilters.to_sleep
-                    ? `${currentFilters.from_sleep} – ${currentFilters.to_sleep} Berths`
+                    ? String(currentFilters.from_sleep) === String(currentFilters.to_sleep)
+                      ? `${currentFilters.from_sleep} Berth`
+                      : `${currentFilters.from_sleep} – ${currentFilters.to_sleep} Berths`
                     : currentFilters.from_sleep
                       ? `From ${currentFilters.from_sleep} Berths`
                       : `Upto ${currentFilters.to_sleep} Berths`}
