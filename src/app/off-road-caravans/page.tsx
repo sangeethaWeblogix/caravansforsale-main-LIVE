@@ -131,7 +131,7 @@ async function fetchOffRoadModelBlogs(seed: number): Promise<any[]> {
 }
 
 
-export const revalidate = 86400;
+export const revalidate = 0;
 
 const CANONICAL = "https://www.caravansforsale.com.au/off-road-caravans/";
 
