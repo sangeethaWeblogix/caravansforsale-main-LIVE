@@ -60,6 +60,21 @@ async function fetchOffRoadSnapshot(): Promise<SnapshotData> {
   }
 }
 
+async function fetchOffRoadBrandCounts(): Promise<Record<string, number>> {
+  try {
+    const res = await fetch(
+      `${API_BASE}/category-makes-count?category=off-road`,
+      { headers: wpHeaders(), next: { revalidate: 3600 } }
+    );
+    if (!res.ok) return {};
+    const raw = await res.text();
+    const jsonStart = raw.indexOf("{");
+    const json = JSON.parse(jsonStart <= 0 ? raw : raw.substring(jsonStart));
+    const makes: any[] = json?.makes ?? [];
+    return Object.fromEntries(makes.map((m: any) => [m.make, m.count]));
+  } catch { return {}; }
+}
+
 async function fetchOffRoadStateBands(): Promise<any[]> {
   try {
     const res = await fetch(
@@ -207,6 +222,7 @@ export default async function OffRoadCaravansDemoPage() {
     offRoadBrandBlogs,
     offRoadModelBlogs,
     offRoadStateBands,
+    offRoadBrandCounts,
   ] = await Promise.all([
     fetchStateBasedCaravans(),
     fetchRequirements(),
@@ -217,6 +233,7 @@ export default async function OffRoadCaravansDemoPage() {
     fetchOffRoadBrandBlogs(seed),
     fetchOffRoadModelBlogs(seed),
     fetchOffRoadStateBands(),
+    fetchOffRoadBrandCounts(),
   ]);
 
   return (
@@ -242,6 +259,7 @@ export default async function OffRoadCaravansDemoPage() {
       offRoadPopularBlogs={offRoadPopularBlogs}
       offRoadBrandBlogs={offRoadBrandBlogs}
       offRoadModelBlogs={offRoadModelBlogs}
+      offRoadBrandCounts={offRoadBrandCounts}
     />
     </>
   );

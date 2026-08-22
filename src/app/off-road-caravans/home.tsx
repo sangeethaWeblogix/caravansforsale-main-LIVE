@@ -74,6 +74,7 @@ interface Props {
   offRoadUsedPriceMax: number;
   offRoadUsedPriceMedian: number;
   offRoadNewPriceMedian: number;
+  offRoadBrandCounts: Record<string, number>;
 }
 
 const CITY_LINKS = [
@@ -143,7 +144,7 @@ const SEARCH_FILTERS = [
   },
 ];
 
-export default function OffRoadCaravansPage({ stateBands, offRoadBlogs, offRoadPopularBlogs, offRoadBrandBlogs, offRoadModelBlogs, offRoadCount, offRoadNewCount, offRoadUsedCount, offRoadPriceMin, offRoadPriceMax, offRoadUsedPriceMin, offRoadUsedPriceMax, offRoadUsedPriceMedian, offRoadNewPriceMedian }: Props) {
+export default function OffRoadCaravansPage({ stateBands, offRoadBlogs, offRoadPopularBlogs, offRoadBrandBlogs, offRoadModelBlogs, offRoadCount, offRoadNewCount, offRoadUsedCount, offRoadPriceMin, offRoadPriceMax, offRoadUsedPriceMin, offRoadUsedPriceMax, offRoadUsedPriceMedian, offRoadNewPriceMedian, offRoadBrandCounts }: Props) {
   const carouselRef = useRef<HTMLDivElement>(null);
   const scrollCarousel = (dir: number) => {
     carouselRef.current?.scrollBy({ left: dir * 320, behavior: "smooth" });
@@ -324,17 +325,17 @@ export default function OffRoadCaravansPage({ stateBands, offRoadBlogs, offRoadP
               <p className="or-panel__sub">Browse listings and reviews for Australia&apos;s leading brands.</p>
               <div className="or-brands-grid">
                 {[
-                  { name: "Jayco",       logo: "Jayco.png",       count: "146+", listHref: "/listings/jayco/off-road-category/",               reviewHref: "/jayco-caravans-review/" },
-                  { name: "Lotus",       logo: "lotus.svg",       count: "68+", listHref: "/listings/lotus/off-road-category/",       reviewHref: "/lotus-caravans-review/" },
-                  { name: "Retreat",     logo: "Retreat.webp",    count: "48+", listHref: "/listings/retreat/off-road-category/",     reviewHref: "/retreat-caravans-review/" },
-                  { name: "Masterpiece", logo: "masterpiece.png", count: "40+", listHref: "/listings/masterpiece/off-road-category/", reviewHref: "/masterpiece-caravans-review/" },
-                  { name: "JB Caravans", logo: "JB-caravans.png", count: "121+", listHref: "/listings/jb/off-road-category/",          reviewHref: "/jb-caravans-review/" },
+                  { name: "Jayco",       logo: "Jayco.png",       makeKey: "jayco",       fallback: "146+", listHref: "/listings/jayco/off-road-category/",               reviewHref: "/jayco-journey-outback-review/" },
+                  { name: "Lotus",       logo: "lotus.svg",       makeKey: "lotus",       fallback: "68+",  listHref: "/listings/lotus/off-road-category/",       reviewHref: "/lotus-caravans-freelander-indepth-review/" },
+                  { name: "Retreat",     logo: "Retreat.webp",    makeKey: "retreat",     fallback: "48+",  listHref: "/listings/retreat/off-road-category/",     reviewHref: "/retreat-caravans-erv-comprehensive-analysis/" },
+                  { name: "Masterpiece", logo: "masterpiece.png", makeKey: "masterpiece", fallback: "40+",  listHref: "/listings/masterpiece/off-road-category/", reviewHref: "/masterpiece-caravans-optimum-in-depth-review/" },
+                  { name: "JB Caravans", logo: "JB-caravans.png", makeKey: "jb",          fallback: "121+", listHref: "/listings/jb/off-road-category/",          reviewHref: "/jb-caravans-dirt-roader-analysis/" },
                 ].map(b => (
                   <div key={b.name} className="or-brand-card">
                     <div className="or-brand-card__logo-wrap">
                       <img src={`/images/${b.logo}`} alt={b.name} className="or-brand-card__logo-img" />
                     </div>
-                    <span className="or-brand-card__count">{b.count}</span>
+                    <span className="or-brand-card__count">{offRoadBrandCounts[b.makeKey] ? `${offRoadBrandCounts[b.makeKey]}+` : b.fallback}</span>
                     <span className="or-brand-card__listings-label">Listings</span>
                     <a href={b.listHref} className="or-brand-card__view-btn">View Listings </a>
                     <a href={b.reviewHref} className="or-brand-card__link">Read Reviews </a>
