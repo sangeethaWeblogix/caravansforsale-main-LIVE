@@ -334,7 +334,7 @@ export default function OffRoadCaravansPage({ stateBands, offRoadBlogs, offRoadP
               <button className="or-latest-arrow or-latest-arrow--prev" onClick={() => scrollCarousel(-1)} aria-label="Previous"><i className="bi bi-chevron-left" /></button>
               <div className="or-latest-carousel" ref={carouselRef}>
                 {offRoadBlogs.map((b) => (
-                  <a key={b.id} href={fixLink(b.link) || `/${b.slug}/`} className="or-latest-card">
+                  <a key={b.id} href={fixLink(b.slug) || `/${b.slug}/`} className="or-latest-card">
                     <div className="or-latest-img-wrap">
                       <img src={b.image || "/images/download.svg"} alt={b.title} className="or-latest-img" loading="lazy" />
                     </div>
