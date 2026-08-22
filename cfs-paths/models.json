@@ -3,6 +3,7 @@
     "type": "models",
     "count": 2797,
     "paths": [
+        "adria/136-rd-terrain-tuff/",
         "adria/action-361-lt/",
         "adria/action-361lt/",
         "adria/adora-492-dt/",
@@ -1160,7 +1161,6 @@
         "jayco/discovery-pop-top/",
         "jayco/discovery-poptop/",
         "jayco/discovery-poptop-16-67-4-dy-my26/",
-        "jayco/discovery-poptop-17-55-5-sh/",
         "jayco/expanda/",
         "jayco/expanda-12-37-1/",
         "jayco/expanda-16-49-1/",
@@ -2801,5 +2801,5 @@
         "zone-rv/summit/",
         "zone-rv/venture/"
     ],
-    "generated_at": "2026-08-21 15:45:02"
+    "generated_at": "2026-08-22 15:43:42"
 }
