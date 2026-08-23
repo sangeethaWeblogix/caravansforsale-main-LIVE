@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "region-make",
-    "count": 1053,
+    "count": 1056,
     "paths": [
         "australian-capital-territory-state/australian-capital-territory-region/avida/",
         "australian-capital-territory-state/australian-capital-territory-region/crusader/",
@@ -45,7 +45,6 @@
         "new-south-wales-state/coffs-harbour-region/titanium/",
         "new-south-wales-state/coffs-harbour-region/torus-rv/",
         "new-south-wales-state/hunter-region/atlas/",
-        "new-south-wales-state/hunter-region/billabong/",
         "new-south-wales-state/hunter-region/cadillac-rv/",
         "new-south-wales-state/hunter-region/coromal/",
         "new-south-wales-state/hunter-region/cosy-cab/",
@@ -64,21 +63,25 @@
         "new-south-wales-state/hunter-region/mdc/",
         "new-south-wales-state/hunter-region/new-age/",
         "new-south-wales-state/hunter-region/newgen/",
-        "new-south-wales-state/hunter-region/nextgen/",
         "new-south-wales-state/hunter-region/nova/",
         "new-south-wales-state/hunter-region/on-the-move/",
-        "new-south-wales-state/hunter-region/option-rv/",
         "new-south-wales-state/hunter-region/paramount/",
         "new-south-wales-state/hunter-region/prime-edge/",
-        "new-south-wales-state/hunter-region/retreat/",
         "new-south-wales-state/hunter-region/royal-flair/",
-        "new-south-wales-state/hunter-region/silver-valley/",
         "new-south-wales-state/hunter-region/snowy-river/",
         "new-south-wales-state/hunter-region/supreme/",
         "new-south-wales-state/hunter-region/swag/",
         "new-south-wales-state/hunter-region/traveller/",
         "new-south-wales-state/hunter-region/vacationer/",
         "new-south-wales-state/hunter-region/victory/",
+        "new-south-wales-state/hunter-valley-exc-newcastle-region/billabong/",
+        "new-south-wales-state/hunter-valley-exc-newcastle-region/jayco/",
+        "new-south-wales-state/hunter-valley-exc-newcastle-region/lotus/",
+        "new-south-wales-state/hunter-valley-exc-newcastle-region/nextgen/",
+        "new-south-wales-state/hunter-valley-exc-newcastle-region/option-rv/",
+        "new-south-wales-state/hunter-valley-exc-newcastle-region/paramount/",
+        "new-south-wales-state/hunter-valley-exc-newcastle-region/retreat/",
+        "new-south-wales-state/hunter-valley-exc-newcastle-region/silver-valley/",
         "new-south-wales-state/illawarra-region/star-vision/",
         "new-south-wales-state/illawarra-region/supreme/",
         "new-south-wales-state/illawarra-region/titan/",
@@ -1057,5 +1060,5 @@
         "western-australia-state/western-australia-outback-south-region/western/",
         "western-australia-state/western-australia-outback-south-region/windsor/"
     ],
-    "generated_at": "2026-08-21 15:45:02"
+    "generated_at": "2026-08-22 15:43:42"
 }

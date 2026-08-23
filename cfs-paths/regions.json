@@ -1,13 +1,14 @@
 {
     "success": true,
     "type": "regions",
-    "count": 45,
+    "count": 46,
     "paths": [
         "australian-capital-territory-state/australian-capital-territory-region/",
         "new-south-wales-state/central-coast-region/",
         "new-south-wales-state/central-west-region/",
         "new-south-wales-state/coffs-harbour-region/",
         "new-south-wales-state/hunter-region/",
+        "new-south-wales-state/hunter-valley-exc-newcastle-region/",
         "new-south-wales-state/illawarra-region/",
         "new-south-wales-state/mid-north-coast-region/",
         "new-south-wales-state/murray-region/",
@@ -49,5 +50,5 @@
         "western-australia-state/perth-region/",
         "western-australia-state/western-australia-outback-south-region/"
     ],
-    "generated_at": "2026-08-21 15:45:02"
+    "generated_at": "2026-08-22 15:43:42"
 }

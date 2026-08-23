@@ -1,13 +1,14 @@
 {
     "success": true,
     "type": "cat-region",
-    "count": 254,
+    "count": 259,
     "paths": [
         "family-category/australian-capital-territory-state/australian-capital-territory-region/",
         "family-category/new-south-wales-state/central-coast-region/",
         "family-category/new-south-wales-state/central-west-region/",
         "family-category/new-south-wales-state/coffs-harbour-region/",
         "family-category/new-south-wales-state/hunter-region/",
+        "family-category/new-south-wales-state/hunter-valley-exc-newcastle-region/",
         "family-category/new-south-wales-state/mid-north-coast-region/",
         "family-category/new-south-wales-state/murray-region/",
         "family-category/new-south-wales-state/new-england-region/",
@@ -48,6 +49,7 @@
         "family-category/western-australia-state/western-australia-outback-south-region/",
         "hybrid-category/new-south-wales-state/coffs-harbour-region/",
         "hybrid-category/new-south-wales-state/hunter-region/",
+        "hybrid-category/new-south-wales-state/hunter-valley-exc-newcastle-region/",
         "hybrid-category/new-south-wales-state/illawarra-region/",
         "hybrid-category/new-south-wales-state/mid-north-coast-region/",
         "hybrid-category/new-south-wales-state/murray-region/",
@@ -89,6 +91,7 @@
         "luxury-category/new-south-wales-state/central-west-region/",
         "luxury-category/new-south-wales-state/coffs-harbour-region/",
         "luxury-category/new-south-wales-state/hunter-region/",
+        "luxury-category/new-south-wales-state/hunter-valley-exc-newcastle-region/",
         "luxury-category/new-south-wales-state/illawarra-region/",
         "luxury-category/new-south-wales-state/mid-north-coast-region/",
         "luxury-category/new-south-wales-state/murray-region/",
@@ -133,6 +136,7 @@
         "off-road-category/new-south-wales-state/central-west-region/",
         "off-road-category/new-south-wales-state/coffs-harbour-region/",
         "off-road-category/new-south-wales-state/hunter-region/",
+        "off-road-category/new-south-wales-state/hunter-valley-exc-newcastle-region/",
         "off-road-category/new-south-wales-state/illawarra-region/",
         "off-road-category/new-south-wales-state/mid-north-coast-region/",
         "off-road-category/new-south-wales-state/murray-region/",
@@ -218,6 +222,7 @@
         "touring-category/new-south-wales-state/central-west-region/",
         "touring-category/new-south-wales-state/coffs-harbour-region/",
         "touring-category/new-south-wales-state/hunter-region/",
+        "touring-category/new-south-wales-state/hunter-valley-exc-newcastle-region/",
         "touring-category/new-south-wales-state/mid-north-coast-region/",
         "touring-category/new-south-wales-state/murray-region/",
         "touring-category/new-south-wales-state/new-england-region/",
@@ -258,5 +263,5 @@
         "touring-category/western-australia-state/perth-region/",
         "touring-category/western-australia-state/western-australia-outback-south-region/"
     ],
-    "generated_at": "2026-08-21 15:45:03"
+    "generated_at": "2026-08-22 15:43:43"
 }
