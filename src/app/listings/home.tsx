@@ -10,7 +10,7 @@ import StateListingGrid, { SeoV2, Listing, buildFeaturedOrder } from "./StateLis
 import StateBrowseSection from "./StateBrowseSection";
 import type { BrowseSectionData } from "./browseSectionShared";
 import StateContent from "./StateContent";
-import { buildApiUrl, buildListingsSlug, buildFilterBreadcrumbs } from "./urlUtils";
+import { buildApiUrl, buildListingsSlug, buildFilterBreadcrumbs, parseDemoFilters } from "./urlUtils";
 // import { useBanners } from "@/components/BannerHandler";
 // import { useBannerTracking } from "@/hooks/useBannerTracking";
 import "./main.css?=7";
@@ -321,7 +321,23 @@ export default function StateHome({
 
   useEffect(() => {
     const handlePopState = () => {
-      const cid = new URLSearchParams(window.location.search).get("clickid");
+      // Back/forward only changes window.location — it doesn't re-render
+      // StateFilterBar or fire handleFilterChange, so `filters` state was
+      // previously left stale (still holding the filters from just before
+      // the browser navigated away), and no re-fetch was triggered even
+      // though the URL now points at a different filter combination.
+      // Re-derive filters from the new URL the same way the server does
+      // (parseDemoFilters), so popping back/forward re-fetches matching data.
+      const slug = window.location.pathname
+        .replace(/^\/listings\/?/, "")
+        .replace(/\/$/, "")
+        .split("/")
+        .filter(Boolean);
+      const query: Record<string, string> = {};
+      new URLSearchParams(window.location.search).forEach((v, k) => { query[k] = v; });
+      setFilters(parseDemoFilters(slug, query));
+
+      const cid = query.clickid;
       if (cid) {
         const saved = readPage(cid);
         setClickid(cid);
