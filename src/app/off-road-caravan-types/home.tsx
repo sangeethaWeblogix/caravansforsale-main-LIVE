@@ -198,14 +198,10 @@ export default function Home({ snapshot }: Props) {
 
           <div className="ort-td-hero">
             <div className="ort-td-hero__img-col">
-              <Image src="/images/Semi-Off-Road.png" alt="Semi Off Road Caravans" width={480} height={320} className="ort-td-hero__img" unoptimized />
+              <Image src="/images/full-Off-Road.png" alt="Semi Off Road Caravans" width={480} height={320} className="ort-td-hero__img" unoptimized />
             </div>
             <div className="ort-td-hero__text">
-              <div className="ort-td-hero__icon-strip">
-                <i className="bi bi-truck" />
-                <i className="bi bi-arrow-left-right" />
-                <span className="ort-td-hero__strip-line" />
-              </div>
+              
               <h2 className="ort-td-hero__h2">Semi Off Road <span className="ort-td-hero__h2-accent">Caravans</span></h2>
               <div className="ort-td-hero__underline" />
               <p>A <strong>semi off road caravan</strong> is a caravan positioned in the market above a standard touring caravan but below a fully built off road caravan.</p>
@@ -306,11 +302,7 @@ export default function Home({ snapshot }: Props) {
               <Image src="/images/Full-Off-Road.png" alt="Full Off Road Caravans" width={480} height={320} className="ort-td-hero__img" unoptimized />
             </div>
             <div className="ort-td-hero__text">
-              <div className="ort-td-hero__icon-strip">
-                <i className="bi bi-shield-fill" style={{ color: "#2e7d32" }} />
-                <i className="bi bi-tools" style={{ color: "#2e7d32" }} />
-                <span className="ort-td-hero__strip-line" style={{ background: "#2e7d32" }} />
-              </div>
+              
               <h2 className="ort-td-hero__h2">Full Off Road <span className="ort-td-hero__h2-accent" style={{ color: "#2e7d32" }}>Caravans</span></h2>
               <div className="ort-td-hero__underline" style={{ background: "#2e7d32" }} />
               <p>A <strong>full off road caravan</strong> is generally designed for travellers who expect to spend considerably more time away from sealed highways.</p>
@@ -399,11 +391,7 @@ export default function Home({ snapshot }: Props) {
               <Image src="/images/Extreme-Off-Road.png" alt="Extreme Off Road Caravans" width={480} height={320} className="ort-td-hero__img" unoptimized />
             </div>
             <div className="ort-td-hero__text">
-              <div className="ort-td-hero__icon-strip">
-                <i className="bi bi-lightning-fill" style={{ color: "#b71c1c" }} />
-                <i className="bi bi-shield-fill" style={{ color: "#b71c1c" }} />
-                <span className="ort-td-hero__strip-line" style={{ background: "#b71c1c" }} />
-              </div>
+              
               <h2 className="ort-td-hero__h2">Extreme Off Road <span className="ort-td-hero__h2-accent" style={{ color: "#b71c1c" }}>Caravans</span></h2>
               <div className="ort-td-hero__underline" style={{ background: "#b71c1c" }} />
               <p>The term <strong>extreme off road caravan</strong> is generally used for caravans positioned toward the highest end of remote touring capability.</p>
@@ -488,14 +476,10 @@ export default function Home({ snapshot }: Props) {
 
           <div className="ort-td-hero ort-td-hero--reverse">
             <div className="ort-td-hero__img-col">
-              <Image src="/images/Hybrid-Off-Road.png" alt="Hybrid Off Road Caravans" width={480} height={320} className="ort-td-hero__img" unoptimized />
+              <Image src="/images/full-Off-Road.png" alt="Hybrid Off Road Caravans" width={480} height={320} className="ort-td-hero__img" unoptimized />
             </div>
             <div className="ort-td-hero__text">
-              <div className="ort-td-hero__icon-strip">
-                <i className="bi bi-arrows-collapse" style={{ color: "#6a1b9a" }} />
-                <i className="bi bi-layout-split" style={{ color: "#6a1b9a" }} />
-                <span className="ort-td-hero__strip-line" style={{ background: "#6a1b9a" }} />
-              </div>
+              
               <h2 className="ort-td-hero__h2">Hybrid Off Road <span className="ort-td-hero__h2-accent" style={{ color: "#6a1b9a" }}>Caravans</span></h2>
               <div className="ort-td-hero__underline" style={{ background: "#6a1b9a" }} />
               <p>A <strong>hybrid off road caravan</strong> combines characteristics of an off-road camper trailer with the hard-sided accommodation and amenities normally associated with a caravan.</p>
@@ -822,7 +806,7 @@ export default function Home({ snapshot }: Props) {
 
             <div className="ort-chooser-card" style={{ borderTopColor: "#b71c1c" }}>
               <div className="ort-chooser-card__type" style={{ color: "#b71c1c" }}>
-                <Image src="/images/Extreme-Off-Road.png" alt="Extreme Off Road" width={60} height={40} unoptimized className="ort-chooser-card__img" />
+                <Image src="/images/full-Off-Road.png" alt="Extreme Off Road" width={60} height={40} unoptimized className="ort-chooser-card__img" />
                 Choose an Extreme Off Road Caravan if&hellip;
               </div>
               <p>Remote and demanding touring forms a major part of your travel plans and you require substantial payload, power, water and protection.</p>
