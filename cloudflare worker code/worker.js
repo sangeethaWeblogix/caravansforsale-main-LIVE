@@ -401,9 +401,7 @@ async function getStaticHtmlFromKV(url, env) {
       // nightly generate-index-cache.js run or by the WP-triggered generate-affected-cache.
       // Between a new deployment and those jobs running, some KV entries will have
       // the OLD buildId — those are detected below and trigger stale-while-revalidate.
-      const htmlBuildId =
-        rawHtml.match(/\/_next\/static\/([^/]+)\/_buildManifest\.js/)?.[1] || // App Router
-        rawHtml.match(/"buildId":"([^"]+)"/)?.[1]; // Pages Router fallback
+      const htmlBuildId = extractBuildId(rawHtml);
 
       // Build-ID mismatch: KV HTML was cached before the latest Vercel deployment.
       //
@@ -567,9 +565,7 @@ async function revalidateKvEntry(env, pageUrl, kvKey) {
     }
 
     // Extract the new buildId from the fresh HTML so we can update current-build-id.
-    const newBuildId =
-      freshHtml.match(/\/_next\/static\/([^/]+)\/_buildManifest\.js/)?.[1] ||
-      freshHtml.match(/"buildId":"([^"]+)"/)?.[1];
+    const newBuildId = extractBuildId(freshHtml);
 
     if (!newBuildId) {
       console.log(`[revalidate] Could not extract buildId from fresh response for ${kvKey} — skipping KV write`);
@@ -623,6 +619,29 @@ async function getRoutesMapping(env) {
 // ============================================
 // UTILITY FUNCTIONS
 // ============================================
+
+/**
+ * Extracts a per-deployment identifier from rendered Next.js HTML so the
+ * Worker can tell whether a KV-cached page still matches the live deployment.
+ *
+ * Pages Router embeds a real "buildId" (script src /_next/static/{buildId}/_buildManifest.js,
+ * or "buildId":"..." inside __NEXT_DATA__). App Router (this project, built with
+ * Turbopack) embeds NEITHER of those — there is no __NEXT_DATA__ and no
+ * _buildManifest.js reference in the HTML at all, so both legacy patterns always
+ * return null and the mismatch check below silently never fires.
+ *
+ * What App Router HTML DOES contain is Vercel's skew-protection query param on
+ * every static asset URL: /_next/static/chunks/<hash>.js?dpl=<deploymentId>. That
+ * dpl_xxx value changes on every deployment, so it's used as the buildId stand-in.
+ * scripts/update-kv-build-id.js and scripts/generate-priority-pages.js must stay
+ * in sync with this — they write/extract the same dpl_xxx value into current-build-id.
+ */
+function extractBuildId(html) {
+  return html.match(/\/_next\/static\/([^/]+)\/_buildManifest\.js/)?.[1] // Pages Router
+    || html.match(/"buildId":"([^"]+)"/)?.[1] // Pages Router (__NEXT_DATA__) fallback
+    || html.match(/\/_next\/static\/chunks\/[^"'\s]+\?dpl=([A-Za-z0-9_-]+)/)?.[1] // App Router / Turbopack
+    || null;
+}
 
 /**
  * Fetch from origin while bypassing Cloudflare's edge cache.
