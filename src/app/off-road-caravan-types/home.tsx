@@ -142,7 +142,7 @@ export default function Home({ snapshot, popularBlogs }: Props) {
               There is no single industry-wide classification that automatically guarantees how or where a caravan can be used. Instead, the best way to compare off road caravan types is to look at the caravan&rsquo;s intended use, chassis, suspension, ground clearance, coupling, tyres, protection, weight, payload and off-grid capabilities.
             </p>
             <p>
-              This guide explains the main types of off road caravans available in Australia, their typical differences and which type may suit your tow vehicle, destinations and style of travel.
+              This guide explains the main types of <a href="/off-road-caravans/" style={{ color: "#ec7200", fontWeight: 600, textDecoration: "none" }}>off road caravans in Australia</a>, their typical differences and which type may suit your tow vehicle, destinations and style of travel.
             </p>
           </div>
           <div className="ort-hero__btns">

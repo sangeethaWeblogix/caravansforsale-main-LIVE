@@ -251,10 +251,11 @@ export default function OffRoadCaravansPage({ stateBands, offRoadBlogs, offRoadP
                   </div>
                 ))}
               </div>
-              <a href="/listings/off-road-category/" className="or-compare-btn">
-                <span className="or-compare-btn__icon"><i className="bi bi-arrow-left-right" /></span>
-                Compare All Types 
-              </a>
+              <div className="or-compare-btn-wrap">
+                <a href="/off-road-caravan-types/" className="or-compare-btn">
+                  Compare Off Road Caravan Types
+                </a>
+              </div>
             </div>
 
             {/* Market Snapshot */}

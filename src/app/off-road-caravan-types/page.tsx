@@ -6,7 +6,8 @@ export const metadata: Metadata = {
   title: "Off Road Caravan Types Compared | Semi, Full, Hybrid & Extreme",
   description:
     "Compare semi, full, extreme and hybrid off road caravans in Australia. Understand terrain capability, towing, weight, construction and off-grid features.",
-  robots: { index: false, follow: false },
+  robots: { index: true, follow: true },
+  alternates: { canonical: "https://www.caravansforsale.com.au/off-road-caravan-types/" },
 };
 
 const API_BASE = process.env.NEXT_PUBLIC_CFS_API_BASE;
