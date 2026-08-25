@@ -25,6 +25,20 @@ type SnapshotData = {
   new_price_median: number;
 };
 
+async function fetchPopularBlogs(seed: number): Promise<any[]> {
+  try {
+    const res = await fetch(
+      `${API_BASE}/blog-shuffle?popular=off-road&seed=${seed}`,
+      { headers: wpHeaders(), next: { revalidate: 0 } }
+    );
+    if (!res.ok) return [];
+    const raw = await res.text();
+    const jsonStart = raw.indexOf("{");
+    const json = JSON.parse(jsonStart <= 0 ? raw : raw.substring(jsonStart));
+    return json?.data ?? json?.posts ?? json?.items ?? [];
+  } catch { return []; }
+}
+
 async function fetchOffRoadSnapshot(): Promise<SnapshotData> {
   const empty = { total_count: 0, new_count: 0, used_count: 0, used_price_median: 0, new_price_median: 0 };
   try {
@@ -94,14 +108,18 @@ const schemaJsonLd = {
 };
 
 export default async function OffRoadCaravanTypesPage() {
-  const snapshot = await fetchOffRoadSnapshot();
+  const seed = Math.floor(Math.random() * 100000);
+  const [snapshot, popularBlogs] = await Promise.all([
+    fetchOffRoadSnapshot(),
+    fetchPopularBlogs(seed),
+  ]);
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaJsonLd) }}
       />
-      <Home snapshot={snapshot} />
+      <Home snapshot={snapshot} popularBlogs={popularBlogs} />
     </>
   );
 }

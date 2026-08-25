@@ -14,16 +14,21 @@ interface SnapshotData {
 
 interface Props {
   snapshot: SnapshotData;
+  popularBlogs: any[];
 }
 
 
 const SEMI_VS_FULL = [
-  { feature: "Corrugated Roads",     semi: "Limited",          full: "Well Suited" },
-  { feature: "Off-Grid Capability",  semi: "Moderate",         full: "High" },
-  { feature: "Suspension",           semi: "Upgraded",         full: "Heavy-Duty" },
-  { feature: "Purchase Price",       semi: "Lower",            full: "Higher" },
-  { feature: "Weight",               semi: "Generally Lower",  full: "Generally Higher" },
-  { feature: "Best For",             semi: "Occasional Unsealed Roads", full: "Remote & Rough Roads" },
+  { feature: "Sealed Highways",           icon: "bi-signpost-2",        semi: { val: "Excellent",                  type: "good" }, full: { val: "Excellent",               type: "good" } },
+  { feature: "Formed Gravel Roads",        icon: "bi-map",               semi: { val: "Generally Suitable",         type: "good" }, full: { val: "Suitable",                type: "good" } },
+  { feature: "Maintained Dirt Roads",      icon: "bi-compass",           semi: { val: "Generally Suitable",         type: "good" }, full: { val: "Suitable",                type: "good" } },
+  { feature: "Corrugated Remote Roads",    icon: "bi-activity",          semi: { val: "Limited / Model Dependent",  type: "mid"  }, full: { val: "Generally Better Suited",  type: "good" } },
+  { feature: "Heavy-duty Suspension",      icon: "bi-wrench-adjustable", semi: { val: "Sometimes",                  type: "mid"  }, full: { val: "Common",                  type: "good" } },
+  { feature: "Off-road Coupling",          icon: "bi-link-45deg",        semi: { val: "Model Dependent",            type: "mid"  }, full: { val: "Common",                  type: "good" } },
+  { feature: "Large Off-grid Electrical",  icon: "bi-lightning-charge",  semi: { val: "Optional / Model Dependent", type: "mid"  }, full: { val: "More Common",             type: "good" } },
+  { feature: "Larger Water Capacity",      icon: "bi-droplet-half",      semi: { val: "Model Dependent",            type: "mid"  }, full: { val: "More Common",             type: "good" } },
+  { feature: "Weight",                     icon: "bi-boxes",             semi: { val: "Generally Lower",            type: "down" }, full: { val: "Generally Higher",        type: "up"   } },
+  { feature: "Purchase Price",             icon: "bi-tag",               semi: { val: "Generally Lower",            type: "down" }, full: { val: "Generally Higher",        type: "up"   } },
 ];
 
 const FULL_VS_HYBRID = [
@@ -73,13 +78,27 @@ function terrainClass(v: string) {
   return "ort-terrain--no";
 }
 
+function CmpCell({ v }: { v: { val: string; type: string } }) {
+  return (
+    <div className={`ort-cmp-val ort-cmp-val--${v.type}`}>
+      <span className="ort-cmp-val__icon">
+        {v.type === "good" && <i className="bi bi-check-lg" />}
+        {v.type === "mid"  && <span>~</span>}
+        {v.type === "down" && <i className="bi bi-arrow-down-short" />}
+        {v.type === "up"   && <i className="bi bi-arrow-up-short" />}
+      </span>
+      {v.val}
+    </div>
+  );
+}
+
 function FaqItem({ q, a }: { q: string; a: string }) {
   const [open, setOpen] = useState(false);
   return (
     <div className={`ort-faq__item${open ? " ort-faq__item--open" : ""}`}>
       <button className="ort-faq__q" onClick={() => setOpen(!open)} aria-expanded={open}>
         <h3 className="ort-faq__q-text">{q}</h3>
-        <i className={`bi ${open ? "bi-dash" : "bi-plus"} ort-faq__icon`} />
+        <i className={`bi ${open ? "bi-chevron-up" : "bi-chevron-down"} ort-faq__icon`} />
       </button>
       {open && <div className="ort-faq__a"><p>{a}</p></div>}
     </div>
@@ -90,7 +109,11 @@ function fmtNum(n: number, prefix = "") {
   return n > 0 ? `${prefix}${n.toLocaleString()}` : null;
 }
 
-export default function Home({ snapshot }: Props) {
+function stripHtml(html: string): string {
+  return html.replace(/<[^>]+>/g, "").replace(/&[a-z]+;/gi, " ").trim();
+}
+
+export default function Home({ snapshot, popularBlogs }: Props) {
   const { total_count, new_count, used_count, used_price_median, new_price_median } = snapshot;
   const totalAdv = used_count + new_count;
   const medianAdv = totalAdv > 0 && used_price_median > 0 && new_price_median > 0
@@ -124,7 +147,7 @@ export default function Home({ snapshot }: Props) {
           </div>
           <div className="ort-hero__btns">
             <a href="/listings/off-road-category/" className="ort-btn ort-btn--pill">
-              <i className="bi bi-search" /> Explore Off Road Caravans
+              <i className="bi bi-search" /> Off Road Caravan Listings
             </a>
           </div>
         </div>
@@ -198,7 +221,7 @@ export default function Home({ snapshot }: Props) {
 
           <div className="ort-td-hero">
             <div className="ort-td-hero__img-col">
-              <Image src="/images/full-Off-Road.png" alt="Semi Off Road Caravans" width={480} height={320} className="ort-td-hero__img" unoptimized />
+              <Image src="/images/Semi-Off-Road.jpg" alt="Semi Off Road Caravans" width={480} height={320} className="ort-td-hero__img" unoptimized />
             </div>
             <div className="ort-td-hero__text">
               
@@ -299,12 +322,12 @@ export default function Home({ snapshot }: Props) {
 
           <div className="ort-td-hero ort-td-hero--reverse">
             <div className="ort-td-hero__img-col">
-              <Image src="/images/Full-Off-Road.png" alt="Full Off Road Caravans" width={480} height={320} className="ort-td-hero__img" unoptimized />
+              <Image src="/images/Full-Off-Road.jpg" alt="Full Off Road Caravans" width={480} height={320} className="ort-td-hero__img" unoptimized />
             </div>
             <div className="ort-td-hero__text">
               
-              <h2 className="ort-td-hero__h2">Full Off Road <span className="ort-td-hero__h2-accent" style={{ color: "#2e7d32" }}>Caravans</span></h2>
-              <div className="ort-td-hero__underline" style={{ background: "#2e7d32" }} />
+              <h2 className="ort-td-hero__h2">Full Off Road <span className="ort-td-hero__h2-accent" style={{ color: "#ec7200" }}>Caravans</span></h2>
+              <div className="ort-td-hero__underline" style={{ background: "#ec7200" }} />
               <p>A <strong>full off road caravan</strong> is generally designed for travellers who expect to spend considerably more time away from sealed highways.</p>
               <p>These caravans commonly combine stronger construction with suspension designed for rougher roads, increased ground clearance, off-road couplings, all-terrain tyres and additional protection for components exposed underneath the caravan.</p>
               <p>They also frequently include larger electrical and water systems because the destinations they are designed to reach may have limited access to mains power, water or established campgrounds.</p>
@@ -312,15 +335,15 @@ export default function Home({ snapshot }: Props) {
           </div>
 
           <div className="ort-td-card ort-td-card--split">
-            <div className="ort-td-card__left" style={{ background: "#f0f7f0" }}>
-              <div className="ort-td-card__icon-wrap" style={{ background: "#d9f0d9", color: "#2e7d32" }}><i className="bi bi-people-fill" /></div>
+            <div className="ort-td-card__left">
+              <div className="ort-td-card__icon-wrap" style={{ background: "#fff3e8", color: "#ec7200" }}><i className="bi bi-people-fill" /></div>
               <h3 className="ort-td-card__h3">Who Is a Full Off Road Caravan Best For?</h3>
             </div>
             <div className="ort-td-card__right">
               <p className="ort-td-intro-bold">A full off road caravan may be suitable if you regularly plan to travel on:</p>
               <ul className="ort-check-list">
                 {["Corrugated Outback roads", "Rough unsealed roads", "Remote touring routes", "Station tracks", "National park access roads", "Extended routes where services are limited"].map(item => (
-                  <li key={item}><i className="bi bi-check-circle-fill" style={{ color: "#2e7d32" }} /> {item}</li>
+                  <li key={item}><i className="bi bi-check-circle-fill" style={{ color: "#ec7200" }} /> {item}</li>
                 ))}
               </ul>
               <p>They are particularly popular with travellers who want to explore remote areas while retaining the comfort of a conventional caravan, including an internal kitchen, shower, toilet, large bed and substantial storage.</p>
@@ -330,7 +353,7 @@ export default function Home({ snapshot }: Props) {
           <div className="ort-td-features">
             <h3 className="ort-td-features__h3">Typical Full Off Road Features</h3>
             <div className="ort-td-feat-divider">
-              <span /><i className="bi bi-gear-fill" style={{ color: "#2e7d32" }} /><span />
+              <span /><i className="bi bi-gear-fill" style={{ color: "#ec7200" }} /><span />
             </div>
             <p className="ort-td-features__intro">Depending on the caravan, you may find:</p>
             <div className="ort-td-feat-grid">
@@ -346,7 +369,7 @@ export default function Home({ snapshot }: Props) {
                 { img: "off_road_icon2.png",  label: "Increased Solar Capacity" },
               ].map(f => (
                 <div key={f.label} className="ort-td-feat-item">
-                  <div className="ort-td-feat-icon" style={{ background: "#d9f0d9" }}>
+                  <div className="ort-td-feat-icon">
                     <img src={`/images/${f.img}`} alt="" className="ort-td-feat-img" />
                   </div>
                   <span>{f.label}</span>
@@ -357,8 +380,8 @@ export default function Home({ snapshot }: Props) {
           </div>
 
           <div className="ort-td-card ort-td-card--split">
-            <div className="ort-td-card__left" style={{ background: "#f0f7f0" }}>
-              <div className="ort-td-card__icon-wrap" style={{ background: "#d9f0d9", color: "#2e7d32" }}><i className="bi bi-exclamation-triangle-fill" /></div>
+            <div className="ort-td-card__left">
+              <div className="ort-td-card__icon-wrap" style={{ background: "#fff3e8", color: "#ec7200" }}><i className="bi bi-exclamation-triangle-fill" /></div>
               <h3 className="ort-td-card__h3">Full Off Road Does Not Mean &ldquo;Go Anywhere&rdquo;</h3>
             </div>
             <div className="ort-td-card__right">
@@ -369,7 +392,7 @@ export default function Home({ snapshot }: Props) {
                   "Deep washouts, steep creek crossings, tight tracks and soft sand can still exceed the caravan’s capability.",
                   "Severe angles and extreme terrain may damage even a full off road caravan.",
                 ].map(q => (
-                  <li key={q}><i className="bi bi-exclamation-circle-fill" style={{ color: "#e53935" }} /> {q}</li>
+                  <li key={q}><i className="bi bi-exclamation-circle-fill" style={{ color: "#ec7200" }} /> {q}</li>
                 ))}
               </ul>
               <div className="ort-td-tip">
@@ -388,12 +411,12 @@ export default function Home({ snapshot }: Props) {
 
           <div className="ort-td-hero">
             <div className="ort-td-hero__img-col">
-              <Image src="/images/Extreme-Off-Road.png" alt="Extreme Off Road Caravans" width={480} height={320} className="ort-td-hero__img" unoptimized />
+              <Image src="/images/Extreme-Off-Road.jpg" alt="Extreme Off Road Caravans" width={480} height={320} className="ort-td-hero__img" unoptimized />
             </div>
             <div className="ort-td-hero__text">
               
-              <h2 className="ort-td-hero__h2">Extreme Off Road <span className="ort-td-hero__h2-accent" style={{ color: "#b71c1c" }}>Caravans</span></h2>
-              <div className="ort-td-hero__underline" style={{ background: "#b71c1c" }} />
+              <h2 className="ort-td-hero__h2">Extreme Off Road <span className="ort-td-hero__h2-accent" style={{ color: "#ec7200" }}>Caravans</span></h2>
+              <div className="ort-td-hero__underline" style={{ background: "#ec7200" }} />
               <p>The term <strong>extreme off road caravan</strong> is generally used for caravans positioned toward the highest end of remote touring capability.</p>
               <p>It is not a formal engineering classification. Instead, manufacturers commonly use the term for caravans incorporating more substantial chassis, suspension, protection, payload and off-grid systems designed around extended travel in remote parts of Australia.</p>
               <p>These caravans may carry significantly larger quantities of water, electrical storage, solar capacity and equipment than more conventional caravans.</p>
@@ -401,15 +424,15 @@ export default function Home({ snapshot }: Props) {
           </div>
 
           <div className="ort-td-card ort-td-card--split">
-            <div className="ort-td-card__left" style={{ background: "#fdf3f3" }}>
-              <div className="ort-td-card__icon-wrap" style={{ background: "#fce0e0", color: "#b71c1c" }}><i className="bi bi-people-fill" /></div>
+            <div className="ort-td-card__left">
+              <div className="ort-td-card__icon-wrap" style={{ background: "#fff3e8", color: "#ec7200" }}><i className="bi bi-people-fill" /></div>
               <h3 className="ort-td-card__h3">Who Is an Extreme Off Road Caravan Best For?</h3>
             </div>
             <div className="ort-td-card__right">
               <p className="ort-td-intro-bold">An extreme off road caravan is most relevant to travellers who:</p>
               <ul className="ort-check-list">
                 {["Regularly undertake extended remote-area trips", "Expect sustained travel on difficult corrugated roads", "Spend long periods away from powered sites", "Require substantial water and battery capacity", "Carry significant tools, recovery gear and equipment", "Own a suitably rated tow vehicle"].map(item => (
-                  <li key={item}><i className="bi bi-check-circle-fill" style={{ color: "#b71c1c" }} /> {item}</li>
+                  <li key={item}><i className="bi bi-check-circle-fill" style={{ color: "#ec7200" }} /> {item}</li>
                 ))}
               </ul>
               <p>For travellers who primarily visit caravan parks and maintained campsites, this additional capability may provide little practical benefit while increasing purchase price and towing weight.</p>
@@ -419,7 +442,7 @@ export default function Home({ snapshot }: Props) {
           <div className="ort-td-features">
             <h3 className="ort-td-features__h3">Typical Extreme Off Road Features</h3>
             <div className="ort-td-feat-divider">
-              <span /><i className="bi bi-gear-fill" style={{ color: "#b71c1c" }} /><span />
+              <span /><i className="bi bi-gear-fill" style={{ color: "#ec7200" }} /><span />
             </div>
             <p className="ort-td-features__intro">Features may include:</p>
             <div className="ort-td-feat-grid">
@@ -435,7 +458,7 @@ export default function Home({ snapshot }: Props) {
                 { img: "off_road_icon2.png",  label: "Large Solar Arrays" },
               ].map(f => (
                 <div key={f.label} className="ort-td-feat-item">
-                  <div className="ort-td-feat-icon" style={{ background: "#fce0e0" }}>
+                  <div className="ort-td-feat-icon">
                     <img src={`/images/${f.img}`} alt="" className="ort-td-feat-img" />
                   </div>
                   <span>{f.label}</span>
@@ -445,8 +468,8 @@ export default function Home({ snapshot }: Props) {
           </div>
 
           <div className="ort-td-card ort-td-card--split">
-            <div className="ort-td-card__left" style={{ background: "#fdf3f3" }}>
-              <div className="ort-td-card__icon-wrap" style={{ background: "#fce0e0", color: "#b71c1c" }}><i className="bi bi-exclamation-triangle-fill" /></div>
+            <div className="ort-td-card__left">
+              <div className="ort-td-card__icon-wrap" style={{ background: "#fff3e8", color: "#ec7200" }}><i className="bi bi-exclamation-triangle-fill" /></div>
               <h3 className="ort-td-card__h3">Consider the Additional Weight</h3>
             </div>
             <div className="ort-td-card__right">
@@ -457,7 +480,7 @@ export default function Home({ snapshot }: Props) {
                   "Multiple spare wheels, protection systems and recovery equipment increase the Aggregate Trailer Mass.",
                   "Additional weight can also change which tow vehicle you require.",
                 ].map(q => (
-                  <li key={q}><i className="bi bi-exclamation-circle-fill" style={{ color: "#b71c1c" }} /> {q}</li>
+                  <li key={q}><i className="bi bi-exclamation-circle-fill" style={{ color: "#ec7200" }} /> {q}</li>
                 ))}
               </ul>
               <div className="ort-td-tip">
@@ -476,12 +499,12 @@ export default function Home({ snapshot }: Props) {
 
           <div className="ort-td-hero ort-td-hero--reverse">
             <div className="ort-td-hero__img-col">
-              <Image src="/images/full-Off-Road.png" alt="Hybrid Off Road Caravans" width={480} height={320} className="ort-td-hero__img" unoptimized />
+              <Image src="/images/Hybrid-Off-Road.jpg" alt="Hybrid Off Road Caravans" width={480} height={320} className="ort-td-hero__img" unoptimized />
             </div>
             <div className="ort-td-hero__text">
               
-              <h2 className="ort-td-hero__h2">Hybrid Off Road <span className="ort-td-hero__h2-accent" style={{ color: "#6a1b9a" }}>Caravans</span></h2>
-              <div className="ort-td-hero__underline" style={{ background: "#6a1b9a" }} />
+              <h2 className="ort-td-hero__h2">Hybrid Off Road <span className="ort-td-hero__h2-accent" style={{ color: "#ec7200" }}>Caravans</span></h2>
+              <div className="ort-td-hero__underline" style={{ background: "#ec7200" }} />
               <p>A <strong>hybrid off road caravan</strong> combines characteristics of an off-road camper trailer with the hard-sided accommodation and amenities normally associated with a caravan.</p>
               <p>There is no single universal definition of a hybrid caravan. In practice, hybrids are generally more compact than conventional full-size caravans and are designed to provide strong off-road capability while reducing overall towing dimensions.</p>
               <p>Some use pop-top roofs, while others use full-height bodies. Kitchens may be internal, external or a combination of both.</p>
@@ -489,15 +512,15 @@ export default function Home({ snapshot }: Props) {
           </div>
 
           <div className="ort-td-card ort-td-card--split">
-            <div className="ort-td-card__left" style={{ background: "#f5f0fa" }}>
-              <div className="ort-td-card__icon-wrap" style={{ background: "#ece0f5", color: "#6a1b9a" }}><i className="bi bi-people-fill" /></div>
+            <div className="ort-td-card__left">
+              <div className="ort-td-card__icon-wrap" style={{ background: "#fff3e8", color: "#ec7200" }}><i className="bi bi-people-fill" /></div>
               <h3 className="ort-td-card__h3">Who Is a Hybrid Off Road Caravan Best For?</h3>
             </div>
             <div className="ort-td-card__right">
               <p className="ort-td-intro-bold">Hybrid caravans are particularly attractive to travellers who want:</p>
               <ul className="ort-check-list">
                 {["A shorter, more compact caravan", "Easier manoeuvrability on tight tracks", "A narrower towing profile", "Strong off-road capability", "Lower overall towing bulk", "Hard-sided accommodation with good off-grid systems"].map(item => (
-                  <li key={item}><i className="bi bi-check-circle-fill" style={{ color: "#6a1b9a" }} /> {item}</li>
+                  <li key={item}><i className="bi bi-check-circle-fill" style={{ color: "#ec7200" }} /> {item}</li>
                 ))}
               </ul>
               <p>They can work especially well for couples and smaller families who prioritise where they can travel over having maximum internal floor space.</p>
@@ -507,7 +530,7 @@ export default function Home({ snapshot }: Props) {
           <div className="ort-td-features">
             <h3 className="ort-td-features__h3">Typical Hybrid Off Road Features</h3>
             <div className="ort-td-feat-divider">
-              <span /><i className="bi bi-gear-fill" style={{ color: "#6a1b9a" }} /><span />
+              <span /><i className="bi bi-gear-fill" style={{ color: "#ec7200" }} /><span />
             </div>
             <p className="ort-td-features__intro">Depending on the model, a hybrid may include:</p>
             <div className="ort-td-feat-grid">
@@ -523,7 +546,7 @@ export default function Home({ snapshot }: Props) {
                 { img: "off_road_icon9.png",  label: "Protected Water Tanks" },
               ].map(f => (
                 <div key={f.label} className="ort-td-feat-item">
-                  <div className="ort-td-feat-icon" style={{ background: "#ece0f5" }}>
+                  <div className="ort-td-feat-icon">
                     <img src={`/images/${f.img}`} alt="" className="ort-td-feat-img" />
                   </div>
                   <span>{f.label}</span>
@@ -533,8 +556,8 @@ export default function Home({ snapshot }: Props) {
           </div>
 
           <div className="ort-td-card ort-td-card--split">
-            <div className="ort-td-card__left" style={{ background: "#f5f0fa" }}>
-              <div className="ort-td-card__icon-wrap" style={{ background: "#ece0f5", color: "#6a1b9a" }}><i className="bi bi-arrow-left-right" /></div>
+            <div className="ort-td-card__left">
+              <div className="ort-td-card__icon-wrap" style={{ background: "#fff3e8", color: "#ec7200" }}><i className="bi bi-arrow-left-right" /></div>
               <h3 className="ort-td-card__h3">What Are the Compromises?</h3>
             </div>
             <div className="ort-td-card__right">
@@ -547,7 +570,7 @@ export default function Home({ snapshot }: Props) {
                   "Additional setup steps with pop-top designs",
                   "Fewer large family layouts",
                 ].map(q => (
-                  <li key={q}><i className="bi bi-question-circle-fill" style={{ color: "#6a1b9a" }} /> {q}</li>
+                  <li key={q}><i className="bi bi-question-circle-fill" style={{ color: "#ec7200" }} /> {q}</li>
                 ))}
               </ul>
               <div className="ort-td-tip">
@@ -576,85 +599,69 @@ export default function Home({ snapshot }: Props) {
           <div className="ort-compare-grid">
 
             <div className="ort-compare-col">
-              <h3 className="ort-compare-col__title">
-                <span style={{ color: "#e53935" }}>Semi Off Road</span> vs <span style={{ color: "#2e7d32" }}>Full Off Road</span>
+              <h3 className="ort-cmp-title">
+                Semi Off Road vs Full Off Road Caravans
               </h3>
-              <table className="ort-compare-table">
+              
+              <p className="ort-cmp-intro">One of the most common questions Australian buyers ask is whether they actually need a full off road caravan. The answer depends mainly on where you intend to travel.</p>
+              <div className="ort-table-scroll">
+              <table className="ort-cmp-table">
                 <thead>
                   <tr>
-                    <th>Feature</th>
-                    <th style={{ color: "#e53935" }}>Semi Off Road</th>
-                    <th style={{ color: "#2e7d32" }}>Full Off Road</th>
+                    <th className="ort-cmp-th--feat">Feature</th>
+                    <th className="ort-cmp-th--col">Semi Off Road</th>
+                    <th className="ort-cmp-th--col">Full Off Road</th>
                   </tr>
                 </thead>
                 <tbody>
                   {SEMI_VS_FULL.map((r) => (
                     <tr key={r.feature}>
-                      <td>{r.feature}</td>
-                      <td>{r.semi}</td>
-                      <td>{r.full}</td>
+                      <td><span className="ort-cmp-feat">{r.feature}</span></td>
+                      <td><CmpCell v={r.semi} /></td>
+                      <td><CmpCell v={r.full} /></td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-              <a href="/listings/off-road-category/" className="ort-compare-link">
-                View All Off Road Caravans <i className="bi bi-arrow-right" />
-              </a>
+              </div>
+              <div className="ort-cmp-info ort-cmp-info--orange">
+                <i className="bi bi-info-circle ort-cmp-info__icon" />
+                <p>If most of your trips involve highways with occasional gravel-road access to campsites, a <strong>semi off road caravan</strong> may be all you need.</p>
+              </div>
+              <div className="ort-cmp-info ort-cmp-info--blue">
+                <i className="bi bi-info-circle ort-cmp-info__icon" />
+                <p>If your travel plans regularly include long corrugated routes, remote touring and extended periods away from services, a <strong>full off road caravan</strong> is likely to provide a more appropriate starting point.</p>
+              </div>
             </div>
 
-            <div className="ort-compare-col">
-              <h3 className="ort-compare-col__title">
-                <span style={{ color: "#2e7d32" }}>Full Off Road</span> vs <span style={{ color: "#6a1b9a" }}>Hybrid Off Road</span>
-              </h3>
-              <table className="ort-compare-table">
-                <thead>
-                  <tr>
-                    <th>Feature</th>
-                    <th style={{ color: "#2e7d32" }}>Full Off Road</th>
-                    <th style={{ color: "#6a1b9a" }}>Hybrid Off Road</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {FULL_VS_HYBRID.map((r) => (
-                    <tr key={r.feature}>
-                      <td>{r.feature}</td>
-                      <td>{r.full}</td>
-                      <td>{r.hybrid}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              <a href="/listings/off-road-category/" className="ort-compare-link">
-                View All Off Road Caravans <i className="bi bi-arrow-right" />
-              </a>
+            <div className="ort-compare-col mt-5">
+              <h3 className="ort-cmp-title">Full Off Road vs Hybrid Off Road Caravans</h3>
+              
+              <p className="ort-cmp-intro">A full off road caravan and a hybrid caravan can both be highly capable away from sealed roads, but they generally prioritise different things.</p>
+              <div className="ort-cmp-cols">
+                <div className="ort-cmp-col-block">
+                  <div className="ort-cmp-col-block__hd ort-cmp-col-block__hd--dark">Full Off Road typically provides more:</div>
+                  <ul className="ort-cmp-col-block__list">
+                    {["Internal living space", "Storage", "Larger kitchens", "Larger bathrooms", "Family-friendly layouts", "Residential-style comfort"].map(i => <li key={i}><i className="bi bi-check-lg" />{i}</li>)}
+                  </ul>
+                </div>
+                <div className="ort-cmp-col-block">
+                  <div className="ort-cmp-col-block__hd ort-cmp-col-block__hd--orange">Hybrid Off Road typically prioritises:</div>
+                  <ul className="ort-cmp-col-block__list">
+                    {["Shorter dimensions", "Lower towing profile", "Manoeuvrability", "Access to tighter campsites", "Potentially lower towing weight", "Compact remote touring"].map(i => <li key={i}><i className="bi bi-check-lg" />{i}</li>)}
+                  </ul>
+                </div>
+              </div>
+              <div className="ort-cmp-info ort-cmp-info--orange">
+                <i className="bi bi-info-circle ort-cmp-info__icon" />
+                <p>Neither is automatically more capable.</p>
+              </div>
+              <div className="ort-cmp-info ort-cmp-info--blue">
+                <i className="bi bi-info-circle ort-cmp-info__icon" />
+                <p>The better choice depends on the individual caravan&rsquo;s engineering and whether you value <strong>internal comfort or compact mobility</strong> more highly.</p>
+              </div>
             </div>
 
-            <div className="ort-compare-col">
-              <h3 className="ort-compare-col__title">Typical Terrain Suitability</h3>
-              <table className="ort-compare-table ort-terrain-table">
-                <thead>
-                  <tr>
-                    <th>Terrain</th>
-                    <th>Semi</th>
-                    <th>Full</th>
-                    <th>Extreme</th>
-                    <th>Hybrid</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {TERRAIN.map((r) => (
-                    <tr key={r.terrain}>
-                      <td>{r.terrain}</td>
-                      <td className={terrainClass(r.semi)}>{r.semi}</td>
-                      <td className={terrainClass(r.full)}>{r.full}</td>
-                      <td className={terrainClass(r.extreme)}>{r.extreme}</td>
-                      <td className={terrainClass(r.hybrid)}>{r.hybrid}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              <p className="ort-terrain-legend">✓ Well Suited &nbsp;&nbsp;~ Limited/Model Dependent &nbsp;&nbsp;– Not Recommended</p>
-            </div>
 
           </div>
         </div>
@@ -668,46 +675,46 @@ export default function Home({ snapshot }: Props) {
           <div className="ort-makes-grid">
 
             <div className="ort-makes-card">
-              <div className="ort-makes-card__icon"><i className="bi bi-tools" /></div>
+              <div className="ort-makes-card__icon"><img src="/images/off_road_icon1.png" alt="" className="ort-makes-img-icon" /></div>
               <h3 className="ort-makes-card__title">Chassis &amp; Construction</h3>
               <p>The chassis forms the structural foundation of the caravan. Off-road caravans commonly use chassis designed to handle increased loads and repeated vibration associated with rough-road travel.</p>
               <p>When comparing caravans, consider: chassis material, dimensions, reinforcement, A-frame construction, body construction, mounting method and protection against corrosion.</p>
-              <p className="ort-makes-card__note">Do not assume the heaviest chassis is automatically the best. Good engineering balances structural strength with overall caravan weight.</p>
+              <p className="ort-makes-card__note"><i className="bi bi-shield-check ort-makes-card__note-icon" />Do not assume the heaviest chassis is automatically the best. Good engineering balances structural strength with overall caravan weight.</p>
             </div>
 
             <div className="ort-makes-card">
-              <div className="ort-makes-card__icon"><i className="bi bi-arrows-vertical" /></div>
+              <div className="ort-makes-card__icon"><img src="/images/off_road_icon2.png" alt="" className="ort-makes-img-icon" /></div>
               <h3 className="ort-makes-card__title">Suspension</h3>
               <p>Suspension is one of the most important differences between touring and off-road caravans. Systems may include leaf springs, independent coil suspension, independent airbag suspension and trailing-arm systems.</p>
               <p>Independent suspension can provide greater wheel movement over uneven surfaces and allow each wheel to react independently.</p>
-              <p className="ort-makes-card__note">Suspension should never be assessed in isolation. Its rating, geometry, shock absorbers, brakes, tyres and chassis must work together.</p>
+              <p className="ort-makes-card__note"><i className="bi bi-shield-check ort-makes-card__note-icon" />Suspension should never be assessed in isolation. Its rating, geometry, shock absorbers, brakes, tyres and chassis must work together.</p>
             </div>
 
             <div className="ort-makes-card">
-              <div className="ort-makes-card__icon"><i className="bi bi-arrow-down-up" /></div>
+              <div className="ort-makes-card__icon"><img src="/images/off_road_icon7.png" alt="" className="ort-makes-img-icon" /></div>
               <h3 className="ort-makes-card__title">Ground Clearance</h3>
               <p>Ground clearance helps protect vulnerable components when travelling over uneven terrain. Look carefully at the lowest points underneath the caravan, including water tanks, plumbing, steps, spare-wheel mounts, suspension components and stabilisers.</p>
-              <p className="ort-makes-card__note">A caravan may appear tall while still having vulnerable components mounted relatively low.</p>
+              <p className="ort-makes-card__note"><i className="bi bi-shield-check ort-makes-card__note-icon" />A caravan may appear tall while still having vulnerable components mounted relatively low.</p>
             </div>
 
             <div className="ort-makes-card">
-              <div className="ort-makes-card__icon"><i className="bi bi-link-45deg" /></div>
+              <div className="ort-makes-card__icon"><img src="/images/off_road_icon8.png" alt="" className="ort-makes-img-icon" /></div>
               <h3 className="ort-makes-card__title">Off Road Coupling</h3>
               <p>An off-road articulation coupling is designed to allow greater movement between the caravan and tow vehicle than a conventional ball coupling. This becomes particularly important when the tow vehicle and caravan are travelling across uneven terrain at different angles.</p>
-              <p className="ort-makes-card__note">Check both the coupling type and its rated capacity.</p>
+              <p className="ort-makes-card__note"><i className="bi bi-shield-check ort-makes-card__note-icon" />Check both the coupling type and its rated capacity.</p>
             </div>
 
             <div className="ort-makes-card">
-              <div className="ort-makes-card__icon"><i className="bi bi-circle" /></div>
+              <div className="ort-makes-card__icon"><img src="/images/off_road_icon4.png" alt="" className="ort-makes-img-icon" /></div>
               <h3 className="ort-makes-card__title">Tyres &amp; Wheels</h3>
               <p>Off-road caravans commonly use stronger tyres with increased sidewall height and tread designed for unsealed surfaces. Check tyre load rating, wheel size, spare-wheel availability, compatibility with the tow vehicle where relevant and accessibility of replacements in remote areas.</p>
             </div>
 
             <div className="ort-makes-card">
-              <div className="ort-makes-card__icon"><i className="bi bi-shield-check" /></div>
+              <div className="ort-makes-card__icon"><img src="/images/off_road_icon6.png" alt="" className="ort-makes-img-icon" /></div>
               <h3 className="ort-makes-card__title">Dust &amp; Water Protection</h3>
               <p>Dust ingress can become a significant issue during extended travel on dry, corrugated roads. Look for quality door and hatch seals, protected vents, pressurisation or dust-reduction systems, protected plumbing, protected water tanks and sealed electrical components.</p>
-              <p className="ort-makes-card__note">Water crossings require additional care because the capability and permitted use of individual caravans varies substantially.</p>
+              <p className="ort-makes-card__note"><i className="bi bi-shield-check ort-makes-card__note-icon" />Water crossings require additional care because the capability and permitted use of individual caravans varies substantially.</p>
             </div>
 
           </div>
@@ -722,19 +729,19 @@ export default function Home({ snapshot }: Props) {
           <div className="ort-weight-grid">
 
             <div className="ort-weight-card">
-              <h3 className="ort-weight-card__title"><i className="bi bi-speedometer2" /> What Is Aggregate Trailer Mass?</h3>
+              <h3 className="ort-weight-card__title">What Is Aggregate Trailer Mass?</h3>
               <p><strong>Aggregate Trailer Mass (ATM)</strong> is the maximum permitted mass of the fully loaded caravan when it is not connected to the tow vehicle.</p>
               <p>Your caravan must remain within its ATM when loaded for travel.</p>
             </div>
 
             <div className="ort-weight-card">
-              <h3 className="ort-weight-card__title"><i className="bi bi-box-seam" /> What Is Caravan Payload?</h3>
+              <h3 className="ort-weight-card__title">What Is Caravan Payload?</h3>
               <p>Payload is broadly the amount of weight available for your belongings and equipment after accounting for the caravan&rsquo;s base tare mass. This can be consumed quickly by water, batteries, solar upgrades, additional gas bottles, tools, generators, food, clothing, bikes and camping equipment.</p>
               <p>Remote touring often requires carrying more equipment, which makes payload particularly important when comparing off road caravans.</p>
             </div>
 
             <div className="ort-weight-card">
-              <h3 className="ort-weight-card__title"><i className="bi bi-truck" /> Match the Caravan to Your Tow Vehicle</h3>
+              <h3 className="ort-weight-card__title">Match the Caravan to Your Tow Vehicle</h3>
               <p>Never choose a caravan based only on the tow vehicle manufacturer&rsquo;s headline towing-capacity figure. You also need to consider the complete combination, including applicable towing capacity, tow-ball capacity, Gross Vehicle Mass, axle limits, Gross Combination Mass, caravan ATM and actual loaded weights.</p>
               <p>If you are uncertain, have the proposed vehicle and caravan combination professionally assessed before purchasing.</p>
             </div>
@@ -786,40 +793,40 @@ export default function Home({ snapshot }: Props) {
           <p className="ort-section-subtitle text-center mb-5">The best off road caravan is not necessarily the caravan with the highest specification. It is the caravan that matches your <strong>actual travel plans</strong>.</p>
           <div className="ort-chooser-grid">
 
-            <div className="ort-chooser-card" style={{ borderTopColor: "#e53935" }}>
-              <div className="ort-chooser-card__type" style={{ color: "#e53935" }}>
-                <Image src="/images/Semi-Off-Road.png" alt="Semi Off Road" width={60} height={40} unoptimized className="ort-chooser-card__img" />
-                Choose a Semi Off Road Caravan if&hellip;
+            <div className="ort-chooser-card" style={{ borderTopColor: "#ec7200" }}>
+              <div className="ort-chooser-card__type" style={{ color: "#000000" }}>
+                <Image src="/images/Full-Off-Road.png" alt="Semi Off Road" width={60} height={40} unoptimized className="ort-chooser-card__img" />
+                Choose a Semi Off Road Caravan if:
               </div>
               <p>Your trips are mainly on sealed roads with occasional gravel, maintained dirt roads and accessible bush camps.</p>
-              <a href="#semi-off-road" className="ort-chooser-card__link">Learn about Semi Off Road <i className="bi bi-arrow-right" /></a>
+              
             </div>
 
-            <div className="ort-chooser-card" style={{ borderTopColor: "#2e7d32" }}>
-              <div className="ort-chooser-card__type" style={{ color: "#2e7d32" }}>
+            <div className="ort-chooser-card" style={{ borderTopColor: "#ec7200" }}>
+              <div className="ort-chooser-card__type" style={{ color: "#000000" }}>
                 <Image src="/images/Full-Off-Road.png" alt="Full Off Road" width={60} height={40} unoptimized className="ort-chooser-card__img" />
-                Choose a Full Off Road Caravan if&hellip;
+                Choose a Full Off Road Caravan if:
               </div>
               <p>You expect regular travel on corrugated and rough unsealed roads and want greater durability and off-grid capability.</p>
-              <a href="#full-off-road" className="ort-chooser-card__link">Learn about Full Off Road <i className="bi bi-arrow-right" /></a>
+              
             </div>
 
-            <div className="ort-chooser-card" style={{ borderTopColor: "#b71c1c" }}>
-              <div className="ort-chooser-card__type" style={{ color: "#b71c1c" }}>
-                <Image src="/images/full-Off-Road.png" alt="Extreme Off Road" width={60} height={40} unoptimized className="ort-chooser-card__img" />
-                Choose an Extreme Off Road Caravan if&hellip;
+            <div className="ort-chooser-card" style={{ borderTopColor: "#ec7200" }}>
+              <div className="ort-chooser-card__type" style={{ color: "#000000" }}>
+                <Image src="/images/Full-Off-Road.png" alt="Extreme Off Road" width={60} height={40} unoptimized className="ort-chooser-card__img" />
+                Choose an Extreme Off Road Caravan if:
               </div>
               <p>Remote and demanding touring forms a major part of your travel plans and you require substantial payload, power, water and protection.</p>
-              <a href="#extreme-off-road" className="ort-chooser-card__link">Learn about Extreme Off Road <i className="bi bi-arrow-right" /></a>
+              
             </div>
 
-            <div className="ort-chooser-card" style={{ borderTopColor: "#6a1b9a" }}>
-              <div className="ort-chooser-card__type" style={{ color: "#6a1b9a" }}>
-                <Image src="/images/Hybrid-Off-Road.png" alt="Hybrid Off Road" width={60} height={40} unoptimized className="ort-chooser-card__img" />
-                Choose a Hybrid Off Road Caravan if&hellip;
+            <div className="ort-chooser-card" style={{ borderTopColor: "#ec7200" }}>
+              <div className="ort-chooser-card__type" style={{ color: "#000000" }}>
+                <Image src="/images/Full-Off-Road.png" alt="Hybrid Off Road" width={60} height={40} unoptimized className="ort-chooser-card__img" />
+                Choose a Hybrid Off Road Caravan if:
               </div>
               <p>You want strong off-road capability in a more compact package and are prepared to trade some internal living space for easier manoeuvrability.</p>
-              <a href="#hybrid-off-road" className="ort-chooser-card__link">Learn about Hybrid Off Road <i className="bi bi-arrow-right" /></a>
+              
             </div>
 
           </div>
@@ -856,7 +863,7 @@ export default function Home({ snapshot }: Props) {
               "Is your tow vehicle suitable when both vehicle and caravan are fully loaded?",
             ].map((q, i) => (
               <div key={i} className="ort-checklist-item">
-                <span className="ort-checklist-item__num">{i + 1}</span>
+                <span className="ort-checklist-item__num"><i className="bi bi-question-lg" /></span>
                 <span className="ort-checklist-item__q">{q}</span>
               </div>
             ))}
@@ -871,51 +878,47 @@ export default function Home({ snapshot }: Props) {
           <h2 className="ort-section-title text-center mb-2">Australian Off Road Caravan Market Snapshot</h2>
           <div className="ort-snapshot-grid">
             <div className="ort-snapshot-stat">
-              <span className="ort-snapshot-icon"><i className="bi bi-truck" /></span>
+              <div className="ort-snapshot-icon"><img src="/images/caravan_black.png" alt="" className="ort-snapshot-img-icon" /></div>
               <span className="ort-snapshot-val">{fmtNum(total_count) ?? "3,224+"}</span>
               <span className="ort-snapshot-label">Off Road Caravans Listed</span>
             </div>
             <div className="ort-snapshot-stat">
-              <span className="ort-snapshot-icon ort-snapshot-icon--new">
-                <span className="ort-badge-tag">NEW</span>
-              </span>
+              <div className="ort-snapshot-icon"><img src="/images/caravan_black.png" alt="" className="ort-snapshot-img-icon" /></div>
               <span className="ort-snapshot-val">{fmtNum(new_count) ?? "2,584"}</span>
               <span className="ort-snapshot-label">New Off Road Caravans</span>
             </div>
             <div className="ort-snapshot-stat">
-              <span className="ort-snapshot-icon ort-snapshot-icon--used">
-                <span className="ort-badge-tag">USED</span>
-              </span>
+              <div className="ort-snapshot-icon"><img src="/images/caravan_black.png" alt="" className="ort-snapshot-img-icon" /></div>
               <span className="ort-snapshot-val">{fmtNum(used_count) ?? "616"}</span>
               <span className="ort-snapshot-label">Used Off Road Caravans</span>
             </div>
             <div className="ort-snapshot-stat">
-              <span className="ort-snapshot-icon"><i className="bi bi-currency-dollar" /></span>
+              <div className="ort-snapshot-icon"><img src="/images/good.png" alt="" className="ort-snapshot-img-icon" /></div>
               <span className="ort-snapshot-val">{medianAdv > 0 ? `$${medianAdv.toLocaleString()}` : "$78,500"}</span>
               <span className="ort-snapshot-label">Median Advertised Price</span>
             </div>
             <div className="ort-snapshot-stat">
-              <span className="ort-snapshot-icon"><i className="bi bi-currency-dollar" /></span>
+              <div className="ort-snapshot-icon"><img src="/images/dollar_au.png" alt="" className="ort-snapshot-img-icon" /></div>
               <span className="ort-snapshot-val">{fmtNum(new_price_median, "$") ?? "$110,900"}</span>
               <span className="ort-snapshot-label">Median New Price</span>
             </div>
             <div className="ort-snapshot-stat">
-              <span className="ort-snapshot-icon"><i className="bi bi-currency-dollar" /></span>
+              <div className="ort-snapshot-icon"><img src="/images/dollar_au.png" alt="" className="ort-snapshot-img-icon" /></div>
               <span className="ort-snapshot-val">{fmtNum(used_price_median, "$") ?? "$59,900"}</span>
               <span className="ort-snapshot-label">Median Used Price</span>
             </div>
             <div className="ort-snapshot-stat">
-              <span className="ort-snapshot-icon"><i className="bi bi-rulers" /></span>
+              <div className="ort-snapshot-icon"><img src="/images/ruler.png" alt="" className="ort-snapshot-img-icon" /></div>
               <span className="ort-snapshot-val">19ft</span>
               <span className="ort-snapshot-label">Most Common Length</span>
             </div>
             <div className="ort-snapshot-stat">
-              <span className="ort-snapshot-icon"><i className="bi bi-speedometer2" /></span>
+              <div className="ort-snapshot-icon"><img src="/images/weight.png" alt="" className="ort-snapshot-img-icon" /></div>
               <span className="ort-snapshot-val">2,500kg</span>
               <span className="ort-snapshot-label">Median ATM</span>
             </div>
             <div className="ort-snapshot-stat">
-              <span className="ort-snapshot-icon"><i className="bi bi-people-fill" /></span>
+              <div className="ort-snapshot-icon"><img src="/images/double.png" alt="" className="ort-snapshot-img-icon" /></div>
               <span className="ort-snapshot-val">2–4 Berth</span>
               <span className="ort-snapshot-label">Most Common Sleeping</span>
             </div>
@@ -925,32 +928,33 @@ export default function Home({ snapshot }: Props) {
           </p>
           <div className="ort-snapshot-btns">
             <a href="/listings/new-condition/off-road-category/" className="ort-btn ort-btn--primary">Browse New Off Road Caravans <i className="bi bi-arrow-right" /></a>
-            <a href="/listings/used-condition/off-road-category/" className="ort-btn ort-btn--secondary">Browse Used Off Road Caravans <i className="bi bi-arrow-right" /></a>
-            <a href="/listings/off-road-category/" className="ort-btn ort-btn--dark">View All Off Road Caravans for Sale <i className="bi bi-arrow-right" /></a>
+            <a href="/listings/used-condition/off-road-category/" className="ort-btn ort-btn--primary">Browse Used Off Road Caravans <i className="bi bi-arrow-right" /></a>
+            <a href="/listings/off-road-category/" className="ort-btn ort-btn--primary">View All Off Road Caravans for Sale <i className="bi bi-arrow-right" /></a>
           </div>
         </div>
       </section>
 
       {/* ── Explore More Guides ── */}
-      <section className="ort-guides section-padding" style={{ background: "#f6f7fb" }}>
-        <div className="container">
-          <h2 className="ort-section-title text-center mb-4">Explore More Off Road Caravan Guides</h2>
-          <div className="ort-guides-grid">
-            {GUIDES.map((g) => (
-              <a key={g.title} href={g.href} className="ort-guide-card">
-                <div className="ort-guide-card__img-wrap">
-                  <Image src={g.img} alt={g.title} width={300} height={180} className="ort-guide-card__img" unoptimized />
-                </div>
-                <div className="ort-guide-card__body">
-                  <h3 className="ort-guide-card__title">{g.title}</h3>
-                  <p className="ort-guide-card__desc">{g.desc}</p>
-                  <span className="ort-learn-more">Read Guide <i className="bi bi-arrow-right" /></span>
-                </div>
-              </a>
-            ))}
+      {popularBlogs.length > 0 && (
+        <section className="or-pop-guides">
+          <div className="container">
+            <h2 className="or-section-title">Explore More Off Road Caravan Guides</h2>
+            <div className="or-pop-guides__grid">
+              {popularBlogs.slice(0, 10).map((b: any) => (
+                <a key={b.id} href={`/${b.slug}/`} className="or-pop-guides__card">
+                  <div className="or-pop-guides__img-wrap">
+                    <img src={b.image || "/images/download.svg"} alt={b.title} className="or-pop-guides__img" loading="lazy" onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/images/download.svg"; }} />
+                  </div>
+                  <div className="or-pop-guides__body">
+                    <h3 className="or-pop-guides__title">{b.title}</h3>
+                    {b.excerpt && <p className="or-pop-guides__desc">{stripHtml(b.excerpt)}</p>}
+                  </div>
+                </a>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* ── FAQ ── */}
       <section className="ort-faq section-padding">
@@ -970,16 +974,27 @@ export default function Home({ snapshot }: Props) {
       {/* ── CTA Banner ── */}
       <section className="ort-cta-banner">
         <div className="container">
-          <div className="ort-cta-banner__inner">
-            <div className="ort-cta-banner__text">
-              <h2 className="ort-cta-banner__title">Ready to Find Your Off Road Caravan?</h2>
-              <p className="ort-cta-banner__desc">
-                Now that you understand the differences between types of off road caravans, start exploring new and used caravans from dealers and private sellers across Australia.
-              </p>
+          <div className="ort-cta-banner__card">
+            <div className="ort-cta-banner__left">
+              <div className="ort-cta-banner__icon-wrap">
+                <div className="ort-cta-banner__icon-ring" />
+                <div className="ort-cta-banner__icon-circle">
+                  <img src="/images/category.svg" alt="" className="ort-cta-banner__svg-icon" />
+                </div>
+              </div>
+              <div className="ort-cta-banner__text">
+                <h2 className="ort-cta-banner__title">Ready to <span className="ort-cta-banner__title-accent">Find Your</span><br />Off Road Caravan?</h2>
+                <p className="ort-cta-banner__desc">Now that you understand the different types of off road caravans, start exploring new and used caravans from dealers and private sellers across Australia.</p>
+              </div>
             </div>
+            <div className="ort-cta-banner__divider" />
             <div className="ort-cta-banner__btns">
-              <a href="/listings/off-road-category/" className="ort-btn ort-btn--primary">Browse Off Road Caravans <i className="bi bi-arrow-right" /></a>
-              <a href="/off-road-caravans/" className="ort-btn ort-btn--white">Back to Off Road Caravans Hub <i className="bi bi-arrow-right" /></a>
+              <a href="/listings/off-road-category/" className="ort-btn ort-btn--cta-outline">
+                 Browse Off Road Caravans <i className="bi bi-arrow-right" />
+              </a>
+              <a href="/off-road-caravans/" className="ort-btn ort-btn--cta-outline">
+                 Back to Off Road Caravans Hub <i className="bi bi-arrow-right" />
+              </a>
             </div>
           </div>
         </div>
