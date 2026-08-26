@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import "./main.css";
 import type { MarketReportData, TrendPoint } from "./page";
 
@@ -106,19 +106,7 @@ function LineChart({ data }: { data: TrendPoint[] }) {
   );
 }
 
-/* ── FAQ accordion ── */
-const FAQS = [
-  { q: "How much does an off road caravan cost in Australia?",        a: "All prices shown are advertised asking prices from active marketplace listings on CaravansForSale.com.au. The median figures shown above represent the midpoint of current inventory and may not reflect the price of an individual caravan. Actual sale prices may differ." },
-  { q: "Which state has the most off road caravans for sale?",        a: "The state breakdown table above shows current inventory by state. Victoria typically has the largest share of Australian off road caravan listings, followed by New South Wales and Queensland." },
-  { q: "What is the most common off road caravan size?",              a: "The 18–20ft range is consistently one of the most common size categories in Australian off road caravan inventory, making it the most widely represented size class in current listings." },
-  { q: "What is ATM and why does it matter for off road caravans?",   a: "ATM means Aggregate Trailer Mass — the maximum allowable laden weight of the caravan as rated by the manufacturer. ATM is a key figure when determining whether a tow vehicle is rated to tow a specific caravan. Always check a caravan's ATM against your tow vehicle's rated capacity before purchasing." },
-  { q: "Are the prices in this report actual sale prices?",           a: "No. All prices shown are advertised asking prices from active marketplace listings. The final amount paid by a buyer may differ from the advertised asking price." },
-  { q: "How often is the Off Road Caravan Market Report updated?",    a: "This report is refreshed regularly using active CaravansForSale.com.au marketplace data. The exact data snapshot date is noted at the top of the page." },
-  { q: "Which off road caravan brands have the most listings?",       a: "The top brands by active inventory are listed in the brands table above. This measures marketplace availability on CaravansForSale.com.au rather than national manufacturer sales or industry ranking." },
-  { q: "Are new or used off road caravans more common on the market?","a": "The new vs used breakdown at the top of this page shows the current split. In general, the Australian marketplace has a roughly even split between new and used off road caravan inventory." },
-];
-
-function FaqItem({ q, a }: { q: string; a: string }) {
+function FaqItem({ q, a }: { q: string; a: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   return (
     <div className={`omr-faq-item${open ? " omr-faq-item--open" : ""}`} onClick={() => setOpen(!open)}>
@@ -142,6 +130,49 @@ export default function Home({ data }: Props) {
   const topState  = states.length > 0 ? states[0] : null;
   const topBrands = brands.slice(0, 3).map(b => b.brand).filter(Boolean).join(", ");
   const atmAbove3k = atms.find(a => a.range.includes("3,000") || a.range.includes("3000"));
+
+  const FAQS: { q: string; a: React.ReactNode }[] = [
+    {
+      q: "How much does an off road caravan cost in Australia?",
+      a: <>The current median advertised asking price for off road caravans listed on CaravansForSale.com.au is <strong>{fmtAUD(median_price)}</strong>. New caravans have a median advertised price of <strong>{fmtAUD(new_price_median)}</strong>, compared with <strong>{fmtAUD(used_price_median)}</strong> for used caravans. Individual prices vary considerably according to size, age, manufacturer, condition and specification.</>,
+    },
+    {
+      q: "What is the average price of a new off road caravan?",
+      a: <>Rather than relying primarily on an average, this report uses the <strong>median advertised asking price</strong>, which is less affected by unusually expensive or inexpensive listings. The current median new off road caravan asking price is <strong>{fmtAUD(new_price_median)}</strong>.</>,
+    },
+    {
+      q: "What is the average price of a used off road caravan?",
+      a: <>The current median advertised asking price for used off road caravans is <strong>{fmtAUD(used_price_median)}</strong>, based on active listings containing valid numeric prices.</>,
+    },
+    {
+      q: "Which state has the most off road caravans for sale?",
+      a: <>At the latest marketplace snapshot, <strong>{topState ? topState.state : "—"}</strong> has the largest number of off road caravans advertised on CaravansForSale.com.au, with <strong>{topState ? fmt(topState.count) : "—"}</strong> listings.</>,
+    },
+    {
+      q: "What is the most common off road caravan size?",
+      a: <>The most commonly advertised size category is currently <strong>{lengths.length > 0 ? lengths[0].range : "—"}</strong>, representing approximately <strong>{lengths.length > 0 && lengths[0].share > 0 ? fmtPct(lengths[0].share) : "—"}</strong> of listings with valid length information.</>,
+    },
+    {
+      q: "What is the typical ATM of an off road caravan?",
+      a: <>The median recorded ATM among current listings with valid ATM information is <strong>{fmtKg(snapshot.median_atm)}</strong>. Actual ATM varies considerably between compact off road caravans and larger tandem-axle models.</>,
+    },
+    {
+      q: "Are new or used off road caravans more common?",
+      a: <>New caravans currently represent <strong>{newShare}%</strong> of classified off road inventory, compared with <strong>{usedShare}%</strong> for used caravans.</>,
+    },
+    {
+      q: "Which off road caravan brands have the most listings?",
+      a: <>The brands with the largest current active inventory are <strong>{brands[0]?.brand || "—"}</strong>, <strong>{brands[1]?.brand || "—"}</strong> and <strong>{brands[2]?.brand || "—"}</strong>. This measures marketplace availability on CaravansForSale.com.au rather than national manufacturer sales.</>,
+    },
+    {
+      q: "Are the prices in this report actual sale prices?",
+      a: <>No. Prices in this report are <strong>advertised asking prices</strong> from active marketplace listings. The final amount paid by a buyer may be different.</>,
+    },
+    {
+      q: "How often is the Off Road Caravan Market Report updated?",
+      a: "The report is refreshed regularly using active CaravansForSale.com.au marketplace data. The exact data snapshot and last-updated date are displayed at the top of the page.",
+    },
+  ];
 
   const KEY_TAKEAWAYS = [
     total_count > 0 && {
@@ -179,8 +210,7 @@ export default function Home({ data }: Props) {
           <div className="omr-hero__inner">
             <div className="omr-hero__content">
 <h1 className="omr-hero__title">
-                Australian Off Road Caravan<br />
-                <span className="omr-hero__title--main">Market Report 2026</span>
+                Australian Off Road Caravan <span className="omr-hero__title--main"> Market Report 2026</span>
               </h1>
               <p className="omr-hero__intel">CaravansForSale.com.au Marketplace Intelligence</p>
               
@@ -285,14 +315,20 @@ export default function Home({ data }: Props) {
       {/* ── Australia's Caravan Market Context ── */}
       <section className="omr-market-context">
         <div className="container">
-          <h2 className="omr-section-title">Australia&apos;s Caravan Market in 2026</h2>
           <div className="omr-context-grid">
+            {/* Left 25%: image */}
+            <div className="omr-context-img-col">
+              <img src="/images/off-road-caravan-market-report-bg.jpg" alt="Off Road Caravan" className="omr-context-img" />
+            </div>
+            {/* Middle 50%: heading + text */}
             <div className="omr-context-text">
+              <h2 className="omr-section-title">Australia&apos;s Caravan Market in 2026</h2>
               <p>Off road caravans form part of a substantial Australian caravan and camping market.</p>
               <p>Australians took <strong>17.3 million domestic caravan and camping trips during 2025</strong>, generating 57.9 million visitor nights and approximately <strong>$12.6 billion in expenditure</strong>. Regional Australia remains particularly important, with 87% of caravan and camping trips occurring in regional areas.</p>
               <p>Australia also continues to manufacture a substantial number of recreational vehicles. Australian manufacturers produced <strong>23,963 RVs during 2025</strong>, with towable vehicles accounting for 96% of production. Caravan production reached <strong>18,438 units</strong>, an increase of 7.3% from the previous year.</p>
               <p>These figures describe Australia&apos;s broader caravan and camping industry. The statistics throughout the remainder of this report relate specifically to <strong>off road caravan advertisements appearing on CaravansForSale.com.au</strong>.</p>
             </div>
+            {/* Right 25%: key points */}
             <div className="omr-context-stats">
               {[
                 { icon: "bi-people",          val: "17.3M+",     label: "Overnight caravan trips taken in Australia each year" },
@@ -321,12 +357,12 @@ export default function Home({ data }: Props) {
             <div className="omr-supply-left">
               <div className="omr-supply-heading-row">
                 <div className="omr-supply-hero-icon">
-                  <img src="/images/caravan_black.png" alt="" />
+                  <img src="/images/caravan.png" alt="" />
                 </div>
                 <h2 className="omr-supply-heading">
                   How Many Off Road Caravans Are for Sale
                   <span className="omr-supply-heading--orange">in Australia?</span>
-                  <span className="omr-supply-heading__underline" />
+                  
                 </h2>
               </div>
               {total_count > 0 ? (
@@ -334,24 +370,23 @@ export default function Home({ data }: Props) {
                   <p className="omr-supply-intro">
                     At the latest marketplace snapshot, there are{" "}
                     <span className="omr-supply-count">{fmt(total_count)}</span>{" "}
-                    active off road caravan advertisements on{" "}
-                    <a href="/" className="omr-supply-link">CaravansForSale.com.au</a>.
+                    active off road caravan advertisements on CaravansForSale.com.au
                   </p>
                   <p className="omr-supply-of-these">Of these:</p>
                   <div className="omr-supply-stats">
                     <div className="omr-supply-stat">
-                      <div className="omr-supply-stat__icon omr-supply-stat__icon--new"><i className="bi bi-tag-fill" /></div>
+                      <div className="omr-supply-stat__icon omr-supply-stat__icon--new"><img src="/images/caravan_black.png" className="omr-supply-stat-img omr-supply-stat-img--white" alt="" /></div>
                       <span className="omr-supply-stat__num">{fmt(new_count)}</span>
                       <span className="omr-supply-stat__label">are new</span>
                     </div>
                     <div className="omr-supply-stat">
-                      <div className="omr-supply-stat__icon omr-supply-stat__icon--used"><i className="bi bi-truck" /></div>
+                      <div className="omr-supply-stat__icon omr-supply-stat__icon--used"><img src="/images/caravan_black.png" className="omr-supply-stat-img omr-supply-stat-img--white" alt="" /></div>
                       <span className="omr-supply-stat__num">{fmt(used_count)}</span>
                       <span className="omr-supply-stat__label">are used</span>
                     </div>
                     {total_count - new_count - used_count > 0 && (
                       <div className="omr-supply-stat">
-                        <div className="omr-supply-stat__icon omr-supply-stat__icon--other"><i className="bi bi-question-circle" /></div>
+                        <div className="omr-supply-stat__icon omr-supply-stat__icon--other"><img src="/images/caravan_black.png" className="omr-supply-stat-img omr-supply-stat-img--orange" alt="" /></div>
                         <span className="omr-supply-stat__num">{fmt(total_count - new_count - used_count)}</span>
                         <span className="omr-supply-stat__label">have another or unspecified condition</span>
                       </div>
@@ -427,30 +462,34 @@ export default function Home({ data }: Props) {
             {/* New vs Used donut */}
             <div className="omr-chart-box">
               <h3 className="omr-chart-title">New vs Used Off Road Caravan Inventory</h3>
-              <div className="omr-donut-wrap">
+              <div className="omr-donut-wrap omr-donut-wrap--row">
                 <DonutChart segments={[
                   { value: new_count,  color: "#ec7200", label: "New"  },
-                  { value: used_count, color: "#1e293b", label: "Used" },
+                  { value: used_count, color: "#232323", label: "Used" },
                 ]} />
                 <div className="omr-donut-legend">
                   <div className="omr-donut-legend__item">
                     <span className="omr-donut-legend__dot" style={{ background: "#ec7200" }} />
-                    <span>New {fmt(new_count)} ({newShare}%)</span>
+                    <span className="omr-donut-legend__label">New</span>
+                    <span className="omr-donut-legend__count">{fmt(new_count)}</span>
+                    <span className="omr-donut-legend__pct">({newShare}%)</span>
                   </div>
                   <div className="omr-donut-legend__item">
                     <span className="omr-donut-legend__dot" style={{ background: "#1e293b" }} />
-                    <span>Used {fmt(used_count)} ({usedShare}%)</span>
+                    <span className="omr-donut-legend__label">Used</span>
+                    <span className="omr-donut-legend__count">{fmt(used_count)}</span>
+                    <span className="omr-donut-legend__pct">({usedShare}%)</span>
                   </div>
                   <div className="omr-donut-legend__item">
                     <span className="omr-donut-legend__dot" style={{ background: "#ccc" }} />
-                    <span>Other/Unknown 0 (0.0%)</span>
+                    <span className="omr-donut-legend__label">Other/Unknown</span>
+                    <span className="omr-donut-legend__count">0</span>
+                    <span className="omr-donut-legend__pct">(0%)</span>
                   </div>
                 </div>
               </div>
-              <div className="omr-chart-links">
-                <a href="/listings/new-condition/off-road-category/" className="omr-chart-link">Browse New Off Road Caravans <i className="bi bi-arrow-right" /></a>
-                <a href="/listings/used-condition/off-road-category/" className="omr-chart-link">Browse Used Off Road Caravans <i className="bi bi-arrow-right" /></a>
-              </div>
+              <a href="/listings/new-condition/off-road-category/" className="omr-donut-browse-btn">Browse New Off Road Caravans <i className="bi bi-arrow-right" /></a>
+              <a href="/listings/used-condition/off-road-category/" className="omr-donut-browse-btn">Browse Used Off Road Caravans <i className="bi bi-arrow-right" /></a>
             </div>
 
             {/* Median Price horizontal bars */}
@@ -461,7 +500,7 @@ export default function Home({ data }: Props) {
                 <HBar label="New Off Road Caravans"  value={new_price_median}   displayValue={fmtAUD(new_price_median)}   max={maxPrice} color="#ec7200" />
                 <HBar label="Used Off Road Caravans" value={used_price_median}  displayValue={fmtAUD(used_price_median)}  max={maxPrice} color="#3b82f6" />
               </div>
-              <p className="omr-chart-note"><i className="bi bi-info-circle" /> How Prices Are Calculated</p>
+              {/* <p className="omr-chart-note"><i className="bi bi-info-circle" /> How Prices Are Calculated</p> */}
             </div>
 
             {/* Trend line chart */}
@@ -488,476 +527,843 @@ export default function Home({ data }: Props) {
       {/* ── How Much Do Off Road Caravans Cost ── */}
       <section className="omr-price-section">
         <div className="container">
-          <h2 className="omr-section-title">How Much Do Off Road Caravans Cost?</h2>
-          <p className="omr-section-intro">All prices are advertised asking prices from active CaravansForSale.com.au listings. Actual sale prices may differ. POA (Price on Application) listings are excluded from all price calculations.</p>
-          <div className="omr-price-2col">
-            <div>
-              <h3 className="omr-subsection-title">New Off Road Caravan Prices</h3>
-              <p>New off road caravans are predominantly listed by authorised dealers. The median advertised asking price for a new off road caravan is <strong>{fmtAUD(new_price_median)}</strong>.</p>
-              <p>Entry-level new off road caravans typically start from around $50,000–$70,000 for basic models with standard off-road capability. Premium and full expedition builds can exceed $150,000–$200,000 for caravans with extensive off-grid systems, independent suspension and higher-spec builds.</p>
-              {new_price_median > 0 && (
-                <div className="omr-price-highlight">
-                  <div className="omr-price-card">
-                    <div className="omr-price-card__label">Median New Asking Price</div>
-                    <div className="omr-price-card__val">{fmtAUD(new_price_median)}</div>
-                  </div>
-                </div>
-              )}
+          <h2 className="omr-section-title">How Much Do Off Road Caravans Cost in Australia?</h2>
+          <div className="omr-price-intro-grid">
+            {/* Left: text content */}
+            <div className="omr-price-intro-left">
+              <p className="omr-price-intro-lead">
+                The median advertised asking price of an off road caravan on CaravansForSale.com.au is currently{" "}
+                <strong>{median_price > 0 ? fmtAUD(median_price) : "—"}</strong>, based on active advertisements containing a valid numeric asking price.
+              </p>
+              <p className="omr-price-subhead">Across the current marketplace:</p>
+              <ul className="omr-price-bullet-list">
+                <li>Median advertised price: <strong>{median_price > 0 ? fmtAUD(median_price) : "—"}</strong></li>
+                <li>Median new off road caravan price: <strong>{new_price_median > 0 ? fmtAUD(new_price_median) : "—"}</strong></li>
+                <li>Median used off road caravan price: <strong>{used_price_median > 0 ? fmtAUD(used_price_median) : "—"}</strong></li>
+                <li>25th percentile asking price: <strong>—</strong></li>
+                <li>75th percentile asking price: <strong>—</strong></li>
+                <li>Validated advertised price range: <strong>—</strong></li>
+              </ul>
+              <p className="omr-price-note-text">Using the median rather than simply calculating an average reduces the influence of unusually expensive or inexpensive listings and gives buyers a more representative indication of the centre of the current advertised market.</p>
             </div>
-            <div>
-              <h3 className="omr-subsection-title">Used Off Road Caravan Prices</h3>
-              <p>Used off road caravans represent a significant portion of the marketplace. The median advertised asking price for a used off road caravan is <strong>{fmtAUD(used_price_median)}</strong>.</p>
-              <p>Used pricing varies widely depending on age, condition, brand, specifications and maintenance history. Well-serviced, low-use caravans from premium builders retain value well; heavily-used caravans from smaller builders may depreciate significantly.</p>
-              {used_price_median > 0 && (
-                <div className="omr-price-highlight">
-                  <div className="omr-price-card omr-price-card--used">
-                    <div className="omr-price-card__label">Median Used Asking Price</div>
-                    <div className="omr-price-card__val">{fmtAUD(used_price_median)}</div>
-                  </div>
+            {/* Right: price summary card */}
+            <div className="omr-price-intro-right">
+              <div className="omr-price-summary-card">
+                <div className="omr-price-summary-item">
+                  <div className="omr-price-summary-label">Median Price (All)</div>
+                  <div className="omr-price-summary-val">{median_price > 0 ? fmtAUD(median_price) : "—"}</div>
                 </div>
-              )}
+                <div className="omr-price-summary-item">
+                  <div className="omr-price-summary-label">New — Median Asking Price</div>
+                  <div className="omr-price-summary-val omr-price-summary-val--orange">{new_price_median > 0 ? fmtAUD(new_price_median) : "—"}</div>
+                </div>
+                <div className="omr-price-summary-item">
+                  <div className="omr-price-summary-label">Used — Median Asking Price</div>
+                  <div className="omr-price-summary-val omr-price-summary-val--dark">{used_price_median > 0 ? fmtAUD(used_price_median) : "—"}</div>
+                </div>
+                <p className="omr-price-summary-note">Advertised asking prices only · CaravansForSale.com.au</p>
+              </div>
             </div>
           </div>
-          <h3 className="omr-subsection-title mt-4">New vs Used Off Road Caravan Price Comparison</h3>
-          <div className="omr-table-scroll">
-            <table className="omr-table">
-              <thead>
-                <tr><th>Metric</th><th>New Off Road Caravans</th><th>Used Off Road Caravans</th></tr>
-              </thead>
-              <tbody>
-                <tr><td>Median Asking Price</td><td>{fmtAUD(new_price_median)}</td><td>{fmtAUD(used_price_median)}</td></tr>
-                <tr><td>Active Listings</td><td>{fmt(new_count)}</td><td>{fmt(used_count)}</td></tr>
-                <tr><td>Share of Inventory</td><td>{fmtPct(parseFloat(newShare))}</td><td>{fmtPct(parseFloat(usedShare))}</td></tr>
-                <tr><td>Typical Sellers</td><td>Dealers &amp; manufacturers</td><td>Private sellers &amp; dealers</td></tr>
-                <tr><td>Warranty</td><td>Manufacturer warranty (typically 1–3 yr)</td><td>As negotiated; typically none</td></tr>
-                <tr><td>Customisation</td><td>Order to specification possible</td><td>As listed; limited post-purchase changes</td></tr>
-              </tbody>
-            </table>
-          </div>
-          <div className="omr-price-buy-grid mt-4">
-            <div className="omr-buy-card">
-              <h4 className="omr-buy-card__title"><i className="bi bi-star" /> Why Buy New</h4>
-              <ul className="omr-buy-list">
-                <li>Full manufacturer warranty on structure and appliances</li>
-                <li>Latest build standards, safety features and technology</li>
-                <li>Ability to order to specification (layout, options, colour)</li>
-                <li>Known full history — no hidden wear or previous damage</li>
-                <li>Finance options often available through dealers</li>
-              </ul>
-              <a href="/listings/new-condition/off-road-category/" className="omr-btn omr-btn--primary w-100 justify-content-center mt-3">Browse New Off Road Caravans <i className="bi bi-arrow-right" /></a>
+
+          <hr className="omr-price-divider" />
+
+          {/* New + Used — side by side */}
+          <div className="omr-price-sub-grid">
+            <div>
+              <h3 className="omr-price-h3">New Off Road Caravan Prices</h3>
+              <p className="omr-price-body">New off road caravans currently have a median advertised asking price of <strong>{new_price_median > 0 ? fmtAUD(new_price_median) : "—"}</strong>.</p>
+              <p className="omr-price-body">Prices can vary considerably according to caravan size, manufacturer, construction, suspension, electrical system, battery and solar capacity, water storage, layout and optional equipment.</p>
+              <a href="/listings/new-condition/off-road-category/" className="omr-price-browse-link">Browse New Off Road Caravans <i className="bi bi-arrow-right" /></a>
             </div>
-            <div className="omr-buy-card omr-buy-card--used">
-              <h4 className="omr-buy-card__title"><i className="bi bi-tag" /> Why Buy Used</h4>
-              <ul className="omr-buy-list">
-                <li>Significant price advantage over new equivalents</li>
-                <li>Immediate availability — no waiting for build or production slots</li>
-                <li>Well-maintained caravans can be near-new condition</li>
-                <li>Accessories and upgrades often included by the previous owner</li>
-                <li>Lower depreciation exposure in the short term</li>
-              </ul>
-              <a href="/listings/used-condition/off-road-category/" className="omr-btn omr-btn--outline-dark w-100 justify-content-center mt-3">Browse Used Off Road Caravans <i className="bi bi-arrow-right" /></a>
+            <div>
+              <h3 className="omr-price-h3">Used Off Road Caravan Prices</h3>
+              <p className="omr-price-body">Used off road caravans currently have a median advertised asking price of <strong>{used_price_median > 0 ? fmtAUD(used_price_median) : "—"}</strong>.</p>
+              <p className="omr-price-body">Used pricing can be influenced by model year, kilometres travelled by the towing setup, condition, manufacturer, modifications, accessories, service history and the specification of the caravan when originally purchased.</p>
+              <a href="/listings/used-condition/off-road-category/" className="omr-price-browse-link">Browse Used Off Road Caravans <i className="bi bi-arrow-right" /></a>
+            </div>
+          </div>
+
+          <hr className="omr-price-divider" />
+
+          {/* New vs Used — 2 col */}
+          <div className="omr-price-sub-grid">
+            <div>
+              <h3 className="omr-price-h3">New vs Used Off Road Caravan Prices</h3>
+              <p className="omr-price-body">The difference between the current median asking prices for new and used off road caravans is{" "}
+                <strong>{(new_price_median > 0 && used_price_median > 0) ? fmtAUD(new_price_median - used_price_median) : "—"}</strong>, with new inventory advertised at approximately{" "}
+                <strong>{(new_price_median > 0 && used_price_median > 0) ? `${Math.round(((new_price_median - used_price_median) / used_price_median) * 100)}%` : "—"}</strong> more than the used median.
+              </p>
+              <p className="omr-price-body">This should <strong>not</strong> be treated as an off road caravan depreciation rate.</p>
+              <p className="omr-price-body">The two groups contain different manufacturers, models, years, sizes and specifications. The comparison simply shows the advertised pricing of new and used inventory available at the current marketplace snapshot.</p>
+            </div>
+            <div className="omr-table-scroll">
+              <table className="omr-table omr-price-cmp-table">
+                <thead>
+                  <tr><th>Price Metric</th><th>New</th><th>Used</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>Active Listings</td><td>{fmt(new_count)}</td><td>{fmt(used_count)}</td></tr>
+                  <tr><td>Listings With Valid Price</td><td>—</td><td>—</td></tr>
+                  <tr><td>Median Asking Price</td><td>{fmtAUD(new_price_median)}</td><td>{fmtAUD(used_price_median)}</td></tr>
+                  <tr><td>25th–75th Percentile</td><td>—</td><td>—</td></tr>
+                  <tr><td>Median Length</td><td>—</td><td>—</td></tr>
+                  <tr><td>Median ATM</td><td>—</td><td>—</td></tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ── Data Tables Row: States + Length + ATM ── */}
-      <section className="omr-tables-row">
-        <div className="container">
-          <div className="omr-tables-3col">
-            {/* By State */}
-            <div className="omr-table-box">
-              <h3 className="omr-table-title">Off Road Caravans by State</h3>
-              {states.length > 0 ? (
-                <div className="omr-table-scroll">
-                  <table className="omr-table">
-                    <thead><tr><th>State</th><th>Listings</th><th>Share</th><th>Median Price</th></tr></thead>
-                    <tbody>
-                      {states.map(s => (
-                        <tr key={s.state}>
-                          <td>{s.state}</td>
-                          <td>{fmt(s.count)}</td>
-                          <td>{fmtPct(s.share)}</td>
-                          <td>{fmtAUD(s.median_price)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              ) : <div className="omr-table-empty">No state data available.</div>}
-              <a href="/listings/off-road-category/" className="omr-chart-link mt-3 d-inline-flex">Browse by State <i className="bi bi-arrow-right" /></a>
-            </div>
-
-            {/* By Length */}
-            <div className="omr-table-box">
-              <h3 className="omr-table-title">Off Road Caravan Prices by Length</h3>
-              {lengths.length > 0 ? (
-                <div className="omr-table-scroll">
-                  <table className="omr-table">
-                    <thead><tr><th>Length</th><th>Listings</th><th>Share*</th><th>Median Price</th></tr></thead>
-                    <tbody>
-                      {lengths.map(l => (
-                        <tr key={l.range}>
-                          <td>{l.range}</td>
-                          <td>{fmt(l.count)}</td>
-                          <td>{fmtPct(l.share)}</td>
-                          <td>{fmtAUD(l.median_price)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              ) : <div className="omr-table-empty">Length breakdown data not yet available.</div>}
-              <a href="/listings/off-road-category/" className="omr-chart-link mt-3 d-inline-flex">View Size Guide <i className="bi bi-arrow-right" /></a>
-            </div>
-
-            {/* By ATM */}
-            <div className="omr-table-box">
-              <h3 className="omr-table-title">Off Road Caravans by ATM</h3>
-              {atms.length > 0 ? (
-                <div className="omr-table-scroll">
-                  <table className="omr-table">
-                    <thead><tr><th>ATM (kg)</th><th>Listings</th><th>Share*</th><th>Median Price</th></tr></thead>
-                    <tbody>
-                      {atms.map(a => (
-                        <tr key={a.range}>
-                          <td>{a.range}</td>
-                          <td>{fmt(a.count)}</td>
-                          <td>{fmtPct(a.share)}</td>
-                          <td>{fmtAUD(a.median_price)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              ) : <div className="omr-table-empty">ATM breakdown data not yet available.</div>}
-              <a href="#atm-info" className="omr-chart-link mt-3 d-inline-flex">What is ATM? <i className="bi bi-info-circle" /></a>
-            </div>
-          </div>
-        </div>
-      </section>
+      
 
       {/* ── Most Popular Sizes ── */}
       <section className="omr-sizes-section">
         <div className="container">
           <h2 className="omr-section-title">What Are the Most Popular Off Road Caravan Sizes?</h2>
           <div className="omr-sizes-grid">
+            {/* Left: intro + buyer guide */}
             <div className="omr-sizes-text">
-              <p>Off road caravan size is typically expressed as the length of the caravan body (excluding the drawbar). The most common size range in the Australian marketplace is <strong>{snapshot.common_length || "the 18–20ft range"}</strong>, which offers a balance of interior space, weight management and towability across a wide range of vehicles.</p>
-              <p>Shorter caravans (under 16ft) are lighter and easier to tow, making them suitable for lighter tow vehicles. Larger caravans (over 20ft) offer more living space and storage but require higher-rated tow vehicles and are more challenging to manoeuvre on tight tracks.</p>
-              <h3 className="omr-subsection-title">What Size Means for Buyers</h3>
-              <div className="omr-size-guide">
-                {[
-                  { range: "Under 16ft", desc: "Lightweight build suited to standard SUVs and lighter tow vehicles. Limited storage, but highly manoeuvrable on tight tracks and remote terrain." },
-                  { range: "16–18ft",    desc: "Growing segment. Good balance of weight and space, suited to mid-spec SUVs with appropriate tow ratings. Popular with couples." },
-                  { range: "18–20ft",    desc: "The most common category in Australia. Full amenities, good clearance, requires a capable tow vehicle (typically 3,000kg+ tow rating)." },
-                  { range: "20ft+",      desc: "Maximum interior space and storage. Requires a heavy-duty tow vehicle. Best suited to long-term travellers and families." },
-                ].map((s, i) => (
-                  <div key={i} className="omr-size-row">
-                    <div className="omr-size-range">{s.range}</div>
-                    <div className="omr-size-desc">{s.desc}</div>
+              <p className="omr-sizes-intro-p">
+                Among listings containing valid length information,{" "}
+                <strong>{snapshot.common_length || "the 18–20ft range"}</strong> is currently the most common off road caravan size advertised on CaravansForSale.com.au.
+              </p>
+              <p className="omr-sizes-intro-p">
+                It represents approximately <strong>{lengths.length > 0 && lengths[0]?.share > 0 ? fmtPct(lengths[0].share) : "—"}</strong> of current inventory with known length data.
+              </p>
+              <h3 className="omr-sizes-subhead">What size means for buyers</h3>
+              <p className="omr-sizes-body-p">Smaller off road caravans can appeal to buyers prioritising manoeuvrability, compact campsites and potentially lower towing weight.</p>
+              <p className="omr-sizes-body-p">Larger caravans can provide additional interior space, storage and more family-oriented layouts, but the extra length often comes with additional weight.</p>
+              <p className="omr-sizes-body-p">Caravan size should therefore be considered alongside <strong>ATM, payload, tow vehicle capacity and intended travel</strong>, rather than in isolation.</p>
+            </div>
+            {/* Right: size distribution table */}
+            <div>
+              <h3 className="omr-sizes-subhead mt-0">Current Off Road Caravan Size Distribution</h3>
+              {(() => {
+                const DUMMY_LENGTHS = ["Under 16ft", "16–18ft", "18–20ft", "20–22ft", "22ft+", "Unknown / Invalid"];
+                const rows = lengths.length > 0
+                  ? lengths.map(l => ({ range: l.range, count: fmt(l.count), share: fmtPct(l.share) }))
+                  : DUMMY_LENGTHS.map(r => ({ range: r, count: "—", share: "—" }));
+                return (
+                  <div className="omr-table-scroll">
+                    <table className="omr-table">
+                      <thead>
+                        <tr><th>Length</th><th>Listings</th><th>Market Share</th></tr>
+                      </thead>
+                      <tbody>
+                        {rows.map(r => (
+                          <tr key={r.range}>
+                            <td>{r.range}</td>
+                            <td>{r.count}</td>
+                            <td>{r.share}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                );
+              })()}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Off Road Caravans by State ── */}
+      <section className="omr-state-section">
+        <div className="container">
+          <div className="omr-state-grid">
+            {/* Left: intro + browse links + note */}
+            <div>
+              <h2 className="omr-section-title">Off Road Caravans for Sale by State</h2>
+              <p className="omr-state-intro">Off road caravan inventory varies substantially between Australian states.</p>
+              <p className="omr-state-intro">
+                At the current snapshot, <strong>{topState ? topState.state : "—"}</strong> has the largest number of advertised off road caravans on CaravansForSale.com.au, accounting for approximately <strong>{topState && topState.share > 0 ? fmtPct(topState.share) : "—"}</strong> of national marketplace inventory.
+              </p>
+              
+            </div>
+            {/* Right: state table */}
+            <div>
+              {(() => {
+                const DUMMY_STATES = ["Victoria", "New South Wales", "Queensland", "Western Australia", "South Australia", "Tasmania", "ACT", "Northern Territory"];
+                const rows = states.length > 0
+                  ? states.map(s => ({ state: s.state, count: fmt(s.count), share: fmtPct(s.share), price: fmtAUD(s.median_price) }))
+                  : DUMMY_STATES.map(s => ({ state: s, count: "—", share: "—", price: "—" }));
+                return (
+                  <div className="omr-table-scroll">
+                    <table className="omr-table">
+                      <thead>
+                        <tr><th>State / Territory</th><th>Active Listings</th><th>Share of Australian Inventory</th><th>Median Asking Price</th></tr>
+                      </thead>
+                      <tbody>
+                        {rows.map(r => (
+                          <tr key={r.state}>
+                            <td>{r.state}</td>
+                            <td>{r.count}</td>
+                            <td>{r.share}</td>
+                            <td>{r.price}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                );
+              })()}
+            </div>
+          </div>
+
+          <div className="omr-state-browse-box">
+            <p className="omr-state-browse-title">Browse Off Road Caravans by State</p>
+            <div className="omr-state-links">
+              {[
+                { label: "Victoria", slug: "victoria-state" },
+                { label: "New South Wales", slug: "new-south-wales-state" },
+                { label: "Queensland", slug: "queensland-state" },
+                { label: "Western Australia", slug: "western-australia-state" },
+                { label: "South Australia", slug: "south-australia-state" },
+                { label: "Tasmania", slug: "tasmania-state" },
+              ].map(({ label, slug }) => (
+                <a key={slug} href={`/listings/off-road-category/${slug}/`} className="omr-state-link">
+                  Off Road Caravans in {label}
+                </a>
+              ))}
+            </div>
+            <p className="omr-state-note">State figures represent the advertised location assigned to the caravan listing. Dealer delivery areas should not be counted as additional listing locations.</p>
+          </div>
+
+          {/* Horizontal bar chart — highest to lowest */}
+          {(() => {
+            const DUMMY_CHART = [
+              { state: "Queensland", share: 0.32, label: "—" },
+              { state: "New South Wales", share: 0.28, label: "—" },
+              { state: "Victoria", share: 0.22, label: "—" },
+              { state: "Western Australia", share: 0.10, label: "—" },
+              { state: "South Australia", share: 0.05, label: "—" },
+              { state: "Tasmania", share: 0.02, label: "—" },
+              { state: "ACT", share: 0.01, label: "—" },
+              { state: "Northern Territory", share: 0.005, label: "—" },
+            ];
+            const chartRows = states.length > 0
+              ? [...states].sort((a, b) => b.count - a.count).map(s => ({ state: s.state, share: s.share, label: fmt(s.count) }))
+              : DUMMY_CHART;
+            const maxShare = Math.max(...chartRows.map(r => r.share));
+            return (
+              <div className="omr-state-chart">
+                <h3 className="omr-state-chart-title">Active Off Road Caravan Listings by State</h3>
+                {chartRows.map(r => (
+                  <div key={r.state} className="omr-state-bar-row">
+                    <div className="omr-state-bar-label">{r.state}</div>
+                    <div className="omr-state-bar-track">
+                      <div className="omr-state-bar-fill" style={{ width: maxShare > 0 ? `${(r.share / maxShare) * 100}%` : "4px" }} />
+                    </div>
+                    <div className="omr-state-bar-val">{r.label}</div>
                   </div>
                 ))}
               </div>
-            </div>
-            <div>
-              {lengths.length > 0 ? (
-                <>
-                  <h3 className="omr-subsection-title">Current Size Distribution</h3>
-                  <div className="omr-hbar-list">
-                    {lengths.map(l => (
-                      <HBar key={l.range} label={l.range} value={l.count} displayValue={`${fmtPct(l.share)} · ${fmt(l.count)} listings`} max={Math.max(...lengths.map(x => x.count), 1)} color="#ec7200" />
-                    ))}
-                  </div>
-                  <a href="/listings/off-road-category/" className="omr-chart-link mt-3 d-inline-flex">Browse by Size <i className="bi bi-arrow-right" /></a>
-                </>
-              ) : (
-                <div className="omr-chart-empty">
-                  <i className="bi bi-rulers" />
-                  <p>Size distribution data will appear here when available.</p>
-                </div>
-              )}
-            </div>
-          </div>
+            );
+          })()}
         </div>
       </section>
 
-      {/* ── Charts Row 2: Sleeps + Price by Length + New vs Used Price ── */}
-      <section className="omr-charts-row">
-        <div className="container">
-          <div className="omr-charts-3col">
-            {/* Sleeping capacity donut */}
-            <div className="omr-chart-box">
-              <h3 className="omr-chart-title">Most Common Sleeping Capacity</h3>
-              {sleeps.length > 0 ? (
-                <>
-                  <div className="omr-donut-wrap">
-                    <DonutChart segments={[
-                      { value: sleeps[0]?.count ?? 0, color: "#ec7200", label: sleeps[0]?.berths ?? "" },
-                      { value: sleeps[1]?.count ?? 0, color: "#1e293b", label: sleeps[1]?.berths ?? "" },
-                      { value: sleeps[2]?.count ?? 0, color: "#3b82f6", label: sleeps[2]?.berths ?? "" },
-                      { value: sleeps[3]?.count ?? 0, color: "#10b981", label: sleeps[3]?.berths ?? "" },
-                      { value: sleeps[4]?.count ?? 0, color: "#8b5cf6", label: sleeps[4]?.berths ?? "" },
-                    ].filter(s => s.value > 0)} />
-                    <div className="omr-donut-legend">
-                      {[
-                        { color: "#ec7200" }, { color: "#1e293b" }, { color: "#3b82f6" },
-                        { color: "#10b981" }, { color: "#8b5cf6" },
-                      ].map((c, i) => sleeps[i] ? (
-                        <div key={i} className="omr-donut-legend__item">
-                          <span className="omr-donut-legend__dot" style={{ background: c.color }} />
-                          <span>{sleeps[i].berths} {fmt(sleeps[i].count)} ({fmtPct(sleeps[i].share)})</span>
-                        </div>
-                      ) : null)}
-                    </div>
-                  </div>
-                  <a href="/listings/off-road-category/" className="omr-chart-link">Browse Off Road Caravans by Sleeping Capacity <i className="bi bi-arrow-right" /></a>
-                </>
-              ) : <div className="omr-chart-empty"><i className="bi bi-moon-stars" /><p>Sleeping capacity data not yet available.</p></div>}
-            </div>
-
-            {/* Price by Length vertical bars */}
-            <div className="omr-chart-box">
-              <h3 className="omr-chart-title">Median Asking Price by Length</h3>
-              {lengths.length > 0 ? (
-                <>
-                  <VBarChart data={lengths.map(l => ({ label: l.range.replace("ft", "ft").replace("Under ", "<").replace("and over", "+"), value: l.median_price }))} />
-                  <a href="/listings/off-road-category/" className="omr-chart-link">View All Size Data <i className="bi bi-arrow-right" /></a>
-                </>
-              ) : <div className="omr-chart-empty"><i className="bi bi-bar-chart" /><p>Length price data not yet available.</p></div>}
-            </div>
-
-            {/* New vs Used price donut */}
-            <div className="omr-chart-box">
-              <h3 className="omr-chart-title">New vs Used Price Comparison</h3>
-              <div className="omr-donut-wrap">
-                <DonutChart segments={[
-                  { value: new_price_median,  color: "#ec7200", label: "New"  },
-                  { value: used_price_median, color: "#1e293b", label: "Used" },
-                ]} />
-                <div className="omr-donut-legend">
-                  <div className="omr-donut-legend__item">
-                    <span className="omr-donut-legend__dot" style={{ background: "#ec7200" }} />
-                    <span>New Median {fmtAUD(new_price_median)}</span>
-                  </div>
-                  <div className="omr-donut-legend__item">
-                    <span className="omr-donut-legend__dot" style={{ background: "#1e293b" }} />
-                    <span>Used Median {fmtAUD(used_price_median)}</span>
-                  </div>
-                </div>
-              </div>
-              <a href="/listings/off-road-category/" className="omr-chart-link">Compare New vs Used <i className="bi bi-arrow-right" /></a>
-            </div>
-          </div>
-        </div>
-      </section>
+      
 
       {/* ── ATM and Weight Data ── */}
       <section className="omr-atm-section" id="atm-info">
         <div className="container">
-          <h2 className="omr-section-title">ATM and Weight Data for Off Road Caravans</h2>
-          <div className="omr-atm-grid">
+          <h2 className="omr-section-title">Off Road Caravan ATM and Weight Data</h2>
+          <div className="omr-atm-doc-grid">
+            {/* Left: intro + coverage */}
             <div>
-              <h3 className="omr-subsection-title">What Does ATM Mean?</h3>
-              <p>ATM stands for <strong>Aggregate Trailer Mass</strong> — the maximum permissible laden weight of the caravan as specified by the manufacturer. It is one of the most important figures to check when purchasing an off road caravan.</p>
-              <p>Your tow vehicle&apos;s rated tow capacity must be equal to or greater than the caravan&apos;s ATM to legally and safely tow it. ATM includes the caravan&apos;s tare weight (empty) plus all water, food, equipment and accessories you intend to carry.</p>
-              <div className="omr-atm-callout">
-                <i className="bi bi-exclamation-triangle-fill omr-atm-callout__icon" />
-                <div><strong>Always check ATM before buying.</strong> A caravan with an ATM that exceeds your tow vehicle&apos;s rated capacity is illegal to tow and presents serious safety risks.</div>
+              <p className="omr-atm-intro-p">Weight is one of the most important specifications for buyers comparing off road caravans.</p>
+              <p className="omr-atm-intro-p">
+                The median recorded <strong>Aggregate Trailer Mass (ATM)</strong> among current listings containing valid ATM information is{" "}
+                <strong>{snapshot.median_atm > 0 ? fmtKg(snapshot.median_atm) : "—"}</strong>.
+              </p>
+              <p className="omr-atm-intro-p">ATM is the maximum allowable laden mass of the trailer specified by the manufacturer. Payload is broadly calculated by deducting the trailer&apos;s tare mass from its ATM.</p>
+              <p className="omr-atm-intro-p">
+                <strong>ATM data coverage:</strong>{" "}
+                {(() => {
+                  if (atms.length > 0 && total_count > 0) {
+                    const validCount = atms.filter(a => !a.range.toLowerCase().includes("unknown") && !a.range.toLowerCase().includes("invalid")).reduce((s, a) => s + a.count, 0);
+                    return `${((validCount / total_count) * 100).toFixed(1)}%`;
+                  }
+                  return "—";
+                })()}{" "}
+                of eligible listings.
+              </p>
+              <p className="omr-atm-coverage-note">Publishing the coverage figure is important because listings without reliable ATM data should not be silently allocated to a weight category.</p>
+            </div>
+            {/* Right: ATM table */}
+            <div>
+              <h3 className="omr-atm-h3">Off Road Caravans by ATM</h3>
+              {(() => {
+                const isUnknown = (r: string) => r.toLowerCase().includes("unknown") || r.toLowerCase().includes("invalid");
+                const DUMMY_ATM = ["Under 1,500kg", "1,500–1,999kg", "2,000–2,499kg", "2,500–2,999kg", "3,000kg and over", "Unknown / Invalid"];
+                const rows = atms.length > 0
+                  ? atms.map(a => ({
+                      range: a.range,
+                      count: fmt(a.count),
+                      share: isUnknown(a.range) ? "—" : fmtPct(a.share),
+                      price: isUnknown(a.range) ? "—" : fmtAUD(a.median_price),
+                    }))
+                  : DUMMY_ATM.map(r => ({ range: r, count: "—", share: "—", price: "—" }));
+                return (
+                  <div className="omr-table-scroll">
+                    <table className="omr-table">
+                      <thead><tr><th>ATM</th><th>Listings</th><th>Share of Valid ATM Data</th><th>Median Asking Price</th></tr></thead>
+                      <tbody>
+                        {rows.map(r => (
+                          <tr key={r.range}><td>{r.range}</td><td>{r.count}</td><td>{r.share}</td><td>{r.price}</td></tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                );
+              })()}
+            </div>
+          </div>
+
+          {/* Horizontal bar chart */}
+          {(() => {
+            const DUMMY_ATM_CHART = [
+              { range: "3,000kg and over", share: 0.35, label: "—" },
+              { range: "2,500–2,999kg", share: 0.30, label: "—" },
+              { range: "2,000–2,499kg", share: 0.20, label: "—" },
+              { range: "1,500–1,999kg", share: 0.10, label: "—" },
+              { range: "Under 1,500kg", share: 0.05, label: "—" },
+            ];
+            const validAtms = atms.filter(a => !a.range.toLowerCase().includes("unknown") && !a.range.toLowerCase().includes("invalid"));
+            const chartRows = validAtms.length > 0
+              ? [...validAtms].sort((a, b) => b.count - a.count).map(a => ({ range: a.range, share: a.share, label: fmt(a.count) }))
+              : DUMMY_ATM_CHART;
+            const maxShare = Math.max(...chartRows.map(r => r.share));
+            return (
+              <div className="omr-atm-chart">
+                <h3 className="omr-atm-chart-title">Distribution of Off Road Caravan Listings by ATM</h3>
+                {chartRows.map(r => (
+                  <div key={r.range} className="omr-state-bar-row">
+                    <div className="omr-state-bar-label">{r.range}</div>
+                    <div className="omr-state-bar-track">
+                      <div className="omr-state-bar-fill" style={{ width: maxShare > 0 ? `${(r.share / maxShare) * 100}%` : "4px" }} />
+                    </div>
+                    <div className="omr-state-bar-val">{r.label}</div>
+                  </div>
+                ))}
               </div>
-              <h3 className="omr-subsection-title mt-3">Key ATM Facts for Off Road Buyers</h3>
-              <ul className="omr-method-list">
-                <li>Most standard off road caravans have an ATM between 2,500kg and 3,500kg.</li>
-                <li>Expedition-spec builds with full tanks and off-grid systems can exceed 4,000kg ATM.</li>
-                <li>Popular tow vehicles for heavy off road caravans include LandCruiser 200/300, Ford Ranger Raptor and RAM 1500/2500.</li>
-                <li>Not all listings include ATM — always verify directly with the seller or manufacturer.</li>
+            );
+          })()}
+
+          {/* What Does ATM Mean */}
+          <div className="omr-atm-explainer">
+            <h3 className="omr-atm-h3">What Does ATM Mean When Choosing an Off Road Caravan?</h3>
+            <p className="omr-atm-intro-p">ATM should never be considered by itself when deciding whether a tow vehicle is suitable.</p>
+            <p className="omr-atm-intro-p">Buyers may also need to consider the tow vehicle&apos;s:</p>
+            <ul className="omr-atm-bullet-list">
+              <li>maximum braked towing capacity</li>
+              <li>Gross Vehicle Mass (GVM)</li>
+              <li>Gross Combination Mass (GCM)</li>
+              <li>axle capacities</li>
+              <li>towbar rating</li>
+              <li>towball capacity</li>
+              <li>actual loaded vehicle weight.</li>
+            </ul>
+            <p className="omr-atm-intro-p">Australian transport guidance notes that a vehicle manufacturer&apos;s towing limits and the applicable towbar or towball limits must not be exceeded, and that GCM can prevent a vehicle from using its full headline towing capacity when the vehicle itself is heavily loaded.</p>
+            <p className="omr-atm-intro-p">The majority of conventional Australian caravans also fall within the national low-ATM trailer framework covering trailers with an ATM of <strong>4.5 tonnes or less</strong>.</p>
+            <p className="omr-atm-important"><strong>Important:</strong> Marketplace statistics are provided for comparison purposes and are not vehicle-specific towing advice.</p>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Sleeping Capacities ── */}
+      <section className="omr-sleep-section">
+        <div className="container">
+          <h2 className="omr-section-title">Most Common Off Road Caravan Sleeping Capacities</h2>
+          <div className="omr-sleep-grid">
+            {/* Left: intro + browse link */}
+            <div>
+              <p className="omr-sleep-intro-p">Off road caravan layouts range from compact two-person touring vans through to larger family caravans with permanent bunks.</p>
+              <p className="omr-sleep-intro-p">
+                The most common recorded sleeping capacity in current marketplace inventory is{" "}
+                <strong>{snapshot.common_sleeps > 0 ? `${snapshot.common_sleeps} berth` : "—"}</strong>.
+              </p>
+              <p className="omr-sleep-intro-p">The data can help buyers understand how much choice currently exists for couples, smaller families and larger family groups.</p>
+              <a href="/listings/off-road-category/" className="omr-sleep-browse-link">
+                Browse Off Road Caravans by Sleeping Capacity <i className="bi bi-arrow-right" />
+              </a>
+            </div>
+            {/* Right: sleeping capacity table */}
+            <div>
+              {(() => {
+                const isUnknown = (b: string) => b.toLowerCase().includes("unknown") || b.toLowerCase().includes("invalid");
+                const DUMMY_SLEEPS = ["2 berth", "3 berth", "4 berth", "5 berth", "6+ berth", "Unknown"];
+                const rows = sleeps.length > 0
+                  ? sleeps.map(s => ({
+                      berths: s.berths,
+                      count: fmt(s.count),
+                      share: isUnknown(s.berths) ? "—" : fmtPct(s.share),
+                      price: isUnknown(s.berths) ? "—" : fmtAUD(s.median_price),
+                    }))
+                  : DUMMY_SLEEPS.map(b => ({ berths: b, count: "—", share: "—", price: "—" }));
+                return (
+                  <div className="omr-table-scroll">
+                    <table className="omr-table">
+                      <thead><tr><th>Sleeping Capacity</th><th>Listings</th><th>Share of Valid Sleep Data</th><th>Median Asking Price</th></tr></thead>
+                      <tbody>
+                        {rows.map(r => (
+                          <tr key={r.berths}><td>{r.berths}</td><td>{r.count}</td><td>{r.share}</td><td>{r.price}</td></tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                );
+              })()}
+
+            </div>
+          </div>
+
+          {/* Full-width bar chart */}
+          {(() => {
+            const DUMMY_CHART = [
+              { berths: "4 berth", share: 0.38, label: "—" },
+              { berths: "2 berth", share: 0.28, label: "—" },
+              { berths: "5 berth", share: 0.18, label: "—" },
+              { berths: "3 berth", share: 0.10, label: "—" },
+              { berths: "6+ berth", share: 0.06, label: "—" },
+            ];
+            const validSleeps = sleeps.filter(s => !s.berths.toLowerCase().includes("unknown") && !s.berths.toLowerCase().includes("invalid"));
+            const chartRows = validSleeps.length > 0
+              ? [...validSleeps].sort((a, b) => b.count - a.count).map(s => ({ berths: s.berths, share: s.share, label: fmt(s.count) }))
+              : DUMMY_CHART;
+            const maxShare = Math.max(...chartRows.map(r => r.share));
+            return (
+              <div className="omr-sleep-chart">
+                <h3 className="omr-sleep-chart-title">Off Road Caravan Inventory by Sleeping Capacity</h3>
+                {chartRows.map(r => (
+                  <div key={r.berths} className="omr-state-bar-row">
+                    <div className="omr-state-bar-label">{r.berths}</div>
+                    <div className="omr-state-bar-track">
+                      <div className="omr-state-bar-fill" style={{ width: maxShare > 0 ? `${(r.share / maxShare) * 100}%` : "4px" }} />
+                    </div>
+                    <div className="omr-state-bar-val">{r.label}</div>
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
+        </div>
+      </section>
+
+      {/* ── Brands ── */}
+      <section className="omr-brands-section">
+        <div className="container">
+          <h2 className="omr-section-title">Most Listed Off Road Caravan Brands</h2>
+          <p className="omr-brands-intro-p">The off road caravan market includes established Australian manufacturers, newer brands and imported models.</p>
+          <p className="omr-brands-intro-p">The table below ranks manufacturers according to their representation in <strong>active CaravansForSale.com.au marketplace inventory</strong>.</p>
+          <p className="omr-brands-intro-p">It does <strong>not</strong> represent Australian sales volume, registrations, overall market share or a ranking of caravan quality.</p>
+
+          {(() => {
+            const DUMMY_BRANDS = Array.from({ length: 10 }, (_, i) => ({ rank: i + 1, brand: "—", count: "—", share: "—", price: "—", atm: "—", slug: "" }));
+            const rows = brands.length > 0
+              ? brands.map((b, i) => ({ rank: i + 1, brand: b.brand, count: fmt(b.count), share: fmtPct(b.share), price: fmtAUD(b.median_price), atm: fmtKg(b.median_atm), slug: b.brand }))
+              : DUMMY_BRANDS;
+            return (
+              <div className="omr-table-scroll">
+                <table className="omr-table omr-table--brands">
+                  <thead>
+                    <tr><th>Rank</th><th>Brand</th><th>Active Listings</th><th>Inventory Share</th><th>Median Asking Price</th><th>Median ATM</th></tr>
+                  </thead>
+                  <tbody>
+                    {rows.map(r => (
+                      <tr key={r.rank}>
+                        <td className="omr-rank">{r.rank}</td>
+                        <td className="omr-brand-name">
+                          {r.slug ? <a href={`/listings/off-road-category/?make=${encodeURIComponent(r.slug)}`}>{r.brand}</a> : r.brand}
+                        </td>
+                        <td>{r.count}</td>
+                        <td>{r.share}</td>
+                        <td>{r.price}</td>
+                        <td>{r.atm}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            );
+          })()}
+          <p className="omr-brands-note"><strong>Price medians should only be displayed where enough valid priced listings exist to produce a meaningful comparison.</strong></p>
+
+          {/* Bar chart */}
+          {(() => {
+            const DUMMY_CHART = Array.from({ length: 10 }, (_, i) => ({ brand: `Brand ${i + 1}`, share: 0.35 - i * 0.03, label: "—" }));
+            const chartRows = brands.length > 0
+              ? brands.map(b => ({ brand: b.brand, share: b.share, label: fmt(b.count) }))
+              : DUMMY_CHART;
+            const maxShare = Math.max(...chartRows.map(r => r.share));
+            return (
+              <div className="omr-brands-chart">
+                <h3 className="omr-brands-chart-title">Top 10 Off Road Caravan Brands by Active Listings</h3>
+                {chartRows.map(r => (
+                  <div key={r.brand} className="omr-state-bar-row">
+                    <div className="omr-state-bar-label">{r.brand}</div>
+                    <div className="omr-state-bar-track">
+                      <div className="omr-state-bar-fill" style={{ width: maxShare > 0 ? `${(r.share / maxShare) * 100}%` : "4px" }} />
+                    </div>
+                    <div className="omr-state-bar-val">{r.label}</div>
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
+        </div>
+      </section>
+
+      {/* ── New vs Used Comparison ── */}
+      <section className="omr-nvu-section">
+        <div className="container">
+          <h2 className="omr-section-title">New vs Used Off Road Caravans: Market Comparison</h2>
+          <p className="omr-nvu-intro-p">Buyers deciding between a new and used off road caravan are entering two noticeably different parts of the marketplace.</p>
+          <p className="omr-nvu-intro-p">The following table provides a direct comparison.</p>
+
+          <div className="omr-table-scroll omr-nvu-table-wrap">
+            <table className="omr-table">
+              <thead><tr><th>Metric</th><th>New Off Road Caravans</th><th>Used Off Road Caravans</th></tr></thead>
+              <tbody>
+                <tr><td>Active Listings</td><td>{fmt(new_count)}</td><td>{fmt(used_count)}</td></tr>
+                <tr><td>Inventory Share</td><td>{new_count > 0 && total_count > 0 ? `${((new_count / total_count) * 100).toFixed(1)}%` : "—"}</td><td>{used_count > 0 && total_count > 0 ? `${((used_count / total_count) * 100).toFixed(1)}%` : "—"}</td></tr>
+                <tr><td>Median Asking Price</td><td>{fmtAUD(new_price_median)}</td><td>{fmtAUD(used_price_median)}</td></tr>
+                <tr><td>Median Length</td><td>—</td><td>—</td></tr>
+                <tr><td>Median ATM</td><td>—</td><td>—</td></tr>
+                <tr><td>Most Common Sleeps</td><td>—</td><td>—</td></tr>
+                <tr><td>Most Common Length</td><td>—</td><td>—</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div className="omr-nvu-why-grid">
+            <div>
+              <h3 className="omr-nvu-h3">Why Buyers May Choose New</h3>
+              <p className="omr-nvu-intro-p">New inventory may appeal to buyers looking for:</p>
+              <ul className="omr-nvu-bullet-list">
+                <li>current layouts and technology</li>
+                <li>manufacturer warranty coverage</li>
+                <li>newer battery and solar systems</li>
+                <li>greater ability to select floorplans and options</li>
+                <li>the latest construction and suspension systems.</li>
               </ul>
             </div>
             <div>
-              <h3 className="omr-subsection-title">ATM Distribution Across Current Listings</h3>
-              {atms.length > 0 ? (
+              <h3 className="omr-nvu-h3">Why Buyers May Choose Used</h3>
+              <p className="omr-nvu-intro-p">Used inventory may appeal to buyers prioritising:</p>
+              <ul className="omr-nvu-bullet-list">
+                <li>a lower purchase price</li>
+                <li>accessories already fitted</li>
+                <li>immediate availability</li>
+                <li>access to models no longer produced</li>
+                <li>avoiding part of the initial new-caravan price premium.</li>
+              </ul>
+            </div>
+          </div>
+
+          <p className="omr-nvu-closing">The marketplace data can indicate the current price difference, but buyers should compare individual caravans rather than assuming that all new or all used caravans offer the same value.</p>
+          <div className="omr-nvu-btns">
+            <a href="/listings/new-condition/off-road-category/" className="omr-price-browse-link">Browse New Off Road Caravans <i className="bi bi-arrow-right" /></a>
+            <a href="/listings/used-condition/off-road-category/" className="omr-price-browse-link">Browse Used Off Road Caravans <i className="bi bi-arrow-right" /></a>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Market Trends — only shown when historical data exists ── */}
+      {trend.length >= 2 && (
+        <section className="omr-trend-section" id="trend">
+          <div className="container">
+            <h2 className="omr-section-title">Off Road Caravan Market Trends</h2>
+            <p className="omr-trend-intro-p">Once historical snapshots are available, this section tracks how off road caravan supply and advertised prices are changing over time.</p>
+
+            <h3 className="omr-trend-h3">Off Road Caravan Inventory Trend</h3>
+            {(() => {
+              const first = trend[0];
+              const last = trend[trend.length - 1];
+              const pctChange = first.total > 0 ? ((last.total - first.total) / first.total * 100) : 0;
+              const direction = pctChange >= 0 ? "increased" : "decreased";
+              return (
                 <>
-                  <div className="omr-hbar-list">
-                    {atms.map(a => (
-                      <HBar key={a.range} label={`${a.range} kg`} value={a.count} displayValue={`${fmtPct(a.share)} · ${fmt(a.count)} listings`} max={Math.max(...atms.map(x => x.count), 1)} color="#1e293b" />
-                    ))}
+                  <p className="omr-trend-intro-p">
+                    Current inventory has <strong>{direction}</strong> by <strong>{Math.abs(pctChange).toFixed(1)}%</strong> compared with <strong>{first.label}</strong>.
+                  </p>
+                  <div className="omr-table-scroll omr-trend-table-wrap">
+                    <table className="omr-table">
+                      <thead><tr><th>Month</th><th>Total Listings</th><th>New</th><th>Used</th></tr></thead>
+                      <tbody>
+                        {trend.map(t => (
+                          <tr key={t.label}><td>{t.label}</td><td>{fmt(t.total)}</td><td>{fmt(t.new_count)}</td><td>{fmt(t.used_count)}</td></tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
-                  <p className="omr-data-note mt-2"><i className="bi bi-info-circle" /> Share based on listings with valid ATM data only.</p>
+                  <div className="omr-trend-chart-wrap">
+                    <h3 className="omr-trend-chart-title">Active Off Road Caravan Inventory Over Time</h3>
+                    <LineChart data={trend} />
+                  </div>
                 </>
-              ) : (
-                <div className="omr-chart-empty">
-                  <i className="bi bi-speedometer2" />
-                  <p>ATM distribution data will appear here when available.</p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </section>
+              );
+            })()}
 
-      {/* ── Brands + Key Takeaways ── */}
-      <section className="omr-brands-section">
-        <div className="container">
-          <div className="omr-brands-2col">
-            {/* Brands table */}
-            <div>
-              <h2 className="omr-section-title">Top 10 Off Road Caravan Brands by Active Listings</h2>
-              {brands.length > 0 ? (
-                <div className="omr-table-scroll">
-                  <table className="omr-table omr-table--brands">
-                    <thead>
-                      <tr>
-                        <th>Rank</th>
-                        <th>Brand</th>
-                        <th>Active Listings</th>
-                        <th>Share of Inventory</th>
-                        {brands.some(b => b.median_price > 0) && <th>Median Asking Price</th>}
-                        {brands.some(b => b.median_atm   > 0) && <th>Median ATM</th>}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {brands.map((b, i) => (
-                        <tr key={b.brand}>
-                          <td className="omr-rank">{i + 1}</td>
-                          <td className="omr-brand-name">
-                            <a href={`/listings/off-road-category/?make=${encodeURIComponent(b.brand)}`}>{b.brand}</a>
-                          </td>
-                          <td>{fmt(b.count)}</td>
-                          <td>{fmtPct(b.share)}</td>
-                          {brands.some(x => x.median_price > 0) && <td>{fmtAUD(b.median_price)}</td>}
-                          {brands.some(x => x.median_atm   > 0) && <td>{fmtKg(b.median_atm)}</td>}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              ) : <div className="omr-table-empty">Brand data not available.</div>}
-              <a href="/listings/off-road-category/" className="omr-chart-link mt-3 d-inline-flex">View All Brands <i className="bi bi-arrow-right" /></a>
-            </div>
-
-            {/* Key Takeaways */}
-            <div className="omr-takeaways">
-              <h3 className="omr-takeaways__title">Key Takeaways</h3>
-              {KEY_TAKEAWAYS.length > 0 ? KEY_TAKEAWAYS.map((t, i) => (
-                <div key={i} className="omr-takeaway">
-                  <div className="omr-takeaway__icon"><i className={`bi ${t.icon}`} /></div>
-                  <div>
-                    <div className="omr-takeaway__title">{t.title}</div>
-                    <div className="omr-takeaway__text">{t.text}</div>
-                  </div>
-                </div>
-              )) : (
-                <p className="omr-takeaways__empty">Takeaways will appear once market data is available.</p>
-              )}
-              <a href="/listings/off-road-category/" className="omr-btn omr-btn--primary mt-4 d-inline-flex">
-                Browse Off Road Caravans <i className="bi bi-arrow-right" />
-              </a>
-            </div>
+            <h3 className="omr-trend-h3">Off Road Caravan Asking Price Trend</h3>
+            <p className="omr-trend-intro-p">The national median advertised asking price trend is tracked separately for new and used inventory.</p>
+            <p className="omr-trend-intro-p">Track three separate lines:</p>
+            <ul className="omr-trend-bullet-list">
+              <li><strong>All Off Road Caravans</strong></li>
+              <li><strong>New Off Road Caravans</strong></li>
+              <li><strong>Used Off Road Caravans</strong></li>
+            </ul>
+            <p className="omr-trend-intro-p">Keeping new and used inventory separate helps avoid mistaking changes in the proportion of new and used listings for actual movement in asking prices.</p>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* ── What the Market Means for Buyers ── */}
       <section className="omr-buyers-section">
         <div className="container">
           <h2 className="omr-section-title">What the Current Off Road Caravan Market Means for Buyers</h2>
-          <div className="omr-buyers-grid">
-            <div className="omr-buyers-card">
-              <div className="omr-buyers-card__icon"><i className="bi bi-search" /></div>
-              <h3 className="omr-buyers-card__title">Researching the Market</h3>
-              <p>With {total_count > 0 ? `over ${fmtK(total_count)} caravans` : "a broad selection of caravans"} currently for sale, buyers are in a strong position to compare options. Use the median price data above as a benchmark — caravans priced significantly above the median should offer clear justification in specification, brand or condition.</p>
-              <p>Always compare like-for-like: a lower-priced caravan may have an older build date, higher use, or fewer off-grid systems than a higher-priced equivalent.</p>
-            </div>
-            <div className="omr-buyers-card">
-              <div className="omr-buyers-card__icon"><i className="bi bi-cash-stack" /></div>
-              <h3 className="omr-buyers-card__title">Understanding Price Ranges</h3>
-              <p>The median figures in this report represent the midpoint of current supply. Half the inventory is priced above the median, half below. For buyers with a fixed budget, filtering listings by price range gives a realistic view of what is available in that bracket.</p>
-              <p>New caravans at the median reflect the mid-market dealer offering. Used caravans at the median include well-maintained examples with meaningful remaining life expectancy.</p>
-            </div>
-            <div className="omr-buyers-card">
-              <div className="omr-buyers-card__icon"><i className="bi bi-geo-alt" /></div>
-              <h3 className="omr-buyers-card__title">Location and Availability</h3>
-              <p>{topState ? `${topState.state} currently has the largest share of off road caravan inventory on CaravansForSale.com.au, followed by ${states[1]?.state ?? "NSW"} and ${states[2]?.state ?? "QLD"}.` : "Inventory is spread across all Australian states and territories."} If your preferred state has limited stock, consider purchasing interstate — many buyers purchase caravans from other states and arrange transport or self-collect.</p>
-            </div>
-            <div className="omr-buyers-card">
-              <div className="omr-buyers-card__icon"><i className="bi bi-shield-check" /></div>
-              <h3 className="omr-buyers-card__title">Buying Checklist</h3>
-              <ul className="omr-buy-list">
-                <li>Confirm ATM does not exceed your tow vehicle&apos;s rated capacity</li>
-                <li>Request a pre-purchase inspection by an independent caravan technician</li>
-                <li>Verify compliance plates, registration and ownership documentation</li>
-                <li>Check water, power and gas systems are tested and working</li>
-                <li>Confirm the caravan is free of finance encumbrances (PPSR search)</li>
-              </ul>
-            </div>
-          </div>
-          <div className="text-center mt-4">
-            <a href="/listings/off-road-category/" className="omr-btn omr-btn--primary">Browse Off Road Caravans <i className="bi bi-arrow-right" /></a>
-          </div>
+          <p className="omr-buyers-intro-p">Marketplace statistics become more useful when they help buyers make practical decisions.</p>
+
+          <hr className="omr-buyers-divider" />
+
+          <h3 className="omr-buyers-h3">Where Buyers Currently Have the Most Choice</h3>
+          <p className="omr-buyers-body-p">
+            <strong>{topState ? topState.state : "—"}</strong> currently has the largest advertised off road caravan inventory, accounting for <strong>{topState && topState.share > 0 ? fmtPct(topState.share) : "—"}</strong> of current national listings.
+          </p>
+          <p className="omr-buyers-body-p">Buyers prepared to search beyond their local market may therefore find a wider selection in states or regions with greater inventory.</p>
+
+          <hr className="omr-buyers-divider" />
+
+          <h3 className="omr-buyers-h3">What Buyers Are Currently Being Asked to Pay</h3>
+          <p className="omr-buyers-body-p">The current national median advertised asking price is <strong>{median_price > 0 ? fmtAUD(median_price) : "—"}</strong>.</p>
+          <p className="omr-buyers-body-p">For buyers comparing budgets, the more useful figures may be the separate new and used medians:</p>
+          <p className="omr-buyers-body-p"><strong>New:</strong> {new_price_median > 0 ? fmtAUD(new_price_median) : "—"}<br /><strong>Used:</strong> {used_price_median > 0 ? fmtAUD(used_price_median) : "—"}</p>
+          <p className="omr-buyers-body-p">The middle 50% price range of <strong>—</strong>–<strong>—</strong> can also provide a better indication of where much of the current marketplace sits than simply looking at the cheapest and most expensive advertisements.</p>
+
+          <hr className="omr-buyers-divider" />
+
+          <h3 className="omr-buyers-h3">Which Caravan Sizes Have the Most Choice</h3>
+          <p className="omr-buyers-body-p">
+            The <strong>{snapshot.common_length || (lengths.length > 0 ? lengths[0].range : "18–20ft")} length category</strong> currently contains the highest number of off road caravan advertisements.
+          </p>
+          <p className="omr-buyers-body-p">Buyers shopping within less common size categories may encounter fewer models and therefore benefit from searching across a wider geographic area.</p>
+
+          <hr className="omr-buyers-divider" />
+
+          <h3 className="omr-buyers-h3">How Heavy Is Current Off Road Caravan Inventory?</h3>
+          <p className="omr-buyers-body-p">
+            The median recorded ATM is <strong>{snapshot.median_atm > 0 ? fmtKg(snapshot.median_atm) : "—"}</strong>, while approximately <strong>{atmAbove3k && atmAbove3k.share > 0 ? fmtPct(atmAbove3k.share) : "—"}</strong> of listings with valid ATM information have an ATM of 3,000kg or more.
+          </p>
+          <p className="omr-buyers-body-p">This highlights why towing limits should be considered early in the buying process rather than after selecting a caravan.</p>
+
+          <hr className="omr-buyers-divider" />
+
+          <h3 className="omr-buyers-h3">Which Brands Have the Largest Advertised Supply?</h3>
+          <p className="omr-buyers-body-p">
+            {topBrands ? <><strong>{brands[0]?.brand || "—"}</strong>, <strong>{brands[1]?.brand || "—"}</strong> and <strong>{brands[2]?.brand || "—"}</strong> currently have the largest representation among active off road caravan advertisements.</> : "—"}
+          </p>
+          <p className="omr-buyers-body-p">A greater number of active listings can give buyers more models, layouts and prices to compare, but inventory volume should not be interpreted as a measure of manufacturer quality.</p>
         </div>
       </section>
 
-      {/* ── Methodology & Limitations ── */}
-      <section className="omr-method-section">
+      {/* ── How This Report Is Calculated ── */}
+      <section className="omr-calc-section" id="methodology">
         <div className="container">
-          <div className="omr-method-3col">
-            {/* Methodology */}
-            <div className="omr-method-block">
-              <h3 className="omr-method-title">About the Data & Methodology</h3>
-              <p className="omr-method-intro">This report is based on active off road caravan advertisements on CaravansForSale.com.au at the stated data snapshot. Statistics include listings with valid ATM data where indicated.</p>
-              <ul className="omr-method-list">
-                <li>Prices are advertised asking prices, not sale prices.</li>
-                <li>POA, missing or invalid prices are excluded from price calculations.</li>
-                <li>Duplicates are removed to ensure each caravan is counted once.</li>
-                <li>Coverage rates are shown where data is incomplete.</li>
-                <li>All figures update regularly as listings enter and leave the marketplace.</li>
+
+          <div className="omr-calc-header">
+            <span className="omr-calc-chip">Methodology</span>
+            <h2 className="omr-section-title">How This Off Road Caravan Market Report Is Calculated</h2>
+            <p className="omr-calc-intro-p">Transparency is important when interpreting marketplace statistics.</p>
+            <p className="omr-calc-intro-p">The Australian Off Road Caravan Market Report is calculated from <strong>active caravan advertisements on CaravansForSale.com.au classified within the off road caravan category at the stated data snapshot</strong>.</p>
+          </div>
+
+          <div className="omr-calc-grid">
+
+            <div className="omr-calc-card">
+              <h3 className="omr-calc-h3">Active Listings</h3>
+              <p className="omr-calc-p">Only listings considered active at the snapshot time are included.</p>
+              <p className="omr-calc-p">Removed, expired or otherwise inactive advertisements are excluded from current inventory calculations.</p>
+            </div>
+
+            <div className="omr-calc-card">
+              <h3 className="omr-calc-h3">New and Used Classification</h3>
+              <p className="omr-calc-p">Listings are normalised into:</p>
+              <ul className="omr-calc-list">
+                <li>New</li>
+                <li>Used</li>
+                <li>Other / Unknown.</li>
               </ul>
-              <a href="#faq" className="omr-chart-link">Read Full Methodology <i className="bi bi-arrow-right" /></a>
+              <p className="omr-calc-p">The national total must equal:</p>
+              <p className="omr-calc-formula"><strong>New + Used + Other/Unknown = Total Active Inventory</strong></p>
+              <p className="omr-calc-p">Listings without a valid condition are not silently assigned to either new or used.</p>
             </div>
 
-            {/* Limitations */}
-            <div className="omr-method-block">
-              <h3 className="omr-method-title">Limitations</h3>
-              <div className="omr-limit-list">
-                {[
-                  { icon: "bi-currency-dollar", text: "Advertised prices are not final sale prices." },
-                  { icon: "bi-list-check",       text: "Not every listing includes complete specifications." },
-                  { icon: "bi-database",         text: "Data reflects the marketplace, not national sales." },
-                  { icon: "bi-person",           text: "Use these insights as a guide, not individual valuations." },
-                ].map((l, i) => (
-                  <div key={i} className="omr-limit-item">
-                    <i className={`bi ${l.icon} omr-limit-icon`} />
-                    <span>{l.text}</span>
-                  </div>
-                ))}
+            <div className="omr-calc-card">
+              <h3 className="omr-calc-h3">Asking Prices</h3>
+              <p className="omr-calc-p">Price calculations include listings containing a valid positive numerical asking price in Australian dollars.</p>
+              <p className="omr-calc-p">The following are excluded from price calculations:</p>
+              <ul className="omr-calc-list">
+                <li>POA</li>
+                <li>missing prices</li>
+                <li>zero prices</li>
+                <li>invalid or malformed prices.</li>
+              </ul>
+              <p className="omr-calc-p">These listings may still remain part of total inventory counts.</p>
+              <p className="omr-calc-p">The report describes <strong>advertised asking prices</strong>, not confirmed final transaction prices.</p>
+            </div>
+
+            <div className="omr-calc-card">
+              <h3 className="omr-calc-h3">Why We Use Median Prices</h3>
+              <p className="omr-calc-p">Median prices are used as the primary measure because unusually expensive or inexpensive caravans can substantially influence a simple arithmetic average.</p>
+              <p className="omr-calc-p">The median represents the middle priced listing when all eligible asking prices are arranged from lowest to highest.</p>
+              <p className="omr-calc-p">Where sufficient data is available, the report also shows the <strong>25th–75th percentile</strong>, representing the middle 50% of advertised prices.</p>
+            </div>
+
+            <div className="omr-calc-card">
+              <h3 className="omr-calc-h3">Caravan Length</h3>
+              <p className="omr-calc-p">Caravan lengths are normalised into mutually exclusive categories:</p>
+              <ul className="omr-calc-list">
+                <li>Under 16ft</li>
+                <li>16ft to under 18ft</li>
+                <li>18ft to under 20ft</li>
+                <li>20ft to under 22ft</li>
+                <li>22ft and over.</li>
+              </ul>
+              <p className="omr-calc-p">Missing or implausible length values are reported separately and excluded from length-based calculations.</p>
+            </div>
+
+            <div className="omr-calc-card">
+              <h3 className="omr-calc-h3">ATM</h3>
+              <p className="omr-calc-p">ATM figures are taken from valid recorded listing data.</p>
+              <p className="omr-calc-p">ATM means <strong>Aggregate Trailer Mass</strong> and refers to the manufacturer's maximum allowable mass of the loaded trailer.</p>
+              <p className="omr-calc-p">Listings without a valid ATM remain in total marketplace inventory but are excluded from ATM medians and weight distributions.</p>
+              <p className="omr-calc-p">The percentage of listings with valid ATM data is displayed alongside ATM statistics.</p>
+            </div>
+
+            <div className="omr-calc-card">
+              <h3 className="omr-calc-h3">Sleeping Capacity</h3>
+              <p className="omr-calc-p">Sleeping capacity is normalised into:</p>
+              <ul className="omr-calc-list">
+                <li>2 berth</li>
+                <li>3 berth</li>
+                <li>4 berth</li>
+                <li>5 berth</li>
+                <li>6+ berth.</li>
+              </ul>
+              <p className="omr-calc-p">Listings without reliable sleeping-capacity information are reported as unknown.</p>
+            </div>
+
+            <div className="omr-calc-card">
+              <h3 className="omr-calc-h3">State and Territory</h3>
+              <p className="omr-calc-p">Geographic statistics use the advertised location associated with the caravan.</p>
+              <p className="omr-calc-p">A dealer that offers Australia-wide delivery does not cause the same caravan to be counted in multiple states.</p>
+            </div>
+
+            <div className="omr-calc-card">
+              <h3 className="omr-calc-h3">Brand Data</h3>
+              <p className="omr-calc-p">Manufacturer names are normalised so differences in spelling, punctuation or capitalisation do not split the same brand into multiple groups.</p>
+              <p className="omr-calc-p">Median brand prices should only be shown where a minimum number of valid priced listings exists.</p>
+            </div>
+
+            <div className="omr-calc-card">
+              <h3 className="omr-calc-h3">Duplicate Listings</h3>
+              <p className="omr-calc-p">Where the same physical caravan appears more than once, duplicate detection should use available identifiers such as:</p>
+              <ul className="omr-calc-list">
+                <li>listing ID</li>
+                <li>dealer stock number</li>
+                <li>VIN where available</li>
+                <li>seller</li>
+                <li>make</li>
+                <li>model</li>
+                <li>year</li>
+                <li>specification</li>
+                <li>images or other internal identifiers.</li>
+              </ul>
+              <p className="omr-calc-p">The objective is for one physical caravan to contribute once to national marketplace statistics.</p>
+            </div>
+
+            <div className="omr-calc-card">
+              <h3 className="omr-calc-h3">Data Coverage</h3>
+              <p className="omr-calc-p">Not every advertisement contains every specification.</p>
+              <p className="omr-calc-p">For this reason, the report displays coverage alongside important statistics.</p>
+              <p className="omr-calc-p">For example:</p>
+              <p className="omr-calc-formula"><strong>ATM data available for: 78% of listings</strong></p>
+              <p className="omr-calc-p">is more transparent than presenting an ATM distribution that appears to represent 100% of the market.</p>
+            </div>
+
+          </div>
+
+          {/* Data Updates — full width */}
+          <div className="omr-calc-updates-card">
+            <div className="omr-calc-updates-icon"><i className="bi bi-arrow-clockwise" /></div>
+            <div className="omr-calc-updates-body">
+              <h3 className="omr-calc-h3 omr-calc-h3--light">Data Updates</h3>
+              <p className="omr-calc-p omr-calc-p--light">All figures on this page originate from the <strong>same canonical marketplace snapshot</strong>. The snapshot cards, charts, state totals, new/used totals and tables therefore update together.</p>
+              <div className="omr-calc-snapshot-row">
+                <div className="omr-calc-snapshot-item">
+                  <span className="omr-calc-snapshot-label">Data snapshot</span>
+                  <span className="omr-calc-snapshot-val">{(snapshot as any).snapshot_date ?? "—"}</span>
+                </div>
+                <div className="omr-calc-snapshot-item">
+                  <span className="omr-calc-snapshot-label">Next scheduled refresh</span>
+                  <span className="omr-calc-snapshot-val">{(snapshot as any).next_refresh ?? "—"}</span>
+                </div>
               </div>
-              <a href="#faq" className="omr-chart-link">Full Limitations <i className="bi bi-arrow-right" /></a>
-            </div>
-
-            {/* Final CTA */}
-            <div className="omr-cta-card">
-              <h3 className="omr-cta-card__title">Ready to Find Your<br />Off Road Caravan?</h3>
-              <p className="omr-cta-card__desc">
-                Use real market data to make a smarter decision. Browse thousands of off road caravans
-                from dealers and private sellers across Australia.
-              </p>
-              <a href="/listings/off-road-category/" className="omr-btn omr-btn--primary w-100 justify-content-center">
-                Browse Off Road Caravans <i className="bi bi-arrow-right" />
-              </a>
-              <a href="/off-road-caravans/" className="omr-btn omr-btn--outline-light w-100 justify-content-center mt-2">
-                Back to Off Road Caravans Hub <i className="bi bi-arrow-right" />
-              </a>
             </div>
           </div>
+
+        </div>
+      </section>
+
+      {/* ── Limitations of This Report ── */}
+      <section className="omr-limit-section" id="limitations">
+        <div className="container">
+
+          <div className="omr-calc-header">
+            
+            <h2 className="omr-section-title">Limitations of This Report</h2>
+            <p className="omr-calc-intro-p">This report provides a detailed view of advertisements appearing on CaravansForSale.com.au, but it does not represent every caravan available or owned in Australia.</p>
+            <p className="omr-calc-intro-p">Important limitations include:</p>
+          </div>
+
+          <div className="omr-limit-cards-grid">
+            {[
+              { icon: "bi-currency-dollar",   text: "Advertised prices are not confirmed sale prices." },
+              { icon: "bi-arrow-repeat",      text: "Marketplace inventory changes as advertisements are added and removed." },
+              { icon: "bi-list-check",        text: "Some listings may have incomplete specifications." },
+              { icon: "bi-pencil-square",     text: "Seller-entered information can contain errors." },
+              { icon: "bi-bar-chart-line",    text: "Brand representation reflects active inventory rather than national sales." },
+              { icon: "bi-geo-alt",           text: "Geographic data reflects the advertised location of listings." },
+              { icon: "bi-tag",               text: "Marketplace pricing does not necessarily indicate the replacement cost or market valuation of an individual caravan." },
+            ].map((item, i) => (
+              <div key={i} className="omr-limit-card">
+                <div className="omr-limit-card__icon"><i className={`bi ${item.icon}`} /></div>
+                <p className="omr-limit-card__text">{item.text}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="omr-limit-closing">
+            <p>Statistics should therefore be used as <strong>marketplace indicators rather than individual caravan valuations</strong>.</p>
+          </div>
+
         </div>
       </section>
 
       {/* ── FAQ ── */}
       <section className="omr-faq-section" id="faq">
         <div className="container">
-          <h2 className="omr-section-title text-center">Frequently Asked Questions About the Australian Off Road Caravan Market</h2>
+          <h2 className="omr-section-title">Frequently Asked Questions About the Australian Off Road Caravan Market</h2>
           <div className="omr-faq-grid">
-            {FAQS.map((f, i) => <FaqItem key={i} q={f.q} a={f.a} />)}
+            <div className="omr-faq-col">
+              {FAQS.slice(0, Math.ceil(FAQS.length / 2)).map((f, i) => <FaqItem key={i} q={f.q} a={f.a} />)}
+            </div>
+            <div className="omr-faq-col">
+              {FAQS.slice(Math.ceil(FAQS.length / 2)).map((f, i) => <FaqItem key={`r${i}`} q={f.q} a={f.a} />)}
+            </div>
           </div>
         </div>
       </section>
@@ -967,19 +1373,36 @@ export default function Home({ data }: Props) {
         <div className="container">
           <h2 className="omr-section-title text-center">Explore the Australian Off Road Caravan Market</h2>
           <p className="omr-explore-desc">
-            Market statistics can help you understand current prices and availability, but the right caravan will ultimately
-            depend on your tow vehicle, travel plans, budget, preferred layout and required off-road capability.
+            Market statistics can help you understand current prices and availability, but the right caravan willultimately depend on your tow vehicle, travel plans, budget, preferred layout and required off-roadcapability.<br></br>
+            Continue your research by comparing live advertisements, caravan types, manufacturers, models andbuying guides across CaravansForSale.com.au.
           </p>
           <div className="omr-explore-links">
-            <a href="/listings/off-road-category/"                className="omr-explore-link"><i className="bi bi-truck" /> Browse All Off Road Caravans for Sale</a>
-            <a href="/listings/new-condition/off-road-category/"  className="omr-explore-link"><i className="bi bi-star" /> Browse New Off Road Caravans</a>
-            <a href="/listings/used-condition/off-road-category/" className="omr-explore-link"><i className="bi bi-tag" /> Browse Used Off Road Caravans</a>
-            <a href="/off-road-caravans/"                         className="omr-explore-link"><i className="bi bi-house" /> Explore Off Road Caravans Australia</a>
-            <a href="/off-road-caravan-types/"                    className="omr-explore-link"><i className="bi bi-grid" /> Compare Off Road Caravan Types</a>
+            <a href="/listings/off-road-category/"                className="omr-explore-link">Browse All Off Road Caravans for Sale</a>
+            <a href="/listings/new-condition/off-road-category/"  className="omr-explore-link">Browse New Off Road Caravans</a>
+            <a href="/listings/used-condition/off-road-category/" className="omr-explore-link">Browse Used Off Road Caravans</a>
+            <a href="/off-road-caravans/"                         className="omr-explore-link">Explore Off Road Caravans Australia</a>
+            <a href="/off-road-caravan-types/"                    className="omr-explore-link">Compare Off Road Caravan Types</a>
           </div>
-          <div className="omr-explore-btns">
-            <a href="/listings/off-road-category/" className="omr-btn omr-btn--primary">Browse Off Road Caravans <i className="bi bi-arrow-right" /></a>
-            <a href="/off-road-caravans/"          className="omr-btn omr-btn--outline-dark">Back to Off Road Caravans Hub <i className="bi bi-arrow-right" /></a>
+          
+        </div>
+      </section>
+
+      {/* ── Final CTA ── */}
+      <section className="omr-final-cta-section">
+        <div className="container">
+          <div className="omr-final-cta-card">
+            <div className="omr-final-cta-icon">
+              <img src="/images/category.svg" alt="" width={40} height={40} />
+            </div>
+            <div className="omr-final-cta-body">
+              <h2 className="omr-final-cta-title">Ready to <span>Find Your</span> Off Road Caravan?</h2>
+              <p className="omr-final-cta-p">Use the latest Australian marketplace data to understand current prices and availability, then compare <strong>new and used off road caravans from dealers and private sellers across Australia</strong>.</p>
+              <p className="omr-final-cta-p">Search by price, state, length, ATM, sleeping capacity, brand and condition to find caravans that match your touring plans.</p>
+            </div>
+            <div className="omr-final-cta-btns">
+              <a href="/listings/off-road-category/" className="omr-final-cta-btn">Browse Off Road Caravans <i className="bi bi-arrow-right" /></a>
+              <a href="/off-road-caravans/" className="omr-final-cta-btn ">Back to Off Road Caravans Hub <i className="bi bi-arrow-right" /></a>
+            </div>
           </div>
         </div>
       </section>
