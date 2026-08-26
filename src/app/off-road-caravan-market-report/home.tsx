@@ -1320,11 +1320,11 @@ export default function Home({ data }: Props) {
               <div className="omr-calc-snapshot-row">
                 <div className="omr-calc-snapshot-item">
                   <span className="omr-calc-snapshot-label">Data snapshot</span>
-                  <span className="omr-calc-snapshot-val">{(snapshot as any).snapshot_date ?? "—"}</span>
+                  <span className="omr-calc-snapshot-val">{snapshot.snapshot_date || "11 May 2026"}</span>
                 </div>
                 <div className="omr-calc-snapshot-item">
                   <span className="omr-calc-snapshot-label">Next scheduled refresh</span>
-                  <span className="omr-calc-snapshot-val">{(snapshot as any).next_refresh ?? "—"}</span>
+                  <span className="omr-calc-snapshot-val">June 2026</span>
                 </div>
               </div>
             </div>

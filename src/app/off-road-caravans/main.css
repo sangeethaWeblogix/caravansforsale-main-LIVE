@@ -3841,7 +3841,7 @@ main .section-head .category_icon li img {
 .or-redesign-section { background: #f8f9fb; padding: 48px 0; }
 .or-redesign-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
 .or-redesign-grid:last-child { margin-bottom: 0; }
-.or-panel { background: #fff; border-radius: 16px; padding: 32px; border: 1.5px solid #e0e4ee;}
+.or-panel { background: #fff; border-radius: 16px; padding: 32px; border: 1.5px solid #e0e4ee; display: flex; flex-direction: column; }
 
 /* Panel header */
 .or-panel__eyebrow { display: flex; align-items: center; gap: 10px; font-size: 11px; font-weight: 700; color: #ec7200; letter-spacing: 1.2px; text-transform: uppercase; margin-bottom: 10px; }
@@ -3891,7 +3891,7 @@ main .section-head .category_icon li img {
 }
 
 /* Compare All Types button */
-.or-compare-btn-wrap { display: flex; justify-content: center; margin-top: 20px; }
+.or-compare-btn-wrap { display: flex; justify-content: center; margin-top: auto; padding-top: 20px; }
 .or-compare-btn { display: inline-flex; align-items: center; gap: 6px; background: #ec7200; color: #fff; font-weight: 600; font-size: 15px; padding: 11px 32px; border-radius: 6px; text-decoration: none; transition: background 0.15s; }
 .or-compare-btn:hover { background: #d46200; color: #fff; }
 
