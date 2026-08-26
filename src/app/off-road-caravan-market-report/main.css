@@ -361,8 +361,9 @@ color: #161616;
 /* ── Line Chart ── */
 .omr-linechart {
   width: 100%;
-  height: 120px;
+  height: 220px;
   display: block;
+  overflow: visible;
 }
 
 /* ── Data Tables Row ── */
@@ -394,6 +395,12 @@ color: #161616;
     overflow-x: auto;
     border-radius: 10px;
     border: 1.5px solid #ddd;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+}
+.omr-table-scroll .omr-table {
+  min-width: 420px;
 }
 .omr-table {
   width: 100%;
@@ -978,7 +985,16 @@ color: #161616;
 }
 .omr-supply-callout strong { color: #ec7200; }
 /* right column: table header */
-.omr-supply-right { padding-top: 4px; }
+.omr-supply-right { padding-top: 4px; min-width: 0; }
+
+/* Prevent grid children from overflowing — allows omr-table-scroll to scroll */
+.omr-price-sub-grid > div,
+.omr-sizes-grid > div,
+.omr-state-grid > div,
+.omr-atm-doc-grid > div,
+.omr-sleep-grid > div,
+.omr-nvu-table-wrap,
+.omr-trend-table-wrap { min-width: 0; }
 .omr-supply-table-header {
   display: flex;
   align-items: flex-start;
@@ -1073,9 +1089,9 @@ color: #161616;
     line-height: 1.7;
 }
 .omr-price-divider {
-  border: none;
-  border-top: 1px solid #e5e7eb;
-  margin: 36px 0;
+    border: none;
+    border-top: 1px solid #999999;
+    margin: 36px 0;
 }
 .omr-price-h3 {
   font-size: 19px;
@@ -1092,6 +1108,7 @@ color: #161616;
     font-size: 16px;
     line-height: 1.8;
 }
+.omr-price-body strong { font-weight: 600; }
 .omr-price-browse-link {
   display: inline-flex;
   align-items: center;
@@ -1183,6 +1200,7 @@ color: #161616;
     font-size: 16px;
     line-height: 1.75;
 }
+.omr-state-intro strong { font-weight: 600; }
 .omr-state-subhead {
   font-size: 16px;
   font-weight: 700;
@@ -1481,47 +1499,100 @@ color: #161616;
 .omr-buyers-card p:last-child { margin-bottom: 0; }
 
 /* ── Responsive ── */
+/* ── Mini laptop (≤1199px) ── */
 @media (max-width: 1199px) {
   .omr-snap-grid { grid-template-columns: repeat(5, 1fr); }
-  .omr-hero__img-col { width: 340px; }
+  .omr-hero__img-col { width: 300px; }
+  .omr-hero__title { font-size: 32px; }
 }
+
+/* ── Tablet landscape / mini laptop (≤991px) ── */
 @media (max-width: 991px) {
-  .omr-hero { padding: 40px 0; }
+  .omr-hero { padding: 36px 0; }
   .omr-hero__content { max-width: 100%; }
+  .omr-hero__title { font-size: 28px; }
+  .omr-hero__desc { font-size: 15px; }
+  .omr-hero__meta { font-size: 13px; gap: 4px 8px; }
+  .omr-snap-grid { grid-template-columns: repeat(3, 1fr); }
+  .omr-snap-val { font-size: 17px; }
   .omr-charts-3col    { grid-template-columns: 1fr; }
   .omr-tables-3col    { grid-template-columns: 1fr; }
   .omr-brands-2col    { grid-template-columns: 1fr; }
-  .omr-calc-grid        { grid-template-columns: 1fr; }
+  .omr-calc-grid        { grid-template-columns: repeat(2, 1fr); }
   .omr-calc-updates-card { flex-direction: column; gap: 16px; padding: 28px 24px; }
-  .omr-limit-cards-grid { grid-template-columns: 1fr; }
+  .omr-limit-cards-grid { grid-template-columns: repeat(2, 1fr); }
   .omr-final-cta-card { flex-direction: column; align-items: flex-start; padding: 28px 24px; }
   .omr-final-cta-btns { width: 100%; min-width: unset; }
   .omr-faq-grid       { grid-template-columns: 1fr; }
-  .omr-faq-item:nth-child(odd) { border-right: none; }
   .omr-context-grid   { grid-template-columns: 1fr; }
   .omr-supply-grid    { grid-template-columns: 1fr; }
   .omr-price-intro-grid { grid-template-columns: 1fr; }
   .omr-price-sub-grid   { grid-template-columns: 1fr; }
   .omr-state-grid       { grid-template-columns: 1fr; }
-
   .omr-sizes-grid     { grid-template-columns: 1fr; }
   .omr-atm-doc-grid   { grid-template-columns: 1fr; }
   .omr-sleep-grid     { grid-template-columns: 1fr; }
   .omr-nvu-why-grid   { grid-template-columns: 1fr; }
   .omr-buyers-grid    { grid-template-columns: 1fr; }
+  .omr-glance { padding: 36px 0; }
+  .omr-charts-row { padding: 36px 0; }
+  .omr-chart-box { padding: 20px 16px; }
+  .omr-section-title { font-size: 22px; }
+  .omr-linechart { height: 190px; }
+  .omr-final-cta-title { font-size: 22px; }
 }
+
+/* ── Tablet portrait (≤767px) ── */
 @media (max-width: 767px) {
   .omr-snap-grid { grid-template-columns: repeat(3, 1fr); }
-  .omr-section-title { font-size: 22px; }
-  .omr-hero__title { font-size: 28px; }
-  .omr-hero { padding: 40px 0; }
+  .omr-section-title { font-size: 21px; }
+  .omr-hero__title { font-size: 26px; }
+  .omr-hero { padding: 32px 0; }
   .omr-brands-2col  { grid-template-columns: 1fr; }
+  .omr-calc-grid    { grid-template-columns: 1fr; }
+  .omr-limit-cards-grid { grid-template-columns: 1fr; }
+  .omr-hero__intel { font-size: 15px; }
+  .omr-glance-intro p { font-size: 14px; }
+  .omr-table { font-size: 13px; }
+  .omr-table th, .omr-table td { padding: 10px 12px; }
+  .omr-price-h3 { font-size: 17px; }
+  .omr-buyers-h3 { font-size: 17px; }
+  .omr-chart-title { font-size: 15px; }
+  .omr-linechart { height: 170px; }
 }
+
+/* ── Mobile (≤575px) ── */
 @media (max-width: 575px) {
+  .omr-donut-wrap--row { flex-direction: column; align-items: center; }
+  .omr-donut-wrap--row .omr-donut-legend { width: 100%; }
+  .omr-donut-legend__count { min-width: 36px; }
+  .omr-donut-legend__pct   { min-width: 40px; }
   .omr-snap-grid { grid-template-columns: repeat(2, 1fr); }
-  .omr-hero__title { font-size: 24px; }
-  .omr-section-title { font-size: 20px; }
+  .omr-snap-card { padding: 14px 8px 12px; }
+  .omr-snap-val { font-size: 15px; }
+  .omr-snap-label { font-size: 12px; }
+  .omr-hero__title { font-size: 22px; }
+  .omr-hero__intel { font-size: 14px; }
+  .omr-hero__desc { font-size: 14px; }
+  .omr-hero__meta { flex-direction: column; align-items: center; gap: 4px; font-size: 12px; }
+  .omr-hero__meta-sep { display: none; }
   .omr-hero__btns { flex-direction: column; }
-  .omr-btn { justify-content: center; }
+  .omr-btn { justify-content: center; width: 100%; }
+  .omr-section-title { font-size: 19px; }
   .omr-explore-btns { flex-direction: column; align-items: center; }
+  .omr-glance { padding: 28px 0; }
+  .omr-charts-row { padding: 28px 0; }
+  .omr-table { font-size: 12px; }
+  .omr-table th, .omr-table td { padding: 8px 10px; }
+  .omr-chart-box { padding: 16px 12px; }
+  .omr-chart-title { font-size: 14px; margin-bottom: 10px; }
+  .omr-linechart { height: 150px; }
+  .omr-final-cta-title { font-size: 20px; }
+  .omr-final-cta-btn { font-size: 13px; padding: 12px 16px; }
+  .omr-calc-grid { grid-template-columns: 1fr; }
+  .omr-limit-cards-grid { grid-template-columns: 1fr; }
+  .omr-price-intro-lead { font-size: 15px; }
+  .omr-price-body { font-size: 14px; }
+  .omr-buyers-body-p { font-size: 14px; }
+  .omr-faq-item__q { font-size: 14px; }
 }

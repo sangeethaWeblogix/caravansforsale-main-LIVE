@@ -309,10 +309,11 @@ export default function OffRoadCaravansPage({ stateBands, offRoadBlogs, offRoadP
                   <span className="or-stat-card__label">Most Common Sleeps</span>
                 </div>
               </div>
-              <a href="/listings/off-road-category/" className="or-report-btn">
-                <span className="or-report-btn__icon"><i className="bi bi-file-earmark-text" /></span>
-                View Full Market Report →
-              </a>
+              <div className="or-compare-btn-wrap">
+                <a href="/off-road-caravan-market-report/" className="or-compare-btn">
+                  View Full Market Report →
+                </a>
+              </div>
             </div>
           </div>
 
