@@ -657,13 +657,11 @@ const priceUpperIdx = !isPOA ? PRICE_STEPS.findIndex(s => s >= displayPrice) : -
         {isOffRoad && (
           <section className="lsd-offroad-extra">
             
-              <h2 className="lsd-offroad-extra__title">
-                {offRoadSeed % 2 === 0 ? "Find Your Ideal Off Road Caravan" : "Search and Compare Off Road Caravans"}
-              </h2>
+              <h2 className="lsd-offroad-extra__title">Find Your Ideal Off Road Caravan</h2>
               <p className="lsd-offroad-extra__body">
-                Browse live caravan listings from across the country, then compare{" "}
-                <a href="https://www.caravansforsale.com.au/off-road-caravans/">off road caravans in Australia</a>{" "}
-                using search filters by price, location, weight, length and sleeping capacity while exploring manufacturer and model reviews.
+                Need help choosing the right off road caravan? Visit our{" "}
+                <a href="https://www.caravansforsale.com.au/off-road-caravans/">Off Road Caravans</a>{" "}
+                hub to compare caravan types, current prices, brands, models, market data, reviews and buying guides.
               </p>
             
           </section>

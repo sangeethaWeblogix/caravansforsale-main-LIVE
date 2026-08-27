@@ -3841,7 +3841,7 @@ main .section-head .category_icon li img {
 .or-redesign-section { background: #f8f9fb; padding: 48px 0; }
 .or-redesign-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
 .or-redesign-grid:last-child { margin-bottom: 0; }
-.or-panel { background: #fff; border-radius: 16px; padding: 32px; border: 1.5px solid #e0e4ee;}
+.or-panel { background: #fff; border-radius: 16px; padding: 32px; border: 1.5px solid #e0e4ee; display: flex; flex-direction: column; }
 
 /* Panel header */
 .or-panel__eyebrow { display: flex; align-items: center; gap: 10px; font-size: 11px; font-weight: 700; color: #ec7200; letter-spacing: 1.2px; text-transform: uppercase; margin-bottom: 10px; }
@@ -3891,10 +3891,9 @@ main .section-head .category_icon li img {
 }
 
 /* Compare All Types button */
-.or-compare-btn { display: none; align-items: center; gap: 14px; border: 1.5px solid #ec7200; border-radius: 12px; padding: 12px 18px; color: #111; font-weight: 600; font-size: 14px; text-decoration: none; margin-top: 20px; transition: background 0.15s; }
-.or-compare-btn:hover { background: #fff7f0; }
-.or-compare-btn__icon { width: 40px; height: 40px; border-radius: 50%; background: #ec7200; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.or-compare-btn__icon i { color: #fff; font-size: 18px; }
+.or-compare-btn-wrap { display: flex; justify-content: center; margin-top: auto; padding-top: 20px; }
+.or-compare-btn { display: inline-flex; align-items: center; gap: 6px; background: #ec7200; color: #fff; font-weight: 600; font-size: 15px; padding: 11px 32px; border-radius: 6px; text-decoration: none; transition: background 0.15s; }
+.or-compare-btn:hover { background: #d46200; color: #fff; }
 
 /* Stats grid */
 .or-stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
@@ -3920,7 +3919,7 @@ main .section-head .category_icon li img {
 }
 
 /* View Full Market Report button */
-.or-report-btn { display: none; align-items: center; gap: 14px; background: #ec7200; border-radius: 12px; padding: 14px 20px; color: #fff; font-weight: 600; font-size: 14px; text-decoration: none; margin-top: 20px; transition: background 0.15s; }
+.or-report-btn { display: flex; align-items: center; gap: 14px; background: #ec7200; border-radius: 12px; padding: 14px 20px; color: #fff; font-weight: 600; font-size: 14px; text-decoration: none; margin-top: 20px; transition: background 0.15s; }
 .or-report-btn:hover { background: #d46500; }
 .or-report-btn__icon { width: 38px; height: 38px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .or-report-btn__icon i { color: #fff; font-size: 17px; }

@@ -37,7 +37,7 @@ async function fetchOffRoadSnapshot(): Promise<SnapshotData> {
   try {
     const res = await fetch(
       `${API_BASE}/market_snapshot?category=off-road`,
-      { headers: wpHeaders(), next: { revalidate: 3600 } }
+      { headers: wpHeaders(), next: { revalidate: 0 } }
     );
     if (!res.ok) return empty;
     const raw = await res.text();
@@ -64,7 +64,7 @@ async function fetchOffRoadBrandCounts(): Promise<Record<string, number>> {
   try {
     const res = await fetch(
       `${API_BASE}/category-makes-count?category=off-road`,
-      { headers: wpHeaders(), next: { revalidate: 3600 } }
+      { headers: wpHeaders(), next: { revalidate: 0 } }
     );
     if (!res.ok) return {};
     const raw = await res.text();
@@ -79,7 +79,7 @@ async function fetchOffRoadStateBands(): Promise<any[]> {
   try {
     const res = await fetch(
       `${API_BASE}/off-road-state-caravans-list`,
-      { headers: wpHeaders(), next: { revalidate: 3600 } }
+      { headers: wpHeaders(), next: { revalidate: 0 } }
     );
     if (!res.ok) return [];
     const raw = await res.text();
@@ -93,7 +93,7 @@ async function fetchOffRoadBlogs(): Promise<any[]> {
   try {
     const res = await fetch(
       `${API_BASE}/blog?product_category=off-road&per_page=20&page=1`,
-      { headers: wpHeaders(), next: { revalidate: 3600 } }
+      { headers: wpHeaders(), next: { revalidate: 0 } }
     );
     if (!res.ok) return [];
     const raw = await res.text();
@@ -107,7 +107,7 @@ async function fetchOffRoadPopularBlogs(seed: number): Promise<any[]> {
   try {
     const res = await fetch(
       `${API_BASE}/blog-shuffle?popular=off-road&seed=${seed}`,
-      { headers: wpHeaders(), next: { revalidate: 3600 } }
+      { headers: wpHeaders(), next: { revalidate: 0 } }
     );
     if (!res.ok) return [];
     const raw = await res.text();
@@ -121,7 +121,7 @@ async function fetchOffRoadBrandBlogs(seed: number): Promise<any[]> {
   try {
     const res = await fetch(
       `${API_BASE}/blog-shuffle?make=off-road&seed=${seed}`,
-      { headers: wpHeaders(), next: { revalidate: 3600 } }
+      { headers: wpHeaders(), next: { revalidate: 0 } }
     );
     if (!res.ok) return [];
     const raw = await res.text();
@@ -135,7 +135,7 @@ async function fetchOffRoadModelBlogs(seed: number): Promise<any[]> {
   try {
     const res = await fetch(
       `${API_BASE}/blog-shuffle?model=off-road&seed=${seed}`,
-      { headers: wpHeaders(), next: { revalidate: 3600 } }
+      { headers: wpHeaders(), next: { revalidate: 0 } }
     );
     if (!res.ok) return [];
     const raw = await res.text();

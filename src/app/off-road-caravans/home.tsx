@@ -208,7 +208,7 @@ export default function OffRoadCaravansPage({ stateBands, offRoadBlogs, offRoadP
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
             </svg>
-            Explore Off Road Caravans
+            Off Road Caravan Listings
           </a>
         </div>
       </section>
@@ -236,10 +236,10 @@ export default function OffRoadCaravansPage({ stateBands, offRoadBlogs, offRoadP
               <p className="or-panel__sub text-center">Not sure which off road caravan is right for you? Here&apos;s a quick guide.</p>
               <div className="or-types-grid">
                 {[
-                  { label: "Semi Off Road",    img: "Semi-Off-Road.png",    desc: "Built for gravel roads and light corrugations. Ideal for touring and occasional dirt tracks." },
+                  { label: "Semi Off Road",    img: "Full-Off-Road.png",    desc: "Built for gravel roads and light corrugations. Ideal for touring and occasional dirt tracks." },
                   { label: "Full Off Road",    img: "Full-Off-Road.png",    desc: "Built for rough roads and remote travel. Stronger suspension and chassis." },
-                  { label: "Extreme Off Road", img: "Extreme-Off-Road.png", desc: "Designed for the toughest terrain and remote expeditions. Maximum durability." },
-                  { label: "Hybrid Off Road",  img: "Hybrid-Off-Road.png",  desc: "Lightweight and low profile with off road capability. Great for couples & small families." },
+                  { label: "Extreme Off Road", img: "Full-Off-Road.png", desc: "Designed for the toughest terrain and remote expeditions. Maximum durability." },
+                  { label: "Hybrid Off Road",  img: "Full-Off-Road.png",  desc: "Lightweight and low profile with off road capability. Great for couples & small families." },
                 ].map(t => (
                   <div key={t.label} className="or-type-card">
                     <div className="or-type-card__img-wrap">
@@ -251,10 +251,11 @@ export default function OffRoadCaravansPage({ stateBands, offRoadBlogs, offRoadP
                   </div>
                 ))}
               </div>
-              <a href="/listings/off-road-category/" className="or-compare-btn">
-                <span className="or-compare-btn__icon"><i className="bi bi-arrow-left-right" /></span>
-                Compare All Types 
-              </a>
+              <div className="or-compare-btn-wrap">
+                <a href="/off-road-caravan-types/" className="or-compare-btn">
+                  Compare Off Road Caravan Types
+                </a>
+              </div>
             </div>
 
             {/* Market Snapshot */}
@@ -308,10 +309,11 @@ export default function OffRoadCaravansPage({ stateBands, offRoadBlogs, offRoadP
                   <span className="or-stat-card__label">Most Common Sleeps</span>
                 </div>
               </div>
-              <a href="/listings/off-road-category/" className="or-report-btn">
-                <span className="or-report-btn__icon"><i className="bi bi-file-earmark-text" /></span>
-                View Full Market Report →
-              </a>
+              <div className="or-compare-btn-wrap">
+                <a href="/off-road-caravan-market-report/" className="or-compare-btn">
+                  View Full Market Report →
+                </a>
+              </div>
             </div>
           </div>
 
@@ -393,7 +395,7 @@ export default function OffRoadCaravansPage({ stateBands, offRoadBlogs, offRoadP
               {offRoadPopularBlogs.slice(0, 10).map((b) => (
                 <a key={b.id} href={`/${b.slug}/`} className="or-pop-guides__card">
                   <div className="or-pop-guides__img-wrap">
-                    <img src={b.image || "/images/download.svg"} alt={b.title} className="or-pop-guides__img" loading="lazy" />
+                    <img src={b.image || "/images/download.svg"} alt={b.title} className="or-pop-guides__img" loading="lazy" onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/images/download.svg"; }} />
                   </div>
                   <div className="or-pop-guides__body">
                     <h3 className="or-pop-guides__title">{b.title}</h3>
@@ -415,7 +417,7 @@ export default function OffRoadCaravansPage({ stateBands, offRoadBlogs, offRoadP
                 <h2 className="or-section-title">Brand Reviews</h2>
                 {offRoadBrandBlogs.slice(0, 4).map((b) => (
                   <a key={b.id} href={`/${b.slug}/`} className="or-reviews-item">
-                    <img src={b.image || "/images/download.svg"} alt={b.title} className="or-reviews-thumb" loading="lazy" />
+                    <img src={b.image || "/images/download.svg"} alt={b.title} className="or-reviews-thumb" loading="lazy" onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/images/download.svg"; }} />
                     <div className="or-reviews-item__body">
                       <h3 className="or-reviews-item__title">{b.title}</h3>
                     </div>
@@ -426,7 +428,7 @@ export default function OffRoadCaravansPage({ stateBands, offRoadBlogs, offRoadP
                 <h2 className="or-section-title">Model Reviews</h2>
                 {offRoadModelBlogs.slice(0, 4).map((b) => (
                   <a key={b.id} href={`/${b.slug}/`} className="or-reviews-item">
-                    <img src={b.image || "/images/download.svg"} alt={b.title} className="or-reviews-thumb" loading="lazy" />
+                    <img src={b.image || "/images/download.svg"} alt={b.title} className="or-reviews-thumb" loading="lazy" onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/images/download.svg"; }} />
                     <div className="or-reviews-item__body">
                       <h3 className="or-reviews-item__title">{b.title}</h3>
                     </div>
