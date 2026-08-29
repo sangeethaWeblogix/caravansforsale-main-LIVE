@@ -25,6 +25,8 @@ export default function CookiePolicy() {
 
               <ul>
                 <li>caravansforsale.com.au</li>
+                <li>motorhomesforsale.com.au</li>
+                <li>campervansforsale.au</li>
                 
               </ul>
 
