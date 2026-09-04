@@ -15,7 +15,7 @@ import HomeBuyerGuide from "./HomeBuyerGuide";
 import HomeListingSlider from "./HomeListingSlider";
 import { useBanners } from "@/components/BannerHandler";
 import { useBannerTracking } from "@/hooks/useBannerTracking";
-import "./main.css?=298";
+import "./main.css?=299";
 
 const BlogSection = dynamic(() => import("../blogSection"), { ssr: false });
 const PostRequirement = dynamic(() => import("../postRequirement"), { ssr: false });
@@ -151,7 +151,7 @@ const handleBannerClick = useCallback((e: React.MouseEvent<HTMLAnchorElement>) =
               </div>
               <div className="hd-banner__trust-text">
                 <strong>Thousands of Listings</strong>
-                <span>New &amp; used caravans across Australia</span>
+                <span>New and used caravans across Australia</span>
               </div>
             </div>
             <div className="hd-banner__trust-item">
@@ -159,8 +159,8 @@ const handleBannerClick = useCallback((e: React.MouseEvent<HTMLAnchorElement>) =
                 <img src="/images/australia.png" alt="" className="hd-banner__trust-icon" width={26} height={26} />
               </div>
               <div className="hd-banner__trust-text">
-                <strong>Australia Wide</strong>
-                <span>Find caravans from every state &amp; territory</span>
+                <strong>Australia-Wide Coverage</strong>
+                <span>Find caravan listings across every state and territory</span>
               </div>
             </div>
             <div className="hd-banner__trust-item">
@@ -182,19 +182,19 @@ const handleBannerClick = useCallback((e: React.MouseEvent<HTMLAnchorElement>) =
           <div className="hd-banner__bottom">
             <div className="hd-banner__bottom-item">
               <img src="/images/icon1.png" alt="" className="hd-banner__bottom-icon" />
-              <div><strong>Trusted Marketplace</strong><span>Safe &amp; secure platform</span></div>
+              <div><strong>Trusted Marketplace</strong><span>A safe and secure platform</span></div>
             </div>
             <div className="hd-banner__bottom-item">
               <img src="/images/icon2.png" alt="" className="hd-banner__bottom-icon" />
-              <div><strong>Great Prices</strong><span>Compare &amp; save</span></div>
+              <div><strong>Compare Prices</strong><span>Find the best value caravans</span></div>
             </div>
             <div className="hd-banner__bottom-item">
               <img src="/images/icon3.png" alt="" className="hd-banner__bottom-icon" />
-              <div><strong>Buy with Confidence</strong><span>Verified dealers &amp; sellers</span></div>
+              <div><strong>Buy With Confidence</strong><span>Dealer and private seller listings</span></div>
             </div>
             <div className="hd-banner__bottom-item">
               <img src="/images/icon4.png" alt="" className="hd-banner__bottom-icon" />
-              <div><strong>Coast to Country</strong><span>Caravans Australia wide</span></div>
+              <div><strong>Coast to Country</strong><span>Caravans Australia-wide</span></div>
             </div>
           </div>
         </div>
