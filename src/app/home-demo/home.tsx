@@ -15,7 +15,7 @@ import HomeBuyerGuide from "./HomeBuyerGuide";
 import HomeListingSlider from "./HomeListingSlider";
 import { useBanners } from "@/components/BannerHandler";
 import { useBannerTracking } from "@/hooks/useBannerTracking";
-import "./main.css?=26";
+import "./main.css?=298";
 
 const BlogSection = dynamic(() => import("../blogSection"), { ssr: false });
 const PostRequirement = dynamic(() => import("../postRequirement"), { ssr: false });
@@ -245,6 +245,7 @@ const handleBannerClick = useCallback((e: React.MouseEvent<HTMLAnchorElement>) =
       {/* ── New Caravans for Sale ── */}
       <HomeListingSlider
         title="New Caravans for Sale"
+        subtitle="Explore the latest new caravans from dealers and manufacturers across Australia."
         viewAllHref="/listings/new-condition/"
         items={featuredNew}
         badgeVariant="new"
@@ -255,9 +256,9 @@ const handleBannerClick = useCallback((e: React.MouseEvent<HTMLAnchorElement>) =
         <div className="container">
           <div className="sell-banner">
             <div className="sell-content">
-              <h3>List Your Caravan For Sale Today</h3>
-              <p className="subtitle">Reach thousands of caravan buyers daily.</p>
-              <p className="desc">List your caravan on CaravansForSale.com.au — Australia&apos;s trusted marketplace to buy and sell caravans.</p>
+              <h3>List Your Caravan for Sale Today</h3>
+              <p className="subtitle">Reach thousands of buyers looking for new and used caravans every day.</p>
+              <p className="desc">List your caravan on Australia&apos;s trusted caravan marketplace and connect with interested buyers nationwide.</p>
               <div className="btns_two">
                 <a href="/dealer-advertising/" className="btn primary-btn">Dealer Sign Up</a>
                 <a href="/sell-my-caravan/" className="btn secondary-btn">Private Seller - Click Here</a>
@@ -270,6 +271,7 @@ const handleBannerClick = useCallback((e: React.MouseEvent<HTMLAnchorElement>) =
       {/* ── Used Caravans for Sale ── */}
       <HomeListingSlider
         title="Used Caravans for Sale"
+        subtitle="Browse used caravans across Australia from trusted dealers and private sellers. Compare prices, models and locations to find the right pre-owned caravan for your budget."
         viewAllHref="/listings/used-condition/"
         items={featuredUsed}
         badgeVariant="used"

@@ -55,6 +55,12 @@ const nextConfig: NextConfig = {
   // ✅ Redirects: malformed URLs + old sell-my-caravan URL structure → new nested URLs
   async redirects() {
     return [
+      // ── Page redirects ───────────────────────────────────────────────────
+      {
+        source: "/caravan-sales/",
+        destination: "/",
+        permanent: true,
+      },
       // ── Malformed feed URLs ──────────────────────────────────────────────
       {
         source: "/:path*/feed/:rest*",

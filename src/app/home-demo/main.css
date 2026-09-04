@@ -234,6 +234,12 @@
     text-decoration: underline !important;
 }
 
+.hf-subtitle {
+    color: #141414;
+    margin: -16px 0 20px;
+    font-size: 15px;
+}
+
 .hd-section-title {
     color: #000000 !important;
     letter-spacing: 0;
@@ -892,7 +898,7 @@
 /* LEFT */
 .sell-content {
     color: #fff;
-    width: 50%;
+    width: 60%;
     padding: 30px 50px;
 }
 
@@ -2700,7 +2706,7 @@ main .section-head .category_icon li img {
 
 @media only screen and (min-width: 1440px) {
   .sell-content {
-    width: 50%;
+    width: 60%;
     padding: 40px 60px;
   }
   .product_data .img_b {
