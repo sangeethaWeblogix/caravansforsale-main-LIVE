@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "makes",
-    "count": 255,
+    "count": 254,
     "paths": [
         "adria/",
         "adventura/",
@@ -14,7 +14,6 @@
         "atlantic/",
         "atlas/",
         "aura/",
-        "aus-rv/",
         "aus-wide/",
         "auscraft-rv/",
         "ausflex/",
@@ -48,6 +47,7 @@
         "complete-campsite/",
         "concept/",
         "condor/",
+        "conqueror/",
         "coromal/",
         "coronet-rv/",
         "cosy-cab/",
@@ -245,7 +245,6 @@
         "viscount/",
         "vision-rv/",
         "vivid/",
-        "wander-series/",
         "western/",
         "wildtrail/",
         "willow-rv/",
@@ -259,5 +258,5 @@
         "york/",
         "zone-rv/"
     ],
-    "generated_at": "2026-08-22 15:43:42"
+    "generated_at": "2026-09-08 21:34:34"
 }
