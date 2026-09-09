@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "cat-region",
-    "count": 259,
+    "count": 262,
     "paths": [
         "family-category/australian-capital-territory-state/australian-capital-territory-region/",
         "family-category/new-south-wales-state/central-coast-region/",
@@ -47,6 +47,7 @@
         "family-category/western-australia-state/mandurah-region/",
         "family-category/western-australia-state/perth-region/",
         "family-category/western-australia-state/western-australia-outback-south-region/",
+        "hybrid-category/new-south-wales-state/central-coast-region/",
         "hybrid-category/new-south-wales-state/coffs-harbour-region/",
         "hybrid-category/new-south-wales-state/hunter-region/",
         "hybrid-category/new-south-wales-state/hunter-valley-exc-newcastle-region/",
@@ -131,6 +132,7 @@
         "luxury-category/western-australia-state/mandurah-region/",
         "luxury-category/western-australia-state/perth-region/",
         "luxury-category/western-australia-state/western-australia-outback-south-region/",
+        "luxury-category/western-australia-state/western-australia-wheat-belt-region/",
         "off-road-category/australian-capital-territory-state/australian-capital-territory-region/",
         "off-road-category/new-south-wales-state/central-coast-region/",
         "off-road-category/new-south-wales-state/central-west-region/",
@@ -161,6 +163,7 @@
         "off-road-category/queensland-state/wide-bay-region/",
         "off-road-category/south-australia-state/adelaide-region/",
         "off-road-category/south-australia-state/south-australia-south-east-region/",
+        "off-road-category/tas-state/hobart-region/",
         "off-road-category/tasmania-state/hobart-region/",
         "off-road-category/tasmania-state/launceston-region/",
         "off-road-category/tasmania-state/north-west-region/",
@@ -223,6 +226,7 @@
         "touring-category/new-south-wales-state/coffs-harbour-region/",
         "touring-category/new-south-wales-state/hunter-region/",
         "touring-category/new-south-wales-state/hunter-valley-exc-newcastle-region/",
+        "touring-category/new-south-wales-state/illawarra-region/",
         "touring-category/new-south-wales-state/mid-north-coast-region/",
         "touring-category/new-south-wales-state/murray-region/",
         "touring-category/new-south-wales-state/new-england-region/",
@@ -258,10 +262,9 @@
         "touring-category/victoria-state/mornington-peninsula-region/",
         "touring-category/victoria-state/north-west-region/",
         "touring-category/victoria-state/shepparton-region/",
-        "touring-category/victoria-state/warrnambool-and-south-west-region/",
         "touring-category/western-australia-state/mandurah-region/",
         "touring-category/western-australia-state/perth-region/",
         "touring-category/western-australia-state/western-australia-outback-south-region/"
     ],
-    "generated_at": "2026-08-22 15:43:43"
+    "generated_at": "2026-09-09 15:45:03"
 }
