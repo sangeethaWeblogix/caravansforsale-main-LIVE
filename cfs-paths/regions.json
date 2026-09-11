@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "regions",
-    "count": 47,
+    "count": 46,
     "paths": [
         "australian-capital-territory-state/australian-capital-territory-region/",
         "new-south-wales-state/central-coast-region/",
@@ -48,8 +48,7 @@
         "victoria-state/shepparton-region/",
         "western-australia-state/mandurah-region/",
         "western-australia-state/perth-region/",
-        "western-australia-state/western-australia-outback-south-region/",
-        "western-australia-state/western-australia-wheat-belt-region/"
+        "western-australia-state/western-australia-outback-south-region/"
     ],
-    "generated_at": "2026-09-10 15:45:02"
+    "generated_at": "2026-09-11 15:45:02"
 }

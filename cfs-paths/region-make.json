@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "region-make",
-    "count": 1046,
+    "count": 1045,
     "paths": [
         "australian-capital-territory-state/australian-capital-territory-region/avida/",
         "australian-capital-territory-state/australian-capital-territory-region/crusader/",
@@ -1047,8 +1047,7 @@
         "western-australia-state/western-australia-outback-south-region/supreme/",
         "western-australia-state/western-australia-outback-south-region/vanguard/",
         "western-australia-state/western-australia-outback-south-region/western/",
-        "western-australia-state/western-australia-outback-south-region/windsor/",
-        "western-australia-state/western-australia-wheat-belt-region/crusader/"
+        "western-australia-state/western-australia-outback-south-region/windsor/"
     ],
-    "generated_at": "2026-09-10 15:45:03"
+    "generated_at": "2026-09-11 15:45:02"
 }

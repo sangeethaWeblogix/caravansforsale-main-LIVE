@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "models",
-    "count": 2720,
+    "count": 2719,
     "paths": [
         "adria/action-361-lt/",
         "adria/action-361lt/",
@@ -361,7 +361,6 @@
         "crusader/crusader-excalibur-nobleman/",
         "crusader/crusader-excalibur-nobleman-my25/",
         "crusader/crusader-gladiator-storm-my24/",
-        "crusader/crusader-lifechanger-experience-my25/",
         "crusader/crv-esperance/",
         "crusader/crv-esperance-storm/",
         "crusader/crv-gladiator-storm/",
@@ -2724,5 +2723,5 @@
         "zone-rv/summit/",
         "zone-rv/venture/"
     ],
-    "generated_at": "2026-09-10 15:45:02"
+    "generated_at": "2026-09-11 15:45:02"
 }
