@@ -64,6 +64,17 @@ interface Props {
   initialMakeCounts?: { name: string; slug: string; count: number }[];
 }
 
+/** Remove duplicate states by name (WP taxonomy can return the same state twice, e.g. TAS). */
+function dedupStatesByName(arr: StateOption[]): StateOption[] {
+  const seen = new Set<string>();
+  return arr.filter((s) => {
+    const key = s.name.toLowerCase();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 const PRICE_OPTIONS  = [10000,20000,30000,40000,50000,60000,70000,80000,90000,100000,125000,150000,175000,200000,225000,250000,275000,300000];
 const ATM_OPTIONS    = [600,800,1000,1250,1500,1750,2000,2250,2500,2750,3000,3500,4000,4500];
 const SLEEP_OPTIONS  = [1,2,3,4,5,6,7];
@@ -85,7 +96,7 @@ export default function StateFilterBar({
 }: Props) {
   /* ── Data ── */
   const [categories, setCategories] = useState<{name: string; slug: string}[]>(initialCategories ?? []);
-  const [states,     setStates]     = useState<StateOption[]>(initialStates ?? []);
+  const [states,     setStates]     = useState<StateOption[]>(dedupStatesByName(initialStates ?? []));
   const [makes,      setMakes]      = useState<{name: string; slug: string; models?: {name: string; slug: string}[]}[]>(initialMakes ?? []);
   const [catLoading, setCatLoading] = useState(!initialCategories);
   const [categoryCounts, setCategoryCounts] = useState<{name: string; slug: string; count: number}[]>(initialCategoryCounts ?? []);
@@ -106,7 +117,7 @@ export default function StateFilterBar({
       .then((res: any) => {
         if (res?.data) {
           setCategories(res.data.all_categories || []);
-          setStates(res.data.states || []);
+          setStates(dedupStatesByName(res.data.states || []));
         }
         setCatLoading(false);
       }).catch(() => setCatLoading(false));
