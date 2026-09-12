@@ -98,7 +98,7 @@ const CITY_LINKS = [
 
 const SEARCH_FILTERS = [
   {
-    label: "By Budget",
+    label: "By Price",
     icon: "$",
     links: [
       { text: "Under $50,000",         href: "/listings/?max_price=50000&category=off-road" },

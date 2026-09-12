@@ -11,12 +11,13 @@ import { type FeaturedListing as Listing } from "@/api/homeApi/featured/api";
 
 interface Props {
   title: string;
+  subtitle?: string;
   viewAllHref: string;
   items: Listing[];
   badgeVariant: "new" | "used";
 }
 
-export default function HomeListingSlider({ title, viewAllHref, items, badgeVariant }: Props) {
+export default function HomeListingSlider({ title, subtitle, viewAllHref, items, badgeVariant }: Props) {
   const swiperRef = useRef<SwiperType | null>(null);
   const [isBeginning, setIsBeginning] = useState(true);
   const [isEnd, setIsEnd] = useState(false);
@@ -40,6 +41,7 @@ export default function HomeListingSlider({ title, viewAllHref, items, badgeVari
             View all <span aria-hidden>→</span>
           </Link> */}
         </div>
+        {subtitle && <p className="hf-subtitle">{subtitle}</p>}
 
         <div className="hf-swiper-wrap">
           {!isBeginning && (

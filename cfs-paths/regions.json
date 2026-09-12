@@ -33,6 +33,7 @@
         "queensland-state/wide-bay-region/",
         "south-australia-state/adelaide-region/",
         "south-australia-state/south-australia-south-east-region/",
+        "tas-state/hobart-region/",
         "tasmania-state/hobart-region/",
         "tasmania-state/launceston-region/",
         "tasmania-state/north-west-region/",
@@ -45,10 +46,9 @@
         "victoria-state/mornington-peninsula-region/",
         "victoria-state/north-west-region/",
         "victoria-state/shepparton-region/",
-        "victoria-state/warrnambool-and-south-west-region/",
         "western-australia-state/mandurah-region/",
         "western-australia-state/perth-region/",
         "western-australia-state/western-australia-outback-south-region/"
     ],
-    "generated_at": "2026-08-22 15:43:42"
+    "generated_at": "2026-09-12 15:45:02"
 }

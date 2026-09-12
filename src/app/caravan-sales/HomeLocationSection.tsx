@@ -27,7 +27,7 @@ const MINOR_CITIES = [
 const FILTERS = [
   {
     icon: <Image src="/images/Budget.png" alt="Budget" width={24} height={24} unoptimized />,
-    label: "By Your Budget",
+    label: "By Price",
     items: [
       { text: "Under $30,000",       href: "/listings/under-30000/" },
       { text: "$30,000 – $40,000",   href: "/listings/between-30000-40000/" },
