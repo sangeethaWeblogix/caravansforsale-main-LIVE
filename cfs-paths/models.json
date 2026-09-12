@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "models",
-    "count": 2719,
+    "count": 2709,
     "paths": [
         "adria/action-361-lt/",
         "adria/action-361lt/",
@@ -1297,15 +1297,12 @@
         "kokoda/xcore-defender-19ft/",
         "kokoda/xcore-squadron/",
         "kokoda/xtrail-force-iii/",
-        "la-vista/bella/",
         "la-vista/bella-tourer/",
-        "la-vista/el-nido/",
         "la-vista/latina/",
         "la-vista/matador/",
         "la-vista/paloma/",
         "la-vista/quokka/",
         "la-vista/quokka-off-road-family-van/",
-        "la-vista/rampage/",
         "la-vista/seville/",
         "la-vista/viewfinder/",
         "la-vista/viewfinder-21-family/",
@@ -2250,12 +2247,6 @@
         "stallion/ranch/",
         "stallion/shire/",
         "star-vision/12/",
-        "star-vision/captain-compass/",
-        "star-vision/captain-galaxy/",
-        "star-vision/captain-journey/",
-        "star-vision/captain-path-finder/",
-        "star-vision/captain-roamer/",
-        "star-vision/captain-venture/",
         "star-vision/px1/",
         "star-vision/px2/",
         "statewide/tracker/",
@@ -2622,7 +2613,6 @@
         "viscount/wildshark-1/",
         "viscount/wildshark-family/",
         "viscount/wildshark-v3-2/",
-        "viscount/wildshark-ws3-family/",
         "vision-rv/elysium-196-c/",
         "vision-rv/elysium-196-f-2/",
         "vision-rv/elysium-196-f-3/",
@@ -2723,5 +2713,5 @@
         "zone-rv/summit/",
         "zone-rv/venture/"
     ],
-    "generated_at": "2026-09-11 15:45:02"
+    "generated_at": "2026-09-12 15:45:02"
 }

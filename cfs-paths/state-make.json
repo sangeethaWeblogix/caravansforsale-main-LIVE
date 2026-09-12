@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "state-make",
-    "count": 627,
+    "count": 623,
     "paths": [
         "australian-capital-territory-state/avida/",
         "australian-capital-territory-state/crusader/",
@@ -139,7 +139,6 @@
         "queensland-state/avan/",
         "queensland-state/beyond-rv/",
         "queensland-state/blue-sky/",
-        "queensland-state/blue-tongue/",
         "queensland-state/boss-adventure/",
         "queensland-state/bruder/",
         "queensland-state/bushmaster/",
@@ -232,7 +231,6 @@
         "queensland-state/snowy-river/",
         "queensland-state/southern-cross/",
         "queensland-state/sportscruiser/",
-        "queensland-state/star-vision/",
         "queensland-state/stoney-creek/",
         "queensland-state/suncoast/",
         "queensland-state/sunland/",
@@ -332,7 +330,6 @@
         "south-australia-state/vacationer/",
         "south-australia-state/van-cruiser/",
         "south-australia-state/victory/",
-        "south-australia-state/viscount/",
         "south-australia-state/windsor/",
         "south-australia-state/x-series-rv/",
         "south-australia-state/xtour/",
@@ -456,7 +453,6 @@
         "victoria-state/jurgens/",
         "victoria-state/kingdom/",
         "victoria-state/kokoda/",
-        "victoria-state/la-vista/",
         "victoria-state/lake-star/",
         "victoria-state/latitude-rv/",
         "victoria-state/leader/",
@@ -631,5 +627,5 @@
         "western-australia-state/xtour/",
         "western-australia-state/zone-rv/"
     ],
-    "generated_at": "2026-09-11 15:45:02"
+    "generated_at": "2026-09-12 15:45:02"
 }

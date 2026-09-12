@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "region-make",
-    "count": 1045,
+    "count": 1040,
     "paths": [
         "australian-capital-territory-state/australian-capital-territory-region/avida/",
         "australian-capital-territory-state/australian-capital-territory-region/crusader/",
@@ -265,7 +265,6 @@
         "queensland-state/brisbane-region/paramount/",
         "queensland-state/brisbane-region/regent/",
         "queensland-state/brisbane-region/royal-flair/",
-        "queensland-state/brisbane-region/star-vision/",
         "queensland-state/brisbane-region/windsor/",
         "queensland-state/gold-coast-region/atlas/",
         "queensland-state/gold-coast-region/austrack-campers/",
@@ -443,7 +442,6 @@
         "queensland-state/sunshine-coast-region/vision-rv/",
         "queensland-state/sunshine-coast-region/willow-rv/",
         "queensland-state/sunshine-coast-region/winnebago/",
-        "queensland-state/toowoomba-region/blue-tongue/",
         "queensland-state/toowoomba-region/regent/",
         "queensland-state/toowoomba-region/snowy-river/",
         "queensland-state/townsville-region/austrack-campers/",
@@ -562,7 +560,6 @@
         "south-australia-state/adelaide-region/vacationer/",
         "south-australia-state/adelaide-region/van-cruiser/",
         "south-australia-state/adelaide-region/victory/",
-        "south-australia-state/adelaide-region/viscount/",
         "south-australia-state/adelaide-region/windsor/",
         "south-australia-state/adelaide-region/x-series-rv/",
         "south-australia-state/adelaide-region/xtour/",
@@ -815,7 +812,6 @@
         "victoria-state/melbourne-region/jurgens/",
         "victoria-state/melbourne-region/kingdom/",
         "victoria-state/melbourne-region/kokoda/",
-        "victoria-state/melbourne-region/la-vista/",
         "victoria-state/melbourne-region/lake-star/",
         "victoria-state/melbourne-region/leader/",
         "victoria-state/melbourne-region/legacy/",
@@ -852,7 +848,6 @@
         "victoria-state/melbourne-region/seascape/",
         "victoria-state/melbourne-region/signature/",
         "victoria-state/melbourne-region/stallion/",
-        "victoria-state/melbourne-region/star-vision/",
         "victoria-state/melbourne-region/supreme/",
         "victoria-state/melbourne-region/track/",
         "victoria-state/melbourne-region/trakmaster/",
@@ -1049,5 +1044,5 @@
         "western-australia-state/western-australia-outback-south-region/western/",
         "western-australia-state/western-australia-outback-south-region/windsor/"
     ],
-    "generated_at": "2026-09-11 15:45:02"
+    "generated_at": "2026-09-12 15:45:02"
 }
