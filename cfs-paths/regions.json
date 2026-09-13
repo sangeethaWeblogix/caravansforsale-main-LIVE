@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "regions",
-    "count": 46,
+    "count": 45,
     "paths": [
         "australian-capital-territory-state/australian-capital-territory-region/",
         "new-south-wales-state/central-coast-region/",
@@ -33,7 +33,6 @@
         "queensland-state/wide-bay-region/",
         "south-australia-state/adelaide-region/",
         "south-australia-state/south-australia-south-east-region/",
-        "tas-state/hobart-region/",
         "tasmania-state/hobart-region/",
         "tasmania-state/launceston-region/",
         "tasmania-state/north-west-region/",
@@ -50,5 +49,5 @@
         "western-australia-state/perth-region/",
         "western-australia-state/western-australia-outback-south-region/"
     ],
-    "generated_at": "2026-09-12 15:45:02"
+    "generated_at": "2026-09-13 15:45:02"
 }

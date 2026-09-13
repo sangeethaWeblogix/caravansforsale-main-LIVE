@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "models",
-    "count": 2709,
+    "count": 2699,
     "paths": [
         "adria/action-361-lt/",
         "adria/action-361lt/",
@@ -568,8 +568,6 @@
         "donway/wakool-sxz-rd/",
         "dream-rv/dark-knight/",
         "dream-rv/nightshadow/",
-        "dream-rv/nightshadow-dj/",
-        "dream-rv/nightshadow-x/",
         "dreamhaven/15-series-tourline/",
         "dreamhaven/15-serise-super-x-my25/",
         "dreamhaven/18-series-super-x/",
@@ -955,7 +953,6 @@
         "goldstream-rv/1760-rhino-3t/",
         "goldstream-rv/1760-rk-st-panther/",
         "goldstream-rv/1760-series/",
-        "goldstream-rv/1860-re-adventure-pack/",
         "goldstream-rv/1860-re-rd-adventure-cp/",
         "goldstream-rv/2050-series/",
         "goldstream-rv/2150-big-ensuite-rhino-cpx/",
@@ -1308,10 +1305,6 @@
         "la-vista/viewfinder-21-family/",
         "lagoon/belmont/",
         "lagoon/pasadena/",
-        "lake-star/achilles/",
-        "lake-star/atrium/",
-        "lake-star/grandiose/",
-        "lake-star/terrax/",
         "latitude-rv/arctic/",
         "latitude-rv/arctic-a-t/",
         "latitude-rv/arctic-plus/",
@@ -1559,9 +1552,6 @@
         "my-dream-rv/dream-catcher/",
         "my-dream-rv/dream-delight/",
         "my-dream-rv/dreamcatcher/",
-        "my-dream-rv/nightshadow-x-dj-dream-journey/",
-        "my-dream-rv/nullarbor/",
-        "my-dream-rv/peninsula-family/",
         "my-dream-rv/penninsula/",
         "ndc/cobba/",
         "ndc/expedition-xl/",
@@ -2713,5 +2703,5 @@
         "zone-rv/summit/",
         "zone-rv/venture/"
     ],
-    "generated_at": "2026-09-12 15:45:02"
+    "generated_at": "2026-09-13 15:45:02"
 }
