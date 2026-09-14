@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "models",
-    "count": 2699,
+    "count": 2700,
     "paths": [
         "adria/action-361-lt/",
         "adria/action-361lt/",
@@ -353,6 +353,7 @@
         "cosy-cab/pembrey/",
         "creative/grant-tourer/",
         "creative/tanami/",
+        "crusader/136-rd-terrain-tuff/",
         "crusader/15-series-super-x/",
         "crusader/aramis/",
         "crusader/centaur-x/",
@@ -2703,5 +2704,5 @@
         "zone-rv/summit/",
         "zone-rv/venture/"
     ],
-    "generated_at": "2026-09-13 15:45:02"
+    "generated_at": "2026-09-14 15:45:02"
 }

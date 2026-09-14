@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "region-make",
-    "count": 1035,
+    "count": 1036,
     "paths": [
         "australian-capital-territory-state/australian-capital-territory-region/avida/",
         "australian-capital-territory-state/australian-capital-territory-region/crusader/",
@@ -216,6 +216,7 @@
         "new-south-wales-state/southern-highlands-region/x-series-rv/",
         "new-south-wales-state/sydney-region/avan/",
         "new-south-wales-state/sydney-region/blue-tongue/",
+        "new-south-wales-state/sydney-region/crusader/",
         "new-south-wales-state/sydney-region/cub/",
         "new-south-wales-state/sydney-region/design-rv/",
         "new-south-wales-state/sydney-region/ezytrail/",
@@ -1039,5 +1040,5 @@
         "western-australia-state/western-australia-outback-south-region/western/",
         "western-australia-state/western-australia-outback-south-region/windsor/"
     ],
-    "generated_at": "2026-09-13 15:45:02"
+    "generated_at": "2026-09-14 15:45:02"
 }
