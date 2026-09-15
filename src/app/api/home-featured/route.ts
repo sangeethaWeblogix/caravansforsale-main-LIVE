@@ -14,7 +14,6 @@ function normalizeProduct(p: any): any {
   } else if (typeof p.image_format === "string") {
     p.image_format = [p.image_format];
   }
-  if (!p.seller_type) p.seller_type = "dealer";
   return p;
 }
 

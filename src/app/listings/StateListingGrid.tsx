@@ -218,7 +218,7 @@ function ListingCard({
   const price    = formatPrice(item.sale_price || item.regular_price);
   const isNew    = item.condition?.toLowerCase() === "new";
   const type     = toTitleCase((item.categories?.[0] ?? "").replace(/-/g, " "));
-  const sellerType = toTitleCase(item.seller_type ?? "");
+  const sellerType = item.seller_type ? toTitleCase(item.seller_type) : "Dealer";
   const lenFmt   = formatLength(item.length);
   const isDealer = item.seller_type !== "private";
 
