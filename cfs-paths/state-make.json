@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "state-make",
-    "count": 623,
+    "count": 620,
     "paths": [
         "australian-capital-territory-state/avida/",
         "australian-capital-territory-state/crusader/",
@@ -64,7 +64,6 @@
         "new-south-wales-state/mdc/",
         "new-south-wales-state/millard/",
         "new-south-wales-state/montana/",
-        "new-south-wales-state/my-dream-rv/",
         "new-south-wales-state/new-age/",
         "new-south-wales-state/new-design/",
         "new-south-wales-state/new-line/",
@@ -88,7 +87,6 @@
         "new-south-wales-state/regent/",
         "new-south-wales-state/rembrandt/",
         "new-south-wales-state/retreat/",
-        "new-south-wales-state/river/",
         "new-south-wales-state/roadstar/",
         "new-south-wales-state/royal-flair/",
         "new-south-wales-state/signature/",
@@ -334,7 +332,6 @@
         "south-australia-state/x-series-rv/",
         "south-australia-state/xtour/",
         "south-australia-state/york/",
-        "tas-state/lotus/",
         "tasmania-state/adria/",
         "tasmania-state/arctic/",
         "tasmania-state/austrack-campers/",
@@ -358,6 +355,7 @@
         "tasmania-state/la-vista/",
         "tasmania-state/latitude-rv/",
         "tasmania-state/living-edge/",
+        "tasmania-state/lotus/",
         "tasmania-state/lunar/",
         "tasmania-state/masterpiece/",
         "tasmania-state/mdc/",
@@ -453,7 +451,6 @@
         "victoria-state/jurgens/",
         "victoria-state/kingdom/",
         "victoria-state/kokoda/",
-        "victoria-state/lake-star/",
         "victoria-state/latitude-rv/",
         "victoria-state/leader/",
         "victoria-state/legacy/",
@@ -627,5 +624,5 @@
         "western-australia-state/xtour/",
         "western-australia-state/zone-rv/"
     ],
-    "generated_at": "2026-09-12 15:45:02"
+    "generated_at": "2026-09-15 15:45:02"
 }
