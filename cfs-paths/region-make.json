@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "region-make",
-    "count": 1036,
+    "count": 1037,
     "paths": [
         "australian-capital-territory-state/australian-capital-territory-region/avida/",
         "australian-capital-territory-state/australian-capital-territory-region/crusader/",
@@ -210,6 +210,7 @@
         "new-south-wales-state/southern-highlands-region/snowy-river/",
         "new-south-wales-state/southern-highlands-region/sunfinder/",
         "new-south-wales-state/southern-highlands-region/supreme/",
+        "new-south-wales-state/southern-highlands-region/traveller/",
         "new-south-wales-state/southern-highlands-region/vacationer/",
         "new-south-wales-state/southern-highlands-region/viscount/",
         "new-south-wales-state/southern-highlands-region/windsor/",
@@ -1040,5 +1041,5 @@
         "western-australia-state/western-australia-outback-south-region/western/",
         "western-australia-state/western-australia-outback-south-region/windsor/"
     ],
-    "generated_at": "2026-09-15 15:45:02"
+    "generated_at": "2026-09-16 15:45:02"
 }

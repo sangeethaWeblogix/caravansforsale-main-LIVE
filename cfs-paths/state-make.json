@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "state-make",
-    "count": 620,
+    "count": 621,
     "paths": [
         "australian-capital-territory-state/avida/",
         "australian-capital-territory-state/crusader/",
@@ -103,6 +103,7 @@
         "new-south-wales-state/titanium/",
         "new-south-wales-state/torus-rv/",
         "new-south-wales-state/trail/",
+        "new-south-wales-state/traveller/",
         "new-south-wales-state/tuff-track/",
         "new-south-wales-state/urban/",
         "new-south-wales-state/vacationer/",
@@ -624,5 +625,5 @@
         "western-australia-state/xtour/",
         "western-australia-state/zone-rv/"
     ],
-    "generated_at": "2026-09-15 15:45:02"
+    "generated_at": "2026-09-16 15:45:02"
 }
