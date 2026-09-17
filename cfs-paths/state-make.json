@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "state-make",
-    "count": 621,
+    "count": 623,
     "paths": [
         "australian-capital-territory-state/avida/",
         "australian-capital-territory-state/crusader/",
@@ -123,6 +123,7 @@
         "northern-territory-state/jurgens/",
         "northern-territory-state/lotus/",
         "northern-territory-state/snowy-river/",
+        "qld-state/jb/",
         "queensland-state/adria/",
         "queensland-state/adventura/",
         "queensland-state/alpha-rv/",
@@ -299,6 +300,7 @@
         "south-australia-state/maverick/",
         "south-australia-state/mdc/",
         "south-australia-state/millard/",
+        "south-australia-state/network-rv/",
         "south-australia-state/new-age/",
         "south-australia-state/nova/",
         "south-australia-state/olympic/",
@@ -625,5 +627,5 @@
         "western-australia-state/xtour/",
         "western-australia-state/zone-rv/"
     ],
-    "generated_at": "2026-09-16 15:45:02"
+    "generated_at": "2026-09-17 15:45:02"
 }

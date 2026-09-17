@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "cat-region",
-    "count": 260,
+    "count": 263,
     "paths": [
         "family-category/australian-capital-territory-state/australian-capital-territory-region/",
         "family-category/new-south-wales-state/central-coast-region/",
@@ -129,6 +129,7 @@
         "luxury-category/victoria-state/mornington-peninsula-region/",
         "luxury-category/victoria-state/north-west-region/",
         "luxury-category/victoria-state/shepparton-region/",
+        "luxury-category/victoria-state/warrnambool-and-south-west-region/",
         "luxury-category/western-australia-state/mandurah-region/",
         "luxury-category/western-australia-state/perth-region/",
         "luxury-category/western-australia-state/western-australia-outback-south-region/",
@@ -149,6 +150,7 @@
         "off-road-category/new-south-wales-state/southern-highlands-region/",
         "off-road-category/new-south-wales-state/sydney-region/",
         "off-road-category/northern-territory-state/darwin-region/",
+        "off-road-category/qld-state/wide-bay-region/",
         "off-road-category/queensland-state/brisbane-region/",
         "off-road-category/queensland-state/gold-coast-region/",
         "off-road-category/queensland-state/ipswich-region/",
@@ -260,9 +262,10 @@
         "touring-category/victoria-state/mornington-peninsula-region/",
         "touring-category/victoria-state/north-west-region/",
         "touring-category/victoria-state/shepparton-region/",
+        "touring-category/victoria-state/warrnambool-and-south-west-region/",
         "touring-category/western-australia-state/mandurah-region/",
         "touring-category/western-australia-state/perth-region/",
         "touring-category/western-australia-state/western-australia-outback-south-region/"
     ],
-    "generated_at": "2026-09-16 15:45:02"
+    "generated_at": "2026-09-17 15:45:03"
 }

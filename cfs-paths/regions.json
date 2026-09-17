@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "regions",
-    "count": 45,
+    "count": 47,
     "paths": [
         "australian-capital-territory-state/australian-capital-territory-region/",
         "new-south-wales-state/central-coast-region/",
@@ -20,6 +20,7 @@
         "new-south-wales-state/southern-highlands-region/",
         "new-south-wales-state/sydney-region/",
         "northern-territory-state/darwin-region/",
+        "qld-state/wide-bay-region/",
         "queensland-state/brisbane-region/",
         "queensland-state/gold-coast-region/",
         "queensland-state/ipswich-region/",
@@ -45,9 +46,10 @@
         "victoria-state/mornington-peninsula-region/",
         "victoria-state/north-west-region/",
         "victoria-state/shepparton-region/",
+        "victoria-state/warrnambool-and-south-west-region/",
         "western-australia-state/mandurah-region/",
         "western-australia-state/perth-region/",
         "western-australia-state/western-australia-outback-south-region/"
     ],
-    "generated_at": "2026-09-16 15:45:02"
+    "generated_at": "2026-09-17 15:45:02"
 }

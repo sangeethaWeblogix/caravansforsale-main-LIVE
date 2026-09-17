@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "region-make",
-    "count": 1037,
+    "count": 1040,
     "paths": [
         "australian-capital-territory-state/australian-capital-territory-region/avida/",
         "australian-capital-territory-state/australian-capital-territory-region/crusader/",
@@ -243,6 +243,7 @@
         "northern-territory-state/darwin-region/jurgens/",
         "northern-territory-state/darwin-region/lotus/",
         "northern-territory-state/darwin-region/snowy-river/",
+        "qld-state/wide-bay-region/jb/",
         "queensland-state/brisbane-region/adria/",
         "queensland-state/brisbane-region/aussie-fivestar/",
         "queensland-state/brisbane-region/austrack-campers/",
@@ -530,6 +531,7 @@
         "south-australia-state/adelaide-region/maverick/",
         "south-australia-state/adelaide-region/mdc/",
         "south-australia-state/adelaide-region/millard/",
+        "south-australia-state/adelaide-region/network-rv/",
         "south-australia-state/adelaide-region/new-age/",
         "south-australia-state/adelaide-region/nova/",
         "south-australia-state/adelaide-region/olympic/",
@@ -926,6 +928,7 @@
         "victoria-state/shepparton-region/snowy-river/",
         "victoria-state/shepparton-region/suncoast/",
         "victoria-state/shepparton-region/windsor/",
+        "victoria-state/warrnambool-and-south-west-region/paramount/",
         "western-australia-state/mandurah-region/avan/",
         "western-australia-state/mandurah-region/concept/",
         "western-australia-state/mandurah-region/crusader/",
@@ -1041,5 +1044,5 @@
         "western-australia-state/western-australia-outback-south-region/western/",
         "western-australia-state/western-australia-outback-south-region/windsor/"
     ],
-    "generated_at": "2026-09-16 15:45:02"
+    "generated_at": "2026-09-17 15:45:03"
 }
