@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "region-make",
-    "count": 1040,
+    "count": 1039,
     "paths": [
         "australian-capital-territory-state/australian-capital-territory-region/avida/",
         "australian-capital-territory-state/australian-capital-territory-region/crusader/",
@@ -327,7 +327,6 @@
         "queensland-state/ipswich-region/long-haul-campers/",
         "queensland-state/ipswich-region/mars-campers/",
         "queensland-state/ipswich-region/newgen/",
-        "queensland-state/ipswich-region/onlywe/",
         "queensland-state/ipswich-region/stoney-creek/",
         "queensland-state/logan-beaudesert-region/avan/",
         "queensland-state/logan-beaudesert-region/ezytrail/",
@@ -1044,5 +1043,5 @@
         "western-australia-state/western-australia-outback-south-region/western/",
         "western-australia-state/western-australia-outback-south-region/windsor/"
     ],
-    "generated_at": "2026-09-17 15:45:03"
+    "generated_at": "2026-09-18 15:45:02"
 }

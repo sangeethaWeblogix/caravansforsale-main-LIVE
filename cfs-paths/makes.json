@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "makes",
-    "count": 253,
+    "count": 252,
     "paths": [
         "adria/",
         "adventura/",
@@ -159,7 +159,6 @@
         "nova/",
         "olympic/",
         "on-the-move/",
-        "onlywe/",
         "opal/",
         "option-rv/",
         "opus-campers/",
@@ -257,5 +256,5 @@
         "york/",
         "zone-rv/"
     ],
-    "generated_at": "2026-09-17 15:45:02"
+    "generated_at": "2026-09-18 15:45:02"
 }

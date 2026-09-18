@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "models",
-    "count": 2702,
+    "count": 2701,
     "paths": [
         "adria/action-361-lt/",
         "adria/action-361lt/",
@@ -1746,7 +1746,6 @@
         "on-the-move/traxx-series-3/",
         "on-the-move/traxx-touring/",
         "on-the-move/vortex/",
-        "onlywe/teardrop/",
         "opal/sothern-explorer/",
         "opal/southern-explorer-series-196/",
         "opal/tourer-mk1-220/",
@@ -2706,5 +2705,5 @@
         "zone-rv/summit/",
         "zone-rv/venture/"
     ],
-    "generated_at": "2026-09-17 15:45:02"
+    "generated_at": "2026-09-18 15:45:02"
 }

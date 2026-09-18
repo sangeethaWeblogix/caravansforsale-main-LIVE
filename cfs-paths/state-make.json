@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "state-make",
-    "count": 623,
+    "count": 622,
     "paths": [
         "australian-capital-territory-state/avida/",
         "australian-capital-territory-state/crusader/",
@@ -208,7 +208,6 @@
         "queensland-state/nova/",
         "queensland-state/olympic/",
         "queensland-state/on-the-move/",
-        "queensland-state/onlywe/",
         "queensland-state/option-rv/",
         "queensland-state/orca-rv/",
         "queensland-state/oz-star/",
@@ -627,5 +626,5 @@
         "western-australia-state/xtour/",
         "western-australia-state/zone-rv/"
     ],
-    "generated_at": "2026-09-17 15:45:02"
+    "generated_at": "2026-09-18 15:45:02"
 }
