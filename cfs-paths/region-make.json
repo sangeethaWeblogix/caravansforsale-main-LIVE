@@ -52,6 +52,7 @@
         "new-south-wales-state/hunter-region/design-rv/",
         "new-south-wales-state/hunter-region/eternity/",
         "new-south-wales-state/hunter-region/hardkorr-campers/",
+        "new-south-wales-state/hunter-region/hinterland/",
         "new-south-wales-state/hunter-region/jawa/",
         "new-south-wales-state/hunter-region/jayco/",
         "new-south-wales-state/hunter-region/leader/",
@@ -881,7 +882,6 @@
         "victoria-state/mornington-peninsula-region/snowy-river/",
         "victoria-state/mornington-peninsula-region/stoney-creek/",
         "victoria-state/mornington-peninsula-region/supreme/",
-        "victoria-state/mornington-peninsula-region/titanium/",
         "victoria-state/mornington-peninsula-region/villa/",
         "victoria-state/north-west-region/goldstar-rv/",
         "victoria-state/north-west-region/jayco/",
@@ -1043,5 +1043,5 @@
         "western-australia-state/western-australia-outback-south-region/western/",
         "western-australia-state/western-australia-outback-south-region/windsor/"
     ],
-    "generated_at": "2026-09-18 15:45:02"
+    "generated_at": "2026-09-19 15:45:02"
 }

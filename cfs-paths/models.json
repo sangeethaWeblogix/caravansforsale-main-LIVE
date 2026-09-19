@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "models",
-    "count": 2701,
+    "count": 2703,
     "paths": [
         "adria/action-361-lt/",
         "adria/action-361lt/",
@@ -1089,6 +1089,7 @@
         "hilltop/summit/",
         "hilltop/thredbo/",
         "hinterland/20-tourer/",
+        "hinterland/hinterland-domain/",
         "hitch-hika/adelaide/",
         "hitch-hika/adelaide-176/",
         "hitch-hika/adelaide-226-rc/",
@@ -1178,6 +1179,7 @@
         "jayco/freedom/",
         "jayco/freedom-16-52-2/",
         "jayco/heritage/",
+        "jayco/j-pod/",
         "jayco/j-pod-outback/",
         "jayco/journey/",
         "jayco/journey-13-42-2/",
@@ -2705,5 +2707,5 @@
         "zone-rv/summit/",
         "zone-rv/venture/"
     ],
-    "generated_at": "2026-09-18 15:45:02"
+    "generated_at": "2026-09-19 15:45:02"
 }
