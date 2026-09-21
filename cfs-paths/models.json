@@ -364,7 +364,6 @@
         "crusader/crusader-gladiator-storm-my24/",
         "crusader/crv-esperance/",
         "crusader/crv-esperance-storm/",
-        "crusader/crv-gladiator-storm/",
         "crusader/crv-hurricane-my24/",
         "crusader/doriemus/",
         "crusader/dreamhaven/",
@@ -1560,6 +1559,7 @@
         "ndc/expedition-xl/",
         "ndc/westbourne/",
         "network-rv/2/",
+        "network-rv/terrain-tuff/",
         "new-age/big-red/",
         "new-age/big-red-196/",
         "new-age/big-red-21/",
@@ -2707,5 +2707,5 @@
         "zone-rv/summit/",
         "zone-rv/venture/"
     ],
-    "generated_at": "2026-09-20 15:45:01"
+    "generated_at": "2026-09-21 15:45:02"
 }
