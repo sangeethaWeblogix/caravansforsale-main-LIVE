@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "cat-region",
-    "count": 263,
+    "count": 262,
     "paths": [
         "family-category/australian-capital-territory-state/australian-capital-territory-region/",
         "family-category/new-south-wales-state/central-coast-region/",
@@ -47,7 +47,6 @@
         "family-category/western-australia-state/mandurah-region/",
         "family-category/western-australia-state/perth-region/",
         "family-category/western-australia-state/western-australia-outback-south-region/",
-        "hybrid-category/new-south-wales-state/central-coast-region/",
         "hybrid-category/new-south-wales-state/coffs-harbour-region/",
         "hybrid-category/new-south-wales-state/hunter-region/",
         "hybrid-category/new-south-wales-state/hunter-valley-exc-newcastle-region/",
@@ -267,5 +266,5 @@
         "touring-category/western-australia-state/perth-region/",
         "touring-category/western-australia-state/western-australia-outback-south-region/"
     ],
-    "generated_at": "2026-09-21 15:45:03"
+    "generated_at": "2026-09-22 15:45:02"
 }

@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "models",
-    "count": 2703,
+    "count": 2704,
     "paths": [
         "adria/action-361-lt/",
         "adria/action-361lt/",
@@ -2375,6 +2375,7 @@
         "the-little-caravan-company/x-scape-hard-top/",
         "the-little-caravan-company/x-scape-pop-top/",
         "the-little-caravan-company/xscape/",
+        "titan/196-touring-terrain-rear-door/",
         "titan/480-sierra-blackhawk/",
         "titan/490-blackhawk-family-bunk-1/",
         "titan/490-blackhawk-family-bunk-2/",
@@ -2707,5 +2708,5 @@
         "zone-rv/summit/",
         "zone-rv/venture/"
     ],
-    "generated_at": "2026-09-21 15:45:02"
+    "generated_at": "2026-09-22 15:45:02"
 }

@@ -13,7 +13,6 @@
         "new-south-wales-state/central-coast-region/jayco/",
         "new-south-wales-state/central-coast-region/new-age/",
         "new-south-wales-state/central-coast-region/newlands/",
-        "new-south-wales-state/central-coast-region/vision-rv/",
         "new-south-wales-state/central-west-region/aussie-fivestar/",
         "new-south-wales-state/central-west-region/franklin/",
         "new-south-wales-state/central-west-region/jayco/",
@@ -185,6 +184,7 @@
         "new-south-wales-state/riverina-region/masterpiece/",
         "new-south-wales-state/riverina-region/nova/",
         "new-south-wales-state/riverina-region/supreme/",
+        "new-south-wales-state/riverina-region/vision-rv/",
         "new-south-wales-state/southern-highlands-region/concept/",
         "new-south-wales-state/southern-highlands-region/crusader/",
         "new-south-wales-state/southern-highlands-region/design-rv/",
@@ -1043,5 +1043,5 @@
         "western-australia-state/western-australia-outback-south-region/western/",
         "western-australia-state/western-australia-outback-south-region/windsor/"
     ],
-    "generated_at": "2026-09-21 15:45:02"
+    "generated_at": "2026-09-22 15:45:02"
 }
