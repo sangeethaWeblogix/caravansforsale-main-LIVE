@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "state-make",
-    "count": 621,
+    "count": 617,
     "paths": [
         "australian-capital-territory-state/avida/",
         "australian-capital-territory-state/crusader/",
@@ -107,7 +107,6 @@
         "new-south-wales-state/tuff-track/",
         "new-south-wales-state/urban/",
         "new-south-wales-state/vacationer/",
-        "new-south-wales-state/victory/",
         "new-south-wales-state/viscount/",
         "new-south-wales-state/vision-rv/",
         "new-south-wales-state/vivid/",
@@ -249,7 +248,6 @@
         "queensland-state/urban/",
         "queensland-state/vacationer/",
         "queensland-state/van-cruiser/",
-        "queensland-state/vancraft/",
         "queensland-state/victory/",
         "queensland-state/viscount/",
         "queensland-state/vision-rv/",
@@ -277,7 +275,6 @@
         "south-australia-state/essential/",
         "south-australia-state/evolution/",
         "south-australia-state/ezytrail/",
-        "south-australia-state/franklin/",
         "south-australia-state/gold-class/",
         "south-australia-state/goldstar-rv/",
         "south-australia-state/goldstream-rv/",
@@ -305,7 +302,6 @@
         "south-australia-state/olympic/",
         "south-australia-state/on-the-move/",
         "south-australia-state/oz-star/",
-        "south-australia-state/paramount/",
         "south-australia-state/phoenix/",
         "south-australia-state/prime-campers/",
         "south-australia-state/prime-edge/",
@@ -625,5 +621,5 @@
         "western-australia-state/xtour/",
         "western-australia-state/zone-rv/"
     ],
-    "generated_at": "2026-09-24 15:45:02"
+    "generated_at": "2026-09-25 15:45:03"
 }

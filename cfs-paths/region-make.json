@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "region-make",
-    "count": 1038,
+    "count": 1030,
     "paths": [
         "australian-capital-territory-state/australian-capital-territory-region/avida/",
         "australian-capital-territory-state/australian-capital-territory-region/crusader/",
@@ -70,7 +70,6 @@
         "new-south-wales-state/hunter-region/supreme/",
         "new-south-wales-state/hunter-region/swag/",
         "new-south-wales-state/hunter-region/vacationer/",
-        "new-south-wales-state/hunter-region/victory/",
         "new-south-wales-state/hunter-valley-exc-newcastle-region/billabong/",
         "new-south-wales-state/hunter-valley-exc-newcastle-region/jayco/",
         "new-south-wales-state/hunter-valley-exc-newcastle-region/lotus/",
@@ -389,8 +388,6 @@
         "queensland-state/moreton-bay-south-region/jawa/",
         "queensland-state/moreton-bay-south-region/retreat/",
         "queensland-state/moreton-bay-south-region/track/",
-        "queensland-state/moreton-bay-south-region/vancraft/",
-        "queensland-state/moreton-bay-south-region/victory/",
         "queensland-state/moreton-bay-south-region/wonder-roo/",
         "queensland-state/moreton-bay-south-region/xtour/",
         "queensland-state/sunshine-coast-region/adria/",
@@ -509,7 +506,6 @@
         "south-australia-state/adelaide-region/essential/",
         "south-australia-state/adelaide-region/evolution/",
         "south-australia-state/adelaide-region/ezytrail/",
-        "south-australia-state/adelaide-region/franklin/",
         "south-australia-state/adelaide-region/gold-class/",
         "south-australia-state/adelaide-region/goldstar-rv/",
         "south-australia-state/adelaide-region/goldstream-rv/",
@@ -536,7 +532,6 @@
         "south-australia-state/adelaide-region/olympic/",
         "south-australia-state/adelaide-region/on-the-move/",
         "south-australia-state/adelaide-region/oz-star/",
-        "south-australia-state/adelaide-region/paramount/",
         "south-australia-state/adelaide-region/phoenix/",
         "south-australia-state/adelaide-region/prime-campers/",
         "south-australia-state/adelaide-region/regent/",
@@ -639,7 +634,6 @@
         "victoria-state/ballarat-region/ndc/",
         "victoria-state/ballarat-region/new-age/",
         "victoria-state/ballarat-region/newlands/",
-        "victoria-state/ballarat-region/nextgen/",
         "victoria-state/ballarat-region/nova/",
         "victoria-state/ballarat-region/olympic/",
         "victoria-state/ballarat-region/paramount/",
@@ -838,7 +832,6 @@
         "victoria-state/melbourne-region/regent/",
         "victoria-state/melbourne-region/retreat/",
         "victoria-state/melbourne-region/roadstar/",
-        "victoria-state/melbourne-region/roma/",
         "victoria-state/melbourne-region/royal-flair/",
         "victoria-state/melbourne-region/rp/",
         "victoria-state/melbourne-region/safari/",
@@ -853,7 +846,6 @@
         "victoria-state/melbourne-region/urecau/",
         "victoria-state/melbourne-region/vacationer/",
         "victoria-state/melbourne-region/vecto/",
-        "victoria-state/melbourne-region/victory/",
         "victoria-state/melbourne-region/viscount/",
         "victoria-state/melbourne-region/wildtrail/",
         "victoria-state/melbourne-region/windsor/",
@@ -1042,5 +1034,5 @@
         "western-australia-state/western-australia-outback-south-region/western/",
         "western-australia-state/western-australia-outback-south-region/windsor/"
     ],
-    "generated_at": "2026-09-24 15:45:02"
+    "generated_at": "2026-09-25 15:45:03"
 }
