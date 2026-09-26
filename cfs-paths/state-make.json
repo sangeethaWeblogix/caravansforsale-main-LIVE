@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "state-make",
-    "count": 617,
+    "count": 616,
     "paths": [
         "australian-capital-territory-state/avida/",
         "australian-capital-territory-state/crusader/",
@@ -198,7 +198,6 @@
         "queensland-state/mdc/",
         "queensland-state/millard/",
         "queensland-state/my-dream-rv/",
-        "queensland-state/network-rv/",
         "queensland-state/new-age/",
         "queensland-state/new-design/",
         "queensland-state/newgen/",
@@ -621,5 +620,5 @@
         "western-australia-state/xtour/",
         "western-australia-state/zone-rv/"
     ],
-    "generated_at": "2026-09-25 15:45:03"
+    "generated_at": "2026-09-26 15:45:02"
 }

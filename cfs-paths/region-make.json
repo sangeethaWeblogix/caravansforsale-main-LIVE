@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "region-make",
-    "count": 1030,
+    "count": 1029,
     "paths": [
         "australian-capital-territory-state/australian-capital-territory-region/avida/",
         "australian-capital-territory-state/australian-capital-territory-region/crusader/",
@@ -295,7 +295,6 @@
         "queensland-state/gold-coast-region/majestic/",
         "queensland-state/gold-coast-region/masterpiece/",
         "queensland-state/gold-coast-region/mdc/",
-        "queensland-state/gold-coast-region/network-rv/",
         "queensland-state/gold-coast-region/new-age/",
         "queensland-state/gold-coast-region/new-design/",
         "queensland-state/gold-coast-region/newlands/",
@@ -1034,5 +1033,5 @@
         "western-australia-state/western-australia-outback-south-region/western/",
         "western-australia-state/western-australia-outback-south-region/windsor/"
     ],
-    "generated_at": "2026-09-25 15:45:03"
+    "generated_at": "2026-09-26 15:45:02"
 }
