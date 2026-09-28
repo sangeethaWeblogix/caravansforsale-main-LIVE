@@ -811,7 +811,6 @@
         "ezytrail/ceduna-16-mk3-twin/",
         "ezytrail/ceduna-17-mk3-quad/",
         "ezytrail/ceduna-17-mk3-twin/",
-        "ezytrail/mk1/",
         "ezytrail/parkes-13/",
         "ezytrail/parkes-13-mk2/",
         "ezytrail/parkes-13-mk3/",
@@ -1175,6 +1174,7 @@
         "jayco/expanda-outback-17-56-2-ob/",
         "jayco/expanda-poptop-17-56-1/",
         "jayco/expanda-poptop-17-56-2-ob-ex/",
+        "jayco/flamingo-outback/",
         "jayco/freedom/",
         "jayco/freedom-16-52-2/",
         "jayco/heritage/",
@@ -2679,5 +2679,5 @@
         "zone-rv/summit/",
         "zone-rv/venture/"
     ],
-    "generated_at": "2026-09-27 15:45:02"
+    "generated_at": "2026-09-28 15:45:02"
 }

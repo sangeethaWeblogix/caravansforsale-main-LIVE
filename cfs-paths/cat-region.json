@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "cat-region",
-    "count": 262,
+    "count": 263,
     "paths": [
         "family-category/australian-capital-territory-state/australian-capital-territory-region/",
         "family-category/new-south-wales-state/central-coast-region/",
@@ -177,6 +177,7 @@
         "off-road-category/victoria-state/shepparton-region/",
         "off-road-category/western-australia-state/mandurah-region/",
         "off-road-category/western-australia-state/perth-region/",
+        "off-road-category/western-australia-state/western-australia-outback-nouth-region/",
         "off-road-category/western-australia-state/western-australia-outback-south-region/",
         "pop-top-category/new-south-wales-state/central-coast-region/",
         "pop-top-category/new-south-wales-state/central-west-region/",
@@ -266,5 +267,5 @@
         "touring-category/western-australia-state/perth-region/",
         "touring-category/western-australia-state/western-australia-outback-south-region/"
     ],
-    "generated_at": "2026-09-27 15:45:03"
+    "generated_at": "2026-09-28 15:45:02"
 }

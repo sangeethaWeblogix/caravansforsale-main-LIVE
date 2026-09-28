@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "region-make",
-    "count": 1029,
+    "count": 1030,
     "paths": [
         "australian-capital-territory-state/australian-capital-territory-region/avida/",
         "australian-capital-territory-state/australian-capital-territory-region/crusader/",
@@ -57,6 +57,7 @@
         "new-south-wales-state/hunter-region/leader/",
         "new-south-wales-state/hunter-region/lifestyle-campers/",
         "new-south-wales-state/hunter-region/lotus/",
+        "new-south-wales-state/hunter-region/majestic/",
         "new-south-wales-state/hunter-region/masterpiece/",
         "new-south-wales-state/hunter-region/mdc/",
         "new-south-wales-state/hunter-region/new-age/",
@@ -130,7 +131,6 @@
         "new-south-wales-state/newcastle-region/design-rv/",
         "new-south-wales-state/newcastle-region/elite/",
         "new-south-wales-state/newcastle-region/essential/",
-        "new-south-wales-state/newcastle-region/ezytrail/",
         "new-south-wales-state/newcastle-region/franklin/",
         "new-south-wales-state/newcastle-region/great-aussie/",
         "new-south-wales-state/newcastle-region/hardkorr-campers/",
@@ -1016,6 +1016,7 @@
         "western-australia-state/perth-region/x-series-rv/",
         "western-australia-state/perth-region/xtour/",
         "western-australia-state/perth-region/zone-rv/",
+        "western-australia-state/western-australia-outback-nouth-region/jayco/",
         "western-australia-state/western-australia-outback-south-region/avan/",
         "western-australia-state/western-australia-outback-south-region/coromal/",
         "western-australia-state/western-australia-outback-south-region/crusader/",
@@ -1033,5 +1034,5 @@
         "western-australia-state/western-australia-outback-south-region/western/",
         "western-australia-state/western-australia-outback-south-region/windsor/"
     ],
-    "generated_at": "2026-09-27 15:45:02"
+    "generated_at": "2026-09-28 15:45:02"
 }
