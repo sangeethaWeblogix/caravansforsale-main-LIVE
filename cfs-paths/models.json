@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "models",
-    "count": 2675,
+    "count": 2676,
     "paths": [
         "adria/action-361-lt/",
         "adria/action-361lt/",
@@ -2321,6 +2321,7 @@
         "supreme/1800-r-k1e3-s-classic-tourer/",
         "supreme/1800_r_k1e3_s-classic-tourer/",
         "supreme/1860_r_k1e3_t-classic-tourer/",
+        "supreme/19-6ft-rear-ensuite/",
         "supreme/1960_c_k1e2_t-executive/",
         "supreme/2000_r_k1e1_t-classic-tourer/",
         "supreme/2000_r_k1e1_t-territory/",
@@ -2679,5 +2680,5 @@
         "zone-rv/summit/",
         "zone-rv/venture/"
     ],
-    "generated_at": "2026-09-29 15:45:02"
+    "generated_at": "2026-09-30 15:45:02"
 }

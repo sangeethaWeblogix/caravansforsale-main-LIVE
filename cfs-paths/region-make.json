@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "region-make",
-    "count": 1030,
+    "count": 1031,
     "paths": [
         "australian-capital-territory-state/australian-capital-territory-region/avida/",
         "australian-capital-territory-state/australian-capital-territory-region/crusader/",
@@ -41,6 +41,7 @@
         "new-south-wales-state/coffs-harbour-region/royal-flair/",
         "new-south-wales-state/coffs-harbour-region/snowy-river/",
         "new-south-wales-state/coffs-harbour-region/summit/",
+        "new-south-wales-state/coffs-harbour-region/supreme/",
         "new-south-wales-state/coffs-harbour-region/titanium/",
         "new-south-wales-state/coffs-harbour-region/torus-rv/",
         "new-south-wales-state/hunter-region/atlas/",
@@ -1034,5 +1035,5 @@
         "western-australia-state/western-australia-outback-south-region/western/",
         "western-australia-state/western-australia-outback-south-region/windsor/"
     ],
-    "generated_at": "2026-09-29 15:45:02"
+    "generated_at": "2026-09-30 15:45:02"
 }
