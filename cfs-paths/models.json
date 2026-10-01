@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "models",
-    "count": 2676,
+    "count": 2677,
     "paths": [
         "adria/action-361-lt/",
         "adria/action-361lt/",
@@ -140,6 +140,7 @@
         "avan/gabrielle/",
         "avan/golf-tourer/",
         "avan/golf-tourer-607/",
+        "avan/leah/",
         "avan/nathan-609/",
         "avan/owen/",
         "avan/pop-top/",
@@ -2680,5 +2681,5 @@
         "zone-rv/summit/",
         "zone-rv/venture/"
     ],
-    "generated_at": "2026-09-30 15:45:02"
+    "generated_at": "2026-10-01 15:45:02"
 }
