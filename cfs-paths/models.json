@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "models",
-    "count": 2678,
+    "count": 2676,
     "paths": [
         "adria/action-361-lt/",
         "adria/action-361lt/",
@@ -619,7 +619,6 @@
         "elite/eildon-s8/",
         "elite/eildon-series-8-diamond-le/",
         "elite/goulburn/",
-        "elite/goulburn-rz-off-road/",
         "elite/goulburn-rz-series-2/",
         "elite/goulburn-series-2/",
         "elite/hume/",
@@ -1175,7 +1174,6 @@
         "jayco/expanda-outback-17-56-2-ob/",
         "jayco/expanda-poptop-17-56-1/",
         "jayco/expanda-poptop-17-56-2-ob-ex/",
-        "jayco/flamingo-outback/",
         "jayco/freedom/",
         "jayco/freedom-16-52-2/",
         "jayco/heritage/",
@@ -2682,5 +2680,5 @@
         "zone-rv/summit/",
         "zone-rv/venture/"
     ],
-    "generated_at": "2026-10-03 16:17:43"
+    "generated_at": "2026-10-05 05:39:30"
 }
