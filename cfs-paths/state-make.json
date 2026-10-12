@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "state-make",
-    "count": 616,
+    "count": 615,
     "paths": [
         "australian-capital-territory-state/avida/",
         "australian-capital-territory-state/crusader/",
@@ -143,7 +143,6 @@
         "queensland-state/bushmaster/",
         "queensland-state/bushtracker/",
         "queensland-state/bushwakka/",
-        "queensland-state/complete-campsite/",
         "queensland-state/concept/",
         "queensland-state/coromal/",
         "queensland-state/cosy-cab/",
@@ -620,5 +619,5 @@
         "western-australia-state/xtour/",
         "western-australia-state/zone-rv/"
     ],
-    "generated_at": "2026-10-10 19:56:28"
+    "generated_at": "2026-10-12 15:33:55"
 }

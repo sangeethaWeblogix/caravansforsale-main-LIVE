@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "region-make",
-    "count": 1030,
+    "count": 1029,
     "paths": [
         "australian-capital-territory-state/australian-capital-territory-region/avida/",
         "australian-capital-territory-state/australian-capital-territory-region/crusader/",
@@ -396,7 +396,6 @@
         "queensland-state/sunshine-coast-region/blue-sky/",
         "queensland-state/sunshine-coast-region/bushmaster/",
         "queensland-state/sunshine-coast-region/bushtracker/",
-        "queensland-state/sunshine-coast-region/complete-campsite/",
         "queensland-state/sunshine-coast-region/coromal/",
         "queensland-state/sunshine-coast-region/crusader/",
         "queensland-state/sunshine-coast-region/elite/",
@@ -1034,5 +1033,5 @@
         "western-australia-state/western-australia-outback-south-region/western/",
         "western-australia-state/western-australia-outback-south-region/windsor/"
     ],
-    "generated_at": "2026-10-10 19:56:28"
+    "generated_at": "2026-10-12 15:33:55"
 }

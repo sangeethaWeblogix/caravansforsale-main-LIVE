@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "makes",
-    "count": 252,
+    "count": 251,
     "paths": [
         "adria/",
         "adventura/",
@@ -44,7 +44,6 @@
         "centaur/",
         "coach-rv/",
         "compass/",
-        "complete-campsite/",
         "concept/",
         "condor/",
         "conqueror/",
@@ -256,5 +255,5 @@
         "york/",
         "zone-rv/"
     ],
-    "generated_at": "2026-10-10 19:56:28"
+    "generated_at": "2026-10-12 15:33:54"
 }

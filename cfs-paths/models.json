@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "models",
-    "count": 2676,
+    "count": 2675,
     "paths": [
         "adria/action-361-lt/",
         "adria/action-361lt/",
@@ -280,7 +280,6 @@
         "coach-rv/2-bunk-18-7ft/",
         "coach-rv/hm-series-20ft/",
         "compass/nautilus/",
-        "complete-campsite/exodus-11/",
         "concept/ascot/",
         "concept/ascot-640/",
         "concept/ascot-650/",
@@ -2680,5 +2679,5 @@
         "zone-rv/summit/",
         "zone-rv/venture/"
     ],
-    "generated_at": "2026-10-10 19:56:28"
+    "generated_at": "2026-10-12 15:33:55"
 }
