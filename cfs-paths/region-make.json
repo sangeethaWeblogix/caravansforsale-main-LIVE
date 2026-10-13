@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "region-make",
-    "count": 1029,
+    "count": 1028,
     "paths": [
         "australian-capital-territory-state/australian-capital-territory-region/avida/",
         "australian-capital-territory-state/australian-capital-territory-region/crusader/",
@@ -243,7 +243,6 @@
         "northern-territory-state/darwin-region/jurgens/",
         "northern-territory-state/darwin-region/lotus/",
         "northern-territory-state/darwin-region/snowy-river/",
-        "qld-state/wide-bay-region/jb/",
         "queensland-state/brisbane-region/adria/",
         "queensland-state/brisbane-region/aussie-fivestar/",
         "queensland-state/brisbane-region/austrack-campers/",
@@ -1033,5 +1032,5 @@
         "western-australia-state/western-australia-outback-south-region/western/",
         "western-australia-state/western-australia-outback-south-region/windsor/"
     ],
-    "generated_at": "2026-10-12 16:58:57"
+    "generated_at": "2026-10-13 17:17:41"
 }

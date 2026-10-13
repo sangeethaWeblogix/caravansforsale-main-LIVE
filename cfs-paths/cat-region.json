@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "cat-region",
-    "count": 262,
+    "count": 261,
     "paths": [
         "family-category/australian-capital-territory-state/australian-capital-territory-region/",
         "family-category/new-south-wales-state/central-coast-region/",
@@ -149,7 +149,6 @@
         "off-road-category/new-south-wales-state/southern-highlands-region/",
         "off-road-category/new-south-wales-state/sydney-region/",
         "off-road-category/northern-territory-state/darwin-region/",
-        "off-road-category/qld-state/wide-bay-region/",
         "off-road-category/queensland-state/brisbane-region/",
         "off-road-category/queensland-state/gold-coast-region/",
         "off-road-category/queensland-state/ipswich-region/",
@@ -266,5 +265,5 @@
         "touring-category/western-australia-state/perth-region/",
         "touring-category/western-australia-state/western-australia-outback-south-region/"
     ],
-    "generated_at": "2026-10-12 16:58:58"
+    "generated_at": "2026-10-13 17:17:41"
 }
