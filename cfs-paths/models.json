@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "models",
-    "count": 2674,
+    "count": 2672,
     "paths": [
         "adria/action-361-lt/",
         "adria/action-361lt/",
@@ -150,7 +150,6 @@
         "avan/the-marion/",
         "avida/sapphire/",
         "avida/topaz/",
-        "bailey/pegusus-624/",
         "bailey/s-n-1863/",
         "bailey/senator-vermont/",
         "barefoot/classic/",
@@ -1926,7 +1925,6 @@
         "regal/luxury/",
         "regal/my22/",
         "regal/rsv/",
-        "regal/rsv-commander/",
         "regent/cruiser/",
         "regent/cruiser-216/",
         "regent/cruiser-rcc220/",
@@ -2678,5 +2676,5 @@
         "zone-rv/summit/",
         "zone-rv/venture/"
     ],
-    "generated_at": "2026-10-17 06:11:04"
+    "generated_at": "2026-10-19 00:57:20"
 }

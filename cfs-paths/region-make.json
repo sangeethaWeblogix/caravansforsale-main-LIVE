@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "region-make",
-    "count": 1028,
+    "count": 1026,
     "paths": [
         "australian-capital-territory-state/australian-capital-territory-region/avida/",
         "australian-capital-territory-state/australian-capital-territory-region/crusader/",
@@ -146,7 +146,6 @@
         "new-south-wales-state/newcastle-region/tuff-track/",
         "new-south-wales-state/newcastle-region/urban/",
         "new-south-wales-state/newcastle-region/vivid/",
-        "new-south-wales-state/orana-region/bailey/",
         "new-south-wales-state/orana-region/jayco/",
         "new-south-wales-state/richmond-tweed-region/avan/",
         "new-south-wales-state/richmond-tweed-region/avida/",
@@ -740,7 +739,6 @@
         "victoria-state/latrobe-gippsland-region/nextgen/",
         "victoria-state/latrobe-gippsland-region/nova/",
         "victoria-state/latrobe-gippsland-region/on-the-move/",
-        "victoria-state/latrobe-gippsland-region/regal/",
         "victoria-state/latrobe-gippsland-region/roma/",
         "victoria-state/latrobe-gippsland-region/royal-flair/",
         "victoria-state/latrobe-gippsland-region/safari/",
@@ -1032,5 +1030,5 @@
         "western-australia-state/western-australia-outback-south-region/western/",
         "western-australia-state/western-australia-outback-south-region/windsor/"
     ],
-    "generated_at": "2026-10-17 06:11:04"
+    "generated_at": "2026-10-19 00:57:20"
 }
