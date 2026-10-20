@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "models",
-    "count": 2672,
+    "count": 2671,
     "paths": [
         "adria/action-361-lt/",
         "adria/action-361lt/",
@@ -2509,7 +2509,6 @@
         "vacationer/endura-caravan-209r/",
         "vacationer/endura-x/",
         "vacationer/endure-196r/",
-        "vacationer/leonora/",
         "vacationer/roadtrip/",
         "vacationer/rough-rider/",
         "vacationer/rough-rider-21r/",
@@ -2676,5 +2675,5 @@
         "zone-rv/summit/",
         "zone-rv/venture/"
     ],
-    "generated_at": "2026-10-20 06:51:13"
+    "generated_at": "2026-10-21 06:53:03"
 }
