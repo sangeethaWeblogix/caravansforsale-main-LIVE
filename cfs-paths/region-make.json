@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "region-make",
-    "count": 1026,
+    "count": 1025,
     "paths": [
         "australian-capital-territory-state/australian-capital-territory-region/avida/",
         "australian-capital-territory-state/australian-capital-territory-region/crusader/",
@@ -475,7 +475,6 @@
         "queensland-state/wide-bay-region/on-the-move/",
         "queensland-state/wide-bay-region/option-rv/",
         "queensland-state/wide-bay-region/red-centre/",
-        "queensland-state/wide-bay-region/regal/",
         "queensland-state/wide-bay-region/regent/",
         "queensland-state/wide-bay-region/royal-flair/",
         "queensland-state/wide-bay-region/snowy-river/",
@@ -1030,5 +1029,5 @@
         "western-australia-state/western-australia-outback-south-region/western/",
         "western-australia-state/western-australia-outback-south-region/windsor/"
     ],
-    "generated_at": "2026-10-23 17:26:56"
+    "generated_at": "2026-10-25 07:00:33"
 }

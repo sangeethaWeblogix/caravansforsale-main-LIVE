@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "state-make",
-    "count": 614,
+    "count": 613,
     "paths": [
         "australian-capital-territory-state/avida/",
         "australian-capital-territory-state/crusader/",
@@ -213,7 +213,6 @@
         "queensland-state/pro-rv/",
         "queensland-state/ranger/",
         "queensland-state/red-centre/",
-        "queensland-state/regal/",
         "queensland-state/regent/",
         "queensland-state/rembrandt/",
         "queensland-state/retreat/",
@@ -618,5 +617,5 @@
         "western-australia-state/xtour/",
         "western-australia-state/zone-rv/"
     ],
-    "generated_at": "2026-10-23 17:26:56"
+    "generated_at": "2026-10-25 07:00:33"
 }
