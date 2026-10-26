@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "state-make",
-    "count": 613,
+    "count": 612,
     "paths": [
         "australian-capital-territory-state/avida/",
         "australian-capital-territory-state/crusader/",
@@ -108,7 +108,6 @@
         "new-south-wales-state/urban/",
         "new-south-wales-state/vacationer/",
         "new-south-wales-state/viscount/",
-        "new-south-wales-state/vision-rv/",
         "new-south-wales-state/vivid/",
         "new-south-wales-state/windsor/",
         "new-south-wales-state/wonder-roo/",
@@ -617,5 +616,5 @@
         "western-australia-state/xtour/",
         "western-australia-state/zone-rv/"
     ],
-    "generated_at": "2026-10-26 09:06:27"
+    "generated_at": "2026-10-27 07:16:27"
 }
