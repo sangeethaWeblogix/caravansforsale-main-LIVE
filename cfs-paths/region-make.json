@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "region-make",
-    "count": 1024,
+    "count": 1023,
     "paths": [
         "australian-capital-territory-state/australian-capital-territory-region/avida/",
         "australian-capital-territory-state/australian-capital-territory-region/crusader/",
@@ -231,7 +231,6 @@
         "new-south-wales-state/sydney-region/oz-star/",
         "new-south-wales-state/sydney-region/signature/",
         "new-south-wales-state/sydney-region/trail/",
-        "new-south-wales-state/sydney-region/viscount/",
         "northern-territory-state/darwin-region/avan/",
         "northern-territory-state/darwin-region/boroma/",
         "northern-territory-state/darwin-region/crusader/",
@@ -1028,5 +1027,5 @@
         "western-australia-state/western-australia-outback-south-region/western/",
         "western-australia-state/western-australia-outback-south-region/windsor/"
     ],
-    "generated_at": "2026-10-27 16:43:37"
+    "generated_at": "2026-10-28 20:07:17"
 }

@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "models",
-    "count": 2668,
+    "count": 2667,
     "paths": [
         "adria/action-361-lt/",
         "adria/action-361lt/",
@@ -2547,7 +2547,6 @@
         "victory/trophy-24-family-quad-bunk/",
         "victory/trophy-series/",
         "villa/21-6/",
-        "viscount/royal/",
         "viscount/v-series/",
         "viscount/v-series-v2/",
         "viscount/v1/",
@@ -2672,5 +2671,5 @@
         "zone-rv/summit/",
         "zone-rv/venture/"
     ],
-    "generated_at": "2026-10-27 16:43:37"
+    "generated_at": "2026-10-28 20:07:17"
 }
