@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "models",
-    "count": 2665,
+    "count": 2664,
     "paths": [
         "adria/action-361-lt/",
         "adria/action-361lt/",
@@ -1677,7 +1677,6 @@
         "olympic/marathon-196/",
         "olympic/marathon-196-3/",
         "olympic/marathon-21/",
-        "olympic/marathon-family/",
         "olympic/marathon-rear-club/",
         "olympic/pursuit/",
         "olympic/sprinter/",
@@ -2669,5 +2668,5 @@
         "zone-rv/summit/",
         "zone-rv/venture/"
     ],
-    "generated_at": "2026-10-30 07:14:54"
+    "generated_at": "2026-11-01 06:38:17"
 }
