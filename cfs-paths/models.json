@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "models",
-    "count": 2664,
+    "count": 2663,
     "paths": [
         "adria/action-361-lt/",
         "adria/action-361lt/",
@@ -1553,7 +1553,6 @@
         "ndc/cobba/",
         "ndc/expedition-xl/",
         "ndc/westbourne/",
-        "network-rv/terrain-tuff/",
         "new-age/big-red/",
         "new-age/big-red-196/",
         "new-age/big-red-21/",
@@ -2668,5 +2667,5 @@
         "zone-rv/summit/",
         "zone-rv/venture/"
     ],
-    "generated_at": "2026-11-01 06:38:17"
+    "generated_at": "2026-11-04 07:25:03"
 }
