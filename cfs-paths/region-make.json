@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "region-make",
-    "count": 1022,
+    "count": 1020,
     "paths": [
         "australian-capital-territory-state/australian-capital-territory-region/avida/",
         "australian-capital-territory-state/australian-capital-territory-region/crusader/",
@@ -20,7 +20,6 @@
         "new-south-wales-state/coffs-harbour-region/atlantic/",
         "new-south-wales-state/coffs-harbour-region/austrack-campers/",
         "new-south-wales-state/coffs-harbour-region/australian-off-road/",
-        "new-south-wales-state/coffs-harbour-region/avan/",
         "new-south-wales-state/coffs-harbour-region/concept/",
         "new-south-wales-state/coffs-harbour-region/coromal/",
         "new-south-wales-state/coffs-harbour-region/eagle/",
@@ -154,7 +153,6 @@
         "new-south-wales-state/richmond-tweed-region/bluewater/",
         "new-south-wales-state/richmond-tweed-region/coromal/",
         "new-south-wales-state/richmond-tweed-region/crusader/",
-        "new-south-wales-state/richmond-tweed-region/design-rv/",
         "new-south-wales-state/richmond-tweed-region/eagle/",
         "new-south-wales-state/richmond-tweed-region/empire/",
         "new-south-wales-state/richmond-tweed-region/essential/",
@@ -1026,5 +1024,5 @@
         "western-australia-state/western-australia-outback-south-region/western/",
         "western-australia-state/western-australia-outback-south-region/windsor/"
     ],
-    "generated_at": "2026-11-05 00:17:16"
+    "generated_at": "2026-11-05 16:46:50"
 }
