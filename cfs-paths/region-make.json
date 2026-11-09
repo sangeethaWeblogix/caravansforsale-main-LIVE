@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "region-make",
-    "count": 1020,
+    "count": 1018,
     "paths": [
         "australian-capital-territory-state/australian-capital-territory-region/avida/",
         "australian-capital-territory-state/australian-capital-territory-region/crusader/",
@@ -206,7 +206,6 @@
         "new-south-wales-state/southern-highlands-region/snowy-river/",
         "new-south-wales-state/southern-highlands-region/sunfinder/",
         "new-south-wales-state/southern-highlands-region/supreme/",
-        "new-south-wales-state/southern-highlands-region/traveller/",
         "new-south-wales-state/southern-highlands-region/vacationer/",
         "new-south-wales-state/southern-highlands-region/viscount/",
         "new-south-wales-state/southern-highlands-region/windsor/",
@@ -240,7 +239,6 @@
         "northern-territory-state/darwin-region/snowy-river/",
         "queensland-state/brisbane-region/adria/",
         "queensland-state/brisbane-region/aussie-fivestar/",
-        "queensland-state/brisbane-region/austrack-campers/",
         "queensland-state/brisbane-region/boss-adventure/",
         "queensland-state/brisbane-region/bruder/",
         "queensland-state/brisbane-region/concept/",
@@ -1024,5 +1022,5 @@
         "western-australia-state/western-australia-outback-south-region/western/",
         "western-australia-state/western-australia-outback-south-region/windsor/"
     ],
-    "generated_at": "2026-11-07 17:17:28"
+    "generated_at": "2026-11-10 08:51:13"
 }

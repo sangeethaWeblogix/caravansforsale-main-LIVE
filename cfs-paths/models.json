@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "models",
-    "count": 2662,
+    "count": 2661,
     "paths": [
         "adria/action-361-lt/",
         "adria/action-361lt/",
@@ -2433,7 +2433,6 @@
         "trail/x-plorer-range/",
         "trakmaster/kimberley/",
         "trakmaster/simpson/",
-        "traveller/21-6/",
         "traveller/belair/",
         "traveller/chateau/",
         "traveller/prodigy/",
@@ -2666,5 +2665,5 @@
         "zone-rv/summit/",
         "zone-rv/venture/"
     ],
-    "generated_at": "2026-11-07 17:17:28"
+    "generated_at": "2026-11-10 08:51:13"
 }
