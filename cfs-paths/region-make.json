@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "region-make",
-    "count": 1018,
+    "count": 1017,
     "paths": [
         "australian-capital-territory-state/australian-capital-territory-region/avida/",
         "australian-capital-territory-state/australian-capital-territory-region/crusader/",
@@ -51,7 +51,6 @@
         "new-south-wales-state/hunter-region/design-rv/",
         "new-south-wales-state/hunter-region/eternity/",
         "new-south-wales-state/hunter-region/hardkorr-campers/",
-        "new-south-wales-state/hunter-region/hinterland/",
         "new-south-wales-state/hunter-region/jawa/",
         "new-south-wales-state/hunter-region/jayco/",
         "new-south-wales-state/hunter-region/leader/",
@@ -1022,5 +1021,5 @@
         "western-australia-state/western-australia-outback-south-region/western/",
         "western-australia-state/western-australia-outback-south-region/windsor/"
     ],
-    "generated_at": "2026-11-10 08:51:13"
+    "generated_at": "2026-11-11 10:21:28"
 }

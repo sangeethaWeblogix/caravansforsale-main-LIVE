@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "models",
-    "count": 2661,
+    "count": 2660,
     "paths": [
         "adria/action-361-lt/",
         "adria/action-361lt/",
@@ -1084,7 +1084,6 @@
         "hilltop/summit/",
         "hilltop/thredbo/",
         "hinterland/20-tourer/",
-        "hinterland/hinterland-domain/",
         "hitch-hika/adelaide/",
         "hitch-hika/adelaide-176/",
         "hitch-hika/adelaide-226-rc/",
@@ -2665,5 +2664,5 @@
         "zone-rv/summit/",
         "zone-rv/venture/"
     ],
-    "generated_at": "2026-11-10 08:51:13"
+    "generated_at": "2026-11-11 10:21:28"
 }
