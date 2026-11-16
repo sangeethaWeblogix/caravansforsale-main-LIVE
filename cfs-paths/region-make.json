@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "region-make",
-    "count": 1017,
+    "count": 1016,
     "paths": [
         "australian-capital-territory-state/australian-capital-territory-region/avida/",
         "australian-capital-territory-state/australian-capital-territory-region/crusader/",
@@ -223,7 +223,6 @@
         "new-south-wales-state/sydney-region/mars-campers/",
         "new-south-wales-state/sydney-region/mdc/",
         "new-south-wales-state/sydney-region/new-line/",
-        "new-south-wales-state/sydney-region/olympic/",
         "new-south-wales-state/sydney-region/oz-star/",
         "new-south-wales-state/sydney-region/signature/",
         "new-south-wales-state/sydney-region/trail/",
@@ -1021,5 +1020,5 @@
         "western-australia-state/western-australia-outback-south-region/western/",
         "western-australia-state/western-australia-outback-south-region/windsor/"
     ],
-    "generated_at": "2026-11-16 09:14:07"
+    "generated_at": "2026-11-17 09:36:48"
 }

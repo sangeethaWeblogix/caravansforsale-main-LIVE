@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "models",
-    "count": 2660,
+    "count": 2659,
     "paths": [
         "adria/action-361-lt/",
         "adria/action-361lt/",
@@ -1661,7 +1661,6 @@
         "nova/terra-sportz-696-rear-club/",
         "nova/vita/",
         "olympic/1000/",
-        "olympic/19-6ft-rear-ensuite/",
         "olympic/javelin/",
         "olympic/javelin-sp/",
         "olympic/javelin-x10/",
@@ -2664,5 +2663,5 @@
         "zone-rv/summit/",
         "zone-rv/venture/"
     ],
-    "generated_at": "2026-11-16 09:14:07"
+    "generated_at": "2026-11-17 09:36:48"
 }
