@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "region-make",
-    "count": 1016,
+    "count": 1014,
     "paths": [
         "australian-capital-territory-state/australian-capital-territory-region/avida/",
         "australian-capital-territory-state/australian-capital-territory-region/crusader/",
@@ -56,7 +56,6 @@
         "new-south-wales-state/hunter-region/leader/",
         "new-south-wales-state/hunter-region/lifestyle-campers/",
         "new-south-wales-state/hunter-region/lotus/",
-        "new-south-wales-state/hunter-region/majestic/",
         "new-south-wales-state/hunter-region/masterpiece/",
         "new-south-wales-state/hunter-region/mdc/",
         "new-south-wales-state/hunter-region/new-age/",
@@ -389,7 +388,6 @@
         "queensland-state/sunshine-coast-region/coromal/",
         "queensland-state/sunshine-coast-region/crusader/",
         "queensland-state/sunshine-coast-region/elite/",
-        "queensland-state/sunshine-coast-region/essential/",
         "queensland-state/sunshine-coast-region/ezytrail/",
         "queensland-state/sunshine-coast-region/fair-dinkum/",
         "queensland-state/sunshine-coast-region/fortitude/",
@@ -1020,5 +1018,5 @@
         "western-australia-state/western-australia-outback-south-region/western/",
         "western-australia-state/western-australia-outback-south-region/windsor/"
     ],
-    "generated_at": "2026-11-20 22:48:34"
+    "generated_at": "2026-11-24 09:37:22"
 }
