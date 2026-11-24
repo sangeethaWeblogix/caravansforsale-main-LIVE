@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "region-make",
-    "count": 1014,
+    "count": 1013,
     "paths": [
         "australian-capital-territory-state/australian-capital-territory-region/avida/",
         "australian-capital-territory-state/australian-capital-territory-region/crusader/",
@@ -861,7 +861,6 @@
         "victoria-state/north-west-region/jayco/",
         "victoria-state/north-west-region/mdc/",
         "victoria-state/north-west-region/new-age/",
-        "victoria-state/north-west-region/olympic/",
         "victoria-state/north-west-region/option-rv/",
         "victoria-state/north-west-region/snowy-river/",
         "victoria-state/north-west-region/vanguard/",
@@ -1018,5 +1017,5 @@
         "western-australia-state/western-australia-outback-south-region/western/",
         "western-australia-state/western-australia-outback-south-region/windsor/"
     ],
-    "generated_at": "2026-11-24 09:37:22"
+    "generated_at": "2026-11-25 09:40:57"
 }
