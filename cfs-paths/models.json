@@ -1,7 +1,7 @@
 {
     "success": true,
     "type": "models",
-    "count": 2658,
+    "count": 2657,
     "paths": [
         "adria/action-361-lt/",
         "adria/action-361lt/",
@@ -2197,7 +2197,6 @@
         "snowy-river/srp20-single-beds/",
         "snowy-river/srs-9/",
         "snowy-river/srs9/",
-        "snowy-river/srt-22f/",
         "snowy-river/srt-18-2/",
         "snowy-river/srt-18f-2/",
         "snowy-river/srt-18f2b/",
@@ -2662,5 +2661,5 @@
         "zone-rv/summit/",
         "zone-rv/venture/"
     ],
-    "generated_at": "2026-11-25 23:27:46"
+    "generated_at": "2026-11-27 09:51:09"
 }
